@@ -1,0 +1,23 @@
+{
+  "name": "@lactalink/typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LactaLink shared typescript configuration.",
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./base.json",
+    "./next": "./nextjs.json",
+    "./react-native": "./react-native.json"
+  },
+  "devDependencies": {
+    "@tsconfig/next": "^2.0.3",
+    "@tsconfig/node22": "^22.0.1",
+    "@tsconfig/react-native": "^3.0.5",
+    "@tsconfig/recommended": "^1.0.8",
+    "@types/jest": "^29.5.14"
+  }
+}

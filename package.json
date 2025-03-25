@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "name": "lactalink",
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:mobile": "turbo dev --filter=\"{./apps/mobile}...\"",
+    "dev:web": "turbo dev --filter=\"{./apps/web}...\"",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "test": "turbo test",
+    "build": "turbo build",
+    "build:mobile": "turbo build --filter=\"...{./apps/mobile}\"",
+    "build:web": "turbo dev --filter=\"{./apps/web}...\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "turbo": "^2.4.4",
+    "typescript": "^5.5.4"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "semi": true,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindFunctions": [
+      "tva"
+    ]
+  },
+  "packageManager": "pnpm@9.15.7",
+  "engines": {
+    "node": "^22.14.0",
+    "pnpm": "^9"
+  }
+}
