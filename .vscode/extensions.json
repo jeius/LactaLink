@@ -3,6 +3,10 @@
     "dbaeumer.vscode-eslint", 
     "esbenp.prettier-vscode", 
     "bradlc.vscode-tailwindcss",
+    "expo.vscode-expo-tools",
+    "formulahendry.auto-rename-tag",
+    "gluestack.gluestack-vscode",
+    "ijs.reactnextjssnippets",
     "dsznajder.es7-react-js-snippets"
   ]
 }
