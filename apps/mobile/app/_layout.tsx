@@ -1,11 +1,8 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
-import "@/global.css";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-
-// Import your global CSS file
-import "../global.css";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { ThemeProvider } from '@/components/ui/theme-provider';
+import '@/global.css';
 
 export default function RootLayout() {
   return (

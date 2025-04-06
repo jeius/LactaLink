@@ -1,9 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import { Alert, View } from "react-native";
+import { Button } from '@/components/ui/button';
+import { Heading } from '@/components/ui/heading';
+import { Text } from '@/components/ui/text';
+import { Alert, View } from 'react-native';
 
 export default function App() {
   return (
@@ -13,15 +11,13 @@ export default function App() {
           Welcome to NativeWind!
         </Heading>
         <Text className="text-xl">Style your app with</Text>
-        <Text className="bg-slate-500 text-3xl font-bold underline">
-          Tailwind CSS!
-        </Text>
+        <Text className="bg-slate-500 text-3xl font-bold underline">Tailwind CSS!</Text>
       </View>
       <Button
         variant="solid"
         size="lg"
         onPress={() => {
-          Alert.alert("NativeWind", "You're all set up!");
+          Alert.alert('NativeWind', "You're all set up!");
         }}
       >
         <Text>Sounds Good!</Text>
