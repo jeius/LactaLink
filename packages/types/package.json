@@ -1,0 +1,15 @@
+{
+  "name": "@lactalink/types",
+  "version": "1.0.0",
+  "description": "Lactalink shared types",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "devDependencies": {
+    "@lactalink/typescript-config": "workspace:*"
+  }
+}
