@@ -3,19 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@payload-config": [
-        "./src/payload.config.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@payload-config": ["./src/payload.config.ts"]
     }
   },
-  "include": [
-    "../../packages/typescript-config/../../node_modules/.pnpm/@tsconfig+next@2.0.3/node_modules/@tsconfig/next/next-env.d.ts",
-    "../../packages/typescript-config/../../node_modules/.pnpm/@tsconfig+next@2.0.3/node_modules/@tsconfig/next/**/*.ts",
-    "../../packages/typescript-config/../../node_modules/.pnpm/@tsconfig+next@2.0.3/node_modules/@tsconfig/next/**/*.tsx",
-    "../../packages/typescript-config/../../node_modules/.pnpm/@tsconfig+next@2.0.3/node_modules/@tsconfig/next/.next/types/**/*.ts",
-    ".next/types/**/*.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.mjs"]
 }
