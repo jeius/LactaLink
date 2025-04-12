@@ -48,6 +48,12 @@
         "projectId": "ee00ec97-b3a9-4e3e-b499-95bb14571879"
       }
     },
-    "owner": "lactalink"
+    "owner": "lactalink",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ee00ec97-b3a9-4e3e-b499-95bb14571879"
+    }
   }
 }

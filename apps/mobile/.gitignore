@@ -40,3 +40,7 @@ android/
 
 # ios
 ios/
+
+# next.js
+.next/
+out/
