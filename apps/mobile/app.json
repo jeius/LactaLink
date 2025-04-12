@@ -8,6 +8,7 @@
     "scheme": "lactalink",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lactalinkph"
@@ -18,10 +19,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.lactalinkph"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static"
     },
     "plugins": [
       "expo-router",
