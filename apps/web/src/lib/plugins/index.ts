@@ -1,6 +1,5 @@
-import { s3Storage } from '@payloadcms/storage-s3';
 import { Plugin } from 'payload';
-import StorageConfig from './storage-config';
+import { s3StoragePlugin } from './s3Storage';
 
 export const plugins: Plugin[] = [
   // nestedDocsPlugin({
@@ -16,25 +15,5 @@ export const plugins: Plugin[] = [
   //     admin: { group: collectionGroup.system },
   //   },
   // }),
-  s3Storage({
-    collections: {
-      images: true,
-    },
-    bucket: process.env.S3_BUCKET_IMAGES!,
-    config: StorageConfig,
-  }),
-  s3Storage({
-    collections: {
-      media: true,
-    },
-    bucket: process.env.S3_BUCKET_MEDIA!,
-    config: StorageConfig,
-  }),
-  s3Storage({
-    collections: {
-      avatars: true,
-    },
-    bucket: process.env.S3_BUCKET_AVATARS!,
-    config: StorageConfig,
-  }),
+  ...s3StoragePlugin,
 ];

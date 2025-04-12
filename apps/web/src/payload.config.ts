@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import Collections from './collections';
 import { Users } from './collections/Users';
 import { plugins } from './lib/plugins';
+import { getServerSideURL } from './lib/utils/getURL';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -35,6 +36,7 @@ export default buildConfig({
     autoLogin: autoLoginConfig,
   },
   collections: Collections,
+  serverURL: getServerSideURL(),
   editor: lexicalEditor(),
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
@@ -44,7 +46,7 @@ export default buildConfig({
   },
   db: postgresAdapter({
     idType: 'uuid',
-    allowIDOnCreate: true,
+    // allowIDOnCreate: true,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },

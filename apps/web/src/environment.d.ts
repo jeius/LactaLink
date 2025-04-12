@@ -15,6 +15,8 @@ declare global {
       S3_ENDPOINT: string;
       S3_REGION: string;
       RESEND_API_KEY: string;
+      GOOGLE_CLIENT_ID: string;
+      GOOGLE_CLIENT_SECRET: string;
     }
   }
 }
