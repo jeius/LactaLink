@@ -5,18 +5,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo-icon.png",
-    "scheme": "myapp",
+    "scheme": "lactalink",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lactalinkph"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.lactalink"
+      "package": "com.lactalinkph"
     },
     "web": {
       "bundler": "metro",
@@ -38,6 +39,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ee00ec97-b3a9-4e3e-b499-95bb14571879"
+      }
+    },
+    "owner": "lactalink"
   }
 }
