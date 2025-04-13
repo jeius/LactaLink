@@ -38,4 +38,4 @@ jobs:
       - name: ⚒️ Build mobile on push
         if: ${{ github.event_name == 'push' }} # only run this step if the workflow was triggered by a push event
         working-directory: apps/mobile
-        run: eas build --non-interactive --wait --platform=all --profile=development
+        run: eas build --non-interactive --wait --platform=android --profile=development
