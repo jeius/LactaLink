@@ -7,7 +7,7 @@
   },
   "build": {
     "monorepo": {
-      "pnpm": "9.15.5",
+      "pnpm": "9.15.7",
       "cache": {
         "key": "turbo",
         "paths": ["../../node_modules/.cache/turbo"]
@@ -20,10 +20,7 @@
       "extends": "monorepo",
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
-      "android": {
-        "buildType": "apk"
-      }
+      "channel": "development"
     },
     "preview": {
       "extends": "monorepo",

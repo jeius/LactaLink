@@ -30,6 +30,12 @@ jobs:
       - name: 👷 Build packages for mobile
         run: pnpm run -w build:mobile
 
-      - name: ⚒️ Build mobile
+      - name: ⚒️ Build mobile on dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' }} # only run this step if the workflow was triggered by a dispatch event
         working-directory: apps/mobile
         run: eas build --non-interactive --wait --platform=${{ github.event.inputs.platform }} --profile=development
+
+      - name: ⚒️ Build mobile on push
+        if: ${{ github.event_name == 'push' }} # only run this step if the workflow was triggered by a push event
+        working-directory: apps/mobile
+        run: eas build --non-interactive --wait --platform=all --profile=development
