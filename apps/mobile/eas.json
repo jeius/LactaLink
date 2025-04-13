@@ -8,6 +8,7 @@
   "build": {
     "monorepo": {
       "pnpm": "9.15.7",
+      "node": "22.14.0",
       "cache": {
         "key": "turbo",
         "paths": ["../../node_modules/.cache/turbo"]
