@@ -11,14 +11,14 @@
     "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lactalinkph"
+      "bundleIdentifier": "com.lactalink.mobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.lactalinkph"
+      "package": "com.lactalink.mobile"
     },
     "plugins": [
       "expo-router",
@@ -47,7 +47,7 @@
     },
     "owner": "lactalink",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "sdkVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/ee00ec97-b3a9-4e3e-b499-95bb14571879"

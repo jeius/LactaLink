@@ -7,7 +7,6 @@
     "dev": "expo start",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
-    "web": "DARK_MODE=media expo start --web",
     "build": "expo export --output-dir ./build --platform all",
     "dev:android": "eas build --platform android --profile development",
     "dev:ios": "eas build --platform ios --profile development",

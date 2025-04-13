@@ -2,21 +2,45 @@
   "cli": {
     "version": ">= 16.3.1",
     "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false,
     "requireCommit": true
   },
   "build": {
+    "monorepo": {
+      "pnpm": "9.15.5",
+      "cache": {
+        "key": "turbo",
+        "paths": ["../../node_modules/.cache/turbo"]
+      },
+      "env": {
+        "EXPO_USE_FAST_RESOLVER": "true"
+      }
+    },
     "development": {
+      "extends": "monorepo",
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "preview": {
+      "extends": "monorepo",
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
+      "extends": "monorepo",
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

@@ -32,7 +32,7 @@
       "tva"
     ]
   },
-  "packageManager": "pnpm@9.15.7",
+  "packageManager": "pnpm@9.15.5",
   "engines": {
     "node": "^22.14.0",
     "pnpm": "^9.15.5"

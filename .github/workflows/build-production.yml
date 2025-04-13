@@ -1,0 +1,45 @@
+name: Build Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build for (all/android/ios)
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - android
+          - ios
+      submit:
+        description: Auto submit to the store?
+        type: boolean
+        required: false
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup monorepo
+        uses: ./.github/actions/setup-monorepo
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 👷 Build packages for mobile
+        run: pnpm run -w build:mobile
+
+      - name: 🚀 Build mobile
+        if: ${{ github.event.inputs.submit == 'false'}}
+        working-directory: apps/mobile
+        run: eas build --non-interactive --wait --platform=${{ github.event.inputs.platform }} --profile=production
+
+      - name: 🚀 Build & submit mobile
+        if: ${{ github.event.inputs.submit == 'true'}}
+        working-directory: apps/mobile
+        run: eas build --non-interactive --wait --auto-submit --platform=${{ github.event.inputs.platform }} --profile=production
