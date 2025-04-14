@@ -21,15 +21,6 @@ const monorepoConfig = {
       path.resolve(projectDir, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
     ],
-    /**
-     * React Native has very frail symlink support for modern monorepo tools
-     * that rely on symlinks and global caches to dramatically increase the
-     * performance of installs e.g. pnpm. The best way around this is using
-     * Microsoft's rnx-kit. I've written more extensively about this in the
-     * README.
-     *
-     * @see https://gist.github.com/Zn4rK/ed60c380e7b672e3089074f51792a2b8
-     */
     resolveRequest: (context, moduleName, platform) => {
       try {
         // Symlinks resolver throws when it can't find what we're looking for.

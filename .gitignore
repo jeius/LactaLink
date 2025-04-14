@@ -6,19 +6,47 @@ packages/*/build
 # Turborepo
 .turbo
 
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
 # Expo
 .expo
 __generated__
 web-build
+.expo
+dist
+build
+android
+ios
+expo-env.d.ts
+
+# Next.js
+.next
+out
+coverage
+next-env.d.ts
+
+# Typescript
+*.tsbuildinfo
 
 # macOS
 .DS_Store
+*.pem
 
 # Node
 node_modules
-npm-debug.log
-yarn-error.log
 package-lock.json
+.pnp
+.pnp.js
+.yarn/install-state.gz
 
 # Ruby
 .direnv
@@ -58,4 +86,9 @@ xcuserdata
 .settings
 
 # VSCode
-.history/
+.history
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
