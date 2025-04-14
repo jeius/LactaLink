@@ -8,11 +8,21 @@ module.exports = function (api) {
         'module-resolver',
         {
           root: ['./'],
-
           alias: {
             '@': './',
             'tailwind.config': './tailwind.config.js',
           },
+        },
+      ],
+      [
+        'dotenv-import',
+        {
+          moduleName: '@env',
+          path: ['.env', '.env.development', '.env.production'],
+          blocklist: null,
+          allowlist: null,
+          safe: false,
+          allowUndefined: false,
         },
       ],
     ],
