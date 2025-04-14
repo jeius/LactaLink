@@ -2,9 +2,12 @@
   "expo": {
     "name": "LactaLink",
     "slug": "lactalink",
+    "description": "A breastmilk sharing platform that connects donors, recipients, hospitals, and milk banks for safe and efficient milk distribution.",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo-icon.png",
+    "icon": "./assets/images/icon.png",
+    "backgroundColor": "#FFF7F7",
+    "primaryColor": "#FE828C",
     "scheme": "lactalink",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#FFCDD1"
       },
       "package": "com.lactalink.mobile"
     },
@@ -26,8 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#FFCDD1"
         }
