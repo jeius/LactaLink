@@ -16,6 +16,15 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Next.js
+../web/
+.next/
+out/
+
+# Builds
+android/
+ios/
+
 # Metro
 .metro-health-check*
 
@@ -35,12 +44,5 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# android
-android/
 
-# ios
-ios/
 
-# next.js
-.next/
-out/

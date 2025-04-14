@@ -11,7 +11,7 @@
       "node": "22.14.0",
       "cache": {
         "key": "turbo",
-        "paths": ["../../node_modules/.cache/turbo"]
+        "paths": ["../../.turbo/cache"]
       },
       "env": {
         "EXPO_USE_FAST_RESOLVER": "true"
