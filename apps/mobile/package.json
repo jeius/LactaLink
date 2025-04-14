@@ -60,5 +60,12 @@
     "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",
     "jscodeshift": "0.15.2"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false
+      }
+    }
   }
 }
