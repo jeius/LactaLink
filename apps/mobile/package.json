@@ -4,12 +4,12 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "expo start",
+    "dev": "expo start --dev-client",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
     "build": "expo export --output-dir ./build --platform all",
-    "dev:android": "eas build --platform android --profile development",
-    "dev:ios": "eas build --platform ios --profile development",
+    "build:android": "eas build:dev --platform android --profile development",
+    "build:ios": "eas build:dev --platform ios --profile development",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc"

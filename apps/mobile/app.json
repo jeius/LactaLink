@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#FFCDD1"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FE828C"
       },
       "package": "com.lactalink.mobile"
     },
