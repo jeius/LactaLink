@@ -21,7 +21,10 @@
       "extends": "monorepo",
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "API_URL": "http://localhost:3000"
+      }
     },
     "preview": {
       "extends": "monorepo",
@@ -38,6 +41,9 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "API_URL": "https://www.lactalink.com"
       }
     }
   },
