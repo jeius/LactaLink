@@ -11,7 +11,7 @@
     "test": "turbo test",
     "build": "turbo build",
     "build:mobile": "turbo build --filter=\"...{./apps/mobile}\"",
-    "build:web": "turbo dev --filter=\"{./apps/web}...\""
+    "build:web": "turbo build --filter=\"{./apps/web}...\""
   },
   "devDependencies": {
     "prettier": "^3.4.2",
