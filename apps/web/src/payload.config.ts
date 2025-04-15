@@ -4,8 +4,7 @@ import path from 'path';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
-import Collections from './collections';
-import { Users } from './collections/Users';
+import Collections, { Admins } from './collections';
 import { plugins } from './lib/plugins';
 import { getServerSideURL } from './lib/utils/getURL';
 
@@ -24,7 +23,7 @@ const autoLoginConfig =
 
 export default buildConfig({
   admin: {
-    user: Users.slug,
+    user: Admins.slug,
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -35,6 +34,7 @@ export default buildConfig({
     },
     autoLogin: autoLoginConfig,
   },
+  auth: { jwtOrder: ['JWT', 'Bearer', 'cookie'] },
   collections: Collections,
   serverURL: getServerSideURL(),
   editor: lexicalEditor(),
@@ -42,11 +42,11 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || '',
   cookiePrefix: 'user-session',
   typescript: {
-    outputFile: path.resolve(dirname, './payload-types.ts'),
+    outputFile: path.resolve(dirname, './lib/types/payload-types.ts'),
   },
   db: postgresAdapter({
     idType: 'uuid',
-    // allowIDOnCreate: true,
+    allowIDOnCreate: true,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },

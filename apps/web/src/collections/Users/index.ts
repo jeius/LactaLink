@@ -1,26 +1,17 @@
+import { collectionEndpoints } from '@/auth/endpoints';
 import { collectionGroup } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { endpoints } from './endpoints';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
   admin: {
     group: collectionGroup.user,
     useAsTitle: 'email',
+    defaultColumns: ['email', 'type', 'id'],
   },
   auth: true,
-  endpoints,
+  endpoints: collectionEndpoints,
   fields: [
-    {
-      name: 'role',
-      type: 'select',
-      defaultValue: 'user',
-      saveToJWT: true,
-      options: [
-        { label: 'User', value: 'user' },
-        { label: 'Admin', value: 'admin' },
-      ],
-    },
     {
       name: 'type',
       type: 'select',
@@ -39,6 +30,16 @@ export const Users: CollectionConfig<'users'> = {
           label: 'Milk Bank',
           value: 'milkBank',
         },
+      ],
+    },
+    {
+      name: 'createdVia',
+      label: 'Created Via',
+      type: 'select',
+      defaultValue: 'default',
+      options: [
+        { label: 'Default', value: 'default' },
+        { label: 'OAuth', value: 'oauth' },
       ],
     },
   ],
