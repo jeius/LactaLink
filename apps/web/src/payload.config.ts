@@ -42,7 +42,7 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || '',
   cookiePrefix: 'user-session',
   typescript: {
-    outputFile: path.resolve(dirname, '../../../packages/types/index.ts'),
+    outputFile: path.resolve(dirname, './payload-types.ts'),
   },
   db: postgresAdapter({
     idType: 'uuid',

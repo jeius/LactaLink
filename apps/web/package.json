@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
+    "google-auth-library": "^9.15.1",
     "graphql": "^16.8.1",
     "lucide-react": "^0.487.0",
     "next": "^15.2.3",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@svgr/webpack": "^8.1.0",
     "@types/node": "^22.5.4",
     "@types/react": "18.3.18",
