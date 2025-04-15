@@ -10,6 +10,9 @@ export const Users: CollectionConfig<'users'> = {
     defaultColumns: ['email', 'type', 'id'],
   },
   auth: true,
+  access: {
+    read: ({ req }) => Boolean(req.user),
+  },
   endpoints: collectionEndpoints,
   fields: [
     {

@@ -17,7 +17,6 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
     }
 
     const googleUser = await verifyGoogleToken(googleToken);
-    console.log('Google User', googleUser);
 
     if (!googleUser) {
       throw new APIError('Invalid Google token.', httpStatus.NOT_ACCEPTABLE);
@@ -46,7 +45,7 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
 
     if (existingUsers.totalDocs > 0) {
       user = existingUsers.docs[0];
-      payload.logger.info(`User found with id: ${user.id}`);
+      payload.logger.info(`User found.`);
     } else {
       payload.logger.info(`User with email: ${email} was not found. Creating new user.`);
       // Create new user
@@ -65,7 +64,7 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
         },
       });
 
-      payload.logger.info(`User created with id: ${user.email}`);
+      payload.logger.info(`User created with email: ${user.email}`);
     }
 
     payload.logger.info(`Checking if account already exists for user: ${user.email}`);

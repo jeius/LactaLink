@@ -1,18 +1,9 @@
 import { User } from '@/lib/types';
 import { getRequestCollection, jwtSign } from '@/lib/utils';
-import type { SanitizedPermissions } from 'payload';
+import type { SignInResult } from '@lactalink/types';
 import { getAccessResults, getFieldsToSign, PayloadRequest } from 'payload';
 
-export type Result =
-  | {
-      exp: number;
-      token: string;
-      user: User;
-      permissions: SanitizedPermissions;
-    }
-  | { user: null };
-
-export const loginOperation = async (req: PayloadRequest): Promise<Result> => {
+export const loginOperation = async (req: PayloadRequest): Promise<SignInResult> => {
   const collection = getRequestCollection(req);
   const user = req.user;
 

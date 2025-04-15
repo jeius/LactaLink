@@ -1,6 +1,3 @@
 {
-  "extends": "@lactalink/typescript-config",
-  "compilerOptions": {
-    "moduleResolution": "nodenext"
-  }
+  "extends": "@lactalink/typescript-config"
 }

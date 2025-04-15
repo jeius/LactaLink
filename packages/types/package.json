@@ -6,10 +6,12 @@
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
   "license": "MIT",
   "main": "index.ts",
+  "types": "./index.ts",
   "exports": {
     ".": "./index.ts"
   },
   "devDependencies": {
-    "@lactalink/typescript-config": "workspace:*"
+    "@lactalink/typescript-config": "workspace:*",
+    "payload": "^3.34.0"
   }
 }
