@@ -58,6 +58,7 @@
     "@babel/core": "^7.20.0",
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@react-native-community/cli": "^18.0.0",
     "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",

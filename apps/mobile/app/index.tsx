@@ -1,26 +1,47 @@
+// eslint-disable-next-line import/no-unresolved
+import { EXPO_PUBLIC_API_URL } from '@env';
+
 import { Button } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
+import type { SignInResult } from '@lactalink/types';
 import {
   GoogleSignin,
   isErrorWithCode,
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { useState } from 'react';
 import { View } from 'react-native';
 
+const API_URL = EXPO_PUBLIC_API_URL;
+
 export default function App() {
+  const [token, setToken] = useState('');
   async function handleGoogleSignIn() {
     try {
       await GoogleSignin.hasPlayServices();
       const res = await GoogleSignin.signIn();
       if (isSuccessResponse(res)) {
-        const { idToken, user } = res.data;
-        const { email, familyName, givenName, id, name } = user;
+        const { idToken } = res.data;
 
-        console.log('User Info: ', { email, familyName, givenName, id, name });
-        console.log('ID Token: ', idToken);
         // You can now use the idToken to authenticate with your backend server
+        const authResult = await fetch(`${API_URL}/api/users/login/google`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (authResult.ok) {
+          const authData = (await authResult.json()) as SignInResult;
+
+          if ('token' in authData) setToken(authData.token);
+        } else {
+          const errorData = await authResult.json();
+          console.log('Error authenticating: ', errorData);
+        }
       } else {
         console.log('Error signing in: ', res);
       }
@@ -29,20 +50,39 @@ export default function App() {
         switch (error.code) {
           case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
             console.log('Play services not available or outdated.');
-            break;
+            return;
           case statusCodes.SIGN_IN_CANCELLED:
             console.log('User cancelled the sign-in flow.');
-            break;
+            return;
           case statusCodes.IN_PROGRESS:
             console.log('Sign-in is in progress already.');
-            break;
+            return;
           case statusCodes.SIGN_IN_REQUIRED:
             console.log('Sign-in is required.');
-            break;
+            return;
           default:
-            break;
+            return;
         }
       }
+      console.log('Unknown error: ', error);
+    }
+  }
+
+  async function handleVerify() {
+    console.log('JWT', token);
+    try {
+      const authResult = await fetch(`${API_URL}/api/users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `JWT ${token}`,
+        },
+      });
+
+      const data = authResult.json();
+      console.log('Verified Data: ', data);
+    } catch (error) {
+      console.log('Verification Failed', error);
     }
   }
 
@@ -55,6 +95,9 @@ export default function App() {
       </View>
       <Button variant="solid" size="lg" onPress={handleGoogleSignIn}>
         <Text className="text-primary-0">Sign in</Text>
+      </Button>
+      <Button variant="outline" size="lg" onPress={handleVerify}>
+        <Text className="text-foreground-500">Verify Access</Text>
       </Button>
     </View>
   );
