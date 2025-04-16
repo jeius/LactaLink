@@ -7,4 +7,6 @@ export type AuthResult = {
   user: User | null;
   permissions?: SanitizedPermissions;
   message?: string;
+  collection?: 'users' | 'admins';
+  error?: object;
 };

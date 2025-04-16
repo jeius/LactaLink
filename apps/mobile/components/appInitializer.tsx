@@ -1,4 +1,4 @@
-import { CheckAuth } from '@/auth/checkAuth';
+import { GetAuth } from '@/auth/getAuth';
 import '@/global.css';
 import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
 import { useLoadedFonts } from '@/hooks/useLoadedFonts';
@@ -17,7 +17,7 @@ export function AppInitializer({ children }: Props) {
 
   const { isPending: isAuthLoading, data } = useQuery({
     queryKey: ['auth'],
-    queryFn: CheckAuth,
+    queryFn: GetAuth,
     staleTime: Infinity,
     refetchOnMount: false,
   });

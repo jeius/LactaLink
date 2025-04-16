@@ -1,4 +1,4 @@
-import { CheckAuth } from '@/auth/checkAuth';
+import { GetAuth } from '@/auth/getAuth';
 import { GoogleAuth } from '@/auth/googleAuth';
 import { SignIn } from '@/auth/operations/signIn';
 import { SignOut } from '@/auth/operations/signOut';
@@ -19,7 +19,7 @@ export function useSession() {
     refetch,
   } = useQuery<AuthResult | null>({
     queryKey: KEY,
-    queryFn: CheckAuth,
+    queryFn: GetAuth,
     staleTime: 1000 * 60 * 2, // 2 minutes
     retry: false,
   });

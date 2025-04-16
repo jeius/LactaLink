@@ -8,7 +8,7 @@ export const loginOperation = async (req: PayloadRequest): Promise<AuthResult> =
   const user = req.user;
 
   if (!user) {
-    return { user: null };
+    return { user: null, message: 'Unable to authenticate user.' };
   }
   const fieldsToSign = getFieldsToSign({
     collectionConfig: collection.config,
@@ -22,9 +22,15 @@ export const loginOperation = async (req: PayloadRequest): Promise<AuthResult> =
     tokenExpiration: collection.config.auth.tokenExpiration,
   });
 
-  const { collection: _, ...restOfUser } = user;
+  const { collection: collectionSlug, ...restOfUser } = user;
 
   const permissions = await getAccessResults({ req });
 
-  return { user: restOfUser as User, exp, token, permissions };
+  return {
+    exp,
+    token,
+    permissions,
+    collection: collectionSlug,
+    user: { ...restOfUser } as User,
+  };
 };

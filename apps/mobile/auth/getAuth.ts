@@ -2,7 +2,7 @@ import { API_URL, MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { AuthResult } from '@lactalink/types';
 
-export async function CheckAuth(): Promise<AuthResult> {
+export async function GetAuth(): Promise<AuthResult> {
   const token = Storage.getString(MMKV_KEYS.AUTH_TOKEN);
 
   if (!token) {

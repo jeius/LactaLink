@@ -5,7 +5,7 @@ import type { PayloadHandler } from 'payload';
 import { APIError, generatePayloadCookie, headersWithCors } from 'payload';
 import { loginOperation } from '../operations/login';
 
-export const googleLoginHandler: PayloadHandler = async (req) => {
+export const googleAuthHandler: PayloadHandler = async (req) => {
   const payload = req.payload;
   const collection = getRequestCollection(req);
 
@@ -121,31 +121,33 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
 
     const result = await loginOperation(req);
 
-    if (result.token) {
-      const cookie = generatePayloadCookie({
+    const cookie =
+      result.token &&
+      generatePayloadCookie({
         collectionAuthConfig: collection.config.auth,
         cookiePrefix: req.payload.config.cookiePrefix,
         token: result.token,
       });
 
-      return Response.json(
-        {
-          message: 'Authentication Passed!',
-          ...result,
-        },
-        {
-          headers: headersWithCors({
-            headers: new Headers({
-              'Set-Cookie': cookie,
-            }),
-            req,
-          }),
-          status: httpStatus.OK,
-        }
-      );
+    const headers = new Headers();
+    if (cookie) {
+      headers.append('Set-Cookie', cookie);
     }
 
-    return Response.json(result, { status: 200 });
+    if (collection.config.auth.removeTokenFromResponses) {
+      delete result.token;
+    }
+
+    return Response.json(
+      {
+        message: req.t('authentication:loggedIn'),
+        ...result,
+      },
+      {
+        headers: headersWithCors({ headers, req }),
+        status: httpStatus.OK,
+      }
+    );
   } catch (err) {
     if (err instanceof APIError) {
       return Response.json(
@@ -159,7 +161,7 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
     // Handle other errors (e.g., database errors, network errors)
     return Response.json(
       {
-        message: 'Authentication failed',
+        message: 'Authentication failed.',
         error: err,
       },
       { status: 500 }
