@@ -12,3 +12,5 @@ export const QUERY_KEYS = {
 };
 
 export const API_URL = EXPO_PUBLIC_API_URL;
+
+export { ICONS } from './icons';
