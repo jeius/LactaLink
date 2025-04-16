@@ -1,11 +1,10 @@
-import { SanitizedPermissions } from 'payload';
+import type { SanitizedPermissions } from 'payload';
 import { User } from './payload-types';
 
-export type SignInResult =
-  | {
-      exp: number;
-      token: string;
-      user: User;
-      permissions: SanitizedPermissions;
-    }
-  | { user: null };
+export type AuthResult = {
+  exp?: number;
+  token?: string;
+  user: User | null;
+  permissions?: SanitizedPermissions;
+  message?: string;
+};

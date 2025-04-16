@@ -121,7 +121,7 @@ export const googleLoginHandler: PayloadHandler = async (req) => {
 
     const result = await loginOperation(req);
 
-    if ('token' in result) {
+    if (result.token) {
       const cookie = generatePayloadCookie({
         collectionAuthConfig: collection.config.auth,
         cookiePrefix: req.payload.config.cookiePrefix,

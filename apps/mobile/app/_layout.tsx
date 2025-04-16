@@ -1,36 +1,27 @@
+import { AppInitializer } from '@/components/appInitializer';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import '@/global.css';
-import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
-import { useLoadedFonts } from '@/hooks/useLoadedFonts';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 
-// // Prevent the splash screen from auto-hiding before asset loading is complete.
-// SplashScreen.preventAutoHideAsync();
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const [loaded] = useLoadedFonts();
-
-  useGoogleSignInConfig();
-
-  // useEffect(() => {
-  //   if (loaded) {
-  //     SplashScreen.hideAsync();
-  //   }
-  // }, [loaded]);
-
-  // if (!loaded) {
-  //   return null;
-  // }
-
   return (
-    <ThemeProvider>
-      <GluestackUIProvider mode="light">
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </GluestackUIProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <GluestackUIProvider mode="light">
+          <AppInitializer>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(root)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </AppInitializer>
+        </GluestackUIProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

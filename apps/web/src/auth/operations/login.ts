@@ -1,9 +1,9 @@
 import { User } from '@/lib/types';
 import { getRequestCollection, jwtSign } from '@/lib/utils';
-import type { SignInResult } from '@lactalink/types';
+import type { AuthResult } from '@lactalink/types';
 import { getAccessResults, getFieldsToSign, PayloadRequest } from 'payload';
 
-export const loginOperation = async (req: PayloadRequest): Promise<SignInResult> => {
+export const loginOperation = async (req: PayloadRequest): Promise<AuthResult> => {
   const collection = getRequestCollection(req);
   const user = req.user;
 
