@@ -1,10 +1,10 @@
-import { collectionGroup } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 
 export const Accounts: CollectionConfig<'accounts'> = {
   slug: 'accounts',
   admin: {
-    group: collectionGroup.user,
+    group: COLLECTION_GROUP.USER,
     useAsTitle: 'providerID',
     defaultColumns: ['user', 'provider', 'providerID'],
   },

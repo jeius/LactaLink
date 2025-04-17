@@ -1,5 +1,5 @@
-export const collectionGroup = {
-  user: 'User Management',
-  content: 'Content Management',
-  system: 'System Management',
+export const COLLECTION_GROUP = {
+  USER: 'User Management',
+  CONTENT: 'Content Management',
+  SYSTEM: 'System Management',
 };

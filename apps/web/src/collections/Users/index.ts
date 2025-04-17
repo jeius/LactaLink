@@ -1,11 +1,11 @@
 import { collectionEndpoints } from '@/auth/endpoints';
-import { collectionGroup } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
   admin: {
-    group: collectionGroup.user,
+    group: COLLECTION_GROUP.USER,
     useAsTitle: 'email',
     defaultColumns: ['email', 'type', 'id'],
   },
