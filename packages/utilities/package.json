@@ -1,11 +1,11 @@
 {
-  "name": "@lactalink/types",
+  "name": "@lactalink/utilities",
   "version": "1.0.0",
-  "description": "Lactalink shared types",
+  "description": "Lactalink shared utilities",
   "private": true,
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
   "license": "MIT",
-  "main": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
@@ -14,7 +14,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
@@ -22,7 +22,6 @@
     "dev": "tsc"
   },
   "devDependencies": {
-    "@lactalink/typescript-config": "workspace:*",
-    "payload": "^3.34.0"
+    "@lactalink/typescript-config": "workspace:*"
   }
 }
