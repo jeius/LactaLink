@@ -1,5 +1,7 @@
 export * from './canUseDOM';
 export * from './cn';
+export * from './extractID';
+export * from './formatString';
 export * from './getRequestEntity';
 export * from './getURL';
 export * from './jwt';
