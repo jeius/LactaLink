@@ -5,6 +5,7 @@ import { buildConfig } from 'payload';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 import Collections, { Admins } from './collections';
+import { Endpoints } from './endpoints';
 import { plugins } from './lib/plugins';
 import { getServerSideURL } from './lib/utils/getURL';
 
@@ -38,6 +39,7 @@ export default buildConfig({
   collections: Collections,
   serverURL: getServerSideURL(),
   editor: lexicalEditor(),
+  endpoints: Endpoints,
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
   cookiePrefix: 'user-session',
