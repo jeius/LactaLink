@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc"
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@lactalink/typescript-config": "workspace:*"

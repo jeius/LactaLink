@@ -6,6 +6,8 @@
     "dev": "turbo dev",
     "dev:mobile": "turbo dev --filter=\"{./apps/mobile}...\"",
     "dev:web": "turbo dev --filter=\"{./apps/web}...\"",
+    "dev:types": "turbo dev --filter=\"{./packages/types}...\"",
+    "dev:utils": "turbo dev --filter=\"{./packages/utilities}...\"",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
