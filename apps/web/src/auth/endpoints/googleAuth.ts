@@ -1,6 +1,6 @@
-import { User } from '@/lib/types';
 import { getRequestCollection, verifyGoogleToken } from '@/lib/utils';
-import { status as httpStatus } from 'http-status';
+import { User } from '@lactalink/types';
+import { status as HttpStatus } from 'http-status';
 import type { PayloadHandler } from 'payload';
 import { APIError, generatePayloadCookie, headersWithCors } from 'payload';
 import { loginOperation } from '../operations/login';
@@ -13,18 +13,18 @@ export const googleAuthHandler: PayloadHandler = async (req) => {
     const googleToken = req.headers.get('authorization')?.split(' ')[1];
 
     if (!googleToken) {
-      throw new APIError('Missing Google token.', httpStatus.NOT_FOUND);
+      throw new APIError('Missing Google token.', HttpStatus.NOT_FOUND);
     }
 
     const googleUser = await verifyGoogleToken(googleToken);
 
     if (!googleUser) {
-      throw new APIError('Invalid Google token.', httpStatus.NOT_ACCEPTABLE);
+      throw new APIError('Invalid Google token.', HttpStatus.NOT_ACCEPTABLE);
     }
 
     const { email, given_name, family_name, sub: googleId, exp, picture } = googleUser;
     if (!email || !given_name || !family_name || !googleId) {
-      throw new APIError('Invalid user data from Google', httpStatus.NOT_ACCEPTABLE);
+      throw new APIError('Invalid user data from Google', HttpStatus.NOT_ACCEPTABLE);
     }
 
     payload.logger.info(`Finding existing user with email: ${email}`);
@@ -145,7 +145,7 @@ export const googleAuthHandler: PayloadHandler = async (req) => {
       },
       {
         headers: headersWithCors({ headers, req }),
-        status: httpStatus.OK,
+        status: HttpStatus.OK,
       }
     );
   } catch (err) {

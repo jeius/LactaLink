@@ -28,12 +28,12 @@ export const searchFields: Field[] = [
         name: 'description',
         label: 'Description',
       },
-      {
-        name: 'image',
-        label: 'Image',
-        type: 'upload',
-        relationTo: 'media',
-      },
+      // {
+      //   name: 'image',
+      //   label: 'Image',
+      //   type: 'upload',
+      //   relationTo: 'media',
+      // },
     ],
   },
   {

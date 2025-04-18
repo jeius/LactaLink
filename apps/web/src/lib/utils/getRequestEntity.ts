@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import type { Collection, CollectionSlug, PayloadRequest, SanitizedGlobalConfig } from 'payload';
 
 import { APIError } from 'payload';

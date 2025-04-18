@@ -22,13 +22,6 @@ export const s3StoragePlugin: Plugin[] = [
   }),
   s3Storage({
     collections: {
-      media: true,
-    },
-    bucket: process.env.S3_BUCKET_MEDIA!,
-    config: StorageConfig,
-  }),
-  s3Storage({
-    collections: {
       avatars: true,
     },
     bucket: process.env.S3_BUCKET_AVATARS!,

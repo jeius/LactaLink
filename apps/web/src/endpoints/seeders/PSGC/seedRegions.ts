@@ -9,21 +9,26 @@ const headers = new Headers({
   'Content-Type': 'application/json',
 });
 
+type IncomingData = {
+  islandGroups: IslandGroup[];
+};
+
 export async function seedRegions(
   req: PayloadRequest,
-  islandGroups: IslandGroup[]
+  incomingData: IncomingData
 ): Promise<Region[]> {
   const { payload, user } = req;
+  const { islandGroups } = incomingData;
 
-  const response = await fetch(API_URL, { headers });
+  const response = await fetch(API_URL, { method: 'GET', headers });
 
   if (!response.ok) {
-    throw new APIError('Unable to fetch regions.', status.EXPECTATION_FAILED);
+    throw new APIError('Unable to fetch regions from PSGC.', status.EXPECTATION_FAILED);
   }
 
   const data = (await response.json()) as RegionPSGC[];
 
-  const regions = await batchProcess(data, 8, async (data) => {
+  return await batchProcess(data, 10, async (data) => {
     const { name, code, regionName, islandGroupCode } = data;
 
     const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
@@ -44,6 +49,4 @@ export async function seedRegions(
       },
     });
   });
-
-  return regions;
 }

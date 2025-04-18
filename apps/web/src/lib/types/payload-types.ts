@@ -73,7 +73,7 @@ export interface Config {
     admins: Admin;
     avatars: Avatar;
     barangays: Barangay;
-    citiesMunicipalities: CitiesMunicipality;
+    citiesMunicipalities: CityMunicipality;
     images: Image;
     islandGroups: IslandGroup;
     provinces: Province;
@@ -230,7 +230,7 @@ export interface Address {
   street?: string | null;
   region: string | Region;
   province: string | Province;
-  cityMunicipality: string | CitiesMunicipality;
+  cityMunicipality: string | CityMunicipality;
   barangay: string | Barangay;
   islandGroup?: (string | null) | IslandGroup;
   completeName?: string | null;
@@ -288,13 +288,13 @@ export interface Province {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "citiesMunicipalities".
  */
-export interface CitiesMunicipality {
+export interface CityMunicipality {
   id: string;
   name: string;
   oldName?: string | null;
   isCapital: boolean;
   code: string;
-  type: 'city' | 'municipality';
+  type: 'none' | 'city' | 'municipality';
   districtCode?: string | null;
   province: string | Province;
   region: string | Region;
@@ -313,7 +313,7 @@ export interface Barangay {
   code: string;
   subMunicipalityCode?: string | null;
   districtCode?: string | null;
-  cityMunicipality: string | CitiesMunicipality;
+  cityMunicipality: string | CityMunicipality;
   province: string | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;
@@ -498,7 +498,7 @@ export interface PayloadLockedDocument {
       } | null)
     | ({
         relationTo: 'citiesMunicipalities';
-        value: string | CitiesMunicipality;
+        value: string | CityMunicipality;
       } | null)
     | ({
         relationTo: 'images';

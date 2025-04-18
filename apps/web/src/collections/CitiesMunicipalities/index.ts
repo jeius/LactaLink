@@ -3,6 +3,7 @@ import { CollectionConfig } from 'payload';
 
 export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
   slug: 'citiesMunicipalities',
+  typescript: { interface: 'CityMunicipality' },
   admin: {
     group: COLLECTION_GROUP.CONTENT,
     useAsTitle: 'name',
@@ -31,9 +32,11 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
     },
     {
       name: 'type',
-      type: 'select',
+      type: 'radio',
       required: true,
+      defaultValue: 'none',
       options: [
+        { label: 'None', value: 'none' },
         { label: 'City', value: 'city' },
         { label: 'Municipality', value: 'municipality' },
       ],

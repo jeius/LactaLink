@@ -1,4 +1,4 @@
-import { Image } from '@/lib/types';
+import { Image } from '@lactalink/types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateAlt: CollectionBeforeChangeHook<Image> = ({ data, req, operation }) => {

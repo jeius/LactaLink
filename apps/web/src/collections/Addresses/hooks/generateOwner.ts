@@ -1,4 +1,4 @@
-import { Address } from '@/lib/types';
+import { Address } from '@lactalink/types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateOwner: CollectionBeforeChangeHook<Address> = ({ req, operation, data }) => {

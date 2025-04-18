@@ -1,4 +1,6 @@
+import { formatCamelCase } from '@lactalink/utilities';
 import { CollectionSlug, PayloadRequest } from 'payload';
+import { seedStatus } from '../Status/seedStatus';
 
 export async function clearAddresses(req: PayloadRequest) {
   const { payload, user } = req;
@@ -15,6 +17,7 @@ export async function clearAddresses(req: PayloadRequest) {
   ];
 
   for (const collection of collectionsToDelete) {
+    seedStatus.push(`Deleting ${formatCamelCase(collection)}...`);
     await payload.delete({
       collection,
       user,
