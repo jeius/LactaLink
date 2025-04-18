@@ -8,6 +8,8 @@
     "dev:web": "turbo dev --filter=\"{./apps/web}...\"",
     "dev:types": "turbo dev --filter=\"{./packages/types}...\"",
     "dev:utils": "turbo dev --filter=\"{./packages/utilities}...\"",
+    "generate:types": "turbo generate:types",
+    "generate:importmap": "turbo generate:importmap",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
