@@ -41,7 +41,9 @@
     "lint:fix": {
       "dependsOn": ["^lint:fix"]
     },
-    "generate:types": {},
+    "generate:types": {
+      "inputs": ["**/*.{ts}"]
+    },
     "generate:importmap": {}
   }
 }
