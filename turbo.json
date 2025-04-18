@@ -41,12 +41,7 @@
     "lint:fix": {
       "dependsOn": ["^lint:fix"]
     },
-    "generate:types": {
-      "outputs": [],
-      "dependsOn": ["@lactalink/types#build"]
-    },
-    "generate:importmap": {
-      "cache": false
-    }
+    "generate:types": {},
+    "generate:importmap": {}
   }
 }
