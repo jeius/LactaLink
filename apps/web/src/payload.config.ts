@@ -30,9 +30,11 @@ export default buildConfig({
     },
     components: {
       graphics: {
-        Logo: '@/components/Logo#default',
+        Logo: '@/components/Logo',
       },
+      beforeDashboard: ['@/components/BeforeDashboard'],
     },
+    avatar: 'default',
     autoLogin: autoLoginConfig,
   },
   auth: { jwtOrder: ['JWT', 'Bearer', 'cookie'] },
