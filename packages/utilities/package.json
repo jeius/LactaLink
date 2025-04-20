@@ -22,6 +22,7 @@
     "dev": "tsc --watch"
   },
   "devDependencies": {
-    "@lactalink/typescript-config": "workspace:*"
+    "@lactalink/typescript-config": "workspace:*",
+    "@types/node": "^22.5.4"
   }
 }
