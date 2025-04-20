@@ -1,17 +1,7 @@
 'use client';
 
 import { Button, ConfirmationModal, toast, useModal } from '@payloadcms/ui';
-import Link from 'next/link';
 import { useCallback, useState } from 'react';
-
-const SuccessMessage: React.FC = () => (
-  <div>
-    Seeding Done! You can now{' '}
-    <Link href="/" target="_blank">
-      visit the website.
-    </Link>
-  </div>
-);
 
 const options: RequestInit = {
   method: 'POST',
@@ -29,8 +19,16 @@ export default function SeedPSGC() {
   const { openModal } = useModal();
 
   const modalSlug = 'seed-psgc';
-  const heading = 'Are you absolutely sure?';
-  const body = <span className="text-base">This may take a few minutes to complete.</span>;
+  const heading = 'Do you want to proceed?';
+  const body = (
+    <>
+      <span>
+        This will populate the barangays, cities/municipalities, provinces, regions, and island
+        groups. It will not delete any existing data, but may take a very long time to complete.
+      </span>{' '}
+      <strong>Once executed, you can&apos;t cancel the seeding.</strong>
+    </>
+  );
 
   const handleReset = useCallback(async () => {
     if (seeded) {
@@ -55,18 +53,18 @@ export default function SeedPSGC() {
 
           if (!res.ok) {
             const errData = await res.json();
-            const msg =
-              'message' in errData ? errData.message : 'An error occurred while resetting.';
+            const msg = 'message' in errData ? errData.message : 'An error occurred while seeding.';
             throw new Error(msg);
           }
 
           setSeeded(true);
         })(),
         {
-          loading: 'Seeding PSGC data...',
-          success: <SuccessMessage />,
-          error: 'An error occurred while seeding.',
           dismissible: false,
+          closeButton: false,
+          loading: 'Seeding PSGC data...',
+          success: 'Seeding complete!',
+          error: ({ message }) => message,
         }
       );
     } catch (err) {

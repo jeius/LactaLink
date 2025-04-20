@@ -51,15 +51,18 @@ export const seedPSGCHandler: PayloadHandler = async (req) => {
     });
 
     const endTime = Date.now(); // End timer
-    const durationMs = endTime - startTime;
+    const duration = (endTime - startTime) * 1000; //in seconds
 
     const message = 'Seed success for PSGC data.';
     const status = HttpStatus.OK;
 
-    return Response.json({ message, durationMs }, { status });
+    payload.logger.info(message);
+    payload.logger.error(`Elapsed time: ${duration} seconds`);
+
+    return Response.json({ message }, { status });
   } catch (error) {
     const endTime = Date.now();
-    const durationMs = endTime - startTime;
+    const duration = (endTime - startTime) * 1000; //in seconds
 
     let message = 'Unknown error occurred.';
     let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -70,7 +73,7 @@ export const seedPSGCHandler: PayloadHandler = async (req) => {
     }
 
     payload.logger.error(error, message);
-    payload.logger.error(`DurationMS: ${durationMs}`);
-    return Response.json({ message, error, durationMs }, { status });
+    payload.logger.error(`Elapsed time: ${duration} seconds`);
+    return Response.json({ message, error }, { status });
   }
 };
