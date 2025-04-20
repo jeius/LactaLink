@@ -18,6 +18,8 @@ export const IslandGroups: CollectionConfig<'islandGroups'> = {
       name: 'code',
       type: 'text',
       required: true,
+      unique: true,
+      index: true,
     },
   ],
 };

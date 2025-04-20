@@ -22,6 +22,8 @@ export const Barangays: CollectionConfig<'barangays'> = {
       name: 'code',
       type: 'text',
       required: true,
+      unique: true,
+      index: true,
     },
     {
       name: 'subMunicipalityCode',
@@ -42,7 +44,6 @@ export const Barangays: CollectionConfig<'barangays'> = {
       name: 'province',
       type: 'relationship',
       relationTo: 'provinces',
-      required: true,
       maxDepth: 0,
     },
     {

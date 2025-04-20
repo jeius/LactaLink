@@ -18,6 +18,8 @@ export const Provinces: CollectionConfig<'provinces'> = {
       name: 'code',
       type: 'text',
       required: true,
+      unique: true,
+      index: true,
     },
     {
       name: 'region',

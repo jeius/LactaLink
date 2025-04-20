@@ -4,6 +4,10 @@ import { CollectionConfig } from 'payload';
 export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
   slug: 'citiesMunicipalities',
   typescript: { interface: 'CityMunicipality' },
+  labels: {
+    plural: 'Cities/Municipalities',
+    singular: 'City/Municipality',
+  },
   admin: {
     group: COLLECTION_GROUP.CONTENT,
     useAsTitle: 'name',
@@ -29,6 +33,8 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
       name: 'code',
       type: 'text',
       required: true,
+      unique: true,
+      index: true,
     },
     {
       name: 'type',
@@ -49,7 +55,6 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
       name: 'province',
       type: 'relationship',
       relationTo: 'provinces',
-      required: true,
       maxDepth: 0,
     },
     {

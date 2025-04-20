@@ -9,5 +9,11 @@ export const Admins: CollectionConfig<'admins'> = {
     defaultColumns: ['email', 'id'],
   },
   auth: true,
-  fields: [],
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+    },
+  ],
 };

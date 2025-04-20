@@ -18,6 +18,8 @@ export const Regions: CollectionConfig<'regions'> = {
       name: 'code',
       type: 'text',
       required: true,
+      unique: true,
+      index: true,
     },
     {
       name: 'regionName',
