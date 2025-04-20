@@ -7,13 +7,14 @@ import type {
   Region,
 } from '@lactalink/types';
 import { batchProcess } from '@lactalink/utilities';
-import status from 'http-status';
+import { status } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 
 const API_URL = `${PSGC_API_URL}/api/cities-municipalities.json`;
 const headers = new Headers({
   'Content-Type': 'application/json',
 });
+const collection = 'citiesMunicipalities';
 
 type IncomingData = {
   islandGroups: IslandGroup[];
@@ -26,7 +27,8 @@ export async function seedCitiesMunicipalities(
   incomingData: IncomingData
 ): Promise<CityMunicipality[]> {
   const { payload, user } = req;
-  const { islandGroups, regions, provinces } = incomingData;
+
+  const { islandGroups, provinces, regions } = incomingData;
 
   const response = await fetch(API_URL, { method: 'GET', headers });
 
@@ -39,7 +41,7 @@ export async function seedCitiesMunicipalities(
 
   const resData = (await response.json()) as CityMunicipalityPSGC[];
 
-  const citiesMunicipalities = await batchProcess(resData, 10, async (data) => {
+  const citiesMunicipalities = await batchProcess(resData, 5000, async (data) => {
     const {
       name,
       code,
@@ -53,29 +55,41 @@ export async function seedCitiesMunicipalities(
       districtCode,
     } = data;
 
+    const existingDoc = await payload.find({
+      req,
+      user,
+      collection,
+      pagination: false,
+      limit: 1,
+      select: { id: true, code: true },
+      where: { code: { equals: code } },
+    });
+
+    if (existingDoc.totalDocs > 0) {
+      return existingDoc.docs[0];
+    }
+
     const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
     const regionID = regions.find((item) => item.code === regionCode)?.id;
     const provinceID = provinces.find((item) => item.code === provinceCode)?.id;
 
     if (!islandGroupID) {
-      throw new APIError(
-        `Island Group ID not found for city/municipality: ${name}`,
-        status.NOT_FOUND
-      );
+      payload.logger.error(data, `Island Group ID not found for city/municipality: ${name}`);
+      payload.logger.error(`Skipping creation of city/municipality: ${name}`);
+      return null;
     }
 
     if (!regionID) {
-      throw new APIError(`Region ID not found for city/municipality: ${name}`, status.NOT_FOUND);
-    }
-
-    if (!provinceID) {
-      throw new APIError(`Province ID not found for city/municipality: ${name}`, status.NOT_FOUND);
+      payload.logger.error(data, `Region ID not found for city/municipality: ${name}`);
+      payload.logger.error(`Skipping creation of city/municipality: ${name}`);
+      return null;
     }
 
     return await payload.create({
-      collection: 'citiesMunicipalities',
+      collection,
       user,
       req,
+      select: { id: true, code: true },
       data: {
         name,
         code,
@@ -90,5 +104,5 @@ export async function seedCitiesMunicipalities(
     });
   });
 
-  return citiesMunicipalities;
+  return citiesMunicipalities.filter((item) => item !== null);
 }

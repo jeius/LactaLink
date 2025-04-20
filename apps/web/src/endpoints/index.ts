@@ -4,7 +4,7 @@ import { seedStatusHandler } from './seeders/Status';
 
 export const Endpoints: Endpoint[] = [
   {
-    method: 'get',
+    method: 'post',
     path: '/seed/psgc',
     handler: seedPSGCHandler,
   },

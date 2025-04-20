@@ -1,7 +1,7 @@
 import { PSGC_API_URL } from '@/lib/constants';
 import type { IslandGroup, Region, RegionPSGC } from '@lactalink/types';
 import { batchProcess } from '@lactalink/utilities';
-import status from 'http-status';
+import { status } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 
 const API_URL = `${PSGC_API_URL}/api/regions.json`;
@@ -9,6 +9,7 @@ const headers = new Headers({
   'Content-Type': 'application/json',
 });
 
+const collection = 'regions';
 type IncomingData = {
   islandGroups: IslandGroup[];
 };
@@ -18,6 +19,7 @@ export async function seedRegions(
   incomingData: IncomingData
 ): Promise<Region[]> {
   const { payload, user } = req;
+
   const { islandGroups } = incomingData;
 
   const response = await fetch(API_URL, { method: 'GET', headers });
@@ -28,8 +30,22 @@ export async function seedRegions(
 
   const data = (await response.json()) as RegionPSGC[];
 
-  return await batchProcess(data, 10, async (data) => {
+  const regions = await batchProcess(data, 100, async (data) => {
     const { name, code, regionName, islandGroupCode } = data;
+
+    const existingDoc = await payload.find({
+      req,
+      user,
+      collection,
+      pagination: false,
+      limit: 1,
+      select: { id: true, code: true },
+      where: { code: { equals: code } },
+    });
+
+    if (existingDoc.totalDocs > 0) {
+      return existingDoc.docs[0];
+    }
 
     const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
 
@@ -38,9 +54,10 @@ export async function seedRegions(
     }
 
     return await payload.create({
-      collection: 'regions',
+      collection,
       user,
       req,
+      select: { id: true, code: true },
       data: {
         name,
         code,
@@ -49,4 +66,6 @@ export async function seedRegions(
       },
     });
   });
+
+  return regions.filter((item) => item !== null);
 }

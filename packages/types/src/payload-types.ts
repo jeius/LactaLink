@@ -296,7 +296,7 @@ export interface CityMunicipality {
   code: string;
   type: 'none' | 'city' | 'municipality';
   districtCode?: string | null;
-  province: string | Province;
+  province?: (string | null) | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;
   updatedAt: string;
@@ -314,7 +314,7 @@ export interface Barangay {
   subMunicipalityCode?: string | null;
   districtCode?: string | null;
   cityMunicipality: string | CityMunicipality;
-  province: string | Province;
+  province?: (string | null) | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;
   updatedAt: string;
@@ -326,6 +326,7 @@ export interface Barangay {
  */
 export interface Admin {
   id: string;
+  name: string;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -614,6 +615,7 @@ export interface AddressesSelect<T extends boolean = true> {
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
+  name?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

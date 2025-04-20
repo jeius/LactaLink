@@ -8,13 +8,15 @@ import type {
   Region,
 } from '@lactalink/types';
 import { batchProcess } from '@lactalink/utilities';
-import status from 'http-status';
+import { status } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 
 const API_URL = `${PSGC_API_URL}/api/barangays.json`;
 const headers = new Headers({
   'Content-Type': 'application/json',
 });
+
+const collection = 'barangays';
 
 type IncomingData = {
   islandGroups: IslandGroup[];
@@ -28,7 +30,8 @@ export async function seedBarangays(
   incomingData: IncomingData
 ): Promise<Barangay[]> {
   const { payload, user } = req;
-  const { islandGroups, regions, provinces, citiesMunicipalities } = incomingData;
+
+  const { islandGroups, citiesMunicipalities, provinces, regions } = incomingData;
 
   const response = await fetch(API_URL, { method: 'GET', headers });
 
@@ -38,7 +41,7 @@ export async function seedBarangays(
 
   const resData = (await response.json()) as BarangayPSGC[];
 
-  return await batchProcess(resData, 10, async (data) => {
+  const barangays = await batchProcess(resData, 20000, async (data) => {
     const {
       name,
       code,
@@ -51,6 +54,20 @@ export async function seedBarangays(
       districtCode,
       subMunicipalityCode,
     } = data;
+
+    const existingDoc = await payload.find({
+      req,
+      user,
+      collection,
+      pagination: false,
+      limit: 1,
+      select: { id: true, code: true },
+      where: { code: { equals: code } },
+    });
+
+    if (existingDoc.totalDocs > 0) {
+      return existingDoc.docs[0];
+    }
 
     const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
     const regionID = regions.find((item) => item.code === regionCode)?.id;
@@ -74,18 +91,15 @@ export async function seedBarangays(
       throw new APIError(`Region ID not found for barangay: ${name}`, status.NOT_FOUND);
     }
 
-    if (!provinceID) {
-      throw new APIError(`Province ID not found for barangay: ${name}`, status.NOT_FOUND);
-    }
-
     if (!cityMunicipalityID) {
       throw new APIError(`City/Municipality ID not found for barangay: ${name}`, status.NOT_FOUND);
     }
 
     return await payload.create({
-      collection: 'barangays',
+      collection,
       user,
       req,
+      select: { id: true, code: true },
       data: {
         name,
         code,
@@ -99,4 +113,6 @@ export async function seedBarangays(
       },
     });
   });
+
+  return barangays.filter((item) => item !== null);
 }
