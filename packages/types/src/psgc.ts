@@ -1,3 +1,10 @@
+export type SlugPSGC =
+  | 'island-groups'
+  | 'regions'
+  | 'provinces'
+  | 'cities-municipalities'
+  | 'barangays';
+
 export type IslandGroupPSGC = {
   name: string;
   code: string;

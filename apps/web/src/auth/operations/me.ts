@@ -1,4 +1,5 @@
 import { getServerSideURL } from '@/lib/utils';
+import { AuthResult } from '@lactalink/types';
 import { status as httpStatus } from 'http-status';
 import { APIError } from 'payload';
 
@@ -19,6 +20,6 @@ export async function meOperation(token: string | null) {
     throw new APIError(errData.message, httpStatus.EXPECTATION_FAILED);
   }
 
-  const data = await meResponse.json();
+  const data: AuthResult = await meResponse.json();
   return data;
 }

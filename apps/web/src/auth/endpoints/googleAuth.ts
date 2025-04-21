@@ -1,5 +1,6 @@
 import { getRequestCollection, verifyGoogleToken } from '@/lib/utils';
 import { User } from '@lactalink/types';
+import { isAuthSuccess } from '@lactalink/utilities';
 import { status as HttpStatus } from 'http-status';
 import type { PayloadHandler } from 'payload';
 import { APIError, generatePayloadCookie, headersWithCors } from 'payload';
@@ -121,33 +122,29 @@ export const googleAuthHandler: PayloadHandler = async (req) => {
 
     const result = await loginOperation(req);
 
-    const cookie =
-      result.token &&
-      generatePayloadCookie({
+    let cookie;
+
+    if (isAuthSuccess(result) && result.token) {
+      cookie = generatePayloadCookie({
         collectionAuthConfig: collection.config.auth,
         cookiePrefix: req.payload.config.cookiePrefix,
         token: result.token,
       });
+    }
 
     const headers = new Headers();
     if (cookie) {
       headers.append('Set-Cookie', cookie);
     }
 
-    if (collection.config.auth.removeTokenFromResponses) {
+    if (collection.config.auth.removeTokenFromResponses && isAuthSuccess(result)) {
       delete result.token;
     }
 
-    return Response.json(
-      {
-        message: req.t('authentication:loggedIn'),
-        ...result,
-      },
-      {
-        headers: headersWithCors({ headers, req }),
-        status: HttpStatus.OK,
-      }
-    );
+    return Response.json(result, {
+      headers: headersWithCors({ headers, req }),
+      status: HttpStatus.OK,
+    });
   } catch (err) {
     if (err instanceof APIError) {
       return Response.json(
@@ -161,10 +158,10 @@ export const googleAuthHandler: PayloadHandler = async (req) => {
     // Handle other errors (e.g., database errors, network errors)
     return Response.json(
       {
-        message: 'Authentication failed.',
+        message: 'An unexpected error occured.',
         error: err,
       },
-      { status: 500 }
+      { status: HttpStatus.INTERNAL_SERVER_ERROR }
     );
   }
 };

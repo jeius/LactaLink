@@ -12,22 +12,21 @@ export const getAuthHandler: PayloadHandler = async (req) => {
   const result = await meOperation(currentToken);
   const permissions = await getAccessResults({ req });
 
-  if (collection.config.auth.removeTokenFromResponses) {
+  if (collection.config.auth.removeTokenFromResponses && 'token' in result) {
     delete result.token;
   }
 
-  return Response.json(
-    {
-      ...result,
-      permissions,
-      message: req.t('authentication:authenticated'),
-    },
-    {
-      headers: headersWithCors({
-        headers: new Headers(),
-        req,
-      }),
-      status: httpStatus.OK,
-    }
-  );
+  const authResult = {
+    ...result,
+    permissions,
+    message: req.t('authentication:authenticated'),
+  };
+
+  return Response.json(authResult, {
+    headers: headersWithCors({
+      headers: new Headers(),
+      req,
+    }),
+    status: httpStatus.OK,
+  });
 };

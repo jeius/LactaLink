@@ -25,7 +25,7 @@ export async function getPreference(params: BaseParams): Promise<Result<GetPrefe
   const apiUrl = `${url}/api/payload-preferences/${key}`;
 
   try {
-    const req = await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -33,9 +33,9 @@ export async function getPreference(params: BaseParams): Promise<Result<GetPrefe
       },
     });
 
-    const data = await req.json();
+    const data = await res.json();
 
-    if (!req.ok) {
+    if (!res.ok) {
       let msg = 'An unexpected error occurred.';
       if (data && typeof data === 'object' && 'message' in data) {
         msg = data.message as string;
@@ -66,7 +66,7 @@ export async function postPreference<T = unknown>(
   const apiUrl = `${url}/api/payload-preferences/${key}`;
 
   try {
-    const req = await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,9 +75,9 @@ export async function postPreference<T = unknown>(
       body: JSON.stringify({ value }),
     });
 
-    const data = await req.json();
+    const data = await res.json();
 
-    if (!req.ok) {
+    if (!res.ok) {
       let msg = 'An unexpected error occurred.';
       if (data && typeof data === 'object' && 'message' in data) {
         msg = data.message as string;

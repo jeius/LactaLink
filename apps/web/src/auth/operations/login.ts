@@ -1,13 +1,13 @@
 import { getRequestCollection, jwtSign } from '@/lib/utils';
-import type { AuthResult, User } from '@lactalink/types';
+import type { Admin, AuthResult, User } from '@lactalink/types';
 import { getAccessResults, getFieldsToSign, PayloadRequest } from 'payload';
 
 export const loginOperation = async (req: PayloadRequest): Promise<AuthResult> => {
   const collection = getRequestCollection(req);
-  const user = req.user;
+  const { user, t } = req;
 
   if (!user) {
-    return { user: null, message: 'Unable to authenticate user.' };
+    return { user: null, message: t('error:noUser') };
   }
   const fieldsToSign = getFieldsToSign({
     collectionConfig: collection.config,
@@ -30,6 +30,7 @@ export const loginOperation = async (req: PayloadRequest): Promise<AuthResult> =
     token,
     permissions,
     collection: collectionSlug,
-    user: { ...restOfUser } as User,
+    user: { ...restOfUser } as User | Admin,
+    message: t('authentication:authenticated'),
   };
 };
