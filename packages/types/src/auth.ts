@@ -1,4 +1,4 @@
-import type { APIError, SanitizedPermissions, ValidationError } from 'payload';
+import type { SanitizedPermissions } from 'payload';
 import { CustomError } from './errors';
 import type { Admin, User } from './payload-types';
 
@@ -12,7 +12,7 @@ export type AuthResult =
       collection: 'users' | 'admins';
     }
   | {
-      error?: Error | APIError | ValidationError | CustomError;
+      error?: CustomError;
       message: string;
       user: null;
     };

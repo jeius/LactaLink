@@ -1,8 +1,17 @@
+import { APIResponse } from './apiResponse';
+
 export type SlugPSGC =
   | 'island-groups'
   | 'regions'
   | 'provinces'
   | 'cities-municipalities'
+  | 'barangays';
+
+export type CollectionSlugPSGC =
+  | 'islandGroups'
+  | 'regions'
+  | 'provinces'
+  | 'citiesMunicipalities'
   | 'barangays';
 
 export type IslandGroupPSGC = {
@@ -66,3 +75,50 @@ export type BarangayPSGC = {
   regionCode: string;
   islandGroupCode: string;
 };
+
+export type ExistingDocs = Record<string, string>;
+
+export type RawAndExistingDocs<T> = {
+  rawData: T[];
+  existingDocs: ExistingDocs;
+};
+
+export type IncomingIslandGroupData = {
+  islandGroups: RawAndExistingDocs<IslandGroupPSGC>;
+};
+
+export type IncomingRegionData = {
+  existingIslandGroups: ExistingDocs;
+  regions: RawAndExistingDocs<RegionPSGC>;
+};
+
+export type IncomingProvinceData = {
+  existingIslandGroups: ExistingDocs;
+  existingRegions: ExistingDocs;
+  provinces: RawAndExistingDocs<ProvincePSGC>;
+};
+
+export type IncomingCityMunicipalityData = {
+  existingIslandGroups: ExistingDocs;
+  existingRegions: ExistingDocs;
+  existingProvinces: ExistingDocs;
+  citiesMunicipalities: RawAndExistingDocs<CityMunicipalityPSGC>;
+};
+
+export type IncomingBarangayData = {
+  existingIslandGroups: ExistingDocs;
+  existingRegions: ExistingDocs;
+  existingProvinces: ExistingDocs;
+  existingCitiesMunicipalities: ExistingDocs;
+  barangays: RawAndExistingDocs<BarangayPSGC>;
+};
+
+export type ResponseData = {
+  islandGroups: RawAndExistingDocs<IslandGroupPSGC>;
+  provinces: RawAndExistingDocs<ProvincePSGC>;
+  regions: RawAndExistingDocs<RegionPSGC>;
+  citiesMunicipalities: RawAndExistingDocs<CityMunicipalityPSGC>;
+  barangays: RawAndExistingDocs<BarangayPSGC>;
+};
+
+export type PSGCResponse = APIResponse<ResponseData>;

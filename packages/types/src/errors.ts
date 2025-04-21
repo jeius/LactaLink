@@ -1,4 +1,10 @@
-export type CustomError = {
-  message: string;
-  code?: number;
-};
+import { APIError, ValidationError } from 'payload';
+
+export type CustomError =
+  | Error
+  | APIError
+  | ValidationError
+  | {
+      message: string;
+      code?: number;
+    };

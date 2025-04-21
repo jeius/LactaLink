@@ -1,12 +1,52 @@
+/**
+ * Utility function to create a standardized Payload handler.
+ *
+ * This function wraps a custom handler with additional functionality, such as:
+ * - Authorization checks for admin users.
+ * - Logging of operation success or failure.
+ * - Measuring and logging the elapsed time for the operation.
+ * - Returning a standardized JSON response.
+ */
+
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadHandler } from 'payload';
 
+/**
+ * Options for configuring the Payload handler.
+ */
 type HandlerOptions = {
+  /**
+   * Whether the handler requires the user to be an admin.
+   * Defaults to `false`.
+   */
   requireAdmin?: boolean;
+
+  /**
+   * The custom handler function to execute.
+   * Receives the request object as its parameter.
+   */
   handler: (req: Parameters<PayloadHandler>[0]) => Promise<unknown>;
+
+  /**
+   * A custom success message to include in the response.
+   * Defaults to "Operation successful."
+   */
   successMessage?: string;
 };
 
+/**
+ * Creates a standardized Payload handler.
+ *
+ * @param {HandlerOptions} options - The options for configuring the handler.
+ * @returns {PayloadHandler} - A function that handles the request and returns a response.
+ *
+ * @description
+ * This function wraps a custom handler with additional functionality:
+ * - If `requireAdmin` is `true`, it checks if the user is an admin and throws an error if not.
+ * - Executes the custom handler and logs the elapsed time for the operation.
+ * - Logs success or error messages and returns a standardized JSON response.
+ * - Handles errors gracefully, including `APIError` instances.
+ */
 export function createPayloadHandler({
   requireAdmin = false,
   handler,
@@ -17,37 +57,48 @@ export function createPayloadHandler({
     const startTime = Date.now();
 
     try {
+      // Check if the operation requires admin privileges and validate the user.
       if (requireAdmin && (!user || user.collection !== 'admins')) {
         throw new APIError(t('error:unauthorized'), HttpStatus.UNAUTHORIZED);
       }
 
+      // Execute the custom handler and capture the result.
       const data = await handler(req);
 
+      // Calculate the elapsed time for the operation.
       const endTime = Date.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
 
-      const message = successMessage || 'Operation successful.';
+      // Prepare the success response.
+      const message = successMessage;
       const status = HttpStatus.OK;
 
-      payload.logger.info(message);
-      payload.logger.info(`Elapsed time: ${duration} seconds`);
+      // Log the success message and elapsed time.
+      if (message) payload.logger.info(`> ${message}`);
+      payload.logger.info(`>>> API Duration: ${duration} seconds`);
 
+      // Return the success response.
       return Response.json({ message, data }, { status });
     } catch (error) {
+      // Calculate the elapsed time for the operation.
       const endTime = Date.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
 
+      // Prepare the error response.
       let message = 'Unknown error occurred.';
       let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
 
+      // If the error is an instance of APIError, use its message and status.
       if (error instanceof APIError) {
         message = error.message;
         status = error.status;
       }
 
-      payload.logger.error(error, message);
-      payload.logger.error(`Elapsed time: ${duration} seconds`);
+      // Log the error message and elapsed time.
+      payload.logger.error(error, `> ${message}`);
+      payload.logger.error(`>>> API Duration: ${duration} seconds`);
 
+      // Return the error response.
       return Response.json({ message, error }, { status });
     }
   };
