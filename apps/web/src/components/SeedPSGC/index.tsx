@@ -1,20 +1,15 @@
 'use client';
 
+import { extractErrorMessage } from '@lactalink/utilities';
 import { Button, ConfirmationModal, toast, useModal } from '@payloadcms/ui';
 import { useCallback, useState } from 'react';
-
-const options: RequestInit = {
-  method: 'POST',
-  credentials: 'include',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-};
+import { seedPSGC } from './operations';
 
 export default function SeedPSGC() {
   const [loading, setLoading] = useState(false);
   const [seeded, setSeeded] = useState(false);
   const [error, setError] = useState('');
+  const [seedID, setSeedID] = useState<string>();
 
   const { openModal } = useModal();
 
@@ -30,7 +25,7 @@ export default function SeedPSGC() {
     </>
   );
 
-  const handleReset = useCallback(async () => {
+  const handleSeed = useCallback(async () => {
     if (seeded) {
       toast.info('PSGC data already seeded.');
       return;
@@ -47,14 +42,12 @@ export default function SeedPSGC() {
     setLoading(true);
 
     try {
-      await toast.promise(
+      toast.promise(
         (async () => {
-          const res = await fetch(`/api/seed/psgc`, options);
+          const result = await seedPSGC();
 
-          if (!res.ok) {
-            const errData = await res.json();
-            const msg = 'message' in errData ? errData.message : 'An error occurred while seeding.';
-            throw new Error(msg);
+          if ('error' in result) {
+            throw new Error(result.message, { cause: result.error });
           }
 
           setSeeded(true);
@@ -62,20 +55,18 @@ export default function SeedPSGC() {
         {
           dismissible: false,
           closeButton: false,
+          // loading: <Loading seedID={seedID} />,
           loading: 'Seeding PSGC data...',
           success: 'Seeding complete!',
           error: ({ message }) => message,
         }
       );
     } catch (err) {
-      if (err && typeof err === 'object' && 'message' in err) {
-        const msg = err.message as string;
-        setError(msg || '');
-      }
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [loading, seeded, error]);
+  }, [seeded, loading, error]);
 
   return (
     <>
@@ -86,7 +77,7 @@ export default function SeedPSGC() {
         body={body}
         heading={heading}
         modalSlug={modalSlug}
-        onConfirm={handleReset}
+        onConfirm={handleSeed}
       />
     </>
   );
