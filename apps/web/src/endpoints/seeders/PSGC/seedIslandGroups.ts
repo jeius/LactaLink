@@ -1,43 +1,44 @@
-import { PSGC_API_URL } from '@/lib/constants';
-import { IslandGroup, IslandGroupPSGC } from '@lactalink/types';
-import { batchProcess } from '@lactalink/utilities';
-import { status } from 'http-status';
+import { BATCH_INDEX_KEY } from '@/lib/constants';
+import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
+import {
+  ExistingDocs,
+  IncomingIslandGroupData,
+  IslandGroup,
+  IslandGroupPSGC,
+} from '@lactalink/types';
+import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
+import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
-
-const API_URL = `${PSGC_API_URL}/api/island-groups.json`;
-const headers = new Headers({
-  'Content-Type': 'application/json',
-});
+import { seed } from './seeder';
 
 const collection = 'islandGroups';
+let batchIndex = 0;
 
-export async function seedIslandGroups(req: PayloadRequest): Promise<IslandGroup[]> {
-  const { payload, user } = req;
+async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
+  const { payload, user, t, json, searchParams } = req;
 
-  const response = await fetch(API_URL, { method: 'GET', headers });
+  batchIndex = Number(searchParams.get(BATCH_INDEX_KEY) || 0);
 
-  if (!response.ok) {
-    throw new APIError('Unable to fetch island groups from PSGC.', status.EXPECTATION_FAILED);
+  const { islandGroups }: IncomingIslandGroupData = json ? await json() : {};
+
+  if (!islandGroups) {
+    throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const data = (await response.json()) as IslandGroupPSGC[];
+  const { rawData, existingDocs } = islandGroups;
 
-  const islandGroups = await batchProcess(data, 10, async (data) => {
-    const existingDoc = await payload.find({
-      req,
-      user,
-      collection,
-      pagination: false,
-      limit: 1,
-      where: { code: { equals: data.code } },
-    });
-
-    if (existingDoc.totalDocs > 0) {
-      return existingDoc.docs[0];
-    }
-
-    return await payload.create({ collection, data, user, req });
+  return await seed<IslandGroupPSGC, IslandGroup>({
+    collection,
+    payload,
+    user,
+    rawData,
+    existingDocs,
+    resolveData: (item) => item,
   });
-
-  return islandGroups.filter((item) => item !== null);
 }
+
+export const seedIslandGroupsHandler = createPayloadHandler({
+  requireAdmin: true,
+  successMessage: `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`,
+  handler: async (req) => seedHandler(req),
+});
