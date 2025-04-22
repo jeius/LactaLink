@@ -53,13 +53,13 @@ export function createPayloadHandler({
   successMessage,
 }: HandlerOptions): PayloadHandler {
   return async (req) => {
-    const { user, t, payload } = req;
+    const { user, payload } = req;
     const startTime = Date.now();
 
     try {
       // Check if the operation requires admin privileges and validate the user.
       if (requireAdmin && (!user || user.collection !== 'admins')) {
-        throw new APIError(t('error:unauthorized'), HttpStatus.UNAUTHORIZED);
+        throw new APIError('Unauthorized: Only admin users allowed.', HttpStatus.UNAUTHORIZED);
       }
 
       // Execute the custom handler and capture the result.
@@ -76,6 +76,11 @@ export function createPayloadHandler({
       // Log the success message and elapsed time.
       if (message) payload.logger.info(`> ${message}`);
       payload.logger.info(`>>> API Duration: ${duration} seconds`);
+
+      // Exclude data in the response if its null or undefined;
+      if (data === null || data === undefined) {
+        return Response.json({ message }, { status });
+      }
 
       // Return the success response.
       return Response.json({ message, data }, { status });

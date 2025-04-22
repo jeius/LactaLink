@@ -7,11 +7,14 @@ import { ReactNode } from 'react';
 
 const queryClient = new QueryClient();
 
+const isDevelopment =
+  process.env.VERCEL_ENV === 'development' || process.env.NODE_ENV === 'development';
+
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.VERCEL_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+      {isDevelopment && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

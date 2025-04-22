@@ -1,8 +1,7 @@
 export * from './collectionGroup';
+export * from './reactQueryKeys';
 
 export const PSGC_API_URL = process.env.PSGC_API_URL;
-
-export const PSGC_SEED_STATUS_KEY = 'psgc-seed-status';
 
 export const SEED_REGIONS_BATCH_SIZE = 20;
 

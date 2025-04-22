@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * Imports constants, utilities, and types used for the seeding operation.
  */
@@ -16,7 +14,6 @@ import {
   IncomingRegionData,
 } from '@lactalink/types';
 import { formatCamelCase, formatCamelCaseCaps, getChunks, toKebabCase } from '@lactalink/utilities';
-import { Payload } from 'payload';
 
 /**
  * Default batch size for processing raw data.
@@ -59,11 +56,6 @@ type SeedParams<T, Slug> = {
    * The incoming data to seed into the collection.
    */
   incomingData: IncomingData<T, Slug>;
-
-  /**
-   * The Payload instance used for database operations.
-   */
-  payload: Payload;
 };
 
 /**
@@ -96,18 +88,17 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
   collection,
   batchSize = BATCH_SIZE,
   incomingData,
-  payload,
 }: SeedParams<T, Slug>): Promise<ExistingDocs> {
   type Placeholder = Record<Slug, { rawData: object[]; existingDocs: ExistingDocs }>;
   const { rawData, existingDocs } = (incomingData as Placeholder)[collection];
   const batches = getChunks(rawData, batchSize);
 
-  payload.logger.info(`>`);
-  payload.logger.info(`>>> Seeding ${formatCamelCase(collection)}...`);
+  console.log(`>`);
+  console.log(`>>> Seeding ${formatCamelCase(collection)}...`);
 
   // Skip seeding if there is no raw data.
   if (batches.length === 0) {
-    payload.logger.info(`>> Empty raw data, skipping seed for ${formatCamelCaseCaps(collection)}`);
+    console.log(`>> ${formatCamelCaseCaps(collection)} already seeded, skipping...`);
     return existingDocs;
   }
 
@@ -119,7 +110,7 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
     (incomingData as Placeholder)[collection].rawData = batchRawData;
 
     batchesToExecute.push(async () => {
-      payload.logger.info(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
+      console.log(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
 
       const url = new URL(`/api/seed/${toKebabCase(collection)}`, getServerSideURL());
       url.searchParams.set(BATCH_INDEX_KEY, String(batchIndex));

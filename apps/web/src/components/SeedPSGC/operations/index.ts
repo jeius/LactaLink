@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * Imports constants, utilities, and functions used for the seeding operation.
  */
@@ -9,16 +7,15 @@ import {
   SEED_PROVINCES_BATCH_SIZE,
   SEED_REGIONS_BATCH_SIZE,
 } from '@/lib/constants';
+import { CustomError } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
-import config from '@payload-config';
-import { getPayload } from 'payload';
 import { fetchPSGCData } from './fetchPSGCData';
 import { seed } from './seed';
 
 /**
  * Seeds PSGC (Philippine Standard Geographic Code) data into the database.
  *
- * @returns {Promise<{ message: string; error?: unknown }>} - A message indicating the success or failure of the operation.
+ * @returns {Promise<{ message: string; error?: CustomError }>} - A message indicating the success or failure of the operation.
  *
  * @description
  * This function orchestrates the seeding of PSGC data into the database in a structured manner.
@@ -40,9 +37,8 @@ import { seed } from './seed';
  * const result = await seedPSGC();
  * console.log(result.message); // "Seed success for PSGC data."
  */
-export const seedPSGC = async () => {
+export const seedPSGC = async (): Promise<{ message: string; error?: CustomError }> => {
   const startTime = Date.now(); // Start timer
-  const payload = await getPayload({ config });
 
   try {
     // Fetch raw filtered data from the PSGC
@@ -51,14 +47,12 @@ export const seedPSGC = async () => {
 
     // Seed Island Groups
     const existingIslandGroups = await seed({
-      payload,
       collection: 'islandGroups',
       incomingData: { islandGroups },
     });
 
     // Seed Regions
     const existingRegions = await seed({
-      payload,
       collection: 'regions',
       batchSize: SEED_REGIONS_BATCH_SIZE,
       incomingData: { regions, existingIslandGroups },
@@ -66,7 +60,6 @@ export const seedPSGC = async () => {
 
     // Seed Provinces
     const existingProvinces = await seed({
-      payload,
       collection: 'provinces',
       batchSize: SEED_PROVINCES_BATCH_SIZE,
       incomingData: { provinces, existingIslandGroups, existingRegions },
@@ -74,7 +67,6 @@ export const seedPSGC = async () => {
 
     // Seed Cities/Municipalities
     const existingCitiesMunicipalities = await seed({
-      payload,
       collection: 'citiesMunicipalities',
       batchSize: SEED_CITIES_MUNICIPALITIES_BATCH_SIZE,
       incomingData: {
@@ -87,7 +79,6 @@ export const seedPSGC = async () => {
 
     // Seed Barangays
     await seed({
-      payload,
       collection: 'barangays',
       batchSize: SEED_BARANGAYS_BATCH_SIZE,
       incomingData: {
@@ -102,9 +93,9 @@ export const seedPSGC = async () => {
     // Calculate and log the elapsed time
     const endTime = Date.now();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
-    const message = 'Seed success for PSGC data.';
+    const message = 'Seed successfully finished!';
 
-    payload.logger.info(`>>> Elapsed time: ${duration} seconds.`);
+    console.log(`>>> Elapsed time: ${duration} seconds.`);
     return { message };
   } catch (error) {
     // Handle errors and log the elapsed time
@@ -112,8 +103,8 @@ export const seedPSGC = async () => {
     const duration = ((endTime - startTime) / 1000).toFixed(2);
     const message = extractErrorMessage(error);
 
-    payload.logger.error(error, `> ${message}`);
-    payload.logger.error(`>>> Elapsed time: ${duration} seconds.`);
-    return { message, error };
+    console.log(error, `> ${message}`);
+    console.log(`>>> Elapsed time: ${duration} seconds.`);
+    return { message, error: error as CustomError };
   }
 };

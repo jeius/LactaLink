@@ -19,6 +19,10 @@
     "./formatString": {
       "types": "./dist/formatString.d.ts",
       "default": "./dist/formatString.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "default": "./dist/hooks/index.js"
     }
   },
   "scripts": {
@@ -26,8 +30,14 @@
     "dev": "tsc --watch"
   },
   "devDependencies": {
-    "@lactalink/typescript-config": "workspace:*",
     "@lactalink/types": "workspace:*",
-    "@types/node": "^22.5.4"
+    "@lactalink/typescript-config": "workspace:*",
+    "@tanstack/react-query": "^5.71.10",
+    "@types/node": "^22.5.4",
+    "@types/react": "^19.1.2",
+    "react": "18.3.1"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.71.10"
   }
 }

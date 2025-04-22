@@ -9,7 +9,7 @@ export default function SeedPSGC() {
   const [loading, setLoading] = useState(false);
   const [seeded, setSeeded] = useState(false);
   const [error, setError] = useState('');
-  const [seedID, setSeedID] = useState<string>();
+  const [seedMessage, setSeedMessage] = useState('Seeding PSGC data...');
 
   const { openModal } = useModal();
 
@@ -51,13 +51,13 @@ export default function SeedPSGC() {
           }
 
           setSeeded(true);
+          setSeedMessage(result.message);
         })(),
         {
           dismissible: false,
           closeButton: false,
-          // loading: <Loading seedID={seedID} />,
-          loading: 'Seeding PSGC data...',
-          success: 'Seeding complete!',
+          loading: seedMessage,
+          success: 'Seeding successfully completed!',
           error: ({ message }) => message,
         }
       );
