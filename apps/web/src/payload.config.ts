@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import Collections, { Admins } from './collections';
 import { Endpoints } from './endpoints';
 import { plugins } from './lib/plugins';
-import { getServerSideURL } from './lib/utils/getURL';
+import { getServerSideURL } from './lib/utils';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -33,6 +33,7 @@ export default buildConfig({
         Logo: '@/components/Logo',
       },
       beforeDashboard: ['@/components/BeforeDashboard'],
+      providers: ['@/components/providers'],
     },
     avatar: 'default',
     autoLogin: autoLoginConfig,
