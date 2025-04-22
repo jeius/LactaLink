@@ -9,7 +9,7 @@ import {
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
-import { seed } from './seeder';
+import { seed } from './utils/seeder';
 
 const collection = 'islandGroups';
 let batchIndex = 0;

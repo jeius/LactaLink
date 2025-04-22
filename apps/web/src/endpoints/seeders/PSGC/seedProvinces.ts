@@ -1,78 +1,69 @@
-import { PSGC_API_URL } from '@/lib/constants';
-import type { IslandGroup, Province, ProvincePSGC, Region } from '@lactalink/types';
-import { batchProcess } from '@lactalink/utilities';
-import { status } from 'http-status';
+import { BATCH_INDEX_KEY } from '@/lib/constants';
+import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
+import type {
+  CollectionSlugPSGC,
+  ExistingDocs,
+  IncomingProvinceData,
+  Province,
+  ProvincePSGC,
+} from '@lactalink/types';
+import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
+import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
+import { getExistingOrThrow } from './utils/getExistingOrThrow';
+import { seed } from './utils/seeder';
 
-const API_URL = `${PSGC_API_URL}/api/provinces.json`;
-const headers = new Headers({
-  'Content-Type': 'application/json',
-});
+const collection: CollectionSlugPSGC = 'provinces';
+let batchIndex = 0;
 
-const collection = 'provinces';
+export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
+  const { payload, user, t, json, searchParams } = req;
 
-type IncomingData = {
-  islandGroups: IslandGroup[];
-  regions: Region[];
-};
+  batchIndex = Number(searchParams.get(BATCH_INDEX_KEY) || 0);
 
-export async function seedProvinces(
-  req: PayloadRequest,
-  incomingData: IncomingData
-): Promise<Province[]> {
-  const { payload, user } = req;
+  const { provinces, existingIslandGroups, existingRegions }: IncomingProvinceData = json
+    ? await json()
+    : {};
 
-  const { islandGroups, regions } = incomingData;
-
-  const response = await fetch(API_URL, { method: 'GET', headers });
-
-  if (!response.ok) {
-    throw new APIError('Unable to fetch provinces from PSGC.', status.EXPECTATION_FAILED);
+  if (!provinces || !existingIslandGroups || !existingRegions) {
+    throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const resData = (await response.json()) as ProvincePSGC[];
+  const { rawData, existingDocs } = provinces;
+  const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  const provinces = await batchProcess(resData, 1500, async (data) => {
-    const { name, code, regionCode, islandGroupCode } = data;
+  return await seed<ProvincePSGC, Province>({
+    collection,
+    payload,
+    user,
+    rawData,
+    existingDocs,
+    resolveData: (item) => {
+      const islandGroupID = getExistingOrThrow(
+        existingIslandGroups,
+        item.islandGroupCode,
+        'Island Group ID',
+        collectionLabel
+      );
 
-    const existingDoc = await payload.find({
-      req,
-      user,
-      collection,
-      pagination: false,
-      limit: 1,
-      select: { id: true, code: true },
-      where: { code: { equals: code } },
-    });
-
-    if (existingDoc.totalDocs > 0) {
-      return existingDoc.docs[0];
-    }
-
-    const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
-    const regionID = regions.find((item) => item.code === regionCode)?.id;
-
-    if (!islandGroupID) {
-      throw new APIError(`Island Group ID not found for province: ${name}`, status.NOT_FOUND);
-    }
-
-    if (!regionID) {
-      throw new APIError(`Region ID not found for province: ${name}`, status.NOT_FOUND);
-    }
-
-    return await payload.create({
-      collection,
-      user,
-      req,
-      select: { id: true, code: true },
-      data: {
-        name,
-        code,
+      const regionID = getExistingOrThrow(
+        existingRegions,
+        item.regionCode,
+        'Region ID',
+        collectionLabel
+      );
+      return {
+        name: item.name,
+        code: item.code,
         region: regionID,
         islandGroup: islandGroupID,
-      },
-    });
+      };
+    },
   });
-
-  return provinces.filter((item) => item !== null);
 }
+
+export const seedProvincesHandler = createPayloadHandler({
+  requireAdmin: true,
+  successMessage: `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`,
+  handler: async (req) => seedHandler(req),
+});

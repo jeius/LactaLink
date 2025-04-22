@@ -1,5 +1,8 @@
 import { Endpoint } from 'payload';
+import { seedBarangaysHandler } from './seeders/PSGC/seedBarangays';
+import { seedCitiesMunicipalitiesHandler } from './seeders/PSGC/seedCitiesMunicipalities';
 import { seedIslandGroupsHandler } from './seeders/PSGC/seedIslandGroups';
+import { seedProvincesHandler } from './seeders/PSGC/seedProvinces';
 import { seedPSGCHandler } from './seeders/PSGC/seedPSGC';
 import { seedRegionsHandler } from './seeders/PSGC/seedRegions';
 
@@ -18,6 +21,21 @@ export const Endpoints: Endpoint[] = [
     method: 'post',
     path: '/seed/regions',
     handler: seedRegionsHandler,
+  },
+  {
+    method: 'post',
+    path: '/seed/provinces',
+    handler: seedProvincesHandler,
+  },
+  {
+    method: 'post',
+    path: '/seed/cities-municipalities',
+    handler: seedCitiesMunicipalitiesHandler,
+  },
+  {
+    method: 'post',
+    path: '/seed/barangays',
+    handler: seedBarangaysHandler,
   },
   // {
   //   method: 'get',

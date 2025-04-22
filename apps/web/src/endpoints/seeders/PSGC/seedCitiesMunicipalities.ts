@@ -1,108 +1,93 @@
-import { PSGC_API_URL } from '@/lib/constants';
+import { BATCH_INDEX_KEY } from '@/lib/constants';
+import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import type {
   CityMunicipality,
   CityMunicipalityPSGC,
-  IslandGroup,
-  Province,
-  Region,
+  CollectionSlugPSGC,
+  ExistingDocs,
+  IncomingCityMunicipalityData,
 } from '@lactalink/types';
-import { batchProcess } from '@lactalink/utilities';
-import { status } from 'http-status';
+import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
+import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
+import { getExistingOrThrow } from './utils/getExistingOrThrow';
+import { seed } from './utils/seeder';
 
-const API_URL = `${PSGC_API_URL}/api/cities-municipalities.json`;
-const headers = new Headers({
-  'Content-Type': 'application/json',
-});
-const collection = 'citiesMunicipalities';
+const collection: CollectionSlugPSGC = 'citiesMunicipalities';
+let batchIndex = 0;
 
-type IncomingData = {
-  islandGroups: IslandGroup[];
-  regions: Region[];
-  provinces: Province[];
-};
+export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
+  const { payload, user, t, json, searchParams } = req;
 
-export async function seedCitiesMunicipalities(
-  req: PayloadRequest,
-  incomingData: IncomingData
-): Promise<CityMunicipality[]> {
-  const { payload, user } = req;
+  batchIndex = Number(searchParams.get(BATCH_INDEX_KEY) || 0);
 
-  const { islandGroups, provinces, regions } = incomingData;
+  const {
+    citiesMunicipalities,
+    existingIslandGroups,
+    existingRegions,
+    existingProvinces,
+  }: IncomingCityMunicipalityData = json ? await json() : {};
 
-  const response = await fetch(API_URL, { method: 'GET', headers });
-
-  if (!response.ok) {
-    throw new APIError(
-      'Unable to fetch cities/municipalities from PSGC.',
-      status.EXPECTATION_FAILED
-    );
+  if (!citiesMunicipalities || !existingIslandGroups || !existingRegions || !existingProvinces) {
+    throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const resData = (await response.json()) as CityMunicipalityPSGC[];
+  const { rawData, existingDocs } = citiesMunicipalities;
+  const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  const citiesMunicipalities = await batchProcess(resData, 5000, async (data) => {
-    const {
-      name,
-      code,
-      regionCode,
-      islandGroupCode,
-      isCapital,
-      oldName,
-      provinceCode,
-      isCity,
-      isMunicipality,
-      districtCode,
-    } = data;
+  return await seed<CityMunicipalityPSGC, CityMunicipality>({
+    collection,
+    payload,
+    user,
+    rawData,
+    existingDocs,
+    resolveData: (item) => {
+      const islandGroupID = getExistingOrThrow(
+        existingIslandGroups,
+        item.islandGroupCode,
+        'Island Group ID',
+        collectionLabel
+      );
 
-    const existingDoc = await payload.find({
-      req,
-      user,
-      collection,
-      pagination: false,
-      limit: 1,
-      select: { id: true, code: true },
-      where: { code: { equals: code } },
-    });
+      const regionID = getExistingOrThrow(
+        existingRegions,
+        item.regionCode,
+        'Region ID',
+        collectionLabel
+      );
 
-    if (existingDoc.totalDocs > 0) {
-      return existingDoc.docs[0];
-    }
+      const provinceID = getExistingOrThrow(
+        existingProvinces,
+        item.provinceCode,
+        'Province ID',
+        collectionLabel
+      );
 
-    const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
-    const regionID = regions.find((item) => item.code === regionCode)?.id;
-    const provinceID = provinces.find((item) => item.code === provinceCode)?.id;
+      const type: CityMunicipality['type'] = item.isCity
+        ? 'city'
+        : item.isMunicipality
+          ? 'municipality'
+          : 'none';
 
-    if (!islandGroupID) {
-      payload.logger.error(data, `Island Group ID not found for city/municipality: ${name}`);
-      payload.logger.error(`Skipping creation of city/municipality: ${name}`);
-      return null;
-    }
+      const districtCode = typeof item.districtCode === 'string' ? item.districtCode : undefined;
 
-    if (!regionID) {
-      payload.logger.error(data, `Region ID not found for city/municipality: ${name}`);
-      payload.logger.error(`Skipping creation of city/municipality: ${name}`);
-      return null;
-    }
-
-    return await payload.create({
-      collection,
-      user,
-      req,
-      select: { id: true, code: true },
-      data: {
-        name,
-        code,
-        oldName,
-        isCapital,
-        type: isCity ? 'city' : isMunicipality ? 'municipality' : 'none',
-        districtCode: typeof districtCode === 'string' ? districtCode : null,
-        province: provinceID,
+      return {
+        name: item.name,
+        code: item.code,
+        isCapital: item.isCapital,
+        oldName: item.oldName,
+        type,
+        districtCode,
+        province: Boolean(provinceID) ? provinceID : null,
         region: regionID,
         islandGroup: islandGroupID,
-      },
-    });
+      };
+    },
   });
-
-  return citiesMunicipalities.filter((item) => item !== null);
 }
+
+export const seedCitiesMunicipalitiesHandler = createPayloadHandler({
+  requireAdmin: true,
+  successMessage: `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`,
+  handler: async (req) => seedHandler(req),
+});

@@ -3,7 +3,7 @@ export function sanitizeStreetAddress(input: string): string {
 }
 
 export function formatCamelCase(str: string): string {
-  return str.replace(/([a-z])([A-Z])/g, '$1 $2');
+  return str.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
 }
 
 export function formatCamelCaseCaps(str: string): string {

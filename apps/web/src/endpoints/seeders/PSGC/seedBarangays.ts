@@ -1,118 +1,105 @@
-import { PSGC_API_URL } from '@/lib/constants';
+import { BATCH_INDEX_KEY } from '@/lib/constants';
+import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import type {
   Barangay,
   BarangayPSGC,
-  CityMunicipality,
-  IslandGroup,
-  Province,
-  Region,
+  CollectionSlugPSGC,
+  ExistingDocs,
+  IncomingBarangayData,
 } from '@lactalink/types';
-import { batchProcess } from '@lactalink/utilities';
-import { status } from 'http-status';
+import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
+import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
+import { getExistingOrThrow } from './utils/getExistingOrThrow';
+import { seed } from './utils/seeder';
 
-const API_URL = `${PSGC_API_URL}/api/barangays.json`;
-const headers = new Headers({
-  'Content-Type': 'application/json',
-});
+const collection: CollectionSlugPSGC = 'barangays';
+let batchIndex = 0;
 
-const collection = 'barangays';
+export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
+  const { payload, user, t, json, searchParams } = req;
 
-type IncomingData = {
-  islandGroups: IslandGroup[];
-  regions: Region[];
-  provinces: Province[];
-  citiesMunicipalities: CityMunicipality[];
-};
+  batchIndex = Number(searchParams.get(BATCH_INDEX_KEY) || 0);
 
-export async function seedBarangays(
-  req: PayloadRequest,
-  incomingData: IncomingData
-): Promise<Barangay[]> {
-  const { payload, user } = req;
+  const {
+    barangays,
+    existingIslandGroups,
+    existingRegions,
+    existingProvinces,
+    existingCitiesMunicipalities,
+  }: IncomingBarangayData = json ? await json() : {};
 
-  const { islandGroups, citiesMunicipalities, provinces, regions } = incomingData;
-
-  const response = await fetch(API_URL, { method: 'GET', headers });
-
-  if (!response.ok) {
-    throw new APIError('Unable to fetch barangays from PSGC.', status.EXPECTATION_FAILED);
+  if (
+    !barangays ||
+    !existingIslandGroups ||
+    !existingRegions ||
+    !existingProvinces ||
+    !existingCitiesMunicipalities
+  ) {
+    throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const resData = (await response.json()) as BarangayPSGC[];
+  const { rawData, existingDocs } = barangays;
+  const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  const barangays = await batchProcess(resData, 20000, async (data) => {
-    const {
-      name,
-      code,
-      regionCode,
-      islandGroupCode,
-      cityCode,
-      municipalityCode,
-      oldName,
-      provinceCode,
-      districtCode,
-      subMunicipalityCode,
-    } = data;
+  return await seed<BarangayPSGC, Barangay>({
+    collection,
+    payload,
+    user,
+    rawData,
+    existingDocs,
+    resolveData: (item) => {
+      const islandGroupID = getExistingOrThrow(
+        existingIslandGroups,
+        item.islandGroupCode,
+        'Island Group ID',
+        collectionLabel
+      );
 
-    const existingDoc = await payload.find({
-      req,
-      user,
-      collection,
-      pagination: false,
-      limit: 1,
-      select: { id: true, code: true },
-      where: { code: { equals: code } },
-    });
+      const regionID = getExistingOrThrow(
+        existingRegions,
+        item.regionCode,
+        'Region ID',
+        collectionLabel
+      );
 
-    if (existingDoc.totalDocs > 0) {
-      return existingDoc.docs[0];
-    }
+      const provinceID = getExistingOrThrow(
+        existingProvinces,
+        item.provinceCode,
+        'Province ID',
+        collectionLabel
+      );
 
-    const islandGroupID = islandGroups.find((item) => item.code === islandGroupCode)?.id;
-    const regionID = regions.find((item) => item.code === regionCode)?.id;
-    const provinceID = provinces.find((item) => item.code === provinceCode)?.id;
+      const cityMuncipalityCode = item.cityCode || item.municipalityCode;
 
-    let cityMunicipalityID: string | undefined;
+      const cityMuncipalityID = getExistingOrThrow(
+        existingCitiesMunicipalities,
+        cityMuncipalityCode,
+        'City/Municipality ID',
+        collectionLabel
+      );
 
-    if (typeof cityCode === 'string') {
-      cityMunicipalityID = citiesMunicipalities.find((item) => item.code === cityCode)?.id;
-    }
+      const districtCode = typeof item.districtCode === 'string' ? item.districtCode : undefined;
+      const subMunicipalityCode =
+        typeof item.subMunicipalityCode === 'string' ? item.subMunicipalityCode : undefined;
 
-    if (typeof municipalityCode === 'string') {
-      cityMunicipalityID = citiesMunicipalities.find((item) => item.code === municipalityCode)?.id;
-    }
-
-    if (!islandGroupID) {
-      throw new APIError(`Island Group ID not found for barangay: ${name}`, status.NOT_FOUND);
-    }
-
-    if (!regionID) {
-      throw new APIError(`Region ID not found for barangay: ${name}`, status.NOT_FOUND);
-    }
-
-    if (!cityMunicipalityID) {
-      throw new APIError(`City/Municipality ID not found for barangay: ${name}`, status.NOT_FOUND);
-    }
-
-    return await payload.create({
-      collection,
-      user,
-      req,
-      select: { id: true, code: true },
-      data: {
-        name,
-        code,
-        oldName,
-        cityMunicipality: cityMunicipalityID,
-        districtCode: typeof districtCode === 'string' ? districtCode : null,
-        subMunicipalityCode: typeof subMunicipalityCode === 'string' ? subMunicipalityCode : null,
-        province: provinceID,
+      return {
+        name: item.name,
+        code: item.code,
+        oldName: item.oldName,
+        districtCode,
+        subMunicipalityCode,
+        cityMunicipality: cityMuncipalityID,
+        province: Boolean(provinceID) ? provinceID : null,
         region: regionID,
         islandGroup: islandGroupID,
-      },
-    });
+      };
+    },
   });
-
-  return barangays.filter((item) => item !== null);
 }
+
+export const seedBarangaysHandler = createPayloadHandler({
+  requireAdmin: true,
+  successMessage: `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`,
+  handler: async (req) => seedHandler(req),
+});

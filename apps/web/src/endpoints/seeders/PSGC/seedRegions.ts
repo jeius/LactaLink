@@ -1,12 +1,19 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type { ExistingDocs, IncomingRegionData, Region, RegionPSGC } from '@lactalink/types';
+import type {
+  CollectionSlugPSGC,
+  ExistingDocs,
+  IncomingRegionData,
+  Region,
+  RegionPSGC,
+} from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
-import { seed } from './seeder';
+import { getExistingOrThrow } from './utils/getExistingOrThrow';
+import { seed } from './utils/seeder';
 
-const collection = 'regions';
+const collection: CollectionSlugPSGC = 'regions';
 let batchIndex = 0;
 
 export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
@@ -21,6 +28,7 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   }
 
   const { rawData, existingDocs } = regions;
+  const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
   return await seed<RegionPSGC, Region>({
     collection,
@@ -29,10 +37,13 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
     rawData,
     existingDocs,
     resolveData: (item) => {
-      const islandGroupID = existingIslandGroups[item.islandGroupCode];
-      if (!islandGroupID) {
-        throw new APIError(`Missing Island Group for region ${item.name}.`, HttpStatus.NOT_FOUND);
-      }
+      const islandGroupID = getExistingOrThrow(
+        existingIslandGroups,
+        item.islandGroupCode,
+        'Island Group ID',
+        collectionLabel
+      );
+
       return {
         name: item.name,
         regionName: item.regionName,
