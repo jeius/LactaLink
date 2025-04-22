@@ -29,9 +29,8 @@ type HandlerOptions = {
 
   /**
    * A custom success message to include in the response.
-   * Defaults to "Operation successful."
    */
-  successMessage?: string;
+  successMessage?: string | ((req: Parameters<PayloadHandler>[0]) => string | Promise<string>);
 };
 
 /**
@@ -70,8 +69,13 @@ export function createPayloadHandler({
       const duration = ((endTime - startTime) / 1000).toFixed(2);
 
       // Prepare the success response.
-      const message = successMessage;
       const status = HttpStatus.OK;
+      const message =
+        typeof successMessage === 'string'
+          ? successMessage
+          : typeof successMessage === 'function'
+            ? await successMessage(req)
+            : successMessage;
 
       // Log the success message and elapsed time.
       if (message) payload.logger.info(`> ${message}`);

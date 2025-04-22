@@ -18,6 +18,7 @@ import {
   RegionPSGC,
   User,
 } from '@lactalink/types';
+import { batchProcess } from '@lactalink/utilities';
 import { Payload } from 'payload';
 
 /**
@@ -112,9 +113,9 @@ export async function seed<T extends PSGCInput, K extends Output>({
   existingDocs,
   resolveData: resolveData,
 }: SeedOptions<T, K>): Promise<ExistingDocs> {
-  for (const item of rawData) {
+  await batchProcess(rawData, 500, async (item) => {
     // Skip items that already exist in the `existingDocs` map.
-    if (existingDocs[item.code]) continue;
+    if (existingDocs[item.code]) return;
 
     // Resolve the raw data into the desired format.
     const data = await resolveData(item);
@@ -129,7 +130,7 @@ export async function seed<T extends PSGCInput, K extends Output>({
 
     // Add the new document to the `existingDocs` map.
     existingDocs[newDoc.code] = newDoc.id;
-  }
+  });
 
   // Return the updated map of existing documents.
   return existingDocs;

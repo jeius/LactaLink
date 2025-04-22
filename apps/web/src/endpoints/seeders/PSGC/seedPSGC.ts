@@ -69,7 +69,7 @@ async function filterData<T extends { code: string }>({
 
 export const seedPSGCHandler = createPayloadHandler({
   requireAdmin: true,
-  successMessage: 'Fetching and filtering raw PSGC data success!',
+  successMessage: 'Fetch complete!',
   handler: async ({ payload }) => {
     payload.logger.info('>>> Starting seed of PSGC data...');
 

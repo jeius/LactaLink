@@ -102,43 +102,40 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
     return existingDocs;
   }
 
-  // Prepare an array of batch execution functions.
-  const batchesToExecute: (() => Promise<ExistingDocs>)[] = [];
-
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batchRawData = batches[batchIndex];
     (incomingData as Placeholder)[collection].rawData = batchRawData;
 
-    batchesToExecute.push(async () => {
-      console.log(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
+    console.log(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
 
-      const url = new URL(`/api/seed/${toKebabCase(collection)}`, getServerSideURL());
-      url.searchParams.set(BATCH_INDEX_KEY, String(batchIndex));
+    const url = new URL(`/api/seed/${toKebabCase(collection)}`, getServerSideURL());
+    url.searchParams.set(BATCH_INDEX_KEY, String(batchIndex));
 
-      const res = await fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(incomingData),
-      });
+    const start = Date.now();
 
-      const resData: APIResponse<ExistingDocs> = await res.json();
-      if ('data' in resData) {
-        return resData.data;
-      } else {
-        throw new Error(`Batch ${batchIndex} failed: ${resData.message}`);
-      }
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(incomingData),
     });
-  }
 
-  // Execute all batch functions in parallel and collect results.
-  const results = await Promise.all(batchesToExecute.map((fn) => fn()));
+    const end = Date.now();
+    const duration = ((end - start) / 1000).toFixed(2);
+    console.log(`>> Batch ${batchIndex} finish: ${duration} seconds.`);
 
-  // Merge the results of all batches into the existingDocs map.
-  for (const newExistingDocs of results) {
-    Object.assign(existingDocs, newExistingDocs);
+    if (!res.ok) {
+      throw new Error(`Batch ${batchIndex} failed: HTTP ${res.status}`);
+    }
+
+    const resData: APIResponse<ExistingDocs> = await res.json();
+    if ('data' in resData && resData.data) {
+      Object.assign(existingDocs, resData.data);
+    } else {
+      throw new Error(`Batch ${batchIndex} failed: ${resData.message}`);
+    }
   }
 
   return existingDocs;

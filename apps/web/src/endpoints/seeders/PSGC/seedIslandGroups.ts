@@ -12,12 +12,9 @@ import { APIError, PayloadRequest } from 'payload';
 import { seed } from './utils/seeder';
 
 const collection = 'islandGroups';
-let batchIndex = 0;
 
 async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
-  const { payload, user, t, json, searchParams } = req;
-
-  batchIndex = Number(searchParams.get(BATCH_INDEX_KEY) || 0);
+  const { payload, user, t, json } = req;
 
   const { islandGroups }: IncomingIslandGroupData = json ? await json() : {};
 
@@ -39,6 +36,9 @@ async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
 
 export const seedIslandGroupsHandler = createPayloadHandler({
   requireAdmin: true,
-  successMessage: `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`,
   handler: async (req) => seedHandler(req),
+  successMessage: (req) => {
+    const batchIndex = Number(req.searchParams.get(BATCH_INDEX_KEY) || 0);
+    return `${formatCamelCaseCaps(collection)} batch ${batchIndex} seeded successfully.`;
+  },
 });
