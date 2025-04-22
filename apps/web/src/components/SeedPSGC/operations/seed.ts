@@ -17,9 +17,7 @@ import { Payload } from 'payload';
 
 const BATCH_SIZE = 100;
 
-type IncomingData<T extends SeedData, Slug extends CollectionSlugPSGC> = Slug extends keyof T
-  ? T
-  : never;
+type IncomingData<T, Slug> = Slug extends keyof T ? T : never;
 
 type SeedData =
   | IncomingIslandGroupData
@@ -28,7 +26,7 @@ type SeedData =
   | IncomingCityMunicipalityData
   | IncomingBarangayData;
 
-type SeedParams<T extends SeedData, Slug extends CollectionSlugPSGC> = {
+type SeedParams<T, Slug> = {
   collection: Slug;
   batchSize?: number;
   incomingData: IncomingData<T, Slug>;
@@ -41,7 +39,8 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
   incomingData,
   payload,
 }: SeedParams<T, Slug>): Promise<ExistingDocs> {
-  const { rawData, existingDocs } = incomingData[collection];
+  type Placeholder = Record<Slug, { rawData: object[]; existingDocs: ExistingDocs }>;
+  const { rawData, existingDocs } = (incomingData as Placeholder)[collection];
   const batches = getChunks(rawData, batchSize);
 
   payload.logger.info(`>`);
@@ -57,7 +56,7 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batchRawData = batches[batchIndex];
-    incomingData[collection].rawData = batchRawData;
+    (incomingData as Placeholder)[collection].rawData = batchRawData;
 
     batchesToExecute.push(async () => {
       payload.logger.info(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
