@@ -90,7 +90,7 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
         districtCode,
         subMunicipalityCode,
         cityMunicipality: cityMuncipalityID,
-        province: Boolean(provinceID) ? provinceID : null,
+        province: provinceID ? provinceID : null,
         region: regionID,
         islandGroup: islandGroupID,
       };

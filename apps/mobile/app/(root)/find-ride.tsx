@@ -1,24 +1,20 @@
-import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { router } from 'expo-router';
+import { Text, View } from 'react-native';
 
-import CustomButton from "@/components/CustomButton";
-import GoogleTextInput from "@/components/GoogleTextInput";
-import RideLayout from "@/components/RideLayout";
-import { icons } from "@/constants";
-import { useLocationStore } from "@/store";
+import CustomButton from '@/components/CustomButton';
+import GoogleTextInput from '@/components/GoogleTextInput';
+import RideLayout from '@/components/RideLayout';
+import { icons } from '@/constants';
+import { useLocationStore } from '@/store';
 
 const FindRide = () => {
-  const {
-    userAddress,
-    destinationAddress,
-    setDestinationLocation,
-    setUserLocation,
-  } = useLocationStore();
+  const { userAddress, destinationAddress, setDestinationLocation, setUserLocation } =
+    useLocationStore();
 
   return (
     <RideLayout title="Ride">
       <View className="my-3">
-        <Text className="text-lg font-JakartaSemiBold mb-3">From</Text>
+        <Text className="font-JakartaSemiBold mb-3 text-lg">From</Text>
 
         <GoogleTextInput
           icon={icons.target}
@@ -30,7 +26,7 @@ const FindRide = () => {
       </View>
 
       <View className="my-3">
-        <Text className="text-lg font-JakartaSemiBold mb-3">To</Text>
+        <Text className="font-JakartaSemiBold mb-3 text-lg">To</Text>
 
         <GoogleTextInput
           icon={icons.map}

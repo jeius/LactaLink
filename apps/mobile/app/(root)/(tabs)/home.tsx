@@ -1,25 +1,18 @@
-import { useUser } from "@clerk/clerk-expo";
-import { useAuth } from "@clerk/clerk-expo";
-import * as Location from "expo-location";
-import { router } from "expo-router";
-import { useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  ActivityIndicator,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
+import * as Location from 'expo-location';
+import { router } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import GoogleTextInput from "@/components/GoogleTextInput";
-import Map from "@/components/Map";
-import RideCard from "@/components/RideCard";
-import { icons, images } from "@/constants";
-import { useFetch } from "@/lib/fetch";
-import { useLocationStore } from "@/store";
-import { Ride } from "@/types/type";
+import GoogleTextInput from '@/components/GoogleTextInput';
+import Map from '@/components/Map';
+import RideCard from '@/components/RideCard';
+import { icons, images } from '@/constants';
+import { useFetch } from '@/lib/fetch';
+import { useLocationStore } from '@/store';
+import { Ride } from '@/types/type';
 
 const Home = () => {
   const { user } = useUser();
@@ -29,26 +22,22 @@ const Home = () => {
 
   const handleSignOut = () => {
     signOut();
-    router.replace("/(auth)/sign-in");
+    router.replace('/(auth)/sign-in');
   };
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
 
-  const {
-    data: recentRides,
-    loading,
-    error,
-  } = useFetch<Ride[]>(`/(api)/ride/${user?.id}`);
+  const { data: recentRides, loading, error } = useFetch<Ride[]>(`/(api)/ride/${user?.id}`);
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
         setHasPermission(false);
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({});
 
       const address = await Location.reverseGeocodeAsync({
         latitude: location.coords?.latitude!,
@@ -70,7 +59,7 @@ const Home = () => {
   }) => {
     setDestinationLocation(location);
 
-    router.push("/(root)/find-ride");
+    router.push('/(root)/find-ride');
   };
 
   return (
@@ -90,7 +79,7 @@ const Home = () => {
               <>
                 <Image
                   source={images.noResult}
-                  className="w-40 h-40"
+                  className="h-40 w-40"
                   alt="No recent rides found"
                   resizeMode="contain"
                 />
@@ -103,15 +92,13 @@ const Home = () => {
         )}
         ListHeaderComponent={
           <>
-            <View className="flex flex-row items-center justify-between my-5">
-              <Text className="text-2xl font-JakartaExtraBold">
-                Welcome {user?.firstName}👋
-              </Text>
+            <View className="my-5 flex flex-row items-center justify-between">
+              <Text className="font-JakartaExtraBold text-2xl">Welcome {user?.firstName}👋</Text>
               <TouchableOpacity
                 onPress={handleSignOut}
-                className="justify-center items-center w-10 h-10 rounded-full bg-white"
+                className="h-10 w-10 items-center justify-center rounded-full bg-white"
               >
-                <Image source={icons.out} className="w-4 h-4" />
+                <Image source={icons.out} className="h-4 w-4" />
               </TouchableOpacity>
             </View>
 
@@ -122,17 +109,13 @@ const Home = () => {
             />
 
             <>
-              <Text className="text-xl font-JakartaBold mt-5 mb-3">
-                Your current location
-              </Text>
-              <View className="flex flex-row items-center bg-transparent h-[300px]">
+              <Text className="font-JakartaBold mb-3 mt-5 text-xl">Your current location</Text>
+              <View className="flex h-[300px] flex-row items-center bg-transparent">
                 <Map />
               </View>
             </>
 
-            <Text className="text-xl font-JakartaBold mt-5 mb-3">
-              Recent Rides
-            </Text>
+            <Text className="font-JakartaBold mb-3 mt-5 text-xl">Recent Rides</Text>
           </>
         }
       />

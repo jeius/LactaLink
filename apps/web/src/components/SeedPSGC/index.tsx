@@ -66,7 +66,7 @@ export default function SeedPSGC() {
     } finally {
       setLoading(false);
     }
-  }, [seeded, loading, error]);
+  }, [seeded, loading, error, seedMessage]);
 
   return (
     <>
