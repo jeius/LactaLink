@@ -22,10 +22,13 @@ const serverFunction: ServerFunctionClient = async function (args) {
   });
 };
 
-const Layout = ({ children }: Args) => (
-  <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
-    {children}
-  </RootLayout>
-);
+const Layout = async ({ children }: Args) => {
+  return await RootLayout({
+    children,
+    config,
+    importMap,
+    serverFunction,
+  });
+};
 
 export default Layout;
