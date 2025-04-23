@@ -14,12 +14,8 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       error,
     } = await supabase.auth.getUser();
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (!sbUser) {
-      throw new Error('No active session.');
+    if (error || !sbUser) {
+      return { user: null };
     }
 
     const userDoc = await payload.findByID({
@@ -29,7 +25,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     });
 
     if (!userDoc) {
-      throw new Error('No authenticated user.');
+      return { user: null };
     }
 
     const user: AuthStrategyResult['user'] = {
