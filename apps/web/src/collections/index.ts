@@ -1,7 +1,5 @@
 import { CollectionConfig } from 'payload';
-import { Accounts } from './Accounts';
 import { Addresses } from './Addresses';
-import { Admins } from './Admins';
 import { Avatars } from './Avatars';
 import { Barangays } from './Barangays';
 import { CitiesMunicipalities } from './CitiesMunicipalities';
@@ -12,9 +10,7 @@ import { Regions } from './Regions';
 import { Users } from './Users';
 
 const Collections: CollectionConfig[] = [
-  Accounts,
   Addresses,
-  Admins,
   Avatars,
   Barangays,
   CitiesMunicipalities,
@@ -26,9 +22,7 @@ const Collections: CollectionConfig[] = [
 ];
 
 export {
-  Accounts,
   Addresses,
-  Admins,
   Avatars,
   Barangays,
   CitiesMunicipalities,

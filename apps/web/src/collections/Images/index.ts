@@ -20,7 +20,7 @@ export const Images: CollectionConfig<'images'> = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: ['users', 'admins'],
+      relationTo: ['users'],
       admin: {
         position: 'sidebar',
       },

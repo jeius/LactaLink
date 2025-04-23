@@ -4,10 +4,10 @@ import path from 'path';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
-import Collections, { Admins } from './collections';
+import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
 import { plugins } from './lib/plugins';
-import { getServerSideURL } from './lib/utils';
+import { getServerSideURL } from './lib/utils/getURL';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -24,7 +24,7 @@ const autoLoginConfig =
 
 export default buildConfig({
   admin: {
-    user: Admins.slug,
+    user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -34,6 +34,7 @@ export default buildConfig({
       },
       beforeDashboard: ['@/components/BeforeDashboard'],
       providers: ['@/components/providers'],
+      afterLogin: ['@/components/GoogleSignIn'],
     },
     avatar: 'default',
     autoLogin: autoLoginConfig,
@@ -45,7 +46,6 @@ export default buildConfig({
   endpoints: Endpoints,
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
-  cookiePrefix: 'user-session',
   typescript: {
     outputFile: path.resolve(dirname, './lib/types/payload-types.ts'),
   },

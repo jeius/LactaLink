@@ -1,4 +1,5 @@
-import { getRequestCollection, verifyGoogleToken } from '@/lib/utils';
+import { getRequestCollection } from '@/lib/utils/getRequestEntity';
+import { verifyGoogleToken } from '@/lib/utils/verifyGoogleToken';
 import { User } from '@lactalink/types';
 import { isAuthSuccess } from '@lactalink/utilities';
 import { status as HttpStatus } from 'http-status';
@@ -61,7 +62,6 @@ export const googleAuthHandler: PayloadHandler = async (req) => {
           email,
           password: googleId, // Use Google ID as password
           type: 'individual',
-          createdVia: 'oauth',
         },
       });
 

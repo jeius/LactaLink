@@ -2,7 +2,7 @@
  * Imports constants, utilities, and types used for the seeding operation.
  */
 import { BATCH_INDEX_KEY } from '@/lib/constants';
-import { getServerSideURL } from '@/lib/utils/getServerSideUrl';
+import { getServerSideURL } from '@/lib/utils/getURL';
 import {
   APIResponse,
   CollectionSlugPSGC,

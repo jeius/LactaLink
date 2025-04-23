@@ -78,7 +78,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: ['users', 'admins'],
+      relationTo: ['users'],
       admin: {
         position: 'sidebar',
       },

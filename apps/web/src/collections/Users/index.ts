@@ -1,5 +1,6 @@
 import { collectionEndpoints } from '@/auth/endpoints';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { SupabaseStrategy } from '@/auth/strategy';
+import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 
 export const Users: CollectionConfig<'users'> = {
@@ -9,41 +10,82 @@ export const Users: CollectionConfig<'users'> = {
     useAsTitle: 'email',
     defaultColumns: ['email', 'type', 'id'],
   },
-  auth: true,
+  auth: {
+    // disableLocalStrategy: true,
+    strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],
+  },
   access: {
     read: ({ req }) => Boolean(req.user),
   },
   endpoints: collectionEndpoints,
+  lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [
     {
-      name: 'type',
-      type: 'select',
-      defaultValue: 'individual',
-      required: true,
+      name: 'role',
+      type: 'radio',
+      defaultValue: 'authenticated',
       options: [
+        { label: 'Authenticated', value: 'authenticated' },
+        { label: 'Admin', value: 'admin' },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
         {
-          label: 'Individual',
-          value: 'individual',
-        },
-        {
-          label: 'Hospital',
-          value: 'hospital',
-        },
-        {
-          label: 'Milk Bank',
-          value: 'milkBank',
+          name: 'phone',
+          type: 'text',
+          unique: true,
+          index: true,
+          admin: { width: '30%' },
         },
       ],
     },
     {
-      name: 'createdVia',
-      label: 'Created Via',
-      type: 'select',
-      defaultValue: 'default',
-      options: [
-        { label: 'Default', value: 'default' },
-        { label: 'OAuth', value: 'oauth' },
+      type: 'row',
+      fields: [
+        {
+          name: 'type',
+          type: 'select',
+          defaultValue: 'individual',
+          required: true,
+          admin: { width: '30%' },
+          options: [
+            {
+              label: 'Individual',
+              value: 'individual',
+            },
+            {
+              label: 'Hospital',
+              value: 'hospital',
+            },
+            {
+              label: 'Milk Bank',
+              value: 'milkBank',
+            },
+          ],
+        },
       ],
+    },
+    {
+      name: 'lastSignInAt',
+      type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'confirmedAt',
+      type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'emailConfirmedAt',
+      type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'phoneConfirmedAt',
+      type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
     },
   ],
 };

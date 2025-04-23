@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const updateSession = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
   try {
     // Create an unmodified response
     let response = NextResponse.next({
@@ -31,10 +32,14 @@ export const updateSession = async (request: NextRequest) => {
       }
     );
 
-    // const user = await supabase.auth.getUser();
+    // const { data, error } = await supabase.auth.getUser();
+
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
 
     // // admin routes
-    // if (request.nextUrl.pathname.startsWith('/admin') && user.error) {
+    // if (request.nextUrl.pathname.startsWith('/admin') && error) {
     //   return NextResponse.redirect(new URL('/sign-in', request.url));
     // }
 

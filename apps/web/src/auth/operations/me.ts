@@ -1,4 +1,4 @@
-import { getServerSideURL } from '@/lib/utils';
+import { getServerSideURL } from '@/lib/utils/getURL';
 import { AuthResult } from '@lactalink/types';
 import { status as httpStatus } from 'http-status';
 import { APIError } from 'payload';

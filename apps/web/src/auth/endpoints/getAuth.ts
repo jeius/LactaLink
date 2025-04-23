@@ -1,7 +1,7 @@
 import { status as httpStatus } from 'http-status';
 
 import { meOperation } from '@/auth/operations/me';
-import { getRequestCollection } from '@/lib/utils';
+import { getRequestCollection } from '@/lib/utils/getRequestEntity';
 import type { PayloadHandler } from 'payload';
 import { extractJWT, getAccessResults, headersWithCors } from 'payload';
 

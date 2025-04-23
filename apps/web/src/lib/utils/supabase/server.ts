@@ -1,3 +1,4 @@
+import { SESSION_NAME } from '@/lib/constants';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -23,6 +24,10 @@ export const createClient = async () => {
             // user sessions.
           }
         },
+      },
+      cookieOptions: {
+        name: SESSION_NAME,
+        httpOnly: true,
       },
     }
   );

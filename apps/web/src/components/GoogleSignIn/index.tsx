@@ -1,23 +1,13 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { adminClient } from 'payload-auth-plugin/client';
-import { Button } from '../ui/button';
-
-const { signin } = adminClient();
+import { googleSignIn } from '@/auth/actions/signIn';
+import { Button } from '@/components/ui/button';
 
 export default function GoogleSignIn() {
-  const router = useRouter();
   async function handleSignIn() {
-    const { message, isSuccess, isError } = await signin().oauth('google');
-    if (isError) {
-      console.log(message);
-    }
-    if (isSuccess) {
-      router.push('/admin');
-    }
+    await googleSignIn();
   }
   return (
-    <Button onClick={handleSignIn} type="button" className="w-full">
+    <Button className="bg-primary w-full border-0" onClick={handleSignIn} type="button">
       Sign in with Google
     </Button>
   );

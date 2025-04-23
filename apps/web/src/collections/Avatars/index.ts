@@ -20,7 +20,7 @@ export const Avatars: CollectionConfig<'avatars'> = {
     {
       name: 'owner',
       type: 'relationship',
-      relationTo: ['users', 'admins'],
+      relationTo: ['users'],
       admin: {
         position: 'sidebar',
       },
