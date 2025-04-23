@@ -1,6 +1,8 @@
 {
   "name": "@lactalink/mobile",
   "main": "entry.js",
+  "description": "Mobile platform of the LactaLink app.",
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
   "private": true,
   "version": "1.0.0",
   "scripts": {

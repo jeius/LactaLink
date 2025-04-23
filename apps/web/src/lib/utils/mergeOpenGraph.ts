@@ -4,17 +4,14 @@ import { getServerSideURL } from './getURL';
 const defaultOpenGraph: Metadata['openGraph'] = {
   type: 'website',
   description:
-    'A comprehensive Thesis Management System web app for students and faculty, enabling streamlined thesis proposal submission, progress tracking, document management, and collaboration.',
+    'A breastmilk sharing platform that connects donors, recipients, hospitals, and milk banks for safe and efficient milk distribution.',
   images: [
     {
       url: `${getServerSideURL()}/og-image.jpg`,
     },
-    {
-      url: `${getServerSideURL()}/profile-cover.jpg`,
-    },
   ],
-  siteName: 'Thesis Management System',
-  title: 'Thesis Management System: Streamline Your Academic Journey',
+  siteName: 'LactaLink',
+  title: 'LactaLink: Share The Nourishment',
   url: getServerSideURL(),
 };
 

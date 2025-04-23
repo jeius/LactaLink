@@ -1,5 +1,11 @@
 import gluestackPlugin from '@gluestack-ui/nativewind-utils/tailwind-plugin';
 
+function toRgba(variableName) {
+  return ({ opacityValue }) => {
+    return `color-mix(in srgb, var(${variableName}) calc(${opacityValue} * 100%), transparent)`;
+  };
+}
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'media',
