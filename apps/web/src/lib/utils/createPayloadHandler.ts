@@ -17,7 +17,8 @@ import { APIError, PayloadHandler } from 'payload';
 type HandlerOptions = {
   /**
    * Whether the handler requires the user to be an admin.
-   * Defaults to `false`.
+   *
+   * @default false
    */
   requireAdmin?: boolean;
 
@@ -29,6 +30,9 @@ type HandlerOptions = {
 
   /**
    * A custom success message to include in the response.
+   * Can be a string or a function that returns a string or a Promise that resolves to a string.
+   *
+   * @default 'Operation completed successfully.'
    */
   successMessage?: string | ((req: Parameters<PayloadHandler>[0]) => string | Promise<string>);
 };
@@ -57,7 +61,7 @@ export function createPayloadHandler({
 
     try {
       // Check if the operation requires admin privileges and validate the user.
-      if (requireAdmin && (!user || user.collection !== 'admins')) {
+      if (requireAdmin && (!user || user.role !== 'admin')) {
         throw new APIError('Unauthorized: Only admin users allowed.', HttpStatus.UNAUTHORIZED);
       }
 
@@ -75,7 +79,7 @@ export function createPayloadHandler({
           ? successMessage
           : typeof successMessage === 'function'
             ? await successMessage(req)
-            : successMessage;
+            : 'Operation completed successfully.';
 
       // Log the success message and elapsed time.
       if (message) payload.logger.info(`> ${message}`);

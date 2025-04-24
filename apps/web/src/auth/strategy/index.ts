@@ -1,20 +1,30 @@
 import { createClient } from '@/lib/utils/supabase/server';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { AuthError } from '@supabase/supabase-js';
 import { AuthStrategyFunction, AuthStrategyResult } from 'payload';
 
 export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
-  const { payload, strategyName, isGraphQL } = params;
+  const { payload, strategyName, isGraphQL, headers } = params;
 
   try {
     const supabase = await createClient();
     const collection = payload.collections['users'];
 
+    let token = headers.get('Authorization') || undefined;
+
+    if (token?.startsWith('Bearer ')) {
+      token = token.replace('Bearer ', '').trim();
+    }
+
     const {
       data: { user: sbUser },
       error,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser(token);
 
-    if (error || !sbUser) {
+    if (error) {
+      throw new AuthError(error.message, error.status, error.code);
+    }
+
+    if (!sbUser) {
       return { user: null };
     }
 
@@ -35,8 +45,8 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     };
 
     return { user };
-  } catch (err) {
-    payload.logger.error(err, extractErrorMessage(err));
+  } catch (_) {
+    // payload.logger.error(_, extractErrorMessage(_));
     return { user: null };
   }
 };
