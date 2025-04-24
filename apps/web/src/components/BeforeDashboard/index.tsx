@@ -1,18 +1,17 @@
-import { Admin } from '@lactalink/types';
+import { User } from '@lactalink/types';
 import { Payload } from 'payload';
 import SeedPSGC from '../SeedPSGC';
-import './style.scss';
 
 interface Props {
-  user: Admin;
+  user: User;
   payload: Payload;
 }
 
-export default function BeforeDashboard({ user }: Props) {
+export default function BeforeDashboard(_: Props) {
   return (
-    <div className="dashboard_container px-5 py-4">
+    <div className="bg-card rounded-2xl px-5 py-4">
       <div>
-        <h1 className="mb-2 text-4xl">Welcome {user.name}!</h1>
+        <h1 className="mb-2 text-4xl">Welcome!</h1>
         <p className="text-lg">
           Manage users, monitor milk donations, and keep the platform running smoothly. Everything
           you need to oversee and support the breastmilk sharing community is right here.

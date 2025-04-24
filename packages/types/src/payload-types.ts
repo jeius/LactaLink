@@ -63,14 +63,11 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    admins: AdminAuthOperations;
     users: UserAuthOperations;
   };
   blocks: {};
   collections: {
-    accounts: Account;
     addresses: Address;
-    admins: Admin;
     avatars: Avatar;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
@@ -85,9 +82,7 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    accounts: AccountsSelect<false> | AccountsSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
-    admins: AdminsSelect<false> | AdminsSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
@@ -106,34 +101,12 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user:
-    | (Admin & {
-        collection: 'admins';
-      })
-    | (User & {
-        collection: 'users';
-      });
+  user: User & {
+    collection: 'users';
+  };
   jobs: {
     tasks: unknown;
     workflows: unknown;
-  };
-}
-export interface AdminAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
   };
 }
 export interface UserAuthOperations {
@@ -156,69 +129,6 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "accounts".
- */
-export interface Account {
-  id: string;
-  user: string | User;
-  /**
-   * The unique ID of the user from the provider
-   */
-  providerID: string;
-  provider: 'google' | 'facebook';
-  type: 'oauth' | 'phone';
-  /**
-   * Username of the user from the provider if available.
-   */
-  username?: string | null;
-  /**
-   * Given name of the user from the provider if available.
-   */
-  givenName?: string | null;
-  /**
-   * Family name of the user from the provider if available.
-   */
-  familyName?: string | null;
-  /**
-   * URL to the profile picture if available.
-   */
-  picture?: string | null;
-  /**
-   * Access token from the provider
-   */
-  accessToken?: string | null;
-  /**
-   * Expiration time of the access token in seconds
-   */
-  expiration?: number | null;
-  /**
-   * Refresh token from the provider
-   */
-  refreshToken?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: string;
-  type: 'individual' | 'hospital' | 'milkBank';
-  createdVia?: ('default' | 'oauth') | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses".
  */
 export interface Address {
@@ -235,15 +145,10 @@ export interface Address {
   islandGroup?: (string | null) | IslandGroup;
   completeName?: string | null;
   owner?: (string | null) | User;
-  createdBy?:
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'admins';
-        value: string | Admin;
-      } | null);
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -322,11 +227,17 @@ export interface Barangay {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins".
+ * via the `definition` "users".
  */
-export interface Admin {
+export interface User {
   id: string;
-  name: string;
+  role?: ('authenticated' | 'admin') | null;
+  phone?: string | null;
+  type: 'individual' | 'hospital' | 'milkBank';
+  lastSignInAt?: string | null;
+  confirmedAt?: string | null;
+  emailConfirmedAt?: string | null;
+  phoneConfirmedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -345,15 +256,10 @@ export interface Admin {
 export interface Avatar {
   id: string;
   alt?: string | null;
-  owner?:
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'admins';
-        value: string | Admin;
-      } | null);
+  owner?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -391,15 +297,10 @@ export interface Avatar {
 export interface Image {
   id: string;
   alt?: string | null;
-  createdBy?:
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'admins';
-        value: string | Admin;
-      } | null);
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -478,16 +379,8 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: 'accounts';
-        value: string | Account;
-      } | null)
-    | ({
         relationTo: 'addresses';
         value: string | Address;
-      } | null)
-    | ({
-        relationTo: 'admins';
-        value: string | Admin;
       } | null)
     | ({
         relationTo: 'avatars';
@@ -522,15 +415,10 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'admins';
-        value: string | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: string | User;
-      };
+  user: {
+    relationTo: 'users';
+    value: string | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -540,15 +428,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: string;
-  user:
-    | {
-        relationTo: 'admins';
-        value: string | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: string | User;
-      };
+  user: {
+    relationTo: 'users';
+    value: string | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -575,25 +458,6 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "accounts_select".
- */
-export interface AccountsSelect<T extends boolean = true> {
-  user?: T;
-  providerID?: T;
-  provider?: T;
-  type?: T;
-  username?: T;
-  givenName?: T;
-  familyName?: T;
-  picture?: T;
-  accessToken?: T;
-  expiration?: T;
-  refreshToken?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses_select".
  */
 export interface AddressesSelect<T extends boolean = true> {
@@ -609,22 +473,6 @@ export interface AddressesSelect<T extends boolean = true> {
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins_select".
- */
-export interface AdminsSelect<T extends boolean = true> {
-  name?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -835,8 +683,13 @@ export interface RegionsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  phone?: T;
   type?: T;
-  createdVia?: T;
+  lastSignInAt?: T;
+  confirmedAt?: T;
+  emailConfirmedAt?: T;
+  phoneConfirmedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

@@ -1,7 +1,8 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root {
   --radius: 1rem;
@@ -178,18 +179,18 @@
   --info-900: oklch(0.32 0.06 220);
   --info-950: oklch(0.24 0.06 220);
 
-  --background-muted: oklch(0.972 0.045 20); /* Converted from #FFF4F5 */
-  --success-background: oklch(0.835 0.045 180); /* Converted from #B3CECF */
-  --error-background: oklch(0.972 0.045 20); /* Converted from #FEF1F1 */
-  --warning-background: oklch(0.972 0.045 80); /* Converted from #FFF3EA */
-  --info-background: oklch(0.902 0.045 220); /* Converted from #DCF1FB */
+  --background-muted: oklch(0.972 0.045 20);
+  --success-background: oklch(0.835 0.045 180);
+  --error-background: oklch(0.972 0.045 20);
+  --warning-background: oklch(0.972 0.045 80);
+  --info-background: oklch(0.902 0.045 220);
 
-  --indicator-primary: oklch(0.835 0.18 20); /* Converted from #FE9BA3 */
-  --indicator-info: oklch(0.835 0.18 220); /* Converted from #89CFF0 */
-  --indicator-error: oklch(0.522 0.18 20); /* Converted from #B91C1C */
+  --indicator-primary: oklch(0.835 0.18 20);
+  --indicator-info: oklch(0.835 0.18 220);
+  --indicator-error: oklch(0.522 0.18 20);
 }
 
-.dark {
+[data-theme='dark'] {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -405,21 +406,4 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@theme inline {
-  --font-sans: var(--font-plus-jakarta-sans);
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  html {
-    @apply font-sans;
-    @apply antialiased;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
