@@ -2,6 +2,9 @@ import { collectionEndpoints } from '@/auth/endpoints';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
+import { supabaseSignOut } from './hooks/afterLogout';
+import { supabaseSignUp } from './hooks/beforeCreate';
+import { supabaseSignIn } from './hooks/beforeOperation';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
@@ -10,13 +13,18 @@ export const Users: CollectionConfig<'users'> = {
     useAsTitle: 'email',
     defaultColumns: ['email', 'type', 'id'],
   },
+  hooks: {
+    beforeChange: [supabaseSignUp],
+    beforeOperation: [supabaseSignIn],
+    afterLogout: [supabaseSignOut],
+  },
   auth: {
-    // disableLocalStrategy: true,
     strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],
   },
   access: {
     read: ({ req }) => Boolean(req.user),
   },
+  disableDuplicate: true,
   endpoints: collectionEndpoints,
   lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [

@@ -1,5 +1,5 @@
 'use client';
-import { googleSignIn } from '@/auth/actions/signIn';
+import { googleSignIn } from '@/auth/operations/signIn';
 import { Button } from '@/components/ui/button';
 
 export default function GoogleSignIn() {
