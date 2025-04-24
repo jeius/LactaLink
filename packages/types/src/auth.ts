@@ -1,18 +1,21 @@
+import type { SignInWithIdTokenCredentials } from '@supabase/supabase-js';
 import type { SanitizedPermissions } from 'payload';
 import { CustomError } from './errors';
-import type { Admin, User } from './payload-types';
+import type { User } from './payload-types';
 
 export type AuthResult =
   | {
       exp: number;
       token?: string;
-      user: User | Admin;
+      user: User;
       permissions: SanitizedPermissions;
       message: string;
-      collection: 'users' | 'admins';
+      collection: 'users';
     }
   | {
       error?: CustomError;
       message: string;
       user: null;
     };
+
+export type OAuthData = Pick<SignInWithIdTokenCredentials, 'provider' | 'options' | 'nonce'>;

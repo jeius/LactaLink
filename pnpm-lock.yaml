@@ -322,6 +322,9 @@ importers:
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@supabase/supabase-js':
+        specifier: ^2.49.4
+        version: 2.49.4
       payload:
         specifier: ^3.34.0
         version: 3.34.0(graphql@16.10.0)(typescript@5.8.2)
