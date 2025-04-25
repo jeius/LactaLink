@@ -14,7 +14,6 @@ export const supabaseSignIn: CollectionBeforeOperationHook = async (params) => {
 
   await signIn(email, password).catch((err) => {
     req.payload.logger.error(extractErrorMessage(err));
-    // TODO: redirect to verify otp page if email is not verified
   });
 
   return args;

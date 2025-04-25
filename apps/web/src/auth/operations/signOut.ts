@@ -9,6 +9,6 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    throw new APIError(error.message, error.status, error);
+    throw new APIError(error.message, error.status);
   }
 }

@@ -61,10 +61,10 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
       );
 
       const type: CityMunicipality['type'] = item.isCity
-        ? 'city'
+        ? 'CITY'
         : item.isMunicipality
-          ? 'municipality'
-          : 'none';
+          ? 'MUNICIPALITY'
+          : 'NONE';
 
       const districtCode = typeof item.districtCode === 'string' ? item.districtCode : undefined;
 

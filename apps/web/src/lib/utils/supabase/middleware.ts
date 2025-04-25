@@ -1,3 +1,5 @@
+import { SESSION_NAME } from '@/lib/constants';
+import { PUBLIC_ROUTES } from '@/lib/constants/routes';
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -29,10 +31,29 @@ export const updateSession = async (request: NextRequest) => {
             );
           },
         },
+        cookieOptions: {
+          name: SESSION_NAME,
+          httpOnly: true,
+        },
       }
     );
 
-    // const { data, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    // If the identities array is empty, it means the user is not verified yet
+    // and we need to redirect them to the verify-otp page.
+    if (
+      user &&
+      !user.identities?.length &&
+      !pathname.startsWith(PUBLIC_ROUTES.auth) &&
+      !pathname.startsWith(PUBLIC_ROUTES.api) &&
+      pathname !== '/admin/logout'
+    ) {
+      return NextResponse.redirect(new URL('/auth/verify-otp', request.url));
+    }
 
     if (pathname === '/') {
       return NextResponse.redirect(new URL('/admin', request.url));

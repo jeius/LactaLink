@@ -61,7 +61,7 @@ export function createPayloadHandler({
 
     try {
       // Check if the operation requires admin privileges and validate the user.
-      if (requireAdmin && (!user || user.role !== 'admin')) {
+      if (requireAdmin && (!user || user.role !== 'ADMIN')) {
         throw new APIError('Unauthorized: Only admin users allowed.', HttpStatus.UNAUTHORIZED);
       }
 

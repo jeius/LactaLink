@@ -31,10 +31,10 @@ export const Users: CollectionConfig<'users'> = {
     {
       name: 'role',
       type: 'radio',
-      defaultValue: 'authenticated',
+      defaultValue: 'AUTHENTICATED',
       options: [
-        { label: 'Authenticated', value: 'authenticated' },
-        { label: 'Admin', value: 'admin' },
+        { label: 'Authenticated', value: 'AUTHENTICATED' },
+        { label: 'Admin', value: 'ADMIN' },
       ],
     },
     {
@@ -55,21 +55,20 @@ export const Users: CollectionConfig<'users'> = {
         {
           name: 'type',
           type: 'select',
-          defaultValue: 'individual',
-          required: true,
+          defaultValue: 'INDIVIDUAL',
           admin: { width: '30%' },
           options: [
             {
               label: 'Individual',
-              value: 'individual',
+              value: 'INDIVIDUAL',
             },
             {
               label: 'Hospital',
-              value: 'hospital',
+              value: 'HOSPITAL',
             },
             {
               label: 'Milk Bank',
-              value: 'milkBank',
+              value: 'MILK_BANK',
             },
           ],
         },
@@ -93,6 +92,19 @@ export const Users: CollectionConfig<'users'> = {
     {
       name: 'phoneConfirmedAt',
       type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'createdVia',
+      type: 'select',
+      defaultValue: 'EMAIL_PASSWORD',
+      options: [
+        { label: 'Email and Password', value: 'EMAIL_PASSWORD' },
+        { label: 'OAuth', value: 'OAUTH' },
+        { label: 'Magic Link', value: 'MAGIC_LINK' },
+        { label: 'Phone', value: 'PHONE' },
+        { label: 'Phone and Password', value: 'PHONE_PASSWORD' },
+      ],
       admin: { position: 'sidebar', readOnly: true },
     },
   ],

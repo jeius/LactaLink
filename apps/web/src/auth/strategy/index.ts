@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/utils/supabase/server';
+import { User } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { AuthError } from '@supabase/supabase-js';
 import { AuthStrategyFunction, AuthStrategyResult } from 'payload';
 
 export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
   const { payload, strategyName, isGraphQL, headers } = params;
+  const collection = payload.collections['users'];
+  const collectionSlug = 'users';
+
+  payload.logger.info('Supabase auth strategy called');
 
   try {
     const supabase = await createClient();
-    const collection = payload.collections['users'];
 
-    let token = headers.get('Authorization') || undefined;
+    let token = headers.get('Authorization') || headers.get('authorization') || undefined;
 
     if (token?.startsWith('Bearer ')) {
       token = token.replace('Bearer ', '').trim();
@@ -25,28 +30,69 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     }
 
     if (!sbUser) {
+      payload.logger.error('User not found from supabase.');
       return { user: null };
     }
 
-    const userDoc = await payload.findByID({
+    if (!sbUser.email) {
+      const msg = 'Unable to create new user, no email provided.';
+      payload.logger.error(msg);
+      throw new AuthError(msg, 404, 'missing_email');
+    }
+
+    const baseData: Omit<User, 'createdAt' | 'sizes' | 'updatedAt'> = {
       id: sbUser.id,
-      collection: collection.config.slug,
-      depth: isGraphQL ? 0 : collection.config.auth.depth,
-    });
+      email: sbUser.email,
+      emailConfirmedAt: sbUser.email_confirmed_at || null,
+      phone: sbUser.phone || null,
+      phoneConfirmedAt: sbUser.phone_confirmed_at || null,
+      confirmedAt: sbUser.confirmed_at || null,
+      lastSignInAt: sbUser.last_sign_in_at || null,
+    };
 
-    if (!userDoc) {
-      return { user: null };
-    }
+    const { id, ...updateUser } = baseData;
+
+    const userDoc = await payload
+      .findByID({
+        id: sbUser.id,
+        collection: collectionSlug,
+        depth: isGraphQL ? 0 : collection.config.auth.depth,
+      })
+      .then(
+        async (user) =>
+          await payload.update({
+            id,
+            user,
+            collection: collectionSlug,
+            data: updateUser,
+          })
+      )
+      .catch(async () => {
+        payload.logger.info('User not found, creating new user...');
+        return await payload.create({
+          collection: collectionSlug,
+          data: { ...baseData, createdVia: 'OAUTH', password: crypto.randomUUID() },
+        });
+      })
+      .catch(async () => {
+        // This is to avoid race conditions when two users are created at the same time.
+        // If the user already exists, we will just return the existing user.
+        return await payload.findByID({
+          id: sbUser.id,
+          collection: collectionSlug,
+          depth: isGraphQL ? 0 : collection.config.auth.depth,
+        });
+      });
 
     const user: AuthStrategyResult['user'] = {
       ...userDoc,
-      collection: collection.config.slug,
+      collection: collectionSlug,
       _strategy: strategyName,
     };
 
     return { user };
   } catch (_) {
-    // payload.logger.error(_, extractErrorMessage(_));
+    payload.logger.error(extractErrorMessage(_));
     return { user: null };
   }
 };

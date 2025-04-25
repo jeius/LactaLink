@@ -40,11 +40,11 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
       name: 'type',
       type: 'radio',
       required: true,
-      defaultValue: 'none',
+      defaultValue: 'NONE',
       options: [
-        { label: 'None', value: 'none' },
-        { label: 'City', value: 'city' },
-        { label: 'Municipality', value: 'municipality' },
+        { label: 'None', value: 'NONE' },
+        { label: 'City', value: 'CITY' },
+        { label: 'Municipality', value: 'MUNICIPALITY' },
       ],
     },
     {

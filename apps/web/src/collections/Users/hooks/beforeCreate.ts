@@ -29,9 +29,13 @@ export const supabaseSignUp: CollectionBeforeChangeHook<User> = async (args) => 
 
   const user = await signUp(email, password);
 
-  data.id = user.id;
-  data.email = user.email;
-  data.password = user.password;
+  // If identities are present, it means the user is created successfully
+  // and we can set the user id in the data object to be saved in the database.
+  // Otherwise, we can assume that the user is already created and we can skip this step.
+  // This is a workaround to avoid creating duplicate users in the database.
+  if (user.identities?.length) {
+    data.id = user.id;
+  }
 
   return data;
 };
