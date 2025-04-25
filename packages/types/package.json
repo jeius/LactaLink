@@ -28,10 +28,13 @@
   "scripts": {
     "build": "tsc",
     "generate:types": "pnpm --filter=@lactalink/web generate:types && pnpm tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/eslint-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "payload": "^3.34.0"
   }

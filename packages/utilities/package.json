@@ -31,10 +31,13 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
     "@lactalink/types": "workspace:*",
+    "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@tanstack/react-query": "^5.71.10",
     "@types/node": "^22.5.4",
