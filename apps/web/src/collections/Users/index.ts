@@ -2,6 +2,7 @@ import { collectionEndpoints } from '@/auth/endpoints';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
+import { adminAccessControl } from './access/admin';
 import { supabaseSignOut } from './hooks/afterLogout';
 import { supabaseSignUp } from './hooks/beforeCreate';
 import { supabaseSignIn } from './hooks/beforeOperation';
@@ -22,7 +23,9 @@ export const Users: CollectionConfig<'users'> = {
     strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],
   },
   access: {
+    admin: adminAccessControl,
     read: ({ req }) => Boolean(req.user),
+    create: () => true,
   },
   disableDuplicate: true,
   endpoints: collectionEndpoints,

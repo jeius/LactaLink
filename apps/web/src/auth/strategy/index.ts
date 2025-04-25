@@ -1,3 +1,4 @@
+import { extractBearerToken } from '@/lib/utils/extractToken';
 import { createClient } from '@/lib/utils/supabase/server';
 import { User } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
@@ -14,11 +15,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
   try {
     const supabase = await createClient();
 
-    let token = headers.get('Authorization') || headers.get('authorization') || undefined;
-
-    if (token?.startsWith('Bearer ')) {
-      token = token.replace('Bearer ', '').trim();
-    }
+    const token = extractBearerToken(headers);
 
     const {
       data: { user: sbUser },
