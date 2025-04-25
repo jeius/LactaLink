@@ -199,7 +199,7 @@ export interface CityMunicipality {
   oldName?: string | null;
   isCapital: boolean;
   code: string;
-  type: 'none' | 'city' | 'municipality';
+  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
   districtCode?: string | null;
   province?: (string | null) | Province;
   region: string | Region;
@@ -231,13 +231,14 @@ export interface Barangay {
  */
 export interface User {
   id: string;
-  role?: ('authenticated' | 'admin') | null;
+  role?: ('AUTHENTICATED' | 'ADMIN') | null;
   phone?: string | null;
-  type: 'individual' | 'hospital' | 'milkBank';
+  type?: ('INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK') | null;
   lastSignInAt?: string | null;
   confirmedAt?: string | null;
   emailConfirmedAt?: string | null;
   phoneConfirmedAt?: string | null;
+  createdVia?: ('EMAIL_PASSWORD' | 'OAUTH' | 'MAGIC_LINK' | 'PHONE' | 'PHONE_PASSWORD') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -690,6 +691,7 @@ export interface UsersSelect<T extends boolean = true> {
   confirmedAt?: T;
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;
+  createdVia?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
