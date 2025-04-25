@@ -3,21 +3,26 @@ import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
 import { getMeUser } from '@lactalink/utilities';
 
-export async function getAuth(): Promise<AuthResult> {
+type SignInParams = {
+  email: string;
+  password: string;
+};
+
+export async function signIn({ email, password }: SignInParams): Promise<AuthResult> {
   const {
     data: { session },
     error,
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { user: null, message: error.message };
   }
 
-  const token = session?.access_token;
-
-  if (!token) {
-    return { user: null, message: 'No active session, user must sign in.' };
+  if (!session) {
+    return { user: null, message: 'No session found' };
   }
+
+  const { access_token: token } = session;
 
   return await getMeUser({ token, tokenType: 'Bearer', url: API_URL });
 }

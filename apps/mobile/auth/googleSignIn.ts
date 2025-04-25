@@ -1,6 +1,7 @@
-import { API_URL, MMKV_KEYS } from '@/lib/constants';
-import Storage from '@/lib/localStorage';
+import { API_URL } from '@/lib/constants';
+import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
+import { getMeUser } from '@lactalink/utilities/dist/auth';
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -8,35 +9,37 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 
-export async function GoogleAuth(): Promise<AuthResult> {
+export async function googleSignIn(): Promise<AuthResult> {
   try {
     await GoogleSignin.hasPlayServices();
     const res = await GoogleSignin.signIn();
 
-    if (isSuccessResponse(res)) {
-      const { idToken } = res.data;
-      const authResponse = await fetch(`${API_URL}/api/users/auth/google`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData);
-      }
-
-      const authResult = (await authResponse.json()) as AuthResult;
-
-      if (authResult.token) {
-        Storage.set(MMKV_KEYS.AUTH_TOKEN, authResult.token);
-      }
-
-      return authResult;
+    if (!isSuccessResponse(res)) {
+      return { user: null, message: 'Could not authenticate with Google. Try again later!' };
     }
-    return { user: null, message: 'Could not authenticate with Google. Try again later!' };
+
+    const { idToken } = res.data;
+
+    if (!idToken) {
+      return { user: null, message: 'No Google ID Token found' };
+    }
+
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signInWithIdToken({ token: idToken, provider: 'google' });
+
+    if (error) {
+      return { user: null, message: error.message };
+    }
+
+    if (!session) {
+      return { user: null, message: 'No session found' };
+    }
+
+    const { access_token: token } = session;
+
+    return await getMeUser({ token, tokenType: 'Bearer', url: API_URL });
   } catch (error) {
     if (isErrorWithCode(error)) {
       let message: string;

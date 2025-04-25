@@ -1,7 +1,7 @@
 import { API_URL, MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { AuthResult } from '@lactalink/types';
-import { GetAuth } from '../getAuth';
+import { getAuth } from './getAuth';
 
 export async function RefreshToken(): Promise<AuthResult> {
   const token = Storage.getString(MMKV_KEYS.AUTH_TOKEN);
@@ -25,9 +25,9 @@ export async function RefreshToken(): Promise<AuthResult> {
 
   const data = (await res.json()) as AuthResult;
 
-  if (data.token) {
+  if ('token' in data && data.token) {
     Storage.set(MMKV_KEYS.AUTH_TOKEN, data.token);
   }
 
-  return await GetAuth();
+  return await getAuth();
 }

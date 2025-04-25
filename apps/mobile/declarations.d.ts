@@ -2,6 +2,8 @@ declare module '@env' {
   export const GOOGLE_WEB_CLIENT_ID: string;
   export const GOOGLE_IOS_CLIENT_ID: string;
   export const EXPO_PUBLIC_API_URL: string;
+  export const EXPO_PUBLIC_SUPABASE_URL: string;
+  export const EXPO_PUBLIC_SUPABASE_ANON_KEY: string;
 }
 
 declare module '*.svg' {
