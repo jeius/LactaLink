@@ -1,5 +1,5 @@
 import { AuthResult, User } from '@lactalink/types';
-import { extractErrorMessage } from './errors';
+import { extractErrorMessage } from './errors/extractError';
 
 type Params = {
   token: string;

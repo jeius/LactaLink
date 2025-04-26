@@ -1,4 +1,4 @@
-import { extractErrorMessage } from './errors';
+import { extractErrorMessage } from './errors/extractError';
 
 type BaseParams<T = unknown> = {
   authToken: string;

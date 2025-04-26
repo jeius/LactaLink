@@ -36,8 +36,8 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
-    "@lactalink/types": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@tanstack/react-query": "^5.71.10",
     "@types/node": "^22.5.4",
