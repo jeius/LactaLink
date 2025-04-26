@@ -1,0 +1,49 @@
+{
+  "name": "@lactalink/forms",
+  "version": "1.0.0",
+  "description": "Lactalink shared forms package",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
+  },
+  "devDependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*",
+    "@types/node": "^22.5.4",
+    "@types/react": "^19.1.2",
+    "react-hook-form": "^7.56.1",
+    "zod": "^3.24.3"
+  },
+  "peerDependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "react-hook-form": "^7.56.1",
+    "zod": "^3.24.3"
+  }
+}
