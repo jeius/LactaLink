@@ -22,12 +22,12 @@
   --secondary-foreground: oklch(0.925 0.025 193.7);
 
   --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
+  --muted-foreground: oklch(0.6 0.04 0);
 
   --accent: oklch(0.851 0.055 275.5);
   --accent-foreground: oklch(0.988 0.004 275.5);
 
-  --destructive: oklch(0.6 0.06 20);
+  --destructive: oklch(0.61 0.2129 26.34);
 
   --border: oklch(0.88 0.02 10);
   --input: oklch(0.76 0.03 10);
@@ -92,17 +92,17 @@
   --typography-100: oklch(0.9 0.01 0);
   --typography-200: oklch(0.8 0.02 0);
   --typography-300: oklch(0.7 0.03 0);
-  --typography-400: oklch(0.6 0.04 0);
-  --typography-500: oklch(0.5 0.05 0);
+  --typography-400: oklch(0.52 0.0527 14.08);
+  --typography-500: oklch(0.39 0.0716 15.88);
   --typography-600: oklch(0.4 0.04 0);
   --typography-700: oklch(0.3 0.03 0);
   --typography-800: oklch(0.2 0.02 0);
   --typography-900: oklch(0.1 0.01 0);
   --typography-950: oklch(0.05 0.005 0);
 
-  --background-0: oklch(0.985 0.005 20);
-  --background-50: oklch(0.975 0.005 20);
-  --background-100: oklch(0.965 0.005 20);
+  --background-0: oklch(0.99 0.0032 17.21);
+  --background-50: oklch(0.99 0.0053 17.25);
+  --background-100: oklch(0.98 0.0086 17.3);
   --background-200: oklch(0.945 0.005 20);
   --background-300: oklch(0.915 0.005 20);
   --background-400: oklch(0.885 0.005 20);
@@ -130,12 +130,12 @@
   --success-50: oklch(0.88 0.02 180);
   --success-100: oklch(0.82 0.02 180);
   --success-200: oklch(0.76 0.02 180);
-  --success-300: oklch(0.64 0.03 180);
-  --success-400: oklch(0.52 0.03 180);
-  --success-500: oklch(0.4 0.03 180);
+  --success-300: oklch(0.66 0.0581 200.22);
+  --success-400: oklch(0.54 0.072 200.21);
+  --success-500: oklch(0.43 0.0729 201.31);
   --success-600: oklch(0.32 0.03 180);
   --success-700: oklch(0.24 0.03 180);
-  --success-800: oklch(0.16 0.03 180);
+  --success-800: oklch(0.24 0.0402 200.27);
   --success-900: oklch(0.08 0.03 180);
   --success-950: oklch(0.04 0.03 180);
 
@@ -143,12 +143,12 @@
   --error-50: oklch(0.92 0.05 20);
   --error-100: oklch(0.88 0.05 20);
   --error-200: oklch(0.84 0.05 20);
-  --error-300: oklch(0.76 0.06 20);
-  --error-400: oklch(0.68 0.06 20);
-  --error-500: oklch(0.6 0.06 20);
+  --error-300: oklch(0.71 0.1661 22.22);
+  --error-400: oklch(0.64 0.2078 25.33);
+  --error-500: oklch(0.61 0.2129 26.34);
   --error-600: oklch(0.52 0.06 20);
   --error-700: oklch(0.44 0.06 20);
-  --error-800: oklch(0.36 0.06 20);
+  --error-800: oklch(0.44 0.1613 26.9);
   --error-900: oklch(0.28 0.06 20);
   --error-950: oklch(0.18 0.06 20);
 

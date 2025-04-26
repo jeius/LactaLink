@@ -25,6 +25,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/verify-otp', baseUrl));
   }
 
+  if (payloadToken && sbUser && (pathname === '/auth/verify-otp' || pathname === '/auth/sign-in')) {
+    return NextResponse.redirect(new URL('/', baseUrl));
+  }
+
   return response;
 }
 

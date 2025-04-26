@@ -16,3 +16,5 @@ export const BATCH_INDEX_KEY = 'batchIndex';
 export const DOC_LOCK_DURATION = 60;
 
 export const SESSION_NAME = 'sb-session-token';
+
+export const RESEND_OTP = 120; //in seconds
