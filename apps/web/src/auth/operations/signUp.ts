@@ -4,7 +4,7 @@ import { createClient } from '@/lib/utils/supabase/server';
 import { status } from 'http-status';
 import { APIError } from 'payload';
 
-export async function signUp(email: string, password: string) {
+export async function signUpWithSupabase(email: string, password: string) {
   const supabase = await createClient();
 
   const {

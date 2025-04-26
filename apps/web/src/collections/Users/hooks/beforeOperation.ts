@@ -1,5 +1,5 @@
-import { signIn } from '@/auth/operations/signIn';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { signInWithSupabase as signIn } from '@/auth/operations/signIn';
+import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { Arguments } from 'node_modules/payload/dist/auth/operations/login';
 import { CollectionBeforeOperationHook } from 'payload';
 

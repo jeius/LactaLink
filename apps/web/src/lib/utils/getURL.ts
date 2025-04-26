@@ -6,7 +6,9 @@ export const getClientSideURL = () => {
     const domain = window.location.hostname;
     const port = window.location.port;
 
-    return `${protocol}//${domain}${port ? `:${port}` : ''}`;
+    const origin = window.location.origin;
+
+    return origin || `${protocol}//${domain}${port ? `:${port}` : ''}`;
   }
 
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {

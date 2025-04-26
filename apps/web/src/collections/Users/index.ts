@@ -12,7 +12,7 @@ export const Users: CollectionConfig<'users'> = {
   admin: {
     group: COLLECTION_GROUP.USER,
     useAsTitle: 'email',
-    defaultColumns: ['email', 'type', 'id'],
+    defaultColumns: ['email', 'type', 'role', 'id'],
   },
   hooks: {
     beforeChange: [supabaseSignUp],

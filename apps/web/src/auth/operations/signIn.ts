@@ -6,7 +6,7 @@ import { status } from 'http-status';
 import { redirect } from 'next/navigation';
 import { APIError } from 'payload';
 
-export async function signIn(email: string, password: string) {
+export async function signInWithSupabase(email: string, password: string) {
   const supabase = await createClient();
 
   const {

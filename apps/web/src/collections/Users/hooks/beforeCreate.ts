@@ -1,4 +1,4 @@
-import { signUp } from '@/auth/operations/signUp';
+import { signUpWithSupabase as signUp } from '@/auth/operations/signUp';
 import { User } from '@lactalink/types';
 import { CollectionBeforeChangeHook, ValidationError } from 'payload';
 

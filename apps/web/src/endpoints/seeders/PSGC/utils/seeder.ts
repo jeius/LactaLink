@@ -3,7 +3,6 @@
  * These include types for PSGC inputs, outputs, and user roles.
  */
 import {
-  Admin,
   Barangay,
   BarangayPSGC,
   CityMunicipality,
@@ -65,9 +64,6 @@ type SeedOptions<T, K> = {
    * Can be an Admin, a User, or null.
    */
   user:
-    | (Admin & {
-        collection: 'admins';
-      })
     | (User & {
         collection: 'users';
       })

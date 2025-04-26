@@ -1,7 +1,7 @@
 import { extractBearerToken } from '@/lib/utils/extractToken';
 import { createClient } from '@/lib/utils/supabase/server';
 import { User } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { AuthError } from '@supabase/supabase-js';
 import { AuthStrategyFunction, AuthStrategyResult } from 'payload';
 
