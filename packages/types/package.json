@@ -14,15 +14,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     },
     "./auth": {
       "types": "./dist/auth.d.ts",
-      "default": "./dist/auth.d.ts"
+      "default": "./dist/auth.js"
     },
     "./errors": {
       "types": "./dist/errors.d.ts",
-      "default": "./dist/errors.d.ts"
+      "default": "./dist/errors.js"
+    },
+    "./forms": {
+      "types": "./dist/forms/index.d.ts",
+      "default": "./dist/forms/index.js"
     }
   },
   "scripts": {
@@ -33,9 +37,12 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
-    "@lactalink/typescript-config": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "payload": "^3.34.0"
+  },
+  "dependencies": {
+    "zod": "^3.24.3"
   }
 }

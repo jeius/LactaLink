@@ -14,8 +14,12 @@ export type AuthResult =
     }
   | {
       error?: CustomError;
+      errors?: CustomError[];
       message: string;
       user: null;
     };
+
+export type AuthSuccess = Extract<AuthResult, { user: User }>;
+export type AuthError = Extract<AuthResult, { user: null }>;
 
 export type OAuthData = Pick<SignInWithIdTokenCredentials, 'provider' | 'options' | 'nonce'>;
