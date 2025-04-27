@@ -7,21 +7,12 @@ export const supabaseSignUp: CollectionBeforeChangeHook<User> = async (args) => 
 
   if (operation !== 'create' || collection.slug !== 'users') return data;
 
-  const { email, password } = data;
+  const { email } = data;
 
   if (!email) {
     throw new ValidationError({
       collection: collection.slug,
       errors: [{ message: 'Email is required to create a user.', path: 'email' }],
-      req,
-      id: data.id,
-    });
-  }
-
-  if (!password) {
-    throw new ValidationError({
-      collection: collection.slug,
-      errors: [{ message: 'Password is required to create a user.', path: 'password' }],
       req,
       id: data.id,
     });

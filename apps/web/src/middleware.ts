@@ -18,27 +18,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  const payloadToken = request.cookies.get('payload-token')?.value;
-  const { response, user: sbUser } = await updateSession(request);
-  const isAuthenticated = Boolean(payloadToken && sbUser);
-  const isAuthenticatedViaOAuth = Boolean(sbUser);
+  const { response, user } = await updateSession(request);
 
   // If the user is not authenticated and the pathname is not in the
   // public route, homepage, and auth pages.
-  if (!isAuthenticated && !isAuthenticatedViaOAuth && !isHomePage && !isPublicRoute) {
+  if (!user && !isHomePage && !isPublicRoute) {
     const url = new URL('/auth/sign-in', baseUrl);
     url.searchParams.set(SEARCH_PARAMS_KEYS.REDIRECT, redirect);
     return NextResponse.redirect(url);
   }
 
-  // If the identities array of supabase user is empty, it means the user is
-  // not verified yet and we need to redirect them to the verify-otp page.
-  if (payloadToken && !sbUser?.identities?.length && pathname !== '/auth/verify-otp') {
-    const url = new URL('/auth/verify-otp', baseUrl);
-    return NextResponse.redirect(url);
-  }
-
-  if ((isAuthenticated || isAuthenticatedViaOAuth) && isAuthPage) {
+  if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/', baseUrl));
   }
 

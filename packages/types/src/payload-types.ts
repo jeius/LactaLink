@@ -231,6 +231,8 @@ export interface Barangay {
  */
 export interface User {
   id: string;
+  authId?: string | null;
+  email: string;
   role?: ('AUTHENTICATED' | 'ADMIN') | null;
   phone?: string | null;
   type?: ('INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK') | null;
@@ -241,14 +243,6 @@ export interface User {
   createdVia?: ('EMAIL_PASSWORD' | 'OAUTH' | 'MAGIC_LINK' | 'PHONE' | 'PHONE_PASSWORD') | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -684,6 +678,8 @@ export interface RegionsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  authId?: T;
+  email?: T;
   role?: T;
   phone?: T;
   type?: T;
@@ -694,13 +690,6 @@ export interface UsersSelect<T extends boolean = true> {
   createdVia?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

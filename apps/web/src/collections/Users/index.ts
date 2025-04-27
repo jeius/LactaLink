@@ -1,11 +1,10 @@
+import { signOut } from '@/auth/actions/signOut';
 import { collectionEndpoints } from '@/auth/endpoints';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import { adminAccessControl } from './access/admin';
-import { supabaseSignOut } from './hooks/afterLogout';
-import { supabaseSignUp } from './hooks/beforeCreate';
-import { supabaseSignIn } from './hooks/beforeOperation';
+import { appendPermissions } from './hooks/afterMe';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
@@ -15,11 +14,16 @@ export const Users: CollectionConfig<'users'> = {
     defaultColumns: ['email', 'type', 'role', 'id'],
   },
   hooks: {
-    beforeChange: [supabaseSignUp],
-    beforeOperation: [supabaseSignIn],
-    afterLogout: [supabaseSignOut],
+    afterMe: [appendPermissions],
+    afterLogout: [
+      async (args) => {
+        await signOut();
+        return args;
+      },
+    ],
   },
   auth: {
+    disableLocalStrategy: true,
     strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],
   },
   access: {
@@ -31,6 +35,18 @@ export const Users: CollectionConfig<'users'> = {
   endpoints: collectionEndpoints,
   lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [
+    {
+      name: 'authId',
+      type: 'text',
+      hidden: true,
+    },
+    {
+      name: 'email',
+      type: 'text',
+      unique: true,
+      required: true,
+      index: true,
+    },
     {
       name: 'role',
       type: 'radio',

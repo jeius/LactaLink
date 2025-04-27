@@ -9,9 +9,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { getClientSideURL } from '@/lib/utils/getURL';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { AuthError, AuthSuccess } from '@lactalink/types/auth';
 import { signInSchema, type SignInSchema } from '@lactalink/types/forms';
 import { useForm } from 'react-hook-form';
 
@@ -21,6 +19,7 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { signIn } from '@/auth/actions/signIn';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -41,16 +40,12 @@ export default function SignInForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(formData: SignInSchema) {
-    const res = await fetch(new URL('/api/users/login', getClientSideURL()), {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const { email, password } = formData;
 
-    if (!res.ok) {
-      const { error, errors } = (await res.json()) as AuthError;
+    const res = await signIn(email, password);
+
+    if (!res.user) {
+      const { error, errors } = res;
       if (error) {
         setMessage(extractErrorMessage(error));
       } else if (errors) {
@@ -58,7 +53,7 @@ export default function SignInForm() {
       }
       setStatus('failed');
     } else {
-      const { user } = (await res.json()) as AuthSuccess;
+      const { user } = res;
       setMessage('🎉 Signed in successfully.');
       setStatus('success');
 

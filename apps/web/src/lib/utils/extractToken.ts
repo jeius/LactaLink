@@ -1,10 +1,12 @@
-export function extractBearerToken(headers: Headers) {
+export function extractToken(headers: Headers) {
   let token = headers.get('Authorization') || headers.get('authorization') || undefined;
 
-  if (token?.startsWith('Bearer')) {
-    token = token.replace('Bearer ', '').trim();
+  if (token?.startsWith('JWT')) {
+    token = token.replace('JWT', '').trim();
+  } else if (token?.startsWith('Bearer')) {
+    token = token.replace('Bearer', '').trim();
   } else {
-    token = undefined;
+    return undefined;
   }
 
   return token;

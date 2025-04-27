@@ -4,6 +4,10 @@ export const AUTH_PAGES = {
   VERIFY: '/auth/verify-otp',
 };
 
+export const PUBLIC_ADMIN_PAGES = {
+  CREATE_FIRST_ADMIN: '/admin/create-first-admin',
+};
+
 export const ERROR_PAGES = {
   ERROR: '/error',
 };
@@ -13,6 +17,7 @@ export const PUBLIC_ROUTES = {
   API: '/api',
   ...AUTH_PAGES,
   ...ERROR_PAGES,
+  ...PUBLIC_ADMIN_PAGES,
 };
 
 export const SEARCH_PARAMS_KEYS = {

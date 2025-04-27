@@ -1,13 +1,13 @@
 import { SESSION_NAME } from '@/lib/constants';
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
-import { extractBearerToken } from '../extractToken';
+import { extractToken } from '../extractToken';
 
 export const updateSession = async (request: NextRequest) => {
   try {
     const { response, supabase } = createClient(request);
 
-    const token = extractBearerToken(request.headers);
+    const token = extractToken(request.headers);
 
     const {
       data: { user },

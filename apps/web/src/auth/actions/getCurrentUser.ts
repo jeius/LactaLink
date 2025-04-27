@@ -1,23 +1,21 @@
 'use server';
 import { getServerSideURL } from '@/lib/utils/getURL';
+import { createClient } from '@/lib/utils/supabase/server';
 import { getMeUser } from '@lactalink/utilities';
-import config from '@payload-config';
-import { cookies } from 'next/headers';
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies();
-  const cookieName = (await config).cookiePrefix + '-token';
-  const token = cookieStore.get(cookieName)?.value;
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!token) {
-    return null;
-  }
+  if (!session) return null;
+
+  const { access_token } = session;
 
   const authResult = await getMeUser({
-    token,
-    tokenType: 'JWT',
+    token: access_token,
     url: getServerSideURL(),
-    collection: 'users',
   });
 
   if (authResult.user) {

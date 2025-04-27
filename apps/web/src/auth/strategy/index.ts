@@ -1,4 +1,4 @@
-import { extractBearerToken } from '@/lib/utils/extractToken';
+import { extractToken } from '@/lib/utils/extractToken';
 import { createClient } from '@/lib/utils/supabase/server';
 import { User } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
@@ -10,12 +10,12 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
   const collection = payload.collections['users'];
   const collectionSlug = 'users';
 
-  payload.logger.info('Supabase auth strategy called');
+  payload.logger.info('Authenticating...');
 
   try {
     const supabase = await createClient();
 
-    const token = extractBearerToken(headers);
+    const token = extractToken(headers);
 
     const {
       data: { user: sbUser },
@@ -32,13 +32,13 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     }
 
     if (!sbUser.email) {
-      const msg = 'Unable to create new user, no email provided.';
+      const msg = 'User has no email, unable to authenticate.';
       payload.logger.error(msg);
       throw new AuthError(msg, 404, 'missing_email');
     }
 
-    const baseData: Omit<User, 'createdAt' | 'sizes' | 'updatedAt'> = {
-      id: sbUser.id,
+    const baseData: Omit<User, 'createdAt' | 'sizes' | 'updatedAt' | 'id'> = {
+      authId: sbUser.id,
       email: sbUser.email,
       emailConfirmedAt: sbUser.email_confirmed_at || null,
       phone: sbUser.phone || null,
@@ -47,28 +47,33 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       lastSignInAt: sbUser.last_sign_in_at || null,
     };
 
-    const { id, ...updateUser } = baseData;
-
     const userDoc = await payload
-      .findByID({
-        id: sbUser.id,
+      .find({
         collection: collectionSlug,
         depth: isGraphQL ? 0 : collection.config.auth.depth,
+        pagination: false,
+        limit: 1,
+        where: {
+          or: [{ authId: { equals: sbUser.id } }, { email: { equals: sbUser.email } }],
+        },
       })
-      .then(
-        async (user) =>
-          await payload.update({
-            id,
-            user,
-            collection: collectionSlug,
-            data: updateUser,
-          })
-      )
+      .then(async ({ docs }) => {
+        if (!docs.length) throw new Error('User not found.');
+
+        const user = docs[0];
+        return await payload.update({
+          id: user.id,
+          user,
+          collection: collectionSlug,
+          data: baseData,
+        });
+      })
       .catch(async () => {
         payload.logger.info('User not found, creating new user...');
+
         return await payload.create({
           collection: collectionSlug,
-          data: { ...baseData, createdVia: 'OAUTH', password: crypto.randomUUID() },
+          data: { ...baseData, createdVia: 'OAUTH' },
         });
       })
       .catch(async () => {

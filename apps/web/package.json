@@ -36,7 +36,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
-    "google-auth-library": "^9.15.1",
     "graphql": "^16.8.1",
     "http-status": "^2.1.0",
     "input-otp": "^1.4.2",
