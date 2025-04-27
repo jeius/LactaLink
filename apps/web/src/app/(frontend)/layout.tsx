@@ -1,3 +1,4 @@
+import Providers from '@/components/providers';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { mergeOpenGraph } from '@/lib/utils/mergeOpenGraph';
 import '@/styles/globals.css';
@@ -18,7 +19,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>
-      <body className="relative">{children}</body>
+      <body className="relative">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

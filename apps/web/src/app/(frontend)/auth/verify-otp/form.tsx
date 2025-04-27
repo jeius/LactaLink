@@ -1,13 +1,13 @@
 'use client';
 
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { DotIcon } from 'lucide-react';
+import { CheckCircle2Icon, DotIcon } from 'lucide-react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema } from '@lactalink/types/forms';
@@ -18,11 +18,15 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 
 import { verifySignup } from '@/auth/actions/verifyOTP';
+import { useGlobalState } from '@/hooks/useGlobalState';
+import { QUERY_KEYS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
+const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
+
 export default function OTPForm() {
-  const [message, setMessage] = useState<FormBannerProps['message']>(null);
+  const [message, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
   const [status, setStatus] = useState<FormBannerProps['status']>();
   const router = useRouter();
 
@@ -36,7 +40,7 @@ export default function OTPForm() {
 
   useEffect(() => {
     if (errorMessage) setMessage(errorMessage);
-  }, [errorMessage]);
+  }, [errorMessage, setMessage]);
 
   async function onSubmit(formData: OtpSchema) {
     const { error } = await verifySignup(formData.otp);
@@ -45,9 +49,11 @@ export default function OTPForm() {
       setMessage(error.message);
       setStatus('failed');
     } else {
+      setMessage('Account verified successfully.');
       setStatus('success');
-      router.refresh();
     }
+
+    router.push('/');
   }
 
   return (
@@ -81,7 +87,6 @@ export default function OTPForm() {
                     </InputOTPGroup>
                   </InputOTP>
                 </FormControl>
-                <FormMessage />
               </FormItem>
             );
           }}
@@ -100,7 +105,15 @@ export default function OTPForm() {
             isSubmitting ? 'cursor-progress' : 'cursor-default'
           )}
         >
-          {isSubmitting ? 'Verifying...' : 'Verify'}
+          {isSubmitting ? (
+            'Verifying...'
+          ) : status === 'success' ? (
+            <>
+              <CheckCircle2Icon /> Verified
+            </>
+          ) : (
+            'Verify'
+          )}
         </Button>
       </form>
     </Form>

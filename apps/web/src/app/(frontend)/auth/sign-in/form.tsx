@@ -21,14 +21,17 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState<FormBannerProps['message']>(null);
   const [status, setStatus] = useState<FormBannerProps['status']>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get(SEARCH_PARAMS_KEYS.REDIRECT);
 
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
@@ -47,19 +50,25 @@ export default function SignInForm() {
     });
 
     if (!res.ok) {
-      const authError = (await res.json()) as AuthError;
-      if (authError.error) {
-        setMessage(extractErrorMessage(authError.error));
-      } else if (authError.errors) {
-        setMessage(extractErrorMessage(authError.errors));
+      const { error, errors } = (await res.json()) as AuthError;
+      if (error) {
+        setMessage(extractErrorMessage(error));
+      } else if (errors) {
+        setMessage(extractErrorMessage(errors));
       }
-
       setStatus('failed');
     } else {
-      const authSuccess = (await res.json()) as AuthSuccess;
-      setMessage(authSuccess.message);
+      const { user } = (await res.json()) as AuthSuccess;
+      setMessage('🎉 Signed in successfully.');
       setStatus('success');
-      router.refresh();
+
+      if (!user.emailConfirmedAt) {
+        router.push(`/auth/verify-otp?${searchParams.toString()}`);
+      } else if (redirect) {
+        router.replace(redirect);
+      } else {
+        router.push('/');
+      }
     }
   }
 
@@ -158,7 +167,7 @@ export default function SignInForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-full text-lg font-normal"
+          className="mx-auto w-full max-w-md rounded-full py-6 text-lg font-normal"
           size="lg"
         >
           {isSubmitting ? 'Signing in...' : 'Sign In'}

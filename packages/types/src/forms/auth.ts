@@ -26,7 +26,10 @@ export const signUpSchema = z
   .and(confirmPasswordSchema);
 
 export const otpSchema = z.object({
-  otp: z.string().length(6, 'Invalid OTP'),
+  otp: z
+    .string()
+    .length(6, 'OTP must be exactly 6 digits')
+    .regex(/^\d+$/, 'OTP must contain only numbers'),
 });
 
 export const forgotPasswordSchema = z.object({

@@ -1,28 +1,29 @@
 'use client';
 
+import { FormBannerProps } from '@/components/FormBanner';
 import { Button } from '@/components/ui/button';
-import { RESEND_OTP } from '@/lib/constants';
+import { useGlobalState } from '@/hooks/useGlobalState';
+import { QUERY_KEYS, RESEND_OTP } from '@/lib/constants';
 import { createClient } from '@/lib/utils/supabase/client';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
+
 export default function SendAgain({ email }: { email: string }) {
-  const router = useRouter();
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [_, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
 
   const sendOTP = useCallback(async () => {
     const supabase = createClient();
     const { error } = await supabase.auth.resend({ email, type: 'signup' });
 
     if (error) {
-      const searchParams = new URLSearchParams();
-      searchParams.append('msg', error.message);
-      router.push(`/error?${searchParams.toString()}`);
+      setMessage(error.message);
     }
 
     // Start countdown after sending
     setSecondsLeft(RESEND_OTP);
-  }, [email, router]);
+  }, [email, setMessage]);
 
   useEffect(() => {
     sendOTP();

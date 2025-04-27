@@ -51,3 +51,17 @@ export function formatKebabToTitle(str: string) {
 export function formatKebab(str: string) {
   return str.split('-').join(' ');
 }
+
+export function isStartsWith<T extends string | string[] | Record<string, string>>(
+  value: string,
+  prefixes: T
+): boolean {
+  const baseList =
+    typeof prefixes === 'string'
+      ? [prefixes]
+      : Array.isArray(prefixes)
+        ? prefixes
+        : Object.values(prefixes);
+
+  return baseList.some((base) => value.startsWith(base));
+}

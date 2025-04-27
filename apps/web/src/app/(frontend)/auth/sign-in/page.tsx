@@ -25,19 +25,19 @@ export default function Page() {
   return (
     <main className="min-h-[calc(100vh - 2rem)] p-5">
       <div className="container mx-auto mt-20 max-w-4xl">
-        <Card className="overflow-hidden rounded-2xl p-0 pb-10">
-          <div className="bg-background-100 relative h-40 w-full overflow-clip p-4">
+        <Card className="overflow-hidden rounded-2xl bg-transparent p-0 pb-10">
+          <div className="relative h-40 w-full overflow-clip p-4">
             <NextImage
               src={`${getServerSideURL()}/images/sign-in.png`}
               alt="Mother Breastfeeding"
               width={1080}
               height={1080}
-              className="absolute inset-0 -top-32 bg-cover"
+              className="absolute inset-0 -top-32 -z-10 bg-cover"
             />
             <div className="from-primary absolute inset-0 bg-gradient-to-t opacity-30" />
-            <Logo className="h-12 w-16" />
+            <Logo className="z-20 h-12 w-16" />
           </div>
-          <CardHeader>
+          <CardHeader className="bg-card">
             <CardTitle className="text-xl font-bold">Welcome 👋</CardTitle>
             <CardDescription>
               Don&apos;t have an account?
@@ -46,13 +46,13 @@ export default function Page() {
               </Button>
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-card">
             <Suspense fallback={null}>
               <SignInForm />
             </Suspense>
           </CardContent>
-          <CardFooter className="flex flex-col items-center justify-center">
-            <div className="flex w-full items-center justify-between gap-4">
+          <CardFooter className="bg-card flex flex-col items-center justify-center">
+            <div className="flex w-full max-w-md items-center justify-between gap-4">
               <div className="bg-border h-[1px] w-full"></div>
               <span className="text-muted-foreground whitespace-nowrap text-xs">
                 OR CONTINUE WITH
