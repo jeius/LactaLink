@@ -47,9 +47,9 @@ export default function SignInForm() {
   }, [email, password]);
 
   async function onSubmit(formData: SignInSchema) {
-    const { email, password } = formData;
+    const { email } = formData;
 
-    const { user, message } = await signIn(email, password);
+    const { user, message } = await signIn(formData);
 
     if (!user) {
       setMessage(message);

@@ -2,11 +2,12 @@
 
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
+import { SignInSchema } from '@lactalink/types/forms';
 import { getMeUser } from '@lactalink/utilities';
 import { redirect } from 'next/navigation';
 import { APIError } from 'payload';
 
-export async function signIn(email: string, password: string) {
+export async function signIn({ email, password }: SignInSchema) {
   const supabase = await createClient();
 
   const {

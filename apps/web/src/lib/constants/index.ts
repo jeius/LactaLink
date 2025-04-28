@@ -17,4 +17,4 @@ export const DOC_LOCK_DURATION = 60;
 
 export const SESSION_NAME = 'sb-session-token';
 
-export const RESEND_OTP = 120; //in seconds
+export const RESEND_OTP = 90; //in seconds

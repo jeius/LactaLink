@@ -47,7 +47,7 @@ export default async function Page({ searchParams }: Props) {
 
   return (
     <main className="min-h-[calc(100vh - 2rem)] p-5">
-      <div className="container mx-auto mt-20 flex max-w-4xl flex-col gap-5">
+      <div className="container mx-auto mt-5 flex max-w-lg flex-col gap-2 lg:mt-10 lg:max-w-4xl">
         <Button
           variant={'link'}
           className="text-muted-foreground hover:text-foreground size-fit p-2 hover:no-underline"

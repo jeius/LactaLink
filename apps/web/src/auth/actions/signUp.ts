@@ -3,14 +3,13 @@
 import { users } from '@/lib/db/drizzle-schema';
 import { createClient } from '@/lib/utils/supabase/server';
 import { User } from '@lactalink/types';
+import { SignUpSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import config from '@payload-config';
-import { eq } from '@payloadcms/db-postgres/drizzle';
+import { eq, sql } from '@payloadcms/db-postgres/drizzle';
 import { getPayload } from 'payload';
 
-type Params = {
-  email: string;
-  password: string;
+type Params = SignUpSchema & {
   role?: User['role'];
 };
 export async function signUp({ email, password, role = 'AUTHENTICATED' }: Params) {
@@ -41,7 +40,7 @@ export async function signUp({ email, password, role = 'AUTHENTICATED' }: Params
   try {
     const [{ id }]: { id: string }[] = await payload.db.drizzle
       .update(users)
-      .set({ role })
+      .set({ role, updatedAt: sql`NOW()` })
       .where(eq(users.authId, user.id))
       .returning({ id: users.id });
 

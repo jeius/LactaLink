@@ -18,8 +18,12 @@ interface Props {
 export default function SendAgain({ email, type }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [_, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
+  const [isSending, setIsSending] = useState(false);
 
   const sendOTP = useCallback(async () => {
+    if (secondsLeft > 0) return;
+
+    setIsSending(true);
     const supabase = createClient();
     const { error } = await supabase.auth.resend({ email, type });
 
@@ -29,11 +33,13 @@ export default function SendAgain({ email, type }: Props) {
 
     // Start countdown after sending
     setSecondsLeft(RESEND_OTP);
-  }, [email, setMessage]);
+    setIsSending(false);
+  }, [email, setMessage, type, secondsLeft]);
 
   useEffect(() => {
     sendOTP();
-  }, [sendOTP]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -57,9 +63,13 @@ export default function SendAgain({ email, type }: Props) {
       className="text-primary hover:text-primary-600 hover:cursor-pointer hover:no-underline"
       size="sm"
       onClick={sendOTP}
-      disabled={secondsLeft > 0}
+      disabled={secondsLeft > 0 || isSending}
     >
-      {secondsLeft > 0 ? `Send again in ${formatTime(secondsLeft)}` : 'Send again'}
+      {secondsLeft > 0
+        ? `Send again in ${formatTime(secondsLeft)}`
+        : isSending
+          ? 'Sending code...'
+          : 'Send again'}
     </Button>
   );
 }

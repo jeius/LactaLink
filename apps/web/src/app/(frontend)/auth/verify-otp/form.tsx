@@ -63,9 +63,8 @@ export default function OTPForm({ email, type }: OTPFormProps) {
       setStatus('failed');
     } else {
       setStatus('success');
+      router.push('/');
     }
-
-    router.push('/');
   }
 
   return (
