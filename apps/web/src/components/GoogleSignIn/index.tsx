@@ -1,14 +1,17 @@
 'use client';
-import { googleSignIn } from '@/auth/operations/signIn';
+
+import { googleSignIn } from '@/auth/actions/signIn';
 import { Button } from '@/components/ui/button';
 
 export default function GoogleSignIn() {
-  async function handleSignIn() {
-    await googleSignIn();
-  }
   return (
-    <Button className="bg-primary w-full border-0" onClick={handleSignIn} type="button">
-      Sign in with Google
+    <Button
+      variant={'outline'}
+      className="text-primary hover:bg-primary-300 border-primary mt-4 w-full max-w-md rounded-full bg-transparent py-6 text-lg font-normal"
+      size="lg"
+      onClick={googleSignIn}
+    >
+      Google
     </Button>
   );
 }

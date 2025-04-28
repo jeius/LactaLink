@@ -1,5 +1,4 @@
 import { signOut } from '@/auth/actions/signOut';
-import { collectionEndpoints } from '@/auth/endpoints';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
@@ -32,13 +31,14 @@ export const Users: CollectionConfig<'users'> = {
     create: () => true,
   },
   disableDuplicate: true,
-  endpoints: collectionEndpoints,
   lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [
     {
       name: 'authId',
       type: 'text',
       hidden: true,
+      unique: true,
+      index: true,
     },
     {
       name: 'email',

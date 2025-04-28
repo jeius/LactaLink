@@ -1,21 +1,27 @@
 'use client';
 
-import { FormBannerProps } from '@/components/FormBanner';
+import { FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
 import { useGlobalState } from '@/hooks/useGlobalState';
 import { QUERY_KEYS, RESEND_OTP } from '@/lib/constants';
 import { createClient } from '@/lib/utils/supabase/client';
+import { OTPType } from '@lactalink/types/auth';
 import { useCallback, useEffect, useState } from 'react';
 
 const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
 
-export default function SendAgain({ email }: { email: string }) {
+interface Props {
+  email: string;
+  type: OTPType;
+}
+
+export default function SendAgain({ email, type }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [_, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
 
   const sendOTP = useCallback(async () => {
     const supabase = createClient();
-    const { error } = await supabase.auth.resend({ email, type: 'signup' });
+    const { error } = await supabase.auth.resend({ email, type });
 
     if (error) {
       setMessage(error.message);

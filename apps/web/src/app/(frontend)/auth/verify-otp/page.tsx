@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/card';
 import { Metadata } from 'next';
 
-import { getCurrentUser } from '@/auth/actions/getCurrentUser';
+import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
+import { OTPType } from '@lactalink/types';
 import NextImage from 'next/image';
-import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import OTPForm from './form';
 import SendAgain from './sendAgain';
@@ -21,17 +21,22 @@ export const metadata: Metadata = {
   description: 'Verify OTP page for LactaLink',
 };
 
-export default async function Page() {
-  const { user } = (await getCurrentUser()) ?? {};
+interface Props {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}
 
-  if (!user) {
-    redirect(`${getServerSideURL()}/auth/sign-in`);
+export default async function Page({ searchParams }: Props) {
+  const { email, type } = await searchParams;
+  const otpType = type as OTPType;
+
+  if (!email) {
+    const msg = 'Unable to send verification code, email not provided.';
+    encodedRedirect('/error', msg);
   }
-  const email = user.email;
-  const isEmailConfirmed = Boolean(user.emailConfirmedAt);
 
-  if (isEmailConfirmed) {
-    redirect(`${getServerSideURL()}`);
+  if (!type) {
+    const msg = 'Unable to send verification code, verification type not provided.';
+    encodedRedirect('/error', msg);
   }
 
   return (
@@ -56,14 +61,14 @@ export default async function Page() {
           </CardHeader>
           <CardContent className="mt-6">
             <Suspense fallback={null}>
-              <OTPForm />
+              <OTPForm email={email!} type={otpType} />
             </Suspense>
           </CardContent>
           <CardFooter className="mt-8 flex flex-col items-center justify-center">
             <p className="text-muted-foreground text-sm">
               Didn&apos;t receive the verification code?
             </p>
-            <SendAgain email={email} />
+            <SendAgain email={email!} type={otpType} />
           </CardFooter>
         </Card>
       </div>

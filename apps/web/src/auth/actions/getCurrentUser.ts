@@ -22,5 +22,5 @@ export async function getCurrentUser() {
     return { user: authResult.user, permissions: authResult.permissions };
   }
 
-  return null;
+  return { user: null, permissions: null };
 }

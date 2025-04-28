@@ -23,3 +23,5 @@ export type AuthSuccess = Extract<AuthResult, { user: User }>;
 export type AuthError = Extract<AuthResult, { user: null }>;
 
 export type OAuthData = Pick<SignInWithIdTokenCredentials, 'provider' | 'options' | 'nonce'>;
+
+export type OTPType = 'signup' | 'email_change';

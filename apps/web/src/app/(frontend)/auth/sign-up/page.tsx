@@ -1,4 +1,4 @@
-import SignInForm from '@/components/forms/SignInForm';
+import SignUpForm from '@/components/forms/SignUpForm';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import Logo from '@/components/icons/logo.svg';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Sign In | LactaLink',
+  title: 'Create Account | LactaLink',
 };
 
 export default function Page() {
@@ -39,22 +39,17 @@ export default function Page() {
             <Logo className="z-20 h-12 w-16" />
           </div>
           <CardHeader className="bg-card">
-            <CardTitle className="text-xl font-bold">Welcome 👋</CardTitle>
+            <CardTitle className="text-xl font-bold">Create your account 👋</CardTitle>
             <CardDescription>
-              Don&apos;t have an account?
-              <Button
-                variant="link"
-                className="text-primary hover:text-primary/70 hover:no-underline"
-                size={'sm'}
-                asChild
-              >
-                <Link href={'/auth/sign-up'}>Create account</Link>
+              Already have an account?
+              <Button variant="link" className="text-primary" size={'sm'} asChild>
+                <Link href={'/auth/sign-in'}>Sign in</Link>
               </Button>
             </CardDescription>
           </CardHeader>
           <CardContent className="bg-card">
             <Suspense fallback={null}>
-              <SignInForm />
+              <SignUpForm />
             </Suspense>
           </CardContent>
           <CardFooter className="bg-card flex flex-col items-center justify-center">

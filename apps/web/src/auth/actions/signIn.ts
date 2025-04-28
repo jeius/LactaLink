@@ -2,12 +2,11 @@
 
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
-import { AuthResult } from '@lactalink/types';
 import { getMeUser } from '@lactalink/utilities';
 import { redirect } from 'next/navigation';
 import { APIError } from 'payload';
 
-export async function signIn(email: string, password: string): Promise<AuthResult> {
+export async function signIn(email: string, password: string) {
   const supabase = await createClient();
 
   const {
@@ -19,16 +18,21 @@ export async function signIn(email: string, password: string): Promise<AuthResul
     return { user: null, message: error.message };
   }
 
-  if (!session) return { user: null, message: 'No active session, user must be logged in.' };
+  if (!session)
+    return {
+      user: null,
+      isVerified: undefined,
+      message: 'No active session, user must be logged in.',
+    };
 
   const { access_token } = session;
 
-  const authResult = await getMeUser({
+  const { user, message } = await getMeUser({
     token: access_token,
     url: getServerSideURL(),
   });
 
-  return authResult;
+  return { user, message };
 }
 
 export async function googleSignIn() {

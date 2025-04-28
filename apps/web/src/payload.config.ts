@@ -34,18 +34,10 @@ export default buildConfig({
       },
       beforeDashboard: ['@/components/BeforeDashboard'],
       providers: ['@/components/providers'],
-      afterLogin: ['@/components/GoogleSignIn'],
-      views: {
-        createFirstAdmin: {
-          path: '/create-first-admin',
-          Component: '@/components/GoogleSignIn',
-        },
-      },
     },
     avatar: 'default',
     autoLogin: autoLoginConfig,
   },
-  auth: { jwtOrder: ['JWT', 'Bearer', 'cookie'] },
   collections: Collections,
   serverURL: getServerSideURL(),
   editor: lexicalEditor(),

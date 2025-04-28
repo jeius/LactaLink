@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types/forms';
 import { useForm } from 'react-hook-form';
 
-import { FormBanner, FormBannerProps } from '@/components/FormBanner';
+import { FormBanner, FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ import { useState } from 'react';
 
 import { signIn } from '@/auth/actions/signIn';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignInForm() {
@@ -42,28 +41,26 @@ export default function SignInForm() {
   async function onSubmit(formData: SignInSchema) {
     const { email, password } = formData;
 
-    const res = await signIn(email, password);
+    const { user, message } = await signIn(email, password);
 
-    if (!res.user) {
-      const { error, errors } = res;
-      if (error) {
-        setMessage(extractErrorMessage(error));
-      } else if (errors) {
-        setMessage(extractErrorMessage(errors));
-      }
+    if (!user) {
+      setMessage(message);
       setStatus('failed');
-    } else {
-      const { user } = res;
-      setMessage('🎉 Signed in successfully.');
-      setStatus('success');
-
-      if (!user.emailConfirmedAt) {
-        router.push(`/auth/verify-otp?${searchParams.toString()}`);
-      } else if (redirect) {
-        router.replace(redirect);
-      } else {
-        router.push('/');
+      if (message.toLowerCase().includes('email not confirmed')) {
+        const emailParams = new URLSearchParams();
+        emailParams.append('email', email);
+        router.push(`/auth/verify-otp?${emailParams.toString()}`);
       }
+      return;
+    }
+
+    setMessage('🎉 Signed in successfully.');
+    setStatus('success');
+
+    if (redirect) {
+      router.replace(redirect);
+    } else {
+      router.push('/');
     }
   }
 
@@ -103,27 +100,15 @@ export default function SignInForm() {
               <FormItem>
                 <div className="flex w-full items-center justify-between">
                   <FormLabel>Password</FormLabel>
-                  {showPassword ? (
-                    <Button
-                      type="button"
-                      variant={'ghost'}
-                      size="icon"
-                      className="text-muted-foreground hover:text-foreground size-fit rounded-full px-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(false)}
-                    >
-                      <EyeIcon />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant={'ghost'}
-                      size="icon"
-                      className="text-muted-foreground hover:text-foreground size-fit rounded-full px-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(true)}
-                    >
-                      <EyeClosedIcon />
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant={'ghost'}
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground size-fit rounded-full px-2 hover:cursor-pointer hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeIcon /> : <EyeClosedIcon />}
+                  </Button>
                 </div>
                 <FormControl>
                   <div className="focus-within:outline-primary flex w-full items-center gap-1 overflow-clip rounded-full border pl-4 focus-within:outline-2">

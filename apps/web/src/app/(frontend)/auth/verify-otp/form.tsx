@@ -11,21 +11,27 @@ import { CheckCircle2Icon, DotIcon } from 'lucide-react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema } from '@lactalink/types/forms';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { FormBanner, FormBannerProps } from '@/components/FormBanner';
+import { FormBanner, FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
 
-import { verifySignup } from '@/auth/actions/verifyOTP';
+import { verifyOtp } from '@/auth/actions/verifyOTP';
 import { useGlobalState } from '@/hooks/useGlobalState';
 import { QUERY_KEYS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { OTPType } from '@lactalink/types/auth';
 
 const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
 
-export default function OTPForm() {
+interface OTPFormProps {
+  email: string;
+  type: OTPType;
+}
+
+export default function OTPForm({ email, type }: OTPFormProps) {
   const [message, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
   const [status, setStatus] = useState<FormBannerProps['status']>();
   const router = useRouter();
@@ -42,14 +48,14 @@ export default function OTPForm() {
     if (errorMessage) setMessage(errorMessage);
   }, [errorMessage, setMessage]);
 
-  async function onSubmit(formData: OtpSchema) {
-    const { error } = await verifySignup(formData.otp);
+  async function onSubmit({ otp }: OtpSchema) {
+    const { user, message } = await verifyOtp({ token: otp, type, email });
 
-    if (error) {
-      setMessage(error.message);
+    setMessage(message);
+
+    if (!user) {
       setStatus('failed');
     } else {
-      setMessage('Account verified successfully.');
       setStatus('success');
     }
 

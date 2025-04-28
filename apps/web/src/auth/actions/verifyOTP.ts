@@ -1,17 +1,27 @@
 'use server';
 
-import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
-import { redirect } from 'next/navigation';
-import { getCurrentUser } from './getCurrentUser';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 
-export async function verifySignup(otp: string) {
-  const { user } = (await getCurrentUser()) ?? {};
+export async function verifyOtp(params: VerifyOtpParams) {
+  const supabase = await createClient();
+  const {
+    error: otpError,
+    data: { session },
+  } = await supabase.auth.verifyOtp(params);
 
-  if (!user) {
-    redirect(`${getServerSideURL()}/auth/sign-in`);
+  if (otpError || !session) {
+    return { user: null, message: otpError?.message || 'Session not found.' };
   }
 
-  const supabase = await createClient();
-  return await supabase.auth.verifyOtp({ email: user.email, token: otp, type: 'signup' });
+  const {
+    data: { user },
+    error: sessionError,
+  } = await supabase.auth.setSession(session);
+
+  if (sessionError && !user) {
+    return { user: null, message: sessionError.message };
+  }
+
+  return { user, message: 'Verification successfull.' };
 }
