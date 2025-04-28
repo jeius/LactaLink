@@ -8,10 +8,14 @@ import {
 } from '@/components/ui/card';
 import { Metadata } from 'next';
 
+import { Button } from '@/components/ui/button';
+import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
 import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { OTPType } from '@lactalink/types';
+import { ChevronLeft } from 'lucide-react';
 import NextImage from 'next/image';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import OTPForm from './form';
 import SendAgain from './sendAgain';
@@ -21,12 +25,14 @@ export const metadata: Metadata = {
   description: 'Verify OTP page for LactaLink',
 };
 
+const redirectKey = SEARCH_PARAMS_KEYS.REDIRECT;
+
 interface Props {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
 export default async function Page({ searchParams }: Props) {
-  const { email, type } = await searchParams;
+  const { email, type, redirect } = await searchParams;
   const otpType = type as OTPType;
 
   if (!email) {
@@ -41,7 +47,18 @@ export default async function Page({ searchParams }: Props) {
 
   return (
     <main className="min-h-[calc(100vh - 2rem)] p-5">
-      <div className="container mx-auto mt-20 max-w-4xl">
+      <div className="container mx-auto mt-20 flex max-w-4xl flex-col gap-5">
+        <Button
+          variant={'link'}
+          className="text-muted-foreground hover:text-foreground size-fit p-2 hover:no-underline"
+          asChild
+        >
+          <Link
+            href={`${getServerSideURL()}/auth/sign-in?${redirect ? `?${redirectKey}=${redirect}` : ''}`}
+          >
+            <ChevronLeft /> Back to sign in
+          </Link>
+        </Button>
         <Card className="overflow-hidden rounded-2xl p-0 pb-10">
           <div className="bg-background-100 relative h-40 w-full overflow-clip p-4">
             <NextImage

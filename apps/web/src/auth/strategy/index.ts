@@ -1,13 +1,13 @@
+import { users } from '@/lib/db/drizzle-schema';
 import { extractToken } from '@/lib/utils/extractToken';
 import { createClient } from '@/lib/utils/supabase/server';
-import { User } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { eq } from '@payloadcms/db-postgres/drizzle';
 import { AuthError } from '@supabase/supabase-js';
 import { AuthStrategyFunction, AuthStrategyResult } from 'payload';
 
 export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
-  const { payload, strategyName, isGraphQL, headers } = params;
-  const collection = payload.collections['users'];
+  const { payload, strategyName, headers } = params;
   const collectionSlug = 'users';
 
   payload.logger.info('Authenticating...');
@@ -19,11 +19,11 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
 
     const {
       data: { user: sbUser },
-      error,
+      error: authError,
     } = await supabase.auth.getUser(token);
 
-    if (error) {
-      throw new AuthError(error.message, error.status, error.code);
+    if (authError) {
+      throw new AuthError(authError.message, authError.status, authError.code);
     }
 
     if (!sbUser) {
@@ -31,60 +31,11 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       return { user: null };
     }
 
-    if (!sbUser.email) {
-      const msg = 'User has no email, unable to authenticate.';
-      payload.logger.error(msg);
-      throw new AuthError(msg, 404, 'missing_email');
-    }
-
-    const baseData: Omit<User, 'createdAt' | 'sizes' | 'updatedAt' | 'id'> = {
-      authId: sbUser.id,
-      email: sbUser.email,
-      emailConfirmedAt: sbUser.email_confirmed_at || null,
-      phone: sbUser.phone || null,
-      phoneConfirmedAt: sbUser.phone_confirmed_at || null,
-      confirmedAt: sbUser.confirmed_at || null,
-      lastSignInAt: sbUser.last_sign_in_at || null,
-    };
-
-    const userDoc = await payload
-      .find({
-        collection: collectionSlug,
-        depth: isGraphQL ? 0 : collection.config.auth.depth,
-        pagination: false,
-        limit: 1,
-        where: {
-          or: [{ authId: { equals: sbUser.id } }, { email: { equals: sbUser.email } }],
-        },
-      })
-      .then(async ({ docs }) => {
-        if (!docs.length) throw new Error('User not found.');
-
-        const user = docs[0];
-        return await payload.update({
-          id: user.id,
-          user,
-          collection: collectionSlug,
-          data: baseData,
-        });
-      })
-      .catch(async () => {
-        payload.logger.info('User not found, creating new user...');
-
-        return await payload.create({
-          collection: collectionSlug,
-          data: { ...baseData, createdVia: 'OAUTH' },
-        });
-      })
-      .catch(async () => {
-        // This is to avoid race conditions when two users are created at the same time.
-        // If the user already exists, we will just return the existing user.
-        return await payload.findByID({
-          id: sbUser.id,
-          collection: collectionSlug,
-          depth: isGraphQL ? 0 : collection.config.auth.depth,
-        });
-      });
+    const [{ authId: __, ...userDoc }] = await payload.db.drizzle
+      .select()
+      .from(users)
+      .where(eq(users.authId, sbUser.id))
+      .limit(1);
 
     const user: AuthStrategyResult['user'] = {
       ...userDoc,

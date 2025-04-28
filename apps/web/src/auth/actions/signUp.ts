@@ -1,17 +1,19 @@
 'use server';
 
+import { users } from '@/lib/db/drizzle-schema';
 import { createClient } from '@/lib/utils/supabase/server';
 import { User } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import config from '@payload-config';
-import { getPayload, ValidationError } from 'payload';
+import { eq } from '@payloadcms/db-postgres/drizzle';
+import { getPayload } from 'payload';
 
 type Params = {
   email: string;
   password: string;
-  role: User['role'];
+  role?: User['role'];
 };
-export async function signUp({ email, password, role }: Params) {
+export async function signUp({ email, password, role = 'AUTHENTICATED' }: Params) {
   const supabase = await createClient();
   const payload = await getPayload({ config });
 
@@ -37,24 +39,19 @@ export async function signUp({ email, password, role }: Params) {
   }
 
   try {
-    const admin = await payload.create({
+    const [{ id }]: { id: string }[] = await payload.db.drizzle
+      .update(users)
+      .set({ role })
+      .where(eq(users.authId, user.id))
+      .returning({ id: users.id });
+
+    const updatedUser = await payload.findByID({
+      id,
       collection: 'users',
-      data: { email, authId: user.id, role, createdVia: 'EMAIL_PASSWORD' },
-      depth: 0,
     });
 
-    return { user: admin, message: '🎉 Signed up successfully.' };
+    return { user: updatedUser, message: '🎉 Signed up successfully.' };
   } catch (error) {
-    let msg = extractErrorMessage(error);
-
-    const err = error as ValidationError;
-    if (err) {
-      const { path, message } = err.data.errors[0];
-      if (path === 'email' && message.toLowerCase().includes('unique')) {
-        msg = 'Email already taken.';
-      }
-    }
-
-    return { user: null, message: msg };
+    return { user: null, message: extractErrorMessage(error) };
   }
 }

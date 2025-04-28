@@ -34,13 +34,6 @@ export const Users: CollectionConfig<'users'> = {
   lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [
     {
-      name: 'authId',
-      type: 'text',
-      hidden: true,
-      unique: true,
-      index: true,
-    },
-    {
       name: 'email',
       type: 'text',
       unique: true,
@@ -99,11 +92,6 @@ export const Users: CollectionConfig<'users'> = {
       admin: { position: 'sidebar', readOnly: true },
     },
     {
-      name: 'confirmedAt',
-      type: 'date',
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
       name: 'emailConfirmedAt',
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },
@@ -111,19 +99,6 @@ export const Users: CollectionConfig<'users'> = {
     {
       name: 'phoneConfirmedAt',
       type: 'date',
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'createdVia',
-      type: 'select',
-      defaultValue: 'EMAIL_PASSWORD',
-      options: [
-        { label: 'Email and Password', value: 'EMAIL_PASSWORD' },
-        { label: 'OAuth', value: 'OAUTH' },
-        { label: 'Magic Link', value: 'MAGIC_LINK' },
-        { label: 'Phone', value: 'PHONE' },
-        { label: 'Phone and Password', value: 'PHONE_PASSWORD' },
-      ],
       admin: { position: 'sidebar', readOnly: true },
     },
   ],

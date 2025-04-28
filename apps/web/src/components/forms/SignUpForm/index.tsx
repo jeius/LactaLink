@@ -16,7 +16,7 @@ import { useForm } from 'react-hook-form';
 import { FormBanner, FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { signUp } from '@/auth/actions/signUp';
 import { OTPType } from '@lactalink/types';
@@ -36,8 +36,16 @@ export default function SignUpForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
+  const email = form.watch('email');
+  const password = form.watch('password');
+  const confirmPassword = form.watch('confirmPassword');
+
+  useEffect(() => {
+    setStatus(undefined);
+  }, [email, password, confirmPassword]);
+
   async function onSubmit(formData: SignUpSchema) {
-    const { user, message } = await signUp({ ...formData, role: 'AUTHENTICATED' });
+    const { user, message } = await signUp({ ...formData });
 
     if (!user) {
       setMessage(message);

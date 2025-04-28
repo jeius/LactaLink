@@ -44,6 +44,12 @@ export default function OTPForm({ email, type }: OTPFormProps) {
   const isSubmitting = form.formState.isSubmitting;
   const errorMessage = form.formState.errors.otp?.message;
 
+  const otp = form.watch('otp');
+
+  useEffect(() => {
+    setStatus(undefined);
+  }, [otp]);
+
   useEffect(() => {
     if (errorMessage) setMessage(errorMessage);
   }, [errorMessage, setMessage]);

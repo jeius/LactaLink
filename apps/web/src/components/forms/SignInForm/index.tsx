@@ -17,10 +17,11 @@ import { FormBanner, FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { signIn } from '@/auth/actions/signIn';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
+import { OTPType } from '@lactalink/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignInForm() {
@@ -38,6 +39,13 @@ export default function SignInForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
+  const email = form.watch('email');
+  const password = form.watch('password');
+
+  useEffect(() => {
+    setStatus(undefined);
+  }, [email, password]);
+
   async function onSubmit(formData: SignInSchema) {
     const { email, password } = formData;
 
@@ -47,8 +55,10 @@ export default function SignInForm() {
       setMessage(message);
       setStatus('failed');
       if (message.toLowerCase().includes('email not confirmed')) {
+        const type: OTPType = 'signup';
         const emailParams = new URLSearchParams();
         emailParams.append('email', email);
+        emailParams.append('type', type);
         router.push(`/auth/verify-otp?${emailParams.toString()}`);
       }
       return;

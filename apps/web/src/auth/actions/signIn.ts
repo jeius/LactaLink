@@ -21,7 +21,6 @@ export async function signIn(email: string, password: string) {
   if (!session)
     return {
       user: null,
-      isVerified: undefined,
       message: 'No active session, user must be logged in.',
     };
 
