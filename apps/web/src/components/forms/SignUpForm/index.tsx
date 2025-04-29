@@ -19,10 +19,10 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { signUp } from '@/auth/actions/signUp';
-import { OTPType } from '@lactalink/types';
+import { OTPType, User } from '@lactalink/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function SignUpForm() {
+export default function SignUpForm({ role }: { role?: User['role'] }) {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState<FormBannerProps['message']>(null);
   const [status, setStatus] = useState<FormBannerProps['status']>();
@@ -45,7 +45,7 @@ export default function SignUpForm() {
   }, [email, password, confirmPassword]);
 
   async function onSubmit(formData: SignUpSchema) {
-    const { user, message } = await signUp({ ...formData });
+    const { user, message } = await signUp({ ...formData, role });
 
     if (!user) {
       setMessage(message);

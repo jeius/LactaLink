@@ -43,6 +43,8 @@ export default buildConfig({
   serverURL: getServerSideURL(),
   editor: lexicalEditor(),
   endpoints: Endpoints,
+  sharp,
+  plugins,
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -78,6 +80,4 @@ export default buildConfig({
       },
     ],
   }),
-  sharp,
-  plugins,
 });

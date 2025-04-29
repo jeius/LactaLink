@@ -2,10 +2,7 @@ export const AUTH_PAGES = {
   SIGN_IN: '/auth/sign-in',
   SIGN_UP: '/auth/sign-up',
   VERIFY: '/auth/verify-otp',
-};
-
-export const PUBLIC_ADMIN_PAGES = {
-  CREATE_FIRST_ADMIN: '/admin/create-first-admin',
+  CREATE_ADMIN: '/auth/create-first-admin',
 };
 
 export const ERROR_PAGES = {
@@ -17,7 +14,6 @@ export const PUBLIC_ROUTES = {
   API: '/api',
   ...AUTH_PAGES,
   ...ERROR_PAGES,
-  ...PUBLIC_ADMIN_PAGES,
 };
 
 export const SEARCH_PARAMS_KEYS = {
