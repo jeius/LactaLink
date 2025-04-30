@@ -3,3 +3,5 @@ export type * from './auth';
 export type * from './errors';
 export type * from './payload-types';
 export type * from './psgc';
+
+export type Theme = 'light' | 'dark' | 'system';
