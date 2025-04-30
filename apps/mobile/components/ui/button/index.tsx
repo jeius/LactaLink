@@ -1,3 +1,4 @@
+'use client';
 import { createButton } from '@gluestack-ui/button';
 import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
