@@ -14,25 +14,53 @@
     "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lactalink.mobile"
+      "bundleIdentifier": "com.lactalink.mobile",
+      "icon": {
+        "dark": "./assets/images/ios-dark.png",
+        "light": "./assets/images/ios-light.png",
+        "tinted": "./assets/images/ios-tinted.png"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FE828C"
+        "monochromeImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFF7F7"
       },
       "package": "com.lactalink.mobile"
     },
+    "androidStatusBar": {
+      "translucent": true
+    },
     "plugins": [
       "expo-router",
-      "expo-font",
       "expo-asset",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Jakarta-ExtraBold.ttf",
+            "./assets/fonts/Jakarta-Bold.ttf",
+            "./assets/fonts/Jakarta-SemiBold.ttf",
+            "./assets/fonts/Jakarta-Medium.ttf",
+            "./assets/fonts/Jakarta-Regular.ttf",
+            "./assets/fonts/Jakarta-Light.ttf",
+            "./assets/fonts/Jakarta-ExtraLight.ttf",
+            "./assets/fonts/Jakarta-Italic.ttf"
+          ]
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash-icon-light.png",
           "resizeMode": "contain",
-          "backgroundColor": "#FFCDD1"
+          "backgroundColor": "#FFF7F7",
+          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/images/splash-icon-dark.png",
+            "backgroundColor": "#332E2E"
+          }
         }
       ],
       [
