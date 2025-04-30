@@ -1,11 +1,5 @@
 import gluestackPlugin from '@gluestack-ui/nativewind-utils/tailwind-plugin';
 
-function toRgba(variableName) {
-  return ({ opacityValue }) => {
-    return `color-mix(in srgb, var(${variableName}) calc(${opacityValue} * 100%), transparent)`;
-  };
-}
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'media',
@@ -180,6 +174,14 @@ module.exports = {
         body: undefined,
         mono: undefined,
         roboto: ['Roboto', 'sans-serif'],
+        Jakarta: ['Jakarta', 'sans-serif'],
+        JakartaBold: ['Jakarta-Bold', 'sans-serif'],
+        JakartaExtraBold: ['Jakarta-ExtraBold', 'sans-serif'],
+        JakartaExtraLight: ['Jakarta-ExtraLight', 'sans-serif'],
+        JakartaLight: ['Jakarta-Light', 'sans-serif'],
+        JakartaMedium: ['Jakarta-Medium', 'sans-serif'],
+        JakartaSemiBold: ['Jakarta-SemiBold', 'sans-serif'],
+        JakartaItalic: ['Jakarta-Italic', 'sans-serif'],
       },
       fontWeight: {
         extrablack: '950',
