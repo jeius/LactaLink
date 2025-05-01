@@ -1,9 +1,8 @@
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import { ToastProvider } from '@gluestack-ui/toast';
-import { useColorScheme } from 'nativewind';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, ViewProps } from 'react-native';
-import { config } from './config';
+import { Config, config } from './config';
 import { ModeType } from './types';
 
 export function GluestackUIProvider({
@@ -14,17 +13,13 @@ export function GluestackUIProvider({
   children?: React.ReactNode;
   style?: ViewProps['style'];
 }) {
-  const { colorScheme, setColorScheme } = useColorScheme();
-
-  useEffect(() => {
-    setColorScheme(mode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
-
   return (
     <View
-      className="font-Jakarta"
-      style={[config[colorScheme!], { flex: 1, height: '100%', width: '100%' }, props.style]}
+      style={[
+        config[mode as keyof Config],
+        { flex: 1, height: '100%', width: '100%' },
+        props.style,
+      ]}
     >
       <OverlayProvider>
         <ToastProvider>{props.children}</ToastProvider>

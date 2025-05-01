@@ -112,7 +112,7 @@ const buttonStyle = tva({
 });
 
 const buttonTextStyle = tva({
-  base: 'text-typography-0 web:select-none font-semibold',
+  base: 'text-typography-0 web:select-none font-JakartaSemiBold',
   parentVariants: {
     action: {
       primary:
@@ -124,7 +124,7 @@ const buttonTextStyle = tva({
       negative: 'text-error-600 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',
     },
     variant: {
-      link: 'data-[active=true]:underline data-[hover=true]:underline',
+      link: '',
       outline: '',
       solid:
         'text-typography-0 data-[hover=true]:text-typography-0 data-[active=true]:text-typography-0',

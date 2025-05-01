@@ -1,11 +1,17 @@
 import { getAuth } from '@/auth/getAuth';
-import '@/global.css';
 import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
-import { useLoadedFonts } from '@/hooks/useLoadedFonts';
 import { useQuery } from '@tanstack/react-query';
-import { Redirect } from 'expo-router';
-import { ReactNode } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+
+import * as SplashScreen from 'expo-splash-screen';
+import { ReactNode, useEffect } from 'react';
+
+import { useFontsLoader } from '@/hooks/useFontsLoader';
+import { QUERY_KEYS } from '@/lib/constants';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { useTheme } from './providers/theme-provider';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
 type Props = {
   children: ReactNode;
@@ -13,10 +19,11 @@ type Props = {
 
 export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
-  const [fontsLoaded] = useLoadedFonts();
+  const [fontsLoaded, error] = useFontsLoader();
+  const { isLoading: isThemeLoading } = useTheme();
 
   const { isPending: isAuthLoading, data } = useQuery({
-    queryKey: ['auth'],
+    queryKey: QUERY_KEYS.AUTH.ALL,
     queryFn: getAuth,
     staleTime: Infinity,
     refetchOnMount: false,
@@ -24,19 +31,34 @@ export function AppInitializer({ children }: Props) {
 
   const user = data?.user;
 
-  const isAppReady = fontsLoaded && !isAuthLoading;
+  const isAppReady = fontsLoaded && !isThemeLoading && !isAuthLoading;
 
-  if (isAppReady && !user) {
-    return <Redirect href="./(auth)/sign-in" />;
+  useEffect(() => {
+    if (isAppReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [isAppReady]);
+
+  if (error) {
+    console.log(error);
+    return (
+      <View className="bg-primary-100 flex-1 items-center justify-center">
+        <Text className="font-sans text-sm">{error.message}</Text>
+      </View>
+    );
   }
+
+  // if (isAppReady && !user) {
+  //   return <Redirect href="./(auth)/sign-in" />;
+  // }
 
   if (!isAppReady) {
     return (
-      <View className="bg-primary-200 flex-1 items-center justify-center">
+      <View className="bg-primary-100 flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  return <>{children}</>;
+  return children;
 }

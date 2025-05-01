@@ -2,7 +2,7 @@ import { Theme } from '@lactalink/types';
 import { API_URL } from '../constants';
 import { supabase } from '../supabase';
 
-export const getTheme = async (): Promise<Theme> => {
+export const getTheme = async (): Promise<Theme | null> => {
   try {
     const {
       data: { session },
@@ -23,11 +23,13 @@ export const getTheme = async (): Promise<Theme> => {
     return value;
   } catch (err) {
     //TODO: Render an error toast
-    return 'light';
+    return null;
   }
 };
 
 export const updateTheme = async (theme: Theme) => {
+  if (!theme) return;
+
   try {
     const {
       data: { session },

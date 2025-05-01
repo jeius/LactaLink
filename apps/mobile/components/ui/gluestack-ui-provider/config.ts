@@ -1,7 +1,12 @@
 'use client';
 import { vars } from 'nativewind';
 
-export const config = {
+export type Config = {
+  light: Record<string, string>;
+  dark: Record<string, string>;
+};
+
+export const config: Config = {
   light: vars({
     '--color-primary-0': '255 243 244',
     '--color-primary-50': '255 230 232',

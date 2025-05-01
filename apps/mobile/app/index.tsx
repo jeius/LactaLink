@@ -1,10 +1,14 @@
-import { useSession } from '@/hooks/useSession';
+import { MMKV_KEYS } from '@/lib/constants';
+import Storage from '@/lib/localStorage';
 import { Redirect } from 'expo-router';
 
 export default function Page() {
-  const { user } = useSession();
+  const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING);
+  const user = null;
 
   if (user) return <Redirect href="./(root)/(tabs)/home" />;
 
-  return <Redirect href="./(auth)/welcome" />;
+  if (viewedOnboarding) return <Redirect href="/(auth)/sign-in" />;
+
+  return <Redirect href="/(auth)/welcome" />;
 }
