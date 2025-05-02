@@ -46,5 +46,8 @@
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.71.10"
+  },
+  "dependencies": {
+    "qs-esm": "^7.0.2"
   }
 }

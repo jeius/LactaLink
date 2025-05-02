@@ -27,7 +27,7 @@ export const Users: CollectionConfig<'users'> = {
   },
   access: {
     admin: adminAccessControl,
-    read: ({ req }) => Boolean(req.user),
+    read: () => true,
     create: () => true,
   },
   disableDuplicate: true,

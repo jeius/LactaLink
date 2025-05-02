@@ -13,7 +13,7 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputIcon } from '@/components/ui/input';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,15 +22,17 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { useSession } from '@/hooks/useSession';
 import { router } from 'expo-router';
-import { AlertCircleIcon, LockIcon, MailIcon } from 'lucide-react-native';
+import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 
 export default function SignInForm() {
+  const [showPass, setShowPass] = useState(false);
+  const { signIn } = useSession();
+
   const [formMessage, setFormMessage] = useState<FormMessageProps>({
     status: undefined,
     message: undefined,
   });
-  const { signIn } = useSession();
 
   const {
     handleSubmit,
@@ -110,6 +112,11 @@ export default function SignInForm() {
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
               />
+              {field.value && (
+                <InputSlot className="pr-3" onPress={() => setShowPass(!showPass)}>
+                  <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
+                </InputSlot>
+              )}
             </Input>
           )}
         />

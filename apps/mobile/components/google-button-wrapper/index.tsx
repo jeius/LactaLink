@@ -16,7 +16,7 @@ export default function GoogleButtonWrapper({ children, ...props }: ViewProps) {
   }
 
   return (
-    <VStack space="sm" {...props}>
+    <VStack space="lg" {...props}>
       {children}
 
       <HStack space="sm" className="items-center">
@@ -27,7 +27,7 @@ export default function GoogleButtonWrapper({ children, ...props }: ViewProps) {
         <Box className="bg-outline-50 h-[1px] flex-1" />
       </HStack>
 
-      <Button size="xl" variant="outline" className="rounded-xl" onPress={handleGoogleAuth}>
+      <Button size="xl" variant="outline" onPress={handleGoogleAuth}>
         <ButtonText>Google</ButtonText>
         <ButtonIcon as={GoogleIcon} size="lg" />
       </Button>

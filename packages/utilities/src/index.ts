@@ -4,4 +4,5 @@ export * from './delay';
 export * from './extractID';
 export * from './formatString';
 export * from './hooks';
+export * from './isEmailTaken';
 export * from './preference';
