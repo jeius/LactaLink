@@ -1,5 +1,6 @@
 import { Theme } from '@lactalink/types';
-import { API_URL } from '../constants';
+import { getPreference, postPreference } from '@lactalink/utilities';
+import { API_URL, MMKV_KEYS } from '../constants';
 import { supabase } from '../supabase';
 
 export const getTheme = async (): Promise<Theme | null> => {
@@ -12,15 +13,16 @@ export const getTheme = async (): Promise<Theme | null> => {
       throw new Error('No active session.');
     }
 
-    const req = await fetch(`${API_URL}/api/payload-preferences/theme`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
+    const res = await getPreference<Theme>({
+      apiUrl: API_URL,
+      authToken: session.access_token,
+      key: MMKV_KEYS.THEME,
     });
-    const { value } = (await req.json()) as { value: Theme };
-    return value;
+
+    if ('error' in res) {
+      return null;
+    }
+    return res.data.value;
   } catch (err) {
     //TODO: Render an error toast
     return null;
@@ -39,14 +41,16 @@ export const updateTheme = async (theme: Theme) => {
       throw new Error('No active session.');
     }
 
-    await fetch(`${API_URL}/api/payload-preferences/theme`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ value: theme }),
+    const res = await postPreference({
+      apiUrl: API_URL,
+      authToken: session.access_token,
+      key: MMKV_KEYS.THEME,
+      value: theme,
     });
+
+    if ('error' in res) return;
+
+    return res.data.doc.value;
   } catch (err) {
     //TODO: Render an error toast
   }

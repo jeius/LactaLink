@@ -11,16 +11,18 @@ type Success<T> = { data: T };
 type Failure = { error: Error; message: string };
 export type Result<T> = Success<T> | Failure;
 
-type GetPreference = {
+type GetPreference<T> = {
   _id: string;
   key: string;
   user: string;
   userCollection: string;
   __v: number;
-  value: any;
+  value: T;
 };
 
-export async function getPreference(params: BaseParams): Promise<Result<GetPreference>> {
+export async function getPreference<TValue = unknown>(
+  params: Omit<BaseParams, 'value'>
+): Promise<Result<GetPreference<TValue>>> {
   const { authToken, apiUrl: url, key } = params;
   const apiUrl = `${url}/api/payload-preferences/${key}`;
 
@@ -29,7 +31,7 @@ export async function getPreference(params: BaseParams): Promise<Result<GetPrefe
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `JWT ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
     });
 
@@ -43,7 +45,7 @@ export async function getPreference(params: BaseParams): Promise<Result<GetPrefe
       throw new Error(msg);
     }
 
-    return { data: data as GetPreference };
+    return { data: data as GetPreference<TValue> };
   } catch (err) {
     return { message: extractErrorMessage(err), error: err as Error };
   }
