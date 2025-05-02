@@ -6,7 +6,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "expo start --dev-client",
+    "dev": "expo start --dev-client -c",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
     "build": "expo export --output-dir ./build --platform all",
@@ -17,9 +17,13 @@
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc"
   },
   "dependencies": {
+    "@lactalink/utilities": "workspace:*",
     "@expo/html-elements": "^0.4.2",
     "@gluestack-ui/button": "^1.0.14",
+    "@gluestack-ui/form-control": "^0.1.19",
     "@gluestack-ui/icon": "^0.1.27",
+    "@gluestack-ui/image": "^0.1.17",
+    "@gluestack-ui/input": "^0.1.38",
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.22",
     "@gluestack-ui/toast": "^1.0.9",
@@ -72,7 +76,6 @@
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
-    "@lactalink/utilities": "workspace:*",
     "@react-native-community/cli": "^18.0.0",
     "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",
