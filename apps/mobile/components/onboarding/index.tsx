@@ -2,10 +2,10 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { CarouselRenderItem } from 'react-native-reanimated-carousel';
-import { OnboardingData } from '../_data';
+import { OnboardingData } from './data';
 import List from './list';
 
-export const Onboarding: CarouselRenderItem<OnboardingData> = (args) => {
+export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
   const {
     index,
     item: { Image, description, subtitle, title, footer },

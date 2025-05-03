@@ -13,7 +13,8 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SignUpForm from './form';
+
+import SignUpForm from '@/components/sign-up';
 
 export default function SignUp() {
   const { width, height } = Dimensions.get('window');

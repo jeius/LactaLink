@@ -1,5 +1,6 @@
 import Logo from '@/assets/svgs/logo.svg';
 import SignInImage from '@/assets/svgs/sign-in.svg';
+import SignInForm from '@/components/sign-in';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -12,7 +13,6 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SignInForm from './form';
 
 export default function SignIn() {
   const { width, height } = Dimensions.get('window');

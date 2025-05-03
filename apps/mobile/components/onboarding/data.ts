@@ -11,7 +11,7 @@ import {
 import { FC } from 'react';
 
 import { ONBOARDING_IMAGES } from '@/lib/constants/images';
-import { ListProps } from './_components/list';
+import { ListProps } from './list';
 
 export type OnboardingData = {
   id: string;

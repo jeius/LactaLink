@@ -6,13 +6,13 @@ import GradientBackground from '@/components/ui/gradient-bg';
 import { VStack } from '@/components/ui/vstack';
 import { Dimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import { OnboardingData, onboardingData } from './_data';
 
 import { Box } from '@/components/ui/box';
 import { router } from 'expo-router';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
-import { Onboarding } from './_components/onboarding';
 
+import { OnboardingItem } from '@/components/onboarding';
+import { OnboardingData, onboardingData } from '@/components/onboarding/data';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 
@@ -78,7 +78,7 @@ const Home = () => {
           onSnapToItem={setCurrentPage}
           onScrollEnd={handleScrollEnd}
           data={onboardingData}
-          renderItem={Onboarding}
+          renderItem={OnboardingItem}
           pagingEnabled
           scrollAnimationDuration={400}
           mode="parallax"

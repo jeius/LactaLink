@@ -6,7 +6,7 @@ import { VStack } from '@/components/ui/vstack';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { FC } from 'react';
 
-import { iconStyle, itemStyle } from './_style';
+import { iconStyle, itemStyle } from './style';
 
 export type ListProps = {
   items: {

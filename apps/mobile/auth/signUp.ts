@@ -1,11 +1,22 @@
-import { API_URL } from '@/lib/constants';
-import { AuthResult } from '@lactalink/types';
-import { createUser } from '@lactalink/utilities';
+import { supabase } from '@/lib/supabase';
 
 type SignUpParams = {
   email: string;
   password: string;
 };
-export async function signUp({ email, password }: SignUpParams): Promise<AuthResult> {
-  return await createUser({ data: { email, password }, url: API_URL, collection: 'users' });
+export async function signUp({ email, password }: SignUpParams) {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.signUp({ email, password });
+
+  if (error) {
+    return { user: null, message: error.message };
+  }
+
+  if (!user) {
+    return { user: null, message: 'Failed to create account.' };
+  }
+
+  return { user, message: '🎉 Account created successfully.' };
 }
