@@ -1,11 +1,20 @@
+import { Protected } from '@/components/protected';
+import { Button, ButtonText } from '@/components/ui/button';
+import { useSession } from '@/hooks/useSession';
 import React from 'react';
-import { Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Home() {
+  const { signOut } = useSession();
+
   return (
-    <SafeAreaView>
-      <Text>Home</Text>
-    </SafeAreaView>
+    <Protected>
+      <Button
+        onPress={() => {
+          signOut();
+        }}
+      >
+        <ButtonText>Sign out</ButtonText>
+      </Button>
+    </Protected>
   );
 }

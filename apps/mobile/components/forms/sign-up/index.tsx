@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/toast';
 import { API_URL } from '@/lib/constants';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
+import { OTPType } from '@lactalink/types';
 import { isEmailTaken } from '@lactalink/utilities';
 import { FormSlide } from './form-slide';
 
@@ -63,8 +64,11 @@ export default function SignUpForm() {
         render: ({ id }) => successToast(id, '🎉 Account created.'),
       });
 
-      //@ts-expect-error expo-router-type-error
-      router.push('/verify-otp');
+      const type: OTPType = 'signup';
+      router.replace({
+        pathname: '/verify-otp',
+        params: { email: formData.email, type },
+      });
     } else {
       toast.show({
         id: 'sign-up',

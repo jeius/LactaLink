@@ -37,14 +37,14 @@ const Home = () => {
 
   function handleNext() {
     if (isLastSlide) {
-      router.replace('./(auth)/sign-up/index');
+      router.replace('/sign-up');
     }
     ref.current?.next();
   }
 
   function handleSkip() {
     Storage.set(MMKV_KEYS.ONBOARDING, true);
-    router.replace('./(auth)/sign-in/index');
+    router.replace('/sign-in');
   }
 
   function handleScrollEnd() {
@@ -59,7 +59,7 @@ const Home = () => {
         <Button
           variant="link"
           size="sm"
-          className="z-10 h-min w-min p-5"
+          className="absolute right-0 top-0 z-10 h-min w-min p-5"
           action="primary"
           style={{ opacity: isLastSlide ? 0 : 1 }}
           onPress={handleSkip}
@@ -73,7 +73,7 @@ const Home = () => {
           ref={ref}
           loop={false}
           width={width}
-          height={height * 0.78}
+          height={height * 0.85}
           onProgressChange={progress}
           onSnapToItem={setCurrentPage}
           onScrollEnd={handleScrollEnd}
@@ -110,7 +110,7 @@ const Home = () => {
           onPress={onPressPagination}
         />
 
-        <Box className="w-full p-5">
+        <Box className="w-full p-5 pt-2">
           <Button
             size="xl"
             className="shadow-primary-800 w-full rounded-2xl shadow-md"

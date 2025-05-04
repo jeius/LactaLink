@@ -15,15 +15,15 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, type SignInSchema } from '@lactalink/types';
+import { OTPType, signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
+import { useToast } from '@/components/ui/toast';
 import { useSession } from '@/hooks/useSession';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { router } from 'expo-router';
 import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { useToast } from '../ui/toast';
 
 export default function SignInForm() {
   const [showPass, setShowPass] = useState(false);
@@ -32,9 +32,8 @@ export default function SignInForm() {
 
   const {
     handleSubmit,
-    formState,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -51,17 +50,21 @@ export default function SignInForm() {
     const { message, user } = await signIn(formData);
 
     if (!user) {
+      if (message.toLowerCase().includes('email not confirmed')) {
+        const type: OTPType = 'signup';
+        router.push({
+          pathname: '/verify-otp',
+          params: { email: formData.email, type },
+        });
+        toast.close('sign-in');
+        return;
+      }
       toast.show({
         id: 'sign-in',
         duration: 3000,
         placement: 'top',
         render: ({ id }) => errorToast(id, message),
       });
-
-      if (message.toLowerCase().includes('email not confirmed')) {
-        //@ts-expect-error expo-router-type-error
-        router.push('/verify-otp');
-      }
     } else {
       toast.show({
         id: 'sign-in',
@@ -75,7 +78,7 @@ export default function SignInForm() {
 
   return (
     <VStack space="lg" className="flex-1">
-      <FormControl isInvalid={'email' in errors} isDisabled={formState.isSubmitting}>
+      <FormControl isInvalid={'email' in errors} isDisabled={isSubmitting}>
         <FormControlLabel className="mb-2">
           <FormControlLabelText>Email</FormControlLabelText>
         </FormControlLabel>
@@ -107,8 +110,8 @@ export default function SignInForm() {
         </FormControlError>
       </FormControl>
 
-      <VStack>
-        <FormControl isInvalid={'password' in errors} isDisabled={formState.isSubmitting}>
+      <VStack space="md">
+        <FormControl isInvalid={'password' in errors} isDisabled={isSubmitting}>
           <FormControlLabel className="mb-2">
             <FormControlLabelText>Password</FormControlLabelText>
           </FormControlLabel>
@@ -151,6 +154,7 @@ export default function SignInForm() {
             size="sm"
             action="secondary"
             className="justify-start"
+            isDisabled={isSubmitting}
             onPress={() => {
               router.push('./(auth)/forgot-password/index');
             }}
@@ -162,10 +166,10 @@ export default function SignInForm() {
         </HStack>
       </VStack>
 
-      <GoogleButtonWrapper className="mb-2">
+      <GoogleButtonWrapper disabled={isSubmitting} className="mb-2 mt-10 flex-1 justify-center">
         <Button
           size="xl"
-          isDisabled={formState.isSubmitting}
+          isDisabled={isSubmitting}
           className="rounded-xl"
           onPress={handleSubmit(onSubmit)}
         >

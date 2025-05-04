@@ -6,6 +6,7 @@ import { useGlobalState } from '@/hooks/useGlobalState';
 import { QUERY_KEYS, RESEND_OTP } from '@/lib/constants';
 import { createClient } from '@/lib/utils/supabase/client';
 import { OTPType } from '@lactalink/types/auth';
+import { formatTime } from '@lactalink/utilities';
 import { useCallback, useEffect, useState } from 'react';
 
 const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
@@ -50,12 +51,6 @@ export default function SendAgain({ email, type }: Props) {
 
     return () => clearInterval(timer);
   }, [secondsLeft]);
-
-  const formatTime = (totalSeconds: number) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   return (
     <Button

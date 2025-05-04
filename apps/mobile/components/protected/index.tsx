@@ -8,8 +8,12 @@ export function Protected({ children }: SafeAreaViewProps) {
   const { user, session, isLoading } = useSession();
 
   useEffect(() => {
-    if (!isLoading && (!user || !session)) {
-      router.replace('/sign-in');
+    if (!isLoading) {
+      if (!user || !session) {
+        router.replace('/sign-in');
+      }
+      // Todo: check if the user has no profile, then redirect
+      // to setup profile.
     }
   }, [user, session, isLoading]);
 

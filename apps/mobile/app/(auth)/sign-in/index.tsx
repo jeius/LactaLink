@@ -1,6 +1,7 @@
 import Logo from '@/assets/svgs/logo.svg';
 import SignInImage from '@/assets/svgs/sign-in.svg';
-import SignInForm from '@/components/sign-in';
+import SignInForm from '@/components/forms/sign-in';
+import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -31,23 +32,25 @@ export default function SignIn() {
         <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
       </Box>
 
-      <VStack className="w-full flex-1 p-5">
-        <VStack className="mb-4">
-          <Text bold size="2xl">
-            Welcome 👋
-          </Text>
-          <HStack space="sm" className="items-center">
-            <Text size="md" className="text-typography-400">
-              Don&apos;t have an account?
+      <KeyboardAvoidingWrapper>
+        <VStack className="w-full p-5">
+          <VStack className="mb-4">
+            <Text bold size="2xl">
+              Welcome 👋
             </Text>
-            <Button size="md" variant="link" onPress={() => router.push('/(auth)/sign-up')}>
-              <ButtonText className="text-primary-500">Create account</ButtonText>
-            </Button>
-          </HStack>
-        </VStack>
+            <HStack space="sm" className="items-center">
+              <Text size="md" className="text-typography-400">
+                Don&apos;t have an account?
+              </Text>
+              <Button size="md" variant="link" onPress={() => router.push('/(auth)/sign-up')}>
+                <ButtonText className="text-primary-500">Create account</ButtonText>
+              </Button>
+            </HStack>
+          </VStack>
 
-        <SignInForm />
-      </VStack>
+          <SignInForm />
+        </VStack>
+      </KeyboardAvoidingWrapper>
     </SafeAreaView>
   );
 }

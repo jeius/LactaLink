@@ -106,8 +106,8 @@ export const config: Config = {
     '--color-info-950': '14 21 24',
 
     /* Typography */
-    '--color-typography-0': '245, 240, 240',
-    '--color-typography-50': '224, 214, 215',
+    '--color-typography-0': '255, 255, 255',
+    '--color-typography-50': '243, 238, 238',
     '--color-typography-100': '209, 194, 195',
     '--color-typography-200': '194, 174, 175',
     '--color-typography-300': '163, 133, 136',

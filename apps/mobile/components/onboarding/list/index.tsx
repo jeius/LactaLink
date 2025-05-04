@@ -19,7 +19,7 @@ export type ListProps = {
 
 export default function List({ items }: ListProps) {
   return (
-    <VStack space="lg">
+    <VStack space="md">
       {items &&
         items.map(({ icon, iconPosition, content, variant }, i) => {
           const isHorizontal = iconPosition === 'left' || iconPosition === 'right';
@@ -33,7 +33,9 @@ export default function List({ items }: ListProps) {
                 className="items-center"
                 reversed={iconPosition === 'right'}
               >
-                {icon && <Icon as={icon} size="xl" className={iconStyle({ variant })} />}
+                {icon && (
+                  <Icon as={icon} width={24} height={24} className={iconStyle({ variant })} />
+                )}
                 <Text className={itemStyle({ variant })}>{content}</Text>
               </HStack>
             );

@@ -1,6 +1,6 @@
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
 import React from 'react';
-import { Box } from '../ui/box';
-import { Text } from '../ui/text';
 
 export interface FormMessageProps {
   status?: 'success' | 'error';

@@ -19,7 +19,7 @@ const SCOPE = 'TOAST';
 cssInterop(MotionView, { className: 'style' });
 
 const toastStyle = tva({
-  base: 'web:pointer-events-auto shadow-hard-5 border-outline-100 m-1 gap-1 rounded-md p-4',
+  base: 'web:pointer-events-auto shadow-hard-5 border-outline-100 m-1 gap-1 rounded-xl p-4',
   variants: {
     action: {
       error: 'bg-error-500',
@@ -37,7 +37,7 @@ const toastStyle = tva({
 });
 
 const toastTitleStyle = tva({
-  base: 'text-typography-0 font-body tracking-md text-left font-medium',
+  base: 'text-typography-0 tracking-md font-JakartaMedium text-left',
   variants: {
     isTruncated: {
       true: '',
@@ -75,7 +75,7 @@ const toastTitleStyle = tva({
       warning: '',
       success: '',
       info: '',
-      muted: '',
+      muted: 'text-typography-500',
     },
   },
   parentCompoundVariants: [

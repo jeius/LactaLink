@@ -18,7 +18,7 @@ export function loadingToast(id: string, message = 'Loading...') {
         style={{ width: width * 0.9 }}
       >
         <HStack space="sm" className="mx-auto">
-          <Spinner size="small" color={'#F0EBEB'} />
+          <Spinner size="small" color={`rgb(102, 52, 56)`} />
           <ToastTitle>{message}</ToastTitle>
         </HStack>
       </Toast>

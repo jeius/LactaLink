@@ -9,7 +9,7 @@ export const MMKV_KEYS = {
 };
 
 export const API_URL = EXPO_PUBLIC_API_URL;
-
+export const RESEND_OTP = 90; // seconds
 export const SUPABASE_URL = EXPO_PUBLIC_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = EXPO_PUBLIC_SUPABASE_ANON_KEY;
 

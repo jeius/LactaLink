@@ -8,7 +8,11 @@ import { HStack } from '../ui/hstack';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-export default function GoogleButtonWrapper({ children, ...props }: ViewProps) {
+export default function GoogleButtonWrapper({
+  children,
+  disabled,
+  ...props
+}: ViewProps & { disabled?: boolean }) {
   const { googleAuth } = useSession();
 
   function handleGoogleAuth() {
@@ -27,7 +31,7 @@ export default function GoogleButtonWrapper({ children, ...props }: ViewProps) {
         <Divider orientation="horizontal" className="flex-1" />
       </HStack>
 
-      <Button size="xl" variant="outline" onPress={handleGoogleAuth}>
+      <Button isDisabled={disabled} size="xl" variant="outline" onPress={handleGoogleAuth}>
         <ButtonText>Google</ButtonText>
         <ButtonIcon as={GoogleIcon} size="lg" />
       </Button>
