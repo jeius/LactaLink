@@ -20,7 +20,7 @@ export default function SignUp() {
   const { width, height } = Dimensions.get('window');
   return (
     <SafeAreaView className="bg-background-100 relative flex flex-1 p-5">
-      <VStack className="bg-background-0 border-outline-100 m-auto w-full max-w-md rounded-2xl border">
+      <VStack className="bg-background-0 border-outline-100 m-auto w-full max-w-md overflow-hidden rounded-2xl border">
         <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
           <SignUpImage width={width} height={height * 0.3} style={{ marginLeft: -20 }} />
 

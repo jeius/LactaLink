@@ -48,15 +48,18 @@ export default function SignInForm() {
     const { message, user } = await signIn(formData);
 
     if (!user) {
+      if (message.toLowerCase().includes('email not confirmed')) {
+        router.push('./(auth)/verify-otp');
+      }
       setFormMessage({ status: 'error', message });
     } else {
       setFormMessage({ status: 'success', message });
-      router.push('./(root)/(tabs)/home/index');
+      router.push('./(root)/(tabs)/home');
     }
   }
 
   return (
-    <VStack space="2xl" className="flex-1">
+    <VStack space="lg" className="flex-1">
       <FormControl isInvalid={'email' in errors} isDisabled={formState.isSubmitting}>
         <FormControlLabel className="mb-2">
           <FormControlLabelText>Email</FormControlLabelText>
@@ -67,7 +70,7 @@ export default function SignInForm() {
           rules={{ required: true }}
           name="email"
           render={({ field }) => (
-            <Input variant="outline" size="lg" className="border-outline-200 h-12 rounded-xl">
+            <Input variant="outline" size="md" className="border-outline-200 h-12 rounded-xl">
               <InputIcon as={MailIcon} className="text-primary-500 ml-3" />
               <InputField
                 type="text"
@@ -90,64 +93,66 @@ export default function SignInForm() {
         </FormControlError>
       </FormControl>
 
-      <FormControl isInvalid={'password' in errors} isDisabled={formState.isSubmitting}>
-        <FormControlLabel className="mb-2">
-          <FormControlLabelText>Password</FormControlLabelText>
-        </FormControlLabel>
+      <VStack>
+        <FormControl isInvalid={'password' in errors} isDisabled={formState.isSubmitting}>
+          <FormControlLabel className="mb-2">
+            <FormControlLabelText>Password</FormControlLabelText>
+          </FormControlLabel>
 
-        <Controller
-          control={control}
-          rules={{ required: true }}
-          name="password"
-          render={({ field }) => (
-            <Input variant="outline" size="lg" className="border-outline-200 h-12 rounded-xl">
-              <InputIcon as={LockIcon} className="text-primary-500 ml-3" />
-              <InputField
-                type="password"
-                placeholder="Enter your password"
-                autoCorrect={false}
-                autoCapitalize="none"
-                autoComplete="current-password"
-                value={field.value}
-                onChangeText={field.onChange}
-                onBlur={field.onBlur}
-              />
-              {field.value && (
-                <InputSlot className="pr-3" onPress={() => setShowPass(!showPass)}>
-                  <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
-                </InputSlot>
-              )}
-            </Input>
-          )}
-        />
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            name="password"
+            render={({ field }) => (
+              <Input variant="outline" size="md" className="border-outline-200 h-12 rounded-xl">
+                <InputIcon as={LockIcon} className="text-primary-500 ml-3" />
+                <InputField
+                  type={showPass ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  autoComplete="current-password"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                />
+                {field.value && (
+                  <InputSlot className="pr-3" onPress={() => setShowPass(!showPass)}>
+                    <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
+                  </InputSlot>
+                )}
+              </Input>
+            )}
+          />
 
-        <FormControlError>
-          <FormControlErrorIcon as={AlertCircleIcon} size="sm" />
-          <FormControlErrorText>{errors.password?.message}</FormControlErrorText>
-        </FormControlError>
-      </FormControl>
+          <FormControlError>
+            <FormControlErrorIcon as={AlertCircleIcon} size="sm" />
+            <FormControlErrorText>{errors.password?.message}</FormControlErrorText>
+          </FormControlError>
+        </FormControl>
 
-      <HStack>
-        <Button
-          variant="link"
-          size="sm"
-          action="secondary"
-          className="justify-start"
-          onPress={() => {
-            router.push('./(auth)/forgot-password/index');
-          }}
-        >
-          <ButtonText className="text-typography-400 font-JakartaMedium w-min">
-            Forgot Password?
-          </ButtonText>
-        </Button>
-      </HStack>
+        <HStack>
+          <Button
+            variant="link"
+            size="sm"
+            action="secondary"
+            className="justify-start"
+            onPress={() => {
+              router.push('./(auth)/forgot-password/index');
+            }}
+          >
+            <ButtonText className="text-typography-400 font-JakartaMedium w-min">
+              Forgot Password?
+            </ButtonText>
+          </Button>
+        </HStack>
+      </VStack>
 
       <Box className="flex-1">
         <FormMessage {...formMessage} />
       </Box>
 
-      <GoogleButtonWrapper className="mb-6">
+      <GoogleButtonWrapper className="mb-2">
         <Button
           size="xl"
           isDisabled={formState.isSubmitting}

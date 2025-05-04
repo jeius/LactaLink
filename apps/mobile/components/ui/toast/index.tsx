@@ -22,11 +22,11 @@ const toastStyle = tva({
   base: 'web:pointer-events-auto shadow-hard-5 border-outline-100 m-1 gap-1 rounded-md p-4',
   variants: {
     action: {
-      error: 'bg-error-800',
-      warning: 'bg-warning-700',
-      success: 'bg-success-700',
-      info: 'bg-info-700',
-      muted: 'bg-background-800',
+      error: 'bg-error-500',
+      warning: 'bg-warning-500',
+      success: 'bg-success-500',
+      info: 'bg-info-600',
+      muted: 'bg-primary-400',
     },
 
     variant: {
@@ -43,7 +43,7 @@ const toastTitleStyle = tva({
       true: '',
     },
     bold: {
-      true: 'font-bold',
+      true: 'font-JakartaBold',
     },
     underline: {
       true: 'underline',
@@ -114,7 +114,7 @@ const toastDescriptionStyle = tva({
       true: '',
     },
     bold: {
-      true: 'font-bold',
+      true: 'font-JakartaBold',
     },
     underline: {
       true: 'underline',

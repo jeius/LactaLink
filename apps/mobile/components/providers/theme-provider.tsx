@@ -61,8 +61,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ theme: theme || 'light', setTheme, toggleTheme, isLoading }}>
-      <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
-      <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
+      {/* <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
+      <StatusBar style={theme === 'light' ? 'dark' : 'light'} /> */}
+
+      <GluestackUIProvider mode={'light'}>{children}</GluestackUIProvider>
+      <StatusBar style={'dark'} />
     </ThemeContext.Provider>
   );
 };

@@ -26,7 +26,7 @@ export default function SignIn() {
           style={{ marginLeft: -20, marginTop: -40 }}
         />
 
-        <GradientBackground colors={['#FFF3F4', '#FE828C']} className="opacity-40" />
+        <GradientBackground colors={['transparent', '#FFCDD1']} className="opacity-70" />
 
         <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
       </Box>
