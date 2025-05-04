@@ -1,8 +1,6 @@
 'use client';
 
-import FormMessage, { FormMessageProps } from '@/components/form-message';
 import GoogleButtonWrapper from '@/components/google-button-wrapper';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
@@ -21,18 +19,16 @@ import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
 import { useSession } from '@/hooks/useSession';
+import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { router } from 'expo-router';
 import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
+import { useToast } from '../ui/toast';
 
 export default function SignInForm() {
   const [showPass, setShowPass] = useState(false);
   const { signIn } = useSession();
-
-  const [formMessage, setFormMessage] = useState<FormMessageProps>({
-    status: undefined,
-    message: undefined,
-  });
+  const toast = useToast();
 
   const {
     handleSubmit,
@@ -45,16 +41,35 @@ export default function SignInForm() {
   });
 
   async function onSubmit(formData: SignInSchema) {
+    toast.show({
+      id: 'sign-in',
+      duration: null,
+      placement: 'top',
+      render: ({ id }) => loadingToast(id, 'Signing in...'),
+    });
+
     const { message, user } = await signIn(formData);
 
     if (!user) {
+      toast.show({
+        id: 'sign-in',
+        duration: 3000,
+        placement: 'top',
+        render: ({ id }) => errorToast(id, message),
+      });
+
       if (message.toLowerCase().includes('email not confirmed')) {
-        router.push('./(auth)/verify-otp');
+        //@ts-expect-error expo-router-type-error
+        router.push('/verify-otp');
       }
-      setFormMessage({ status: 'error', message });
     } else {
-      setFormMessage({ status: 'success', message });
-      router.push('./(root)/(tabs)/home');
+      toast.show({
+        id: 'sign-in',
+        duration: 3000,
+        placement: 'top',
+        render: ({ id }) => successToast(id, '🎉 Welcome back!'),
+      });
+      router.replace('/home');
     }
   }
 
@@ -67,7 +82,6 @@ export default function SignInForm() {
 
         <Controller
           control={control}
-          rules={{ required: true }}
           name="email"
           render={({ field }) => (
             <Input variant="outline" size="md" className="border-outline-200 h-12 rounded-xl">
@@ -80,8 +94,8 @@ export default function SignInForm() {
                 autoComplete="email"
                 keyboardType="email-address"
                 value={field.value}
-                onChangeText={field.onChange}
                 onBlur={field.onBlur}
+                onChangeText={field.onChange}
               />
             </Input>
           )}
@@ -113,8 +127,8 @@ export default function SignInForm() {
                   autoCapitalize="none"
                   autoComplete="current-password"
                   value={field.value}
-                  onChangeText={field.onChange}
                   onBlur={field.onBlur}
+                  onChangeText={field.onChange}
                 />
                 {field.value && (
                   <InputSlot className="pr-3" onPress={() => setShowPass(!showPass)}>
@@ -147,10 +161,6 @@ export default function SignInForm() {
           </Button>
         </HStack>
       </VStack>
-
-      <Box className="flex-1">
-        <FormMessage {...formMessage} />
-      </Box>
 
       <GoogleButtonWrapper className="mb-2">
         <Button

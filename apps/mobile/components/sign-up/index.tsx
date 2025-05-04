@@ -8,13 +8,11 @@ import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { useSession } from '@/hooks/useSession';
 import { router } from 'expo-router';
 
-import { Toast, ToastTitle, useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/toast';
 import { API_URL } from '@/lib/constants';
+import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
 import { isEmailTaken } from '@lactalink/utilities';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { HStack } from '../ui/hstack';
-import { Spinner } from '../ui/spinner';
 import { FormSlide } from './form-slide';
 
 const FIELD_NAMES: ControllerProps<SignUpSchema>['name'][] = ['email', 'password'];
@@ -27,7 +25,6 @@ export default function SignUpForm() {
 
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
-    mode: 'onSubmit',
     defaultValues: { email: '', password: '' },
   });
 
@@ -36,22 +33,7 @@ export default function SignUpForm() {
       id: 'sign-up',
       duration: null,
       placement: 'top',
-      render: ({ id }) => (
-        <SafeAreaView>
-          <Toast
-            nativeID={`toast-${id}`}
-            variant="solid"
-            action="muted"
-            className="shadow-hard-5 p-5"
-            style={{ width: width * 0.9 }}
-          >
-            <HStack space="sm" className="mx-auto">
-              <Spinner size="small" color={'#F0EBEB'} />
-              <ToastTitle>Creating account...</ToastTitle>
-            </HStack>
-          </Toast>
-        </SafeAreaView>
-      ),
+      render: ({ id }) => loadingToast(id, 'Creating...'),
     });
 
     const result = await isEmailTaken({ email: formData.email, apiUrl: API_URL });
@@ -66,62 +48,29 @@ export default function SignUpForm() {
         id: 'sign-up',
         duration: 3000,
         placement: 'top',
-        render: ({ id }) => (
-          <SafeAreaView>
-            <Toast
-              nativeID={`toast-${id}`}
-              variant="solid"
-              action="error"
-              className="shadow-hard-5 gap-4 p-5"
-              style={{ width: width * 0.9 }}
-            >
-              <ToastTitle className="text-center">{result}</ToastTitle>
-            </Toast>
-          </SafeAreaView>
-        ),
+        render: ({ id }) => errorToast(id, result),
       });
       return;
     }
 
     const { user, message } = await signUp(formData);
+
     if (user) {
       toast.show({
         id: 'sign-up',
         duration: 3000,
         placement: 'top',
-        render: ({ id }) => (
-          <SafeAreaView>
-            <Toast
-              nativeID={`toast-${id}`}
-              variant="solid"
-              action="success"
-              className="shadow-hard-5 gap-4 p-5"
-              style={{ width: width * 0.9 }}
-            >
-              <ToastTitle className="text-center">🎉 Account created.</ToastTitle>
-            </Toast>
-          </SafeAreaView>
-        ),
+        render: ({ id }) => successToast(id, '🎉 Account created.'),
       });
-      router.push('./(auth)/verify-otp');
+
+      //@ts-expect-error expo-router-type-error
+      router.push('/verify-otp');
     } else {
       toast.show({
         id: 'sign-up',
         duration: 3000,
         placement: 'top',
-        render: ({ id }) => (
-          <SafeAreaView>
-            <Toast
-              nativeID={`toast-${id}`}
-              variant="solid"
-              action="error"
-              className="shadow-hard-5 gap-4 p-5"
-              style={{ width: width * 0.9 }}
-            >
-              <ToastTitle className="text-center">{message}</ToastTitle>
-            </Toast>
-          </SafeAreaView>
-        ),
+        render: ({ id }) => errorToast(id, message),
       });
     }
   }

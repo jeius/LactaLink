@@ -7,9 +7,9 @@ export default function Page() {
   const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING);
   const { user } = useSession();
 
-  if (user) return <Redirect href="./(root)/(tabs)/home" />;
+  if (user) return <Redirect href="/home" />;
 
-  if (viewedOnboarding) return <Redirect href="/(auth)/sign-in" />;
+  if (viewedOnboarding) return <Redirect href="/sign-in" />;
 
-  return <Redirect href="/(auth)/welcome" />;
+  return <Redirect href="/welcome" />;
 }
