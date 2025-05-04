@@ -11,7 +11,7 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
 
 interface ThemeContextType {
-  theme: Omit<Theme, 'system'>;
+  theme: 'light' | 'dark';
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   isLoading: boolean;
