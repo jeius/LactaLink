@@ -14,6 +14,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.6.11
         version: 0.6.11(prettier@3.5.3)
+      shx:
+        specifier: ^0.4.0
+        version: 0.4.0
       turbo:
         specifier: ^2.4.4
         version: 2.4.4
@@ -59,9 +62,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.56.1(react@18.3.1))
-      '@lactalink/forms':
-        specifier: workspace:*
-        version: link:../../packages/forms
       '@lactalink/utilities':
         specifier: workspace:*
         version: link:../../packages/utilities
@@ -349,9 +349,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.1.2
         version: 19.1.2(@types/react@19.1.2)
-      shx:
-        specifier: ^0.4.0
-        version: 0.4.0
 
   packages/eslint-config:
     devDependencies:
@@ -379,33 +376,6 @@ importers:
       eslint-plugin-turbo:
         specifier: ^2.4.4
         version: 2.4.4(eslint@8.57.1)(turbo@2.4.4)
-
-  packages/forms:
-    devDependencies:
-      '@hookform/resolvers':
-        specifier: ^5.0.1
-        version: 5.0.1(react-hook-form@7.56.1(react@19.0.0))
-      '@lactalink/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@lactalink/types':
-        specifier: workspace:*
-        version: link:../types
-      '@lactalink/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^22.5.4
-        version: 22.13.13
-      '@types/react':
-        specifier: ~18.3.12
-        version: 18.3.18
-      react-hook-form:
-        specifier: ^7.56.1
-        version: 7.56.1(react@19.0.0)
-      zod:
-        specifier: ^3.24.3
-        version: 3.24.3
 
   packages/types:
     dependencies:
@@ -459,9 +429,6 @@ importers:
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@tanstack/react-query':
-        specifier: ^5.71.10
-        version: 5.71.10(react@18.3.1)
       '@types/node':
         specifier: ^22.5.4
         version: 22.13.13

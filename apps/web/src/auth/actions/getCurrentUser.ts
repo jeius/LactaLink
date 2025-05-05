@@ -1,7 +1,7 @@
 'use server';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
-import { getMeUser } from '@lactalink/utilities';
+import { getMeUser } from '@lactalink/utilities/getters';
 
 export async function getCurrentUser() {
   const supabase = await createClient();

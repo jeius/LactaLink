@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { AuthResult } from '@lactalink/types/dist/auth';
+import { AuthResult } from '@lactalink/types';
 
 export async function signOut(): Promise<AuthResult> {
   await supabase.auth.signOut();

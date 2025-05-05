@@ -15,13 +15,16 @@
     "build:mobile": "turbo build --filter=\"...{./apps/mobile}\"",
     "build:web": "turbo build --filter=\"{./apps/web}...\"",
     "build:types": "turbo build --filter=\"{./packages/types}...\"",
-    "build:utils": "turbo build --filter=\"{./packages/utilities}...\""
+    "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
+    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo",
+    "refresh": "pnpm run clean:all && pnpm install && pnpm build"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "turbo": "^2.4.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "shx": "^0.4.0"
   },
   "prettier": {
     "printWidth": 100,

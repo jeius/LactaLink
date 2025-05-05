@@ -1,5 +1,5 @@
 import { updateSession } from '@/lib/utils/supabase/middleware';
-import { isStartsWith } from '@lactalink/utilities/formatString';
+import { isStartsWith } from '@lactalink/utilities/formatters';
 import { NextResponse, type NextRequest } from 'next/server';
 import { AUTH_PAGES, PUBLIC_ROUTES, SEARCH_PARAMS_KEYS } from './lib/constants/routes';
 

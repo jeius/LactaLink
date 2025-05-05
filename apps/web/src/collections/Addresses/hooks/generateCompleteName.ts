@@ -1,5 +1,6 @@
 import { Address } from '@/lib/types';
-import { extractID, sanitizeStreetAddress } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities';
+import { sanitizeStreetAddress } from '@lactalink/utilities/formatters';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateCompleteName: CollectionBeforeChangeHook<Address> = async (args) => {

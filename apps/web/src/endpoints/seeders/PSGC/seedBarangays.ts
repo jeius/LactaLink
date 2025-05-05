@@ -7,7 +7,7 @@ import type {
   ExistingDocs,
   IncomingBarangayData,
 } from '@lactalink/types';
-import { formatCamelCaseCaps } from '@lactalink/utilities/formatString';
+import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { getExistingOrThrow } from './utils/getExistingOrThrow';

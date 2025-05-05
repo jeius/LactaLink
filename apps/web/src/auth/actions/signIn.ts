@@ -3,7 +3,7 @@
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
 import { SignInSchema } from '@lactalink/types/forms';
-import { getMeUser } from '@lactalink/utilities';
+import { getMeUser } from '@lactalink/utilities/getters';
 import { redirect } from 'next/navigation';
 import { APIError } from 'payload';
 

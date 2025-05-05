@@ -13,7 +13,8 @@ import {
   IncomingProvinceData,
   IncomingRegionData,
 } from '@lactalink/types';
-import { formatCamelCase, formatCamelCaseCaps, getChunks, toKebabCase } from '@lactalink/utilities';
+import { getChunks } from '@lactalink/utilities';
+import { formatCamelCase, formatCamelCaseCaps, toKebabCase } from '@lactalink/utilities/formatters';
 
 /**
  * Default batch size for processing raw data.

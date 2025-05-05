@@ -1,7 +1,7 @@
 import { API_URL } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
-import { getMeUser } from '@lactalink/utilities/dist/auth';
+import { getMeUser } from '@lactalink/utilities';
 import {
   GoogleSignin,
   isErrorWithCode,

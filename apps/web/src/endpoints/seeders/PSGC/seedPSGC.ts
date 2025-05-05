@@ -10,7 +10,7 @@ import {
   RegionPSGC,
   SlugPSGC,
 } from '@lactalink/types';
-import { formatCamelCaseCaps, formatKebabToTitle } from '@lactalink/utilities';
+import { formatCamelCaseCaps, formatKebabToTitle } from '@lactalink/utilities/formatters';
 import { APIError, Payload } from 'payload';
 
 const init: RequestInit = {

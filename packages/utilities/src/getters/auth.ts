@@ -1,5 +1,5 @@
 import { AuthResult } from '@lactalink/types';
-import { extractErrorMessage } from './errors/extractError';
+import { extractErrorMessage } from '../errors/extractError';
 
 /**
  * Parameters for the `getMeUser` function.
