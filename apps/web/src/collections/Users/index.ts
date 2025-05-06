@@ -87,6 +87,29 @@ export const Users: CollectionConfig<'users'> = {
       ],
     },
     {
+      type: 'row',
+      fields: [
+        {
+          name: 'individual',
+          type: 'relationship',
+          relationTo: 'individuals',
+          admin: { width: '30%' },
+        },
+        {
+          name: 'hospital',
+          type: 'relationship',
+          relationTo: 'hospitals',
+          admin: { width: '30%' },
+        },
+        {
+          name: 'milkBank',
+          type: 'relationship',
+          relationTo: 'milkBanks',
+          admin: { width: '30%' },
+        },
+      ],
+    },
+    {
       name: 'lastSignInAt',
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },

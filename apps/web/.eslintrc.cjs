@@ -6,4 +6,17 @@ module.exports = {
       rootDir: ['./src/'],
     },
   },
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@/lib/types/payload-types',
+            message: 'Please import types from @lactalink/types for single source of truth.',
+          },
+        ],
+      },
+    ],
+  },
 };
