@@ -11,10 +11,6 @@
       "env": {
         "EXPO_USE_FAST_RESOLVER": "true"
       }
-      // "cache": {
-      //   "key": "turbo",
-      //   "paths": ["../../.turbo/cache"]
-      // }
     },
     "development": {
       "extends": "monorepo",
