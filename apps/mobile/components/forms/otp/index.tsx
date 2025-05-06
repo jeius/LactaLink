@@ -1,8 +1,10 @@
+import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
+import { getRgbColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast } from '@/lib/toaster';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,13 +25,16 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
   });
 
   const toast = useToast();
+  const { theme } = useTheme();
+  const textColor = getRgbColor(theme, 'typography', 900);
+  const focusColor = getRgbColor(theme, 'indicator', 'primary');
 
   async function onSubmit({ otp }: OtpSchema) {
     toast.show({
       id: 'otp',
       duration: null,
       placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Verifying code...'),
+      render: ({ id }) => loadingToast(id, 'Verifying code...', theme),
     });
 
     const { error } = await supabase.auth.verifyOtp({ email, type, token: otp });
@@ -53,7 +58,7 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
         name="otp"
         render={({ field }) => (
           <OtpInput
-            focusColor={'rgb(254 155 163)'}
+            focusColor={focusColor}
             numberOfDigits={6}
             onTextChange={field.onChange}
             onBlur={field.onBlur}
@@ -71,7 +76,7 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
               allowFontScaling: false,
             }}
             theme={{
-              pinCodeTextStyle: { color: 'rgb(102, 52, 56)' },
+              pinCodeTextStyle: { color: textColor },
             }}
           />
         )}

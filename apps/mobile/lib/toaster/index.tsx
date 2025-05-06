@@ -14,7 +14,7 @@ export function loadingToast(
   theme: keyof ColorsConfig = 'light'
 ) {
   const { width } = Dimensions.get('window');
-  const spinnerColor = getRgbColor(theme, 'typography', 500);
+  const spinnerColor = getRgbColor(theme, 'typography', 900);
   return (
     <SafeAreaView>
       <Toast

@@ -26,7 +26,7 @@ export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
           </Text>
           <Text className="font-JakartaMedium text-primary-700 text-base">{subtitle}</Text>
         </VStack>
-        <Text italic size="lg" className="text-center">
+        <Text italic size="lg" className="text-typography-950 text-center">
           {description}
         </Text>
         {footer && <List items={footer} />}

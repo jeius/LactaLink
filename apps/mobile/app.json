@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "backgroundColor": "#FFF7F7",
+    "backgroundColor": "#fff4f5",
     "primaryColor": "#FE828C",
     "scheme": "lactalink",
     "userInterfaceStyle": "automatic",
@@ -25,7 +25,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "monochromeImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FFF7F7"
+        "backgroundColor": "#FE828C"
       },
       "package": "com.lactalink.mobile"
     },
@@ -55,7 +55,7 @@
         {
           "image": "./assets/images/splash-icon-light.png",
           "resizeMode": "contain",
-          "backgroundColor": "#FFF7F7",
+          "backgroundColor": "#FFECED",
           "imageWidth": 200,
           "dark": {
             "image": "./assets/images/splash-icon-dark.png",

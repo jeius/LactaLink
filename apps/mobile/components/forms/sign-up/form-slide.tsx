@@ -93,7 +93,7 @@ export function FormSlide<T extends ControllerProps<SignUpSchema>>({
   );
 
   return (
-    <VStack className="border-outline-100 mr-4 h-full rounded-xl border">
+    <VStack className="border-outline-200 mr-4 h-full rounded-xl border">
       <HStack>
         <Button
           size="sm"
@@ -104,9 +104,7 @@ export function FormSlide<T extends ControllerProps<SignUpSchema>>({
           onPress={handlePrev}
         >
           {isPassword && <ButtonIcon as={ChevronLeftIcon} size="sm" />}
-          <ButtonText className="text-typography-400">
-            {isEmail ? 'Enter your email' : 'Change email'}
-          </ButtonText>
+          <ButtonText>{isEmail ? 'Enter your email' : 'Change email'}</ButtonText>
         </Button>
       </HStack>
 

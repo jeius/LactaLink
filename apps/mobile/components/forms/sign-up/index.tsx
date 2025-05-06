@@ -8,6 +8,7 @@ import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { useSession } from '@/hooks/useSession';
 import { router } from 'expo-router';
 
+import { useTheme } from '@/components/providers/theme-provider';
 import { useToast } from '@/components/ui/toast';
 import { API_URL } from '@/lib/constants';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
@@ -23,6 +24,7 @@ export default function SignUpForm() {
   const { width } = Dimensions.get('window');
   const { signUp } = useSession();
   const toast = useToast();
+  const { theme } = useTheme();
 
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -34,7 +36,7 @@ export default function SignUpForm() {
       id: 'sign-up',
       duration: null,
       placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Creating...'),
+      render: ({ id }) => loadingToast(id, 'Creating...', theme),
     });
 
     const result = await isEmailTaken({ email: formData.email, apiUrl: API_URL });

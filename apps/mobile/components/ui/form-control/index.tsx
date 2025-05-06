@@ -84,7 +84,7 @@ const formControlHelperStyle = tva({
 });
 
 const formControlHelperTextStyle = tva({
-  base: 'text-typography-300 font-sans',
+  base: 'text-typography-700 font-sans',
   variants: {
     isTruncated: {
       true: 'web:truncate',
@@ -128,7 +128,7 @@ const formControlLabelStyle = tva({
 });
 
 const formControlLabelTextStyle = tva({
-  base: 'text-typography-500 font-JakartaMedium',
+  base: 'text-typography-900 font-JakartaMedium',
   variants: {
     isTruncated: {
       true: 'web:truncate',
@@ -168,7 +168,7 @@ const formControlLabelTextStyle = tva({
 });
 
 const formControlLabelAstrickStyle = tva({
-  base: 'text-typography-500 font-JakartaMedium',
+  base: 'text-typography-900 font-JakartaMedium',
   variants: {
     isTruncated: {
       true: 'web:truncate',

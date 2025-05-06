@@ -25,7 +25,7 @@ export default function GoogleButtonWrapper({
 
       <HStack space="sm" className="items-center">
         <Divider orientation="horizontal" className="flex-1" />
-        <Text size="sm" className="text-typography-400">
+        <Text size="sm" className="text-typography-500">
           OR CONTINUE WITH
         </Text>
         <Divider orientation="horizontal" className="flex-1" />

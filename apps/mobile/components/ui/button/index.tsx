@@ -118,7 +118,7 @@ const buttonTextStyle = tva({
       primary:
         'text-primary-600 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-700',
       secondary:
-        'text-typography-500 data-[hover=true]:text-typography-600 data-[active=true]:text-typography-700',
+        'text-typography-700 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-950',
       positive:
         'text-success-600 data-[hover=true]:text-success-600 data-[active=true]:text-success-700',
       negative: 'text-error-600 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',

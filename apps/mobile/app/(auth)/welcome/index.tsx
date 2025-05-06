@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, ButtonText } from '@/components/ui/button';
@@ -13,12 +13,17 @@ import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated
 
 import { OnboardingItem } from '@/components/onboarding';
 import { OnboardingData, onboardingData } from '@/components/onboarding/data';
+import { useTheme } from '@/components/providers/theme-provider';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
+import { Theme } from '@lactalink/types';
 
 const gradientColors = ['#FEB4BA', '#FFE6E8', '#FFF3F4'] as const;
 
 const Home = () => {
+  const prevTheme = useRef<Theme>('system');
+  const { theme, setTheme } = useTheme();
+
   const { height, width } = Dimensions.get('window');
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
@@ -50,6 +55,17 @@ const Home = () => {
   function handleScrollEnd() {
     Storage.set(MMKV_KEYS.ONBOARDING, true);
   }
+
+  useEffect(() => {
+    prevTheme.current = theme;
+    setTheme('light');
+
+    return () => {
+      setTheme(prevTheme.current);
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <SafeAreaView className="relative h-full flex-1 items-center justify-between">

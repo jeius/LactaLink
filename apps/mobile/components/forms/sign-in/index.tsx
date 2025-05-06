@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { OTPType, signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
+import { useTheme } from '@/components/providers/theme-provider';
 import { useToast } from '@/components/ui/toast';
 import { useSession } from '@/hooks/useSession';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
@@ -29,6 +30,7 @@ export default function SignInForm() {
   const [showPass, setShowPass] = useState(false);
   const { signIn } = useSession();
   const toast = useToast();
+  const { theme } = useTheme();
 
   const {
     handleSubmit,
@@ -44,7 +46,7 @@ export default function SignInForm() {
       id: 'sign-in',
       duration: null,
       placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Signing in...'),
+      render: ({ id }) => loadingToast(id, 'Signing in...', theme),
     });
 
     const { message, user } = await signIn(formData);
@@ -87,7 +89,7 @@ export default function SignInForm() {
           control={control}
           name="email"
           render={({ field }) => (
-            <Input variant="outline" size="md" className="border-outline-200 h-12 rounded-xl">
+            <Input variant="outline" size="md" className="h-12 rounded-xl">
               <InputIcon as={MailIcon} className="text-primary-500 ml-3" />
               <InputField
                 type="text"
@@ -121,7 +123,7 @@ export default function SignInForm() {
             rules={{ required: true }}
             name="password"
             render={({ field }) => (
-              <Input variant="outline" size="md" className="border-outline-200 h-12 rounded-xl">
+              <Input variant="outline" size="md" className="h-12 rounded-xl">
                 <InputIcon as={LockIcon} className="text-primary-500 ml-3" />
                 <InputField
                   type={showPass ? 'text' : 'password'}
@@ -159,7 +161,7 @@ export default function SignInForm() {
               router.push('./(auth)/forgot-password/index');
             }}
           >
-            <ButtonText className="text-typography-400 font-JakartaMedium w-min">
+            <ButtonText className="text-typography-700 font-JakartaMedium w-min">
               Forgot Password?
             </ButtonText>
           </Button>

@@ -1,6 +1,7 @@
 import Logo from '@/assets/svgs/logo.svg';
 import VerifyImage from '@/assets/svgs/verification.svg';
 import OTPForm from '@/components/forms/otp';
+import { useTheme } from '@/components/providers/theme-provider';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
+import { getRgbColor } from '@/lib/colors';
 import { RESEND_OTP } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
@@ -27,10 +29,16 @@ export default function VerifyOTP() {
   const [isSending, setIsSending] = useState(false);
 
   const toast = useToast();
+  const { theme } = useTheme();
   const { email, type } = useLocalSearchParams();
 
   const formattedEmail = Array.isArray(email) ? email[0] : email;
   const formattedType = (Array.isArray(type) ? type[0] : type) as OTPType;
+
+  const gradientColors = [
+    'transparent',
+    (getRgbColor(theme, 'primary', 200) as string) || 'transparent',
+  ] as const;
 
   const sendOTP = useCallback(async () => {
     if (secondsLeft > 0) return;
@@ -40,7 +48,7 @@ export default function VerifyOTP() {
       id: 'otp',
       placement: 'top',
       duration: null,
-      render: ({ id }) => loadingToast(id, 'Sending verification code...'),
+      render: ({ id }) => loadingToast(id, 'Sending verification code...', theme),
     });
 
     const { error } = await supabase.auth.resend({ email: formattedEmail, type: formattedType });
@@ -62,7 +70,7 @@ export default function VerifyOTP() {
     // Start countdown after sending
     setSecondsLeft(RESEND_OTP);
     setIsSending(false);
-  }, [formattedEmail, formattedType, secondsLeft, toast]);
+  }, [formattedEmail, formattedType, secondsLeft, theme, toast]);
 
   useEffect(() => {
     if (!email) {
@@ -107,7 +115,7 @@ export default function VerifyOTP() {
         <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
           <VerifyImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
 
-          <GradientBackground colors={['#FFF3F4', '#FE828C']} className="opacity-40" />
+          <GradientBackground colors={gradientColors} className="opacity-40" />
 
           <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
         </Box>

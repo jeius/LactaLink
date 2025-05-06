@@ -1,6 +1,7 @@
 'use client';
 
 import { getTheme, updateTheme } from '@/lib/api/theme';
+import { getRgbColor } from '@/lib/colors';
 import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
@@ -8,7 +9,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import React, { createContext, useContext, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
+
+import * as NavigationBar from 'expo-navigation-bar';
 
 interface ThemeContextType {
   theme: 'light' | 'dark';
@@ -55,17 +59,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (theme) {
       Storage.set(MMKV_KEYS.THEME, theme);
       saveThemeToServer(theme);
+
+      // Set Android navigation bar color
+      if (Platform.OS === 'android') {
+        const bgColor = getRgbColor(theme, 'background', 50);
+
+        if (bgColor) {
+          NavigationBar.setBackgroundColorAsync(bgColor.toString());
+          NavigationBar.setButtonStyleAsync(theme);
+        }
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [saveThemeToServer, theme]);
 
   return (
     <ThemeContext.Provider value={{ theme: theme || 'light', setTheme, toggleTheme, isLoading }}>
-      {/* <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
-      <StatusBar style={theme === 'light' ? 'dark' : 'light'} /> */}
-
-      <GluestackUIProvider mode={'light'}>{children}</GluestackUIProvider>
-      <StatusBar style={'dark'} />
+      <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
+      <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
     </ThemeContext.Provider>
   );
 };

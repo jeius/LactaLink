@@ -19,13 +19,13 @@ const SCOPE = 'TOAST';
 cssInterop(MotionView, { className: 'style' });
 
 const toastStyle = tva({
-  base: 'web:pointer-events-auto shadow-hard-5 border-outline-100 m-1 gap-1 rounded-xl p-4',
+  base: 'web:pointer-events-auto shadow-hard-5 border-outline-200 m-1 gap-1 rounded-xl p-4',
   variants: {
     action: {
-      error: 'bg-error-500',
-      warning: 'bg-warning-500',
-      success: 'bg-success-500',
-      info: 'bg-info-600',
+      error: 'bg-error-400',
+      warning: 'bg-warning-400',
+      success: 'bg-success-400',
+      info: 'bg-info-500',
       muted: 'bg-primary-400',
     },
 
@@ -37,7 +37,7 @@ const toastStyle = tva({
 });
 
 const toastTitleStyle = tva({
-  base: 'text-typography-0 tracking-md font-JakartaMedium text-left',
+  base: 'text-typography-0 dark:text-typography-900 tracking-md font-JakartaMedium text-left',
   variants: {
     isTruncated: {
       true: '',
@@ -75,34 +75,34 @@ const toastTitleStyle = tva({
       warning: '',
       success: '',
       info: '',
-      muted: 'text-typography-500',
+      muted: 'text-typography-900',
     },
   },
   parentCompoundVariants: [
     {
       variant: 'outline',
       action: 'error',
-      class: 'text-error-800',
+      class: 'text-error-900',
     },
     {
       variant: 'outline',
       action: 'warning',
-      class: 'text-warning-800',
+      class: 'text-warning-900',
     },
     {
       variant: 'outline',
       action: 'success',
-      class: 'text-success-800',
+      class: 'text-success-900',
     },
     {
       variant: 'outline',
       action: 'info',
-      class: 'text-info-800',
+      class: 'text-info-900',
     },
     {
       variant: 'outline',
       action: 'muted',
-      class: 'text-background-800',
+      class: 'text-typography-900',
     },
   ],
 });
@@ -138,7 +138,7 @@ const toastDescriptionStyle = tva({
   },
   parentVariants: {
     variant: {
-      solid: 'text-typography-50',
+      solid: 'text-typography-100',
       outline: 'text-typography-900',
     },
   },

@@ -6,9 +6,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
 import { useFontsLoader } from '@/hooks/useFontsLoader';
+import { getRgbColor } from '@/lib/colors';
 import { QUERY_KEYS } from '@/lib/constants';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from './providers/theme-provider';
+import { Spinner } from './ui/spinner';
+import { Text } from './ui/text';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -20,16 +23,14 @@ type Props = {
 export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   const [fontsLoaded, error] = useFontsLoader();
-  const { isLoading: isThemeLoading } = useTheme();
+  const { isLoading: isThemeLoading, theme } = useTheme();
 
-  const { isPending: isAuthLoading, data } = useQuery({
+  const { isPending: isAuthLoading } = useQuery({
     queryKey: QUERY_KEYS.AUTH.ALL,
     queryFn: getAuth,
     staleTime: Infinity,
     refetchOnMount: false,
   });
-
-  const user = data?.user;
 
   const isAppReady = fontsLoaded && !isThemeLoading && !isAuthLoading;
 
@@ -42,21 +43,17 @@ export function AppInitializer({ children }: Props) {
   if (error) {
     console.log(error);
     return (
-      <View className="bg-primary-100 flex-1 items-center justify-center">
-        <Text className="font-sans text-sm">{error.message}</Text>
-      </View>
+      <SafeAreaView className="bg-background-200 flex-1 items-center justify-center">
+        <Text size="sm">{error.message}</Text>
+      </SafeAreaView>
     );
   }
 
-  // if (isAppReady && !user) {
-  //   return <Redirect href="./(auth)/sign-in" />;
-  // }
-
   if (!isAppReady) {
     return (
-      <View className="bg-primary-100 flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-      </View>
+      <SafeAreaView className="bg-background-200 flex-1 items-center justify-center">
+        <Spinner color={getRgbColor(theme, 'primary', 500)} size="large" />
+      </SafeAreaView>
     );
   }
 
