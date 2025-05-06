@@ -4,7 +4,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
-import { getRgbColor } from '@/lib/colors';
+import { getHexColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast } from '@/lib/toaster';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,8 +26,9 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
 
   const toast = useToast();
   const { theme } = useTheme();
-  const textColor = getRgbColor(theme, 'typography', 900);
-  const focusColor = getRgbColor(theme, 'indicator', 'primary');
+  const textColor = getHexColor(theme, 'typography', 900);
+  const focusColor = getHexColor(theme, 'indicator', 'primary');
+  const outlineColor = getHexColor(theme, 'outline', 200);
 
   async function onSubmit({ otp }: OtpSchema) {
     toast.show({
@@ -77,13 +78,14 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
             }}
             theme={{
               pinCodeTextStyle: { color: textColor },
+              pinCodeContainerStyle: { borderColor: outlineColor },
             }}
           />
         )}
       />
 
       <Box className="mx-auto py-2">
-        <Text className="text-error-600">{errors['otp']?.message}</Text>
+        <Text className="text-error-500">{errors['otp']?.message}</Text>
       </Box>
 
       <Button size="lg" onPress={handleSubmit(onSubmit)}>

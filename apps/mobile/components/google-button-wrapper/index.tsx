@@ -1,11 +1,15 @@
 import GoogleIcon from '@/assets/icons/google.svg';
 import { useSession } from '@/hooks/useSession';
-import React from 'react';
+import { errorToast, loadingToast, successToast } from '@/lib/toaster';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
+import { useTheme } from '../providers/theme-provider';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Text } from '../ui/text';
+import { useToast } from '../ui/toast';
 import { VStack } from '../ui/vstack';
 
 export default function GoogleButtonWrapper({
@@ -14,13 +18,45 @@ export default function GoogleButtonWrapper({
   ...props
 }: ViewProps & { disabled?: boolean }) {
   const { googleAuth } = useSession();
+  const toast = useToast();
+  const { theme } = useTheme();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleGoogleAuth() {
-    googleAuth();
+  async function handleGoogleAuth() {
+    setIsSubmitting(true);
+    toast.show({
+      id: 'google-auth',
+      placement: 'top',
+      duration: null,
+      render: ({ id }) => loadingToast(id, 'Authenticating with google...', theme),
+    });
+
+    const authRes = await googleAuth();
+
+    setIsSubmitting(false);
+
+    if (!authRes.user) {
+      toast.show({
+        id: 'google-auth',
+        placement: 'top',
+        duration: 3000,
+        render: ({ id }) => errorToast(id, authRes.message),
+      });
+      return;
+    }
+
+    toast.show({
+      id: 'google-auth',
+      placement: 'top',
+      duration: 3000,
+      render: ({ id }) => successToast(id, 'Welcome! 👋'),
+    });
+
+    router.replace('/home');
   }
 
   return (
-    <VStack space="lg" {...props}>
+    <VStack aria-disabled={isSubmitting || disabled} space="lg" {...props}>
       {children}
 
       <HStack space="sm" className="items-center">
@@ -31,7 +67,12 @@ export default function GoogleButtonWrapper({
         <Divider orientation="horizontal" className="flex-1" />
       </HStack>
 
-      <Button isDisabled={disabled} size="xl" variant="outline" onPress={handleGoogleAuth}>
+      <Button
+        isDisabled={isSubmitting || disabled}
+        size="xl"
+        variant="outline"
+        onPress={handleGoogleAuth}
+      >
         <ButtonText>Google</ButtonText>
         <ButtonIcon as={GoogleIcon} size="lg" />
       </Button>

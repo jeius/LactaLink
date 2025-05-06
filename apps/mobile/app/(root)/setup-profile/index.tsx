@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Setup() {
   return (
-    <SafeAreaView className="bg-background-100 relative flex flex-1 justify-center p-5">
+    <SafeAreaView className="bg-background-50 relative flex flex-1 justify-center p-5">
       <VStack
         space="2xl"
         className="border-outline-100 bg-background-0 shadow-hard-5 items-center rounded-2xl border p-5"
@@ -19,7 +19,7 @@ export default function Setup() {
           <Text size="2xl" bold className="mt-2">
             Account Verified
           </Text>
-          <Text size="sm" className="text-typography-400">
+          <Text size="sm" className="text-typography-700">
             Welcome to LactaLink 👋
           </Text>
         </VStack>

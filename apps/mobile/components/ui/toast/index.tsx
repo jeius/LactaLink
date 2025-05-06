@@ -22,22 +22,22 @@ const toastStyle = tva({
   base: 'web:pointer-events-auto shadow-hard-5 border-outline-200 m-1 gap-1 rounded-xl p-4',
   variants: {
     action: {
-      error: 'bg-error-400',
-      warning: 'bg-warning-400',
-      success: 'bg-success-400',
+      error: 'bg-error-500',
+      warning: 'bg-warning-500',
+      success: 'bg-success-500',
       info: 'bg-info-500',
-      muted: 'bg-primary-400',
+      muted: 'bg-background-muted',
     },
 
     variant: {
       solid: '',
-      outline: 'bg-background-0 border',
+      outline: 'bg-background-50 border',
     },
   },
 });
 
 const toastTitleStyle = tva({
-  base: 'text-typography-0 dark:text-typography-900 tracking-md font-JakartaMedium text-left',
+  base: 'text-typography-0 tracking-md font-JakartaMedium text-left',
   variants: {
     isTruncated: {
       true: '',
@@ -75,10 +75,35 @@ const toastTitleStyle = tva({
       warning: '',
       success: '',
       info: '',
-      muted: 'text-typography-900',
+      muted: '',
     },
   },
   parentCompoundVariants: [
+    {
+      variant: 'solid',
+      action: 'error',
+      class: 'text-error-0',
+    },
+    {
+      variant: 'solid',
+      action: 'warning',
+      class: 'text-warning-0',
+    },
+    {
+      variant: 'solid',
+      action: 'success',
+      class: 'text-success-0',
+    },
+    {
+      variant: 'solid',
+      action: 'info',
+      class: 'text-info-0',
+    },
+    {
+      variant: 'solid',
+      action: 'muted',
+      class: 'text-typography-0',
+    },
     {
       variant: 'outline',
       action: 'error',

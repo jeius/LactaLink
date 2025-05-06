@@ -12,7 +12,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { getRgbColor } from '@/lib/colors';
+import { getHexColor } from '@/lib/colors';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
@@ -23,11 +23,11 @@ export default function SignIn() {
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
-    (getRgbColor(theme, 'primary', 200) as string) || 'transparent',
+    (getHexColor(theme, 'primary', 200) as string) || 'transparent',
   ] as const;
 
   return (
-    <SafeAreaView className="bg-background-50 relative flex max-w-md flex-1 flex-col">
+    <SafeAreaView className="bg-background-50 relative flex flex-1 flex-col">
       <ThemeToggler />
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
         <SignInImage

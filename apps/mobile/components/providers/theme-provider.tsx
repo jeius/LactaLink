@@ -1,7 +1,7 @@
 'use client';
 
 import { getTheme, updateTheme } from '@/lib/api/theme';
-import { getRgbColor } from '@/lib/colors';
+import { getHexColor } from '@/lib/colors';
 import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
@@ -35,12 +35,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     queryFn: async () => {
       const serverTheme = await getTheme();
       const fallbackTheme = (Storage.getString(MMKV_KEYS.THEME) as Theme) || 'system';
-
       const resolvedTheme = serverTheme || fallbackTheme;
-
       setTheme(resolvedTheme);
-      Storage.set(MMKV_KEYS.THEME, resolvedTheme);
-
       return resolvedTheme;
     },
     initialData: () => {
@@ -62,7 +58,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Set Android navigation bar color
       if (Platform.OS === 'android') {
-        const bgColor = getRgbColor(theme, 'background', 50);
+        const bgColor = getHexColor(theme, 'background', 50);
 
         if (bgColor) {
           NavigationBar.setBackgroundColorAsync(bgColor.toString());

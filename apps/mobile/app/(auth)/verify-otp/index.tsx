@@ -11,7 +11,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
-import { getRgbColor } from '@/lib/colors';
+import { getHexColor } from '@/lib/colors';
 import { RESEND_OTP } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
@@ -37,7 +37,7 @@ export default function VerifyOTP() {
 
   const gradientColors = [
     'transparent',
-    (getRgbColor(theme, 'primary', 200) as string) || 'transparent',
+    (getHexColor(theme, 'primary', 200) as string) || 'transparent',
   ] as const;
 
   const sendOTP = useCallback(async () => {
@@ -110,7 +110,7 @@ export default function VerifyOTP() {
   }, [secondsLeft]);
 
   return (
-    <SafeAreaView className="bg-background-100 relative flex flex-1 flex-col items-end justify-center p-5">
+    <SafeAreaView className="bg-background-50 relative flex flex-1 flex-col items-end justify-center p-5">
       <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
         <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
           <VerifyImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
@@ -126,8 +126,12 @@ export default function VerifyOTP() {
               Verification
             </Text>
             <HStack className="flex-wrap items-center">
-              <Text size="md" className="text-typography-400">
-                A six digit code has been sent to <Text bold>{formattedEmail}</Text>.
+              <Text size="md" className="text-typography-700">
+                A six digit code has been sent to{' '}
+                <Text bold className="text-typography-700">
+                  {formattedEmail}
+                </Text>
+                .
               </Text>
             </HStack>
           </VStack>
@@ -138,7 +142,9 @@ export default function VerifyOTP() {
         </Box>
 
         <VStack className="mx-auto items-center p-5">
-          <Text size="sm">Didn&apos;t receive the verification code?</Text>
+          <Text size="sm" className="text-typography-600">
+            Didn&apos;t receive the verification code?
+          </Text>
           <Button
             isDisabled={secondsLeft > 0 || isSending}
             size="sm"
@@ -157,7 +163,7 @@ export default function VerifyOTP() {
       </VStack>
 
       {router.canGoBack() && (
-        <Button variant="link" size="md" onPress={() => router.back()}>
+        <Button variant="link" action="default" size="md" onPress={() => router.back()}>
           <ButtonIcon as={ChevronLeftIcon} />
           <ButtonText>Back to sign in</ButtonText>
         </Button>

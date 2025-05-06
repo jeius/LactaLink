@@ -6,7 +6,7 @@ import { ColorsConfig } from '@/lib/types/colors';
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRgbColor } from '../colors';
+import { getHexColor } from '../colors';
 
 export function loadingToast(
   id: string,
@@ -14,13 +14,13 @@ export function loadingToast(
   theme: keyof ColorsConfig = 'light'
 ) {
   const { width } = Dimensions.get('window');
-  const spinnerColor = getRgbColor(theme, 'typography', 900);
+  const spinnerColor = getHexColor(theme, 'info', 0);
   return (
     <SafeAreaView>
       <Toast
         nativeID={`toast-${id}`}
         variant="solid"
-        action="muted"
+        action="info"
         className="shadow-hard-5 p-5"
         style={{ width: width * 0.9 }}
       >

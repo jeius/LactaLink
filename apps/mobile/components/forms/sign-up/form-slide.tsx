@@ -98,7 +98,7 @@ export function FormSlide<T extends ControllerProps<SignUpSchema>>({
         <Button
           size="sm"
           variant="link"
-          action="secondary"
+          action="default"
           className="mt-1 px-4"
           disabled={isEmail}
           onPress={handlePrev}

@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
 import { useFontsLoader } from '@/hooks/useFontsLoader';
-import { getRgbColor } from '@/lib/colors';
+import { getHexColor } from '@/lib/colors';
 import { QUERY_KEYS } from '@/lib/constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from './providers/theme-provider';
@@ -52,7 +52,7 @@ export function AppInitializer({ children }: Props) {
   if (!isAppReady) {
     return (
       <SafeAreaView className="bg-background-200 flex-1 items-center justify-center">
-        <Spinner color={getRgbColor(theme, 'primary', 500)} size="large" />
+        <Spinner color={getHexColor(theme, 'primary', 500)} size="large" />
       </SafeAreaView>
     );
   }
