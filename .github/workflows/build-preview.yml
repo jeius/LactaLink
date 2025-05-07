@@ -12,6 +12,7 @@ concurrency:
 
 env:
   EXPO_USE_FAST_RESOLVER: true
+  CI: true
 
 jobs:
   build:
