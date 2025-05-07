@@ -18,7 +18,7 @@
     "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
     "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo",
     "refresh": "pnpm run clean:all && pnpm install && pnpm build",
-    "postinstall": "pnpm generate:types && pnpm build:utils"
+    "postinstall": "pnpm build:utils"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
