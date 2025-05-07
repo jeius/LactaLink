@@ -37,7 +37,7 @@ export default function VerifyOTP() {
 
   const gradientColors = [
     'transparent',
-    (getHexColor(theme, 'primary', 200) as string) || 'transparent',
+    (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
   const sendOTP = useCallback(async () => {

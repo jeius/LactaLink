@@ -22,13 +22,11 @@ export default function SignUp() {
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
-    (getHexColor(theme, 'primary', 200) as string) || 'transparent',
+    (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
   return (
     <SafeAreaView className="bg-background-50 relative flex flex-1 p-5">
-      {/* <ThemeToggler /> */}
-
       <KeyboardAvoidingWrapper>
         <VStack className="bg-background-0 border-outline-200 shadow-hard-5 m-auto w-full max-w-md overflow-hidden rounded-2xl border">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>

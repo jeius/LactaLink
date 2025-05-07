@@ -10,9 +10,9 @@ export default function ThemeToggler() {
   const isLight = theme === 'light';
 
   return (
-    <Box className="absolute right-3 top-10 z-10">
-      <Button size="lg" className="rounded-full" onPress={toggleTheme}>
-        <ButtonIcon as={isLight ? SunIcon : MoonIcon} size="sm" />
+    <Box className="absolute bottom-10 right-5 z-10">
+      <Button size="lg" className="h-fit w-fit rounded-full p-4" onPress={toggleTheme}>
+        <ButtonIcon as={isLight ? SunIcon : MoonIcon} size="lg" />
       </Button>
     </Box>
   );

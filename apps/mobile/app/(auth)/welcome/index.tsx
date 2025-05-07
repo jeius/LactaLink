@@ -9,6 +9,7 @@ import { useSharedValue } from 'react-native-reanimated';
 
 import { Box } from '@/components/ui/box';
 import { router } from 'expo-router';
+
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
 import { OnboardingItem } from '@/components/onboarding';
@@ -16,13 +17,11 @@ import { OnboardingData, onboardingData } from '@/components/onboarding/data';
 import { useTheme } from '@/components/providers/theme-provider';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
-import { Theme } from '@lactalink/types';
 
 const gradientColors = ['#FEB4BA', '#FFE6E8', '#FFF3F4'] as const;
 
 const Home = () => {
-  const prevTheme = useRef<Theme>('system');
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   const { height, width } = Dimensions.get('window');
   const progress = useSharedValue<number>(0);
@@ -57,13 +56,7 @@ const Home = () => {
   }
 
   useEffect(() => {
-    prevTheme.current = theme;
     setTheme('light');
-
-    return () => {
-      setTheme(prevTheme.current);
-    };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
