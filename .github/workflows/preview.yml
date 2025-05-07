@@ -1,8 +1,8 @@
-name: Build Preview
+name: Preview Update
 
 on:
-  push:
-    branches: [preview]
+  pull_request:
+    types: [opened, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -13,8 +13,8 @@ env:
   CI: true
 
 jobs:
-  build:
-    name: Build Preview
+  update:
+    name: Build Updates
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,6 +39,9 @@ jobs:
       - name: 👷 Build packages
         run: pnpm -w build:mobile
 
-      - name: 🚀 Build preview
-        working-directory: apps/mobile
-        run: eas build --non-interactive --no-wait --platform=android --profile=preview
+      - name: 🚀 Create preview
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: expo/expo-github-action/preview@v8
+        with:
+          working-directory: apps/mobile
+          command: eas update --auto --branch=pr-${{ github.event.number }}
