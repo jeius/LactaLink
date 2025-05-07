@@ -6,13 +6,12 @@ import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import React, { createContext, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
-
-import * as NavigationBar from 'expo-navigation-bar';
 
 interface ThemeContextType {
   theme: 'light' | 'dark';
@@ -24,6 +23,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const deviceColorScheme = useColorScheme().colorScheme;
+
   const {
     colorScheme: theme,
     setColorScheme: setTheme,
@@ -32,16 +33,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { isLoading } = useQuery({
     queryKey: QUERY_KEYS.USER_THEME,
+    enabled: !Storage.contains(MMKV_KEYS.THEME),
     queryFn: async () => {
       const serverTheme = await getTheme();
-      const fallbackTheme = (Storage.getString(MMKV_KEYS.THEME) as Theme) || 'system';
-      const resolvedTheme = serverTheme || fallbackTheme;
-      setTheme(resolvedTheme);
-      return resolvedTheme;
-    },
-    initialData: () => {
-      const stored = Storage.getString(MMKV_KEYS.THEME);
-      return (stored as Theme) || theme || 'light';
+      const fallback = serverTheme || deviceColorScheme || 'light';
+      setTheme(fallback);
+      return fallback;
     },
   });
 
@@ -51,25 +48,41 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
+  // Apply stored theme once during startup
+  useEffect(() => {
+    const storedTheme = Storage.getString(MMKV_KEYS.THEME) as Theme | undefined;
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist theme and update nav bar whenever it changes
   useEffect(() => {
     if (theme) {
       Storage.set(MMKV_KEYS.THEME, theme);
       saveThemeToServer(theme);
 
-      // Set Android navigation bar color
       if (Platform.OS === 'android') {
         const bgColor = getHexColor(theme, 'background', 50);
-
         if (bgColor) {
           NavigationBar.setBackgroundColorAsync(bgColor.toString());
           NavigationBar.setButtonStyleAsync(theme);
         }
       }
     }
-  }, [saveThemeToServer, theme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme: theme || 'light', setTheme, toggleTheme, isLoading }}>
+    <ThemeContext.Provider
+      value={{
+        theme: theme || 'light',
+        setTheme,
+        toggleTheme,
+        isLoading,
+      }}
+    >
       <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
       <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
     </ThemeContext.Provider>

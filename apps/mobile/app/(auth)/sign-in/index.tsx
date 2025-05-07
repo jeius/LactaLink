@@ -3,7 +3,6 @@ import SignInImage from '@/assets/svgs/sign-in.svg';
 import SignInForm from '@/components/forms/sign-in';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
-import ThemeToggler from '@/components/theme-toggler';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -28,7 +27,8 @@ export default function SignIn() {
 
   return (
     <SafeAreaView className="bg-background-50 relative flex flex-1 flex-col">
-      <ThemeToggler />
+      {/* <ThemeToggler /> */}
+
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
         <SignInImage
           width={width * 1.2}

@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SignUpForm from '@/components/forms/sign-up';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
-import ThemeToggler from '@/components/theme-toggler';
 import { getHexColor } from '@/lib/colors/getColor';
 
 export default function SignUp() {
@@ -28,7 +27,8 @@ export default function SignUp() {
 
   return (
     <SafeAreaView className="bg-background-50 relative flex flex-1 p-5">
-      <ThemeToggler />
+      {/* <ThemeToggler /> */}
+
       <KeyboardAvoidingWrapper>
         <VStack className="bg-background-0 border-outline-200 shadow-hard-5 m-auto w-full max-w-md overflow-hidden rounded-2xl border">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>

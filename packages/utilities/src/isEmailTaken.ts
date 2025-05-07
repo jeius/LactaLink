@@ -10,6 +10,7 @@ type Params = {
    * The email address to check for existence.
    */
   email: string;
+  vercelToken?: string;
 };
 
 /**
@@ -41,7 +42,7 @@ type Params = {
  * ```
  */
 export async function isEmailTaken(params: Params): Promise<boolean | string> {
-  const { apiUrl: url, email } = params;
+  const { apiUrl: url, email, vercelToken } = params;
   const where = { email: { equals: email } };
   const query = stringify({ where });
 
@@ -52,6 +53,7 @@ export async function isEmailTaken(params: Params): Promise<boolean | string> {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'x-vercel-protection-bypass': vercelToken || '',
       },
     });
 

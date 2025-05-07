@@ -1,7 +1,6 @@
-import { API_URL } from '@/lib/constants';
+import { getMeUser } from '@/lib/api/meUser';
 import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
-import { getMeUser } from '@lactalink/utilities';
 
 export async function getAuth(): Promise<AuthResult> {
   const {
@@ -13,11 +12,9 @@ export async function getAuth(): Promise<AuthResult> {
     return { user: null, message: error.message };
   }
 
-  const token = session?.access_token;
-
-  if (!token) {
+  if (!session) {
     return { user: null, message: 'No active session, user must sign in.' };
   }
 
-  return await getMeUser({ token, tokenType: 'Bearer', url: API_URL });
+  return await getMeUser(session.access_token);
 }

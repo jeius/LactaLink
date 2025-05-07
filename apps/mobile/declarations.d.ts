@@ -4,6 +4,7 @@ declare module '@env' {
   export const EXPO_PUBLIC_API_URL: string;
   export const EXPO_PUBLIC_SUPABASE_URL: string;
   export const EXPO_PUBLIC_SUPABASE_ANON_KEY: string;
+  export const VERCEL_AUTOMATION_BYPASS_SECRET: string | undefined;
 }
 
 declare module '*.svg' {

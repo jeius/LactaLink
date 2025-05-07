@@ -1,9 +1,9 @@
-import { Theme } from '@lactalink/types';
-import { getPreference, postPreference } from '@lactalink/utilities';
-import { API_URL, MMKV_KEYS } from '../constants';
+import { Preference, Theme } from '@lactalink/types';
+import { apiFetch, extractErrorMessage } from '@lactalink/utilities';
+import { API_URL, MMKV_KEYS, VERCEL_BYPASS_TOKEN } from '../constants';
 import { supabase } from '../supabase';
 
-export const getTheme = async (): Promise<Theme | null> => {
+export async function getTheme(): Promise<Theme | null> {
   try {
     const {
       data: { session },
@@ -13,23 +13,25 @@ export const getTheme = async (): Promise<Theme | null> => {
       throw new Error('No active session.');
     }
 
-    const res = await getPreference<Theme>({
-      apiUrl: API_URL,
-      authToken: session.access_token,
-      key: MMKV_KEYS.THEME,
-    });
+    const token = session.access_token;
+    const vercelToken = VERCEL_BYPASS_TOKEN;
+    const themeKey = MMKV_KEYS.THEME;
+    const url = new URL(`/api/payload-preferences/${themeKey}`, API_URL);
+
+    const res = await apiFetch<Preference<'GET', Theme>>({ url, token, vercelToken });
 
     if ('error' in res) {
-      return null;
+      throw Error(res.message);
     }
+
     return res.data.value;
   } catch (err) {
-    //TODO: Render an error toast
+    console.log('Get Theme Error:', extractErrorMessage(err));
     return null;
   }
-};
+}
 
-export const updateTheme = async (theme: Theme) => {
+export async function updateTheme(theme: Theme) {
   if (!theme) return;
 
   try {
@@ -37,21 +39,27 @@ export const updateTheme = async (theme: Theme) => {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error('No active session.');
-    }
+    if (!session) return;
 
-    const res = await postPreference({
-      apiUrl: API_URL,
-      authToken: session.access_token,
-      key: MMKV_KEYS.THEME,
-      value: theme,
+    const token = session.access_token;
+    const vercelToken = VERCEL_BYPASS_TOKEN;
+    const themeKey = MMKV_KEYS.THEME;
+    const url = new URL(`/api/payload-preferences/${themeKey}`, API_URL);
+
+    const res = await apiFetch<Preference<'POST', Theme>>({
+      method: 'POST',
+      url,
+      token,
+      vercelToken,
+      body: { value: theme },
     });
 
-    if ('error' in res) return;
+    if ('error' in res) {
+      throw Error(res.message);
+    }
 
     return res.data.doc.value;
   } catch (err) {
-    //TODO: Render an error toast
+    console.log('Update Theme Error:', extractErrorMessage(err));
   }
-};
+}

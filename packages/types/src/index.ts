@@ -1,8 +1,9 @@
-export type * from './apiResponse';
+export type * from './api';
 export type * from './auth';
 export type * from './errors';
 export * from './forms';
 export type * from './payload-types';
+export type * from './preferences';
 export type * from './psgc';
 
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark';

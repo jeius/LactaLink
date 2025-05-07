@@ -1,4 +1,4 @@
-import { APIResponse } from './apiResponse';
+import { APIResponse } from './api';
 
 export type SlugPSGC =
   | 'island-groups'

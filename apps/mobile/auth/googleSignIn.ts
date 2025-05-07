@@ -1,7 +1,6 @@
-import { API_URL } from '@/lib/constants';
+import { getMeUser } from '@/lib/api/meUser';
 import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
-import { getMeUser } from '@lactalink/utilities';
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -37,9 +36,7 @@ export async function googleSignIn(): Promise<AuthResult> {
       return { user: null, message: 'No session found' };
     }
 
-    const { access_token: token } = session;
-
-    return await getMeUser({ token, tokenType: 'Bearer', url: API_URL });
+    return await getMeUser(session.access_token);
   } catch (error) {
     if (isErrorWithCode(error)) {
       let message: string;

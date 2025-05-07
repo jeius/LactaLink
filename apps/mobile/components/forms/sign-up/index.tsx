@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 
 import { useTheme } from '@/components/providers/theme-provider';
 import { useToast } from '@/components/ui/toast';
-import { API_URL } from '@/lib/constants';
+import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
 import { OTPType } from '@lactalink/types';
@@ -39,7 +39,11 @@ export default function SignUpForm() {
       render: ({ id }) => loadingToast(id, 'Creating...', theme),
     });
 
-    const result = await isEmailTaken({ email: formData.email, apiUrl: API_URL });
+    const result = await isEmailTaken({
+      email: formData.email,
+      apiUrl: API_URL,
+      vercelToken: VERCEL_BYPASS_TOKEN,
+    });
 
     if (result === true) {
       form.setError('email', { message: 'Email already taken.', type: 'duplicate' });
