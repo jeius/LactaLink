@@ -20,6 +20,7 @@ declare global {
       PSGC_API_URL: string;
       NEXT_PUBLIC_SUPABASE_URL: string;
       NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
+      VERCEL_AUTOMATION_BYPASS_SECRET?: string;
     }
   }
 }

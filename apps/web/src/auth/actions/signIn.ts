@@ -1,9 +1,9 @@
 'use server';
 
 import { getServerSideURL } from '@/lib/utils/getURL';
+import { getMeUser } from '@/lib/utils/meUser';
 import { createClient } from '@/lib/utils/supabase/server';
 import { SignInSchema } from '@lactalink/types/forms';
-import { getMeUser } from '@lactalink/utilities/getters';
 import { redirect } from 'next/navigation';
 import { APIError } from 'payload';
 
@@ -25,12 +25,7 @@ export async function signIn({ email, password }: SignInSchema) {
       message: 'No active session, user must be logged in.',
     };
 
-  const { access_token } = session;
-
-  const { user, message } = await getMeUser({
-    token: access_token,
-    url: getServerSideURL(),
-  });
+  const { user, message } = await getMeUser(session.access_token);
 
   return { user, message };
 }

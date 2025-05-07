@@ -1,7 +1,6 @@
 'use server';
-import { getServerSideURL } from '@/lib/utils/getURL';
+import { getMeUser } from '@/lib/utils/meUser';
 import { createClient } from '@/lib/utils/supabase/server';
-import { getMeUser } from '@lactalink/utilities/getters';
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -11,12 +10,7 @@ export async function getCurrentUser() {
 
   if (!session) return null;
 
-  const { access_token } = session;
-
-  const authResult = await getMeUser({
-    token: access_token,
-    url: getServerSideURL(),
-  });
+  const authResult = await getMeUser(session.access_token);
 
   if (authResult.user) {
     return { user: authResult.user, permissions: authResult.permissions };
