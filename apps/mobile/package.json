@@ -15,8 +15,7 @@
     "preview:android": "eas build --platform android --profile preview",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
-    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc",
-    "postinstall": "turbo build"
+    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc"
   },
   "dependencies": {
     "@expo/html-elements": "^0.4.2",
