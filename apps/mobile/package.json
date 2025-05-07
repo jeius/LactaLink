@@ -12,6 +12,7 @@
     "build": "expo export --output-dir ./build --platform all",
     "build:android": "eas build:dev --platform android --profile development",
     "build:ios": "eas build:dev --platform ios --profile development",
+    "preview:android": "eas build --platform android --profile preview",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc"
