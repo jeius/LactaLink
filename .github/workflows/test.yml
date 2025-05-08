@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPO_USE_FAST_RESOLVER: true # Use the faster Metro resolver in SDK 51
+  EXPO_USE_FAST_RESOLVER: true
 
 jobs:
   packages:
@@ -23,6 +23,15 @@ jobs:
 
       - name: 🏗 Setup monorepo
         uses: ./.github/actions/setup-monorepo
+
+      - name: 🛠️ Create .env file for Expo
+        run: |
+          echo "EXPO_PUBLIC_API_URL=${{ vars.EXPO_PUBLIC_API_URL_PREVIEW }}" >> apps/mobile/.env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}" >> apps/mobile/.env
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}" >> apps/mobile/.env
+          echo "GOOGLE_IOS_CLIENT_ID=${{ secrets.GOOGLE_IOS_CLIENT_ID }}" >> apps/mobile/.env
+          echo "GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}" >> apps/mobile/.env
+          echo "VERCEL_AUTOMATION_BYPASS_SECRET=${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}" >> apps/mobile/.env
 
       - name: ✅ Lint packages
         run: pnpm run -w lint
