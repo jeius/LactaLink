@@ -1,6 +1,6 @@
 module.exports = {
   extends: '@lactalink/eslint-config/next',
-  ignorePatterns: ['node_modules', '.next', 'assets', 'public'],
+  ignorePatterns: ['node_modules', '.next', 'assets', 'public', '(payload)'],
   settings: {
     next: {
       rootDir: ['./src/'],

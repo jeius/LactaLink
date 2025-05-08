@@ -43,7 +43,7 @@ export function AppInitializer({ children }: Props) {
   if (error) {
     console.log(error);
     return (
-      <SafeAreaView className="bg-background-200 flex-1 items-center justify-center">
+      <SafeAreaView className="bg-background-50 flex-1 items-center justify-center">
         <Text size="sm">{error.message}</Text>
       </SafeAreaView>
     );
@@ -51,7 +51,7 @@ export function AppInitializer({ children }: Props) {
 
   if (!isAppReady) {
     return (
-      <SafeAreaView className="bg-background-200 flex-1 items-center justify-center">
+      <SafeAreaView className="bg-background-50 flex-1 items-center justify-center">
         <Spinner color={getHexColor(theme, 'primary', 500)} size="large" />
       </SafeAreaView>
     );
