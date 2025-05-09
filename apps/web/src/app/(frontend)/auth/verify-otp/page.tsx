@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
 import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { OTPType } from '@lactalink/types';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 import { ChevronLeft } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
@@ -32,13 +32,8 @@ interface Props {
 }
 
 export default async function Page({ searchParams }: Props) {
-  const { email, type, redirect } = await searchParams;
-  const otpType = type as OTPType;
-
-  if (!email) {
-    const msg = 'Unable to send verification code, email not provided.';
-    encodedRedirect('/error', msg);
-  }
+  const { email, type, redirect, phone } = await searchParams;
+  const otpType = type as VerifyOtpParams['type'];
 
   if (!type) {
     const msg = 'Unable to send verification code, verification type not provided.';
@@ -59,34 +54,38 @@ export default async function Page({ searchParams }: Props) {
             <ChevronLeft /> Back to sign in
           </Link>
         </Button>
-        <Card className="overflow-hidden rounded-2xl p-0 pb-10">
-          <div className="bg-background-100 relative h-40 w-full overflow-clip p-4">
+        <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
+          <div className="relative h-40 w-full overflow-clip lg:h-full">
             <NextImage
-              src={`${getServerSideURL()}/images/sign-in.png`}
-              alt="Mother Breastfeeding"
+              src={`${getServerSideURL()}/images/verification.png`}
+              alt="Phone verification"
               width={1080}
               height={1080}
-              className="absolute inset-0 -top-32 bg-cover"
+              className="size-full object-cover object-center"
             />
-            <div className="from-primary absolute inset-0 bg-gradient-to-t opacity-30" />
           </div>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Verify your account</CardTitle>
-            <CardDescription>
-              A six digit code has been sent to <strong>{email}.</strong>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="mt-6">
-            <Suspense fallback={null}>
-              <OTPForm email={email!} type={otpType} />
-            </Suspense>
-          </CardContent>
-          <CardFooter className="mt-8 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground text-sm">
-              Didn&apos;t receive the verification code?
-            </p>
-            <SendAgain email={email!} type={otpType} />
-          </CardFooter>
+
+          <div className="from-primary-100 absolute inset-0 bg-gradient-to-t opacity-30" />
+
+          <div className="lg:w-xl bg-card z-10 flex w-full flex-col gap-6 py-8">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">Verify your account</CardTitle>
+              <CardDescription>
+                A six digit code has been sent to <strong>{email}.</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="mt-6">
+              <Suspense fallback={null}>
+                <OTPForm email={email} type={otpType} phone={phone} />
+              </Suspense>
+            </CardContent>
+            <CardFooter className="mt-8 flex flex-col items-center justify-center">
+              <p className="text-muted-foreground text-sm">
+                Didn&apos;t receive the verification code?
+              </p>
+              <SendAgain email={email} type={otpType} phone={phone} />
+            </CardFooter>
+          </div>
         </Card>
       </div>
     </main>

@@ -38,6 +38,7 @@ export default buildConfig({
     },
     avatar: 'default',
     autoLogin: autoLoginConfig,
+    suppressHydrationWarning: true,
   },
   collections: Collections,
   serverURL: getServerSideURL(),

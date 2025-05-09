@@ -1,45 +1,58 @@
 'use client';
 
-import { FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
-import { useGlobalState } from '@/hooks/useGlobalState';
-import { QUERY_KEYS, RESEND_OTP } from '@/lib/constants';
+import { RESEND_OTP } from '@/lib/constants';
 import { createClient } from '@/lib/utils/supabase/client';
-import { OTPType } from '@lactalink/types/auth';
 import { formatTime } from '@lactalink/utilities/formatters';
+import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
-
-const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
+import { toast } from 'sonner';
 
 interface Props {
-  email: string;
-  type: OTPType;
+  email?: string;
+  phone?: string;
+  type: VerifyOtpParams['type'];
 }
 
-export default function SendAgain({ email, type }: Props) {
+export default function SendAgain({ email, type, phone }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [_, setMessage] = useGlobalState<FormBannerProps['message']>(queryKey, null);
   const [isSending, setIsSending] = useState(false);
+  const supabase = createClient();
 
   const sendOTP = useCallback(async () => {
     if (secondsLeft > 0) return;
 
     setIsSending(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resend({ email, type });
 
-    if (error) {
-      setMessage(error.message);
+    let error: AuthError | null = null;
+
+    try {
+      if (email) {
+        if (type === 'signup' || type === 'email_change') {
+          error = (await supabase.auth.resend({ email, type })).error;
+        } else if (type === 'recovery') {
+          error = (await supabase.auth.resetPasswordForEmail(email)).error;
+        }
+      } else if (phone) {
+        if (type === 'sms' || type === 'phone_change') {
+          error = (await supabase.auth.resend({ phone, type })).error;
+        }
+      }
+
+      if (error) {
+        toast(error.message);
+        return;
+      }
+
+      toast(`Verification sent to your ${email ? 'email' : 'inbox'}.`);
+      setSecondsLeft(RESEND_OTP);
+    } finally {
+      setIsSending(false);
     }
-
-    // Start countdown after sending
-    setSecondsLeft(RESEND_OTP);
-    setIsSending(false);
-  }, [email, setMessage, type, secondsLeft]);
+  }, [secondsLeft, email, phone, type, supabase]);
 
   useEffect(() => {
-    sendOTP();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSecondsLeft(RESEND_OTP);
   }, []);
 
   useEffect(() => {

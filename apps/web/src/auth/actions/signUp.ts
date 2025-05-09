@@ -16,25 +16,16 @@ export async function signUp({ email, password, role = 'AUTHENTICATED' }: Params
   const supabase = await createClient();
   const payload = await getPayload({ config });
 
-  const {
-    error,
-    data: { user },
-  } = await supabase.auth.signUp({ email, password });
+  const auth = await supabase.auth.signUp({ email, password });
 
-  if (error) {
-    return { user: null, message: error.message };
+  if (auth.error) {
+    return { user: null, message: auth.error.message };
   }
+
+  const user = auth.data.user;
 
   if (!user) {
     return { user: null, message: 'Unable to create admin, try again later.' };
-  }
-
-  // If identities are present, it means the user is created successfully
-  // and we can set the user id in the data object to be saved in the database.
-  // Otherwise, we can assume that the user is already created and we can skip this step.
-  // This is a workaround to avoid creating duplicate users in the database.
-  if (!user.identities?.length) {
-    return { user: null, message: 'User already exist.' };
   }
 
   try {

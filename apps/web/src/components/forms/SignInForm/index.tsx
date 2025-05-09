@@ -13,21 +13,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types/forms';
 import { useForm } from 'react-hook-form';
 
-import { FormBanner, FormBannerProps } from '@/components/forms/FormBanner';
 import { Button } from '@/components/ui/button';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { signIn } from '@/auth/actions/signIn';
+import { signIn } from '@/auth/actions';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
-import { OTPType } from '@lactalink/types';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState<FormBannerProps['message']>(null);
-  const [status, setStatus] = useState<FormBannerProps['status']>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get(SEARCH_PARAMS_KEYS.REDIRECT);
@@ -39,33 +37,24 @@ export default function SignInForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  const email = form.watch('email');
-  const password = form.watch('password');
-
-  useEffect(() => {
-    setStatus(undefined);
-  }, [email, password]);
-
   async function onSubmit(formData: SignInSchema) {
     const { email } = formData;
 
-    const { user, message } = await signIn(formData);
+    const res = await signIn(formData);
 
-    if (!user) {
-      setMessage(message);
-      setStatus('failed');
-      if (message.toLowerCase().includes('email not confirmed')) {
-        const type: OTPType = 'signup';
+    if ('error' in res) {
+      if (res.error.code === 'email_not_confirmed') {
+        const type: VerifyOtpParams['type'] = 'signup';
         const emailParams = new URLSearchParams();
         emailParams.append('email', email);
         emailParams.append('type', type);
         router.push(`/auth/verify-otp?${emailParams.toString()}`);
+        return;
       }
-      return;
+      toast(res.error.message, { className: 'bg-destructive', dismissible: true });
     }
 
-    setMessage('🎉 Signed in successfully.');
-    setStatus('success');
+    toast('🎉 Signed in successfully.', { className: 'bg-success-500', dismissible: true });
 
     if (redirect) {
       router.replace(redirect);
@@ -76,7 +65,7 @@ export default function SignInForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-5">
         <FormField
           control={form.control}
           name="email"
@@ -85,7 +74,7 @@ export default function SignInForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <div className="focus-within:outline-primary flex w-full items-center gap-1 overflow-clip rounded-full border pl-4 focus-within:outline-2">
+                  <div className="focus-within:outline-primary flex w-full items-center gap-1.5 overflow-clip rounded-xl border pl-2 focus-within:outline-2">
                     <MailIcon className="text-primary size-4" />
                     <Input
                       placeholder="Enter email address"
@@ -121,7 +110,7 @@ export default function SignInForm() {
                   </Button>
                 </div>
                 <FormControl>
-                  <div className="focus-within:outline-primary flex w-full items-center gap-1 overflow-clip rounded-full border pl-4 focus-within:outline-2">
+                  <div className="focus-within:outline-primary flex w-full items-center gap-1.5 overflow-clip rounded-xl border pl-2 focus-within:outline-2">
                     <LockIcon className="text-primary size-4" />
                     <Input
                       placeholder="Enter password"
@@ -142,7 +131,7 @@ export default function SignInForm() {
           <Button
             type="button"
             variant={'link'}
-            className="text-muted-foreground hover:text-foreground p-0 text-xs hover:no-underline"
+            className="text-muted-foreground hover:text-foreground -mt-6 p-0 text-xs hover:no-underline"
             size={'sm'}
             asChild
           >
@@ -150,14 +139,10 @@ export default function SignInForm() {
           </Button>
         </div>
 
-        <div className="flex w-full justify-center">
-          <FormBanner status={status} message={message} />
-        </div>
-
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="mx-auto w-full max-w-md rounded-full py-6 text-lg font-normal"
+          className="mx-auto mt-6 w-full max-w-md rounded-xl py-6 text-lg font-normal"
           size="lg"
         >
           {isSubmitting ? 'Signing in...' : 'Sign In'}

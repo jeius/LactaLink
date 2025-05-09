@@ -2,51 +2,42 @@
 
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { createClient } from '@/lib/utils/supabase/server';
-import { AuthResult } from '@lactalink/types/auth';
-import {
-  getAuth as GetAuth,
-  signIn as SignIn,
-  signOut as SignOut,
-  signUp as SignUp,
-} from '@lactalink/utilities';
-
-const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-const apiUrl = getServerSideURL();
-const supabase = await createClient();
+import { getAuth as GetAuth, signIn as SignIn, signOut as SignOut } from '@lactalink/utilities';
+import { redirect } from 'next/navigation';
 
 type Params = { email: string; password: string };
 
 export async function signIn(params: Params) {
+  const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  const apiUrl = getServerSideURL();
+  const supabase = await createClient();
   return await SignIn({ ...params, supabase, apiUrl, vercelToken });
 }
 
-export async function signUp(params: Params) {
-  return await SignUp({ ...params, supabase });
-}
-
 export async function signOut() {
+  const supabase = await createClient();
   return await SignOut(supabase);
 }
 
 export async function getAuth() {
+  const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  const apiUrl = getServerSideURL();
+  const supabase = await createClient();
   return await GetAuth({ supabase, apiUrl, vercelToken });
 }
 
-export async function googleSignIn(): Promise<AuthResult> {
+export async function googleSignIn() {
   const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const auth = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${getServerSideURL()}/auth/callback`,
     },
   });
 
-  if (error) {
-    return { error };
+  if (auth.error) {
+    return { error: auth.error };
   }
 
-  if (data?.url) {
-    redirect(data.url);
-  }
+  redirect(auth.data.url);
 }

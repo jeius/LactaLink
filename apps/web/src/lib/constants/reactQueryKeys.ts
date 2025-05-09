@@ -3,4 +3,5 @@ export const QUERY_KEYS = {
     ALL: ['verify-otp'],
     MESSAGE: ['verify-otp', 'message'],
   },
+  THEME: ['theme'],
 };

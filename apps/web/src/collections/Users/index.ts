@@ -1,4 +1,4 @@
-import { signOut } from '@/auth/actions/signOut';
+import { signOut } from '@/auth/actions';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
