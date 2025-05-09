@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const emailSchema = z.string().email('Invalid email address');
+export const emailSchema = z.string().email('Invalid email address');
 
 const passwordSchema = z.string().min(8, 'Required minimum 8 characters long');
 
@@ -37,6 +37,8 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = confirmPasswordSchema;
+
+export type EmailSchema = z.infer<typeof emailSchema>;
 
 export type SignInSchema = z.infer<typeof signInSchema>;
 

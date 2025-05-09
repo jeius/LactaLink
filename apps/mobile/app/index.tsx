@@ -9,7 +9,7 @@ export default function Page() {
 
   if (user) return <Redirect href="/home" />;
 
-  if (viewedOnboarding) return <Redirect href="/sign-in" />;
+  if (viewedOnboarding) return <Redirect href="/auth/sign-in" />;
 
   return <Redirect href="/welcome" />;
 }

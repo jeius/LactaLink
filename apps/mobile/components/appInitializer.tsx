@@ -1,4 +1,4 @@
-import { getAuth } from '@/auth/getAuth';
+import { getAuth } from '@/auth';
 import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
 import { useQuery } from '@tanstack/react-query';
 

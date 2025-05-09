@@ -7,6 +7,7 @@ export default function Layout() {
       <Stack.Screen name="sign-up/index" options={{ headerShown: false }} />
       <Stack.Screen name="sign-in/index" options={{ headerShown: false }} />
       <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
+      <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
       <Stack.Screen name="verify-otp/index" options={{ headerShown: false }} />
     </Stack>
   );

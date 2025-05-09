@@ -1,15 +1,15 @@
 import Verified from '@/assets/icons/account-verified.svg';
 import { VStack } from '@/components/ui/vstack';
 
+import SafeArea from '@/components/safe-area';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Settings2Icon } from 'lucide-react-native';
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Setup() {
   return (
-    <SafeAreaView className="bg-background-50 relative flex flex-1 justify-center p-5">
+    <SafeArea className="justify-center p-5">
       <VStack
         space="2xl"
         className="border-outline-100 bg-background-0 shadow-hard-5 items-center rounded-2xl border p-5"
@@ -33,6 +33,6 @@ export default function Setup() {
           <ButtonText>Setup Account</ButtonText>
         </Button>
       </VStack>
-    </SafeAreaView>
+    </SafeArea>
   );
 }

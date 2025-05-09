@@ -1,4 +1,5 @@
 export type {
+  EmailSchema,
   ForgotPasswordSchema,
   OtpSchema,
   ResetPasswordSchema,
@@ -7,6 +8,7 @@ export type {
 } from './auth';
 
 export {
+  emailSchema,
   forgotPasswordSchema,
   otpSchema,
   resetPasswordSchema,

@@ -2,6 +2,7 @@ import Logo from '@/assets/svgs/logo.svg';
 import VerifyImage from '@/assets/svgs/verification.svg';
 import OTPForm from '@/components/forms/otp';
 import { useTheme } from '@/components/providers/theme-provider';
+import SafeArea from '@/components/safe-area';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -15,13 +16,12 @@ import { getHexColor } from '@/lib/colors';
 import { RESEND_OTP } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
-import { OTPType } from '@lactalink/types';
 import { formatTime } from '@lactalink/utilities';
+import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function VerifyOTP() {
   const { width, height } = Dimensions.get('window');
@@ -30,10 +30,11 @@ export default function VerifyOTP() {
 
   const toast = useToast();
   const { theme } = useTheme();
-  const { email, type } = useLocalSearchParams();
+  const { email: emailParams, type: typeParams, phone: phoneParams } = useLocalSearchParams();
 
-  const formattedEmail = Array.isArray(email) ? email[0] : email;
-  const formattedType = (Array.isArray(type) ? type[0] : type) as OTPType;
+  const email = Array.isArray(emailParams) ? emailParams[0] : emailParams;
+  const phone = Array.isArray(phoneParams) ? phoneParams[0] : phoneParams;
+  const type = (Array.isArray(typeParams) ? typeParams[0] : typeParams) as VerifyOtpParams['type'];
 
   const gradientColors = [
     'transparent',
@@ -43,59 +44,65 @@ export default function VerifyOTP() {
   const sendOTP = useCallback(async () => {
     if (secondsLeft > 0) return;
 
-    setIsSending(true);
-    toast.show({
-      id: 'otp',
-      placement: 'top',
-      duration: null,
-      render: ({ id }) => loadingToast(id, 'Sending verification code...', theme),
-    });
+    const showToast = (type: 'loading' | 'error' | 'success', message: string) => {
+      const renderers = {
+        loading: loadingToast,
+        error: errorToast,
+        success: successToast,
+      };
 
-    const { error } = await supabase.auth.resend({ email: formattedEmail, type: formattedType });
-
-    if (error) {
       toast.show({
         id: 'otp',
         placement: 'top',
-        render: ({ id }) => errorToast(id, error.message),
+        duration: type === 'loading' ? null : undefined,
+        render: ({ id }) => renderers[type](id, message, theme),
       });
+    };
+
+    setIsSending(true);
+    showToast('loading', 'Sending verification code...');
+
+    let error: AuthError | null = null;
+
+    try {
+      if (email) {
+        if (type === 'signup' || type === 'email_change') {
+          error = (await supabase.auth.resend({ email, type })).error;
+        } else if (type === 'recovery') {
+          error = (await supabase.auth.resetPasswordForEmail(email)).error;
+        }
+      } else if (phone) {
+        if (type === 'sms' || type === 'phone_change') {
+          error = (await supabase.auth.resend({ phone, type })).error;
+        }
+      }
+
+      if (error) {
+        showToast('error', error.message);
+        return;
+      }
+
+      showToast('success', `Verification sent to your ${email ? 'email' : 'inbox'}.`);
+      setSecondsLeft(RESEND_OTP);
+    } finally {
+      setIsSending(false);
     }
-
-    toast.show({
-      id: 'otp',
-      placement: 'top',
-      render: ({ id }) => successToast(id, 'Verification sent.', 'Please check your email.'),
-    });
-
-    // Start countdown after sending
-    setSecondsLeft(RESEND_OTP);
-    setIsSending(false);
-  }, [formattedEmail, formattedType, secondsLeft, theme, toast]);
+  }, [email, phone, type, secondsLeft, theme, toast]);
 
   useEffect(() => {
-    if (!email) {
+    if (!typeParams) {
       toast.show({
         id: 'otp',
-        duration: 3000,
-        placement: 'top',
-        render: ({ id }) => errorToast(id, 'Recepient email not found.'),
-      });
-      router.back();
-    }
-    if (!type) {
-      toast.show({
-        id: 'otp',
-        duration: 3000,
         placement: 'top',
         render: ({ id }) => errorToast(id, 'Verification type not found.'),
       });
-      router.back();
+      if (router.canGoBack()) router.back();
     }
-  }, [email, toast, type]);
+  }, [toast, typeParams]);
 
   useEffect(() => {
     toast.closeAll();
-    sendOTP();
+    setSecondsLeft(RESEND_OTP);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -110,7 +117,7 @@ export default function VerifyOTP() {
   }, [secondsLeft]);
 
   return (
-    <SafeAreaView className="bg-background-50 relative flex flex-1 flex-col items-end justify-center p-5">
+    <SafeArea className="items-start justify-center p-5">
       <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
         <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
           <VerifyImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
@@ -129,7 +136,7 @@ export default function VerifyOTP() {
               <Text size="md" className="text-typography-700">
                 A six digit code has been sent to{' '}
                 <Text bold className="text-typography-700">
-                  {formattedEmail}
+                  {email}
                 </Text>
                 .
               </Text>
@@ -138,7 +145,7 @@ export default function VerifyOTP() {
         </VStack>
 
         <Box className="p-5">
-          <OTPForm email={formattedEmail} type={formattedType} />
+          <OTPForm email={email} type={type} phone={phone} />
         </Box>
 
         <VStack className="mx-auto items-center p-5">
@@ -165,9 +172,9 @@ export default function VerifyOTP() {
       {router.canGoBack() && (
         <Button variant="link" action="default" size="md" onPress={() => router.back()}>
           <ButtonIcon as={ChevronLeftIcon} />
-          <ButtonText>Back to sign in</ButtonText>
+          <ButtonText>Go back</ButtonText>
         </Button>
       )}
-    </SafeAreaView>
+    </SafeArea>
   );
 }

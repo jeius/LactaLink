@@ -41,14 +41,14 @@ const Home = () => {
 
   function handleNext() {
     if (isLastSlide) {
-      router.replace('/sign-up');
+      router.replace('/auth/sign-up');
     }
     ref.current?.next();
   }
 
   function handleSkip() {
     Storage.set(MMKV_KEYS.ONBOARDING, true);
-    router.replace('/sign-in');
+    router.replace('/auth/sign-in');
   }
 
   function handleScrollEnd() {

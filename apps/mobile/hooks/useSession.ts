@@ -1,8 +1,5 @@
-import { getAuth } from '@/auth/getAuth';
+import { getAuth, signIn, signOut, signUp } from '@/auth';
 import { googleSignIn } from '@/auth/googleSignIn';
-import { signIn } from '@/auth/signIn';
-import { signOut } from '@/auth/signOut';
-import { signUp } from '@/auth/signUp';
 import { QUERY_KEYS } from '@/lib/constants';
 import { AuthResult } from '@lactalink/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -52,12 +49,12 @@ export function useSession() {
     },
   });
 
-  const user = (auth && auth.user) || null;
-  const session = (auth && 'token' in auth && auth.token) || null;
+  const user = (auth && 'data' in auth && auth.data.user) || null;
+  const token = (auth && 'data' in auth && auth.data.token) || null;
 
   return {
     user,
-    session,
+    token,
     isLoading,
     isError,
     signIn: signInMutation.mutateAsync,

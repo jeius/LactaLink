@@ -10,11 +10,11 @@ import { VStack } from '@/components/ui/vstack';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SignUpForm from '@/components/forms/sign-up';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
+import SafeArea from '@/components/safe-area';
 import { getHexColor } from '@/lib/colors/getColor';
 
 export default function SignUp() {
@@ -26,7 +26,7 @@ export default function SignUp() {
   ] as const;
 
   return (
-    <SafeAreaView className="bg-background-50 relative flex flex-1 p-5">
+    <SafeArea className="p-5">
       <KeyboardAvoidingWrapper>
         <VStack className="bg-background-0 border-outline-200 shadow-hard-5 m-auto w-full max-w-md overflow-hidden rounded-2xl border">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
@@ -43,7 +43,7 @@ export default function SignUp() {
                 <Text size="md" className="text-typography-600">
                   Already have an account?
                 </Text>
-                <Button size="md" variant="link" onPress={() => router.push('/(auth)/sign-in')}>
+                <Button size="md" variant="link" onPress={() => router.push('/auth/sign-in')}>
                   <ButtonText className="text-primary-500">Sign in</ButtonText>
                 </Button>
               </HStack>
@@ -79,6 +79,6 @@ export default function SignUp() {
           </HStack>
         </VStack>
       </KeyboardAvoidingWrapper>
-    </SafeAreaView>
+    </SafeArea>
   );
 }

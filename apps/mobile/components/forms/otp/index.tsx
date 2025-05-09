@@ -8,13 +8,16 @@ import { getHexColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast } from '@/lib/toaster';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { otpSchema, OtpSchema, OTPType } from '@lactalink/types';
+import { otpSchema, OtpSchema } from '@lactalink/types';
+import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { OtpInput } from 'react-native-otp-entry';
 
-export default function OTPForm({ email, type }: { email: string; type: OTPType }) {
+type OTPFormProps = { email?: string; phone?: string; type: VerifyOtpParams['type'] };
+
+export default function OTPForm({ email, type, phone }: OTPFormProps) {
   const {
     control,
     formState: { isSubmitting, errors },
@@ -38,7 +41,17 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
       render: ({ id }) => loadingToast(id, 'Verifying code...', theme),
     });
 
-    const { error } = await supabase.auth.verifyOtp({ email, type, token: otp });
+    let error: AuthError | null = null;
+
+    if (type === 'sms' || type === 'phone_change') {
+      if (phone) {
+        error = (await supabase.auth.verifyOtp({ phone, type, token: otp })).error;
+      }
+    } else {
+      if (email) {
+        error = (await supabase.auth.verifyOtp({ email, type, token: otp })).error;
+      }
+    }
 
     if (error) {
       toast.show({
@@ -46,10 +59,16 @@ export default function OTPForm({ email, type }: { email: string; type: OTPType 
         placement: 'top',
         render: ({ id }) => errorToast(id, error.message),
       });
+      return;
     }
 
     toast.closeAll();
-    router.replace('/setup-profile');
+
+    if (type === 'recovery') {
+      router.replace('/auth/reset-password');
+    } else {
+      router.replace('/setup-profile');
+    }
   }
 
   return (

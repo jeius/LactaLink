@@ -3,6 +3,7 @@ import SignInImage from '@/assets/svgs/sign-in.svg';
 import SignInForm from '@/components/forms/sign-in';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
+import SafeArea from '@/components/safe-area';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import { getHexColor } from '@/lib/colors';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SignIn() {
   const { width, height } = Dimensions.get('window');
@@ -26,7 +26,7 @@ export default function SignIn() {
   ] as const;
 
   return (
-    <SafeAreaView className="bg-background-50 relative flex flex-1 flex-col">
+    <SafeArea>
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
         <SignInImage
           width={width * 1.2}
@@ -49,7 +49,7 @@ export default function SignIn() {
               <Text size="md" className="text-typography-600">
                 Don&apos;t have an account?
               </Text>
-              <Button size="md" variant="link" onPress={() => router.push('/(auth)/sign-up')}>
+              <Button size="md" variant="link" onPress={() => router.push('/auth/sign-up')}>
                 <ButtonText className="text-primary-500">Create account</ButtonText>
               </Button>
             </HStack>
@@ -58,6 +58,6 @@ export default function SignIn() {
           <SignInForm />
         </VStack>
       </KeyboardAvoidingWrapper>
-    </SafeAreaView>
+    </SafeArea>
   );
 }

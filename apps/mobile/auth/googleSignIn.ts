@@ -1,12 +1,14 @@
-import { getMeUser } from '@/lib/api/meUser';
+import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthResult } from '@lactalink/types';
+import { getMeUser } from '@lactalink/utilities';
 import {
   GoogleSignin,
   isErrorWithCode,
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { AuthError } from '@supabase/supabase-js';
 
 export async function googleSignIn(): Promise<AuthResult> {
   try {
@@ -14,13 +16,13 @@ export async function googleSignIn(): Promise<AuthResult> {
     const res = await GoogleSignin.signIn();
 
     if (!isSuccessResponse(res)) {
-      return { user: null, message: 'Could not authenticate with Google. Try again later!' };
+      throw new AuthError('Could not authenticate with Google. Try again later!');
     }
 
     const { idToken } = res.data;
 
     if (!idToken) {
-      return { user: null, message: 'No Google ID Token found' };
+      throw new AuthError('No Google ID Token found');
     }
 
     const {
@@ -29,17 +31,18 @@ export async function googleSignIn(): Promise<AuthResult> {
     } = await supabase.auth.signInWithIdToken({ token: idToken, provider: 'google' });
 
     if (error) {
-      return { user: null, message: error.message };
+      throw error;
     }
 
     if (!session) {
-      return { user: null, message: 'No session found' };
+      throw new AuthError('No session found');
     }
 
-    return await getMeUser(session.access_token);
+    return await getMeUser(session.access_token, API_URL, VERCEL_BYPASS_TOKEN);
   } catch (error) {
+    let message: string = 'An unknown error occured. Please try again later!';
+
     if (isErrorWithCode(error)) {
-      let message: string;
       switch (error.code) {
         case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
           message = 'Play services not available or outdated.';
@@ -61,14 +64,12 @@ export async function googleSignIn(): Promise<AuthResult> {
           message = 'Unknown error occurred.';
           break;
       }
-
-      return { message, user: null };
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else if (error instanceof AuthError) {
+      return { error };
     }
 
-    if (error instanceof Error) {
-      return { user: null, message: error.message };
-    }
-
-    return { user: null, message: 'An unknown error occured. Please try again later!' };
+    return { error: new AuthError(message) };
   }
 }

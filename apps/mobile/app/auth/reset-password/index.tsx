@@ -1,11 +1,11 @@
 import SafeArea from '@/components/safe-area';
+import { Text } from '@/components/ui/text';
 import React from 'react';
-import { Text } from 'react-native';
 
-export default function SetupForm() {
+export default function ResetPassword() {
   return (
     <SafeArea>
-      <Text>SetupForm</Text>
+      <Text>Reset Password</Text>
     </SafeArea>
   );
 }

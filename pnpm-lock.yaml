@@ -438,6 +438,9 @@ importers:
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@supabase/supabase-js':
+        specifier: ^2.49.4
+        version: 2.49.4
       '@types/node':
         specifier: ^22.5.4
         version: 22.13.13

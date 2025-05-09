@@ -15,13 +15,15 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { OTPType, signInSchema, type SignInSchema } from '@lactalink/types';
+import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
 import { useTheme } from '@/components/providers/theme-provider';
 import { useToast } from '@/components/ui/toast';
 import { useSession } from '@/hooks/useSession';
+import { supabase } from '@/lib/supabase';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -49,33 +51,36 @@ export default function SignInForm() {
       render: ({ id }) => loadingToast(id, 'Signing in...', theme),
     });
 
-    const { message, user } = await signIn(formData);
+    const res = await signIn(formData);
 
-    if (!user) {
-      if (message.toLowerCase().includes('email not confirmed')) {
-        const type: OTPType = 'signup';
-        router.push({
-          pathname: '/verify-otp',
-          params: { email: formData.email, type },
-        });
+    if ('error' in res) {
+      if (res.error.code === 'email_not_confirmed') {
+        const type: VerifyOtpParams['type'] = 'signup';
+        const email = formData.email;
+
+        await supabase.auth.resend({ email, type });
+
         toast.close('sign-in');
+        router.push({
+          pathname: '/auth/verify-otp',
+          params: { email, type },
+        });
         return;
       }
       toast.show({
         id: 'sign-in',
-        duration: 3000,
         placement: 'top',
-        render: ({ id }) => errorToast(id, message),
+        render: ({ id }) => errorToast(id, res.error.message),
       });
-    } else {
-      toast.show({
-        id: 'sign-in',
-        duration: 3000,
-        placement: 'top',
-        render: ({ id }) => successToast(id, '🎉 Welcome back!'),
-      });
-      router.replace('/home');
+      return;
     }
+
+    toast.show({
+      id: 'sign-in',
+      placement: 'top',
+      render: ({ id }) => successToast(id, '🎉 Welcome back!'),
+    });
+    router.replace('/home');
   }
 
   return (
@@ -158,7 +163,7 @@ export default function SignInForm() {
             className="justify-start"
             isDisabled={isSubmitting}
             onPress={() => {
-              router.push('./(auth)/forgot-password/index');
+              router.push('/auth/forgot-password');
             }}
           >
             <ButtonText className="text-typography-700 font-JakartaMedium w-min">

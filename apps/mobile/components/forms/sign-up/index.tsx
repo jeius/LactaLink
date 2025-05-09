@@ -13,8 +13,8 @@ import { useToast } from '@/components/ui/toast';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
-import { OTPType } from '@lactalink/types';
 import { isEmailTaken } from '@lactalink/utilities';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 import { FormSlide } from './form-slide';
 
 const FIELD_NAMES: ControllerProps<SignUpSchema>['name'][] = ['email', 'password'];
@@ -53,7 +53,6 @@ export default function SignUpForm() {
     } else if (typeof result === 'string') {
       toast.show({
         id: 'sign-up',
-        duration: 3000,
         placement: 'top',
         render: ({ id }) => errorToast(id, result),
       });
@@ -65,20 +64,18 @@ export default function SignUpForm() {
     if (user) {
       toast.show({
         id: 'sign-up',
-        duration: 3000,
         placement: 'top',
         render: ({ id }) => successToast(id, '🎉 Account created.'),
       });
 
-      const type: OTPType = 'signup';
+      const type: VerifyOtpParams['type'] = 'signup';
       router.replace({
-        pathname: '/verify-otp',
+        pathname: '/auth/verify-otp',
         params: { email: formData.email, type },
       });
     } else {
       toast.show({
         id: 'sign-up',
-        duration: 3000,
         placement: 'top',
         render: ({ id }) => errorToast(id, message),
       });

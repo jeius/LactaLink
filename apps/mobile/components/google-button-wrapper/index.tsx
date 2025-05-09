@@ -31,16 +31,16 @@ export default function GoogleButtonWrapper({
       render: ({ id }) => loadingToast(id, 'Authenticating with google...', theme),
     });
 
-    const authRes = await googleAuth();
+    const authRes = await googleAuth().finally(() => {
+      setIsSubmitting(false);
+    });
 
-    setIsSubmitting(false);
-
-    if (!authRes.user) {
+    if ('error' in authRes) {
       toast.show({
         id: 'google-auth',
         placement: 'top',
         duration: 3000,
-        render: ({ id }) => errorToast(id, authRes.message),
+        render: ({ id }) => errorToast(id, authRes.error.message),
       });
       return;
     }

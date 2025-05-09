@@ -45,5 +45,8 @@
   },
   "dependencies": {
     "zod": "^3.24.3"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.49.4"
   }
 }
