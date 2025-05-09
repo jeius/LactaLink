@@ -1,5 +1,5 @@
+import ForgotPassImage from '@/assets/svgs/forgot-password.svg';
 import Logo from '@/assets/svgs/logo.svg';
-import VerifyImage from '@/assets/svgs/verification.svg';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
@@ -83,7 +83,7 @@ export default function ForgotPassword() {
         <VStack className="my-auto items-start justify-center">
           <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
-              <VerifyImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
+              <ForgotPassImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
 
               <GradientBackground colors={gradientColors} className="opacity-40" />
 

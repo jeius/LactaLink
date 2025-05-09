@@ -43,11 +43,11 @@ export default async function Page() {
         <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
           <div className="relative h-40 w-full overflow-clip lg:h-full">
             <NextImage
-              src={`${getServerSideURL()}/images/sign-up.png`}
+              src={`${getServerSideURL()}/images/admin.png`}
               alt="Mother in chair"
-              width={1080}
-              height={1080}
-              className="size-full object-cover object-top"
+              width={1024}
+              height={1024}
+              className="size-full object-cover"
             />
           </div>
 

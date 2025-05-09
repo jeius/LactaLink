@@ -6,6 +6,7 @@ export default function Layout() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="setup-profile" options={{ headerShown: false }} />
+      <Stack.Screen name="welcome/index" options={{ headerShown: false }} />
     </Stack>
   );
 }
