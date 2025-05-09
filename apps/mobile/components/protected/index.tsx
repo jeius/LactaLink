@@ -9,20 +9,21 @@ import SafeArea from '../safe-area';
 import { Spinner } from '../ui/spinner';
 
 export function Protected(props: SafeAreaViewProps) {
-  const { user, session, isLoading } = useSession();
+  const { user, token, isLoading } = useSession();
   const { theme } = useTheme();
+
   useEffect(() => {
     if (!isLoading) {
-      if (!user || !session) {
+      if (!user || !token) {
         router.replace('/auth/sign-in');
       }
       if (user && !userHasProfile(user)) {
         router.replace('/setup-profile');
       }
     }
-  }, [user, session, isLoading]);
+  }, [user, token, isLoading]);
 
-  if (isLoading || !user || !session) {
+  if (isLoading || !user || !token) {
     return (
       <SafeArea>
         <Spinner color={getHexColor(theme, 'primary', 500)} size={'large'} />

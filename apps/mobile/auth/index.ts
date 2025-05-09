@@ -6,6 +6,7 @@ import {
   signOut as SignOut,
   signUp as SignUp,
 } from '@lactalink/utilities';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const vercelToken = VERCEL_BYPASS_TOKEN;
 const apiUrl = API_URL;
@@ -21,6 +22,9 @@ export async function signUp(params: Params) {
 }
 
 export async function signOut() {
+  if (GoogleSignin.hasPreviousSignIn()) {
+    GoogleSignin.signOut();
+  }
   return await SignOut(supabase);
 }
 
