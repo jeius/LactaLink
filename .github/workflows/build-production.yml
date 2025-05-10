@@ -16,8 +16,6 @@ on:
         description: Auto submit to the store?
         type: boolean
         required: false
-  push:
-    branches: [main]
 
 jobs:
   build:

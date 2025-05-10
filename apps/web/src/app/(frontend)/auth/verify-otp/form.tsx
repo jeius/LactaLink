@@ -16,15 +16,12 @@ import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 
-import { QUERY_KEYS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { createClient } from '@/lib/utils/supabase/client';
 import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-
-const queryKey = QUERY_KEYS.VERIFY_OTP.MESSAGE;
 
 interface OTPFormProps {
   email?: string;
