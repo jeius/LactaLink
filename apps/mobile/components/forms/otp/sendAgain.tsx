@@ -1,9 +1,7 @@
-import { useTheme } from '@/components/providers/theme-provider';
 import { Button, ButtonText } from '@/components/ui/button';
-import { useToast } from '@/components/ui/toast';
+import { useAppToast } from '@/hooks/useAppToast';
 import { RESEND_OTP } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
-import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { formatTime } from '@lactalink/utilities';
 import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -18,29 +16,17 @@ export default function SendAgain({ email, type, phone }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isSending, setIsSending] = useState(false);
 
-  const toast = useToast();
-  const { theme } = useTheme();
+  const toast = useAppToast();
 
   const sendOTP = useCallback(async () => {
     if (secondsLeft > 0) return;
 
-    const showToast = (type: 'loading' | 'error' | 'success', message: string) => {
-      const renderers = {
-        loading: loadingToast,
-        error: errorToast,
-        success: successToast,
-      };
-
-      toast.show({
-        id: 'otp',
-        placement: 'top',
-        duration: type === 'loading' ? null : undefined,
-        render: ({ id }) => renderers[type](id, message, theme),
-      });
-    };
-
     setIsSending(true);
-    showToast('loading', 'Sending verification code...');
+    toast.show({
+      id: 'otp',
+      type: 'loading',
+      message: 'Sending verification code...',
+    });
 
     let error: AuthError | null = null;
 
@@ -58,16 +44,25 @@ export default function SendAgain({ email, type, phone }: Props) {
       }
 
       if (error) {
-        showToast('error', error.message);
+        toast.show({
+          id: 'otp',
+          type: 'error',
+          message: error.message,
+        });
         return;
       }
 
-      showToast('success', `Verification sent to your ${email ? 'email' : 'inbox'}.`);
       setSecondsLeft(RESEND_OTP);
+      const recepient = email ? email : phone ? phone : undefined;
+      toast.show({
+        id: 'otp',
+        type: 'error',
+        message: recepient ? `Verification sent to ${recepient}.` : 'Verification sent.',
+      });
     } finally {
       setIsSending(false);
     }
-  }, [email, phone, type, secondsLeft, theme, toast]);
+  }, [email, phone, type, secondsLeft, toast]);
 
   useEffect(() => {
     toast.closeAll();

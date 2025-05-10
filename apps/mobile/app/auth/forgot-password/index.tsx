@@ -1,5 +1,4 @@
 import ForgotPassImage from '@/assets/svgs/forgot-password.svg';
-import Logo from '@/assets/svgs/logo.svg';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
@@ -14,14 +13,12 @@ import {
 } from '@/components/ui/form-control';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
-import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
+import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
-import { errorToast, loadingToast } from '@/lib/toaster';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/types';
 import { VerifyOtpParams } from '@supabase/supabase-js';
@@ -37,7 +34,7 @@ type Schema = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
   const { width, height } = Dimensions.get('window');
-  const toast = useToast();
+  const toast = useAppToast();
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -57,9 +54,8 @@ export default function ForgotPassword() {
   async function onSubmit({ email }: Schema) {
     toast.show({
       id: 'forgot-password',
-      duration: null,
-      placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Requesting reset...', theme),
+      message: 'Requesting reset...',
+      type: 'loading',
     });
 
     const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -67,8 +63,8 @@ export default function ForgotPassword() {
     if (error) {
       toast.show({
         id: 'forgot-password',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, error.message),
+        message: error.message,
+        type: 'error',
       });
       return;
     }
@@ -84,10 +80,7 @@ export default function ForgotPassword() {
           <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
               <ForgotPassImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
-
               <GradientBackground colors={gradientColors} className="opacity-40" />
-
-              <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
             </Box>
 
             <VStack>
@@ -138,7 +131,7 @@ export default function ForgotPassword() {
 
               <Button
                 isDisabled={isSubmitting}
-                size="xl"
+                size="lg"
                 variant="solid"
                 action="primary"
                 onPress={handleSubmit(onSubmit)}

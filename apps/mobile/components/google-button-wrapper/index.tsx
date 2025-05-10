@@ -1,15 +1,13 @@
 import GoogleIcon from '@/assets/icons/google.svg';
+import { useAppToast } from '@/hooks/useAppToast';
 import { useSession } from '@/hooks/useSession';
-import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
-import { useTheme } from '../providers/theme-provider';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Text } from '../ui/text';
-import { useToast } from '../ui/toast';
 import { VStack } from '../ui/vstack';
 
 export default function GoogleButtonWrapper({
@@ -18,17 +16,15 @@ export default function GoogleButtonWrapper({
   ...props
 }: ViewProps & { disabled?: boolean }) {
   const { googleAuth } = useSession();
-  const toast = useToast();
-  const { theme } = useTheme();
+  const toast = useAppToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleGoogleAuth() {
     setIsSubmitting(true);
     toast.show({
       id: 'google-auth',
-      placement: 'top',
-      duration: null,
-      render: ({ id }) => loadingToast(id, 'Authenticating with google...', theme),
+      type: 'loading',
+      message: 'Authenticating with google...',
     });
 
     const authRes = await googleAuth().finally(() => {
@@ -38,18 +34,16 @@ export default function GoogleButtonWrapper({
     if ('error' in authRes) {
       toast.show({
         id: 'google-auth',
-        placement: 'top',
-        duration: 3000,
-        render: ({ id }) => errorToast(id, authRes.error.message),
+        type: 'error',
+        message: authRes.error.message,
       });
       return;
     }
 
     toast.show({
       id: 'google-auth',
-      placement: 'top',
-      duration: 3000,
-      render: ({ id }) => successToast(id, 'Welcome! 👋'),
+      type: 'success',
+      message: 'Welcome! 👋',
     });
 
     router.replace('/home');

@@ -13,3 +13,9 @@ export default function Page() {
 
   return <Redirect href="/welcome" />;
 }
+
+// import { Redirect } from 'expo-router';
+
+// export default function Page() {
+//   return <Redirect href="/auth/reset-password" />;
+// }

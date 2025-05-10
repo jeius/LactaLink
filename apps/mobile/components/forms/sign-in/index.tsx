@@ -18,11 +18,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
-import { useTheme } from '@/components/providers/theme-provider';
-import { useToast } from '@/components/ui/toast';
+import { useAppToast } from '@/hooks/useAppToast';
 import { useSession } from '@/hooks/useSession';
 import { supabase } from '@/lib/supabase';
-import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
@@ -31,8 +29,7 @@ import React, { useState } from 'react';
 export default function SignInForm() {
   const [showPass, setShowPass] = useState(false);
   const { signIn } = useSession();
-  const toast = useToast();
-  const { theme } = useTheme();
+  const toast = useAppToast();
 
   const {
     handleSubmit,
@@ -46,9 +43,8 @@ export default function SignInForm() {
   async function onSubmit(formData: SignInSchema) {
     toast.show({
       id: 'sign-in',
-      duration: null,
-      placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Signing in...', theme),
+      message: 'Signing in...',
+      type: 'loading',
     });
 
     const res = await signIn(formData);
@@ -69,16 +65,16 @@ export default function SignInForm() {
       }
       toast.show({
         id: 'sign-in',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, res.error.message),
+        message: res.error.message,
+        type: 'error',
       });
       return;
     }
 
     toast.show({
       id: 'sign-in',
-      placement: 'top',
-      render: ({ id }) => successToast(id, '🎉 Welcome back!'),
+      message: '🎉 Welcome back!',
+      type: 'success',
     });
     router.replace('/home');
   }

@@ -11,7 +11,8 @@ import { getHexColor } from '../colors';
 export function loadingToast(
   id: string,
   message = 'Loading...',
-  theme: keyof ColorsConfig = 'light'
+  theme: keyof ColorsConfig = 'light',
+  description?: string
 ) {
   const { width } = Dimensions.get('window');
   const spinnerColor = getHexColor(theme, 'info', 0);
@@ -28,6 +29,7 @@ export function loadingToast(
           <Spinner size="small" color={spinnerColor} />
           <ToastTitle>{message}</ToastTitle>
         </HStack>
+        {description && <ToastDescription>{description}</ToastDescription>}
       </Toast>
     </SafeAreaView>
   );

@@ -2,11 +2,10 @@ import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
+import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
-import { errorToast, loadingToast } from '@/lib/toaster';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema } from '@lactalink/types';
 import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
@@ -27,7 +26,7 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
     defaultValues: { otp: '' },
   });
 
-  const toast = useToast();
+  const toast = useAppToast();
   const { theme } = useTheme();
   const textColor = getHexColor(theme, 'typography', 900);
   const focusColor = getHexColor(theme, 'indicator', 'primary');
@@ -36,9 +35,8 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
   async function onSubmit({ otp }: OtpSchema) {
     toast.show({
       id: 'otp',
-      duration: null,
-      placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Verifying code...', theme),
+      message: 'Verifying code...',
+      type: 'loading',
     });
 
     let error: AuthError | null = null;
@@ -56,8 +54,8 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
     if (error) {
       toast.show({
         id: 'otp',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, error.message),
+        type: 'error',
+        message: error.message,
       });
       return;
     }
@@ -67,7 +65,7 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
     if (type === 'recovery') {
       router.replace('/auth/reset-password');
     } else {
-      router.replace('/setup-profile');
+      router.replace('/home');
     }
   }
 

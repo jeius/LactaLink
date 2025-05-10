@@ -6,32 +6,30 @@ import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
 
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
+import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
-import { errorToast } from '@/lib/toaster';
 
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeftIcon } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { Dimensions } from 'react-native';
 
 export default function VerifyOTP() {
   const { width, height } = Dimensions.get('window');
 
-  const toast = useToast();
+  const toast = useAppToast();
   const { theme } = useTheme();
   const { email: emailParams, type: typeParams, phone: phoneParams } = useLocalSearchParams();
 
   const email = Array.isArray(emailParams) ? emailParams[0] : emailParams;
   const phone = Array.isArray(phoneParams) ? phoneParams[0] : phoneParams;
   const type = (Array.isArray(typeParams) ? typeParams[0] : typeParams) as VerifyOtpParams['type'];
+  const recepient = email || phone;
 
   const gradientColors = [
     'transparent',
@@ -42,8 +40,8 @@ export default function VerifyOTP() {
     if (!typeParams) {
       toast.show({
         id: 'otp',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, 'Verification type not found.'),
+        message: 'Verification type not found.',
+        type: 'error',
       });
       if (router.canGoBack()) router.back();
     }
@@ -66,13 +64,15 @@ export default function VerifyOTP() {
               Verification
             </Text>
             <HStack className="flex-wrap items-center">
-              <Text size="md" className="text-typography-700">
-                A six digit code has been sent to{' '}
-                <Text bold className="text-typography-700">
-                  {email}
+              {recepient && (
+                <Text size="md" className="text-typography-700">
+                  A six digit code has been sent to{' '}
+                  <Text bold className="text-typography-700">
+                    {recepient}
+                  </Text>
+                  .
                 </Text>
-                .
-              </Text>
+              )}
             </HStack>
           </VStack>
         </VStack>
@@ -88,13 +88,6 @@ export default function VerifyOTP() {
           <SendAgain type={type} email={email} phone={phone} />
         </VStack>
       </VStack>
-
-      {router.canGoBack() && (
-        <Button variant="link" action="default" size="md" onPress={() => router.back()}>
-          <ButtonIcon as={ChevronLeftIcon} />
-          <ButtonText>Go back</ButtonText>
-        </Button>
-      )}
     </SafeArea>
   );
 }

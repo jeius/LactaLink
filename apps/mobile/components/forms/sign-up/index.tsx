@@ -8,10 +8,8 @@ import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { useSession } from '@/hooks/useSession';
 import { router } from 'expo-router';
 
-import { useTheme } from '@/components/providers/theme-provider';
-import { useToast } from '@/components/ui/toast';
+import { useAppToast } from '@/hooks/useAppToast';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
-import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
 import { isEmailTaken } from '@lactalink/utilities';
 import { VerifyOtpParams } from '@supabase/supabase-js';
@@ -23,8 +21,7 @@ export default function SignUpForm() {
   const carouselRef = useRef<ICarouselInstance>(null);
   const { width } = Dimensions.get('window');
   const { signUp } = useSession();
-  const toast = useToast();
-  const { theme } = useTheme();
+  const toast = useAppToast();
 
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -34,27 +31,27 @@ export default function SignUpForm() {
   async function onSubmit(formData: SignUpSchema) {
     toast.show({
       id: 'sign-up',
-      duration: null,
-      placement: 'top',
-      render: ({ id }) => loadingToast(id, 'Creating...', theme),
+      message: 'Creating...',
+      type: 'loading',
     });
 
-    const result = await isEmailTaken({
+    const emailTaken = await isEmailTaken({
       email: formData.email,
       apiUrl: API_URL,
       vercelToken: VERCEL_BYPASS_TOKEN,
     });
 
-    if (result === true) {
+    if (emailTaken === true) {
       form.setError('email', { message: 'Email already taken.', type: 'duplicate' });
       carouselRef.current?.scrollTo({ index: 0, animated: true });
+
       toast.close('sign-up');
       return;
-    } else if (typeof result === 'string') {
+    } else if (typeof emailTaken === 'string') {
       toast.show({
         id: 'sign-up',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, result),
+        message: emailTaken,
+        type: 'error',
       });
       return;
     }
@@ -64,20 +61,20 @@ export default function SignUpForm() {
     if (user) {
       toast.show({
         id: 'sign-up',
-        placement: 'top',
-        render: ({ id }) => successToast(id, '🎉 Account created.'),
+        message: '🎉 Account created.',
+        type: 'success',
       });
 
       const type: VerifyOtpParams['type'] = 'signup';
-      router.replace({
+      router.push({
         pathname: '/auth/verify-otp',
         params: { email: formData.email, type },
       });
     } else {
       toast.show({
         id: 'sign-up',
-        placement: 'top',
-        render: ({ id }) => errorToast(id, message),
+        type: 'error',
+        message,
       });
     }
   }
