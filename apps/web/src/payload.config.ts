@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
 import { plugins } from './lib/plugins';
+import { baseAdminMeta } from './lib/utils/baseMeta';
 import { getServerSideURL } from './lib/utils/getURL';
 
 const filename = fileURLToPath(import.meta.url);
@@ -32,6 +33,7 @@ export default buildConfig({
     components: {
       graphics: {
         Logo: '@/components/Logo',
+        Icon: '@/components/HomeIcon',
       },
       beforeDashboard: ['@/components/BeforeDashboard'],
       providers: ['@/components/providers'],
@@ -39,6 +41,7 @@ export default buildConfig({
     avatar: 'default',
     autoLogin: autoLoginConfig,
     suppressHydrationWarning: true,
+    meta: baseAdminMeta,
   },
   collections: Collections,
   serverURL: getServerSideURL(),

@@ -7,7 +7,7 @@ const defaultOpenGraph: Metadata['openGraph'] = {
     'A breastmilk sharing platform that connects donors, recipients, hospitals, and milk banks for safe and efficient milk distribution.',
   images: [
     {
-      url: `${getServerSideURL()}/og-image.jpg`,
+      url: `${getServerSideURL()}/og-image.png`,
     },
   ],
   siteName: 'LactaLink',
