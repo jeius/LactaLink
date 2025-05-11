@@ -1,3 +1,5 @@
+import { ownerField } from '@/fields/ownerField';
+import { generateOwner } from '@/hooks/collections/generateOwner';
 import { CollectionConfig } from 'payload';
 
 export const MilkBanks: CollectionConfig<'milkBanks'> = {
@@ -6,16 +8,11 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type'],
   },
+  hooks: {
+    beforeChange: [generateOwner],
+  },
   fields: [
-    {
-      name: 'user',
-      type: 'join',
-      collection: 'users',
-      on: 'milkBank',
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    ownerField,
     {
       name: 'avatar',
       type: 'relationship',
@@ -66,7 +63,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
       ],
     },
     {
-      name: 'address',
+      name: 'addresses',
       type: 'relationship',
       relationTo: 'addresses',
       hasMany: true,

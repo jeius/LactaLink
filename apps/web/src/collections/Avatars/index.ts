@@ -1,6 +1,8 @@
+import { ownerField } from '@/fields/ownerField';
+import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { generateAlt, generateOwner } from './hooks/beforeChange';
+import { generateAlt } from './hooks/generateAlt';
 
 export const Avatars: CollectionConfig<'avatars'> = {
   slug: 'avatars',
@@ -17,14 +19,7 @@ export const Avatars: CollectionConfig<'avatars'> = {
       name: 'alt',
       type: 'text',
     },
-    {
-      name: 'owner',
-      type: 'relationship',
-      relationTo: ['users'],
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    ownerField,
   ],
   upload: {
     adminThumbnail: 'thumbnail',

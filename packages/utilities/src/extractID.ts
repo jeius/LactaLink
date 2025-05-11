@@ -25,9 +25,9 @@
  * const idFromNull = extractID(nullValue); // null
  * ```
  */
-export function extractID<T extends { id: string }>(
+export function extractID<T extends { id: string | number }>(
   value?: T | string | null
-): string | null | undefined {
+): T['id'] | null | undefined {
   if (!value) return value;
 
   if (typeof value === 'object') {

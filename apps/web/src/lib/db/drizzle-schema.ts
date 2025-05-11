@@ -14,10 +14,10 @@ import {
   uuid,
   varchar,
   timestamp,
-  serial,
-  integer,
   numeric,
   boolean,
+  serial,
+  integer,
   jsonb,
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core';
@@ -27,8 +27,35 @@ export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalitie
   'CITY',
   'MUNICIPALITY',
 ]);
+export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
+  'GOVERNMENT',
+  'PRIVATE',
+  'OTHER',
+]);
+export const enum_individuals_gender = pgEnum('enum_individuals_gender', [
+  'MALE',
+  'FEMALE',
+  'OTHER',
+]);
+export const enum_individuals_marital_status = pgEnum('enum_individuals_marital_status', [
+  'SINGLE',
+  'MARRIED',
+  'WIDOWED',
+  'DIVORCED',
+  'SEPARATED',
+  'N/A',
+]);
+export const enum_milk_banks_type = pgEnum('enum_milk_banks_type', [
+  'GOVERNMENT',
+  'PRIVATE',
+  'OTHER',
+]);
 export const enum_users_role = pgEnum('enum_users_role', ['AUTHENTICATED', 'ADMIN']);
-export const enum_users_type = pgEnum('enum_users_type', ['INDIVIDUAL', 'HOSPITAL', 'MILK_BANK']);
+export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
+  'INDIVIDUAL',
+  'HOSPITAL',
+  'MILK_BANK',
+]);
 
 export const addresses = pgTable(
   'addresses',
@@ -59,7 +86,7 @@ export const addresses = pgTable(
     islandGroup: uuid('island_group_id').references(() => island_groups.id, {
       onDelete: 'set null',
     }),
-    completeName: varchar('complete_name'),
+    displayName: varchar('display_name'),
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -84,38 +111,14 @@ export const addresses = pgTable(
   })
 );
 
-export const addresses_rels = pgTable(
-  'addresses_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    usersID: uuid('users_id'),
-  },
-  (columns) => ({
-    order: index('addresses_rels_order_idx').on(columns.order),
-    parentIdx: index('addresses_rels_parent_idx').on(columns.parent),
-    pathIdx: index('addresses_rels_path_idx').on(columns.path),
-    addresses_rels_users_id_idx: index('addresses_rels_users_id_idx').on(columns.usersID),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [addresses.id],
-      name: 'addresses_rels_parent_fk',
-    }).onDelete('cascade'),
-    usersIdFk: foreignKey({
-      columns: [columns['usersID']],
-      foreignColumns: [users.id],
-      name: 'addresses_rels_users_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const avatars = pgTable(
   'avatars',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     alt: varchar('alt'),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -145,6 +148,7 @@ export const avatars = pgTable(
     sizes_icon_filename: varchar('sizes_icon_filename'),
   },
   (columns) => ({
+    avatars_owner_idx: index('avatars_owner_idx').on(columns.owner),
     avatars_updated_at_idx: index('avatars_updated_at_idx').on(columns.updatedAt),
     avatars_created_at_idx: index('avatars_created_at_idx').on(columns.createdAt),
     avatars_filename_idx: uniqueIndex('avatars_filename_idx').on(columns.filename),
@@ -154,33 +158,6 @@ export const avatars = pgTable(
     avatars_sizes_icon_sizes_icon_filename_idx: index(
       'avatars_sizes_icon_sizes_icon_filename_idx'
     ).on(columns.sizes_icon_filename),
-  })
-);
-
-export const avatars_rels = pgTable(
-  'avatars_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    usersID: uuid('users_id'),
-  },
-  (columns) => ({
-    order: index('avatars_rels_order_idx').on(columns.order),
-    parentIdx: index('avatars_rels_parent_idx').on(columns.parent),
-    pathIdx: index('avatars_rels_path_idx').on(columns.path),
-    avatars_rels_users_id_idx: index('avatars_rels_users_id_idx').on(columns.usersID),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [avatars.id],
-      name: 'avatars_rels_parent_fk',
-    }).onDelete('cascade'),
-    usersIdFk: foreignKey({
-      columns: [columns['usersID']],
-      foreignColumns: [users.id],
-      name: 'avatars_rels_users_fk',
-    }).onDelete('cascade'),
   })
 );
 
@@ -276,6 +253,67 @@ export const cities_municipalities = pgTable(
     cities_municipalities_created_at_idx: index('cities_municipalities_created_at_idx').on(
       columns.createdAt
     ),
+  })
+);
+
+export const hospitals = pgTable(
+  'hospitals',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    avatar: uuid('avatar_id').references(() => avatars.id, {
+      onDelete: 'set null',
+    }),
+    name: varchar('name').notNull(),
+    description: varchar('description'),
+    head: varchar('head'),
+    hospitalID: varchar('hospital_i_d'),
+    type: enum_hospitals_type('type'),
+    phone: varchar('phone'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    hospitals_owner_idx: index('hospitals_owner_idx').on(columns.owner),
+    hospitals_avatar_idx: index('hospitals_avatar_idx').on(columns.avatar),
+    hospitals_phone_idx: uniqueIndex('hospitals_phone_idx').on(columns.phone),
+    hospitals_updated_at_idx: index('hospitals_updated_at_idx').on(columns.updatedAt),
+    hospitals_created_at_idx: index('hospitals_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const hospitals_rels = pgTable(
+  'hospitals_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    addressesID: uuid('addresses_id'),
+  },
+  (columns) => ({
+    order: index('hospitals_rels_order_idx').on(columns.order),
+    parentIdx: index('hospitals_rels_parent_idx').on(columns.parent),
+    pathIdx: index('hospitals_rels_path_idx').on(columns.path),
+    hospitals_rels_addresses_id_idx: index('hospitals_rels_addresses_id_idx').on(
+      columns.addressesID
+    ),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [hospitals.id],
+      name: 'hospitals_rels_parent_fk',
+    }).onDelete('cascade'),
+    addressesIdFk: foreignKey({
+      columns: [columns['addressesID']],
+      foreignColumns: [addresses.id],
+      name: 'hospitals_rels_addresses_fk',
+    }).onDelete('cascade'),
   })
 );
 
@@ -397,6 +435,70 @@ export const images_rels = pgTable(
   })
 );
 
+export const individuals = pgTable(
+  'individuals',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    displayName: varchar('display_name'),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    avatar: uuid('avatar_id').references(() => avatars.id, {
+      onDelete: 'set null',
+    }),
+    givenName: varchar('given_name').notNull(),
+    middleName: varchar('middle_name'),
+    familyName: varchar('family_name').notNull(),
+    birth: timestamp('birth', { mode: 'string', withTimezone: true, precision: 3 }).notNull(),
+    phone: varchar('phone'),
+    dependents: numeric('dependents'),
+    gender: enum_individuals_gender('gender').notNull(),
+    maritalStatus: enum_individuals_marital_status('marital_status').notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    individuals_owner_idx: index('individuals_owner_idx').on(columns.owner),
+    individuals_avatar_idx: index('individuals_avatar_idx').on(columns.avatar),
+    individuals_phone_idx: uniqueIndex('individuals_phone_idx').on(columns.phone),
+    individuals_updated_at_idx: index('individuals_updated_at_idx').on(columns.updatedAt),
+    individuals_created_at_idx: index('individuals_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const individuals_rels = pgTable(
+  'individuals_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    addressesID: uuid('addresses_id'),
+  },
+  (columns) => ({
+    order: index('individuals_rels_order_idx').on(columns.order),
+    parentIdx: index('individuals_rels_parent_idx').on(columns.parent),
+    pathIdx: index('individuals_rels_path_idx').on(columns.path),
+    individuals_rels_addresses_id_idx: index('individuals_rels_addresses_id_idx').on(
+      columns.addressesID
+    ),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [individuals.id],
+      name: 'individuals_rels_parent_fk',
+    }).onDelete('cascade'),
+    addressesIdFk: foreignKey({
+      columns: [columns['addressesID']],
+      foreignColumns: [addresses.id],
+      name: 'individuals_rels_addresses_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const island_groups = pgTable(
   'island_groups',
   {
@@ -414,6 +516,66 @@ export const island_groups = pgTable(
     island_groups_code_idx: uniqueIndex('island_groups_code_idx').on(columns.code),
     island_groups_updated_at_idx: index('island_groups_updated_at_idx').on(columns.updatedAt),
     island_groups_created_at_idx: index('island_groups_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const milk_banks = pgTable(
+  'milk_banks',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    avatar: uuid('avatar_id').references(() => avatars.id, {
+      onDelete: 'set null',
+    }),
+    name: varchar('name').notNull(),
+    description: varchar('description'),
+    head: varchar('head'),
+    type: enum_milk_banks_type('type'),
+    phone: varchar('phone'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    milk_banks_owner_idx: index('milk_banks_owner_idx').on(columns.owner),
+    milk_banks_avatar_idx: index('milk_banks_avatar_idx').on(columns.avatar),
+    milk_banks_phone_idx: uniqueIndex('milk_banks_phone_idx').on(columns.phone),
+    milk_banks_updated_at_idx: index('milk_banks_updated_at_idx').on(columns.updatedAt),
+    milk_banks_created_at_idx: index('milk_banks_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const milk_banks_rels = pgTable(
+  'milk_banks_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    addressesID: uuid('addresses_id'),
+  },
+  (columns) => ({
+    order: index('milk_banks_rels_order_idx').on(columns.order),
+    parentIdx: index('milk_banks_rels_parent_idx').on(columns.parent),
+    pathIdx: index('milk_banks_rels_path_idx').on(columns.path),
+    milk_banks_rels_addresses_id_idx: index('milk_banks_rels_addresses_id_idx').on(
+      columns.addressesID
+    ),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [milk_banks.id],
+      name: 'milk_banks_rels_parent_fk',
+    }).onDelete('cascade'),
+    addressesIdFk: foreignKey({
+      columns: [columns['addressesID']],
+      foreignColumns: [addresses.id],
+      name: 'milk_banks_rels_addresses_fk',
+    }).onDelete('cascade'),
   })
 );
 
@@ -483,7 +645,7 @@ export const users = pgTable(
     email: varchar('email').notNull(),
     role: enum_users_role('role').default('AUTHENTICATED'),
     phone: varchar('phone'),
-    type: enum_users_type('type').default('INDIVIDUAL'),
+    profileType: enum_users_profile_type('profile_type').default('INDIVIDUAL'),
     lastSignInAt: timestamp('last_sign_in_at', {
       mode: 'string',
       withTimezone: true,
@@ -512,6 +674,47 @@ export const users = pgTable(
     users_phone_idx: uniqueIndex('users_phone_idx').on(columns.phone),
     users_updated_at_idx: index('users_updated_at_idx').on(columns.updatedAt),
     users_created_at_idx: index('users_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const users_rels = pgTable(
+  'users_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+    hospitalsID: uuid('hospitals_id'),
+  },
+  (columns) => ({
+    order: index('users_rels_order_idx').on(columns.order),
+    parentIdx: index('users_rels_parent_idx').on(columns.parent),
+    pathIdx: index('users_rels_path_idx').on(columns.path),
+    users_rels_individuals_id_idx: index('users_rels_individuals_id_idx').on(columns.individualsID),
+    users_rels_milk_banks_id_idx: index('users_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    users_rels_hospitals_id_idx: index('users_rels_hospitals_id_idx').on(columns.hospitalsID),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [users.id],
+      name: 'users_rels_parent_fk',
+    }).onDelete('cascade'),
+    individualsIdFk: foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'users_rels_individuals_fk',
+    }).onDelete('cascade'),
+    milkBanksIdFk: foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'users_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+    hospitalsIdFk: foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'users_rels_hospitals_fk',
+    }).onDelete('cascade'),
   })
 );
 
@@ -551,8 +754,11 @@ export const payload_locked_documents_rels = pgTable(
     avatarsID: uuid('avatars_id'),
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
+    hospitalsID: uuid('hospitals_id'),
     imagesID: uuid('images_id'),
+    individualsID: uuid('individuals_id'),
     islandGroupsID: uuid('island_groups_id'),
+    milkBanksID: uuid('milk_banks_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
     usersID: uuid('users_id'),
@@ -573,12 +779,21 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_cities_municipalities_id_idx: index(
       'payload_locked_documents_rels_cities_municipalities_id_idx'
     ).on(columns.citiesMunicipalitiesID),
+    payload_locked_documents_rels_hospitals_id_idx: index(
+      'payload_locked_documents_rels_hospitals_id_idx'
+    ).on(columns.hospitalsID),
     payload_locked_documents_rels_images_id_idx: index(
       'payload_locked_documents_rels_images_id_idx'
     ).on(columns.imagesID),
+    payload_locked_documents_rels_individuals_id_idx: index(
+      'payload_locked_documents_rels_individuals_id_idx'
+    ).on(columns.individualsID),
     payload_locked_documents_rels_island_groups_id_idx: index(
       'payload_locked_documents_rels_island_groups_id_idx'
     ).on(columns.islandGroupsID),
+    payload_locked_documents_rels_milk_banks_id_idx: index(
+      'payload_locked_documents_rels_milk_banks_id_idx'
+    ).on(columns.milkBanksID),
     payload_locked_documents_rels_provinces_id_idx: index(
       'payload_locked_documents_rels_provinces_id_idx'
     ).on(columns.provincesID),
@@ -613,15 +828,30 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [cities_municipalities.id],
       name: 'payload_locked_documents_rels_cities_municipalities_fk',
     }).onDelete('cascade'),
+    hospitalsIdFk: foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'payload_locked_documents_rels_hospitals_fk',
+    }).onDelete('cascade'),
     imagesIdFk: foreignKey({
       columns: [columns['imagesID']],
       foreignColumns: [images.id],
       name: 'payload_locked_documents_rels_images_fk',
     }).onDelete('cascade'),
+    individualsIdFk: foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'payload_locked_documents_rels_individuals_fk',
+    }).onDelete('cascade'),
     islandGroupsIdFk: foreignKey({
       columns: [columns['islandGroupsID']],
       foreignColumns: [island_groups.id],
       name: 'payload_locked_documents_rels_island_groups_fk',
+    }).onDelete('cascade'),
+    milkBanksIdFk: foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'payload_locked_documents_rels_milk_banks_fk',
     }).onDelete('cascade'),
     provincesIdFk: foreignKey({
       columns: [columns['provincesID']],
@@ -717,19 +947,7 @@ export const payload_migrations = pgTable(
   })
 );
 
-export const relations_addresses_rels = relations(addresses_rels, ({ one }) => ({
-  parent: one(addresses, {
-    fields: [addresses_rels.parent],
-    references: [addresses.id],
-    relationName: '_rels',
-  }),
-  usersID: one(users, {
-    fields: [addresses_rels.usersID],
-    references: [users.id],
-    relationName: 'users',
-  }),
-}));
-export const relations_addresses = relations(addresses, ({ one, many }) => ({
+export const relations_addresses = relations(addresses, ({ one }) => ({
   region: one(regions, {
     fields: [addresses.region],
     references: [regions.id],
@@ -760,25 +978,12 @@ export const relations_addresses = relations(addresses, ({ one, many }) => ({
     references: [users.id],
     relationName: 'owner',
   }),
-  _rels: many(addresses_rels, {
-    relationName: '_rels',
-  }),
 }));
-export const relations_avatars_rels = relations(avatars_rels, ({ one }) => ({
-  parent: one(avatars, {
-    fields: [avatars_rels.parent],
-    references: [avatars.id],
-    relationName: '_rels',
-  }),
-  usersID: one(users, {
-    fields: [avatars_rels.usersID],
+export const relations_avatars = relations(avatars, ({ one }) => ({
+  owner: one(users, {
+    fields: [avatars.owner],
     references: [users.id],
-    relationName: 'users',
-  }),
-}));
-export const relations_avatars = relations(avatars, ({ many }) => ({
-  _rels: many(avatars_rels, {
-    relationName: '_rels',
+    relationName: 'owner',
   }),
 }));
 export const relations_barangays = relations(barangays, ({ one }) => ({
@@ -820,6 +1025,33 @@ export const relations_cities_municipalities = relations(cities_municipalities, 
     relationName: 'islandGroup',
   }),
 }));
+export const relations_hospitals_rels = relations(hospitals_rels, ({ one }) => ({
+  parent: one(hospitals, {
+    fields: [hospitals_rels.parent],
+    references: [hospitals.id],
+    relationName: '_rels',
+  }),
+  addressesID: one(addresses, {
+    fields: [hospitals_rels.addressesID],
+    references: [addresses.id],
+    relationName: 'addresses',
+  }),
+}));
+export const relations_hospitals = relations(hospitals, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [hospitals.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  avatar: one(avatars, {
+    fields: [hospitals.avatar],
+    references: [avatars.id],
+    relationName: 'avatar',
+  }),
+  _rels: many(hospitals_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_images_rels = relations(images_rels, ({ one }) => ({
   parent: one(images, {
     fields: [images_rels.parent],
@@ -837,7 +1069,61 @@ export const relations_images = relations(images, ({ many }) => ({
     relationName: '_rels',
   }),
 }));
+export const relations_individuals_rels = relations(individuals_rels, ({ one }) => ({
+  parent: one(individuals, {
+    fields: [individuals_rels.parent],
+    references: [individuals.id],
+    relationName: '_rels',
+  }),
+  addressesID: one(addresses, {
+    fields: [individuals_rels.addressesID],
+    references: [addresses.id],
+    relationName: 'addresses',
+  }),
+}));
+export const relations_individuals = relations(individuals, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [individuals.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  avatar: one(avatars, {
+    fields: [individuals.avatar],
+    references: [avatars.id],
+    relationName: 'avatar',
+  }),
+  _rels: many(individuals_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_island_groups = relations(island_groups, () => ({}));
+export const relations_milk_banks_rels = relations(milk_banks_rels, ({ one }) => ({
+  parent: one(milk_banks, {
+    fields: [milk_banks_rels.parent],
+    references: [milk_banks.id],
+    relationName: '_rels',
+  }),
+  addressesID: one(addresses, {
+    fields: [milk_banks_rels.addressesID],
+    references: [addresses.id],
+    relationName: 'addresses',
+  }),
+}));
+export const relations_milk_banks = relations(milk_banks, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [milk_banks.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  avatar: one(avatars, {
+    fields: [milk_banks.avatar],
+    references: [avatars.id],
+    relationName: 'avatar',
+  }),
+  _rels: many(milk_banks_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_provinces = relations(provinces, ({ one }) => ({
   region: one(regions, {
     fields: [provinces.region],
@@ -857,7 +1143,33 @@ export const relations_regions = relations(regions, ({ one }) => ({
     relationName: 'islandGroup',
   }),
 }));
-export const relations_users = relations(users, () => ({}));
+export const relations_users_rels = relations(users_rels, ({ one }) => ({
+  parent: one(users, {
+    fields: [users_rels.parent],
+    references: [users.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [users_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [users_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [users_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+}));
+export const relations_users = relations(users, ({ many }) => ({
+  _rels: many(users_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_payload_locked_documents_rels = relations(
   payload_locked_documents_rels,
   ({ one }) => ({
@@ -886,15 +1198,30 @@ export const relations_payload_locked_documents_rels = relations(
       references: [cities_municipalities.id],
       relationName: 'citiesMunicipalities',
     }),
+    hospitalsID: one(hospitals, {
+      fields: [payload_locked_documents_rels.hospitalsID],
+      references: [hospitals.id],
+      relationName: 'hospitals',
+    }),
     imagesID: one(images, {
       fields: [payload_locked_documents_rels.imagesID],
       references: [images.id],
       relationName: 'images',
     }),
+    individualsID: one(individuals, {
+      fields: [payload_locked_documents_rels.individualsID],
+      references: [individuals.id],
+      relationName: 'individuals',
+    }),
     islandGroupsID: one(island_groups, {
       fields: [payload_locked_documents_rels.islandGroupsID],
       references: [island_groups.id],
       relationName: 'islandGroups',
+    }),
+    milkBanksID: one(milk_banks, {
+      fields: [payload_locked_documents_rels.milkBanksID],
+      references: [milk_banks.id],
+      relationName: 'milkBanks',
     }),
     provincesID: one(provinces, {
       fields: [payload_locked_documents_rels.provincesID],
@@ -945,36 +1272,50 @@ export const relations_payload_migrations = relations(payload_migrations, () => 
 
 type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
+  enum_hospitals_type: typeof enum_hospitals_type;
+  enum_individuals_gender: typeof enum_individuals_gender;
+  enum_individuals_marital_status: typeof enum_individuals_marital_status;
+  enum_milk_banks_type: typeof enum_milk_banks_type;
   enum_users_role: typeof enum_users_role;
-  enum_users_type: typeof enum_users_type;
+  enum_users_profile_type: typeof enum_users_profile_type;
   addresses: typeof addresses;
-  addresses_rels: typeof addresses_rels;
   avatars: typeof avatars;
-  avatars_rels: typeof avatars_rels;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
+  hospitals: typeof hospitals;
+  hospitals_rels: typeof hospitals_rels;
   images: typeof images;
   images_rels: typeof images_rels;
+  individuals: typeof individuals;
+  individuals_rels: typeof individuals_rels;
   island_groups: typeof island_groups;
+  milk_banks: typeof milk_banks;
+  milk_banks_rels: typeof milk_banks_rels;
   provinces: typeof provinces;
   regions: typeof regions;
   users: typeof users;
+  users_rels: typeof users_rels;
   payload_locked_documents: typeof payload_locked_documents;
   payload_locked_documents_rels: typeof payload_locked_documents_rels;
   payload_preferences: typeof payload_preferences;
   payload_preferences_rels: typeof payload_preferences_rels;
   payload_migrations: typeof payload_migrations;
-  relations_addresses_rels: typeof relations_addresses_rels;
   relations_addresses: typeof relations_addresses;
-  relations_avatars_rels: typeof relations_avatars_rels;
   relations_avatars: typeof relations_avatars;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
+  relations_hospitals_rels: typeof relations_hospitals_rels;
+  relations_hospitals: typeof relations_hospitals;
   relations_images_rels: typeof relations_images_rels;
   relations_images: typeof relations_images;
+  relations_individuals_rels: typeof relations_individuals_rels;
+  relations_individuals: typeof relations_individuals;
   relations_island_groups: typeof relations_island_groups;
+  relations_milk_banks_rels: typeof relations_milk_banks_rels;
+  relations_milk_banks: typeof relations_milk_banks;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
+  relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;
   relations_payload_locked_documents: typeof relations_payload_locked_documents;

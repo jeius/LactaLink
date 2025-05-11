@@ -1,5 +1,7 @@
+import { ownerField } from '@/fields/ownerField';
+import { generateOwner } from '@/hooks/collections/generateOwner';
 import { CollectionConfig } from 'payload';
-import { generateDisplayName } from './hooks/beforeChange';
+import { generateDisplayName } from './hooks/generateDisplayName';
 
 export const Individuals: CollectionConfig<'individuals'> = {
   slug: 'individuals',
@@ -8,7 +10,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
     defaultColumns: ['displayName', 'gender', 'dependents'],
   },
   hooks: {
-    beforeChange: [generateDisplayName],
+    beforeChange: [generateDisplayName, generateOwner],
   },
   fields: [
     {
@@ -20,15 +22,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
         readOnly: true,
       },
     },
-    {
-      name: 'user',
-      type: 'join',
-      collection: 'users',
-      on: 'individual',
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    ownerField,
     {
       name: 'avatar',
       type: 'relationship',
@@ -125,7 +119,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
       ],
     },
     {
-      name: 'address',
+      name: 'addresses',
       type: 'relationship',
       relationTo: 'addresses',
       hasMany: true,
