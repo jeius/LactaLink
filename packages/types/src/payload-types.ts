@@ -83,17 +83,7 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {
-    hospitals: {
-      user: 'users';
-    };
-    individuals: {
-      user: 'users';
-    };
-    milkBanks: {
-      user: 'users';
-    };
-  };
+  collectionsJoins: {};
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
@@ -107,9 +97,7 @@ export interface Config {
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
-    'payload-locked-documents':
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -161,12 +149,8 @@ export interface Address {
   cityMunicipality: string | CityMunicipality;
   barangay: string | Barangay;
   islandGroup?: (string | null) | IslandGroup;
-  completeName?: string | null;
+  displayName?: string | null;
   owner?: (string | null) | User;
-  createdBy?: {
-    relationTo: 'users';
-    value: string | User;
-  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -252,10 +236,20 @@ export interface User {
   email: string;
   role?: ('AUTHENTICATED' | 'ADMIN') | null;
   phone?: string | null;
-  type?: ('INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK') | null;
-  individual?: (string | null) | Individual;
-  hospital?: (string | null) | Hospital;
-  milkBank?: (string | null) | MilkBank;
+  profileType?: ('INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK') | null;
+  profile?:
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null);
   lastSignInAt?: string | null;
   emailConfirmedAt?: string | null;
   phoneConfirmedAt?: string | null;
@@ -269,11 +263,7 @@ export interface User {
 export interface Individual {
   id: string;
   displayName?: string | null;
-  user?: {
-    docs?: (string | User)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
+  owner?: (string | null) | User;
   avatar?: (string | null) | Avatar;
   givenName: string;
   middleName?: string | null;
@@ -283,7 +273,7 @@ export interface Individual {
   dependents?: number | null;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
   maritalStatus: 'SINGLE' | 'MARRIED' | 'WIDOWED' | 'DIVORCED' | 'SEPARATED' | 'N/A';
-  address: (string | Address)[];
+  addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -294,10 +284,7 @@ export interface Individual {
 export interface Avatar {
   id: string;
   alt?: string | null;
-  owner?: {
-    relationTo: 'users';
-    value: string | User;
-  } | null;
+  owner?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -330,15 +317,31 @@ export interface Avatar {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkBanks".
+ */
+export interface MilkBank {
+  id: string;
+  owner?: (string | null) | User;
+  avatar?: (string | null) | Avatar;
+  name: string;
+  description?: string | null;
+  /**
+   * Head or president of the milk bank.
+   */
+  head?: string | null;
+  type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
+  phone?: string | null;
+  addresses: (string | Address)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hospitals".
  */
 export interface Hospital {
   id: string;
-  user?: {
-    docs?: (string | User)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
+  owner?: (string | null) | User;
   avatar?: (string | null) | Avatar;
   name: string;
   description?: string | null;
@@ -349,31 +352,7 @@ export interface Hospital {
   hospitalID?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
-  address: (string | Address)[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkBanks".
- */
-export interface MilkBank {
-  id: string;
-  user?: {
-    docs?: (string | User)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  avatar?: (string | null) | Avatar;
-  name: string;
-  description?: string | null;
-  /**
-   * Head or president of the milk bank.
-   */
-  head?: string | null;
-  type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
-  phone?: string | null;
-  address: (string | Address)[];
+  addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -567,9 +546,8 @@ export interface AddressesSelect<T extends boolean = true> {
   cityMunicipality?: T;
   barangay?: T;
   islandGroup?: T;
-  completeName?: T;
+  displayName?: T;
   owner?: T;
-  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -655,7 +633,7 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
  * via the `definition` "hospitals_select".
  */
 export interface HospitalsSelect<T extends boolean = true> {
-  user?: T;
+  owner?: T;
   avatar?: T;
   name?: T;
   description?: T;
@@ -663,7 +641,7 @@ export interface HospitalsSelect<T extends boolean = true> {
   hospitalID?: T;
   type?: T;
   phone?: T;
-  address?: T;
+  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -766,7 +744,7 @@ export interface ImagesSelect<T extends boolean = true> {
  */
 export interface IndividualsSelect<T extends boolean = true> {
   displayName?: T;
-  user?: T;
+  owner?: T;
   avatar?: T;
   givenName?: T;
   middleName?: T;
@@ -776,7 +754,7 @@ export interface IndividualsSelect<T extends boolean = true> {
   dependents?: T;
   gender?: T;
   maritalStatus?: T;
-  address?: T;
+  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -795,14 +773,14 @@ export interface IslandGroupsSelect<T extends boolean = true> {
  * via the `definition` "milkBanks_select".
  */
 export interface MilkBanksSelect<T extends boolean = true> {
-  user?: T;
+  owner?: T;
   avatar?: T;
   name?: T;
   description?: T;
   head?: T;
   type?: T;
   phone?: T;
-  address?: T;
+  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -838,10 +816,8 @@ export interface UsersSelect<T extends boolean = true> {
   email?: T;
   role?: T;
   phone?: T;
-  type?: T;
-  individual?: T;
-  hospital?: T;
-  milkBank?: T;
+  profileType?: T;
+  profile?: T;
   lastSignInAt?: T;
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;
@@ -887,6 +863,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface Auth {
   [k: string]: unknown;
 }
+
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}

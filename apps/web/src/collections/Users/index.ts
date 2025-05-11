@@ -65,7 +65,8 @@ export const Users: CollectionConfig<'users'> = {
       type: 'row',
       fields: [
         {
-          name: 'type',
+          name: 'profileType',
+          label: 'Profile Type',
           type: 'select',
           defaultValue: 'INDIVIDUAL',
           admin: { width: '30%' },
@@ -90,22 +91,10 @@ export const Users: CollectionConfig<'users'> = {
       type: 'row',
       fields: [
         {
-          name: 'individual',
+          name: 'profile',
           type: 'relationship',
-          relationTo: 'individuals',
-          admin: { width: '30%' },
-        },
-        {
-          name: 'hospital',
-          type: 'relationship',
-          relationTo: 'hospitals',
-          admin: { width: '30%' },
-        },
-        {
-          name: 'milkBank',
-          type: 'relationship',
-          relationTo: 'milkBanks',
-          admin: { width: '30%' },
+          relationTo: ['individuals', 'milkBanks', 'hospitals'],
+          admin: { width: '50%' },
         },
       ],
     },

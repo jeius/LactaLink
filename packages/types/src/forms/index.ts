@@ -15,3 +15,19 @@ export {
   signInSchema,
   signUpSchema,
 } from './auth';
+
+export type {
+  AddressSchema,
+  HospitalSchema,
+  IndividualSchema,
+  MilkBankSchema,
+  SetupProfileSchema,
+} from './setup-profile';
+
+export {
+  addressSchema,
+  hospitalSchema,
+  individualSchema,
+  milkBankSchema,
+  setupProfileSchema,
+} from './setup-profile';

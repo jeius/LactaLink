@@ -1,8 +1,8 @@
+import { ownerField } from '@/fields/ownerField';
+import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
-import { generateCompleteName } from './hooks/generateCompleteName';
-import { generateCreatedBy } from './hooks/generateCreatedBy';
-import { generateOwner } from './hooks/generateOwner';
+import { generateDisplayName } from './hooks/generateDisplayName';
 
 export const Addresses: CollectionConfig<'addresses'> = {
   slug: 'addresses',
@@ -60,31 +60,16 @@ export const Addresses: CollectionConfig<'addresses'> = {
       },
     },
     {
-      name: 'completeName',
+      name: 'displayName',
       type: 'text',
       admin: {
         position: 'sidebar',
         readOnly: true,
       },
     },
-    {
-      name: 'owner',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'createdBy',
-      type: 'relationship',
-      relationTo: ['users'],
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    ownerField,
   ],
   hooks: {
-    beforeChange: [generateCompleteName, generateOwner, generateCreatedBy],
+    beforeChange: [generateDisplayName, generateOwner],
   },
 };

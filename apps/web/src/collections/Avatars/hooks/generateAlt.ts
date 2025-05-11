@@ -17,13 +17,3 @@ export const generateAlt: CollectionBeforeChangeHook<Avatar> = ({ data, operatio
 
   return data;
 };
-
-export const generateOwner: CollectionBeforeChangeHook<Avatar> = ({ req, operation, data }) => {
-  if (operation === 'create' && req.file && req.user) {
-    if (!data.owner) {
-      data.owner = { relationTo: req.user.collection, value: req.user.id };
-    }
-  }
-
-  return data;
-};
