@@ -13,3 +13,9 @@ declare module '*.svg' {
   const content: React.FC<SvgProps>;
   export default content;
 }
+
+declare module '*.png' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const value: string;
+  export default value;
+}

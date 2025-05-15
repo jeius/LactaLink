@@ -5,7 +5,7 @@
     "description": "A breastmilk sharing platform that connects donors, recipients, hospitals, and milk banks for safe and efficient milk distribution.",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/logo/icon.png",
     "backgroundColor": "#fff4f5",
     "primaryColor": "#FE828C",
     "scheme": "lactalink",
@@ -16,15 +16,15 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lactalink.mobile",
       "icon": {
-        "dark": "./assets/images/ios-dark.png",
-        "light": "./assets/images/ios-light.png",
-        "tinted": "./assets/images/ios-tinted.png"
+        "dark": "./assets/logo/ios_dark.png",
+        "light": "./assets/logo/ios_light.png",
+        "tinted": "./assets/logo/ios_tinted.png"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "monochromeImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/logo/adaptive_icon.png",
+        "monochromeImage": "./assets/logo/adaptive_icon.png",
         "backgroundColor": "#FE828C"
       },
       "package": "com.lactalink.mobile"
@@ -34,7 +34,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-asset",
+      "expo-image-picker",
+      [
+        "expo-asset",
+        {
+          "assets": ["./assets/images", "./assets/icons", "./assets/logo"]
+        }
+      ],
       [
         "expo-font",
         {
@@ -53,12 +59,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon-light.png",
+          "image": "./assets/logo/splash_icon_light.png",
           "resizeMode": "contain",
-          "backgroundColor": "#FFECED",
+          "backgroundColor": "#FE828C",
           "imageWidth": 200,
           "dark": {
-            "image": "./assets/images/splash-icon-dark.png",
+            "image": "./assets/logo/splash_icon_dark.png",
             "backgroundColor": "#272625"
           }
         }
