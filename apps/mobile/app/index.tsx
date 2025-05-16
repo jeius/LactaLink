@@ -1,4 +1,4 @@
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/hooks/auth/useSession';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Redirect } from 'expo-router';

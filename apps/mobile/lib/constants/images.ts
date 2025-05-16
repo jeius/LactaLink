@@ -1,11 +1,17 @@
-import onboarding1 from '@/assets/svgs/onboarding1.svg';
-import onboarding2 from '@/assets/svgs/onboarding2.svg';
-import onboarding3 from '@/assets/svgs/onboarding3.svg';
-import onboarding4 from '@/assets/svgs/onboarding4.svg';
-
 export const ONBOARDING_IMAGES = {
-  onboarding1,
-  onboarding2,
-  onboarding3,
-  onboarding4,
+  onboarding1: 'onboarding1',
+  onboarding2: 'onboarding2',
+  onboarding3: 'onboarding3',
+  onboarding4: 'onboarding4',
+};
+
+export const ASSET_IMAGES = {
+  individual: 'individual',
+  hospital: 'hospital',
+  milkBank: 'milk_bank',
+  signIn: 'sign_in',
+  signUp: 'sign_up',
+  forgotPassword: 'forgot_password',
+  verification: 'verification',
+  admin: 'admin',
 };

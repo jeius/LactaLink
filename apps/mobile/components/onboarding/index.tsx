@@ -1,23 +1,27 @@
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { Dimensions } from 'react-native';
 import { CarouselRenderItem } from 'react-native-reanimated-carousel';
+import { Image } from '../ui/image';
 import { OnboardingData } from './data';
 import List from './list';
 
 export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
   const {
     index,
-    item: { Image, description, subtitle, title, footer },
+    item: { image, description, subtitle, title, footer },
   } = args;
-
-  const { width } = Dimensions.get('window');
 
   return (
     <VStack key={index}>
-      <Box className="mx-auto min-h-72 p-4 pb-0">
-        <Image width={width * 0.7} height={width * 0.75} />
+      <Box className="mx-auto h-72 w-full p-4 pb-0">
+        <Image
+          alt={image.alt}
+          source={image.uri}
+          size="none"
+          resizeMode="contain"
+          className="m-auto h-full w-full"
+        />
       </Box>
       <VStack space="xl" className="w-full items-center p-6">
         <VStack className="items-center">
