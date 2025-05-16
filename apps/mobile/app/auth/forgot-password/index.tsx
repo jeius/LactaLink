@@ -1,10 +1,10 @@
-import ForgotPassImage from '@/assets/svgs/forgot-password.svg';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   FormControl,
   FormControlError,
@@ -13,15 +13,17 @@ import {
 } from '@/components/ui/form-control';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
+import { Image } from '@/components/ui/image';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
+import { ASSET_IMAGES } from '@/lib/constants/images';
 import { supabase } from '@/lib/supabase';
+import { VerifyOTPSearchParams } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/types';
-import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { AlertCircleIcon, ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
@@ -33,7 +35,7 @@ const schema = z.object({ email: emailSchema });
 type Schema = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
   const toast = useAppToast();
   const { theme } = useTheme();
 
@@ -69,17 +71,22 @@ export default function ForgotPassword() {
       return;
     }
 
-    const type: VerifyOtpParams['type'] = 'recovery';
-    router.push({ pathname: '/auth/verify-otp', params: { email, type } });
+    const params: VerifyOTPSearchParams = { email, type: 'recovery' };
+    router.push({ pathname: '/auth/verify-otp', params });
   }
 
   return (
     <SafeArea className="p-5">
       <KeyboardAvoidingWrapper>
-        <VStack className="my-auto items-start justify-center">
-          <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
-            <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
-              <ForgotPassImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
+        <VStack className="my-auto">
+          <Card className="max-w-md p-0">
+            <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+              <Image
+                size="full"
+                className="h-80"
+                alt="Forgot Password"
+                source={ASSET_IMAGES.forgotPassword}
+              />
               <GradientBackground colors={gradientColors} className="opacity-40" />
             </Box>
 
@@ -139,14 +146,14 @@ export default function ForgotPassword() {
                 <ButtonText>{isSubmitting ? 'Requesting...' : 'Request Reset'}</ButtonText>
               </Button>
             </VStack>
-          </VStack>
+          </Card>
 
-          {router.canGoBack() && (
-            <Button variant="link" action="default" size="md" onPress={() => router.back()}>
+          <HStack>
+            <Button variant="link" action="default" size="md" onPress={() => router.dismiss()}>
               <ButtonIcon as={ChevronLeftIcon} />
               <ButtonText>Back to sign in</ButtonText>
             </Button>
-          )}
+          </HStack>
         </VStack>
       </KeyboardAvoidingWrapper>
     </SafeArea>

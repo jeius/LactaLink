@@ -18,9 +18,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { Controller, useForm } from 'react-hook-form';
 
+import { useSession } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
-import { useSession } from '@/hooks/useSession';
 import { supabase } from '@/lib/supabase';
+import { VerifyOTPSearchParams } from '@/lib/types';
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
@@ -57,10 +58,8 @@ export default function SignInForm() {
         await supabase.auth.resend({ email, type });
 
         toast.close('sign-in');
-        router.push({
-          pathname: '/auth/verify-otp',
-          params: { email, type },
-        });
+        const params: VerifyOTPSearchParams = { email, type };
+        router.push({ pathname: '/auth/verify-otp', params });
         return;
       }
       toast.show({
@@ -80,7 +79,7 @@ export default function SignInForm() {
   }
 
   return (
-    <VStack space="lg" className="flex-1">
+    <VStack space="lg">
       <FormControl isInvalid={'email' in errors} isDisabled={isSubmitting}>
         <FormControlLabel className="mb-2">
           <FormControlLabelText>Email</FormControlLabelText>
@@ -169,7 +168,7 @@ export default function SignInForm() {
         </HStack>
       </VStack>
 
-      <GoogleButtonWrapper disabled={isSubmitting} className="mb-2 mt-10 flex-1 justify-center">
+      <GoogleButtonWrapper disabled={isSubmitting} className="mt-5">
         <Button
           size="xl"
           isDisabled={isSubmitting}

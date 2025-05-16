@@ -5,14 +5,13 @@ import { ControllerProps, useForm } from 'react-hook-form';
 import { Dimensions } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/hooks/auth/useSession';
 import { router } from 'expo-router';
 
 import { useAppToast } from '@/hooks/useAppToast';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
-import { signUpSchema, SignUpSchema } from '@/lib/types';
+import { signUpSchema, SignUpSchema, VerifyOTPSearchParams } from '@/lib/types';
 import { isEmailTaken } from '@lactalink/utilities';
-import { VerifyOtpParams } from '@supabase/supabase-js';
 import { FormSlide } from './form-slide';
 
 const FIELD_NAMES: ControllerProps<SignUpSchema>['name'][] = ['email', 'password'];
@@ -65,11 +64,8 @@ export default function SignUpForm() {
         type: 'success',
       });
 
-      const type: VerifyOtpParams['type'] = 'signup';
-      router.push({
-        pathname: '/auth/verify-otp',
-        params: { email: formData.email, type },
-      });
+      const params: VerifyOTPSearchParams = { email: formData.email, type: 'signup' };
+      router.push({ pathname: '/auth/verify-otp', params });
     } else {
       toast.show({
         id: 'sign-up',

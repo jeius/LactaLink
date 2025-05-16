@@ -1,34 +1,33 @@
 import Logo from '@/assets/svgs/logo.svg';
-import VerifyImage from '@/assets/svgs/verification.svg';
 import OTPForm from '@/components/forms/otp';
 import SendAgain from '@/components/forms/otp/sendAgain';
+import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
 
 import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
+import { ASSET_IMAGES } from '@/lib/constants/images';
+import { VerifyOTPSearchParams } from '@/lib/types';
 
-import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Dimensions } from 'react-native';
 
 export default function VerifyOTP() {
-  const { width, height } = Dimensions.get('window');
-
+  const { height } = Dimensions.get('window');
   const toast = useAppToast();
   const { theme } = useTheme();
-  const { email: emailParams, type: typeParams, phone: phoneParams } = useLocalSearchParams();
 
-  const email = Array.isArray(emailParams) ? emailParams[0] : emailParams;
-  const phone = Array.isArray(phoneParams) ? phoneParams[0] : phoneParams;
-  const type = (Array.isArray(typeParams) ? typeParams[0] : typeParams) as VerifyOtpParams['type'];
+  const { email, phone, type } = useLocalSearchParams<VerifyOTPSearchParams>();
   const recepient = email || phone;
 
   const gradientColors = [
@@ -37,57 +36,59 @@ export default function VerifyOTP() {
   ] as const;
 
   useEffect(() => {
-    if (!typeParams) {
+    if (!type) {
       toast.show({
         id: 'otp',
         message: 'Verification type not found.',
         type: 'error',
       });
-      if (router.canGoBack()) router.back();
+      router.dismiss();
     }
-  }, [toast, typeParams]);
+  }, [toast, type]);
 
   return (
-    <SafeArea className="items-start justify-center p-5">
-      <VStack className="bg-background-0 border-outline-100 w-full max-w-md overflow-hidden rounded-2xl border">
-        <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
-          <VerifyImage width={width} height={height * 0.2} style={{ marginLeft: -20 }} />
+    <SafeArea className="p-5">
+      <KeyboardAvoidingWrapper>
+        <Card className="my-auto max-w-md p-0">
+          <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+            <Image size="full" alt="Phone email verification" source={ASSET_IMAGES.verification} />
 
-          <GradientBackground colors={gradientColors} className="opacity-40" />
+            <GradientBackground colors={gradientColors} className="opacity-40" />
 
-          <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
-        </Box>
+            <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
+          </Box>
 
-        <VStack>
-          <VStack space="sm" className="p-5">
-            <Text bold size="2xl">
-              Verification
-            </Text>
-            <HStack className="flex-wrap items-center">
-              {recepient && (
-                <Text size="md" className="text-typography-700">
-                  A six digit code has been sent to{' '}
-                  <Text bold className="text-typography-700">
-                    {recepient}
+          <VStack>
+            <VStack space="sm" className="p-5">
+              <Text bold size="2xl">
+                Verification
+              </Text>
+              <HStack className="flex-wrap items-center">
+                {recepient && (
+                  <Text size="md" className="text-typography-700">
+                    A six digit code has been sent to{' '}
+                    <Text bold className="text-typography-700">
+                      {recepient}
+                    </Text>
+                    .
                   </Text>
-                  .
-                </Text>
-              )}
-            </HStack>
+                )}
+              </HStack>
+            </VStack>
           </VStack>
-        </VStack>
 
-        <Box className="p-5">
-          <OTPForm email={email} type={type} phone={phone} />
-        </Box>
+          <Box className="p-5">
+            <OTPForm email={email} type={type!} phone={phone} />
+          </Box>
 
-        <VStack className="mx-auto items-center p-5">
-          <Text size="sm" className="text-typography-600">
-            Didn&apos;t receive the verification code?
-          </Text>
-          <SendAgain type={type} email={email} phone={phone} />
-        </VStack>
-      </VStack>
+          <VStack className="mx-auto items-center p-5">
+            <Text size="sm" className="text-typography-600">
+              Didn&apos;t receive the verification code?
+            </Text>
+            <SendAgain type={type!} email={email} phone={phone} />
+          </VStack>
+        </Card>
+      </KeyboardAvoidingWrapper>
     </SafeArea>
   );
 }

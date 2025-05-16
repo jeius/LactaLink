@@ -1,6 +1,6 @@
 import GoogleIcon from '@/assets/icons/google.svg';
+import { useSession } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
-import { useSession } from '@/hooks/useSession';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';

@@ -1,4 +1,3 @@
-import SignUpImage from '@/assets/svgs/sign-up.svg';
 import GoogleButtonWrapper from '@/components/google-button-wrapper';
 
 import { Box } from '@/components/ui/box';
@@ -15,10 +14,13 @@ import SignUpForm from '@/components/forms/sign-up';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
+import { Card } from '@/components/ui/card';
+import { Image } from '@/components/ui/image';
 import { getHexColor } from '@/lib/colors/getColor';
+import { ASSET_IMAGES } from '@/lib/constants/images';
 
 export default function SignUp() {
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
@@ -28,9 +30,14 @@ export default function SignUp() {
   return (
     <SafeArea className="p-5">
       <KeyboardAvoidingWrapper>
-        <VStack className="bg-background-0 border-outline-200 shadow-hard-5 m-auto w-full max-w-md overflow-hidden rounded-2xl border">
+        <Card className="my-auto max-w-md p-0">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
-            <SignUpImage width={width} height={height * 0.3} style={{ marginLeft: -20 }} />
+            <Image
+              size="none"
+              className="h-80 w-full"
+              alt="Mother Breastfeeding in chair"
+              source={ASSET_IMAGES.signUp}
+            />
             <GradientBackground colors={gradientColors} className="opacity-40" />
           </Box>
 
@@ -77,7 +84,7 @@ export default function SignUp() {
               .
             </Text>
           </HStack>
-        </VStack>
+        </Card>
       </KeyboardAvoidingWrapper>
     </SafeArea>
   );

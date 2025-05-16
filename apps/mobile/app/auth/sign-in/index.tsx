@@ -1,5 +1,4 @@
 import Logo from '@/assets/svgs/logo.svg';
-import SignInImage from '@/assets/svgs/sign-in.svg';
 import SignInForm from '@/components/forms/sign-in';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
@@ -10,15 +9,17 @@ import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
+import { ASSET_IMAGES } from '@/lib/constants/images';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
 
 export default function SignIn() {
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
@@ -28,10 +29,11 @@ export default function SignIn() {
   return (
     <SafeArea>
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
-        <SignInImage
-          width={width * 1.2}
-          height={height * 0.5}
-          style={{ marginLeft: -20, marginTop: -40 }}
+        <Image
+          size="2xl"
+          className="w-full"
+          alt="Mother Breastfeeding"
+          source={ASSET_IMAGES.signIn}
         />
 
         <GradientBackground colors={gradientColors} className="opacity-70" />

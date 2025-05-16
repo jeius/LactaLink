@@ -1,4 +1,4 @@
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/hooks/auth/useSession';
 import { getHexColor } from '@/lib/colors';
 import { userHasProfile } from '@/lib/utils/userHasProfile';
 import { router } from 'expo-router';
