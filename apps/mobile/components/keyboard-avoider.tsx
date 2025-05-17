@@ -19,7 +19,7 @@ type Props = {
 
 const KeyboardAvoidingWrapper: React.FC<Props> = ({
   children,
-  keyboardVerticalOffset = 64,
+  keyboardVerticalOffset = 0,
   scrollViewProps,
   containerStyle,
 }) => {
@@ -27,7 +27,7 @@ const KeyboardAvoidingWrapper: React.FC<Props> = ({
     <KeyboardAvoidingView
       style={[{ flex: 1 }, containerStyle]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={keyboardVerticalOffset && Platform.OS === 'ios' ? 64 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : keyboardVerticalOffset}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView

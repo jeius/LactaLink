@@ -13,6 +13,13 @@ const projectDir = __dirname;
 const monorepoRoot = path.resolve(projectDir, '../..');
 const defaultConfig = getDefaultConfig(projectDir);
 
+const monorepoPackages = {
+  '@lactalink/types': path.resolve(monorepoRoot, 'packages/types'),
+  '@lactalink/utilities': path.resolve(monorepoRoot, 'packages/utilities'),
+  '@lactalink/eslint-config': path.resolve(monorepoRoot, 'packages/eslint-config'),
+  '@lactalink/typescript-config': path.resolve(monorepoRoot, 'packages/typescript-config'),
+};
+
 /** @type {import('expo/metro-config').MetroConfig} */
 const monorepoConfig = {
   resolver: {
@@ -21,6 +28,7 @@ const monorepoConfig = {
       path.resolve(projectDir, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
     ],
+    extraNodeModules: monorepoPackages,
     resolveRequest: (context, moduleName, platform) => {
       try {
         // Symlinks resolver throws when it can't find what we're looking for.
@@ -39,12 +47,6 @@ const monorepoConfig = {
       }
     },
   },
-  /**
-   * Add the monorepo paths to the Metro config.
-   * This allows Metro to resolve modules from the monorepo.
-   *
-   * @see https://docs.expo.dev/guides/monorepos/#modify-the-metro-config
-   */
   watchFolders: [monorepoRoot],
   /**
    * Move the Metro cache to the `node_modules/.cache/metro` folder.
@@ -69,6 +71,12 @@ const svgConfig = {
     // <3 -> https://github.com/kristerkari/react-native-svg-transformer/issues/141
     assetPlugins: ['expo-asset/tools/hashAssetFiles'],
     babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: true,
+      },
+    }),
   },
 };
 

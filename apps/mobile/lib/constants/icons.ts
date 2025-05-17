@@ -1,11 +1,11 @@
-import home from '@/assets/icons/home.svg';
-import list from '@/assets/icons/list.svg';
-import logoIcon from '@/assets/icons/logo-icon.svg';
-import logo from '@/assets/icons/logo.svg';
-
 export const ICONS = {
-  logo,
-  logoIcon,
-  home,
-  list,
+  male: 'male',
+  female: 'female',
+  genderOther: 'gender_other',
+  single: 'single',
+  married: 'couple',
+  divorced: 'divorced',
+  widowed: 'widowed',
+  separated: 'separated',
+  information: 'information',
 };

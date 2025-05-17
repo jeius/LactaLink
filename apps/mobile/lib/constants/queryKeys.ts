@@ -3,4 +3,9 @@ export const QUERY_KEYS = {
     ALL: ['auth'],
   },
   USER_THEME: ['user-theme'],
+  SETUP_PROFILE: {
+    ALL: ['setup-profile'],
+    FORM: ['setup-profile', 'form'],
+    VALUES: ['setup-profile', 'values'],
+  },
 };

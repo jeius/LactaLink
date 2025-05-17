@@ -2,7 +2,7 @@ import { Protected } from '@/components/protected';
 import ThemeToggler from '@/components/theme-toggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/hooks/auth/useSession';
 import { LogOutIcon } from 'lucide-react-native';
 import React from 'react';
 
