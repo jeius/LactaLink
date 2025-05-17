@@ -1,7 +1,7 @@
 import { Asset } from 'expo-asset';
 import { useEffect, useState } from 'react';
 
-export function useAppAssets() {
+export function useAssetsLoader() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -9,7 +9,9 @@ export function useAppAssets() {
     async function loadAssets() {
       try {
         await Asset.loadAsync([
-          require('../assets/images/splash-icon.png'),
+          require('../assets/images/individual.png'),
+          require('../assets/images/hospital.png'),
+          require('../assets/images/milk_bank.png'),
           // Add more assets here
         ]);
         setAssetsLoaded(true);
@@ -22,5 +24,5 @@ export function useAppAssets() {
     loadAssets();
   }, []);
 
-  return { assetsLoaded, error };
+  return [assetsLoaded, error] as const;
 }
