@@ -15,9 +15,9 @@ const baseSchema = z.object({
 
 export const individualSchema = z.object({
   profileType: z.literal('INDIVIDUAL'),
-  givenName: z.string(),
+  givenName: z.string().min(1, 'Required'),
   middleName: z.string().optional(),
-  familyName: z.string(),
+  familyName: z.string().min(1, 'Required'),
   birth: z.date(),
   dependents: z.number().positive().optional(),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),

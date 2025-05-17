@@ -4,17 +4,18 @@ import { VStack } from '@/components/ui/vstack';
 import SafeArea from '@/components/safe-area';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useSession } from '@/hooks/useSession';
+import { useSession } from '@/hooks/auth/useSession';
+import { usePagination } from '@/hooks/forms/usePagination';
+import { SETUP_PROFILE_STEPS } from '@/lib/constants';
 import { router } from 'expo-router';
 import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
 import React from 'react';
 
+const steps = SETUP_PROFILE_STEPS;
+
 export default function Setup() {
   const { signOut } = useSession();
-
-  function handlePress() {
-    router.push('/setup-profile/form');
-  }
+  const { nextPage } = usePagination(steps);
 
   async function handleSignOut() {
     await signOut();
@@ -46,7 +47,7 @@ export default function Setup() {
           We&apos;re excited to have you on board! Let&apos;s get your account ready.
         </Text>
 
-        <Button size="lg" className="my-2 w-full" onPress={handlePress}>
+        <Button size="lg" className="my-2 w-full" onPress={nextPage}>
           <ButtonIcon as={Settings2Icon} />
           <ButtonText>Setup Account</ButtonText>
         </Button>
