@@ -1,4 +1,3 @@
-import { useTheme } from '@/components/providers/theme-provider';
 import { useToast } from '@/components/ui/toast';
 import { errorToast, loadingToast, successToast } from '@/lib/toaster';
 import { InterfaceToastProps } from '@gluestack-ui/toast/lib/types';
@@ -13,13 +12,12 @@ export type ShowProps = InterfaceToastProps & {
 
 export function useAppToast() {
   const toast = useToast();
-  const { theme } = useTheme();
 
   const show = ({ id, message, type, description, placement, ...options }: ShowProps) => {
     const renderFn = {
-      success: (id: string) => successToast(id, message),
-      error: (id: string) => errorToast(id, message),
-      loading: (id: string) => loadingToast(id, message, theme, description),
+      success: (id: string) => successToast(id, message, description),
+      error: (id: string) => errorToast(id, message, description),
+      loading: (id: string) => loadingToast(id, message, description),
     };
 
     toast.show({

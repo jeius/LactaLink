@@ -1,13 +1,11 @@
-import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
+import { MMKV_KEYS } from '@/lib/constants';
 import storage from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm, UseFormReturn } from 'react-hook-form';
 
 const STORAGE_KEY = MMKV_KEYS.SETUP_PROFILE;
-const VALUES_KEY = QUERY_KEYS.SETUP_PROFILE.VALUES;
 
 function getInitialData(): SetupProfileSchema | undefined {
   const raw = storage.getString(STORAGE_KEY);
@@ -20,7 +18,6 @@ function getInitialData(): SetupProfileSchema | undefined {
 }
 
 export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
-  const queryClient = useQueryClient();
   const initialData = getInitialData();
 
   // Create form instance
@@ -43,10 +40,9 @@ export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
   useEffect(() => {
     const subscription = methods.watch((value) => {
       storage.set(STORAGE_KEY, JSON.stringify(value));
-      queryClient.setQueryData(VALUES_KEY, value);
     });
     return () => subscription.unsubscribe();
-  }, [methods, methods.watch, queryClient]);
+  }, [methods, methods.watch]);
 
   return methods;
 };

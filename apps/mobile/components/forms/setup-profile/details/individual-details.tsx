@@ -16,17 +16,17 @@ import { formatDate } from '@lactalink/utilities';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { AlertCircleIcon, BabyIcon, CalendarRangeIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Controller, UseFormReturn } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { Platform } from 'react-native';
 import { genderOptions, maritalStatusOptions } from './options';
 
-export default function IndividualDetails({ form }: { form: UseFormReturn<IndividualSchema> }) {
+export default function IndividualDetails() {
   const {
     control,
     formState: { errors },
     getValues,
     setValue,
-  } = form;
+  } = useFormContext<IndividualSchema>();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const birthDate = getValues('birth');
@@ -56,9 +56,10 @@ export default function IndividualDetails({ form }: { form: UseFormReturn<Indivi
           control={control}
           name="givenName"
           render={({ field }) => (
-            <Input>
+            <Input isDisabled={field.disabled}>
               <InputField
-                {...field}
+                value={field.value}
+                onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 placeholder="Enter your given name."
                 autoCapitalize="words"
@@ -83,9 +84,10 @@ export default function IndividualDetails({ form }: { form: UseFormReturn<Indivi
           control={control}
           name="middleName"
           render={({ field }) => (
-            <Input>
+            <Input isDisabled={field.disabled}>
               <InputField
-                {...field}
+                value={field.value}
+                onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 placeholder="Enter your middle name."
                 autoCapitalize="words"
@@ -112,9 +114,10 @@ export default function IndividualDetails({ form }: { form: UseFormReturn<Indivi
           control={control}
           name="familyName"
           render={({ field }) => (
-            <Input>
+            <Input isDisabled={field.disabled}>
               <InputField
-                {...field}
+                value={field.value}
+                onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 placeholder="Enter your family name."
                 autoCapitalize="words"
@@ -138,10 +141,10 @@ export default function IndividualDetails({ form }: { form: UseFormReturn<Indivi
           control={control}
           name="dependents"
           render={({ field }) => (
-            <Input className="max-w-32 pl-3">
+            <Input isDisabled={field.disabled} className="max-w-32 pl-3">
               <InputIcon as={BabyIcon} className="text-primary-500" />
               <InputField
-                {...field}
+                onBlur={field.onBlur}
                 placeholder="e.g. 2"
                 keyboardType="number-pad"
                 value={field.value ? String(field.value) : ''}
@@ -166,7 +169,7 @@ export default function IndividualDetails({ form }: { form: UseFormReturn<Indivi
           control={control}
           name="birth"
           render={({ field }) => (
-            <Input className="max-w-48 pl-3">
+            <Input isDisabled={field.disabled} className="max-w-48 pl-3">
               <InputIcon as={CalendarRangeIcon} className="text-primary-500" />
               <InputSlot onPress={togglePicker} className="w-full">
                 <InputField

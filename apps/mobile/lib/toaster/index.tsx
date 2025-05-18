@@ -2,20 +2,12 @@ import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Toast, ToastDescription, ToastTitle } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
-import { ColorsConfig } from '@/lib/types/colors';
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getHexColor } from '../colors';
 
-export function loadingToast(
-  id: string,
-  message = 'Loading...',
-  theme: keyof ColorsConfig = 'light',
-  description?: string
-) {
+export function loadingToast(id: string, title = 'Loading...', description?: string) {
   const { width } = Dimensions.get('window');
-  const spinnerColor = getHexColor(theme, 'info', 0);
   return (
     <SafeAreaView>
       <Toast
@@ -26,10 +18,12 @@ export function loadingToast(
         style={{ width: width * 0.9 }}
       >
         <HStack space="sm" className="mx-auto">
-          <Spinner size="small" color={spinnerColor} />
-          <ToastTitle>{message}</ToastTitle>
+          <Spinner size="small" className="text-info-0" />
+          <VStack>
+            <ToastTitle>{title}</ToastTitle>
+            {description && <ToastDescription>{description}</ToastDescription>}
+          </VStack>
         </HStack>
-        {description && <ToastDescription>{description}</ToastDescription>}
       </Toast>
     </SafeAreaView>
   );

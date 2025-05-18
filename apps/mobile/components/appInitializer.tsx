@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
-import { getHexColor } from '@/lib/colors';
 import { QUERY_KEYS } from '@/lib/constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from './providers/theme-provider';
@@ -21,7 +20,7 @@ type Props = {
 
 export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
-  const { isLoading: isThemeLoading, theme } = useTheme();
+  const { isLoading: isThemeLoading } = useTheme();
   const { isPending: isAuthLoading, error } = useQuery({
     queryKey: QUERY_KEYS.AUTH.ALL,
     queryFn: getAuth,
@@ -49,7 +48,7 @@ export function AppInitializer({ children }: Props) {
   if (!isAppReady) {
     return (
       <SafeAreaView className="bg-background-50 flex-1 items-center justify-center">
-        <Spinner color={getHexColor(theme, 'primary', 500)} size="large" />
+        <Spinner size="large" />
       </SafeAreaView>
     );
   }

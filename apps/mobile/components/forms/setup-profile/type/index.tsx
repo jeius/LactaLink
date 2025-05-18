@@ -8,8 +8,8 @@ import React, { ReactNode, useEffect } from 'react';
 
 import { Image } from '@/components/ui/image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { SetupProfileSchema, User } from '@lactalink/types';
-import { UseFormReturn } from 'react-hook-form';
+import { SetupProfileSchema } from '@lactalink/types';
+import { useFormContext } from 'react-hook-form';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { options } from './options';
 
@@ -77,12 +77,12 @@ const descriptionStyle = tva({
   },
 });
 
-export default function ProfileType({ form }: { form: UseFormReturn<SetupProfileSchema> }) {
-  const { watch, setValue } = form;
+export default function ProfileType() {
+  const { setValue, watch } = useFormContext<SetupProfileSchema>();
   const selected = watch('profileType');
 
-  function handleRadioChange(val: User['profileType']) {
-    if (val) setValue('profileType', val);
+  function handleRadioChange(val: typeof selected) {
+    setValue('profileType', val);
   }
 
   return (

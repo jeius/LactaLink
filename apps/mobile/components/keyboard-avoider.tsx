@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { RefObject } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   ScrollViewProps,
   StyleProp,
   TouchableWithoutFeedback,
   ViewStyle,
 } from 'react-native';
 
+import { ScrollView } from 'react-native-gesture-handler';
+
 type Props = {
   children: React.ReactNode;
   keyboardVerticalOffset?: number;
   scrollViewProps?: ScrollViewProps;
   containerStyle?: StyleProp<ViewStyle>;
+  scrollViewRef?: RefObject<ScrollView>;
 };
 
 const KeyboardAvoidingWrapper: React.FC<Props> = ({
@@ -22,6 +24,7 @@ const KeyboardAvoidingWrapper: React.FC<Props> = ({
   keyboardVerticalOffset = 0,
   scrollViewProps,
   containerStyle,
+  scrollViewRef,
 }) => {
   return (
     <KeyboardAvoidingView
@@ -31,6 +34,7 @@ const KeyboardAvoidingWrapper: React.FC<Props> = ({
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           {...scrollViewProps}

@@ -13,14 +13,15 @@ import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { SetupProfileSchema } from '@lactalink/types';
 import { AlertCircleIcon, PhoneIcon } from 'lucide-react-native';
 import React from 'react';
-import { Controller, UseFormReturn } from 'react-hook-form';
-import AddressForm from './address';
+import { Controller, useFormContext } from 'react-hook-form';
+import Addresses from './address';
 
-export default function ProfileContact({ form }: { form: UseFormReturn<SetupProfileSchema> }) {
+export default function ProfileContact() {
   const {
     formState: { errors },
     control,
-  } = form;
+  } = useFormContext<SetupProfileSchema>();
+
   return (
     <VStack space="xl">
       <Card>
@@ -32,15 +33,16 @@ export default function ProfileContact({ form }: { form: UseFormReturn<SetupProf
             control={control}
             name="phone"
             render={({ field }) => (
-              <Input className="pl-3">
+              <Input isDisabled={field.disabled} className="pl-3">
                 <InputIcon as={PhoneIcon} className="text-primary-500" />
                 <InputField
-                  {...field}
                   placeholder="e.g. 09123456789"
                   keyboardType="number-pad"
                   textContentType="telephoneNumber"
                   autoComplete="tel-device"
                   autoCapitalize="none"
+                  value={field.value}
+                  onBlur={field.onBlur}
                   onChangeText={field.onChange}
                 />
               </Input>
@@ -53,7 +55,7 @@ export default function ProfileContact({ form }: { form: UseFormReturn<SetupProf
         </FormControl>
       </Card>
 
-      <AddressForm form={form} />
+      <Addresses />
     </VStack>
   );
 }
