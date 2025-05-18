@@ -82,7 +82,7 @@ export default function Addresses() {
                 render={({ field }) => (
                   <Input isDisabled={field.disabled} variant="underlined">
                     <InputField
-                      value={field.value}
+                      value={field.value || ''}
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       placeholder="e.g. Home, Workplace"
@@ -166,7 +166,7 @@ export default function Addresses() {
                 render={({ field }) => (
                   <InfiniteComboBox
                     collection={'barangays'}
-                    selected={field.value}
+                    selected={field.value || ''}
                     onSelectionChanged={field.onChange}
                     placeholder="Select barangay..."
                     where={
@@ -196,7 +196,7 @@ export default function Addresses() {
                 render={({ field }) => (
                   <Input isDisabled={field.disabled}>
                     <InputField
-                      value={field.value}
+                      value={field.value || ''}
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       placeholder="e.g. Block 9, Sudlonon St."

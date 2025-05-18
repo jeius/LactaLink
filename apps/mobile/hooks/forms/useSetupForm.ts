@@ -1,14 +1,16 @@
-import { MMKV_KEYS } from '@/lib/constants';
 import storage from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
 import { useEffect } from 'react';
 import { useForm, UseFormReturn } from 'react-hook-form';
+import { useSession } from '../auth/useSession';
 
-const STORAGE_KEY = MMKV_KEYS.SETUP_PROFILE;
+const storageKeyPrefix = 'setup-profile-form';
 
-function getInitialData(): SetupProfileSchema | undefined {
-  const raw = storage.getString(STORAGE_KEY);
+function getInitialData(id?: string): SetupProfileSchema | undefined {
+  if (!id) return;
+
+  const raw = storage.getString(`${storageKeyPrefix}-${id}`);
   const data: SetupProfileSchema = raw ? JSON.parse(raw) : null;
 
   if (data && data.profileType === 'INDIVIDUAL') {
@@ -18,7 +20,9 @@ function getInitialData(): SetupProfileSchema | undefined {
 }
 
 export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
-  const initialData = getInitialData();
+  const { user } = useSession();
+
+  const initialData = getInitialData(user?.id);
 
   // Create form instance
   const methods = useForm<SetupProfileSchema>({
@@ -33,16 +37,17 @@ export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
       phone: '',
       head: '',
       hospitalID: '',
+      birth: undefined,
     },
   });
 
-  // Sync form state to MMKV & Query Cache
+  // Sync form state to MMKV
   useEffect(() => {
     const subscription = methods.watch((value) => {
-      storage.set(STORAGE_KEY, JSON.stringify(value));
+      if (user) storage.set(`${storageKeyPrefix}-${user.id}`, JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods, methods.watch]);
+  }, [methods, methods.watch, user]);
 
   return methods;
 };

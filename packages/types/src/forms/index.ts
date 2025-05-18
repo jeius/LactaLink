@@ -18,6 +18,7 @@ export {
 
 export type {
   AddressSchema,
+  AvatarSchema,
   HospitalSchema,
   IndividualSchema,
   MilkBankSchema,
@@ -26,6 +27,7 @@ export type {
 
 export {
   addressSchema,
+  avatarSchema,
   hospitalSchema,
   individualSchema,
   milkBankSchema,

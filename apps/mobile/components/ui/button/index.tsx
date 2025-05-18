@@ -165,24 +165,47 @@ const buttonTextStyle = tva({
       variant: 'outline',
       action: 'primary',
       class:
-        'text-primary-500 data-[hover=true]:text-primary-800 data-[active=true]:text-primary-800',
+        'text-primary-500 data-[hover=true]:text-primary-300 data-[active=true]:text-primary-300',
     },
     {
       variant: 'outline',
       action: 'secondary',
       class:
-        'text-secondary-500 data-[hover=true]:text-secondary-800 data-[active=true]:text-secondary-800',
+        'text-secondary-500 data-[hover=true]:text-secondary-300 data-[active=true]:text-secondary-300',
     },
     {
       variant: 'outline',
       action: 'positive',
       class:
-        'text-success-500 data-[hover=true]:text-success-800 data-[active=true]:text-success-800',
+        'text-success-500 data-[hover=true]:text-success-300 data-[active=true]:text-success-300',
     },
     {
       variant: 'outline',
       action: 'negative',
-      class: 'text-error-500 data-[hover=true]:text-error-800 data-[active=true]:text-error-800',
+      class: 'text-error-500 data-[hover=true]:text-error-300 data-[active=true]:text-error-300',
+    },
+    {
+      variant: 'link',
+      action: 'primary',
+      class:
+        'text-primary-500 data-[hover=true]:text-primary-300 data-[active=true]:text-primary-300',
+    },
+    {
+      variant: 'link',
+      action: 'secondary',
+      class:
+        'text-secondary-500 data-[hover=true]:text-secondary-300 data-[active=true]:text-secondary-300',
+    },
+    {
+      variant: 'link',
+      action: 'positive',
+      class:
+        'text-success-500 data-[hover=true]:text-success-300 data-[active=true]:text-success-300',
+    },
+    {
+      variant: 'link',
+      action: 'negative',
+      class: 'text-error-500 data-[hover=true]:text-error-300 data-[active=true]:text-error-300',
     },
   ],
 });
@@ -190,6 +213,15 @@ const buttonTextStyle = tva({
 const buttonIconStyle = tva({
   base: 'fill-none',
   parentVariants: {
+    action: {
+      primary:
+        'text-primary-500 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-700',
+      secondary:
+        'text-secondary-500 data-[hover=true]:text-secondary-600 data-[active=true]:text-secondary-700',
+      positive:
+        'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-700',
+      negative: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',
+    },
     variant: {
       link: 'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
       outline:
@@ -203,15 +235,6 @@ const buttonIconStyle = tva({
       md: 'h-[18px] w-[18px]',
       lg: 'h-[18px] w-[18px]',
       xl: 'h-5 w-5',
-    },
-    action: {
-      primary:
-        'text-primary-500 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-700',
-      secondary:
-        'text-secondary-500 data-[hover=true]:text-secondary-600 data-[active=true]:text-secondary-700',
-      positive:
-        'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-700',
-      negative: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',
     },
   },
   parentCompoundVariants: [
@@ -235,6 +258,52 @@ const buttonIconStyle = tva({
       variant: 'solid',
       action: 'negative',
       class: 'text-error-0 data-[hover=true]:text-error-0 data-[active=true]:text-error-0',
+    },
+    {
+      variant: 'outline',
+      action: 'primary',
+      class:
+        'text-primary-500 data-[hover=true]:text-primary-800 data-[active=true]:text-primary-800',
+    },
+    {
+      variant: 'outline',
+      action: 'secondary',
+      class:
+        'text-secondary-500 data-[hover=true]:text-secondary-800 data-[active=true]:text-secondary-800',
+    },
+    {
+      variant: 'outline',
+      action: 'positive',
+      class:
+        'text-success-500 data-[hover=true]:text-success-800 data-[active=true]:text-success-800',
+    },
+    {
+      variant: 'outline',
+      action: 'negative',
+      class: 'text-error-500 data-[hover=true]:text-error-800 data-[active=true]:text-error-800',
+    },
+    {
+      variant: 'link',
+      action: 'primary',
+      class:
+        'text-primary-500 data-[hover=true]:text-primary-800 data-[active=true]:text-primary-800',
+    },
+    {
+      variant: 'link',
+      action: 'secondary',
+      class:
+        'text-secondary-500 data-[hover=true]:text-secondary-800 data-[active=true]:text-secondary-800',
+    },
+    {
+      variant: 'link',
+      action: 'positive',
+      class:
+        'text-success-500 data-[hover=true]:text-success-800 data-[active=true]:text-success-800',
+    },
+    {
+      variant: 'link',
+      action: 'negative',
+      class: 'text-error-500 data-[hover=true]:text-error-800 data-[active=true]:text-error-800',
     },
   ],
 });

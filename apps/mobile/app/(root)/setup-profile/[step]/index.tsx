@@ -12,6 +12,7 @@ import { ICONS, SETUP_PROFILE_STEPS } from '@/lib/constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
+import ProfileAvatar from '@/components/forms/setup-profile/avatar';
 import ProfileContact from '@/components/forms/setup-profile/contact';
 import { Box } from '@/components/ui/box';
 import { Image } from '@/components/ui/image';
@@ -67,49 +68,35 @@ export default function Step() {
 
   async function handleNext() {
     if (!hasNextPage) {
-      form.handleSubmit(onSubmit);
+      form.handleSubmit(onSubmit)();
       return;
     }
 
     if (step.includes('type')) {
       nextPage();
-    } else if (step.includes('details')) {
-      let validations: boolean[] = [];
-      switch (profileType) {
-        case 'INDIVIDUAL':
-          validations = await Promise.all(
-            individualFields.map((field) => form.trigger(field))
-          ).then((result) => result.filter(Boolean));
-          if (validations.length === individualFields.length) {
-            nextPage();
-          }
-          break;
-        case 'HOSPITAL':
-          validations = await Promise.all(hospitalFields.map((field) => form.trigger(field))).then(
-            (result) => result.filter(Boolean)
-          );
-          if (validations.length === individualFields.length) {
-            nextPage();
-          }
-          break;
-        case 'MILK_BANK':
-          validations = await Promise.all(milkBankFields.map((field) => form.trigger(field))).then(
-            (result) => result.filter(Boolean)
-          );
-          if (validations.length === individualFields.length) {
-            nextPage();
-          }
-          break;
-        default:
-          break;
-      }
-    } else {
-      const validations = await Promise.all(contactFields.map((field) => form.trigger(field))).then(
-        (result) => result.filter(Boolean)
-      );
-      if (validations.length === contactFields.length) {
-        nextPage();
-      }
+      return;
+    }
+
+    const profileFieldMap: Record<
+      typeof profileType,
+      (keyof IndividualSchema | keyof HospitalSchema | keyof MilkBankSchema)[]
+    > = {
+      INDIVIDUAL: individualFields,
+      HOSPITAL: hospitalFields,
+      MILK_BANK: milkBankFields,
+    };
+
+    const fieldsToValidate =
+      step.includes('details') && profileType ? profileFieldMap[profileType] : contactFields;
+
+    const validationResults = await Promise.all(
+      fieldsToValidate.map((field) => form.trigger(field))
+    );
+
+    const allValid = validationResults.every(Boolean);
+
+    if (allValid) {
+      nextPage();
     }
   }
 
@@ -147,6 +134,8 @@ export default function Step() {
                   {step.includes('details') && <ProfileDetails />}
 
                   {step.includes('contact') && <ProfileContact />}
+
+                  {step.includes('avatar') && <ProfileAvatar />}
                 </VStack>
               )}
             </Box>
@@ -155,7 +144,7 @@ export default function Step() {
               <Button isDisabled={profileType === undefined} size="lg" onPress={handleNext}>
                 <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
               </Button>
-              <Button size="md" variant="link" onPress={handleBack}>
+              <Button size="md" variant="link" action="default" onPress={handleBack}>
                 <ButtonText>Back</ButtonText>
               </Button>
             </VStack>

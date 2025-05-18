@@ -26,10 +26,13 @@ export default function IndividualDetails() {
     formState: { errors },
     getValues,
     setValue,
+    trigger,
   } = useFormContext<IndividualSchema>();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   const birthDate = getValues('birth');
+  const birth = !isNaN(birthDate?.getTime?.()) ? birthDate : new Date(1999, 0, 1);
 
   function togglePicker() {
     setShowDatePicker(!showDatePicker);
@@ -38,7 +41,7 @@ export default function IndividualDetails() {
   const onDateChange = ({ type }: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate;
     if (currentDate && type === 'set') {
-      setValue('birth', currentDate);
+      setValue('birth', currentDate, { shouldValidate: true });
 
       if (Platform.OS === 'android') togglePicker();
     } else {
@@ -86,7 +89,7 @@ export default function IndividualDetails() {
           render={({ field }) => (
             <Input isDisabled={field.disabled}>
               <InputField
-                value={field.value}
+                value={field.value || ''}
                 onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 placeholder="Enter your middle name."
@@ -194,7 +197,7 @@ export default function IndividualDetails() {
           <DateTimePicker
             mode="date"
             display="spinner"
-            value={birthDate || new Date(1999, 0, 1)}
+            value={birth}
             minimumDate={new Date('1900-1-1')}
             maximumDate={new Date()}
             onChange={onDateChange}
@@ -212,7 +215,10 @@ export default function IndividualDetails() {
           render={({ field }) => (
             <OptionsCards
               selected={field.value}
-              onSelectionChange={field.onChange}
+              onSelectionChange={(val) => {
+                field.onChange(val);
+                trigger('gender');
+              }}
               items={genderOptions}
             />
           )}
@@ -233,7 +239,10 @@ export default function IndividualDetails() {
           render={({ field }) => (
             <OptionsCards
               selected={field.value}
-              onSelectionChange={field.onChange}
+              onSelectionChange={(val) => {
+                field.onChange(val);
+                trigger('maritalStatus');
+              }}
               items={maritalStatusOptions}
             />
           )}

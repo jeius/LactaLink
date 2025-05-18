@@ -25,6 +25,11 @@ export const formatTime = (totalSeconds: number): string => {
 
 export function formatDate(param: Date | string): string {
   const date = new Date(param);
+
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
   const day = date.getDate();
   const monthNames = [
     'January',

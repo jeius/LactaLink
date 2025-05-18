@@ -41,7 +41,7 @@ const SCROLL_AMOUNT = 150;
 
 export default function OptionsCards<T>({
   items,
-  onSelectionChange: setSelectedValue,
+  onSelectionChange: setValue,
   selected,
 }: OptionsCardsProps<T>) {
   const scrollRef = useRef<ScrollView>(null);
@@ -60,8 +60,8 @@ export default function OptionsCards<T>({
   }, [layoutWidth, contentWidth]);
 
   function handleSelection(val: T) {
-    if (setSelectedValue) {
-      setSelectedValue(val);
+    if (setValue) {
+      setValue(val);
     }
   }
 

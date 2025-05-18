@@ -1,0 +1,32 @@
+import AvatarUpload from '@/components/avatar-upload';
+import { Card } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { SetupProfileSchema } from '@lactalink/types';
+import React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
+
+export default function ProfileAvatar() {
+  const { control } = useFormContext<SetupProfileSchema>();
+  return (
+    <Card>
+      <VStack space="xl">
+        <VStack space="sm">
+          <Text size="lg" className="font-JakartaMedium">
+            Upload Your Avatar
+          </Text>
+          <Text className="text-typography-800">
+            This will make it easier for others to recognize you within the platform. You can skip
+            this part and change this anytime.
+          </Text>
+        </VStack>
+
+        <Controller
+          control={control}
+          name="avatar"
+          render={({ field }) => <AvatarUpload value={field.value} onChange={field.onChange} />}
+        />
+      </VStack>
+    </Card>
+  );
+}
