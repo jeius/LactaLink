@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 /**
  * Delays the execution of code for a specified amount of time.
  *
@@ -17,4 +19,20 @@
  */
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function useDebounce<T>(value: T, delay = 200): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
