@@ -1,15 +1,17 @@
 import z from 'zod';
 
 export const addressSchema = z.object({
-  name: z.string(),
-  street: z.string(),
-  province: z.string(),
-  cityMunicipality: z.string(),
-  barangay: z.string(),
+  name: z.string().optional(),
+  street: z.string().optional(),
+  province: z.string().min(1, 'Required.'),
+  cityMunicipality: z.string().min(1, 'Required.'),
+  barangay: z.string().optional(),
+  zipCode: z.string().min(1, 'Required.'),
+  default: z.boolean().optional(),
 });
 
 const baseSchema = z.object({
-  addresses: z.array(addressSchema),
+  addresses: z.array(addressSchema).min(1, 'Required atleast one address.'),
   phone: z.string().optional(),
 });
 
@@ -26,7 +28,7 @@ export const individualSchema = z.object({
 
 export const hospitalSchema = z.object({
   profileType: z.literal('HOSPITAL'),
-  name: z.string(),
+  name: z.string().min(1, 'Required.'),
   description: z.string().optional(),
   head: z.string().optional(),
   hospitalID: z.string().optional(),
@@ -35,7 +37,7 @@ export const hospitalSchema = z.object({
 
 export const milkBankSchema = z.object({
   profileType: z.literal('MILK_BANK'),
-  name: z.string(),
+  name: z.string().min(1, 'Required.'),
   description: z.string().optional(),
   head: z.string().optional(),
   type: z.enum(['GOVERNMENT', 'PRIVATE', 'OTHER']),

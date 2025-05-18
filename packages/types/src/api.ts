@@ -1,4 +1,5 @@
 import type { URL } from 'url';
+import { Collections } from './collections';
 import { CustomError } from './errors';
 
 export type APIResponse<T> =
@@ -20,4 +21,17 @@ export type APIParams = {
   token?: string;
   vercelToken?: string;
   body?: Record<string, unknown>;
+};
+
+export type FindResult<T extends Collections> = {
+  docs: T[];
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  limit: number;
+  nextPage: number | null;
+  prevPage: number | null;
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+  pagingCounter: number;
 };
