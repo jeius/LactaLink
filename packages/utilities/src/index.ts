@@ -1,4 +1,4 @@
-export * from './apiFetch';
+export * from './api';
 export * from './auth';
 export * from './batching';
 export * from './delay';

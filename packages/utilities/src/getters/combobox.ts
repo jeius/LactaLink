@@ -6,7 +6,7 @@ import {
   Where,
 } from '@lactalink/types';
 import { stringify } from 'qs-esm';
-import { apiFetch } from '../apiFetch';
+import { apiFetch } from '../api/apiFetch';
 
 type Options = {
   collection: CollectionSlug;

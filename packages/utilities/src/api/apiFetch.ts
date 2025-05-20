@@ -1,16 +1,15 @@
 import { APIParams, APIResponse } from '@lactalink/types';
-import { extractErrorMessage, extractErrorStatus } from './errors';
+import { extractErrorMessage, extractErrorStatus } from '../errors';
 
 export async function apiFetch<T>({
   token,
   method = 'GET',
   url,
   vercelToken,
-  body,
+  body: bodyParams,
+  headers = new Headers({ 'Content-Type': 'application/json' }),
 }: APIParams): Promise<APIResponse<T>> {
   try {
-    const headers = new Headers({ 'Content-Type': 'application/json' });
-
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
     }
@@ -19,7 +18,10 @@ export async function apiFetch<T>({
       headers.append('x-vercel-protection-bypass', vercelToken);
     }
 
-    const res = await fetch(url, { method, headers, body: body && JSON.stringify(body) });
+    const body =
+      bodyParams && (bodyParams instanceof FormData ? bodyParams : JSON.stringify(bodyParams));
+
+    const res = await fetch(url, { method, headers, body });
 
     if (!res.ok) {
       const data = (await res.json()) as { message?: string };

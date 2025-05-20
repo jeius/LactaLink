@@ -1,6 +1,6 @@
 import { AuthResult, MeUser } from '@lactalink/types/auth';
 import { AuthError } from '@supabase/supabase-js';
-import { apiFetch } from '../apiFetch';
+import { apiFetch } from '../api/apiFetch';
 
 export async function getMeUser(
   token: string,
