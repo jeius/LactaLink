@@ -1,6 +1,7 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react-native';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { Noop } from 'react-hook-form';
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -22,7 +23,7 @@ const cardStyle = tva({
   },
 });
 
-export type OptionsCardItem<T> = {
+export type OptionsCardItem<T = string> = {
   label: string;
   value: T;
   image?: {
@@ -32,17 +33,20 @@ export type OptionsCardItem<T> = {
 };
 
 export type OptionsCardsProps<T> = {
-  items: OptionsCardItem<T>[];
-  onSelectionChange?: (val: T) => void;
-  selected?: T;
+  items?: OptionsCardItem<T>[];
+  onChange?: (val: T) => void;
+  value?: T;
+  disabled?: boolean;
+  onBlur?: Noop;
 };
 
 const SCROLL_AMOUNT = 150;
 
-export default function OptionsCards<T>({
-  items,
-  onSelectionChange: setValue,
-  selected,
+export function OptionsCards<T>({
+  items = [],
+  onChange: setValue,
+  value: selected,
+  disabled,
 }: OptionsCardsProps<T>) {
   const scrollRef = useRef<ScrollView>(null);
   const [isScrollable, setIsScrollable] = useState(false);
@@ -95,11 +99,12 @@ export default function OptionsCards<T>({
   };
 
   return (
-    <Box className="relative w-full">
+    <Box disabled={disabled} className="relative w-full">
       <ScrollView
         ref={scrollRef}
         horizontal
         alwaysBounceHorizontal
+        enabled={!disabled}
         scrollEventThrottle={16}
         onScroll={handleScroll}
         onLayout={(e) => {
@@ -112,7 +117,7 @@ export default function OptionsCards<T>({
           setIsScrollable(w > layoutWidth);
         }}
       >
-        <HStack space="sm" className="items-center">
+        <HStack space="sm" className="items-center py-1">
           {items.map(({ label, image, value }, i) => (
             <AnimatedScaleWrapper key={i} isSelected={selected === value}>
               <Pressable onPress={() => handleSelection(value)}>
@@ -120,9 +125,9 @@ export default function OptionsCards<T>({
                   size="md"
                   className={cardStyle({ isSelected: selected === value })}
                   style={{
-                    maxWidth: 105,
+                    // maxWidth: 105,
                     minHeight: 115,
-                    minWidth: 90,
+                    minWidth: 100,
                   }}
                 >
                   <VStack space="md" className="m-auto items-center">

@@ -1,6 +1,6 @@
 import { OptionsCardItem } from '@/components/option-cards';
 import { ICONS } from '@/lib/constants';
-import { IndividualSchema } from '@lactalink/types';
+import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
 
 export const genderOptions: OptionsCardItem<IndividualSchema['gender']>[] = [
   {
@@ -50,4 +50,12 @@ export const maritalStatusOptions: OptionsCardItem<IndividualSchema['maritalStat
     value: 'N/A',
     label: 'Prefer not to say',
   },
+];
+
+export const buildingTypeOptions: OptionsCardItem<
+  HospitalSchema['type'] | MilkBankSchema['type']
+>[] = [
+  { label: 'Government', value: 'GOVERNMENT', image: { uri: ICONS.townHall, alt: 'Government' } },
+  { label: 'Private', value: 'PRIVATE', image: { uri: ICONS.office, alt: 'Office' } },
+  { label: 'Other', value: 'OTHER', image: { uri: ICONS.buildingOther, alt: 'Unknown Building' } },
 ];

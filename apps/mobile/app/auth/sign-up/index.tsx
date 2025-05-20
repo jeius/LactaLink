@@ -31,9 +31,10 @@ export default function SignUp() {
     <SafeArea className="p-5">
       <KeyboardAvoidingWrapper>
         <Card className="my-auto max-w-md p-0">
-          <Box className="relative w-full overflow-hidden" style={{ height: height * 0.15 }}>
+          <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
             <Image
               size="none"
+              resizeMode="cover"
               className="h-80 w-full"
               alt="Mother Breastfeeding in chair"
               source={ASSET_IMAGES.signUp}

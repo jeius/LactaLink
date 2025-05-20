@@ -30,6 +30,7 @@ export default function ResetPassword() {
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
               <Image
                 size="full"
+                resizeMode="cover"
                 className="h-80"
                 alt="Forgot Password"
                 source={ASSET_IMAGES.forgotPassword}

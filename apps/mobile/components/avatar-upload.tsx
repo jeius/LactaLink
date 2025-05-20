@@ -3,6 +3,8 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import * as crypto from 'expo-crypto';
 import * as ImagePicker from 'expo-image-picker';
 
+import { useAppToast } from '@/hooks/useAppToast';
+import { MAX_AVATAR_SIZE } from '@/lib/constants';
 import { AvatarSchema, SetupProfileSchema } from '@lactalink/types';
 import { UploadCloudIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -33,6 +35,7 @@ export type AvatarUploadProps = {
 
 export default function AvatarUpload({ containerClassname, onChange, value }: AvatarUploadProps) {
   const [isPressed, setIsPressed] = useState(false);
+  const toast = useAppToast();
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -45,6 +48,15 @@ export default function AvatarUpload({ containerClassname, onChange, value }: Av
     const pickedImage = result.assets?.[0];
 
     if (!pickedImage) return;
+
+    if (pickedImage.fileSize && pickedImage.fileSize > MAX_AVATAR_SIZE) {
+      toast.show({
+        id: 'avatar-image-picker',
+        type: 'error',
+        message: 'Selected image exceeds the 5MB size limit.',
+      });
+      return;
+    }
 
     const avatar: AvatarSchema = {
       id: crypto.randomUUID(),

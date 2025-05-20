@@ -1,5 +1,4 @@
 import { useSession } from '@/hooks/auth/useSession';
-import { userHasProfile } from '@/lib/utils/userHasProfile';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { SafeAreaViewProps } from 'react-native-safe-area-context';
@@ -14,7 +13,7 @@ export function Protected(props: SafeAreaViewProps) {
       if (!user || !token) {
         router.replace('/auth/sign-in');
       }
-      if (user && !userHasProfile(user)) {
+      if (user && !user?.profile) {
         router.replace('/setup-profile');
       }
     }

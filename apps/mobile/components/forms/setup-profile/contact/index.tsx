@@ -37,7 +37,7 @@ export default function ProfileContact() {
                 <InputIcon as={PhoneIcon} className="text-primary-500" />
                 <InputField
                   placeholder="e.g. 09123456789"
-                  keyboardType="number-pad"
+                  keyboardType="phone-pad"
                   textContentType="telephoneNumber"
                   autoComplete="tel-device"
                   autoCapitalize="none"

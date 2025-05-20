@@ -8,7 +8,7 @@ import { useSession } from '@/hooks/auth/useSession';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants';
 import { router } from 'expo-router';
-import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
+import { Settings2Icon } from 'lucide-react-native';
 import React from 'react';
 
 const steps = SETUP_PROFILE_STEPS;
@@ -24,10 +24,10 @@ export default function Setup() {
 
   return (
     <SafeArea className="justify-center p-5">
-      <Button variant="link" action="default" className="ml-auto" onPress={handleSignOut}>
+      {/* <Button variant="link" action="default" className="ml-auto" onPress={handleSignOut}>
         <ButtonText>Sign out</ButtonText>
         <ButtonIcon as={LogOutIcon} />
-      </Button>
+      </Button> */}
 
       <VStack
         space="2xl"

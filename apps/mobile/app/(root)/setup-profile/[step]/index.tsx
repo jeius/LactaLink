@@ -41,18 +41,18 @@ export default function Step() {
   const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: string }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(steps);
-  const form = useSetupForm();
+  const { form, cleanUpForm } = useSetupForm();
 
   const profileType = form.watch('profileType');
 
-  const typeTitle =
-    profileType === 'MILK_BANK'
-      ? 'Milk Bank'
-      : profileType === 'HOSPITAL'
-        ? 'Hospital'
-        : 'Personal';
+  const title: Record<typeof profileType, string> = {
+    INDIVIDUAL: 'Personal',
+    HOSPITAL: 'Hospital',
+    MILK_BANK: 'Milk Bank',
+  };
 
   async function onSubmit(formData: SetupProfileSchema) {
+    console.log('Submitted Data:', formData);
     toast.show({
       id: 'setup-profile',
       message: 'Creating profile...',
@@ -90,15 +90,13 @@ export default function Step() {
         createOptions
       );
 
-      console.log(`Created ${profileType}:`, createdProfile);
-
       const profileMap: Record<typeof profileType, User['profile']> = {
         INDIVIDUAL: { relationTo: 'individuals', value: createdProfile.id },
         HOSPITAL: { relationTo: 'hospitals', value: createdProfile.id },
         MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
       };
 
-      const updatedUser = await updateDocByID<User>(user.id, {
+      await updateDocByID<User>(user.id, {
         ...baseOptions,
         depth: 1,
         collection: 'users',
@@ -106,18 +104,17 @@ export default function Step() {
           profileType,
           profile: profileMap[profileType],
         },
-      }).then(async (user) => {
-        await refetchSession({ throwOnError: true });
-        return user;
       });
 
-      console.log('Updated User:', updatedUser);
-      console.log('Authenticated User:', user);
       toast.show({
         id: 'setup-profile',
         type: 'success',
         message: 'Profile created successfully.',
       });
+
+      cleanUpForm();
+      await refetchSession({ throwOnError: true });
+      router.dismissTo('/home');
     } catch (error) {
       console.error('Submit error:', error);
       toast.show({
@@ -184,7 +181,7 @@ export default function Step() {
                     <HStack space="md" className="items-center">
                       <Image source={ICONS.information} alt="Information icon" size="xs" />
                       <Text size="xl" bold>
-                        {typeTitle} Information
+                        {title[profileType]} Information
                       </Text>
                     </HStack>
                     <Text>

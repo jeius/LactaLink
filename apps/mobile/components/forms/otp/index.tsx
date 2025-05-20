@@ -3,12 +3,13 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useSession } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema } from '@lactalink/types';
-import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
+import { AuthResponse, VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -28,6 +29,7 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
 
   const toast = useAppToast();
   const { theme } = useTheme();
+  const { refetchSession } = useSession();
   const textColor = getHexColor(theme, 'typography', 900);
   const focusColor = getHexColor(theme, 'indicator', 'primary');
   const outlineColor = getHexColor(theme, 'outline', 200);
@@ -39,31 +41,35 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
       type: 'loading',
     });
 
-    let error: AuthError | null = null;
+    let authResponse: AuthResponse | null = null;
 
     if (type === 'sms' || type === 'phone_change') {
       if (phone) {
-        error = (await supabase.auth.verifyOtp({ phone, type, token: otp })).error;
+        authResponse = await supabase.auth.verifyOtp({ phone, type, token: otp });
       }
     } else {
       if (email) {
-        error = (await supabase.auth.verifyOtp({ email, type, token: otp })).error;
+        authResponse = await supabase.auth.verifyOtp({ email, type, token: otp });
       }
     }
 
-    if (error) {
+    if (!authResponse) return;
+
+    if (authResponse.error) {
       toast.show({
         id: 'otp',
         type: 'error',
-        message: error.message,
+        message: authResponse.error.message,
       });
       return;
     }
 
-    toast.closeAll();
+    await refetchSession();
 
     if (type === 'recovery') {
       router.replace('/auth/reset-password');
+    } else if (type === 'signup') {
+      router.replace('/setup-profile');
     } else {
       router.replace('/home');
     }

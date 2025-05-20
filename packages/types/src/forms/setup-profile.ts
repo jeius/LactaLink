@@ -23,7 +23,15 @@ export const addressSchema = z.object({
 
 const baseSchema = z.object({
   addresses: z.array(addressSchema).min(1, 'Required atleast one address.'),
-  phone: z.string().transform(nullTransform).optional().nullable(),
+  phone: z
+    .string()
+    .max(16, 'Invalid phone number. (Max length 16)')
+    .regex(/^$|^[\d+-]+$/, {
+      message: 'Phone number can only contain digits, +, and -',
+    })
+    .transform(nullTransform)
+    .optional()
+    .nullable(),
   avatar: avatarSchema.optional().nullable(),
 });
 

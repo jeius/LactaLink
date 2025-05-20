@@ -28,10 +28,10 @@ export default function SignIn() {
 
   return (
     <SafeArea>
-      <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+      <Box className="relative w-full overflow-hidden" style={{ height: height * 0.23 }}>
         <Image
-          size="2xl"
-          className="w-full"
+          size="full"
+          resizeMode="cover"
           alt="Mother Breastfeeding"
           source={ASSET_IMAGES.signIn}
         />
