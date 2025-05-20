@@ -51,7 +51,7 @@ export async function updateTheme(theme: Theme) {
       url,
       token,
       vercelToken,
-      body: { value: theme },
+      bodyParams: { value: theme },
     });
 
     if ('error' in res) {

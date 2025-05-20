@@ -13,7 +13,7 @@ export type HasNameCollectionSlug = Omit<
 >;
 export type CollectionOperation = 'CREATE' | 'FIND' | 'UPDATE' | 'DELETE';
 export type CollectionData<T> = Omit<T, 'id' | 'updatedAt' | 'createdAt' | 'sizes'> &
-  //@ts-expect-error 'sizes' is for upload collections and most not be modified.
+  //@ts-expect-error 'sizes' is for upload collections and must not be modified.
   Partial<Pick<T, 'id' | 'updatedAt' | 'createdAt' | 'sizes'>>;
 export type CollectionUpdateData<T> = Partial<CollectionData<T>>;
 export type CollectionOperationData<

@@ -16,9 +16,4 @@ export * from './icons';
 export * from './queryKeys';
 export * from './storageKeys';
 
-export const SETUP_PROFILE_STEPS = [
-  '/setup-profile/type',
-  '/setup-profile/details',
-  '/setup-profile/contact',
-  '/setup-profile/avatar',
-];
+export { SETUP_PROFILE_STEPS } from './profiles';

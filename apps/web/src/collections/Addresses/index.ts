@@ -3,33 +3,43 @@ import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { generateDisplayName } from './hooks/generateDisplayName';
+import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegion';
 
 export const Addresses: CollectionConfig<'addresses'> = {
   slug: 'addresses',
   admin: {
     group: COLLECTION_GROUP.CONTENT,
-    useAsTitle: 'name',
-    defaultColumns: ['completeName', 'owner'],
+    useAsTitle: 'displayName',
+    defaultColumns: ['displayName', 'owner'],
   },
   fields: [
     {
-      name: 'name',
-      label: 'Address Name',
-      type: 'text',
-      admin: {
-        description: 'e.g. Home, Workplace.',
-      },
+      type: 'row',
+      fields: [
+        {
+          name: 'name',
+          label: 'Address Name',
+          type: 'text',
+          admin: {
+            description: 'e.g. Home, Workplace.',
+            width: '50%',
+          },
+        },
+      ],
     },
     {
-      name: 'street',
-      label: 'Street Address',
-      type: 'text',
-    },
-    {
-      name: 'region',
-      type: 'relationship',
-      relationTo: 'regions',
-      required: true,
+      type: 'row',
+      fields: [
+        {
+          name: 'default',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Set as default address.',
+            width: '50%',
+          },
+        },
+      ],
     },
     {
       name: 'province',
@@ -48,7 +58,28 @@ export const Addresses: CollectionConfig<'addresses'> = {
       name: 'barangay',
       type: 'relationship',
       relationTo: 'barangays',
-      required: true,
+    },
+    {
+      name: 'street',
+      label: 'Street Address',
+      type: 'text',
+    },
+    {
+      name: 'displayName',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'region',
+      type: 'relationship',
+      relationTo: 'regions',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
     },
     {
       name: 'islandGroup',
@@ -59,17 +90,9 @@ export const Addresses: CollectionConfig<'addresses'> = {
         readOnly: true,
       },
     },
-    {
-      name: 'displayName',
-      type: 'text',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
     ownerField,
   ],
   hooks: {
-    beforeChange: [generateDisplayName, generateOwner],
+    beforeChange: [generateDisplayName, generateOwner, generateIslandGroupAndRegion],
   },
 };

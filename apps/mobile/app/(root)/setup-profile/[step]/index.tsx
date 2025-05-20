@@ -1,54 +1,44 @@
+import ProfileAvatar from '@/components/forms/setup-profile/avatar';
+import ProfileContact from '@/components/forms/setup-profile/contact';
 import ProfileDetails from '@/components/forms/setup-profile/details';
 import ProfileType from '@/components/forms/setup-profile/type';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import SafeArea from '@/components/safe-area';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+
+import { useSession } from '@/hooks/auth/useSession';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
-import { ICONS, SETUP_PROFILE_STEPS } from '@/lib/constants';
+import { useAppToast } from '@/hooks/useAppToast';
+
+import { API_URL, ICONS, SETUP_PROFILE_STEPS, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
+import {
+  CONTACTFIELDS,
+  HOSPITALFIELDS,
+  INDIVIDUALFIELDS,
+  MILKBANKFIELDS,
+} from '@/lib/constants/profiles';
+import { uploadFile } from '@/lib/utils/file';
+import { createAddresses } from '@/lib/utils/profile/createAddresses';
+import { createProfile } from '@/lib/utils/profile/createProfile';
+
+import { SetupProfileSchema, User } from '@lactalink/types';
+import { extractErrorMessage, updateDocByID } from '@lactalink/utilities';
+
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-
-import ProfileAvatar from '@/components/forms/setup-profile/avatar';
-import ProfileContact from '@/components/forms/setup-profile/contact';
-import { Box } from '@/components/ui/box';
-import { Image } from '@/components/ui/image';
-import {
-  HospitalSchema,
-  IndividualSchema,
-  MilkBankSchema,
-  SetupProfileSchema,
-} from '@lactalink/types';
 import { FormProvider } from 'react-hook-form';
 
 const steps = SETUP_PROFILE_STEPS;
 
-const individualFields: (keyof IndividualSchema)[] = [
-  'givenName',
-  'middleName',
-  'familyName',
-  'dependents',
-  'birth',
-  'gender',
-  'maritalStatus',
-];
-
-const hospitalFields: (keyof HospitalSchema)[] = [
-  'name',
-  'description',
-  'head',
-  'hospitalID',
-  'type',
-];
-
-const milkBankFields: (keyof MilkBankSchema)[] = ['name', 'description', 'head', 'type'];
-
-const contactFields: (keyof SetupProfileSchema)[] = ['addresses', 'phone'];
-
 export default function Step() {
+  const { token, user, refetchSession } = useSession();
+  const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: string }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(steps);
   const form = useSetupForm();
@@ -63,7 +53,79 @@ export default function Step() {
         : 'Personal';
 
   async function onSubmit(formData: SetupProfileSchema) {
-    console.log(formData);
+    toast.show({
+      id: 'setup-profile',
+      message: 'Creating profile...',
+      type: 'loading',
+    });
+
+    const baseOptions = { apiUrl: API_URL, vercelToken: VERCEL_BYPASS_TOKEN, token };
+    const createOptions = {
+      ...baseOptions,
+      depth: 0,
+      select: { id: true, displayName: true },
+    };
+
+    try {
+      if (!user) throw new Error('User not found.');
+
+      const { addresses, avatar, ...rest } = formData;
+
+      const avatarDoc =
+        avatar &&
+        (await uploadFile(
+          { name: avatar.filename!, uri: avatar.url!, type: avatar.mimeType! },
+          { ...baseOptions, collection: 'avatars' }
+        ));
+      const avatarID = avatarDoc?.id || null;
+
+      const addressDocs = await createAddresses(addresses, createOptions);
+
+      const createdProfile = await createProfile(
+        {
+          ...rest,
+          avatar: avatarID,
+          addresses: addressDocs.map((a) => a.id),
+        },
+        createOptions
+      );
+
+      console.log(`Created ${profileType}:`, createdProfile);
+
+      const profileMap: Record<typeof profileType, User['profile']> = {
+        INDIVIDUAL: { relationTo: 'individuals', value: createdProfile.id },
+        HOSPITAL: { relationTo: 'hospitals', value: createdProfile.id },
+        MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
+      };
+
+      const updatedUser = await updateDocByID<User>(user.id, {
+        ...baseOptions,
+        depth: 1,
+        collection: 'users',
+        data: {
+          profileType,
+          profile: profileMap[profileType],
+        },
+      }).then(async (user) => {
+        await refetchSession({ throwOnError: true });
+        return user;
+      });
+
+      console.log('Updated User:', updatedUser);
+      console.log('Authenticated User:', user);
+      toast.show({
+        id: 'setup-profile',
+        type: 'success',
+        message: 'Profile created successfully.',
+      });
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.show({
+        id: 'setup-profile',
+        type: 'error',
+        message: extractErrorMessage(error),
+      });
+    }
   }
 
   async function handleNext() {
@@ -79,15 +141,15 @@ export default function Step() {
 
     const profileFieldMap: Record<
       typeof profileType,
-      (keyof IndividualSchema | keyof HospitalSchema | keyof MilkBankSchema)[]
+      typeof INDIVIDUALFIELDS | typeof HOSPITALFIELDS | typeof MILKBANKFIELDS
     > = {
-      INDIVIDUAL: individualFields,
-      HOSPITAL: hospitalFields,
-      MILK_BANK: milkBankFields,
+      INDIVIDUAL: INDIVIDUALFIELDS,
+      HOSPITAL: HOSPITALFIELDS,
+      MILK_BANK: MILKBANKFIELDS,
     };
 
     const fieldsToValidate =
-      step.includes('details') && profileType ? profileFieldMap[profileType] : contactFields;
+      step.includes('details') && profileType ? profileFieldMap[profileType] : CONTACTFIELDS;
 
     const validationResults = await Promise.all(
       fieldsToValidate.map((field) => form.trigger(field))

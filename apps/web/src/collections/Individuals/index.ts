@@ -101,6 +101,11 @@ export const Individuals: CollectionConfig<'individuals'> = {
             { label: 'Other', value: 'OTHER' },
           ],
         },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
         {
           name: 'maritalStatus',
           label: 'Marital Status',
