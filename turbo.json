@@ -3,11 +3,11 @@
   "ui": "tui",
   "tasks": {
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema", "build"],
       "inputs": ["**/*.{ts,tsx,js,jsx}"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema", "^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env", ".env.development", ".env.production"],
       "outputs": [
         "dist/**",
@@ -36,6 +36,7 @@
     },
     "dev": {
       "cache": false,
+      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema"],
       "persistent": true
     },
     "lint": {
@@ -45,8 +46,16 @@
       "dependsOn": ["^lint:fix"]
     },
     "generate:types": {
-      "inputs": ["**/*.{ts}"]
+      "inputs": ["apps/web/src/collections/**"],
+      "outputs": ["packages/types/src/payload-types.ts"]
     },
-    "generate:importmap": {}
+    "generate:importmap": {
+      "inputs": ["apps/web/src/**"],
+      "outputs": ["apps/web/src/app/(payload)/admin/importMap.js"]
+    },
+    "generate:schema": {
+      "inputs": ["apps/web/src/collections/**"],
+      "outputs": ["apps/web/src/lib/db/**"]
+    }
   }
 }

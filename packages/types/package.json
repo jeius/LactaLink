@@ -31,7 +31,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "generate:types": "pnpm --filter=@lactalink/web generate:types && pnpm tsc",
     "dev": "tsc --watch",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
