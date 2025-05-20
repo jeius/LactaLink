@@ -6,6 +6,7 @@
  * and re-run `payload generate:db-schema` to regenerate this file.
  */
 
+import type {} from '@payloadcms/db-postgres';
 import {
   pgTable,
   index,
@@ -13,9 +14,9 @@ import {
   foreignKey,
   uuid,
   varchar,
+  boolean,
   timestamp,
   numeric,
-  boolean,
   serial,
   integer,
   jsonb,
@@ -62,12 +63,7 @@ export const addresses = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     name: varchar('name'),
-    street: varchar('street'),
-    region: uuid('region_id')
-      .notNull()
-      .references(() => regions.id, {
-        onDelete: 'set null',
-      }),
+    default: boolean('default').default(false),
     province: uuid('province_id')
       .notNull()
       .references(() => provinces.id, {
@@ -78,15 +74,17 @@ export const addresses = pgTable(
       .references(() => cities_municipalities.id, {
         onDelete: 'set null',
       }),
-    barangay: uuid('barangay_id')
-      .notNull()
-      .references(() => barangays.id, {
-        onDelete: 'set null',
-      }),
+    barangay: uuid('barangay_id').references(() => barangays.id, {
+      onDelete: 'set null',
+    }),
+    street: varchar('street'),
+    displayName: varchar('display_name'),
+    region: uuid('region_id').references(() => regions.id, {
+      onDelete: 'set null',
+    }),
     islandGroup: uuid('island_group_id').references(() => island_groups.id, {
       onDelete: 'set null',
     }),
-    displayName: varchar('display_name'),
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -98,12 +96,12 @@ export const addresses = pgTable(
       .notNull(),
   },
   (columns) => ({
-    addresses_region_idx: index('addresses_region_idx').on(columns.region),
     addresses_province_idx: index('addresses_province_idx').on(columns.province),
     addresses_city_municipality_idx: index('addresses_city_municipality_idx').on(
       columns.cityMunicipality
     ),
     addresses_barangay_idx: index('addresses_barangay_idx').on(columns.barangay),
+    addresses_region_idx: index('addresses_region_idx').on(columns.region),
     addresses_island_group_idx: index('addresses_island_group_idx').on(columns.islandGroup),
     addresses_owner_idx: index('addresses_owner_idx').on(columns.owner),
     addresses_updated_at_idx: index('addresses_updated_at_idx').on(columns.updatedAt),
@@ -948,11 +946,6 @@ export const payload_migrations = pgTable(
 );
 
 export const relations_addresses = relations(addresses, ({ one }) => ({
-  region: one(regions, {
-    fields: [addresses.region],
-    references: [regions.id],
-    relationName: 'region',
-  }),
   province: one(provinces, {
     fields: [addresses.province],
     references: [provinces.id],
@@ -967,6 +960,11 @@ export const relations_addresses = relations(addresses, ({ one }) => ({
     fields: [addresses.barangay],
     references: [barangays.id],
     relationName: 'barangay',
+  }),
+  region: one(regions, {
+    fields: [addresses.region],
+    references: [regions.id],
+    relationName: 'region',
   }),
   islandGroup: one(island_groups, {
     fields: [addresses.islandGroup],

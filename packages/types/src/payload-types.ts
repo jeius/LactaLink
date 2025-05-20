@@ -143,14 +143,31 @@ export interface Address {
    * e.g. Home, Workplace.
    */
   name?: string | null;
-  street?: string | null;
-  region: string | Region;
+  /**
+   * Set as default address.
+   */
+  default?: boolean | null;
   province: string | Province;
   cityMunicipality: string | CityMunicipality;
-  barangay: string | Barangay;
-  islandGroup?: (string | null) | IslandGroup;
+  barangay?: (string | null) | Barangay;
+  street?: string | null;
   displayName?: string | null;
+  region?: (string | null) | Region;
+  islandGroup?: (string | null) | IslandGroup;
   owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces".
+ */
+export interface Province {
+  id: string;
+  name: string;
+  code: string;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
   updatedAt: string;
   createdAt: string;
 }
@@ -175,19 +192,6 @@ export interface IslandGroup {
   id: string;
   name: string;
   code: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "provinces".
- */
-export interface Province {
-  id: string;
-  name: string;
-  code: string;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
   updatedAt: string;
   createdAt: string;
 }
@@ -540,13 +544,14 @@ export interface PayloadMigration {
  */
 export interface AddressesSelect<T extends boolean = true> {
   name?: T;
-  street?: T;
-  region?: T;
+  default?: T;
   province?: T;
   cityMunicipality?: T;
   barangay?: T;
-  islandGroup?: T;
+  street?: T;
   displayName?: T;
+  region?: T;
+  islandGroup?: T;
   owner?: T;
   updatedAt?: T;
   createdAt?: T;
