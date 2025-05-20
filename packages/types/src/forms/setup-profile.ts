@@ -1,4 +1,5 @@
 import z from 'zod';
+import { CollectionData } from '../collections';
 import { Avatar } from '../payload-types';
 
 function nullTransform(val: string) {
@@ -8,7 +9,7 @@ function nullTransform(val: string) {
   return val;
 }
 
-export const avatarSchema = z.custom<Omit<Avatar, 'updatedAt' | 'createdAt'>>();
+export const avatarSchema = z.custom<CollectionData<Avatar>>();
 
 export const addressSchema = z.object({
   name: z.string().transform(nullTransform).optional().nullable(),
