@@ -31,8 +31,8 @@ export default function IndividualDetails() {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const birthDate = getValues('birth');
-  const birth = !isNaN(birthDate?.getTime?.()) ? birthDate : new Date(1999, 0, 1);
+  const birthString = getValues('birth');
+  const birth = birthString ? new Date(birthString) : new Date(1999, 0, 1);
 
   function togglePicker() {
     setShowDatePicker(!showDatePicker);
@@ -41,7 +41,7 @@ export default function IndividualDetails() {
   const onDateChange = ({ type }: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate;
     if (currentDate && type === 'set') {
-      setValue('birth', currentDate, { shouldValidate: true });
+      setValue('birth', currentDate.toDateString(), { shouldValidate: true });
 
       if (Platform.OS === 'android') togglePicker();
     } else {
@@ -177,7 +177,7 @@ export default function IndividualDetails() {
               <InputSlot onPress={togglePicker} className="w-full">
                 <InputField
                   onBlur={field.onBlur}
-                  value={field.value ? formatDate(field.value) : ''}
+                  value={formatDate(field.value)}
                   aria-disabled={field.disabled}
                   placeholder="Select date"
                   textContentType="birthdate"

@@ -32,7 +32,7 @@ export const individualSchema = z.object({
   givenName: z.string().min(1, 'Required'),
   middleName: z.string().transform(nullTransform).optional().nullable(),
   familyName: z.string().min(1, 'Required'),
-  birth: z.date(),
+  birth: z.string().min(1, 'Required'),
   dependents: z.number().positive().optional(),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
   maritalStatus: z.enum(['SINGLE', 'MARRIED', 'SEPARATED', 'WIDOWED', 'DIVORCED', 'N/A']),
