@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Delays the execution of code for a specified amount of time.
@@ -35,4 +35,37 @@ export function useDebounce<T>(value: T, delay = 200): T {
   }, [value, delay]);
 
   return debouncedValue;
+}
+
+export function useDebouncedCallback<T extends (...args: never[]) => void>(
+  callback: T,
+  delay: number = 300
+) {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const callbackRef = useRef(callback);
+
+  // Always store the latest callback
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  const debounced = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    },
+    [delay]
+  );
+
+  const cancel = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, []);
+
+  return { debounced, cancel };
 }

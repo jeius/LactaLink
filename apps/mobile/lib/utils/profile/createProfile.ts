@@ -1,5 +1,5 @@
 import { ProfileMapData, ProfileType } from '@/lib/types/profile';
-import { ApiOptions, CollectionData } from '@lactalink/types';
+import { ApiOptions } from '@lactalink/types';
 import { createDoc } from '@lactalink/utilities';
 
 type BaseFields<T extends ProfileType> = Pick<ProfileMapData[T]['output'], 'addresses' | 'avatar'>;
@@ -16,14 +16,10 @@ export const createProfile = async <T extends ProfileType>(
   const { profileType } = data;
   switch (profileType) {
     case 'INDIVIDUAL': {
-      const individualData: CollectionData<ProfileMapData['INDIVIDUAL']['output']> = {
-        ...data,
-        birth: data.birth.toDateString(),
-      };
       return await createDoc<ProfileMapData['INDIVIDUAL']['output']>({
         ...options,
         collection: 'individuals',
-        data: individualData,
+        data,
       });
     }
     case 'HOSPITAL':

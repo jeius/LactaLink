@@ -1,31 +1,26 @@
-import storage from '@/lib/localStorage';
+import { setupProfileStorage as storage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
+import { useDebouncedCallback } from '@lactalink/utilities';
 import { useEffect } from 'react';
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { DeepPartial, useForm } from 'react-hook-form';
 import { useSession } from '../auth/useSession';
 
 const storageKeyPrefix = 'setup-profile-form';
 
 function getInitialData(id?: string): SetupProfileSchema | undefined {
   if (!id) return;
-
-  const raw = storage.getString(`${storageKeyPrefix}-${id}`);
-  const data: SetupProfileSchema = raw ? JSON.parse(raw) : null;
-
-  if (data && data.profileType === 'INDIVIDUAL') {
-    const birth = data.birth;
-    return { ...data, birth: new Date(birth) };
-  }
+  const storageKey = `${storageKeyPrefix}-${id}`;
+  const raw = storage.getString(storageKey);
+  return raw && JSON.parse(raw);
 }
 
-export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
+export function useSetupForm() {
   const { user } = useSession();
-
   const initialData = getInitialData(user?.id);
 
   // Create form instance
-  const methods = useForm<SetupProfileSchema>({
+  const form = useForm<SetupProfileSchema>({
     resolver: zodResolver(setupProfileSchema),
     mode: 'onTouched',
     defaultValues: initialData || {
@@ -37,17 +32,34 @@ export const useSetupForm = (): UseFormReturn<SetupProfileSchema> => {
       phone: '',
       head: '',
       hospitalID: '',
-      birth: undefined,
+      birth: '',
     },
   });
 
-  // Sync form state to MMKV
-  useEffect(() => {
-    const subscription = methods.watch((value) => {
-      if (user) storage.set(`${storageKeyPrefix}-${user.id}`, JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [methods, methods.watch, user]);
+  const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
 
-  return methods;
-};
+  function cleanUpForm() {
+    storage.clearAll();
+  }
+
+  const { debounced: debouncedSave, cancel } = useDebouncedCallback(
+    (value: DeepPartial<SetupProfileSchema>) => {
+      storage.set(storageKey, JSON.stringify(value));
+    }
+  );
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      debouncedSave(value);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      cancel(); // cancel pending debounced calls
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch, debouncedSave, cancel]);
+
+  return { form, cleanUpForm };
+}

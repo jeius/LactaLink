@@ -8,4 +8,7 @@ export const ICONS = {
   widowed: 'widowed',
   separated: 'separated',
   information: 'information',
+  office: 'company_office',
+  townHall: 'town_hall',
+  buildingOther: 'unknown_building',
 };
