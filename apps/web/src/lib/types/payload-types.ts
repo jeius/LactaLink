@@ -237,8 +237,8 @@ export interface Barangay {
  */
 export interface User {
   id: string;
-  email: string;
   role?: ('AUTHENTICATED' | 'ADMIN') | null;
+  email: string;
   phone?: string | null;
   profileType?: ('INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK') | null;
   profile?:
@@ -818,8 +818,8 @@ export interface RegionsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  email?: T;
   role?: T;
+  email?: T;
   phone?: T;
   profileType?: T;
   profile?: T;

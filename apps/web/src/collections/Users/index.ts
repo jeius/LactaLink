@@ -34,13 +34,6 @@ export const Users: CollectionConfig<'users'> = {
   lockDocuments: { duration: DOC_LOCK_DURATION },
   fields: [
     {
-      name: 'email',
-      type: 'text',
-      unique: true,
-      required: true,
-      index: true,
-    },
-    {
       name: 'role',
       type: 'radio',
       defaultValue: 'AUTHENTICATED',
@@ -53,11 +46,17 @@ export const Users: CollectionConfig<'users'> = {
       type: 'row',
       fields: [
         {
+          name: 'email',
+          type: 'text',
+          unique: true,
+          required: true,
+          index: true,
+        },
+        {
           name: 'phone',
           type: 'text',
           unique: true,
           index: true,
-          admin: { width: '30%' },
         },
       ],
     },
@@ -69,7 +68,7 @@ export const Users: CollectionConfig<'users'> = {
           label: 'Profile Type',
           type: 'select',
           defaultValue: 'INDIVIDUAL',
-          admin: { width: '30%' },
+          admin: { width: '50%' },
           options: [
             {
               label: 'Individual',
@@ -85,11 +84,6 @@ export const Users: CollectionConfig<'users'> = {
             },
           ],
         },
-      ],
-    },
-    {
-      type: 'row',
-      fields: [
         {
           name: 'profile',
           type: 'relationship',
