@@ -3,11 +3,11 @@
   "ui": "tui",
   "tasks": {
     "test": {
-      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema", "build"],
+      "dependsOn": ["build"],
       "inputs": ["**/*.{ts,tsx,js,jsx}"]
     },
     "build": {
-      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema", "^build"],
+      "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env", ".env.development", ".env.production"],
       "outputs": [
         "dist/**",
