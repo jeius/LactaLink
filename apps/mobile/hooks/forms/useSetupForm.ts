@@ -33,13 +33,15 @@ export function useSetupForm() {
       head: '',
       hospitalID: '',
       birth: '',
+      gender: 'FEMALE',
+      maritalStatus: 'MARRIED',
     },
   });
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
 
   function cleanUpForm() {
-    storage.clearAll();
+    storage.delete(storageKey);
   }
 
   const { debounced: debouncedSave, cancel } = useDebouncedCallback(

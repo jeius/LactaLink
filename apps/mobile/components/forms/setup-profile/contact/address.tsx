@@ -19,7 +19,7 @@ import { AddressSchema, SetupProfileSchema } from '@lactalink/types';
 import { AlertCircleIcon, PlusIcon, StarIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-import { Hint } from './hint';
+import { HintBox } from './hint-box';
 
 export default function Addresses() {
   const {
@@ -70,7 +70,7 @@ export default function Addresses() {
         Addresses
       </Text>
 
-      <Hint />
+      <HintBox />
 
       {fields.map(({ id }, i) => (
         <Card key={id}>

@@ -8,7 +8,7 @@ import {
   MilkBankSchema,
   SetupProfileSchema,
 } from '@lactalink/types';
-import { HashIcon, HospitalIcon, User2Icon } from 'lucide-react-native';
+import { BabyIcon, HashIcon, HospitalIcon, User2Icon } from 'lucide-react-native';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { buildingTypeOptions, genderOptions, maritalStatusOptions } from './options';
@@ -136,6 +136,7 @@ export default function ProfileDetails() {
         placeholder: 'e.g. 2',
         keyboardType: 'number-pad',
         className: 'max-w-48',
+        inputIcon: BabyIcon,
       },
       {
         name: 'birth',

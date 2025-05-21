@@ -6,16 +6,17 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useSession } from '@/hooks/auth/useSession';
 import { usePagination } from '@/hooks/forms/usePagination';
-import { SETUP_PROFILE_STEPS } from '@/lib/constants';
+import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
+import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { router } from 'expo-router';
 import { Settings2Icon } from 'lucide-react-native';
 import React from 'react';
 
-const steps = SETUP_PROFILE_STEPS;
+const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Setup() {
   const { signOut } = useSession();
-  const { nextPage } = usePagination(steps);
+  const { nextPage } = usePagination(STEPS);
 
   async function handleSignOut() {
     await signOut();

@@ -4,14 +4,14 @@ import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/typ
 
 export const genderOptions: OptionsCardItem<IndividualSchema['gender']>[] = [
   {
-    value: 'MALE',
-    label: 'Male',
-    image: { alt: 'Male Gender', uri: ICONS.male },
-  },
-  {
     value: 'FEMALE',
     label: 'Female',
     image: { alt: 'Female Gender', uri: ICONS.female },
+  },
+  {
+    value: 'MALE',
+    label: 'Male',
+    image: { alt: 'Male Gender', uri: ICONS.male },
   },
   {
     value: 'OTHER',
@@ -22,14 +22,14 @@ export const genderOptions: OptionsCardItem<IndividualSchema['gender']>[] = [
 
 export const maritalStatusOptions: OptionsCardItem<IndividualSchema['maritalStatus']>[] = [
   {
-    value: 'SINGLE',
-    label: 'Single',
-    image: { alt: 'Single icon', uri: ICONS.single },
-  },
-  {
     value: 'MARRIED',
     label: 'Married',
     image: { alt: 'Married icon', uri: ICONS.married },
+  },
+  {
+    value: 'SINGLE',
+    label: 'Single',
+    image: { alt: 'Single icon', uri: ICONS.single },
   },
   {
     value: 'WIDOWED',

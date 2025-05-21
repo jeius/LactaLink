@@ -65,6 +65,7 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
     }
 
     await refetchSession();
+    toast.closeAll();
 
     if (type === 'recovery') {
       router.replace('/auth/reset-password');

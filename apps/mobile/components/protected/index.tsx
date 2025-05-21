@@ -13,7 +13,7 @@ export function Protected(props: SafeAreaViewProps) {
       if (!user || !token) {
         router.replace('/auth/sign-in');
       }
-      if (user && !user?.profile) {
+      if (user && !user.profile) {
         router.replace('/setup-profile');
       }
     }

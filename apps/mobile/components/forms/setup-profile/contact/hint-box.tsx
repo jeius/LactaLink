@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 
 const storageKey = MMKV_KEYS.ALERT.ADDRESS.CREATE;
 
-export function Hint() {
+export function HintBox() {
   const isHintViewed = storage.getBoolean(storageKey);
   const [showHint, setShowHint] = useState(Boolean(!isHintViewed));
 

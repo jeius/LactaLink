@@ -16,6 +16,4 @@ export * from './icons';
 export * from './queryKeys';
 export * from './storageKeys';
 
-export { SETUP_PROFILE_STEPS } from './profiles';
-
 export const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB in bytes

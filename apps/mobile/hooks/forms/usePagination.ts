@@ -1,20 +1,20 @@
 import { Href, usePathname, useRouter } from 'expo-router';
 
-export function usePagination<T extends string>(pages: T[]) {
+export function usePagination<T extends string>(routes: T[]) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const currentPageIndex = pages.findIndex((page) => pathname.includes(String(page)));
-  const hasNextPage = currentPageIndex < pages.length - 1;
+  const currentPageIndex = routes.findIndex((page) => pathname.includes(String(page)));
+  const hasNextPage = currentPageIndex < routes.length - 1;
   const hasPrevPage = currentPageIndex > 0;
 
-  const progress = ((currentPageIndex + 1) / pages.length) * 100;
+  const progress = ((currentPageIndex + 1) / routes.length) * 100;
 
-  const enumPages = [...pages] as const;
+  const enumPages = [...routes] as const;
 
   function handleNext() {
     if (hasNextPage) {
-      const page = pages[currentPageIndex + 1] as Href;
+      const page = routes[currentPageIndex + 1] as Href;
       router.push(page);
     }
   }

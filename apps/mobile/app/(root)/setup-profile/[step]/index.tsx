@@ -1,7 +1,7 @@
 import ProfileAvatar from '@/components/forms/setup-profile/avatar';
 import ProfileContact from '@/components/forms/setup-profile/contact';
 import ProfileDetails from '@/components/forms/setup-profile/details';
-import ProfileType from '@/components/forms/setup-profile/type';
+import ProfileTypeForm from '@/components/forms/setup-profile/type';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import SafeArea from '@/components/safe-area';
 import { Box } from '@/components/ui/box';
@@ -16,13 +16,16 @@ import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { useAppToast } from '@/hooks/useAppToast';
 
-import { API_URL, ICONS, SETUP_PROFILE_STEPS, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
+import { API_URL, ICONS, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import {
-  CONTACTFIELDS,
-  HOSPITALFIELDS,
-  INDIVIDUALFIELDS,
-  MILKBANKFIELDS,
-} from '@/lib/constants/profiles';
+  AVATAR_FIELDS,
+  CONTACT_FIELDS,
+  DETAILS_FIELDS,
+  SETUP_PROFILE_STEPS,
+  TYPE_FIELDS,
+} from '@/lib/constants/setupProfile';
+import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
+import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { uploadFile } from '@/lib/utils/file';
 import { createAddresses } from '@/lib/utils/profile/createAddresses';
 import { createProfile } from '@/lib/utils/profile/createProfile';
@@ -31,28 +34,39 @@ import { SetupProfileSchema, User } from '@lactalink/types';
 import { extractErrorMessage, updateDocByID } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { FormProvider } from 'react-hook-form';
+import React, { FC } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-const steps = SETUP_PROFILE_STEPS;
+const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
+
+type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
   const { token, user, refetchSession } = useSession();
   const toast = useAppToast();
-  const { step } = useLocalSearchParams<{ step: string }>();
-  const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(steps);
-  const { form, cleanUpForm } = useSetupForm();
+  const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
+  const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
+  const { cleanUpForm } = useSetupForm();
+  const form = useFormContext<SetupProfileSchema>();
 
-  const profileType = form.watch('profileType');
+  const profileType = form.getValues('profileType');
 
-  const title: Record<typeof profileType, string> = {
+  const title: Record<ProfileType, string> = {
     INDIVIDUAL: 'Personal',
     HOSPITAL: 'Hospital',
     MILK_BANK: 'Milk Bank',
   };
 
+  const block: Block = {
+    type: ProfileTypeForm,
+    details: ProfileDetails,
+    contact: ProfileContact,
+    avatar: ProfileAvatar,
+  };
+
+  const RenderBlock = block[step];
+
   async function onSubmit(formData: SetupProfileSchema) {
-    console.log('Submitted Data:', formData);
     toast.show({
       id: 'setup-profile',
       message: 'Creating profile...',
@@ -90,7 +104,7 @@ export default function Step() {
         createOptions
       );
 
-      const profileMap: Record<typeof profileType, User['profile']> = {
+      const profileMap: Record<ProfileType, User['profile']> = {
         INDIVIDUAL: { relationTo: 'individuals', value: createdProfile.id },
         HOSPITAL: { relationTo: 'hospitals', value: createdProfile.id },
         MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
@@ -116,7 +130,7 @@ export default function Step() {
       await refetchSession({ throwOnError: true });
       router.dismissTo('/home');
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error('Submit', error);
       toast.show({
         id: 'setup-profile',
         type: 'error',
@@ -131,32 +145,20 @@ export default function Step() {
       return;
     }
 
-    if (step.includes('type')) {
-      nextPage();
-      return;
-    }
-
-    const profileFieldMap: Record<
-      typeof profileType,
-      typeof INDIVIDUALFIELDS | typeof HOSPITALFIELDS | typeof MILKBANKFIELDS
-    > = {
-      INDIVIDUAL: INDIVIDUALFIELDS,
-      HOSPITAL: HOSPITALFIELDS,
-      MILK_BANK: MILKBANKFIELDS,
+    const profileFields: SetupProfileFields = {
+      type: TYPE_FIELDS,
+      details: DETAILS_FIELDS[profileType],
+      contact: CONTACT_FIELDS,
+      avatar: AVATAR_FIELDS,
     };
 
-    const fieldsToValidate =
-      step.includes('details') && profileType ? profileFieldMap[profileType] : CONTACTFIELDS;
-
     const validationResults = await Promise.all(
-      fieldsToValidate.map((field) => form.trigger(field))
+      profileFields[step].map((field) => form.trigger(field))
     );
 
     const allValid = validationResults.every(Boolean);
 
-    if (allValid) {
-      nextPage();
-    }
+    if (allValid) nextPage();
   }
 
   function handleBack() {
@@ -168,48 +170,42 @@ export default function Step() {
   }
 
   return (
-    <FormProvider {...form}>
-      <SafeArea className="py-5">
-        <KeyboardAvoidingWrapper>
-          <VStack space="xl" className="relative mt-5 grow px-5">
-            <Box className="grow">
-              {step.includes('type') && <ProfileType />}
-
-              {!step.includes('type') && (
-                <VStack space="lg">
-                  <VStack space="sm">
-                    <HStack space="md" className="items-center">
-                      <Image source={ICONS.information} alt="Information icon" size="xs" />
-                      <Text size="xl" bold>
-                        {title[profileType]} Information
-                      </Text>
-                    </HStack>
-                    <Text>
-                      Please take a moment to fill out the fields below. Rest assured, your
-                      information is safe with us.
+    <SafeArea className="py-5">
+      <KeyboardAvoidingWrapper>
+        <VStack space="xl" className="relative mt-5 grow px-5">
+          <Box className="grow">
+            {step === 'type' ? (
+              <RenderBlock />
+            ) : (
+              <VStack space="lg">
+                <VStack space="sm">
+                  <HStack space="md" className="items-center">
+                    <Image source={ICONS.information} alt="Information icon" size="xs" />
+                    <Text size="xl" bold>
+                      {title[profileType]} Information
                     </Text>
-                  </VStack>
-
-                  {step.includes('details') && <ProfileDetails />}
-
-                  {step.includes('contact') && <ProfileContact />}
-
-                  {step.includes('avatar') && <ProfileAvatar />}
+                  </HStack>
+                  <Text>
+                    Please take a moment to fill out the fields below. Rest assured, your
+                    information is safe with us.
+                  </Text>
                 </VStack>
-              )}
-            </Box>
 
-            <VStack className="mt-5">
-              <Button isDisabled={profileType === undefined} size="lg" onPress={handleNext}>
-                <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
-              </Button>
-              <Button size="md" variant="link" action="default" onPress={handleBack}>
-                <ButtonText>Back</ButtonText>
-              </Button>
-            </VStack>
+                <RenderBlock />
+              </VStack>
+            )}
+          </Box>
+
+          <VStack className="mt-5">
+            <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
+              <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
+            </Button>
+            <Button size="md" variant="link" action="default" onPress={handleBack}>
+              <ButtonText>Back</ButtonText>
+            </Button>
           </VStack>
-        </KeyboardAvoidingWrapper>
-      </SafeArea>
-    </FormProvider>
+        </VStack>
+      </KeyboardAvoidingWrapper>
+    </SafeArea>
   );
 }
