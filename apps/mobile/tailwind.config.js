@@ -174,8 +174,6 @@ module.exports = {
         heading: ['Jakarta-Bold', 'sans-serif'],
         body: ['Jakarta-Regular', 'sans-serif'],
         sans: ['Jakarta-Regular', 'sans-serif'],
-        roboto: ['Roboto', 'sans-serif'],
-        Jakarta: ['Jakarta-Regular', 'sans-serif'],
         JakartaBold: ['Jakarta-Bold', 'sans-serif'],
         JakartaExtraBold: ['Jakarta-ExtraBold', 'sans-serif'],
         JakartaExtraLight: ['Jakarta-ExtraLight', 'sans-serif'],

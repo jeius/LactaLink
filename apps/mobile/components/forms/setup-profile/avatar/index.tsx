@@ -7,7 +7,19 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 export default function ProfileAvatar() {
-  const { control } = useFormContext<SetupProfileSchema>();
+  const { control, getValues } = useFormContext<SetupProfileSchema>();
+
+  const name = getValues('name')?.trim();
+  const givenName = getValues('givenName')?.trim();
+  const familyName = getValues('familyName')?.trim();
+  const profileType = getValues('profileType')?.trim();
+
+  const filename: Record<string, string | undefined> = {
+    INDIVIDUAL: givenName && familyName && `${givenName}_${familyName}`,
+    MILK_BANK: name,
+    HOSPITAL: name,
+  };
+
   return (
     <Card>
       <VStack space="xl">
@@ -24,7 +36,13 @@ export default function ProfileAvatar() {
         <Controller
           control={control}
           name="avatar"
-          render={({ field }) => <AvatarUpload value={field.value} onChange={field.onChange} />}
+          render={({ field }) => (
+            <AvatarUpload
+              value={field.value}
+              onChange={field.onChange}
+              filename={filename[profileType]}
+            />
+          )}
         />
       </VStack>
     </Card>

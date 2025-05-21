@@ -56,7 +56,6 @@ export function useSession() {
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session);
       refetch();
 
       if (event === 'INITIAL_SESSION') {
