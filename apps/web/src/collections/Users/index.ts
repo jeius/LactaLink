@@ -107,5 +107,10 @@ export const Users: CollectionConfig<'users'> = {
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },
     },
+    {
+      name: 'picture',
+      type: 'text',
+      admin: { position: 'sidebar', readOnly: true },
+    },
   ],
 };

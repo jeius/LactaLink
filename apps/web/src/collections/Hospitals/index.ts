@@ -6,7 +6,7 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
   slug: 'hospitals',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'type'],
+    defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
     beforeChange: [generateOwner],
@@ -15,7 +15,7 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
     ownerField,
     {
       name: 'avatar',
-      type: 'relationship',
+      type: 'upload',
       relationTo: 'avatars',
     },
     {

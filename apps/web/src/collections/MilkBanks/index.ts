@@ -6,7 +6,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
   slug: 'milkBanks',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'type'],
+    defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
     beforeChange: [generateOwner],
@@ -15,7 +15,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     ownerField,
     {
       name: 'avatar',
-      type: 'relationship',
+      type: 'upload',
       relationTo: 'avatars',
     },
     {

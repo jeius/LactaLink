@@ -46,11 +46,11 @@
       "dependsOn": ["^lint:fix"]
     },
     "generate:types": {
-      "inputs": ["apps/web/src/collections/**"],
+      "inputs": ["apps/web/src/collections/**/*"],
       "outputs": ["packages/types/src/payload-types.ts"]
     },
     "generate:importmap": {
-      "inputs": ["apps/web/src/**"],
+      "inputs": ["apps/web/src/**/*"],
       "outputs": ["apps/web/src/app/(payload)/admin/importMap.js"]
     },
     "generate:schema": {

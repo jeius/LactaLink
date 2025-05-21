@@ -257,6 +257,7 @@ export interface User {
   lastSignInAt?: string | null;
   emailConfirmedAt?: string | null;
   phoneConfirmedAt?: string | null;
+  picture?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -826,6 +827,7 @@ export interface UsersSelect<T extends boolean = true> {
   lastSignInAt?: T;
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;
+  picture?: T;
   updatedAt?: T;
   createdAt?: T;
 }

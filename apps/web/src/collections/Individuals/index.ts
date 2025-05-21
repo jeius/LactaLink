@@ -7,7 +7,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
   slug: 'individuals',
   admin: {
     useAsTitle: 'displayName',
-    defaultColumns: ['displayName', 'gender', 'dependents'],
+    defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus', 'owner'],
   },
   hooks: {
     beforeChange: [generateDisplayName, generateOwner],
@@ -25,7 +25,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
     ownerField,
     {
       name: 'avatar',
-      type: 'relationship',
+      type: 'upload',
       relationTo: 'avatars',
     },
     {
