@@ -1,37 +1,19 @@
-import InfiniteComboBox from '@/components/combobox';
+import { ControlledInput } from '@/components/controlled-input';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
+import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { AddressSchema, SetupProfileSchema } from '@lactalink/types';
-import { AlertCircleIcon, PlusIcon, StarIcon, Trash2Icon } from 'lucide-react-native';
+import { CheckIcon, PlusIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect } from 'react';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { HintBox } from './hint-box';
 
 export default function Addresses() {
-  const {
-    control,
-    formState: { errors },
-    watch,
-    setValue,
-    getValues,
-  } = useFormContext<SetupProfileSchema>();
-
+  const { control, setValue, getValues, watch } = useFormContext<SetupProfileSchema>();
   const { append, remove, fields } = useFieldArray({ control, name: 'addresses' });
-
   const addresses = watch('addresses');
 
   const defaultAddress: AddressSchema = {
@@ -72,189 +54,95 @@ export default function Addresses() {
 
       <HintBox />
 
-      {fields.map(({ id }, i) => (
-        <Card key={id}>
+      {fields.map((address, i) => (
+        <Card key={address.id}>
           <VStack space="lg">
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.name}>
-              <Controller
-                control={control}
-                name={`addresses.${i}.name`}
-                render={({ field }) => (
-                  <Input isDisabled={field.disabled} variant="underlined">
-                    <InputField
-                      value={field.value || ''}
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      placeholder="e.g. Home, Workplace"
-                      autoCapitalize="words"
-                    />
-                  </Input>
-                )}
-              />
-              <FormControlHelper>
-                <FormControlHelperText>Name of your address.</FormControlHelperText>
-              </FormControlHelper>
+            <ControlledInput
+              name={`addresses.${i}.name`}
+              inputType="text"
+              textInputVariant="underlined"
+              placeholder="e.g. Home, Workplace"
+              autoCapitalize="words"
+              helperText="Name of your address."
+            />
 
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>{errors.addresses?.[i]?.name?.message}</FormControlErrorText>
-              </FormControlError>
-            </FormControl>
+            <ControlledInput
+              name={`addresses.${i}.province`}
+              label="Province"
+              inputType="combobox"
+              placeholder="Select province..."
+              comboboxProps={{
+                collection: 'provinces',
+                searchPath: 'name',
+                searchPlaceholder: 'Search province here...',
+              }}
+            />
 
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.province}>
-              <FormControlLabel>
-                <FormControlLabelText>Province</FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name={`addresses.${i}.province`}
-                render={({ field }) => (
-                  <InfiniteComboBox
-                    collection={'provinces'}
-                    selected={field.value}
-                    onSelectionChanged={field.onChange}
-                    placeholder="Select province..."
-                  />
-                )}
-              />
+            <ControlledInput
+              name={`addresses.${i}.cityMunicipality`}
+              label="City or Municipality"
+              inputType="combobox"
+              placeholder="Select city or municipality..."
+              comboboxProps={{
+                collection: 'citiesMunicipalities',
+                searchPath: 'name',
+                searchPlaceholder: 'Search city or municipality here...',
+                where: addresses[i].province
+                  ? { province: { equals: addresses[i].province } }
+                  : undefined,
+              }}
+            />
 
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors.addresses?.[i]?.province?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
+            <ControlledInput
+              name={`addresses.${i}.barangay`}
+              label="Barangay"
+              inputType="combobox"
+              placeholder="Select barangay..."
+              comboboxProps={{
+                collection: 'barangays',
+                searchPath: 'name',
+                searchPlaceholder: 'Search barangay here...',
+                where: addresses[i].cityMunicipality
+                  ? { cityMunicipality: { equals: addresses[i].cityMunicipality } }
+                  : addresses[i].province
+                    ? { province: { equals: addresses[i].province } }
+                    : undefined,
+              }}
+            />
 
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.cityMunicipality}>
-              <FormControlLabel>
-                <FormControlLabelText>City or Municipality</FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name={`addresses.${i}.cityMunicipality`}
-                render={({ field }) => (
-                  <InfiniteComboBox
-                    collection={'citiesMunicipalities'}
-                    selected={field.value}
-                    onSelectionChanged={field.onChange}
-                    placeholder="Select city or municipality..."
-                    where={
-                      addresses[i].province
-                        ? { province: { equals: addresses[i].province } }
-                        : undefined
-                    }
-                  />
-                )}
-              />
+            <ControlledInput
+              name={`addresses.${i}.street`}
+              label="Street Address"
+              inputType="text"
+              placeholder="e.g. Block 9, Sudlonon St."
+              autoCapitalize="words"
+              autoComplete="street-address"
+              textContentType="fullStreetAddress"
+            />
 
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors.addresses?.[i]?.cityMunicipality?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
+            <ControlledInput
+              name={`addresses.${i}.zipCode`}
+              label="Zip Code"
+              inputType="text"
+              placeholder="e.g. 9200"
+              keyboardType="number-pad"
+              textContentType="postalCode"
+              className="max-w-32"
+            />
 
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.barangay}>
-              <FormControlLabel>
-                <FormControlLabelText>Barangay</FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name={`addresses.${i}.barangay`}
-                render={({ field }) => (
-                  <InfiniteComboBox
-                    collection={'barangays'}
-                    selected={field.value || ''}
-                    onSelectionChanged={field.onChange}
-                    placeholder="Select barangay..."
-                    where={
-                      addresses[i].cityMunicipality
-                        ? { cityMunicipality: { equals: addresses[i].cityMunicipality } }
-                        : undefined
-                    }
-                  />
-                )}
-              />
-
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors.addresses?.[i]?.barangay?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
-
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.street}>
-              <FormControlLabel>
-                <FormControlLabelText>Street Address</FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name={`addresses.${i}.street`}
-                render={({ field }) => (
-                  <Input isDisabled={field.disabled}>
-                    <InputField
-                      value={field.value || ''}
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      placeholder="e.g. Block 9, Sudlonon St."
-                      autoCapitalize="words"
-                      autoComplete="street-address"
-                      textContentType="fullStreetAddress"
-                    />
-                  </Input>
-                )}
-              />
-
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors.addresses?.[i]?.street?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
-
-            <FormControl isInvalid={!!errors['addresses']?.[i]?.zipCode}>
-              <FormControlLabel>
-                <FormControlLabelText>Zip Code</FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name={`addresses.${i}.zipCode`}
-                render={({ field }) => (
-                  <Input isDisabled={field.disabled} className="max-w-32">
-                    <InputField
-                      value={field.value}
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      placeholder="e.g. 9200"
-                      keyboardType="number-pad"
-                      textContentType="postalCode"
-                    />
-                  </Input>
-                )}
-              />
-
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>
-                  {errors.addresses?.[i]?.zipCode?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
-
-            <HStack space="xl" className="mt-5 flex-1">
-              <Button
-                variant={addresses[i].default ? 'solid' : 'outline'}
-                action="primary"
-                className="grow"
-                onPress={() => handleSetDefault(i)}
+            <HStack space="xl" className="mt-5 flex-1 justify-between">
+              <Checkbox
+                value={`address-${addresses[i].name}-checkbox`}
+                isChecked={addresses[i].default}
+                onChange={() => {
+                  handleSetDefault(i);
+                }}
               >
-                {addresses[i].default && <ButtonIcon as={StarIcon} />}
-                <ButtonText>{addresses[i].default ? 'Default address' : 'Set default'}</ButtonText>
-              </Button>
+                <CheckboxIndicator>
+                  <CheckboxIcon as={CheckIcon} />
+                </CheckboxIndicator>
+                <CheckboxLabel>Set as default address</CheckboxLabel>
+              </Checkbox>
               <Button
                 isDisabled={fields.length < 2}
                 variant="link"
