@@ -1,12 +1,14 @@
-import type { CollectionSlug as SlugsFromPayload, Where as WherePayload } from 'payload';
+import type { Where as WherePayload } from 'payload';
 import { Config } from './payload-types';
+import { KeysMatching } from './utils';
 
 export type Collections = Config['collections'][keyof Config['collections']];
 export type HasNameCollection<T extends Collections> = T extends { name: string } ? T : never;
 export type HasUploadCollection<T extends Collections> = T extends { filename?: string | null }
   ? T
   : never;
-export type CollectionSlug = SlugsFromPayload;
+export type HasUploadSlug = KeysMatching<Config['collections'], HasUploadCollection<Collections>>;
+export type CollectionSlug = keyof Config['collections'];
 export type HasNameCollectionSlug = Omit<
   CollectionSlug,
   'users' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations' | 'avatars'
@@ -14,7 +16,7 @@ export type HasNameCollectionSlug = Omit<
 export type CollectionOperation = 'CREATE' | 'FIND' | 'UPDATE' | 'DELETE';
 export type CollectionData<T> = Omit<T, 'id' | 'updatedAt' | 'createdAt' | 'sizes'> &
   //@ts-expect-error 'sizes' is for upload collections and must not be modified.
-  Partial<Pick<T, 'id' | 'updatedAt' | 'createdAt' | 'sizes'>>;
+  Partial<Pick<T, 'id' | 'updatedAt' | 'createdAt'>>;
 export type CollectionUpdateData<T> = Partial<CollectionData<T>>;
 export type CollectionOperationData<
   T = Collections,

@@ -1,11 +1,17 @@
-import { ApiOptions, Collections, UpdateResult } from '@lactalink/types';
+import {
+  ApiOptions,
+  Collections,
+  CollectionSlug,
+  Config,
+  UpdateByIDResult,
+} from '@lactalink/types';
 import { stringify } from 'qs-esm';
 import { apiFetch } from './apiFetch';
 
-export async function updateDocByID<Collection extends Collections>(
-  id: Collection['id'],
-  options: ApiOptions<Collection, 'UPDATE'>
-): Promise<Collection> {
+export async function updateDocByID<Slug extends CollectionSlug>(
+  id: Collections['id'],
+  options: ApiOptions<Slug, 'UPDATE'>
+): Promise<Config['collections'][Slug]> {
   const { apiUrl, collection, token, vercelToken, data, ...searchParams } = options;
   const query = stringify(searchParams);
 
@@ -14,7 +20,7 @@ export async function updateDocByID<Collection extends Collections>(
   }
 
   const url = new URL(`/api/${collection}/${id}?${query}`, apiUrl);
-  const res = await apiFetch<UpdateResult<Collection>>({
+  const res = await apiFetch<UpdateByIDResult<Config['collections'][Slug]>>({
     token,
     vercelToken,
     url,

@@ -1,10 +1,10 @@
-import { ApiOptions, Collections, CreateResult, HasUploadCollection } from '@lactalink/types';
+import { ApiOptions, CollectionSlug, Config, CreateResult, HasUploadSlug } from '@lactalink/types';
 import { stringify } from 'qs-esm';
 import { apiFetch } from './apiFetch';
 
-export async function createDoc<Collection extends Collections>(
-  params: ApiOptions<Collection, 'CREATE'>
-): Promise<Collection> {
+export async function createDoc<Slug extends CollectionSlug>(
+  params: ApiOptions<Slug, 'CREATE'>
+): Promise<Config['collections'][Slug]> {
   const { apiUrl, collection, token, vercelToken, data, ...searchParams } = params;
   const query = stringify(searchParams);
 
@@ -13,7 +13,7 @@ export async function createDoc<Collection extends Collections>(
   }
 
   const url = new URL(`/api/${collection}?${query}`, apiUrl);
-  const res = await apiFetch<CreateResult<Collection>>({
+  const res = await apiFetch<CreateResult<Config['collections'][Slug]>>({
     token,
     vercelToken,
     url,
@@ -28,9 +28,13 @@ export async function createDoc<Collection extends Collections>(
   return res.data.doc;
 }
 
-export async function uploadFile<Collection extends HasUploadCollection<Collections>>(
-  params: Omit<ApiOptions<Collection, 'CREATE'>, 'data'> & { data: FormData }
-): Promise<Collection> {
+type UploadFileParams<T extends CollectionSlug> = Omit<ApiOptions<T, 'CREATE'>, 'data'> & {
+  data: FormData;
+};
+
+export async function uploadFile<Slug extends HasUploadSlug>(
+  params: UploadFileParams<Slug>
+): Promise<Config['collections'][Slug]> {
   const { apiUrl, collection, token, vercelToken, data, ...searchParams } = params;
   const query = stringify(searchParams);
 
@@ -39,7 +43,7 @@ export async function uploadFile<Collection extends HasUploadCollection<Collecti
   }
 
   const url = new URL(`/api/${collection}?${query}`, apiUrl);
-  const res = await apiFetch<CreateResult<Collection>>({
+  const res = await apiFetch<CreateResult<Config['collections'][Slug]>>({
     token,
     vercelToken,
     url,

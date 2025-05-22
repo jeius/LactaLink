@@ -110,7 +110,7 @@ export default function Step() {
         MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
       };
 
-      await updateDocByID<User>(user.id, {
+      await updateDocByID(user.id, {
         ...baseOptions,
         depth: 1,
         collection: 'users',

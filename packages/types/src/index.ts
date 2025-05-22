@@ -6,5 +6,6 @@ export * from './forms';
 export type * from './payload-types';
 export type * from './preferences';
 export type * from './psgc';
+export type * from './utils';
 
 export type Theme = 'light' | 'dark';

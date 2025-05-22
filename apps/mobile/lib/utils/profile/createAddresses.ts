@@ -3,11 +3,11 @@ import { createDoc } from '@lactalink/utilities';
 
 export async function createAddresses(
   addresses: AddressSchema[],
-  options: Omit<ApiOptions<Address, 'CREATE'>, 'collection' | 'data'>
+  options: Omit<ApiOptions<'addresses', 'CREATE'>, 'collection' | 'data'>
 ): Promise<Address[]> {
   const results = await Promise.allSettled(
     addresses.map((data) =>
-      createDoc<Address>({
+      createDoc({
         ...options,
         collection: 'addresses',
         data,

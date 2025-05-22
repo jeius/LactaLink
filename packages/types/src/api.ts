@@ -1,3 +1,4 @@
+import type { APIError } from 'payload';
 import type { URL } from 'url';
 import {
   CollectionOperation,
@@ -9,6 +10,7 @@ import {
   Where,
 } from './collections';
 import { CustomError } from './errors';
+import { Config } from './payload-types';
 
 export type APIResponse<T> =
   | {
@@ -33,19 +35,20 @@ export type APIParams = {
   headers?: Headers;
 };
 
-export type ApiOptions<T extends Collections, O extends CollectionOperation> = {
-  collection: CollectionSlug;
+export type ApiOptions<T extends CollectionSlug, O extends CollectionOperation> = {
+  collection: T;
   apiUrl: string;
   vercelToken?: string;
   token?: string | null;
   page?: number;
   limit?: number;
   where?: Where;
-  select?: Select<T>;
+  select?: Select<Config['collections'][T]>;
+  sort?: keyof Config['collections'][T];
   populate?: Populate;
   depth?: number;
   // eslint-disable-next-line no-undef
-  data: CollectionOperationData<T, O> | FormData;
+  data?: CollectionOperationData<Config['collections'][T], O>;
 };
 
 export type FindResult<T extends Collections> = {
@@ -61,9 +64,15 @@ export type FindResult<T extends Collections> = {
   pagingCounter: number;
 };
 
+export type FindByIDResult<T extends Collections> = T;
+
 export type CreateResult<T extends Collections> = {
   message: string;
   doc: T;
 };
 
-export type UpdateResult<T extends Collections> = CreateResult<T>;
+export type UpdateResult<T extends Collections> = {
+  docs: T[];
+  errors: APIError[];
+};
+export type UpdateByIDResult<T extends Collections> = CreateResult<T>;

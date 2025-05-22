@@ -1,35 +1,41 @@
-import { ProfileMapData, ProfileType } from '@/lib/types/profile';
-import { ApiOptions } from '@lactalink/types';
+import {
+  ApiOptions,
+  Config,
+  Hospital,
+  HospitalSchema,
+  Individual,
+  IndividualSchema,
+  KeysMatching,
+  MilkBank,
+  MilkBankSchema,
+} from '@lactalink/types';
 import { createDoc } from '@lactalink/utilities';
 
-type BaseFields<T extends ProfileType> = Pick<ProfileMapData[T]['output'], 'addresses' | 'avatar'>;
-type Data<T extends ProfileType> = ProfileMapData[T]['input'] & BaseFields<T>;
-type Options<T extends ProfileType> = Omit<
-  ApiOptions<ProfileMapData[T]['output'], 'CREATE'>,
-  'data' | 'collection'
->;
+type Input = IndividualSchema | HospitalSchema | MilkBankSchema;
+type Output = Individual | Hospital | MilkBank;
+type BaseFields = Pick<Output, 'addresses' | 'avatar'>;
+type Data = Input & BaseFields;
+type Slug = KeysMatching<Config['collections'], Output>;
+type Options = Omit<ApiOptions<Slug, 'CREATE'>, 'data' | 'collection'>;
 
-export const createProfile = async <T extends ProfileType>(
-  data: Data<T>,
-  options: Options<T>
-): Promise<ProfileMapData[T]['output']> => {
+export async function createProfile(data: Data, options: Options): Promise<Output> {
   const { profileType } = data;
   switch (profileType) {
     case 'INDIVIDUAL': {
-      return await createDoc<ProfileMapData['INDIVIDUAL']['output']>({
+      return await createDoc({
         ...options,
         collection: 'individuals',
         data,
       });
     }
     case 'HOSPITAL':
-      return await createDoc<ProfileMapData['HOSPITAL']['output']>({
+      return await createDoc({
         ...options,
         collection: 'hospitals',
         data,
       });
     case 'MILK_BANK':
-      return await createDoc<ProfileMapData['MILK_BANK']['output']>({
+      return await createDoc({
         ...options,
         collection: 'milkBanks',
         data,
@@ -37,4 +43,4 @@ export const createProfile = async <T extends ProfileType>(
     default:
       throw new Error(`Unsupported profile type: ${profileType}`);
   }
-};
+}
