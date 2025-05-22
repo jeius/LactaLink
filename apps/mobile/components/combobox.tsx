@@ -1,9 +1,9 @@
 import { useSession } from '@/hooks/auth/useSession';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
-import { Collections, CollectionSlug, HasNameCollection, Where } from '@lactalink/types';
-import { apiFetch, comboBoxFetcher, useDebounce } from '@lactalink/utilities';
+import { CollectionSlug, Config, Where } from '@lactalink/types';
+import { findDocById, findDocsWithPagination, useDebounce } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import {
   Select,
@@ -17,89 +17,136 @@ import {
   SelectPortal,
   SelectTrigger,
 } from '@/components/ui/select';
-import { ChevronDownIcon, XIcon } from 'lucide-react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ChevronDownIcon, LucideSearchX, XIcon } from 'lucide-react-native';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Box } from './ui/box';
+import { Button, ButtonIcon } from './ui/button';
 import { Divider } from './ui/divider';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputSlot } from './ui/input';
 import { Spinner } from './ui/spinner';
+import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
 
-export type InfiniteComboBoxProps = {
-  selected?: string;
-  onSelectionChanged?: (val: string) => void;
-  collection: CollectionSlug;
+export type InfiniteScrollComboBoxProps<T extends CollectionSlug> = {
+  value?: string;
+  onChange?: (val: string) => void;
+  collection: T;
   limit?: number;
   placeholder?: string;
   where?: Where;
+  searchPath: keyof Config['collections'][T];
+  searchPlaceholder?: string;
 };
 
-export default function InfiniteComboBox({
+export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   collection,
-  limit = 10,
-  where,
+  limit = 20,
+  where: whereParam,
   placeholder,
-  selected,
-  onSelectionChanged,
-}: InfiniteComboBoxProps) {
+  value: selected,
+  onChange: onSelectionChanged,
+  searchPath,
+  searchPlaceholder = 'Search here...',
+}: InfiniteScrollComboBoxProps<T>) {
   const { token } = useSession();
-  const { data: selectedLabel } = useQuery({
-    initialData: '',
+  const inputRef = useRef<TextInput>(null);
+
+  const { data: selectedLabel, isFetching } = useQuery<string>({
     enabled: Boolean(selected),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60,
+    refetchOnMount: true,
     queryKey: ['combobox', 'label', selected],
     queryFn: async () => {
-      const url = new URL(`/api/${collection}/${selected}`, API_URL);
-      if (!token) {
-        throw new Error('Invalid session.');
-      }
-      const res = await apiFetch<HasNameCollection<Collections>>({
-        token,
-        method: 'GET',
-        url,
-        vercelToken: VERCEL_BYPASS_TOKEN,
-      });
+      console.log(selected);
+      if (selected) {
+        console.log('Refetched label.');
+        const res = await findDocById(selected, {
+          collection,
+          token,
+          vercelToken: VERCEL_BYPASS_TOKEN,
+          apiUrl: API_URL,
+          depth: 0,
+        });
 
-      if ('error' in res) {
-        throw res.error;
+        return (res[searchPath] as string) || '';
       }
-
-      return res.data.name;
+      return '';
     },
   });
 
-  const [search, setSearch] = useState(selectedLabel);
+  const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: ['combobox', collection, debouncedSearch, JSON.stringify(where)],
-    initialPageParam: 1,
-    queryFn: ({ pageParam: page }) =>
-      comboBoxFetcher(debouncedSearch, page, {
+    queryKey: ['combobox', collection, debouncedSearch, JSON.stringify(whereParam)],
+    initialPageParam: 0,
+    staleTime: 1000 * 60 * 3,
+    gcTime: 1000 * 60,
+    refetchOnMount: true,
+    queryFn: async ({ pageParam: page }) => {
+      const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
+      const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
+
+      return await findDocsWithPagination({
         collection,
         token,
         vercelToken: VERCEL_BYPASS_TOKEN,
         apiUrl: API_URL,
         limit,
         where,
-      }),
+        page,
+        depth: 0,
+        sort: searchPath,
+        //@ts-expect-error typescript cant infer here.
+        select: { [searchPath]: true },
+      });
+    },
     getNextPageParam: ({ nextPage }) => nextPage,
-    staleTime: Infinity,
-    refetchOnMount: true,
   });
 
-  useEffect(() => {
-    setSearch(selectedLabel);
-  }, [selectedLabel]);
+  const items = useMemo(() => {
+    if (!data) return [];
+
+    const seen = new Set();
+    const deduped: (typeof data.pages)[0]['docs'] = [];
+
+    for (const page of data.pages) {
+      for (const doc of page.docs) {
+        if (!seen.has(doc.id)) {
+          seen.add(doc.id);
+          deduped.push(doc);
+        }
+      }
+    }
+
+    return deduped;
+  }, [data]);
 
   function clearSelection() {
+    clearSearch();
+    onSelectionChanged?.('');
+  }
+
+  function clearSearch() {
     setSearch('');
-    if (onSelectionChanged) onSelectionChanged('');
+    inputRef.current?.clear();
   }
 
   return (
     <Select selectedValue={selected} onValueChange={onSelectionChanged}>
-      <SelectTrigger variant="outline" size="md">
-        <SelectInput value={search} className="grow" placeholder={placeholder || 'Select option'} />
+      <SelectTrigger disabled={isFetching} variant="outline" size="md">
+        <SelectInput
+          value={isFetching ? 'Loading...' : selectedLabel || ''}
+          className="grow"
+          placeholder={placeholder || 'Select option...'}
+        />
+        {selected && (
+          <Button variant="link" className="px-2" action="negative" onPress={clearSelection}>
+            <ButtonIcon as={XIcon} />
+          </Button>
+        )}
         <SelectIcon className="mr-3" as={ChevronDownIcon} />
       </SelectTrigger>
       <SelectPortal>
@@ -112,14 +159,15 @@ export default function InfiniteComboBox({
           <Box className="w-full p-5">
             <Input>
               <InputField
-                className="w-full"
-                defaultValue={search}
+                //@ts-expect-error gluestack-ref-issue
+                ref={inputRef}
+                defaultValue={debouncedSearch}
                 onChangeText={setSearch}
-                placeholder="Search..."
+                placeholder={searchPlaceholder}
               />
               {search && (
-                <InputSlot onPress={clearSelection} className="pr-3">
-                  <Icon as={XIcon} size="sm" className="text-typography-500" />
+                <InputSlot onPress={clearSearch} className="pr-3">
+                  <Icon as={XIcon} size="sm" className="text-secondary-400" />
                 </InputSlot>
               )}
             </Input>
@@ -141,10 +189,21 @@ export default function InfiniteComboBox({
               }
             }}
           >
-            {isLoading && <Spinner size="small" className="mt-4" />}
-            {data?.pages.flatMap(({ docs }) =>
-              docs.map(({ id, name }) => <SelectItem key={id} label={name} value={id} />)
-            )}
+            {isLoading && <Spinner size="large" className="mt-4" />}
+            {items && items.length > 0
+              ? items.map((item) => (
+                  <SelectItem
+                    key={item['id']}
+                    label={item[searchPath] as string}
+                    value={item['id']}
+                  />
+                ))
+              : !isLoading && (
+                  <VStack space="lg" className="mx-auto items-center p-4">
+                    <Icon as={LucideSearchX} className="text-primary-500 h-16 w-16" />
+                    <Text size="lg">No results found.</Text>
+                  </VStack>
+                )}
             {hasNextPage && <Spinner size="small" />}
           </ScrollView>
         </SelectContent>

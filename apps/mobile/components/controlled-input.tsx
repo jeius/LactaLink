@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form-control';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
+import { CollectionSlug } from '@lactalink/types';
 import {
   AlertCircleIcon,
   EyeClosedIcon,
@@ -22,6 +23,8 @@ import {
   LucideIcon,
   LucideProps,
 } from 'lucide-react-native';
+import InfiniteScrollComboBox, { InfiniteScrollComboBoxProps } from './combobox';
+import { Text } from './ui/text';
 
 type InputType =
   | 'text'
@@ -32,20 +35,30 @@ type InputType =
   | 'combobox'
   | 'date';
 
-export type ControlledInputProps<T extends FieldValues = FieldValues> = ComponentPropsWithoutRef<
-  typeof InputField
-> & {
+type TInputField = ComponentPropsWithoutRef<typeof InputField>;
+type TInput = ComponentPropsWithoutRef<typeof Input>;
+type ComboboxProps<T extends CollectionSlug> = Omit<
+  InfiniteScrollComboBoxProps<T>,
+  'value' | 'onChange' | 'placeholder'
+>;
+
+export type ControlledInputProps<
+  T extends FieldValues,
+  K extends CollectionSlug = CollectionSlug,
+> = TInputField & {
   inputIcon?: FC<LucideProps> | LucideIcon;
   errorIcon?: FC<LucideProps> | LucideIcon;
   name: FieldPath<T>;
-  label: string;
+  label?: string;
   helperText?: string;
   inputType?: InputType;
+  textInputVariant?: TInput['variant'];
   className?: string;
   options?: OptionsCardItem[];
+  comboboxProps?: ComboboxProps<K>;
 };
 
-export function ControlledInput<T extends FieldValues = FieldValues>({
+export function ControlledInput<T extends FieldValues, K extends CollectionSlug = CollectionSlug>({
   inputIcon,
   errorIcon = AlertCircleIcon,
   name,
@@ -54,22 +67,23 @@ export function ControlledInput<T extends FieldValues = FieldValues>({
   inputType,
   placeholder,
   className: containerClassName,
+  comboboxProps,
   options,
+  textInputVariant,
   ...props
-}: ControlledInputProps<T>) {
-  const {
-    formState: { errors },
-    trigger,
-  } = useFormContext<T>();
-  const fieldError = errors[name];
+}: ControlledInputProps<T, K>) {
+  const { trigger, getFieldState } = useFormContext<T>();
+  const fieldError = getFieldState(name).error;
 
   const [showPass, setShowPass] = useState(false);
 
   return (
     <FormControl isInvalid={!!fieldError}>
-      <FormControlLabel>
-        <FormControlLabelText>{label}</FormControlLabelText>
-      </FormControlLabel>
+      {label && (
+        <FormControlLabel>
+          <FormControlLabelText>{label}</FormControlLabelText>
+        </FormControlLabel>
+      )}
 
       <Controller
         name={name}
@@ -91,7 +105,11 @@ export function ControlledInput<T extends FieldValues = FieldValues>({
 
             case 'number':
               return (
-                <Input isDisabled={field.disabled} className={containerClassName}>
+                <Input
+                  variant={textInputVariant}
+                  isDisabled={field.disabled}
+                  className={containerClassName}
+                >
                   {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
                   <InputField
                     {...props}
@@ -108,7 +126,11 @@ export function ControlledInput<T extends FieldValues = FieldValues>({
 
             case 'password':
               return (
-                <Input isDisabled={field.disabled} className={containerClassName}>
+                <Input
+                  variant={textInputVariant}
+                  isDisabled={field.disabled}
+                  className={containerClassName}
+                >
                   {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
                   <InputField
                     {...props}
@@ -153,9 +175,24 @@ export function ControlledInput<T extends FieldValues = FieldValues>({
                 />
               );
 
+            case 'combobox':
+              if (!comboboxProps) return <Text>Missing combobox props...</Text>;
+              return (
+                <InfiniteScrollComboBox
+                  {...comboboxProps}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={placeholder}
+                />
+              );
+
             default:
               return (
-                <Input isDisabled={field.disabled} className={containerClassName}>
+                <Input
+                  variant={textInputVariant}
+                  isDisabled={field.disabled}
+                  className={containerClassName}
+                >
                   {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
                   <InputField
                     {...props}
@@ -179,7 +216,7 @@ export function ControlledInput<T extends FieldValues = FieldValues>({
 
       <FormControlError>
         <FormControlErrorIcon as={errorIcon} />
-        <FormControlErrorText>{fieldError?.message?.toString()}</FormControlErrorText>
+        <FormControlErrorText>{fieldError?.message}</FormControlErrorText>
       </FormControlError>
     </FormControl>
   );
