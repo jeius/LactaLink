@@ -14,39 +14,141 @@ import Animated, {
 type DragDirection = 'horizontal' | 'vertical' | 'both';
 
 interface DraggableWrapperRef {
+  /**
+   * Shared value for horizontal translation.
+   */
   translateX: SharedValue<number>;
+
+  /**
+   * Shared value for vertical translation.
+   */
   translateY: SharedValue<number>;
+
+  /**
+   * Resets the position of the draggable element to its initial state.
+   */
   resetPosition: () => void;
+
+  /**
+   * Dismisses the draggable element by animating it out of view.
+   */
   dismiss: () => void;
 }
 
 interface DraggableWrapperProps extends ComponentPropsWithoutRef<typeof Animated.View> {
+  /**
+   * The child components to render inside the draggable wrapper.
+   */
   children: React.ReactNode;
+
+  /**
+   * The direction in which the element can be dragged.
+   * - `horizontal`: Dragging is allowed only horizontally.
+   * - `vertical`: Dragging is allowed only vertically.
+   * - `both`: Dragging is allowed in both directions.
+   */
   direction?: DragDirection;
+
+  /**
+   * Optional bounds to restrict the draggable area.
+   */
   bounds?: {
     minX?: number;
     maxX?: number;
     minY?: number;
     maxY?: number;
   };
+
+  /**
+   * Enables inertia when dragging ends. Defaults to `true`.
+   */
   enableInertia?: boolean;
+
+  /**
+   * Callback triggered when the element is dismissed.
+   */
   onDismiss?: () => void;
+
+  /**
+   * Callback triggered when dragging starts.
+   */
   onDragStart?: () => void;
+
+  /**
+   * Callback triggered during dragging with the current position.
+   */
   onDrag?: (position: { x: number; y: number }) => void;
+
+  /**
+   * Callback triggered when dragging ends.
+   */
   onDragEnd?: () => void;
+
+  /**
+   * Callback triggered when the gesture is canceled.
+   */
   onCancel?: () => void;
+
+  /**
+   * Callback triggered when the gesture fails.
+   */
   onFail?: () => void;
+
+  /**
+   * Ratio of the screen size that determines the dismiss threshold. Defaults to `0.5`.
+   */
   dismissThresholdRatio?: number;
+
+  /**
+   * Multiplier for the dismiss distance when animating out. Defaults to `2`.
+   */
   dismissDistanceMultiplier?: number;
+
+  /**
+   * Whether to fade out the element when dismissed. Defaults to `false`.
+   */
   fadeOnDismiss?: boolean;
+
+  /**
+   * Whether to scale down the element when dismissed. Defaults to `false`.
+   */
   scaleOnDismiss?: boolean;
+
+  /**
+   * Configuration for the spring animation.
+   */
   springConfig?: WithSpringConfig;
+
+  /**
+   * Configuration for the timing animation.
+   */
   timingConfig?: WithTimingConfig;
+
+  /**
+   * Disables dragging if set to `true`. Defaults to `false`.
+   */
   disabled?: boolean;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+/**
+ * A wrapper component that makes its children draggable with customizable behavior.
+ *
+ * This component supports dragging in horizontal, vertical, or both directions. It provides
+ * callbacks for various drag events and allows customization of animations, dismiss behavior,
+ * and bounds.
+ *
+ * @example
+ * ```tsx
+ * <DraggableWrapper
+ *   direction="both"
+ *   onDismiss={() => console.log('Dismissed')}
+ * >
+ *   <Text>Drag me!</Text>
+ * </DraggableWrapper>
+ * ```
+ */
 const DraggableWrapper = forwardRef<DraggableWrapperRef, DraggableWrapperProps>(
   (
     {

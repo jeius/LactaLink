@@ -46,18 +46,79 @@ export type ControlledInputProps<
   T extends FieldValues,
   K extends CollectionSlug = CollectionSlug,
 > = TInputField & {
+  /**
+   * Icon to display inside the input field.
+   */
   inputIcon?: FC<LucideProps> | LucideIcon;
+
+  /**
+   * Icon to display for errors.
+   */
   errorIcon?: FC<LucideProps> | LucideIcon;
+
+  /**
+   * The name of the field in the form context.
+   */
   name: FieldPath<T>;
+
+  /**
+   * Label for the input field.
+   */
   label?: string;
+
+  /**
+   * Helper text to display below the input field.
+   */
   helperText?: string;
+
+  /**
+   * The type of input field to render.
+   */
   inputType?: InputType;
-  textInputVariant?: TInput['variant'];
+
+  /**
+   * Placeholder text for the input field.
+   */
+  placeholder?: string;
+
+  /**
+   * Additional class names for the input container.
+   */
   className?: string;
+
+  /**
+   * Options for the options-cards input type.
+   */
   options?: OptionsCardItem[];
+
+  /**
+   * Props for the combobox input type.
+   */
   comboboxProps?: ComboboxProps<K>;
+
+  /**
+   * Variant of the input field.
+   */
+  textInputVariant?: TInput['variant'];
 };
 
+/**
+ * A controlled input component that integrates with `react-hook-form`.
+ *
+ * This component supports multiple input types, including text, number, password,
+ * textarea, date, options-cards, and combobox. It handles validation, error display,
+ * and form state management seamlessly.
+ *
+ * @example
+ * ```tsx
+ * <ControlledInput
+ *   name="email"
+ *   label="Email Address"
+ *   inputType="text"
+ *   placeholder="Enter your email"
+ * />
+ * ```
+ */
 export function ControlledInput<T extends FieldValues, K extends CollectionSlug = CollectionSlug>({
   inputIcon,
   errorIcon = AlertCircleIcon,
