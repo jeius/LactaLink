@@ -166,7 +166,7 @@ export function ControlledInput<T extends FieldValues, K extends CollectionSlug 
                 <OptionsCards
                   value={field.value}
                   onBlur={field.onBlur}
-                  disabled={field.disabled}
+                  isDisabled={field.disabled}
                   items={options}
                   onChange={(val) => {
                     field.onChange(val);
@@ -181,8 +181,12 @@ export function ControlledInput<T extends FieldValues, K extends CollectionSlug 
                 <InfiniteScrollComboBox
                   {...comboboxProps}
                   value={field.value}
-                  onChange={field.onChange}
+                  isDisabled={field.disabled}
                   placeholder={placeholder}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    trigger(name);
+                  }}
                 />
               );
 

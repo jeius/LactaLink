@@ -35,6 +35,7 @@ export function useSetupForm() {
       birth: '',
       gender: 'FEMALE',
       maritalStatus: 'MARRIED',
+      addresses: [],
     },
   });
 

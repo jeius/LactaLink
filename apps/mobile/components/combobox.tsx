@@ -37,6 +37,7 @@ export type InfiniteScrollComboBoxProps<T extends CollectionSlug> = {
   where?: Where;
   searchPath: keyof Config['collections'][T];
   searchPlaceholder?: string;
+  isDisabled?: boolean;
 };
 
 export default function InfiniteScrollComboBox<T extends CollectionSlug>({
@@ -48,6 +49,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   onChange: onSelectionChanged,
   searchPath,
   searchPlaceholder = 'Search here...',
+  isDisabled: disabled,
 }: InfiniteScrollComboBoxProps<T>) {
   const { token } = useSession();
   const inputRef = useRef<TextInput>(null);
@@ -59,9 +61,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
     refetchOnMount: true,
     queryKey: ['combobox', 'label', selected],
     queryFn: async () => {
-      console.log(selected);
       if (selected) {
-        console.log('Refetched label.');
         const res = await findDocById(selected, {
           collection,
           token,
@@ -135,7 +135,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   }
 
   return (
-    <Select selectedValue={selected} onValueChange={onSelectionChanged}>
+    <Select isDisabled={disabled} selectedValue={selected} onValueChange={onSelectionChanged}>
       <SelectTrigger disabled={isFetching} variant="outline" size="md">
         <SelectInput
           value={isFetching ? 'Loading...' : selectedLabel || ''}
@@ -143,7 +143,13 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
           placeholder={placeholder || 'Select option...'}
         />
         {selected && (
-          <Button variant="link" className="px-2" action="negative" onPress={clearSelection}>
+          <Button
+            isDisabled={disabled || isFetching}
+            variant="link"
+            className="px-2"
+            action="negative"
+            onPress={clearSelection}
+          >
             <ButtonIcon as={XIcon} />
           </Button>
         )}

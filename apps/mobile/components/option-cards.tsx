@@ -36,7 +36,7 @@ export type OptionsCardsProps<T> = {
   items?: OptionsCardItem<T>[];
   onChange?: (val: T) => void;
   value?: T;
-  disabled?: boolean;
+  isDisabled?: boolean;
   onBlur?: Noop;
 };
 
@@ -46,7 +46,7 @@ export function OptionsCards<T>({
   items = [],
   onChange: setValue,
   value: selected,
-  disabled,
+  isDisabled: disabled,
 }: OptionsCardsProps<T>) {
   const scrollRef = useRef<ScrollView>(null);
   const [isScrollable, setIsScrollable] = useState(false);
