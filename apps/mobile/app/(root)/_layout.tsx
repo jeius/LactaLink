@@ -1,4 +1,4 @@
-import { AnimatedProgress } from '@/components/animated-progress';
+import { AnimatedProgress } from '@/components/animated/progress';
 import { Box } from '@/components/ui/box';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';

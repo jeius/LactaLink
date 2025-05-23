@@ -9,8 +9,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useTheme } from './providers/theme-provider';
-import { Box } from './ui/box';
+import { useTheme } from '../providers/theme-provider';
+import { Box } from '../ui/box';
 
 const progressStyle = tva({
   base: 'bg-background-300 w-full rounded-full',

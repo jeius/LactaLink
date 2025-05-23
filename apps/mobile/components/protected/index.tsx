@@ -1,11 +1,10 @@
 import { useSession } from '@/hooks/auth/useSession';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { SafeAreaViewProps } from 'react-native-safe-area-context';
-import SafeArea from '../safe-area';
+import { FC, useEffect } from 'react';
+import SafeArea, { SafeAreaProps } from '../safe-area';
 import { Spinner } from '../ui/spinner';
 
-export function Protected(props: SafeAreaViewProps) {
+export const Protected: FC<SafeAreaProps> = (props) => {
   const { user, token, isLoading } = useSession();
 
   useEffect(() => {
@@ -28,4 +27,4 @@ export function Protected(props: SafeAreaViewProps) {
   }
 
   return <SafeArea {...props} />;
-}
+};

@@ -3,16 +3,21 @@ import ThemeToggler from '@/components/theme-toggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/hooks/auth/useSession';
+import { useAppToast } from '@/hooks/useAppToast';
 import { LogOutIcon } from 'lucide-react-native';
+
+import * as crypto from 'expo-crypto';
+
 import React from 'react';
 
-export default function Home() {
+const Home = () => {
   const { signOut } = useSession();
+  const toast = useAppToast();
 
   return (
     <Protected>
       <ThemeToggler />
-      <VStack space="md" className="items-center">
+      <VStack space="lg" className="items-center">
         <Button
           action="default"
           onPress={() => {
@@ -22,7 +27,18 @@ export default function Home() {
           <ButtonText>Sign out</ButtonText>
           <ButtonIcon as={LogOutIcon} />
         </Button>
+
+        <Button
+          action="secondary"
+          onPress={() => {
+            toast.show({ id: crypto.randomUUID(), type: 'loading' });
+          }}
+        >
+          <ButtonText>Show loading toast</ButtonText>
+        </Button>
       </VStack>
     </Protected>
   );
-}
+};
+
+export default Home;

@@ -640,8 +640,8 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    email: varchar('email').notNull(),
     role: enum_users_role('role').default('AUTHENTICATED'),
+    email: varchar('email').notNull(),
     phone: varchar('phone'),
     profileType: enum_users_profile_type('profile_type').default('INDIVIDUAL'),
     lastSignInAt: timestamp('last_sign_in_at', {
@@ -659,6 +659,7 @@ export const users = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    picture: varchar('picture'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
