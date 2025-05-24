@@ -17,7 +17,7 @@ export const generateDisplayName: CollectionBeforeChangeHook<Address> = async ({
 
   const resolvedLocations = await Promise.all(
     locationFields.map(async ({ key, collection }) => {
-      const id = extractID(data[key]);
+      const id = data[key] && extractID(data[key]);
       if (id) {
         const record = await payload.findByID({ collection, id, select: { name: true } });
         return record.name;

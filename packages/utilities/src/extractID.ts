@@ -1,38 +1,64 @@
+import { Collection } from '@lactalink/types';
+
+type Value = Collection | string | number;
+
 /**
- * Extracts the `id` from an object or returns the value directly if it's a string.
+ * A utility type that extracts the `id` property from an object or an array of objects.
  *
- * This utility function is designed to handle cases where the input can be an object
- * with an `id` property, a string, or `null/undefined`. It ensures that the `id` is
- * extracted if the input is an object, or the input is returned as-is if it's a string.
+ * - If the input is an array of objects with an `id` property, it returns an array of `id` values.
+ * - If the input is a single object with an `id` property, it returns the `id` value.
+ * - If the input is a string or number, it returns the input as-is.
  *
- * @template T - The type of the object containing the `id` property.
- * @param value - The input value, which can be an object with an `id` property, a string, or `null/undefined`.
- * @returns The extracted `id` if the input is an object, the input string if it's already a string,
- *          or `null/undefined` if the input is `null/undefined`.
+ * @template T - The type of the input value.
+ */
+type ExtractID<T> = T extends (infer U)[]
+  ? U extends { id: infer ID }
+    ? ID extends string
+      ? string[]
+      : ID[]
+    : U[]
+  : T extends { id: infer ID }
+    ? ID
+    : T;
+
+/**
+ * Extracts the `id` property from an object or an array of objects.
+ *
+ * This utility function is designed to handle various input types:
+ * - If the input is an array of objects with an `id` property, it returns an array of `id` values.
+ * - If the input is a single object with an `id` property, it returns the `id` value.
+ * - If the input is a string or number, it returns the input as-is.
+ *
+ * @template T - The type of the input value.
+ * @param value - The input value, which can be an object, an array of objects, a string, or a number.
+ * @returns The extracted `id` or the input value itself, depending on the input type.
  *
  * @example
  * ```typescript
- * // Extracting `id` from an object
- * const obj = { id: '12345' };
- * const id = extractID(obj); // '12345'
+ * // Example 1: Extracting IDs from an array of objects
+ * const users = [{ id: '123' }, { id: '456' }];
+ * const ids = extractID(users); // ['123', '456']
  *
- * // Returning the string directly
- * const str = '67890';
- * const idFromString = extractID(str); // '67890'
+ * // Example 2: Extracting an ID from a single object
+ * const user = { id: '789' };
+ * const id = extractID(user); // '789'
  *
- * // Handling null/undefined
- * const nullValue = null;
- * const idFromNull = extractID(nullValue); // null
+ * // Example 3: Returning a string or number as-is
+ * const str = 'example';
+ * const result = extractID(str); // 'example'
+ *
+ * const num = 42;
+ * const resultNum = extractID(num); // 42
  * ```
  */
-export function extractID<T extends { id: string | number }>(
-  value?: T | string | null
-): T['id'] | null | undefined {
-  if (!value) return value;
-
-  if (typeof value === 'object') {
-    return value.id;
+export function extractID<T extends Value | Value[]>(value: T): ExtractID<T> {
+  if (Array.isArray(value)) {
+    return value.map((item) => (typeof item === 'object' ? item.id : item)) as ExtractID<T>;
   }
 
-  return value;
+  if (typeof value === 'object') {
+    return value.id as ExtractID<T>;
+  }
+
+  return value as ExtractID<T>;
 }
