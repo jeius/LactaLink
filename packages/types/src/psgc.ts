@@ -1,4 +1,4 @@
-import { APIResponse } from './api';
+import { ApiFetchResponse } from './api';
 
 export type SlugPSGC =
   | 'island-groups'
@@ -113,7 +113,7 @@ export type IncomingBarangayData = {
   barangays: RawAndExistingDocs<BarangayPSGC>;
 };
 
-export type ResponseData = {
+export type PSGCResponseData = {
   islandGroups: RawAndExistingDocs<IslandGroupPSGC>;
   provinces: RawAndExistingDocs<ProvincePSGC>;
   regions: RawAndExistingDocs<RegionPSGC>;
@@ -121,4 +121,4 @@ export type ResponseData = {
   barangays: RawAndExistingDocs<BarangayPSGC>;
 };
 
-export type PSGCResponse = APIResponse<ResponseData>;
+export type PSGCResponse = ApiFetchResponse<PSGCResponseData>;

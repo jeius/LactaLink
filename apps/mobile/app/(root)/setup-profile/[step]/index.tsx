@@ -16,7 +16,10 @@ import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { useAppToast } from '@/hooks/useAppToast';
 
-import { API_URL, ICONS, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
+import { createNativeFile, uploadFile } from '@/lib/api/file';
+import { createAddresses } from '@/lib/api/profile/createAddresses';
+import { createProfile } from '@/lib/api/profile/createProfile';
+import { ICONS } from '@/lib/constants';
 import {
   AVATAR_FIELDS,
   CONTACT_FIELDS,
@@ -26,12 +29,10 @@ import {
 } from '@/lib/constants/setupProfile';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
-import { uploadFile } from '@/lib/utils/file';
-import { createAddresses } from '@/lib/utils/profile/createAddresses';
-import { createProfile } from '@/lib/utils/profile/createProfile';
 
+import { useApiClient } from '@lactalink/api';
 import { SetupProfileSchema, User } from '@lactalink/types';
-import { extractErrorMessage, updateDocByID } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
@@ -42,7 +43,8 @@ const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
-  const { token, user, refetchSession } = useSession();
+  const { user, refetchSession } = useSession();
+  const client = useApiClient().client;
   const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
@@ -73,36 +75,19 @@ export default function Step() {
       type: 'loading',
     });
 
-    const baseOptions = { apiUrl: API_URL, vercelToken: VERCEL_BYPASS_TOKEN, token };
-    const createOptions = {
-      ...baseOptions,
-      depth: 0,
-      select: { id: true, displayName: true },
-    };
-
     try {
       if (!user) throw new Error('User not found.');
 
       const { addresses, avatar, ...rest } = formData;
 
-      const avatarDoc =
-        avatar &&
-        (await uploadFile(
-          { name: avatar.filename!, uri: avatar.url!, type: avatar.mimeType! },
-          { ...baseOptions, collection: 'avatars' }
-        ));
-      const avatarID = avatarDoc?.id || null;
+      const avatarDoc = avatar && (await uploadFile(createNativeFile(avatar), 'avatars'));
+      const addressDocs = await createAddresses(addresses);
 
-      const addressDocs = await createAddresses(addresses, createOptions);
-
-      const createdProfile = await createProfile(
-        {
-          ...rest,
-          avatar: avatarID,
-          addresses: addressDocs.map((a) => a.id),
-        },
-        createOptions
-      );
+      const createdProfile = await createProfile({
+        ...rest,
+        avatar: avatarDoc,
+        addresses: addressDocs,
+      });
 
       const profileMap: Record<ProfileType, User['profile']> = {
         INDIVIDUAL: { relationTo: 'individuals', value: createdProfile.id },
@@ -110,13 +95,13 @@ export default function Step() {
         MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
       };
 
-      await updateDocByID(user.id, {
-        ...baseOptions,
-        depth: 1,
+      await client?.updateByID({
         collection: 'users',
+        id: user.id,
+        depth: 0,
         data: {
-          profileType,
-          profile: profileMap[profileType],
+          profileType: formData.profileType,
+          profile: profileMap[formData.profileType],
         },
       });
 

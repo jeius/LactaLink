@@ -1,6 +1,5 @@
 {
   "extends": "@lactalink/typescript-config",
-
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

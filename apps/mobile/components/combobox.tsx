@@ -1,7 +1,5 @@
-import { useSession } from '@/hooks/auth/useSession';
-import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { CollectionSlug, Config, Where } from '@lactalink/types';
-import { findDocById, findDocsWithPagination, useDebounce } from '@lactalink/utilities';
+import { useDebounce } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import React, { useMemo, useRef, useState } from 'react';
 
@@ -17,6 +15,7 @@ import {
   SelectPortal,
   SelectTrigger,
 } from '@/components/ui/select';
+import { useSafeApiClient } from '@lactalink/api';
 import { ChevronDownIcon, LucideSearchX, XIcon } from 'lucide-react-native';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Box } from './ui/box';
@@ -51,7 +50,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   searchPlaceholder = 'Search here...',
   isDisabled: disabled,
 }: InfiniteScrollComboBoxProps<T>) {
-  const { token } = useSession();
+  const apiClient = useSafeApiClient();
   const inputRef = useRef<TextInput>(null);
 
   const { data: selectedLabel, isFetching } = useQuery<string>({
@@ -62,12 +61,12 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
     queryKey: ['combobox', 'label', selected],
     queryFn: async () => {
       if (selected) {
-        const res = await findDocById(selected, {
+        const res = await apiClient.findByID({
+          id: selected,
           collection,
-          token,
-          vercelToken: VERCEL_BYPASS_TOKEN,
-          apiUrl: API_URL,
           depth: 0,
+          //@ts-expect-error typescript cant infer here.
+          select: { [searchPath]: true },
         });
 
         return (res[searchPath] as string) || '';
@@ -89,11 +88,9 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
       const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
       const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
 
-      return await findDocsWithPagination({
+      return await apiClient.find({
         collection,
-        token,
-        vercelToken: VERCEL_BYPASS_TOKEN,
-        apiUrl: API_URL,
+        pagination: true,
         limit,
         where,
         page,

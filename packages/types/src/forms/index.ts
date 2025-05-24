@@ -16,20 +16,4 @@ export {
   signUpSchema,
 } from './auth';
 
-export type {
-  AddressSchema,
-  AvatarSchema,
-  HospitalSchema,
-  IndividualSchema,
-  MilkBankSchema,
-  SetupProfileSchema,
-} from './setup-profile';
-
-export {
-  addressSchema,
-  avatarSchema,
-  hospitalSchema,
-  individualSchema,
-  milkBankSchema,
-  setupProfileSchema,
-} from './setup-profile';
+export * from './setupProfile';

@@ -4,7 +4,7 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import {
-  APIResponse,
+  ApiFetchResponse,
   CollectionSlugPSGC,
   ExistingDocs,
   IncomingBarangayData,
@@ -131,7 +131,7 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
       throw new Error(`Batch ${batchIndex} failed: HTTP ${res.status}`);
     }
 
-    const resData: APIResponse<ExistingDocs> = await res.json();
+    const resData: ApiFetchResponse<ExistingDocs> = await res.json();
     if ('data' in resData && resData.data) {
       Object.assign(existingDocs, resData.data);
     } else {

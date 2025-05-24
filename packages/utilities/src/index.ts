@@ -1,4 +1,4 @@
-export * from './api';
+export * from './apiFetch';
 export * from './auth';
 export * from './batching';
 export * from './delay';
@@ -8,3 +8,4 @@ export * from './formatters';
 export * from './getters';
 export * from './hooks';
 export * from './isEmailTaken';
+export * from './mergeHeaders';

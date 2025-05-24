@@ -1,3 +1,5 @@
+import { ApiMethod } from './api';
+
 /**
  * Represents a preference object retrieved from the API.
  *
@@ -17,7 +19,7 @@ export type GetPreference<T> = {
  *
  * @template T - The type of the preference value.
  */
-export type PostPreference<T = unknown> = {
+export type UpdatePreference<T = unknown> = {
   message: string;
   doc: {
     user: string;
@@ -27,12 +29,10 @@ export type PostPreference<T = unknown> = {
   };
 };
 
-type Method = 'GET' | 'POST' | 'DELETE';
-
-export type Preference<TMethod extends Method, TValue = unknown> = TMethod extends 'GET'
+export type Preference<TMethod extends ApiMethod, TValue = unknown> = TMethod extends 'GET'
   ? GetPreference<TValue>
   : TMethod extends 'POST'
-    ? PostPreference<TValue>
+    ? UpdatePreference<TValue>
     : TMethod extends 'DELETE'
       ? { message: string }
       : never;

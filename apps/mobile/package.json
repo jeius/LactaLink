@@ -39,6 +39,7 @@
     "@gluestack-ui/toast": "^1.0.9",
     "@gluestack-ui/tooltip": "^0.1.44",
     "@hookform/resolvers": "^5.0.1",
+    "@lactalink/api": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@legendapp/motion": "^2.4.0",
     "@react-native-community/datetimepicker": "8.2.0",

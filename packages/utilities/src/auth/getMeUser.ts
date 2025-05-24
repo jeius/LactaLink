@@ -1,6 +1,6 @@
 import { AuthResult, MeUser } from '@lactalink/types/auth';
 import { AuthError } from '@supabase/supabase-js';
-import { apiFetch } from '../api/apiFetch';
+import { apiFetch } from '../apiFetch';
 
 export async function getMeUser(
   token: string,
@@ -9,7 +9,7 @@ export async function getMeUser(
 ): Promise<AuthResult> {
   const url = new URL(`/api/users/me`, apiUrl);
 
-  const res = await apiFetch<MeUser>({ url, token, vercelToken });
+  const res = await apiFetch<MeUser>({ url, token, bypassToken: vercelToken, method: 'GET' });
 
   if ('error' in res) {
     return { error: new AuthError(res.message, res.status) };

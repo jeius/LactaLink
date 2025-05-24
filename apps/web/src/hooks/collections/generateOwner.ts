@@ -1,9 +1,9 @@
-import { Collections, User } from '@lactalink/types';
+import { Collection, User } from '@lactalink/types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 // Base type for any collection that may have an owner field
 type CollectionWithOwner = Extract<
-  Collections,
+  Collection,
   {
     owner?: string | User | null;
   }

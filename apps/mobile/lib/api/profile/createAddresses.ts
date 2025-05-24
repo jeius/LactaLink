@@ -1,16 +1,15 @@
-import { Address, AddressSchema, ApiOptions } from '@lactalink/types';
-import { createDoc } from '@lactalink/utilities';
+import { getApiClient } from '@lactalink/api';
+import { Address, AddressSchema } from '@lactalink/types';
+export async function createAddresses(addresses: AddressSchema[]): Promise<Address[]> {
+  const client = getApiClient();
 
-export async function createAddresses(
-  addresses: AddressSchema[],
-  options: Omit<ApiOptions<'addresses', 'CREATE'>, 'collection' | 'data'>
-): Promise<Address[]> {
   const results = await Promise.allSettled(
     addresses.map((data) =>
-      createDoc({
-        ...options,
+      client.create({
         collection: 'addresses',
         data,
+        select: { id: true },
+        depth: 0,
       })
     )
   );
