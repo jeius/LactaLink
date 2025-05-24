@@ -1,0 +1,44 @@
+{
+  "name": "@lactalink/api",
+  "version": "1.0.0",
+  "description": "Lactalink api client",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
+  },
+  "dependencies": {
+    "qs-esm": "^7.0.2"
+  },
+  "devDependencies": {
+    "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/utilities": "workspace:*",
+    "@supabase/supabase-js": "^2.49.4",
+    "@types/node": "^22.5.4",
+    "@types/react": "^19.1.2",
+    "react": "18.3.1",
+    "zustand": "^5.0.5"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "zustand": "^5.0.5"
+  }
+}
