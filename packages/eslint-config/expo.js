@@ -10,6 +10,6 @@ module.exports = {
   extends: [...base.extends, 'expo', 'plugin:@typescript-eslint/recommended'],
   env: {
     browser: true,
-    node: true,
+    node: false,
   },
 };

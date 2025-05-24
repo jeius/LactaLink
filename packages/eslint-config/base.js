@@ -7,8 +7,13 @@ module.exports = {
   extends: ['eslint:recommended', 'prettier'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'prettier', 'turbo'],
-  ignorePatterns: ['node_modules', 'build', 'dist'],
+  ignorePatterns: ['node_modules', 'build', 'dist', '.turbo'],
+  env: {
+    node: true,
+    browser: true,
+  },
   rules: {
+    'no-unused-vars': 'off',
     '@typescript-eslint/ban-ts-comment': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': [
