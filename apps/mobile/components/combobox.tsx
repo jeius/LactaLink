@@ -1,7 +1,8 @@
 import { CollectionSlug, Config, Where } from '@lactalink/types';
-import { useDebounce } from '@lactalink/utilities';
+import { getChunks, useDebounce } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { NativeScrollEvent } from 'react-native';
 
 import {
   Select,
@@ -39,6 +40,11 @@ export type InfiniteScrollComboBoxProps<T extends CollectionSlug> = {
   isDisabled?: boolean;
 };
 
+function isNearBottom(nativeEvent: NativeScrollEvent, threshold = 300) {
+  const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+  return layoutMeasurement.height + contentOffset.y >= contentSize.height - threshold;
+}
+
 export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   collection,
   limit = 20,
@@ -52,6 +58,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
 }: InfiniteScrollComboBoxProps<T>) {
   const apiClient = useSafeApiClient();
   const inputRef = useRef<TextInput>(null);
+  const [searchDefault, setSearchDefault] = useState('');
 
   const { data: selectedLabel, isFetching } = useQuery<string>({
     enabled: Boolean(selected),
@@ -76,7 +83,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   });
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ['combobox', collection, debouncedSearch, JSON.stringify(whereParam)],
@@ -121,6 +128,14 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
     return deduped;
   }, [data]);
 
+  const [batchCount, setBatchCount] = useState(1);
+  const [open, setOpen] = useState(false);
+
+  // Batched items to render
+  const batchedItems = useMemo(() => {
+    return getChunks(items, limit).slice(0, batchCount).flat();
+  }, [items, limit, batchCount]);
+
   function clearSelection() {
     clearSearch();
     onSelectionChanged?.('');
@@ -128,11 +143,45 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
 
   function clearSearch() {
     setSearch('');
+    setSearchDefault('');
     inputRef.current?.clear();
   }
 
+  function handleScroll({ nativeEvent }: { nativeEvent: NativeScrollEvent }) {
+    if (isNearBottom(nativeEvent)) {
+      // If there are more items to show, increase batch count
+      if (batchCount * limit < items.length) {
+        setBatchCount((prev) => prev + 1);
+      } else {
+        // If all items are shown, fetch next page if available
+        fetchNextPage();
+      }
+    }
+  }
+
+  // Reset batchCount when items change or overlay is closed
+  useEffect(() => {
+    setBatchCount(1);
+  }, [debouncedSearch, open]);
+
+  useEffect(() => {
+    if (!open) {
+      setSearchDefault((prev) => (prev !== search ? search : prev));
+    }
+  }, [open, search]);
+
   return (
-    <Select isDisabled={disabled} selectedValue={selected} onValueChange={onSelectionChanged}>
+    <Select
+      onOpen={() => {
+        setOpen(true);
+      }}
+      onClose={() => {
+        setOpen(false);
+      }}
+      isDisabled={disabled}
+      selectedValue={selected}
+      onValueChange={onSelectionChanged}
+    >
       <SelectTrigger disabled={isFetching} variant="outline" size="md">
         <SelectInput
           value={isFetching ? 'Loading...' : selectedLabel || ''}
@@ -164,7 +213,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
               <InputField
                 //@ts-expect-error gluestack-ref-issue
                 ref={inputRef}
-                defaultValue={debouncedSearch}
+                defaultValue={searchDefault}
                 onChangeText={setSearch}
                 placeholder={searchPlaceholder}
               />
@@ -182,19 +231,11 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
             className="h-64 w-full"
             contentContainerClassName="pb-5"
             scrollEventThrottle={100}
-            onScroll={({ nativeEvent }) => {
-              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-              const isNearBottom =
-                layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
-
-              if (isNearBottom) {
-                fetchNextPage();
-              }
-            }}
+            onScroll={handleScroll}
           >
             {isLoading && <Spinner size="large" className="mt-4" />}
-            {items && items.length > 0
-              ? items.map((item) => (
+            {batchedItems && batchedItems.length > 0
+              ? batchedItems.map((item) => (
                   <SelectItem
                     key={item['id']}
                     label={item[searchPath] as string}

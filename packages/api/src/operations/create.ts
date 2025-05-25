@@ -37,8 +37,9 @@ export async function uploadFile<Slug extends FileCollectionSlug>(
   args: CreateArgs<Slug>,
   options: BaseApiFetchArgs
 ): Promise<CollectionBySlug<Slug>> {
-  const { url: apiUrl, headers, ...restOfFetchOptions } = options;
-  headers?.set('Content-Type', 'multipart/form-data');
+  const { url: apiUrl, headers: headersParams, ...restOfFetchOptions } = options;
+  const headers = new Headers(headersParams);
+  headers.set('Content-Type', 'multipart/form-data');
 
   const { collection, data, ...searchParams } = args;
   const query = stringify(searchParams);

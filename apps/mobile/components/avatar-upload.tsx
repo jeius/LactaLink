@@ -62,7 +62,7 @@ export default function AvatarUpload({
       if (!user || !user.picture) return;
 
       const namePrefix = filenameProp?.trim().split('.')[0] || user.email.split('@')[0];
-      const filename = `${namePrefix}_avatar.jpg`;
+      const filename = `${namePrefix}_avatar.jpeg`;
       const fileUri = localDir + filename;
       const downloaded = await FileSystem.downloadAsync(user.picture, fileUri);
 
@@ -105,14 +105,14 @@ export default function AvatarUpload({
     // Save the current URI for possible future deletion
     lastImageUri.current = pickedImage.uri;
 
-    const mimeType = pickedImage.mimeType || 'image/jpeg';
+    const type = pickedImage.fileName?.split('.').pop() || 'jpg';
     const namePrefix = filenameProp?.trim().split('.')[0] || user?.email.split('@')[0] || 'temp';
-    const filename = namePrefix + `_avatar.${mimeType}`;
+    const filename = namePrefix + `_avatar.${type}`;
 
     return {
       id: crypto.randomUUID(),
       filename,
-      mimeType,
+      mimeType: pickedImage.mimeType || 'image/jpeg',
       filesize: pickedImage.fileSize,
       width: pickedImage.width,
       height: pickedImage.height,

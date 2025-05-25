@@ -1,7 +1,7 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
 export const itemStyle = tva({
-  base: 'font-Jakarta text-wrap text-sm',
+  base: 'text-wrap text-sm',
   variants: {
     variant: {
       primary: 'text-primary-600',

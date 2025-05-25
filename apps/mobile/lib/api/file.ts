@@ -1,11 +1,5 @@
 import { getApiClient } from '@lactalink/api';
-import {
-  ApiClientArgsWithoutPagination,
-  CollectionData,
-  CreateArgs,
-  FileCollection,
-  FileCollectionSlug,
-} from '@lactalink/types';
+import { CollectionData, CreateArgs, FileCollection, FileCollectionSlug } from '@lactalink/types';
 import { NativeFile } from '../types';
 
 const FormData = global.FormData;
@@ -18,14 +12,9 @@ export function createNativeFile<T extends FileData>(data: T): NativeFile {
   return { uri: data.url, name: data.filename, type: data.mimeType };
 }
 
-type UploadFileOptions<T extends FileCollectionSlug> = Omit<
-  ApiClientArgsWithoutPagination<T>,
-  'collection'
->;
 export async function uploadFile<T extends FileCollectionSlug = FileCollectionSlug>(
   file: NativeFile,
-  collection: T,
-  options?: UploadFileOptions<T>
+  collection: T
 ) {
   const client = getApiClient();
 
@@ -35,12 +24,10 @@ export async function uploadFile<T extends FileCollectionSlug = FileCollectionSl
 
   const args: CreateArgs<T> = {
     data,
-    select: { id: true, url: true },
-    depth: 2,
     collection,
-    // Include any additional options passed
-    ...options,
+    depth: 2,
   } as CreateArgs<T>;
 
-  return await client.createFile(args);
+  const res = await client.createFile(args);
+  return res;
 }

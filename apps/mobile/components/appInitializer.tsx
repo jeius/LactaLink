@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
-import { QUERY_KEYS, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
+import { QUERY_KEYS } from '@/lib/constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from './providers/theme-provider';
 import { Spinner } from './ui/spinner';
@@ -20,10 +20,8 @@ type Props = {
 };
 
 export function AppInitializer({ children }: Props) {
-  const { client, hasInit: clientInitialized } = useApiClient((s) => ({
-    client: s.client,
-    hasInit: s.hasInitialized,
-  }));
+  const client = useApiClient((s) => s.client);
+  const clientInitialized = useApiClient((s) => s.hasInitialized);
 
   useGoogleSignInConfig();
 
@@ -53,7 +51,6 @@ export function AppInitializer({ children }: Props) {
     if (authResult && 'data' in authResult) {
       const { token } = authResult.data;
       client?.setToken(token);
-      client?.setBypassToken(VERCEL_BYPASS_TOKEN);
     }
   }, [authResult, client]);
 

@@ -9,7 +9,9 @@ import { Controller, useFormContext } from 'react-hook-form';
 export default function ProfileAvatar() {
   const { control, getValues } = useFormContext<SetupProfileSchema>();
 
-  const name = getValues('name')?.trim();
+  const name = getValues('name')
+    ?.trim()
+    .replace(/[^a-zA-Z0-9]+/g, '_');
   const givenName = getValues('givenName')?.trim();
   const familyName = getValues('familyName')?.trim();
   const profileType = getValues('profileType')?.trim();
@@ -40,7 +42,7 @@ export default function ProfileAvatar() {
             <AvatarUpload
               value={field.value}
               onChange={field.onChange}
-              filename={filename[profileType]}
+              filename={filename[profileType]?.toLowerCase()}
             />
           )}
         />
