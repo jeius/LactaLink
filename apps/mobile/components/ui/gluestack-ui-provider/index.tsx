@@ -1,10 +1,21 @@
+import { Toaster } from '@/lib/toaster';
 import { OverlayProvider } from '@gluestack-ui/overlay';
-import { ToastProvider } from '@gluestack-ui/toast';
 import React from 'react';
 import { View, ViewProps } from 'react-native';
 import { Config, config } from './config';
 import { ModeType } from './types';
 
+/**
+ * GluestackUIProvider sets up theming and global UI context for the app.
+ *
+ * - Applies the selected color mode (light/dark) using the config.
+ * - Renders the Toaster at the top level to provide global toast and overlay support.
+ * - Children are rendered inside an absolutely positioned View below the Toaster,
+ *   ensuring that the Toaster is always rendered above the children and respects safe area insets.
+ *
+ * Note: The children must be positioned absolute below the Toaster so that toasts and overlays
+ * are always visible on top of the app content, and safe area insets are respected.
+ */
 export function GluestackUIProvider({
   mode = 'light',
   ...props
@@ -14,15 +25,10 @@ export function GluestackUIProvider({
   style?: ViewProps['style'];
 }) {
   return (
-    <View
-      style={[
-        config[mode as keyof Config],
-        { flex: 1, height: '100%', width: '100%' },
-        props.style,
-      ]}
-    >
+    <View className="relative flex-1" style={[config[mode as keyof Config], props.style]}>
       <OverlayProvider>
-        <ToastProvider>{props.children}</ToastProvider>
+        <View className="absolute inset-0">{props.children}</View>
+        <Toaster />
       </OverlayProvider>
     </View>
   );

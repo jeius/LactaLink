@@ -1,13 +1,31 @@
-import { useToast } from '@/components/ui/toast';
+/**
+ * useAppToast and getAppToast provide convenient access to global toast actions.
+ *
+ * - useAppToast: React hook for accessing toast actions (show, close, closeAll, isActive) in components.
+ * - getAppToast: Utility function for accessing toast actions outside of React components (e.g., in utilities or async logic).
+ *
+ * Both are backed by the ToastStore, which must be initialized by the Toast component at the app root.
+ */
+
 import { useToastStore } from '@/lib/stores/toastStore';
 
+/**
+ * getAppToast returns toast actions for use outside React components.
+ * It omits the internal toast instance and init function from the store.
+ */
+export function getAppToast() {
+  const { toast: _, init: __, ...rest } = useToastStore.getState();
+  return rest;
+}
+
+/**
+ * useAppToast is a React hook that returns toast actions for use within components.
+ */
 export function useAppToast() {
-  const toast = useToast();
+  const show = useToastStore((s) => s.showToast);
+  const close = useToastStore((s) => s.close);
+  const closeAll = useToastStore((s) => s.closeAll);
+  const isActive = useToastStore((s) => s.isActive);
 
-  const show = useToastStore().showToast;
-
-  return {
-    ...toast,
-    show,
-  };
+  return { show, close, closeAll, isActive };
 }

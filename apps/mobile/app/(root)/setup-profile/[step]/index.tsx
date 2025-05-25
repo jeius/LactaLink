@@ -39,6 +39,7 @@ import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
+const TOAST_ID = 'setup-profile';
 
 type Block = Record<SetupProfileSteps, FC>;
 
@@ -70,7 +71,7 @@ export default function Step() {
 
   async function onSubmit(formData: SetupProfileSchema) {
     toast.show({
-      id: 'setup-profile',
+      id: TOAST_ID,
       message: 'Creating profile...',
       type: 'loading',
     });
@@ -106,7 +107,7 @@ export default function Step() {
       });
 
       toast.show({
-        id: 'setup-profile',
+        id: TOAST_ID,
         type: 'success',
         message: 'Profile created successfully.',
       });
@@ -117,7 +118,7 @@ export default function Step() {
     } catch (error) {
       console.error('Submit', error);
       toast.show({
-        id: 'setup-profile',
+        id: TOAST_ID,
         type: 'error',
         message: extractErrorMessage(error),
       });
@@ -155,9 +156,9 @@ export default function Step() {
   }
 
   return (
-    <SafeArea className="py-5">
+    <SafeArea className="mt-5">
       <KeyboardAvoidingWrapper>
-        <VStack space="xl" className="relative mt-5 grow px-5">
+        <VStack space="xl" className="relative grow px-5 py-5">
           <Box className="grow">
             {step === 'type' ? (
               <RenderBlock />

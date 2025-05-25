@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Button, ButtonText } from '@/components/ui/button';
-import GradientBackground from '@/components/ui/gradient-bg';
-import { VStack } from '@/components/ui/vstack';
-import { Dimensions } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
-
-import { Box } from '@/components/ui/box';
-import { router } from 'expo-router';
-
-import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
 import { OnboardingItem } from '@/components/onboarding';
 import { OnboardingData, onboardingData } from '@/components/onboarding/data';
 import { useTheme } from '@/components/providers/theme-provider';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import GradientBackground from '@/components/ui/gradient-bg';
+import { VStack } from '@/components/ui/vstack';
+
+import { Dimensions } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
+
+import { router } from 'expo-router';
+
+import SafeArea from '@/components/safe-area';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 
@@ -61,7 +61,7 @@ const Home = () => {
   }, []);
 
   return (
-    <SafeAreaView className="relative h-full flex-1 items-center justify-between">
+    <SafeArea className="justify-between">
       <GradientBackground colors={gradientColors} end={{ x: 0, y: 1 }} locations={[0, 0.8, 1]} />
 
       <VStack className="relative w-full items-end justify-start gap-0 py-4">
@@ -131,7 +131,7 @@ const Home = () => {
           </Button>
         </Box>
       </VStack>
-    </SafeAreaView>
+    </SafeArea>
   );
 };
 
