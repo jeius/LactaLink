@@ -14,16 +14,6 @@ import { getServerSideURL } from './lib/utils/getURL';
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
-const autoLoginConfig =
-  process.env.NEXT_PUBLIC_ENABLE_AUTOLOGIN === 'true'
-    ? {
-        username: process.env.NEXT_PUBLIC_ADMIN_USERNAME,
-        email: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
-        password: process.env.NEXT_PUBLIC_ADMIN_PASS,
-        prefillOnly: true,
-      }
-    : false;
-
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -39,7 +29,6 @@ export default buildConfig({
       providers: ['@/components/providers'],
     },
     avatar: 'default',
-    autoLogin: autoLoginConfig,
     suppressHydrationWarning: true,
     meta: baseAdminMeta,
   },
