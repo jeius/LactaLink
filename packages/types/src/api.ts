@@ -1,7 +1,6 @@
 import type { APIError } from 'payload';
 import {
   Collection,
-  CollectionBySlug,
   CollectionDataBySlug,
   CollectionSlug,
   CollectionUpdateDataBySlug,
@@ -34,30 +33,25 @@ export type BaseApiFetchArgs = {
   headers?: Headers;
 };
 
-type ApiFetchArgsWithBody<T extends CollectionSlug> = {
-  method: ApiMethodWithBody;
-  body: CollectionDataBySlug<T> | FormData | Record<string, unknown>;
+export type ApiFetchArgs<T extends CollectionSlug> = {
+  method: ApiMethod;
+  body?: CollectionDataBySlug<T> | FormData | { value: unknown };
 } & BaseApiFetchArgs;
 
-type ApiFetchArgsWithoutBody = {
-  method: Exclude<ApiMethod, ApiMethodWithBody>;
-} & BaseApiFetchArgs;
-
-export type ApiFetchArgs<T extends CollectionSlug> =
-  | ApiFetchArgsWithBody<T>
-  | ApiFetchArgsWithoutBody;
-
-export type ApiClientArgs<T extends CollectionSlug, Paginated extends boolean = true> = {
-  collection: T;
+export type SearchParams<T extends CollectionSlug> = {
   page?: number;
   limit?: number;
   where?: Where;
-  select?: Select<CollectionBySlug<T>>;
-  sort?: keyof CollectionBySlug<T>;
+  select?: Select<Collection<T>>;
+  sort?: keyof Collection<T>;
   populate?: Populate;
   depth?: number;
-  pagination?: Paginated;
 };
+
+export type ApiClientArgs<T extends CollectionSlug, Paginated extends boolean = true> = {
+  collection: T;
+  pagination?: Paginated;
+} & SearchParams<T>;
 
 export type ApiClientArgsWithoutPagination<T extends CollectionSlug> = Omit<
   ApiClientArgs<T, false>,
@@ -80,7 +74,7 @@ export type PaginatedResult<T extends Collection> = {
 export type FindResult<
   T extends CollectionSlug,
   isPaginated extends boolean,
-> = isPaginated extends false ? CollectionBySlug<T>[] : PaginatedResult<CollectionBySlug<T>>;
+> = isPaginated extends false ? Collection<T>[] : PaginatedResult<Collection<T>>;
 
 export type FindArgs<T extends CollectionSlug, IsPaginated extends boolean> = ApiClientArgs<
   T,
@@ -88,11 +82,17 @@ export type FindArgs<T extends CollectionSlug, IsPaginated extends boolean> = Ap
 >;
 
 export type FindByIDArgs<T extends CollectionSlug> = ApiClientArgsWithoutPagination<T> & {
-  id: CollectionBySlug<T>['id'];
+  id: Collection<T>['id'];
 };
 
-export type CreateArgs<T extends CollectionSlug> = ApiClientArgsWithoutPagination<T> &
-  (T extends FileCollectionSlug ? { data: FormData } : { data: CollectionDataBySlug<T> });
+export type CreateArgs<T extends CollectionSlug> = ApiClientArgsWithoutPagination<T> & {
+  data: CollectionDataBySlug<T>;
+};
+
+export type CreateFileArgs<T extends FileCollectionSlug> = Pick<
+  ApiClientArgsWithoutPagination<T>,
+  'collection'
+> & { data: FormData };
 
 export type CreateResult<T extends Collection> = {
   message: string;
@@ -100,7 +100,7 @@ export type CreateResult<T extends Collection> = {
 };
 
 export type UpdateByIDArgs<T extends CollectionSlug> = ApiClientArgsWithoutPagination<T> & {
-  id: CollectionBySlug<T>['id'];
+  id: Collection<T>['id'];
   data: CollectionUpdateDataBySlug<T>;
 };
 

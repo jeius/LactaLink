@@ -15,6 +15,12 @@ export type MeUser =
       user: null;
     };
 
+export type BackendSession = {
+  user: User | null;
+  permissions?: SanitizedPermissions;
+  message: string;
+};
+
 export type AuthParams = {
   supabase: SupabaseClient;
   apiUrl: string;

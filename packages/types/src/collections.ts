@@ -2,11 +2,14 @@ import type { Where as WherePayload } from 'payload';
 import { Config } from './payload-types';
 import { FilterUnion } from './utils';
 
-export type Collection = Config['collections'][keyof Config['collections']];
+export type Collections = Config['collections'][keyof Config['collections']];
 
 export type CollectionSlug = keyof Config['collections'];
 
-export type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug];
+type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug];
+
+export type Collection<Slug extends CollectionSlug | unknown = unknown> =
+  Slug extends CollectionSlug ? CollectionBySlug<Slug> : Collections;
 
 export type FileCollection = FilterUnion<Collection, { filename?: string | null }>;
 
@@ -20,14 +23,12 @@ export type CollectionData<T extends Collection> = Omit<
 > &
   Partial<Pick<T, 'id' | 'updatedAt' | 'createdAt'>>;
 
-export type CollectionDataBySlug<Slug extends CollectionSlug> = CollectionData<
-  CollectionBySlug<Slug>
->;
+export type CollectionDataBySlug<Slug extends CollectionSlug> = CollectionData<Collection<Slug>>;
 
 export type CollectionUpdateData<T extends Collection> = Partial<CollectionData<T>>;
 
 export type CollectionUpdateDataBySlug<Slug extends CollectionSlug> = CollectionUpdateData<
-  CollectionBySlug<Slug>
+  Collection<Slug>
 >;
 
 export type CollectionOperationData<

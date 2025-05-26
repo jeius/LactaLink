@@ -21,7 +21,7 @@ export async function apiFetch<T, Slug extends CollectionSlug = CollectionSlug>(
     let body = undefined;
 
     if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-      body = args.body instanceof FormData ? args.body : JSON.stringify(args.body);
+      body = args.body && (args.body instanceof FormData ? args.body : JSON.stringify(args.body));
     }
 
     const res = await fetch(url, { method, headers, body });

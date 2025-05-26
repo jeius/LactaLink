@@ -1,136 +1,144 @@
-import type {
-  CollectionBySlug,
+import {
+  Collection,
   CollectionSlug,
   CreateArgs,
+  CreateFileArgs,
   FileCollectionSlug,
   FindArgs,
   FindByIDArgs,
   FindResult,
   UpdateByIDArgs,
 } from '@lactalink/types';
+import { IAuthClient } from './AuthClient';
 
+/**
+ * Interface defining the contract for API client implementations.
+ * Provides methods for CRUD operations, authentication, header management,
+ * user preferences, and environment utilities.
+ */
 export interface IApiClient {
   /**
-   * Sets the authentication token for API requests.
-   * @param token - The token to set, or `null` to clear the token.
+   * Authentication client for handling user authentication and token management.
+   * May be undefined if not properly initialized.
    */
-  setToken(token?: string | null): void;
+  readonly auth: IAuthClient;
 
   /**
    * Sets the bypass token for API requests.
-   * @param bypassToken - The bypass token to set.
+   * This token can be used to bypass normal authentication mechanisms
+   * of api requests, useful for automation or testing purposes.
+   * @param bypassToken - Optional token to bypass normal authentication
+   *
+   * @example
+   * apiClient.setBypassToken(process.env.VERCEL_AUTOMATION_BYPASS_TOKEN);
    */
   setBypassToken(bypassToken?: string): void;
 
   /**
-   * Retrieves the current authentication token.
-   * @returns The current token, or `null` if no token is set.
-   */
-  getToken(): string | null | undefined;
-
-  /**
-   * Updates the headers used for API requests by merging with the existing headers.
-   * @param headers - The headers to merge.
+   * Updates the current headers by merging new headers with existing ones.
+   * Existing headers with the same key will be overwritten.
+   * @param headers - Headers to merge with existing headers
    */
   updateHeaders(headers: Headers): void;
 
   /**
-   * Replaces the headers used for API requests.
-   * @param headers - The new headers to set.
+   * Replaces all current headers with the provided headers.
+   * This will completely override the existing headers.
+   * @param headers - New headers to set
    */
   setHeaders(headers: Headers): void;
 
   /**
-   * Retrieves the current headers used for API requests.
-   * @returns The current headers.
+   * Retrieves the current headers.
+   * @returns The current Headers object
    */
   getHeaders(): Headers;
 
   /**
-   * Finds documents in a collection.
-   *
-   * This method performs a query on a specified collection and retrieves documents
-   * based on the provided arguments. It supports both paginated and non-paginated results.
-   *
-   * @template Slug - The slug of the collection being queried.
-   * @template IsPaginated - A boolean indicating whether the result is paginated.
-   *                          Defaults to `true`.
-   * @param args - The arguments for the find operation, including filters, pagination options,
-   *               and sorting preferences.
-   * @returns A promise resolving to the found documents. The result type depends on the
-   *          `IsPaginated` parameter:
-   *          - If `IsPaginated` is `true`, the result includes pagination metadata.
-   *          - If `IsPaginated` is `false`, the result is a simple array of documents.
-   *
-   * @example
-   * ```typescript
-   * // Example 1: Paginated query
-   * const result = await apiClient.find({
-   *   collection: 'users',
-   *   where: { role: { equals: 'admin' } },
-   *   limit: 10,
-   *   page: 1,
-   * });
-   * console.log(result.docs); // Array of user documents
-   * console.log(result.totalDocs); // Total number of documents
-   *
-   * // Example 2: Non-paginated query
-   * const result = await apiClient.find<'users', false>({
-   *   collection: 'users',
-   *   where: { role: { equals: 'admin' } },
-   *   paginated: false,
-   * });
-   * console.log(result); // Array of user documents
-   * ```
+   * Gets the current application environment.
+   * @returns The application environment string (e.g., 'expo', 'nextjs', 'node')
+   */
+  getAppEnvironment(): string;
+
+  /**
+   * Checks if the current environment is an Expo app.
+   * @returns True if running in Expo environment, false otherwise
+   */
+  isExpoApp(): boolean;
+
+  /**
+   * Checks if the current environment is a Next.js app.
+   * @returns True if running in Next.js environment, false otherwise
+   */
+  isNextJsApp(): boolean;
+
+  /**
+   * Finds documents in a collection with optional pagination and filtering.
+   * @template Slug - The collection slug type
+   * @template IsPaginated - Whether the results should be paginated
+   * @param args - Arguments for the find operation including collection, query params, filters, etc.
+   * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
    */
   find<Slug extends CollectionSlug, IsPaginated extends boolean = true>(
     args: FindArgs<Slug, IsPaginated>
   ): Promise<FindResult<Slug, IsPaginated>>;
 
   /**
-   * Finds a document by its ID in a collection.
-   * @param args - The arguments for the find-by-ID operation.
-   * @returns A promise resolving to the found document.
+   * Finds a single document by its ID in the specified collection.
+   * @template Slug - The collection slug type
+   * @param args - Arguments containing the collection slug and document ID
+   * @returns Promise resolving to the found document
+   * @throws Error if document is not found or access is denied
    */
-  findByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<CollectionBySlug<Slug>>;
+  findByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<Collection<Slug>>;
 
   /**
-   * Creates a new document in a collection.
-   * @param args - The arguments for the create operation.
-   * @returns A promise resolving to the created document.
+   * Creates a new document in the specified collection.
+   * @template Slug - The collection slug type
+   * @param args - Arguments containing the collection slug and document data
+   * @returns Promise resolving to the created document
+   * @throws Error if creation fails or validation errors occur
    */
-  create<Slug extends CollectionSlug>(args: CreateArgs<Slug>): Promise<CollectionBySlug<Slug>>;
+  create<Slug extends CollectionSlug>(args: CreateArgs<Slug>): Promise<Collection<Slug>>;
 
   /**
-   * Uploads a file to a collection.
-   * @param args - The arguments for the file upload operation.
-   * @returns A promise resolving to the uploaded file's metadata.
+   * Creates a new file document in the specified file collection.
+   * Handles file upload and document creation in one operation.
+   * @template Slug - The file collection slug type
+   * @param args - Arguments containing the collection slug and file data
+   * @returns Promise resolving to the created file document
+   * @throws Error if file upload or creation fails
    */
   createFile<Slug extends FileCollectionSlug>(
-    args: CreateArgs<Slug>
-  ): Promise<CollectionBySlug<Slug>>;
+    args: CreateFileArgs<Slug>
+  ): Promise<Collection<Slug>>;
 
   /**
-   * Updates a document by its ID in a collection.
-   * @param args - The arguments for the update-by-ID operation.
-   * @returns A promise resolving to the updated document.
+   * Updates an existing document by its ID in the specified collection.
+   * @template Slug - The collection slug type
+   * @param args - Arguments containing the collection slug, document ID, and update data
+   * @returns Promise resolving to the updated document
+   * @throws Error if document is not found, access is denied, or validation fails
    */
-  updateByID<Slug extends CollectionSlug>(
-    args: UpdateByIDArgs<Slug>
-  ): Promise<CollectionBySlug<Slug>>;
+  updateByID<Slug extends CollectionSlug>(args: UpdateByIDArgs<Slug>): Promise<Collection<Slug>>;
 
   /**
-   * Retrieves a user preference by its key.
-   * @param key - The key of the preference to retrieve.
-   * @returns A promise resolving to the preference value.
+   * Retrieves a user preference value by its key.
+   * @template TValue - The expected type of the preference value
+   * @param key - The preference key to retrieve
+   * @returns Promise resolving to the preference value
+   * @throws Error if the preference cannot be retrieved or doesn't exist
    */
   getPreference<TValue = unknown>(key: string): Promise<TValue>;
 
   /**
-   * Updates a user preference by its key.
-   * @param key - The key of the preference to update.
-   * @param value - The new value for the preference.
-   * @returns A promise resolving to the updated preference value.
+   * Updates a user preference with a new value.
+   * Creates the preference if it doesn't exist, updates if it does.
+   * @template TValue - The type of the preference value
+   * @param key - The preference key to update
+   * @param value - The new value to set for the preference
+   * @returns Promise resolving to the updated preference value
+   * @throws Error if the preference cannot be updated
    */
   updatePreference<TValue = unknown>(key: string, value: TValue): Promise<TValue>;
 }

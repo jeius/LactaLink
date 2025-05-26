@@ -1,38 +1,99 @@
+import { ApiClientConfig } from '@lactalink/types/interfaces';
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 import { ApiClient } from '../ApiClient';
+import { getAppEnvironment, isServerEnvironment } from '../utils/getEnvironment';
+
+function createApiClient(config: ApiClientConfig) {
+  const appEnv = getAppEnvironment();
+  const isServer = isServerEnvironment();
+
+  // Validate app environment
+  if (appEnv === 'unknown') {
+    throw new Error('App environment not configured. Set EXPO_APP=true or NEXT_APP=true');
+  }
+
+  // Validate environment context
+  if (appEnv === 'nextjs') {
+    // Next.js can run on both client and server
+    if (isServer) {
+      console.log('Creating server API client for Next.js');
+    } else {
+      console.log('Creating client API client for Next.js');
+    }
+  } else if (appEnv === 'expo') {
+    // Expo should always be client-side
+    if (isServer) {
+      throw new Error('Expo app detected in server environment - this should not happen');
+    }
+    console.log('Creating client API client for Expo');
+  }
+
+  return new ApiClient(config);
+}
 
 interface ApiClientStore {
   client: ApiClient | null;
+  serverClient: ApiClient | null;
   hasInitialized: boolean;
-  init: (url: string, token?: string | null, bypassToken?: string) => void;
+  isServer: boolean;
+  init: (config: ApiClientConfig) => void;
+  initServer: (config: ApiClientConfig) => void;
+  reset: () => void;
 }
 
-export const useApiClient = create<ApiClientStore>((set, get) => ({
-  client: null,
-  hasInitialized: false,
-  init: (url, token, bypassToken) => {
-    if (get().hasInitialized) {
-      console.warn('API client has already been initialized.');
-      return;
-    }
+export const useStoreApiClient = create<ApiClientStore>()(
+  subscribeWithSelector((set, get) => ({
+    client: null,
+    serverClient: null,
+    hasInitialized: false,
+    isServer: isServerEnvironment(),
 
-    const client = new ApiClient(url, token, bypassToken);
-    set({ client, hasInitialized: true });
-  },
-}));
+    init: (config: ApiClientConfig) => {
+      const state = get();
 
-const ERROR_MESSAGE = 'API client is not initialized. Call useApiClient.init() first.';
+      if (state.isServer) {
+        console.warn('Client init called on server. Use initServer() instead.');
+        return;
+      }
 
-export const getApiClient = (): ApiClient => {
-  const state = useApiClient.getState();
-  if (!state.client) {
-    throw new Error(ERROR_MESSAGE);
-  }
-  return state.client;
-};
+      if (state.hasInitialized && state.client) {
+        console.warn('Client API has already been initialized.');
+        return;
+      }
 
-export const useSafeApiClient = (): ApiClient => {
-  const client = useApiClient((s) => s.client);
-  if (!client) throw new Error(ERROR_MESSAGE);
-  return client;
-};
+      try {
+        const client = createApiClient(config);
+        set({ client, hasInitialized: true });
+      } catch (error) {
+        console.error('Failed to initialize client API:', error);
+        throw error;
+      }
+    },
+
+    initServer: (config: ApiClientConfig) => {
+      const state = get();
+
+      if (!state.isServer) {
+        console.warn('Server init called on client. Use init() instead.');
+        return;
+      }
+
+      try {
+        const serverClient = createApiClient(config);
+        set({ serverClient, hasInitialized: true });
+      } catch (error) {
+        console.error('Failed to initialize server API:', error);
+        throw error;
+      }
+    },
+
+    reset: () => {
+      set({
+        client: null,
+        serverClient: null,
+        hasInitialized: false,
+      });
+    },
+  }))
+);
