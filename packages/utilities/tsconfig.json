@@ -2,9 +2,8 @@
   "extends": "@lactalink/typescript-config",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext"
+    "rootDir": "src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", ".turbo"]
 }

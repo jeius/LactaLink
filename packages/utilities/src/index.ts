@@ -5,7 +5,4 @@ export * from './delay';
 export * from './errors';
 export * from './extractID';
 export * from './formatters';
-export * from './getters';
-export * from './hooks';
-export * from './isEmailTaken';
 export * from './mergeHeaders';

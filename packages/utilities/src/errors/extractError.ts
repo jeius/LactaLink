@@ -1,3 +1,5 @@
+import { AuthError, isAuthApiError, isAuthError } from '@supabase/supabase-js';
+
 /**
  * Extracts the error message from an error object or array of errors.
  *
@@ -31,11 +33,11 @@ export function extractErrorMessage<T = unknown>(error: T): string {
       } else if (typeof err === 'string') {
         return err;
       }
-      return 'Unknown error';
+      return 'Unknown error.';
     });
     return errorMessages.join(', ');
   }
-  return 'An unexpected error occurred.';
+  return 'Unknown error.';
 }
 
 /**
@@ -57,9 +59,19 @@ export function extractErrorMessage<T = unknown>(error: T): string {
  * const code = extractErrorCode(unknownError); // 'unknown_error'
  * ```
  */
-export function extractErrorCode<T = unknown>(error: T): string {
-  if (error && typeof error === 'object' && 'code' in error)
-    return String((error as { code: unknown }).code);
+export function extractAuthErrorCode<T = unknown>(error: T): AuthError['code'] {
+  if (isAuthError(error)) {
+    return error.code || 'unknown_error';
+  }
+
+  if (isAuthApiError(error)) {
+    return error.code || 'unknown_error';
+  }
+
+  // if (error && typeof error === 'object' && 'code' in error) {
+  //   return String((error as { code: unknown }).code);
+  // }
+
   return 'unknown_error';
 }
 
