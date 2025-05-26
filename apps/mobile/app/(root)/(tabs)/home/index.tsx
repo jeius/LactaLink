@@ -2,7 +2,7 @@ import { Protected } from '@/components/protected';
 import ThemeToggler from '@/components/theme-toggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { LogOutIcon } from 'lucide-react-native';
 
@@ -11,7 +11,7 @@ import * as crypto from 'expo-crypto';
 import React from 'react';
 
 const Home = () => {
-  const { signOut } = useSession();
+  const { signOut } = useAuth();
   const toast = useAppToast();
 
   return (

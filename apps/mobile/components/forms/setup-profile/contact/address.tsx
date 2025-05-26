@@ -1,4 +1,4 @@
-import { ControlledInput } from '@/components/controlled-input';
+import { FormField } from '@/components/form-field';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
@@ -104,7 +104,7 @@ export default function Addresses() {
             >
               <Card>
                 <VStack space="lg">
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.name`}
                     inputType="text"
                     textInputVariant="underlined"
@@ -113,7 +113,7 @@ export default function Addresses() {
                     helperText="Name of your address."
                   />
 
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.province`}
                     label="Province"
                     inputType="combobox"
@@ -125,7 +125,7 @@ export default function Addresses() {
                     }}
                   />
 
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.cityMunicipality`}
                     label="City or Municipality"
                     inputType="combobox"
@@ -140,7 +140,7 @@ export default function Addresses() {
                     }}
                   />
 
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.barangay`}
                     label="Barangay"
                     inputType="combobox"
@@ -157,7 +157,7 @@ export default function Addresses() {
                     }}
                   />
 
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.street`}
                     label="Street Address"
                     inputType="text"
@@ -167,7 +167,7 @@ export default function Addresses() {
                     textContentType="fullStreetAddress"
                   />
 
-                  <ControlledInput
+                  <FormField
                     name={`addresses.${i}.zipCode`}
                     label="Zip Code"
                     inputType="text"

@@ -1,6 +1,8 @@
 import GoogleIcon from '@/assets/icons/google.svg';
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
+import { SIGN_IN_WITH_OAUTH_TOAST_ID } from '@/lib/constants';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
@@ -15,38 +17,50 @@ export default function GoogleButtonWrapper({
   disabled,
   ...props
 }: ViewProps & { disabled?: boolean }) {
-  const { googleAuth } = useSession();
+  const { signInWithGoogle } = useAuth();
   const toast = useAppToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleGoogleAuth() {
     setIsSubmitting(true);
     toast.show({
-      id: 'google-auth',
+      id: SIGN_IN_WITH_OAUTH_TOAST_ID,
       type: 'loading',
       message: 'Authenticating with google...',
     });
 
-    const authRes = await googleAuth().finally(() => {
-      setIsSubmitting(false);
-    });
+    try {
+      const user = await signInWithGoogle();
 
-    if ('error' in authRes) {
+      let name = user.email;
+
+      if (user.profile) {
+        const profile = user.profile.value;
+        if (typeof profile === 'object') {
+          if ('name' in profile) {
+            name = profile.name;
+          } else {
+            name = profile.givenName;
+          }
+        }
+      }
+
       toast.show({
-        id: 'google-auth',
-        type: 'error',
-        message: authRes.error.message,
+        id: SIGN_IN_WITH_OAUTH_TOAST_ID,
+        message: `👋 Welcome! ${name}`,
+        type: 'success',
       });
-      return;
+
+      router.replace('/home');
+    } catch (error) {
+      toast.show({
+        id: SIGN_IN_WITH_OAUTH_TOAST_ID,
+        type: 'error',
+        message: extractErrorMessage(error),
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.show({
-      id: 'google-auth',
-      type: 'success',
-      message: 'Welcome! 👋',
-    });
-
-    router.replace('/home');
   }
 
   return (

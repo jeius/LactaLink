@@ -42,7 +42,7 @@ type ComboboxProps<T extends CollectionSlug> = Omit<
   'value' | 'onChange' | 'placeholder'
 >;
 
-export type ControlledInputProps<
+export type FormFieldProps<
   T extends FieldValues,
   K extends CollectionSlug = CollectionSlug,
 > = TInputField & {
@@ -109,9 +109,11 @@ export type ControlledInputProps<
  * textarea, date, options-cards, and combobox. It handles validation, error display,
  * and form state management seamlessly.
  *
+ * NOTE: This component should be used within a `FormProvider` context from `react-hook-form`.
+ *
  * @example
  * ```tsx
- * <ControlledInput
+ * <FormField
  *   name="email"
  *   label="Email Address"
  *   inputType="text"
@@ -119,7 +121,7 @@ export type ControlledInputProps<
  * />
  * ```
  */
-export function ControlledInput<T extends FieldValues, K extends CollectionSlug = CollectionSlug>({
+export function FormField<T extends FieldValues, K extends CollectionSlug = CollectionSlug>({
   inputIcon,
   errorIcon = AlertCircleIcon,
   name,
@@ -132,14 +134,18 @@ export function ControlledInput<T extends FieldValues, K extends CollectionSlug 
   options,
   textInputVariant,
   ...props
-}: ControlledInputProps<T, K>) {
-  const { trigger, getFieldState } = useFormContext<T>();
+}: FormFieldProps<T, K>) {
+  const {
+    trigger,
+    getFieldState,
+    formState: { isSubmitting },
+  } = useFormContext<T>();
   const fieldError = getFieldState(name).error;
 
   const [showPass, setShowPass] = useState(false);
 
   return (
-    <FormControl isInvalid={!!fieldError}>
+    <FormControl isInvalid={!!fieldError} isDisabled={isSubmitting}>
       {label && (
         <FormControlLabel>
           <FormControlLabelText>{label}</FormControlLabelText>

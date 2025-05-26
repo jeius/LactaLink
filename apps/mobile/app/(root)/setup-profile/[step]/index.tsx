@@ -11,7 +11,7 @@ import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { useAppToast } from '@/hooks/useAppToast';
@@ -44,8 +44,8 @@ const TOAST_ID = 'setup-profile';
 type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
-  const { user, refetchSession } = useSession();
-  const client = useApiClient().client;
+  const { user, refetchSession } = useAuth();
+  const client = useApiClient();
   const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);

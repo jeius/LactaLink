@@ -1,4 +1,4 @@
-import { ControlledInput, ControlledInputProps } from '@/components/controlled-input';
+import { FormField, FormFieldProps } from '@/components/form-field';
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileType } from '@/lib/types';
@@ -18,7 +18,7 @@ export default function ProfileDetails() {
 
   const FormMap: Record<
     ProfileType,
-    ControlledInputProps<HospitalSchema | MilkBankSchema | IndividualSchema>[]
+    FormFieldProps<HospitalSchema | MilkBankSchema | IndividualSchema>[]
   > = {
     HOSPITAL: [
       {
@@ -163,7 +163,7 @@ export default function ProfileDetails() {
       <Card>
         <VStack space="lg">
           {FormMap[profileType].map((props, i) => (
-            <ControlledInput key={i} {...props} />
+            <FormField key={i} {...props} />
           ))}
         </VStack>
       </Card>

@@ -2,182 +2,142 @@
 
 import GoogleButtonWrapper from '@/components/google-button-wrapper';
 import { Button, ButtonText } from '@/components/ui/button';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types';
-import { Controller, useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { FormField } from '@/components/form-field';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
-import { supabase } from '@/lib/supabase';
+import { SIGN_IN_TOAST_ID } from '@/lib/constants';
 import { VerifyOTPSearchParams } from '@/lib/types';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
-import { AlertCircleIcon, EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { LockIcon, MailIcon } from 'lucide-react-native';
+import React from 'react';
 
 export default function SignInForm() {
-  const [showPass, setShowPass] = useState(false);
-  const { signIn } = useSession();
+  const { signIn, sendVerification } = useAuth();
   const toast = useAppToast();
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm<SignInSchema>({
+  const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
   });
 
+  const isSubmitting = form.formState.isSubmitting;
+
   async function onSubmit(formData: SignInSchema) {
     toast.show({
-      id: 'sign-in',
+      id: SIGN_IN_TOAST_ID,
       message: 'Signing in...',
       type: 'loading',
     });
 
-    const res = await signIn(formData);
+    try {
+      const user = await signIn(formData);
+      let name = user.email;
 
-    if ('error' in res) {
-      if (res.error.code === 'email_not_confirmed') {
+      if (user.profile) {
+        const profile = user.profile.value;
+        if (typeof profile === 'object') {
+          if ('name' in profile) {
+            name = profile.name;
+          } else {
+            name = profile.givenName;
+          }
+        }
+      }
+
+      toast.show({
+        id: SIGN_IN_TOAST_ID,
+        message: `🎉 Welcome back! ${name}`,
+        type: 'success',
+      });
+      router.replace('/home');
+    } catch (error) {
+      const code = extractAuthErrorCode(error);
+      if (code === 'email_not_confirmed') {
         const type: VerifyOtpParams['type'] = 'signup';
         const email = formData.email;
 
-        await supabase.auth.resend({ email, type });
+        try {
+          await sendVerification({ email, type });
 
-        toast.close('sign-in');
-        const params: VerifyOTPSearchParams = { email, type };
-        router.push({ pathname: '/auth/verify-otp', params });
-        return;
+          toast.close(SIGN_IN_TOAST_ID);
+          const params: VerifyOTPSearchParams = { email, type };
+          router.push({ pathname: '/auth/verify-otp', params });
+        } catch (err) {
+          toast.show({
+            id: SIGN_IN_TOAST_ID,
+            message: extractErrorMessage(err),
+            type: 'error',
+          });
+        }
       }
-      toast.show({
-        id: 'sign-in',
-        message: res.error.message,
-        type: 'error',
-      });
-      return;
     }
-
-    toast.show({
-      id: 'sign-in',
-      message: '🎉 Welcome back!',
-      type: 'success',
-    });
-    router.replace('/home');
   }
 
   return (
-    <VStack space="lg">
-      <FormControl isInvalid={'email' in errors} isDisabled={isSubmitting}>
-        <FormControlLabel className="mb-2">
-          <FormControlLabelText>Email</FormControlLabelText>
-        </FormControlLabel>
-
-        <Controller
-          control={control}
+    <FormProvider {...form}>
+      <VStack space="lg">
+        <FormField
           name="email"
-          render={({ field }) => (
-            <Input variant="outline" size="md" className="h-12 rounded-xl">
-              <InputIcon as={MailIcon} className="text-primary-500 ml-3" />
-              <InputField
-                type="text"
-                placeholder="Enter email address"
-                autoCorrect={false}
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                value={field.value}
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-              />
-            </Input>
-          )}
+          label="Email"
+          inputType="text"
+          placeholder="Enter email address"
+          autoCorrect={false}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          inputIcon={MailIcon}
         />
 
-        <FormControlError>
-          <FormControlErrorIcon as={AlertCircleIcon} size="sm" />
-          <FormControlErrorText>{errors.email?.message}</FormControlErrorText>
-        </FormControlError>
-      </FormControl>
-
-      <VStack space="md">
-        <FormControl isInvalid={'password' in errors} isDisabled={isSubmitting}>
-          <FormControlLabel className="mb-2">
-            <FormControlLabelText>Password</FormControlLabelText>
-          </FormControlLabel>
-
-          <Controller
-            control={control}
-            rules={{ required: true }}
+        <VStack space="md">
+          <FormField
             name="password"
-            render={({ field }) => (
-              <Input variant="outline" size="md" className="h-12 rounded-xl">
-                <InputIcon as={LockIcon} className="text-primary-500 ml-3" />
-                <InputField
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  autoComplete="current-password"
-                  value={field.value}
-                  onBlur={field.onBlur}
-                  onChangeText={field.onChange}
-                />
-                {field.value && (
-                  <InputSlot className="pr-3" onPress={() => setShowPass(!showPass)}>
-                    <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
-                  </InputSlot>
-                )}
-              </Input>
-            )}
+            label="Password"
+            inputType="password"
+            placeholder="Enter your password"
+            autoCorrect={false}
+            autoCapitalize="none"
+            autoComplete="current-password"
+            inputIcon={LockIcon}
           />
 
-          <FormControlError>
-            <FormControlErrorIcon as={AlertCircleIcon} size="sm" />
-            <FormControlErrorText>{errors.password?.message}</FormControlErrorText>
-          </FormControlError>
-        </FormControl>
+          <HStack>
+            <Button
+              variant="link"
+              size="sm"
+              action="secondary"
+              className="justify-start"
+              isDisabled={isSubmitting}
+              onPress={() => {
+                router.push('/auth/forgot-password');
+              }}
+            >
+              <ButtonText className="text-typography-700 font-JakartaMedium w-min">
+                Forgot Password?
+              </ButtonText>
+            </Button>
+          </HStack>
+        </VStack>
 
-        <HStack>
+        <GoogleButtonWrapper disabled={isSubmitting} className="mt-5">
           <Button
-            variant="link"
-            size="sm"
-            action="secondary"
-            className="justify-start"
+            size="xl"
             isDisabled={isSubmitting}
-            onPress={() => {
-              router.push('/auth/forgot-password');
-            }}
+            className="rounded-xl"
+            onPress={form.handleSubmit(onSubmit)}
           >
-            <ButtonText className="text-typography-700 font-JakartaMedium w-min">
-              Forgot Password?
-            </ButtonText>
+            <ButtonText>{isSubmitting ? 'Signing in...' : 'Sign In'}</ButtonText>
           </Button>
-        </HStack>
+        </GoogleButtonWrapper>
       </VStack>
-
-      <GoogleButtonWrapper disabled={isSubmitting} className="mt-5">
-        <Button
-          size="xl"
-          isDisabled={isSubmitting}
-          className="rounded-xl"
-          onPress={handleSubmit(onSubmit)}
-        >
-          <ButtonText>Sign In</ButtonText>
-        </Button>
-      </GoogleButtonWrapper>
-    </VStack>
+    </FormProvider>
   );
 }

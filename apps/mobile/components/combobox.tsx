@@ -1,4 +1,4 @@
-import { CollectionSlug, Config, Where } from '@lactalink/types';
+import { Collection, CollectionSlug, Where } from '@lactalink/types';
 import { getChunks, useDebounce } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -16,7 +16,7 @@ import {
   SelectPortal,
   SelectTrigger,
 } from '@/components/ui/select';
-import { useSafeApiClient } from '@lactalink/api';
+import { useApiClient } from '@lactalink/api';
 import { ChevronDownIcon, LucideSearchX, XIcon } from 'lucide-react-native';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Box } from './ui/box';
@@ -35,7 +35,7 @@ export type InfiniteScrollComboBoxProps<T extends CollectionSlug> = {
   limit?: number;
   placeholder?: string;
   where?: Where;
-  searchPath: keyof Config['collections'][T];
+  searchPath: keyof Collection<T>;
   searchPlaceholder?: string;
   isDisabled?: boolean;
 };
@@ -56,7 +56,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug>({
   searchPlaceholder = 'Search here...',
   isDisabled: disabled,
 }: InfiniteScrollComboBoxProps<T>) {
-  const apiClient = useSafeApiClient();
+  const apiClient = useApiClient();
   const inputRef = useRef<TextInput>(null);
   const [searchDefault, setSearchDefault] = useState('');
 

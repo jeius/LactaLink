@@ -1,14 +1,11 @@
-import { getAuth } from '@/auth';
 import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
-import { useApiClient } from '@lactalink/api';
-import { useQuery } from '@tanstack/react-query';
 
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
-import { QUERY_KEYS } from '@/lib/constants';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useTheme } from './providers/theme-provider';
+import SafeArea from './safe-area';
 import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 
@@ -20,54 +17,33 @@ type Props = {
 };
 
 export function AppInitializer({ children }: Props) {
-  const client = useApiClient((s) => s.client);
-  const clientInitialized = useApiClient((s) => s.hasInitialized);
-
   useGoogleSignInConfig();
-
   const { isLoading: isThemeLoading } = useTheme();
-  const {
-    isPending: isAuthLoading,
-    error,
-    data: authResult,
-  } = useQuery({
-    queryKey: QUERY_KEYS.AUTH.ALL,
-    queryFn: getAuth,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
-    retry: 3,
-    refetchOnMount: false,
-  });
+  const { isLoading: isAuthLoading, error } = useAuth();
 
-  const isAppReady = clientInitialized && !isThemeLoading && !isAuthLoading;
+  const isAppReady = !isThemeLoading && !isAuthLoading;
 
+  // Hide the splash screen once the app is ready
   useEffect(() => {
     if (isAppReady) {
       SplashScreen.hideAsync();
     }
   }, [isAppReady]);
 
-  useEffect(() => {
-    if (authResult && 'data' in authResult) {
-      const { token } = authResult.data;
-      client?.setToken(token);
-    }
-  }, [authResult, client]);
-
   if (error) {
-    console.log(error);
+    console.warn(error);
     return (
-      <SafeAreaView className="bg-background-50 flex-1 items-center justify-center">
+      <SafeArea>
         <Text size="sm">{error.message}</Text>
-      </SafeAreaView>
+      </SafeArea>
     );
   }
 
   if (!isAppReady) {
     return (
-      <SafeAreaView className="bg-background-50 flex-1 items-center justify-center">
+      <SafeArea>
         <Spinner size="large" />
-      </SafeAreaView>
+      </SafeArea>
     );
   }
 

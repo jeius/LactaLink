@@ -4,7 +4,7 @@ import * as crypto from 'expo-crypto';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { MAX_AVATAR_SIZE } from '@/lib/constants';
 import { AvatarSchema, SetupProfileSchema } from '@lactalink/types';
@@ -49,7 +49,7 @@ export default function AvatarUpload({
   const [isModalOpen, showModal] = useState(false);
 
   const toast = useAppToast();
-  const { user } = useSession();
+  const { user } = useAuth();
   const lastImageUri = useRef<string | null>(value?.url || null);
 
   const localDir = FileSystem.documentDirectory!;
@@ -128,7 +128,7 @@ export default function AvatarUpload({
       mediaTypes: 'images',
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets[0]) {
       showModal(false);
       const avatar = await transformImage(result.assets[0]);
       if (avatar) onChange?.(avatar);
@@ -144,7 +144,7 @@ export default function AvatarUpload({
       cameraType: ImagePicker.CameraType.front,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets[0]) {
       showModal(false);
       const avatar = await transformImage(result.assets[0]);
       if (avatar) onChange?.(avatar);

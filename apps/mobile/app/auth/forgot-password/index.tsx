@@ -1,3 +1,4 @@
+import { FormField } from '@/components/form-field';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
 import SafeArea from '@/components/safe-area';
@@ -5,29 +6,24 @@ import SafeArea from '@/components/safe-area';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-} from '@/components/ui/form-control';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Image } from '@/components/ui/image';
-import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
+import { RESET_PASSWORD_TOAST_ID } from '@/lib/constants';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { supabase } from '@/lib/supabase';
 import { VerifyOTPSearchParams } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { router } from 'expo-router';
-import { AlertCircleIcon, ChevronLeftIcon, MailIcon } from 'lucide-react-native';
+import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { Dimensions } from 'react-native';
 import { z } from 'zod';
 
@@ -37,6 +33,7 @@ type Schema = z.infer<typeof schema>;
 export default function ForgotPassword() {
   const { height } = Dimensions.get('window');
   const toast = useAppToast();
+  const { resetPasswordForEmail } = useAuth();
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -44,35 +41,33 @@ export default function ForgotPassword() {
     (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
-  const {
-    handleSubmit,
-    control,
-    formState: { isSubmitting, errors },
-  } = useForm<Schema>({
+  const form = useForm<Schema>({
     resolver: zodResolver(schema),
     defaultValues: { email: '' },
   });
 
+  const isSubmitting = form.formState.isSubmitting;
+
   async function onSubmit({ email }: Schema) {
     toast.show({
-      id: 'forgot-password',
+      id: RESET_PASSWORD_TOAST_ID,
       message: 'Requesting reset...',
       type: 'loading',
     });
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    try {
+      await resetPasswordForEmail(email);
+      toast.close(RESET_PASSWORD_TOAST_ID);
 
-    if (error) {
+      const params: VerifyOTPSearchParams = { email, type: 'recovery' };
+      router.push({ pathname: '/auth/verify-otp', params });
+    } catch (error) {
       toast.show({
-        id: 'forgot-password',
-        message: error.message,
+        id: RESET_PASSWORD_TOAST_ID,
+        message: extractErrorMessage(error),
         type: 'error',
       });
-      return;
     }
-
-    const params: VerifyOTPSearchParams = { email, type: 'recovery' };
-    router.push({ pathname: '/auth/verify-otp', params });
   }
 
   return (
@@ -105,44 +100,25 @@ export default function ForgotPassword() {
             </VStack>
 
             <VStack space="3xl" className="p-5 pt-0">
-              <FormControl isInvalid={!!errors['email']}>
-                <Controller
-                  control={control}
+              <FormProvider {...form}>
+                <FormField
                   name="email"
-                  render={({ field, field: { disabled } }) => (
-                    <Input
-                      isDisabled={disabled}
-                      size="md"
-                      variant="underlined"
-                      className="gap-2 rounded-xl px-2"
-                    >
-                      <InputIcon as={MailIcon} className="text-primary-500" />
-                      <InputField
-                        type="text"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        placeholder="name@example.com"
-                        keyboardType="email-address"
-                        onChangeText={field.onChange}
-                        value={field.value}
-                        onBlur={field.onBlur}
-                      />
-                    </Input>
-                  )}
+                  inputType="text"
+                  variant="underlined"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  placeholder="name@example.com"
+                  keyboardType="email-address"
+                  inputIcon={MailIcon}
                 />
-
-                <FormControlError>
-                  <FormControlErrorIcon as={AlertCircleIcon} size="sm" />
-                  <FormControlErrorText size="sm">{errors['email']?.message}</FormControlErrorText>
-                </FormControlError>
-              </FormControl>
+              </FormProvider>
 
               <Button
                 isDisabled={isSubmitting}
                 size="lg"
                 variant="solid"
                 action="primary"
-                onPress={handleSubmit(onSubmit)}
+                onPress={form.handleSubmit(onSubmit)}
               >
                 <ButtonText>{isSubmitting ? 'Requesting...' : 'Request Reset'}</ButtonText>
               </Button>

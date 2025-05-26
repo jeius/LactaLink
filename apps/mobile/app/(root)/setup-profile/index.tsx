@@ -4,7 +4,7 @@ import { VStack } from '@/components/ui/vstack';
 import SafeArea from '@/components/safe-area';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
@@ -15,7 +15,7 @@ import React from 'react';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Setup() {
-  const { signOut } = useSession();
+  const { signOut } = useAuth();
   const { nextPage } = usePagination(STEPS);
 
   async function handleSignOut() {

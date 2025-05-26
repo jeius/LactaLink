@@ -2,6 +2,7 @@
   "extends": ["@lactalink/typescript-config/react-native", "expo/tsconfig.base"],
   "compilerOptions": {
     "strict": true,
+    "rootDir": ".",
     "paths": {
       "@/*": ["./*"],
       "tailwind.config": ["./tailwind.config.js"],

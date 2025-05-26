@@ -4,7 +4,7 @@ import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
 import { useDebouncedCallback } from '@lactalink/utilities';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
-import { useSession } from '../auth/useSession';
+import { useAuth } from '../auth/useSession';
 
 const storageKeyPrefix = 'setup-profile-form';
 
@@ -16,7 +16,7 @@ function getInitialData(id?: string): SetupProfileSchema | undefined {
 }
 
 export function useSetupForm() {
-  const { user } = useSession();
+  const { user } = useAuth();
   const initialData = getInitialData(user?.id);
 
   // Create form instance

@@ -3,19 +3,18 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useSession } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
-import { supabase } from '@/lib/supabase';
+import { OTP_TOAST_ID } from '@/lib/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema } from '@lactalink/types';
-import { AuthResponse, VerifyOtpParams } from '@supabase/supabase-js';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { router } from 'expo-router';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { OtpInput } from 'react-native-otp-entry';
-
-type OTPFormProps = { email?: string; phone?: string; type: VerifyOtpParams['type'] };
+import { OTPFormProps } from './type';
 
 export default function OTPForm({ email, type, phone }: OTPFormProps) {
   const {
@@ -29,50 +28,44 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
 
   const toast = useAppToast();
   const { theme } = useTheme();
-  const { refetchSession } = useSession();
+  const { verifyOtp } = useAuth();
   const textColor = getHexColor(theme, 'typography', 900);
   const focusColor = getHexColor(theme, 'indicator', 'primary');
   const outlineColor = getHexColor(theme, 'outline', 200);
 
   async function onSubmit({ otp }: OtpSchema) {
     toast.show({
-      id: 'otp',
+      id: OTP_TOAST_ID,
       message: 'Verifying code...',
       type: 'loading',
     });
 
-    let authResponse: AuthResponse | null = null;
-
-    if (type === 'sms' || type === 'phone_change') {
-      if (phone) {
-        authResponse = await supabase.auth.verifyOtp({ phone, type, token: otp });
+    try {
+      if (type === 'sms' || type === 'phone_change') {
+        if (phone) {
+          await verifyOtp({ phone, type, token: otp });
+        }
+      } else {
+        if (email) {
+          await verifyOtp({ email, type, token: otp });
+        }
       }
-    } else {
-      if (email) {
-        authResponse = await supabase.auth.verifyOtp({ email, type, token: otp });
+
+      toast.closeAll();
+
+      if (type === 'recovery') {
+        router.replace('/auth/reset-password');
+      } else if (type === 'signup') {
+        router.replace('/setup-profile');
+      } else {
+        router.replace('/home');
       }
-    }
-
-    if (!authResponse) return;
-
-    if (authResponse.error) {
+    } catch (error) {
       toast.show({
-        id: 'otp',
+        id: OTP_TOAST_ID,
         type: 'error',
-        message: authResponse.error.message,
+        message: extractErrorMessage(error),
       });
-      return;
-    }
-
-    await refetchSession();
-    toast.closeAll();
-
-    if (type === 'recovery') {
-      router.replace('/auth/reset-password');
-    } else if (type === 'signup') {
-      router.replace('/setup-profile');
-    } else {
-      router.replace('/home');
     }
   }
 
