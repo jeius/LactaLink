@@ -3,6 +3,6 @@ export * from './auth';
 export * from './batching';
 export * from './delay';
 export * from './errors';
-export * from './extractID';
+export * from './extractors';
 export * from './formatters';
 export * from './mergeHeaders';
