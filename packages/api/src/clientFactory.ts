@@ -50,6 +50,7 @@ const SSR_ERROR_MESSAGE = 'Cannot use client API methods during SSR. Use server 
  *   apiUrl: 'https://api.example.com',
  *   supabase: supabaseClient,
  *   bypassToken: 'optional-bypass-token'
+ *   environment: 'nextjs' // or 'expo' for Expo apps
  * });
  * ```
  */
@@ -68,6 +69,7 @@ export function initApiClient(config: ApiClientConfig): void {
  *   apiUrl: 'https://api.example.com',
  *   supabase: supabaseServerClient,
  *   bypassToken: 'server-bypass-token'
+ *   environment: 'nextjs' // or 'expo' for Expo apps
  * });
  * ```
  */

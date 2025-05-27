@@ -68,9 +68,9 @@ export const useStoreApiClient = create<ApiClientStore>()(
     },
 
     initServer: (config: ApiClientConfig) => {
-      const state = get();
+      const isServer = isServerEnvironment(config.environment);
 
-      if (!state.isServer) {
+      if (isServer) {
         console.warn('Server init called on client. Use init() instead.');
         return;
       }
@@ -80,7 +80,7 @@ export const useStoreApiClient = create<ApiClientStore>()(
         set({
           serverClient,
           hasInitialized: true,
-          isServer: isServerEnvironment(config.environment),
+          isServer,
         });
       } catch (error) {
         console.error('Failed to initialize server API:', error);

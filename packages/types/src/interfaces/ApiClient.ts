@@ -26,9 +26,10 @@ export interface IApiClient {
 
   /**
    * Supabase client instance for database operations.
-   * This client is used for direct database interactions and may be undefined
+   * This client is used for direct database interactions.
+   * @returns SupabaseClient instance
    */
-  readonly sb: SupabaseClient;
+  getSupabaseClient(): SupabaseClient;
 
   /**
    * Sets the bypass token for API requests.

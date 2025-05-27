@@ -28,20 +28,21 @@ export class ApiClient implements IApiClient {
   private bypassToken?: string;
   private headers: Headers;
   private appEnvironment: ApiClientConfig['environment'];
+  private supabaseClient: SupabaseClient | (() => SupabaseClient);
   public readonly auth: AuthClient;
-  public readonly sb: SupabaseClient;
 
-  constructor({ apiUrl: url, supabase, bypassToken, environment }: ApiClientConfig) {
-    const headers = new Headers({
-      'Content-Type': 'application/json',
-    });
-    this.url = url;
-    this.bypassToken = bypassToken;
-    this.headers = headers;
-    this.appEnvironment = environment;
-    this.sb = supabase;
+  constructor(config: ApiClientConfig) {
+    this.url = config.apiUrl;
+    this.bypassToken = config.bypassToken;
+    this.headers = new Headers({ 'Content-Type': 'application/json' });
+    this.appEnvironment = config.environment;
+    this.supabaseClient = config.supabase;
 
-    this.auth = new AuthClient(this._getBaseFetchOptions, supabase, environment);
+    this.auth = new AuthClient(
+      this._getBaseFetchOptions,
+      this.getSupabaseClient,
+      config.environment
+    );
   }
 
   // PRIVATE METHODS (arrow functions to preserve 'this' context)
@@ -102,6 +103,16 @@ export class ApiClient implements IApiClient {
   };
 
   // PUBLIC METHODS (arrow functions to preserve 'this' context)
+
+  getSupabaseClient = (): SupabaseClient => {
+    if (typeof this.supabaseClient === 'function') {
+      // Create fresh client for each request (perfect for Next.js SSR)
+      return this.supabaseClient();
+    } else {
+      // Use static client (good for Expo)
+      return this.supabaseClient;
+    }
+  };
 
   setBypassToken = (bypassToken?: string): void => {
     this.bypassToken = bypassToken;

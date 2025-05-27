@@ -20,9 +20,10 @@ import { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/Supaba
 export interface IAuthClient {
   /**
    * Supabase authentication client instance.
-   * May be undefined if not properly initialized.
+   * This is used for direct Supabase authentication operations.
+   * @returns SupabaseAuthClient instance
    */
-  readonly sbAuth?: SupabaseAuthClient;
+  readonly getSbAuth: () => SupabaseAuthClient;
 
   /**
    * Authenticates a user with email and password credentials.

@@ -22,58 +22,67 @@ import { isServerEnvironment } from '../utils/getEnvironment';
 type BaseApiFetchArgsWithoutToken = Omit<BaseApiFetchArgs, 'token'>;
 
 export class AuthClient implements IAuthClient {
-  public readonly sbAuth?: SupabaseAuthClient;
-  private readonly sbClient: SupabaseClient;
   private baseFetchOptions: () => BaseApiFetchArgsWithoutToken;
+  private getSbClient: () => SupabaseClient;
   private isServer: boolean;
   private token: string | null = null;
 
+  public readonly getSbAuth: () => SupabaseAuthClient;
+
   constructor(
     baseFetchOptions: () => BaseApiFetchArgsWithoutToken,
-    supabaseClient: SupabaseClient,
+    getSupabaseClient: () => SupabaseClient,
     environment: ApiClientConfig['environment']
   ) {
     this.baseFetchOptions = baseFetchOptions;
-    this.sbAuth = supabaseClient.auth;
-    this.sbClient = supabaseClient;
+    this.getSbClient = getSupabaseClient;
+    this.getSbAuth = () => getSupabaseClient().auth;
     this.isServer = isServerEnvironment(environment);
 
-    // Initialize token from current session - MOVE THIS TO THE END
     this._initializeToken();
   }
 
-  // Move all arrow functions BEFORE they're used in constructor
-  // Validation helpers
-  private _ensureSupabaseAvailable = (operation: string): SupabaseAuthClient => {
-    if (!this.sbAuth) {
+  // ✅ Always get fresh Supabase client with current cookies
+  private _ensureSbAuthAvailable = (operation: string): SupabaseAuthClient => {
+    const client = this.getSbClient(); // Fresh client every time!
+    if (!client?.auth) {
       throw new Error(`Supabase client not available for ${operation}`);
     }
-    return this.sbAuth;
+    return client.auth;
   };
 
-  private _ensureClientOperation = (operation: string): SupabaseAuthClient => {
-    if (this.isServer) {
-      throw new Error(`${operation} not available on server`);
+  // Ensure Supabase client is available for client-side operations only
+  private _ensureClientSideOperation = (operation: string): SupabaseAuthClient => {
+    const client = this.getSbClient();
+    if (this.isServer && !client) {
+      throw new Error(`Supabase client not available for ${operation} on server`);
     }
-
-    if (!this.sbAuth) {
+    if (!client) {
       throw new Error(`Supabase client not available for ${operation}`);
     }
-    return this.sbAuth;
+    return client.auth;
   };
 
-  private _setToken = (token: string | null): void => {
-    this.token = token;
+  private _getSbDatabaseClient = () => {
+    const client = this.getSbClient();
+    if (!client) {
+      throw new Error('Supabase client not available for database operations');
+    }
+    return client;
   };
 
   // Token management
   private _getCurrentToken = async (): Promise<string | null> => {
-    const supabase = this._ensureSupabaseAvailable('_getCurrentToken');
+    const sb = this._ensureSbAuthAvailable('_getCurrentToken');
 
-    const { data, error } = await supabase.getSession();
+    const { data, error } = await sb.getSession();
     if (error) throw error;
 
     return data.session?.access_token || null;
+  };
+
+  private _setToken = (token: string | null): void => {
+    this.token = token;
   };
 
   private _syncToken = async (): Promise<void> => {
@@ -81,7 +90,6 @@ export class AuthClient implements IAuthClient {
     this._setToken(token);
   };
 
-  // Initialization - move to end since it uses other methods
   private _initializeToken = async (): Promise<void> => {
     try {
       const token = await this._getCurrentToken();
@@ -136,24 +144,31 @@ export class AuthClient implements IAuthClient {
 
   // Check if email is already registered
   private _isEmailRegistered = async (email: string): Promise<boolean> => {
-    const { count, error } = await this.sbClient
+    const sb = this._getSbDatabaseClient();
+
+    const { count, error } = await sb
       .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('email', email);
 
-    if (error) throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
+    if (error) {
+      throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
+    }
 
     return (count ?? 0) > 0;
   };
 
   // Check if phone is already registered
   private _isPhoneRegistered = async (phone: string): Promise<boolean> => {
-    const { count, error } = await this.sbClient
+    const sb = this._getSbDatabaseClient();
+    const { count, error } = await sb
       .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('phone', phone);
 
-    if (error) throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
+    if (error) {
+      throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
+    }
 
     return (count ?? 0) > 0;
   };
@@ -161,15 +176,15 @@ export class AuthClient implements IAuthClient {
   // PUBLIC METHODS (keep at bottom)
 
   signIn = async (credentials: SignInWithPasswordCredentials): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('signIn');
-    const { error } = await supabaseClient.signInWithPassword(credentials);
+    const sbAuth = this._ensureSbAuthAvailable('signIn');
+    const { error } = await sbAuth.signInWithPassword(credentials);
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   signInWithIdToken = async (credentials: SignInWithIdTokenCredentials): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('signInWithIdToken');
-    const { error } = await supabaseClient.signInWithIdToken(credentials);
+    const sbAuth = this._ensureSbAuthAvailable('signInWithIdToken');
+    const { error } = await sbAuth.signInWithIdToken(credentials);
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
@@ -177,14 +192,14 @@ export class AuthClient implements IAuthClient {
   signInWithOAuth = async (
     credentials: SignInWithOAuthCredentials
   ): Promise<OAuthResponse['data']> => {
-    const supabaseClient = this._ensureSupabaseAvailable('signInWithOAuth');
-    const { error, data } = await supabaseClient.signInWithOAuth(credentials);
+    const sbAuth = this._ensureSbAuthAvailable('signInWithOAuth');
+    const { error, data } = await sbAuth.signInWithOAuth(credentials);
     if (error) throw error;
     return data;
   };
 
   signUp = async (credentials: SignUpWithPasswordCredentials): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('signUp');
+    const sbAuth = this._ensureSbAuthAvailable('signUp');
 
     // Check if email is already registered
     const email = 'email' in credentials ? credentials.email : null;
@@ -199,14 +214,14 @@ export class AuthClient implements IAuthClient {
       throw new AuthError('Phone number already taken.', status.CONFLICT, 'phone_already_exists');
     }
 
-    const { error } = await supabaseClient.signUp(credentials);
+    const { error } = await sbAuth.signUp(credentials);
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   signOut = async (options?: SignOut): Promise<void> => {
-    const supabaseClient = this._ensureSupabaseAvailable('signOut');
-    const { error } = await supabaseClient.signOut(options);
+    const sbAuth = this._ensureSbAuthAvailable('signOut');
+    const { error } = await sbAuth.signOut(options);
     if (error) throw error;
 
     // Clear token after sign out
@@ -220,42 +235,42 @@ export class AuthClient implements IAuthClient {
       captchaToken?: string;
     }
   ): Promise<void> => {
-    const supabaseClient = this._ensureSupabaseAvailable('resetPassword');
-    const { error } = await supabaseClient.resetPasswordForEmail(email, options);
+    const sbAuth = this._ensureSbAuthAvailable('resetPassword');
+    const { error } = await sbAuth.resetPasswordForEmail(email, options);
     if (error) throw error;
   };
 
   updateEmail = async (email: string): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('updateEmail');
-    const { error } = await supabaseClient.updateUser({ email });
+    const sbAuth = this._ensureSbAuthAvailable('updateEmail');
+    const { error } = await sbAuth.updateUser({ email });
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   updatePhone = async (phone: string): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('updatePhone');
-    const { error } = await supabaseClient.updateUser({ phone });
+    const sbAuth = this._ensureSbAuthAvailable('updatePhone');
+    const { error } = await sbAuth.updateUser({ phone });
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   updatePassword = async (password: string): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('updatePassword');
-    const { error } = await supabaseClient.updateUser({ password });
+    const sbAuth = this._ensureSbAuthAvailable('updatePassword');
+    const { error } = await sbAuth.updateUser({ password });
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   verifyOTP = async (credentials: VerifyOtpParams): Promise<User> => {
-    const supabaseClient = this._ensureSupabaseAvailable('verifyOTP');
-    const { error } = await supabaseClient.verifyOtp(credentials);
+    const sbAuth = this._ensureSbAuthAvailable('verifyOTP');
+    const { error } = await sbAuth.verifyOtp(credentials);
     if (error) throw error;
     return await this._handleAuthSuccess();
   };
 
   sendVerification = async (params: ResendParams): Promise<void> => {
-    const supabaseClient = this._ensureSupabaseAvailable('sendVerification');
-    const { error } = await supabaseClient.resend(params);
+    const sbAuth = this._ensureSbAuthAvailable('sendVerification');
+    const { error } = await sbAuth.resend(params);
     if (error) throw error;
   };
 
@@ -268,9 +283,9 @@ export class AuthClient implements IAuthClient {
   };
 
   getSession = async () => {
-    const supabaseClient = this._ensureSupabaseAvailable('getSession');
+    const sbAuth = this._ensureSbAuthAvailable('getSession');
 
-    const { data, error } = await supabaseClient.getSession();
+    const { data, error } = await sbAuth.getSession();
     if (error) throw error;
     if (!data.session) return null;
 
@@ -290,9 +305,9 @@ export class AuthClient implements IAuthClient {
     callback?: (event: string, session: Session | null) => void
   ): Subscription => {
     // Auth state listeners don't work on server - throw error
-    const supabase = this._ensureClientOperation('onAuthStateChange');
+    const sbAuth = this._ensureClientSideOperation('onAuthStateChange');
 
-    return supabase.onAuthStateChange((event, session) => {
+    return sbAuth.onAuthStateChange((event, session) => {
       // Do something here if needed
       this._setToken(session?.access_token || null);
 
@@ -300,10 +315,5 @@ export class AuthClient implements IAuthClient {
         callback(event, session);
       }
     }).data.subscription;
-  };
-
-  // Call initialization at the very end or use a separate init method
-  initialize = async (): Promise<void> => {
-    await this._initializeToken();
   };
 }
