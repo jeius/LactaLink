@@ -11,12 +11,12 @@ import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-import { useAuth } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { useAppToast } from '@/hooks/useAppToast';
 
-import { createNativeFile, uploadFile } from '@/lib/api/file';
+import { uploadFile } from '@/lib/api/file';
 import { createAddresses } from '@/lib/api/profile/createAddresses';
 import { createProfile } from '@/lib/api/profile/createProfile';
 import { ICONS } from '@/lib/constants';
@@ -29,10 +29,10 @@ import {
 } from '@/lib/constants/setupProfile';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
+import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 
 import { useApiClient } from '@lactalink/api';
 import { SetupProfileSchema, User } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
@@ -45,7 +45,7 @@ type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
   const { user, refetchSession } = useAuth();
-  const client = useApiClient();
+  const apiClient = useApiClient();
   const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
@@ -81,7 +81,7 @@ export default function Step() {
 
       const { addresses, avatar, ...rest } = formData;
 
-      const avatarDoc = avatar && (await uploadFile(createNativeFile(avatar), 'avatars'));
+      const avatarDoc = avatar && (await uploadFile('avatars', avatar));
       const addressDocs = await createAddresses(addresses);
 
       const createdProfile = await createProfile({
@@ -96,7 +96,7 @@ export default function Step() {
         MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
       };
 
-      await client?.updateByID({
+      await apiClient.updateByID({
         collection: 'users',
         id: user.id,
         depth: 0,
@@ -117,11 +117,7 @@ export default function Step() {
       router.dismissTo('/home');
     } catch (error) {
       console.error('Submit', error);
-      toast.show({
-        id: TOAST_ID,
-        type: 'error',
-        message: extractErrorMessage(error),
-      });
+      showErrorToastWithId(error, TOAST_ID);
     }
   }
 

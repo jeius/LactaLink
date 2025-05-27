@@ -4,7 +4,7 @@ import { VStack } from '@/components/ui/vstack';
 import SafeArea from '@/components/safe-area';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useAuth } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';

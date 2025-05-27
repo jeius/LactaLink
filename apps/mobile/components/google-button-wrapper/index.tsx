@@ -1,8 +1,9 @@
 import GoogleIcon from '@/assets/icons/google.svg';
-import { useAuth } from '@/hooks/auth/useSession';
+import { signInWithGoogle } from '@/auth';
 import { useAppToast } from '@/hooks/useAppToast';
 import { SIGN_IN_WITH_OAUTH_TOAST_ID } from '@/lib/constants';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractName } from '@/lib/utils/extractName';
+import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
@@ -17,7 +18,6 @@ export default function GoogleButtonWrapper({
   disabled,
   ...props
 }: ViewProps & { disabled?: boolean }) {
-  const { signInWithGoogle } = useAuth();
   const toast = useAppToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,18 +32,7 @@ export default function GoogleButtonWrapper({
     try {
       const user = await signInWithGoogle();
 
-      let name = user.email;
-
-      if (user.profile) {
-        const profile = user.profile.value;
-        if (typeof profile === 'object') {
-          if ('name' in profile) {
-            name = profile.name;
-          } else {
-            name = profile.givenName;
-          }
-        }
-      }
+      const name = extractName(user) || user.email;
 
       toast.show({
         id: SIGN_IN_WITH_OAUTH_TOAST_ID,
@@ -53,14 +42,9 @@ export default function GoogleButtonWrapper({
 
       router.replace('/home');
     } catch (error) {
-      toast.show({
-        id: SIGN_IN_WITH_OAUTH_TOAST_ID,
-        type: 'error',
-        message: extractErrorMessage(error),
-      });
-    } finally {
-      setIsSubmitting(false);
+      showErrorToastWithId(error, SIGN_IN_WITH_OAUTH_TOAST_ID);
     }
+    setIsSubmitting(false);
   }
 
   return (

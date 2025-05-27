@@ -6,61 +6,69 @@ import {
   CreateArgs,
   CreateFileArgs,
   CreateResult,
+  FetchGetResult,
   FileCollectionSlug,
   FindArgs,
   FindByIDArgs,
   FindResult,
   GetPreference,
-  SearchParams,
   UpdateByIDArgs,
   UpdateByIDResult,
   UpdatePreference,
 } from '@lactalink/types';
 import { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
 import { mergeHeaders } from '@lactalink/utilities';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'qs-esm';
 import { AuthClient } from './auth/AuthClient';
-import { getAppEnvironment } from './utils';
 import { apiFetch } from './utils/apiFetch';
 
 export class ApiClient implements IApiClient {
   private url: string | URL;
   private bypassToken?: string;
   private headers: Headers;
-  public auth: AuthClient;
+  private appEnvironment: ApiClientConfig['environment'];
+  public readonly auth: AuthClient;
+  public readonly sb: SupabaseClient;
 
-  constructor({ apiUrl, supabase, bypassToken }: ApiClientConfig) {
-    this.url = apiUrl;
-    this.bypassToken = bypassToken;
-    this.headers = new Headers({
+  constructor({ apiUrl: url, supabase, bypassToken, environment }: ApiClientConfig) {
+    const headers = new Headers({
       'Content-Type': 'application/json',
     });
-    this.auth = new AuthClient(this._getBaseFetchOptions, supabase.auth);
+    this.url = url;
+    this.bypassToken = bypassToken;
+    this.headers = headers;
+    this.appEnvironment = environment;
+    this.sb = supabase;
+
+    this.auth = new AuthClient(this._getBaseFetchOptions, supabase, environment);
   }
 
-  private _getBaseFetchOptions(): Omit<BaseApiFetchArgs, 'token'> {
+  // PRIVATE METHODS (arrow functions to preserve 'this' context)
+
+  private _getBaseFetchOptions = (): Omit<BaseApiFetchArgs, 'token'> => {
     return {
       url: this.url,
       bypassToken: this.bypassToken,
       headers: this.headers,
     };
-  }
+  };
 
-  private async _getFetchOptions(): Promise<BaseApiFetchArgs> {
+  private _getFetchOptions = async (): Promise<BaseApiFetchArgs> => {
     const token = await this.auth?.getToken();
     const baseOptions = this._getBaseFetchOptions();
     return { ...baseOptions, token };
-  }
+  };
 
   /**
    * Common method to handle API requests with error handling
    */
-  private async _makeApiRequest<TResponse>(
+  private _makeApiRequest = async <TResponse>(
     endpoint: string,
     method: ApiFetchArgs<CollectionSlug>['method'],
     body?: ApiFetchArgs<CollectionSlug>['body'],
     customHeaders?: Headers
-  ): Promise<TResponse> {
+  ): Promise<TResponse> => {
     const options = await this._getFetchOptions();
     const { url: apiUrl, ...restOfFetchOptions } = options;
 
@@ -80,67 +88,75 @@ export class ApiClient implements IApiClient {
     }
 
     return res.data;
-  }
+  };
 
   /**
    * Builds URL with query parameters
    */
-  private _buildUrlWithQuery<Slug extends CollectionSlug = CollectionSlug>(
+  private _buildUrlWithQuery = (
     basePath: string,
-    searchParams: SearchParams<Slug>
-  ): string {
+    searchParams: Record<string, unknown>
+  ): string => {
     const query = stringify(searchParams);
     return query ? `${basePath}?${query}` : basePath;
-  }
+  };
 
-  setBypassToken(bypassToken?: string) {
+  // PUBLIC METHODS (arrow functions to preserve 'this' context)
+
+  setBypassToken = (bypassToken?: string): void => {
     this.bypassToken = bypassToken;
-  }
+  };
 
-  updateHeaders(headers: Headers) {
+  updateHeaders = (headers: Headers): void => {
     this.headers = mergeHeaders(this.headers, headers);
-  }
+  };
 
-  setHeaders(headers: Headers) {
+  setHeaders = (headers: Headers): void => {
     this.headers = headers;
-  }
+  };
 
-  getHeaders() {
+  getHeaders = (): Headers => {
     return this.headers;
-  }
+  };
 
   // Utility methods
-  getAppEnvironment() {
-    return getAppEnvironment();
-  }
+  getAppEnvironment = (): ApiClientConfig['environment'] => {
+    return this.appEnvironment;
+  };
 
-  isExpoApp() {
-    return getAppEnvironment() === 'expo';
-  }
+  isExpoApp = (): boolean => {
+    return this.getAppEnvironment() === 'expo';
+  };
 
-  isNextJsApp() {
-    return getAppEnvironment() === 'nextjs';
-  }
+  isNextJsApp = (): boolean => {
+    return this.getAppEnvironment() === 'nextjs';
+  };
 
-  async find<Slug extends CollectionSlug, IsPaginated extends boolean = true>(
+  find = async <Slug extends CollectionSlug, IsPaginated extends boolean = true>(
     args: FindArgs<Slug, IsPaginated>
-  ): Promise<FindResult<Slug, IsPaginated>> {
-    const { collection, pagination, page, ...searchParams } = args;
+  ): Promise<FindResult<Slug, IsPaginated>> => {
+    const { collection, ...searchParams } = args;
 
-    const queryParams = pagination ? { ...searchParams, page } : searchParams;
-    const endpoint = this._buildUrlWithQuery(`/api/${collection}`, queryParams);
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
-    return this._makeApiRequest<FindResult<Slug, IsPaginated>>(endpoint, 'GET');
-  }
+    const result = await this._makeApiRequest<FetchGetResult<Collection<Slug>>>(endpoint, 'GET');
 
-  async findByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<Collection<Slug>> {
+    return (searchParams.pagination ? result : result.docs) as FindResult<Slug, IsPaginated>;
+  };
+
+  findByID = async <Slug extends CollectionSlug>(
+    args: FindByIDArgs<Slug>
+  ): Promise<Collection<Slug>> => {
     const { collection, id, ...searchParams } = args;
-    const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
+    const queryParams = { ...searchParams, pagination: false };
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
 
     return this._makeApiRequest<Collection<Slug>>(endpoint, 'GET');
-  }
+  };
 
-  async create<Slug extends CollectionSlug>(args: CreateArgs<Slug>): Promise<Collection<Slug>> {
+  create = async <Slug extends CollectionSlug>(
+    args: CreateArgs<Slug>
+  ): Promise<Collection<Slug>> => {
     const { collection, data, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
@@ -150,11 +166,11 @@ export class ApiClient implements IApiClient {
       data
     );
     return result.doc;
-  }
+  };
 
-  async createFile<Slug extends FileCollectionSlug>(
+  createFile = async <Slug extends FileCollectionSlug>(
     args: CreateFileArgs<Slug>
-  ): Promise<Collection<Slug>> {
+  ): Promise<Collection<Slug>> => {
     const { collection, data } = args;
 
     // Create custom headers for file upload
@@ -169,11 +185,11 @@ export class ApiClient implements IApiClient {
       headers
     );
     return result.doc;
-  }
+  };
 
-  async updateByID<Slug extends CollectionSlug>(
+  updateByID = async <Slug extends CollectionSlug>(
     args: UpdateByIDArgs<Slug>
-  ): Promise<Collection<Slug>> {
+  ): Promise<Collection<Slug>> => {
     const { collection, data, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
 
@@ -183,18 +199,18 @@ export class ApiClient implements IApiClient {
       data
     );
     return result.doc;
-  }
+  };
 
-  async getPreference<TValue = unknown>(key: string): Promise<TValue> {
+  getPreference = async <TValue = unknown>(key: string): Promise<TValue> => {
     const endpoint = `/api/payload-preferences/${key}`;
     const result = await this._makeApiRequest<GetPreference<TValue>>(endpoint, 'GET');
     return result.value;
-  }
+  };
 
-  async updatePreference<TValue = unknown>(key: string, value: TValue): Promise<TValue> {
+  updatePreference = async <TValue = unknown>(key: string, value: TValue): Promise<TValue> => {
     const endpoint = `/api/payload-preferences/${key}`;
     const data = { value };
     const result = await this._makeApiRequest<UpdatePreference<TValue>>(endpoint, 'POST', data);
     return result.doc.value;
-  }
+  };
 }

@@ -2,16 +2,11 @@ import { ApiClientConfig } from '@lactalink/types/interfaces';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { ApiClient } from '../ApiClient';
-import { getAppEnvironment, isServerEnvironment } from '../utils/getEnvironment';
+import { isServerEnvironment } from '../utils/getEnvironment';
 
 function createApiClient(config: ApiClientConfig) {
-  const appEnv = getAppEnvironment();
-  const isServer = isServerEnvironment();
-
-  // Validate app environment
-  if (appEnv === 'unknown') {
-    throw new Error('App environment not configured. Set EXPO_APP=true or NEXT_APP=true');
-  }
+  const appEnv = config.environment;
+  const isServer = isServerEnvironment(appEnv);
 
   // Validate environment context
   if (appEnv === 'nextjs') {
@@ -47,12 +42,13 @@ export const useStoreApiClient = create<ApiClientStore>()(
     client: null,
     serverClient: null,
     hasInitialized: false,
-    isServer: isServerEnvironment(),
+    isServer: true, // Default to true for server-side initialization
 
     init: (config: ApiClientConfig) => {
       const state = get();
+      const isServer = isServerEnvironment(config.environment);
 
-      if (state.isServer) {
+      if (isServer) {
         console.warn('Client init called on server. Use initServer() instead.');
         return;
       }
@@ -64,7 +60,7 @@ export const useStoreApiClient = create<ApiClientStore>()(
 
       try {
         const client = createApiClient(config);
-        set({ client, hasInitialized: true });
+        set({ client, hasInitialized: true, isServer });
       } catch (error) {
         console.error('Failed to initialize client API:', error);
         throw error;
@@ -81,7 +77,11 @@ export const useStoreApiClient = create<ApiClientStore>()(
 
       try {
         const serverClient = createApiClient(config);
-        set({ serverClient, hasInitialized: true });
+        set({
+          serverClient,
+          hasInitialized: true,
+          isServer: isServerEnvironment(config.environment),
+        });
       } catch (error) {
         console.error('Failed to initialize server API:', error);
         throw error;

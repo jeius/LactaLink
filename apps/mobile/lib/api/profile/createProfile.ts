@@ -1,6 +1,5 @@
 import { getApiClient } from '@lactalink/api';
 import {
-  ApiClientArgsWithoutPagination,
   Config,
   ExtractKeys,
   Hospital,
@@ -9,6 +8,7 @@ import {
   IndividualSchema,
   MilkBank,
   MilkBankSchema,
+  S,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 
@@ -17,7 +17,7 @@ type Output = Individual | Hospital | MilkBank;
 type BaseFields = Pick<Output, 'addresses' | 'avatar'>;
 type Data = Input & BaseFields;
 type Slug = ExtractKeys<Config['collections'], Output>;
-type Options = Omit<ApiClientArgsWithoutPagination<Slug>, 'collection'>;
+type Options = Omit<S<Slug>, 'collection'>;
 
 const defaultOptions: Options = {
   depth: 0,

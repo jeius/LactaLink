@@ -9,6 +9,7 @@ import {
   FindResult,
   UpdateByIDArgs,
 } from '@lactalink/types';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { IAuthClient } from './AuthClient';
 
 /**
@@ -22,6 +23,12 @@ export interface IApiClient {
    * May be undefined if not properly initialized.
    */
   readonly auth: IAuthClient;
+
+  /**
+   * Supabase client instance for database operations.
+   * This client is used for direct database interactions and may be undefined
+   */
+  readonly sb: SupabaseClient;
 
   /**
    * Sets the bypass token for API requests.

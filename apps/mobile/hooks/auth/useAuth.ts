@@ -1,4 +1,3 @@
-import { googleSignIn } from '@/hooks/auth/googleSignIn';
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -12,8 +11,6 @@ export function useAuth() {
   // Set up auth state change listener
   useEffect(() => {
     const subscription = apiClient.auth.onAuthStateChange((event) => {
-      console.log('Auth state changed:', event);
-
       // Invalidate session query on any auth state change
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
 
@@ -27,7 +24,6 @@ export function useAuth() {
           if (GoogleSignin.hasPreviousSignIn()) {
             GoogleSignin.signOut();
           }
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
           break;
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed');
@@ -65,15 +61,6 @@ export function useAuth() {
     isLoading,
     isError,
     error,
-
-    // Auth methods
-    signIn: apiClient.auth.signIn,
-    signInWithGoogle: googleSignIn,
-    signUp: apiClient.auth.signUp,
-    verifyOtp: apiClient.auth.verifyOTP,
-    signOut: apiClient.auth.signOut,
-    sendVerification: apiClient.auth.sendVerification,
-    resetPasswordForEmail: apiClient.auth.resetPasswordForEmail,
 
     // Manual refetch
     refetchSession: refetch,

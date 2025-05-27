@@ -4,7 +4,7 @@ import * as crypto from 'expo-crypto';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
-import { useAuth } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useAppToast } from '@/hooks/useAppToast';
 import { MAX_AVATAR_SIZE } from '@/lib/constants';
 import { AvatarSchema, SetupProfileSchema } from '@lactalink/types';

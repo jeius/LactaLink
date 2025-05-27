@@ -1,4 +1,5 @@
-import { AuthError, isAuthApiError, isAuthError } from '@supabase/supabase-js';
+import { ErrorCodes } from '@lactalink/types';
+import { isAuthApiError, isAuthError } from '@supabase/supabase-js';
 
 /**
  * Extracts the error message from an error object or array of errors.
@@ -59,7 +60,7 @@ export function extractErrorMessage<T = unknown>(error: T): string {
  * const code = extractErrorCode(unknownError); // 'unknown_error'
  * ```
  */
-export function extractAuthErrorCode<T = unknown>(error: T): AuthError['code'] {
+export function extractAuthErrorCode<T = unknown>(error: T): ErrorCodes {
   if (isAuthError(error)) {
     return error.code || 'unknown_error';
   }

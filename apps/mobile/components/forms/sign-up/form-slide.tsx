@@ -65,7 +65,7 @@ export function FormSlide({ carouselRef, formFieldProps, onSubmit }: FormSlidePr
         </Button>
       </HStack>
 
-      <VStack className="flex-1 p-5 pt-0">
+      <VStack className="flex-1 justify-between p-5 pt-2">
         <FormField {...formFieldProps} />
 
         <Button size="lg" onPress={handleNext}>

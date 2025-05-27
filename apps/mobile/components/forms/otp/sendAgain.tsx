@@ -1,22 +1,23 @@
 import { Button, ButtonText } from '@/components/ui/button';
-import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { OTP_TOAST_ID, RESEND_OTP } from '@/lib/constants';
-import { extractErrorMessage, formatTime } from '@lactalink/utilities';
-import React, { useCallback, useEffect, useState } from 'react';
-import { OTPFormProps } from './type';
+import { VerifyOtpParams } from '@/lib/types';
+import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
+import { useApiClient } from '@lactalink/api';
+import { formatTime } from '@lactalink/utilities';
+import React, { useEffect, useState } from 'react';
 
-export default function SendAgain({ email, type, phone }: OTPFormProps) {
+export default function SendAgain(params: VerifyOtpParams) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isSending, setIsSending] = useState(false);
-  const { sendVerification, resetPasswordForEmail } = useAuth();
-
   const toast = useAppToast();
+  const apiClient = useApiClient();
 
-  const sendOTP = useCallback(async () => {
+  const sendOTP = async () => {
     if (secondsLeft > 0) return;
-
     setIsSending(true);
+
+    toast.closeAll();
     toast.show({
       id: OTP_TOAST_ID,
       type: 'loading',
@@ -24,40 +25,29 @@ export default function SendAgain({ email, type, phone }: OTPFormProps) {
     });
 
     try {
-      if (email) {
-        if (type === 'signup' || type === 'email_change') {
-          await sendVerification({ email, type });
-        } else if (type === 'recovery') {
-          await resetPasswordForEmail(email);
-        }
-      } else if (phone) {
-        if (type === 'sms' || type === 'phone_change') {
-          await sendVerification({ phone, type });
-        }
+      const type = params.type;
+      const recipient = 'email' in params ? params.email : params.phone;
+
+      if (type === 'recovery') {
+        await apiClient.auth.resetPasswordForEmail(params.email);
+      } else if (type === 'signup' || type === 'email_change') {
+        await apiClient.auth.sendVerification({ email: params.email, type });
+      } else if (type === 'phone_change' || type === 'sms') {
+        await apiClient.auth.sendVerification({ phone: params.phone, type });
       }
-
-      setSecondsLeft(RESEND_OTP);
-
-      const recepient = email ? email : phone ? phone : undefined;
 
       toast.show({
         id: OTP_TOAST_ID,
         type: 'success',
-        message: recepient ? `Verification sent to ${recepient}.` : 'Verification sent.',
+        message: `Verification sent to ${recipient}.`,
       });
     } catch (error) {
-      toast.show({
-        id: OTP_TOAST_ID,
-        type: 'error',
-        message: extractErrorMessage(error),
-      });
-    } finally {
-      setIsSending(false);
+      showErrorToastWithId(error, OTP_TOAST_ID);
     }
-  }, [secondsLeft, toast, email, phone, type, sendVerification, resetPasswordForEmail]);
+    setIsSending(false);
+  };
 
   useEffect(() => {
-    toast.closeAll();
     setSecondsLeft(RESEND_OTP);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

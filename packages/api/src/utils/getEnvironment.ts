@@ -1,14 +1,9 @@
-// Simple environment detection using explicit env vars
-export function getAppEnvironment() {
-  if (process.env.EXPO_APP === 'true') return 'expo';
-  if (process.env.NEXT_APP === 'true') return 'nextjs';
-  return 'unknown';
-}
+import { ApiClientConfig } from '@lactalink/types';
 
-export function isServerEnvironment() {
+export function isServerEnvironment(env: ApiClientConfig['environment']) {
   try {
     // For Next.js, check if we're on server side
-    if (process.env.NEXT_APP === 'true') {
+    if (env === 'nextjs') {
       return typeof window === 'undefined';
     }
     // Expo is always client-side

@@ -1,10 +1,10 @@
+import { useAuth } from '@/hooks/auth/useAuth';
 import { setupProfileStorage as storage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
 import { useDebouncedCallback } from '@lactalink/utilities';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
-import { useAuth } from '../auth/useSession';
 
 const storageKeyPrefix = 'setup-profile-form';
 

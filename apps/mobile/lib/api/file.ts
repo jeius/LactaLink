@@ -1,11 +1,17 @@
 import { getApiClient } from '@lactalink/api';
-import { CollectionData, CreateArgs, FileCollection, FileCollectionSlug } from '@lactalink/types';
+import {
+  Collection,
+  CollectionData,
+  CreateFileArgs,
+  FileCollection,
+  FileCollectionSlug,
+} from '@lactalink/types';
 import { NativeFile } from '../types';
 
 const FormData = global.FormData;
 
 type FileData = CollectionData<FileCollection>;
-export function createNativeFile<T extends FileData>(data: T): NativeFile {
+export function createNativeFile(data: FileData): NativeFile {
   if (!data.url || !data.filename || !data.mimeType) {
     throw new Error('Invalid file parameters. Ensure url, name, and type are provided.');
   }
@@ -13,21 +19,19 @@ export function createNativeFile<T extends FileData>(data: T): NativeFile {
 }
 
 export async function uploadFile<T extends FileCollectionSlug = FileCollectionSlug>(
-  file: NativeFile,
-  collection: T
+  collection: T,
+  data: CollectionData<Collection<T>>
 ) {
-  const client = getApiClient();
+  const apiClient = getApiClient();
 
-  const data = new FormData();
+  const file = createNativeFile(data);
+  const fd = new FormData();
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data.append('file', file as any); // Cast to any to satisfy FormData type requirements
+  fd.append('file', file as any); // Cast to any to satisfy FormData type requirements
 
-  const args: CreateArgs<T> = {
-    data,
-    collection,
-    depth: 2,
-  } as CreateArgs<T>;
+  const args: CreateFileArgs<T> = { data: fd, collection };
 
-  const res = await client.createFile(args);
+  const res = await apiClient.createFile(args);
   return res;
 }

@@ -8,7 +8,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { AuthError } from '@supabase/supabase-js';
 
-export async function googleSignIn(): Promise<User> {
+export async function signInWithGoogle(): Promise<User> {
   try {
     const apiClient = getApiClient();
     await GoogleSignin.hasPlayServices();

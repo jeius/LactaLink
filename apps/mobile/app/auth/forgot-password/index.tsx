@@ -11,15 +11,15 @@ import { HStack } from '@/components/ui/hstack';
 import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useSession';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { RESET_PASSWORD_TOAST_ID } from '@/lib/constants';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { VerifyOTPSearchParams } from '@/lib/types';
+import { VerifyOtpParams } from '@/lib/types';
+import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useApiClient } from '@lactalink/api';
 import { emailSchema } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
 import { router } from 'expo-router';
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
@@ -33,7 +33,7 @@ type Schema = z.infer<typeof schema>;
 export default function ForgotPassword() {
   const { height } = Dimensions.get('window');
   const toast = useAppToast();
-  const { resetPasswordForEmail } = useAuth();
+  const apiClient = useApiClient();
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -56,17 +56,13 @@ export default function ForgotPassword() {
     });
 
     try {
-      await resetPasswordForEmail(email);
+      await apiClient.auth.resetPasswordForEmail(email);
       toast.close(RESET_PASSWORD_TOAST_ID);
 
-      const params: VerifyOTPSearchParams = { email, type: 'recovery' };
+      const params: VerifyOtpParams = { email, type: 'recovery' };
       router.push({ pathname: '/auth/verify-otp', params });
     } catch (error) {
-      toast.show({
-        id: RESET_PASSWORD_TOAST_ID,
-        message: extractErrorMessage(error),
-        type: 'error',
-      });
+      showErrorToastWithId(error, RESET_PASSWORD_TOAST_ID);
     }
   }
 

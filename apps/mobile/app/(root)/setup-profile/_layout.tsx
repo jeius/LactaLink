@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { Redirect, Stack } from 'expo-router';
 import React from 'react';

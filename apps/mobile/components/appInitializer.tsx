@@ -1,9 +1,9 @@
-import { useGoogleSignInConfig } from '@/hooks/useGoogleSignInConfig';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
-import { useAuth } from '@/hooks/auth/useSession';
 import { useTheme } from './providers/theme-provider';
 import SafeArea from './safe-area';
 import { Spinner } from './ui/spinner';
@@ -33,7 +33,7 @@ export function AppInitializer({ children }: Props) {
   if (error) {
     console.warn(error);
     return (
-      <SafeArea>
+      <SafeArea className="items-center justify-center">
         <Text size="sm">{error.message}</Text>
       </SafeArea>
     );
@@ -41,7 +41,7 @@ export function AppInitializer({ children }: Props) {
 
   if (!isAppReady) {
     return (
-      <SafeArea>
+      <SafeArea className="items-center justify-center">
         <Spinner size="large" />
       </SafeArea>
     );

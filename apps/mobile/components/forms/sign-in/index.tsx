@@ -9,21 +9,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { FormProvider, useForm } from 'react-hook-form';
 
+import { signIn } from '@/auth';
 import { FormField } from '@/components/form-field';
-import { useAuth } from '@/hooks/auth/useSession';
-import { useAppToast } from '@/hooks/useAppToast';
-import { SIGN_IN_TOAST_ID } from '@/lib/constants';
-import { VerifyOTPSearchParams } from '@/lib/types';
-import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
-import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
 
 export default function SignInForm() {
-  const { signIn, sendVerification } = useAuth();
-  const toast = useAppToast();
-
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -32,54 +24,7 @@ export default function SignInForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(formData: SignInSchema) {
-    toast.show({
-      id: SIGN_IN_TOAST_ID,
-      message: 'Signing in...',
-      type: 'loading',
-    });
-
-    try {
-      const user = await signIn(formData);
-      let name = user.email;
-
-      if (user.profile) {
-        const profile = user.profile.value;
-        if (typeof profile === 'object') {
-          if ('name' in profile) {
-            name = profile.name;
-          } else {
-            name = profile.givenName;
-          }
-        }
-      }
-
-      toast.show({
-        id: SIGN_IN_TOAST_ID,
-        message: `🎉 Welcome back! ${name}`,
-        type: 'success',
-      });
-      router.replace('/home');
-    } catch (error) {
-      const code = extractAuthErrorCode(error);
-      if (code === 'email_not_confirmed') {
-        const type: VerifyOtpParams['type'] = 'signup';
-        const email = formData.email;
-
-        try {
-          await sendVerification({ email, type });
-
-          toast.close(SIGN_IN_TOAST_ID);
-          const params: VerifyOTPSearchParams = { email, type };
-          router.push({ pathname: '/auth/verify-otp', params });
-        } catch (err) {
-          toast.show({
-            id: SIGN_IN_TOAST_ID,
-            message: extractErrorMessage(err),
-            type: 'error',
-          });
-        }
-      }
-    }
+    await signIn(formData);
   }
 
   return (

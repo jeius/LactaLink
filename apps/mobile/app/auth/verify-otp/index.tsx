@@ -16,7 +16,7 @@ import { VStack } from '@/components/ui/vstack';
 import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { VerifyOTPSearchParams } from '@/lib/types';
+import { VerifyOtpParams } from '@/lib/types';
 
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
@@ -27,8 +27,8 @@ export default function VerifyOTP() {
   const toast = useAppToast();
   const { theme } = useTheme();
 
-  const { email, phone, type } = useLocalSearchParams<VerifyOTPSearchParams>();
-  const recepient = email || phone;
+  const params = useLocalSearchParams<VerifyOtpParams>();
+  const recepient = 'email' in params ? params.email : params.phone;
 
   const gradientColors = [
     'transparent',
@@ -36,7 +36,7 @@ export default function VerifyOTP() {
   ] as const;
 
   useEffect(() => {
-    if (!type) {
+    if (!params.type) {
       toast.show({
         id: 'otp',
         message: 'Verification type not found.',
@@ -44,7 +44,7 @@ export default function VerifyOTP() {
       });
       router.dismiss();
     }
-  }, [toast, type]);
+  }, [toast, params.type]);
 
   return (
     <SafeArea className="p-5">
@@ -78,14 +78,14 @@ export default function VerifyOTP() {
           </VStack>
 
           <Box className="p-5">
-            <OTPForm email={email} type={type!} phone={phone} />
+            <OTPForm {...params} />
           </Box>
 
           <VStack className="mx-auto items-center p-5">
             <Text size="sm" className="text-typography-600">
               Didn&apos;t receive the verification code?
             </Text>
-            <SendAgain type={type!} email={email} phone={phone} />
+            <SendAgain {...params} />
           </VStack>
         </Card>
       </KeyboardAvoidingWrapper>

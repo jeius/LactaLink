@@ -14,8 +14,8 @@ import { useToastStore } from '@/lib/stores/toastStore';
  * It omits the internal toast instance and init function from the store.
  */
 export function getAppToast() {
-  const { toast: _, init: __, ...rest } = useToastStore.getState();
-  return rest;
+  const { toast: _, init: __, showToast, ...rest } = useToastStore.getState();
+  return { show: showToast, ...rest };
 }
 
 /**

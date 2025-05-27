@@ -28,6 +28,7 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
+    "http-status": "^2.1.0",
     "qs-esm": "^7.0.2"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@ import {
   SignInWithIdTokenCredentials,
   SignInWithOAuthCredentials,
   SignInWithPasswordCredentials,
+  SignOut,
   SignUpWithPasswordCredentials,
   Subscription,
   VerifyOtpParams,
@@ -21,7 +22,7 @@ export interface IAuthClient {
    * Supabase authentication client instance.
    * May be undefined if not properly initialized.
    */
-  readonly supabase?: SupabaseAuthClient;
+  readonly sbAuth?: SupabaseAuthClient;
 
   /**
    * Authenticates a user with email and password credentials.
@@ -60,7 +61,7 @@ export interface IAuthClient {
    * @returns Promise that resolves when sign out is complete
    * @throws AuthError if sign out fails
    */
-  signOut(): Promise<void>;
+  signOut(options?: SignOut): Promise<void>;
 
   /**
    * Sends a password reset email to the specified email address.

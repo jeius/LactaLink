@@ -26,7 +26,8 @@ import { useStoreApiClient } from './store/useApiClient';
 // ============================================================================
 
 /** Error thrown when client-side API client is not initialized */
-const CLIENT_ERROR_MESSAGE = 'Client API is not initialized. Call initApiClient() first.';
+const CLIENT_ERROR_MESSAGE =
+  'Client API is not initialized. Call initApiClient() or useInitApiClient first.';
 
 /** Error thrown when server-side API client is not initialized */
 const SERVER_ERROR_MESSAGE = 'Server API is not initialized. Call initServerApiClient() first.';
@@ -185,10 +186,8 @@ export const getUniversalApiClient = (): ApiClient => {
  * ```
  */
 export const useApiClient = (): ApiClient => {
-  const { client, isServer } = useStoreApiClient((s) => ({
-    client: s.client,
-    isServer: s.isServer,
-  }));
+  const client = useStoreApiClient((s) => s.client);
+  const isServer = useStoreApiClient((s) => s.isServer);
 
   if (isServer) {
     throw new Error(SSR_ERROR_MESSAGE);

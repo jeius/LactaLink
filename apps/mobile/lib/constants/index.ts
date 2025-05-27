@@ -22,6 +22,7 @@ export const OTP_TOAST_ID = 'otp';
 export const SIGN_IN_TOAST_ID = 'sign-in';
 export const SIGN_IN_WITH_OAUTH_TOAST_ID = 'sign-in-with-oauth';
 export const SIGN_UP_TOAST_ID = 'sign-up';
+export const SIGN_OUT = 'sign-out';
 export const RESET_PASSWORD_TOAST_ID = 'reset-password';
 export const UPDATE_EMAIL_TOAST_ID = 'update-email';
 export const UPDATE_PASSWORD_TOAST_ID = 'update-password';

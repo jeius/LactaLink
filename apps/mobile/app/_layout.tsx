@@ -4,9 +4,17 @@ import '@/global.css';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
+import { ApiClientConfig } from '@lactalink/types';
 import { Stack } from 'expo-router';
 
-initApiClient({ apiUrl: API_URL, supabase, bypassToken: VERCEL_BYPASS_TOKEN });
+const config: ApiClientConfig = {
+  apiUrl: API_URL,
+  supabase,
+  environment: 'expo',
+  bypassToken: VERCEL_BYPASS_TOKEN,
+};
+
+initApiClient(config);
 
 export default function RootLayout() {
   return (

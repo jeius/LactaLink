@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/auth/useSession';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { router } from 'expo-router';
 import { FC, useEffect } from 'react';
 import SafeArea, { SafeAreaProps } from '../safe-area';
@@ -9,7 +9,7 @@ export const Protected: FC<SafeAreaProps> = (props) => {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user || !session) {
+      if (!session) {
         router.replace('/auth/sign-in');
       }
       if (user && !user.profile) {
@@ -20,7 +20,7 @@ export const Protected: FC<SafeAreaProps> = (props) => {
 
   if (isLoading || !user || !session) {
     return (
-      <SafeArea>
+      <SafeArea className="items-center justify-center">
         <Spinner size={'large'} />
       </SafeArea>
     );
