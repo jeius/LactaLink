@@ -28,7 +28,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     }
 
     if (!sbUser) {
-      payload.logger.error('User not found from supabase.');
+      payload.logger.warn('User not found from supabase.');
       return { user: null };
     }
 
@@ -37,6 +37,11 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       .from(users)
       .where(eq(users.authId, sbUser.id))
       .limit(1);
+
+    if (!authenticatedUser) {
+      payload.logger.warn('User not found in the database.');
+      return { user: null };
+    }
 
     const userDoc = await payload.findByID({
       id: authenticatedUser.id,

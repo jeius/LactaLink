@@ -1,6 +1,6 @@
-import { updateSession } from '@/lib/utils/supabase/middleware';
 import { isStartsWith } from '@lactalink/utilities/formatters';
 import { NextResponse, type NextRequest } from 'next/server';
+import { updateSession } from './lib/api/init/middleware';
 import { AUTH_PAGES, PUBLIC_ROUTES, SEARCH_PARAMS_KEYS } from './lib/constants/routes';
 
 export async function middleware(request: NextRequest) {

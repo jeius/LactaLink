@@ -3,7 +3,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { ReactNode } from 'react';
+import { initClientApi } from '@/lib/api/init/client';
+import { ReactNode, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from './theme-provider';
 
@@ -13,6 +14,10 @@ const isDevelopment =
   process.env.VERCEL_ENV === 'development' || process.env.NODE_ENV === 'development';
 
 export default function Providers({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    // Initialize the API client for client-side usage
+    initClientApi();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>{children}</ThemeProvider>

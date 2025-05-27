@@ -1,11 +1,10 @@
 import { getAppToast } from '@/hooks/useAppToast';
 import { SIGN_IN_TOAST_ID } from '@/lib/constants';
 import { VerifyOtpParams } from '@/lib/types';
-import { extractName } from '@/lib/utils/extractName';
 import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { getApiClient } from '@lactalink/api';
 import { SignInSchema } from '@lactalink/types';
-import { extractAuthErrorCode } from '@lactalink/utilities';
+import { extractAuthErrorCode, extractName } from '@lactalink/utilities';
 import { router } from 'expo-router';
 
 export async function signIn(formData: SignInSchema) {

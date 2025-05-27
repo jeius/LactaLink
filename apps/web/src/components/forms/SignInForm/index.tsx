@@ -18,8 +18,12 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { signIn } from '@/auth/actions';
+import { SIGN_IN_TOAST_ID } from '@/lib/constants';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
+import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
+import { getApiClient } from '@lactalink/api';
+import { extractName } from '@lactalink/utilities';
+import { extractAuthErrorCode } from '@lactalink/utilities/errors';
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -39,27 +43,40 @@ export default function SignInForm() {
 
   async function onSubmit(formData: SignInSchema) {
     const { email } = formData;
+    const apiClient = getApiClient();
+    toast.info('Signing in...', { id: SIGN_IN_TOAST_ID });
 
-    const res = await signIn(formData);
+    try {
+      const user = await apiClient.auth.signIn(formData);
+      const name = extractName(user) || user.email;
+      const message = `👋 Welcome back! ${name}`;
 
-    if ('error' in res) {
-      if (res.error.code === 'email_not_confirmed') {
+      toast.success(message, { id: SIGN_IN_TOAST_ID });
+
+      if (redirect) {
+        router.replace(redirect);
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      const code = extractAuthErrorCode(error);
+      if (code === 'email_not_confirmed') {
         const type: VerifyOtpParams['type'] = 'signup';
-        const emailParams = new URLSearchParams();
-        emailParams.append('email', email);
-        emailParams.append('type', type);
-        router.push(`/auth/verify-otp?${emailParams.toString()}`);
+
+        try {
+          await apiClient.auth.sendVerification({ email, type });
+
+          toast.dismiss(SIGN_IN_TOAST_ID);
+          const emailParams = new URLSearchParams();
+          emailParams.append('email', email);
+          emailParams.append('type', type);
+          router.push(`/auth/verify-otp?${emailParams.toString()}`);
+        } catch (err) {
+          showErrorToastWithId(error, SIGN_IN_TOAST_ID);
+        }
         return;
       }
-      toast(res.error.message, { className: 'bg-destructive', dismissible: true });
-    }
-
-    toast('🎉 Signed in successfully.', { className: 'bg-success-500', dismissible: true });
-
-    if (redirect) {
-      router.replace(redirect);
-    } else {
-      router.push('/');
+      showErrorToastWithId(error, SIGN_IN_TOAST_ID);
     }
   }
 

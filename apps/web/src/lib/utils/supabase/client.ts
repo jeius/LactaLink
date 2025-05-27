@@ -8,7 +8,6 @@ export const createClient = () =>
     {
       cookieOptions: {
         name: SESSION_NAME,
-        httpOnly: true,
       },
     }
   );

@@ -62,13 +62,13 @@ export interface ApiClientConfig {
    * @example
    * ```typescript
    * // Next.js browser client
-   * supabase: createBrowserClient(
+   * supabase: () => createBrowserClient(
    *   process.env.NEXT_PUBLIC_SUPABASE_URL,
    *   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
    * )
    *
    * // Next.js server client
-   * supabase: createServerClient(
+   * supabase: () => createServerClient(
    *   process.env.NEXT_PUBLIC_SUPABASE_URL,
    *   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
    *   { cookies }
