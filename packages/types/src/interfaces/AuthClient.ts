@@ -26,6 +26,14 @@ export interface IAuthClient {
   readonly getSbAuth: () => SupabaseAuthClient;
 
   /**
+   * Creates a new admin user with the specified email and password.
+   * @param credentials - Email and password for registration
+   * @returns Promise resolving to the created user
+   * @throws AuthError if user creation fails
+   */
+  createAdminUser: (credentials: SignUpWithPasswordCredentials) => Promise<User>;
+
+  /**
    * Authenticates a user with email and password credentials.
    * @param credentials - Email and password for sign in
    * @returns Promise resolving to the authenticated user
@@ -47,15 +55,17 @@ export interface IAuthClient {
    * @returns Promise resolving to OAuth response data (URL, provider, etc.)
    * @throws AuthError if OAuth initiation fails
    */
-  signInWithOAuth(credentials: SignInWithOAuthCredentials): Promise<OAuthResponse['data']>;
+  signInWithOAuth(
+    credentials: SignInWithOAuthCredentials
+  ): Promise<Extract<OAuthResponse['data'], { url: string }>>;
 
   /**
    * Registers a new user with email and password credentials.
    * @param credentials - Email and password for registration
-   * @returns Promise resolving to the newly created user
+   * @returns Promise resolving to an object containing user ID, email, and phone
    * @throws AuthError if registration fails
    */
-  signUp(credentials: SignUpWithPasswordCredentials): Promise<User>;
+  signUp(credentials: SignUpWithPasswordCredentials): Promise<Pick<User, 'id' | 'email' | 'phone'>>;
 
   /**
    * Signs out the current user and clears the authentication token.

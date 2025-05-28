@@ -1,4 +1,4 @@
-import SignInForm from '@/components/forms/SignInForm';
+import SignInForm from '@/components/forms/sign-in';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import Logo from '@/components/icons/logo.svg';
 import { Button } from '@/components/ui/button';

@@ -7,5 +7,5 @@ export type CustomError =
       code?: number;
     };
 
-type CustomErrorCode = 'email_already_exists' | 'google_auth_error';
+type CustomErrorCode = 'admin_creation_failed' | 'google_auth_error';
 export type ErrorCodes = AuthError['code'] | CustomErrorCode;

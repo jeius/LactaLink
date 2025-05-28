@@ -33,12 +33,12 @@ export function encodedRedirect(
   const url = new URL(path, getServerSideURL());
 
   if (message) {
-    url.searchParams.append(SEARCH_PARAMS_KEYS.MESSAGE, message);
+    url.searchParams.set(SEARCH_PARAMS_KEYS.MESSAGE, message);
   }
 
   if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
-      url.searchParams.append(key, value);
+      url.searchParams.set(key, value);
     }
   }
 

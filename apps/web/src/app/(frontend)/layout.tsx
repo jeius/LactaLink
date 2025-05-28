@@ -1,5 +1,4 @@
 import Providers from '@/components/providers';
-import { initServerApi } from '@/lib/api/init/server';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { mergeOpenGraph } from '@/lib/utils/mergeOpenGraph';
 import '@/styles/globals.css';
@@ -14,10 +13,6 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Initialize the server API client
-  // This is necessary for server-side rendering to work correctly
-  await initServerApi();
-
   return (
     <html className={`${plusJakartaSans.variable}`} lang="en" suppressHydrationWarning>
       <head>

@@ -18,13 +18,11 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { SIGN_IN_TOAST_ID } from '@/lib/constants';
+import { signIn } from '@/auth/actions';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
-import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
-import { getApiClient } from '@lactalink/api';
+import { VerifyOTP } from '@lactalink/types';
 import { extractName } from '@lactalink/utilities';
-import { extractAuthErrorCode } from '@lactalink/utilities/errors';
-import { VerifyOtpParams } from '@supabase/supabase-js';
+import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -43,40 +41,40 @@ export default function SignInForm() {
 
   async function onSubmit(formData: SignInSchema) {
     const { email } = formData;
-    const apiClient = getApiClient();
-    toast.info('Signing in...', { id: SIGN_IN_TOAST_ID });
+    const type: VerifyOTP['type'] = 'signup';
 
     try {
-      const user = await apiClient.auth.signIn(formData);
-      const name = extractName(user) || user.email;
-      const message = `👋 Welcome back! ${name}`;
+      const signInResult = await toast
+        .promise(() => signIn(formData), {
+          loading: 'Signing in...',
+          success: ({ user, needsVerification }) => {
+            if (needsVerification) {
+              return `Verification email sent to ${email}`;
+            }
+            if (!user) {
+              return 'No user found after sign-in';
+            }
+            const name = extractName(user) || user.email;
+            return `Welcome back, ${name}!👋 `;
+          },
+          error: (error) => extractErrorMessage(error),
+        })
+        .unwrap();
 
-      toast.success(message, { id: SIGN_IN_TOAST_ID });
-
-      if (redirect) {
-        router.replace(redirect);
-      } else {
-        router.push('/');
+      if (signInResult.needsVerification) {
+        const emailParams = new URLSearchParams();
+        emailParams.set('email', email);
+        emailParams.set('type', type);
+        router.push(`/auth/verify-otp?${emailParams.toString()}`);
+      } else if (signInResult.success) {
+        if (redirect) {
+          router.replace(redirect);
+        } else {
+          router.push('/');
+        }
       }
     } catch (error) {
-      const code = extractAuthErrorCode(error);
-      if (code === 'email_not_confirmed') {
-        const type: VerifyOtpParams['type'] = 'signup';
-
-        try {
-          await apiClient.auth.sendVerification({ email, type });
-
-          toast.dismiss(SIGN_IN_TOAST_ID);
-          const emailParams = new URLSearchParams();
-          emailParams.append('email', email);
-          emailParams.append('type', type);
-          router.push(`/auth/verify-otp?${emailParams.toString()}`);
-        } catch (err) {
-          showErrorToastWithId(error, SIGN_IN_TOAST_ID);
-        }
-        return;
-      }
-      showErrorToastWithId(error, SIGN_IN_TOAST_ID);
+      console.error('Sign-in error:', error);
     }
   }
 

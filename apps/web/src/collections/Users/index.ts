@@ -14,12 +14,7 @@ export const Users: CollectionConfig<'users'> = {
   },
   hooks: {
     afterMe: [appendPermissions],
-    afterLogout: [
-      async (args) => {
-        await signOut();
-        return args;
-      },
-    ],
+    afterLogout: [signOut],
   },
   auth: {
     disableLocalStrategy: true,
@@ -27,7 +22,7 @@ export const Users: CollectionConfig<'users'> = {
   },
   access: {
     admin: adminAccessControl,
-    read: () => true,
+    read: adminAccessControl,
     create: () => true,
   },
   disableDuplicate: true,

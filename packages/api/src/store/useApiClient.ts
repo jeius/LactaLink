@@ -14,14 +14,14 @@ function createApiClient(config: ApiClientConfig) {
     if (isServer) {
       console.log('Creating server API client for Next.js');
     } else {
-      console.log('Creating client API client for Next.js');
+      console.log('Creating API client for Next.js');
     }
   } else if (appEnv === 'expo') {
     // Expo should always be client-side
     if (isServer) {
       throw new Error('Expo app detected in server environment - this should not happen');
     }
-    console.log('Creating client API client for Expo');
+    console.log('Creating API client for Expo');
   }
 
   return new ApiClient(config);
@@ -42,17 +42,17 @@ export const useStoreApiClient = create<ApiClientStore>()(
     client: null,
     serverClient: null,
     hasInitialized: false,
-    isServer: true, // Default to true for server-side initialization
+    isServer: typeof window === 'undefined',
 
     init: (config: ApiClientConfig) => {
-      const state = get();
-      const isServer = isServerEnvironment(config.environment);
+      const isServerEnv = isServerEnvironment(config.environment);
 
-      if (isServer) {
+      if (isServerEnv) {
         console.warn('Client init called on server. Use initServer() instead.');
         return;
       }
 
+      const state = get();
       if (state.hasInitialized && state.client) {
         console.warn('Client API has already been initialized.');
         return;
@@ -60,18 +60,30 @@ export const useStoreApiClient = create<ApiClientStore>()(
 
       try {
         const client = createApiClient(config);
-        set({ client, hasInitialized: true, isServer });
+        set({
+          client,
+          hasInitialized: true,
+          isServer: false,
+        });
+        console.log('✅ Client API initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize client API:', error);
+        console.error('❌ Failed to initialize client API:', error);
         throw error;
       }
     },
 
     initServer: (config: ApiClientConfig) => {
-      const isServer = isServerEnvironment(config.environment);
+      const isServerEnv = isServerEnvironment(config.environment);
 
-      if (isServer) {
+      if (!isServerEnv) {
         console.warn('Server init called on client. Use init() instead.');
+        return;
+      }
+
+      const { serverClient } = get();
+
+      if (serverClient) {
+        serverClient.setSupabaseClient(config.supabase);
         return;
       }
 
@@ -80,10 +92,11 @@ export const useStoreApiClient = create<ApiClientStore>()(
         set({
           serverClient,
           hasInitialized: true,
-          isServer,
+          isServer: true,
         });
+        console.log('✅ Server API initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize server API:', error);
+        console.error('❌ Failed to initialize server API:', error);
         throw error;
       }
     },

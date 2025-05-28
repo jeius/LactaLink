@@ -1,8 +1,8 @@
-import { BackendSession, BaseApiFetchArgs, User } from '@lactalink/types';
+import { BackendSession, BaseApiFetchArgs, ErrorCodes, User } from '@lactalink/types';
 import { ApiClientConfig, IAuthClient } from '@lactalink/types/interfaces';
+import { Database } from '@lactalink/types/supabase';
 import {
   AuthError,
-  OAuthResponse,
   ResendParams,
   Session,
   SignInWithIdTokenCredentials,
@@ -20,6 +20,8 @@ import { apiFetch } from '../utils/apiFetch';
 import { isServerEnvironment } from '../utils/getEnvironment';
 
 type BaseApiFetchArgsWithoutToken = Omit<BaseApiFetchArgs, 'token'>;
+type UsersUpdate = Database['public']['Tables']['users']['Update'];
+type UserTable = Database['public']['Tables']['users']['Row'];
 
 export class AuthClient implements IAuthClient {
   private baseFetchOptions: () => BaseApiFetchArgsWithoutToken;
@@ -189,33 +191,74 @@ export class AuthClient implements IAuthClient {
     return await this._handleAuthSuccess();
   };
 
-  signInWithOAuth = async (
-    credentials: SignInWithOAuthCredentials
-  ): Promise<OAuthResponse['data']> => {
+  signInWithOAuth = async (credentials: SignInWithOAuthCredentials) => {
     const sbAuth = this._ensureSbAuthAvailable('signInWithOAuth');
     const { error, data } = await sbAuth.signInWithOAuth(credentials);
     if (error) throw error;
     return data;
   };
 
-  signUp = async (credentials: SignUpWithPasswordCredentials): Promise<User> => {
+  signUp = async (credentials: SignUpWithPasswordCredentials) => {
     const sbAuth = this._ensureSbAuthAvailable('signUp');
 
-    // Check if email is already registered
     const email = 'email' in credentials ? credentials.email : null;
     const isEmailExists = email && (await this._isEmailRegistered(email));
     if (isEmailExists) {
-      throw new AuthError('Email already taken.', status.CONFLICT, 'email_already_exists');
+      const code: ErrorCodes = 'email_exists';
+      throw new AuthError('Email already taken.', status.CONFLICT, code);
     }
 
     const phone = 'phone' in credentials ? credentials.phone : null;
     const isPhoneExists = phone && (await this._isPhoneRegistered(phone));
     if (isPhoneExists) {
-      throw new AuthError('Phone number already taken.', status.CONFLICT, 'phone_already_exists');
+      const code: ErrorCodes = 'phone_exists';
+      throw new AuthError('Phone number already taken.', status.CONFLICT, code);
     }
 
-    const { error } = await sbAuth.signUp(credentials);
+    const { error, data } = await sbAuth.signUp(credentials);
     if (error) throw error;
+    if (!data.user) {
+      const code: ErrorCodes = 'unexpected_failure';
+      throw new AuthError('Failed to create user', status.INTERNAL_SERVER_ERROR, code);
+    }
+
+    const sb = this._getSbDatabaseClient();
+    const { data: user } = await sb
+      .from('users')
+      .select('id, email, phone')
+      .eq('auth_id', data.user.id)
+      .limit(1)
+      .single<UserTable>();
+
+    if (!user) {
+      const code: ErrorCodes = 'user_not_found';
+      throw new AuthError('User not found after sign up', status.NOT_FOUND, code);
+    }
+
+    return { id: user.id, email: user.email, phone: user.phone };
+  };
+
+  createAdminUser = async (credentials: SignUpWithPasswordCredentials): Promise<User> => {
+    const sbAuth = this._ensureSbAuthAvailable('createAdminUser');
+    const sb = this._getSbDatabaseClient();
+    const {
+      data: { user: sbUser },
+      error: signUpError,
+    } = await sbAuth.signUp(credentials);
+    if (!sbUser || signUpError) {
+      const code: ErrorCodes = signUpError?.code || 'admin_creation_failed';
+      const message = signUpError?.message || 'Failed to create admin user';
+      throw new AuthError(message, status.INTERNAL_SERVER_ERROR, code);
+    }
+
+    const { error } = await sb
+      .from('users')
+      .update<UsersUpdate>({ role: 'ADMIN' })
+      .eq('auth_id', sbUser.id);
+
+    if (error) {
+      throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
+    }
     return await this._handleAuthSuccess();
   };
 

@@ -17,10 +17,9 @@ import { Button } from '@/components/ui/button';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import { signUp } from '@/auth/actions/signUp';
-import { getClientSideURL } from '@/lib/utils/getURL';
-import { OTPType, User } from '@lactalink/types';
-import { isEmailTaken } from '@lactalink/utilities';
+import { signUp } from '@/auth/actions';
+import { User, VerifyOTP } from '@lactalink/types';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -37,36 +36,36 @@ export default function SignUpForm({ role }: { role?: User['role'] }) {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(formData: SignUpSchema) {
-    const apiUrl = getClientSideURL();
-    const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
     const email = formData.email;
 
-    const isTaken = await isEmailTaken({ apiUrl, vercelToken, email });
+    try {
+      await toast
+        .promise(() => signUp(formData, role), {
+          loading: 'Creating your account...',
+          success: 'Account created successfully!',
+          error: (error) => extractErrorMessage(error),
+        })
+        .unwrap();
 
-    if (typeof isTaken === 'string') {
-      toast(isTaken);
-    } else if (isTaken) {
-      form.setError(
-        'email',
-        { message: 'Email already taken.', type: 'duplicate' },
-        { shouldFocus: true }
-      );
-      return;
+      const type: VerifyOTP['type'] = 'signup';
+      const params = new URLSearchParams(searchParams);
+      params.set('email', email);
+      params.set('type', type);
+      router.push(`/auth/verify-otp?${params.toString()}`);
+    } catch (error) {
+      const code = extractAuthErrorCode(error);
+
+      if (code === 'email_exists') {
+        form.setError(
+          'email',
+          { message: 'Email already taken.', type: 'duplicate' },
+          { shouldFocus: true }
+        );
+        return;
+      }
+
+      console.error('Error during sign up:', error);
     }
-
-    const { user, message } = await signUp({ ...formData, role });
-
-    if (!user) {
-      toast(message);
-      return;
-    }
-    toast('🎉 User created successfully.');
-
-    const type: OTPType = 'signup';
-    const params = new URLSearchParams(searchParams);
-    params.append('email', email);
-    params.append('type', type);
-    router.push(`/auth/verify-otp?${params.toString()}`);
   }
 
   return (

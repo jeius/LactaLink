@@ -1,43 +1,78 @@
 'use server';
 
+import { getServerApi } from '@/lib/api/getServerApi';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { createClient } from '@/lib/utils/supabase/server';
-import { getAuth as GetAuth, signIn as SignIn, signOut as SignOut } from '@lactalink/utilities';
+import { SignInSchema, SignUpSchema, User, VerifyOTP } from '@lactalink/types';
+import { extractAuthErrorCode } from '@lactalink/utilities';
+import { ResendParams, VerifyOtpParams } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
-type Params = { email: string; password: string };
+export const signIn = async (credentials: SignInSchema) => {
+  const apiClient = await getServerApi();
+  const email = credentials.email;
+  const type: VerifyOTP['type'] = 'signup';
+  try {
+    const user = await apiClient.auth.signIn(credentials);
+    return { success: true, user };
+  } catch (error) {
+    const code = extractAuthErrorCode(error);
 
-export async function signIn(params: Params) {
-  const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  const apiUrl = getServerSideURL();
-  const supabase = await createClient();
-  return await SignIn({ ...params, supabase, apiUrl, vercelToken });
-}
+    if (code === 'email_not_confirmed') {
+      await apiClient.auth.sendVerification({ email, type });
+      return { success: false, needsVerification: true };
+    }
 
-export async function signOut() {
-  const supabase = await createClient();
-  return await SignOut(supabase);
-}
+    throw error;
+  }
+};
 
-export async function getAuth() {
-  const vercelToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  const apiUrl = getServerSideURL();
-  const supabase = await createClient();
-  return await GetAuth({ supabase, apiUrl, vercelToken });
-}
+export const signUp = async (credentials: SignUpSchema, role: User['role']) => {
+  const apiClient = await getServerApi();
+
+  if (role === 'ADMIN') {
+    return await apiClient.auth.createAdminUser(credentials);
+  }
+  return await apiClient.auth.signUp(credentials);
+};
+
+export const signOut = async () => {
+  try {
+    const apiClient = await getServerApi();
+    await apiClient.auth.signOut();
+  } catch (error) {
+    console.warn('Error during sign out:', error);
+  }
+};
+
+export const getMeUser = async () => {
+  const apiClient = await getServerApi();
+  return await apiClient.auth.getMeUser();
+};
 
 export async function googleSignIn() {
-  const supabase = await createClient();
-  const auth = await supabase.auth.signInWithOAuth({
+  const apiClient = await getServerApi();
+  const { url } = await apiClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${getServerSideURL()}/auth/callback`,
     },
   });
 
-  if (auth.error) {
-    return { error: auth.error };
-  }
-
-  redirect(auth.data.url);
+  redirect(url);
 }
+
+export const sendOtp = async (params: VerifyOTP) => {
+  const apiClient = await getServerApi();
+  const type = params.type;
+  if (type === 'recovery') {
+    await apiClient.auth.resetPasswordForEmail(params.email, params.options);
+  } else {
+    await apiClient.auth.sendVerification(params as ResendParams);
+  }
+  return 'email' in params ? params.email : params.phone;
+};
+
+export const verifyOtp = async (params: VerifyOtpParams) => {
+  const apiClient = await getServerApi();
+  return await apiClient.auth.verifyOTP(params);
+};

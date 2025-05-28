@@ -114,6 +114,10 @@ export class ApiClient implements IApiClient {
     }
   };
 
+  setSupabaseClient = (supabase: SupabaseClient | (() => SupabaseClient)): void => {
+    this.supabaseClient = supabase;
+  };
+
   setBypassToken = (bypassToken?: string): void => {
     this.bypassToken = bypassToken;
   };

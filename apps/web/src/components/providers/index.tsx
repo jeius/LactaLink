@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { initClientApi } from '@/lib/api/init/client';
 import { ReactNode, useEffect } from 'react';
-import { Toaster } from 'sonner';
+import { Toaster } from '../ui/sonner';
 import { ThemeProvider } from './theme-provider';
 
 const queryClient = new QueryClient();

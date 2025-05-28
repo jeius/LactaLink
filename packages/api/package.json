@@ -25,7 +25,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix . && prettier --write ."
+    "lint:fix": "eslint --fix . && prettier --write .",
+    "generate:sb-types": "node scripts/generate-supabase-types.js"
   },
   "dependencies": {
     "http-status": "^2.1.0",
@@ -39,7 +40,9 @@
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
     "@types/react": "^19.1.2",
+    "dotenv": "^16.5.0",
     "react": "18.3.1",
+    "supabase": "^2.23.4",
     "zustand": "^5.0.5"
   },
   "peerDependencies": {

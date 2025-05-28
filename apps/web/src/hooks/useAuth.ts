@@ -1,3 +1,5 @@
+'use client';
+
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

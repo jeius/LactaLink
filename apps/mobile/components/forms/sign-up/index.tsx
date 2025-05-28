@@ -53,7 +53,7 @@ export default function SignUpForm() {
 
       const code = extractAuthErrorCode(error);
       const message = extractErrorMessage(error);
-      if (code === 'email_already_exists') {
+      if (code === 'email_exists') {
         form.setError('email', { message, type: 'duplicate' });
         carouselRef.current?.scrollTo({ index: 0, animated: true });
       }

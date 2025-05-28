@@ -18,20 +18,14 @@ import { Button } from '@/components/ui/button';
 
 import { cn } from '@/lib/utils';
 
+import { verifyOtp } from '@/auth/actions';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { createClient } from '@/lib/utils/supabase/client';
-import { AuthError, VerifyOtpParams } from '@supabase/supabase-js';
+import { VerifyOTP } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { toast } from 'sonner';
 
-interface OTPFormProps {
-  email?: string;
-  phone?: string;
-  type: VerifyOtpParams['type'];
-}
-
-export default function OTPForm({ email, type, phone }: OTPFormProps) {
+export default function OTPForm(props: VerifyOTP) {
   const router = useRouter();
-  const supabase = createClient();
 
   const form = useForm<OtpSchema>({
     resolver: zodResolver(otpSchema),
@@ -40,24 +34,19 @@ export default function OTPForm({ email, type, phone }: OTPFormProps) {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  async function onSubmit({ otp }: OtpSchema) {
-    let error: AuthError | null = null;
+  async function onSubmit({ otp: token }: OtpSchema) {
+    try {
+      await toast
+        .promise(() => verifyOtp({ ...props, token }), {
+          loading: 'Verifying OTP...',
+          success: 'OTP verified successfully.',
+          error: (error) => extractErrorMessage(error),
+        })
+        .unwrap();
 
-    if (type === 'sms' || type === 'phone_change') {
-      if (phone) {
-        error = (await supabase.auth.verifyOtp({ phone, type, token: otp })).error;
-      }
-    } else {
-      if (email) {
-        error = (await supabase.auth.verifyOtp({ email, type, token: otp })).error;
-      }
-    }
-
-    if (error) {
-      toast(error.message);
-    } else {
-      toast('Verification successfull.');
       router.push('/');
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
     }
   }
 

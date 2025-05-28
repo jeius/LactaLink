@@ -2,16 +2,16 @@
 
 import { googleSignIn } from '@/auth/actions';
 import { Button } from '@/components/ui/button';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { toast } from 'sonner';
 
 export default function GoogleSignIn() {
-  async function handleSignIn() {
-    const res = await googleSignIn();
-
-    if (res.error) {
-      toast(res.error.message, { className: 'bg-destructive', dismissible: true });
-      return;
-    }
+  function handleSignIn() {
+    toast.promise(googleSignIn, {
+      loading: 'Redirecting to Google...',
+      success: 'Redirected to Google successfully.',
+      error: (error) => extractErrorMessage(error),
+    });
   }
   return (
     <Button

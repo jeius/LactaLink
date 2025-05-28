@@ -32,6 +32,13 @@ export interface IApiClient {
   getSupabaseClient(): SupabaseClient;
 
   /**
+   * Sets the Supabase client instance.
+   *
+   * @param supabase - The Supabase client instance or a function that returns it.
+   */
+  setSupabaseClient(supabase: SupabaseClient | (() => SupabaseClient)): void;
+
+  /**
    * Sets the bypass token for API requests.
    * This token can be used to bypass normal authentication mechanisms
    * of api requests, useful for automation or testing purposes.

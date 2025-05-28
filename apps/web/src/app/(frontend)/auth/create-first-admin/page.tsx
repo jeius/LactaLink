@@ -1,4 +1,4 @@
-import SignUpForm from '@/components/forms/SignUpForm';
+import SignUpForm from '@/components/forms/sign-up';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import Logo from '@/components/icons/logo.svg';
 import {

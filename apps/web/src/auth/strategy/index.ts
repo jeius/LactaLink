@@ -57,7 +57,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
 
     return { user };
   } catch (_) {
-    payload.logger.error(extractErrorMessage(_));
+    payload.logger.warn(extractErrorMessage(_));
     return { user: null };
   }
 };
