@@ -24,17 +24,21 @@
       "types": "./dist/hooks/index.d.ts",
       "default": "./dist/hooks/index.js"
     },
+    "./extractors": {
+      "types": "./dist/extractors/index.d.ts",
+      "default": "./dist/extractors/index.js"
+    },
     "./errors": {
       "types": "./dist/errors/index.d.ts",
       "default": "./dist/errors/index.js"
     },
-    "./preferences": {
-      "types": "./dist/preferences/index.d.ts",
-      "default": "./dist/preferences/index.js"
-    },
     "./getters": {
       "types": "./dist/getters/index.d.ts",
       "default": "./dist/getters/index.js"
+    },
+    "./type-guards": {
+      "types": "./dist/type-guards/index.d.ts",
+      "default": "./dist/type-guards/index.js"
     }
   },
   "scripts": {
