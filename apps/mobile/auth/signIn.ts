@@ -1,9 +1,8 @@
 import { getAppToast } from '@/hooks/useAppToast';
 import { SIGN_IN_TOAST_ID } from '@/lib/constants';
-import { VerifyOtpParams } from '@/lib/types';
 import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { getApiClient } from '@lactalink/api';
-import { SignInSchema } from '@lactalink/types';
+import { ResendEmailOtpSearchParams, SignInSchema } from '@lactalink/types';
 import { extractAuthErrorCode, extractName } from '@lactalink/utilities';
 import { router } from 'expo-router';
 
@@ -30,14 +29,10 @@ export async function signIn(formData: SignInSchema) {
   } catch (error) {
     const code = extractAuthErrorCode(error);
     if (code === 'email_not_confirmed') {
-      const type: VerifyOtpParams['type'] = 'signup';
-      const email = formData.email;
-
+      const params: ResendEmailOtpSearchParams = { email: formData.email, type: 'signup' };
       try {
-        await apiClient.auth.sendVerification({ email, type });
-
+        await apiClient.auth.sendVerification(params);
         toast.close(SIGN_IN_TOAST_ID);
-        const params: VerifyOtpParams = { email, type };
         router.push({ pathname: '/auth/verify-otp', params });
       } catch (err) {
         showErrorToastWithId(error, SIGN_IN_TOAST_ID);

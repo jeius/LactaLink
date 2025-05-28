@@ -25,6 +25,7 @@ export default function RootLayout() {
           <Stack.Screen name="auth" />
           <Stack.Screen name="(root)" />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen name="error" />
         </Stack>
       </AppInitializer>
     </AppProvider>

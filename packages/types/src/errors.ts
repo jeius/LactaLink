@@ -8,4 +8,12 @@ export type CustomError =
     };
 
 type CustomErrorCode = 'admin_creation_failed' | 'google_auth_error';
+
 export type ErrorCodes = AuthError['code'] | CustomErrorCode;
+
+export type ErrorSearchParams = {
+  message: string;
+  code?: ErrorCodes;
+  status?: string;
+  redirect?: string;
+};

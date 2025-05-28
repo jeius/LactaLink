@@ -2,7 +2,7 @@
 
 import { getServerApi } from '@/lib/api/getServerApi';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { SignInSchema, SignUpSchema, User, VerifyOTP } from '@lactalink/types';
+import { SignInSchema, SignUpSchema, User, VerifyOtp } from '@lactalink/types';
 import { extractAuthErrorCode } from '@lactalink/utilities';
 import { ResendParams, VerifyOtpParams } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation';
 export const signIn = async (credentials: SignInSchema) => {
   const apiClient = await getServerApi();
   const email = credentials.email;
-  const type: VerifyOTP['type'] = 'signup';
+  const type: VerifyOtp['type'] = 'signup';
   try {
     const user = await apiClient.auth.signIn(credentials);
     return { success: true, user };
@@ -49,6 +49,11 @@ export const getMeUser = async () => {
   return await apiClient.auth.getMeUser();
 };
 
+export const getSession = async () => {
+  const apiClient = await getServerApi();
+  return await apiClient.auth.getSession();
+};
+
 export async function googleSignIn() {
   const apiClient = await getServerApi();
   const { url } = await apiClient.auth.signInWithOAuth({
@@ -61,7 +66,7 @@ export async function googleSignIn() {
   redirect(url);
 }
 
-export const sendOtp = async (params: VerifyOTP) => {
+export const sendOtp = async (params: VerifyOtp) => {
   const apiClient = await getServerApi();
   const type = params.type;
   if (type === 'recovery') {

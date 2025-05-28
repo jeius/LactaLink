@@ -1,13 +1,13 @@
 import { Button, ButtonText } from '@/components/ui/button';
 import { useAppToast } from '@/hooks/useAppToast';
 import { OTP_TOAST_ID, RESEND_OTP } from '@/lib/constants';
-import { VerifyOtpParams } from '@/lib/types';
 import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { useApiClient } from '@lactalink/api';
-import { formatTime } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types';
+import { formatTime, isResend } from '@lactalink/utilities';
 import React, { useEffect, useState } from 'react';
 
-export default function SendAgain(params: VerifyOtpParams) {
+export default function SendAgain(params: VerifyOtp) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isSending, setIsSending] = useState(false);
   const toast = useAppToast();
@@ -25,15 +25,12 @@ export default function SendAgain(params: VerifyOtpParams) {
     });
 
     try {
-      const type = params.type;
       const recipient = 'email' in params ? params.email : params.phone;
 
-      if (type === 'recovery') {
+      if (isResend(params)) {
+        await apiClient.auth.sendVerification(params);
+      } else {
         await apiClient.auth.resetPasswordForEmail(params.email);
-      } else if (type === 'signup' || type === 'email_change') {
-        await apiClient.auth.sendVerification({ email: params.email, type });
-      } else if (type === 'phone_change' || type === 'sms') {
-        await apiClient.auth.sendVerification({ phone: params.phone, type });
       }
 
       toast.show({

@@ -18,7 +18,7 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { signUp } from '@/auth/actions';
-import { User, VerifyOTP } from '@lactalink/types';
+import { User, VerifyOtp } from '@lactalink/types';
 import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -47,7 +47,7 @@ export default function SignUpForm({ role }: { role?: User['role'] }) {
         })
         .unwrap();
 
-      const type: VerifyOTP['type'] = 'signup';
+      const type: VerifyOtp['type'] = 'signup';
       const params = new URLSearchParams(searchParams);
       params.set('email', email);
       params.set('type', type);

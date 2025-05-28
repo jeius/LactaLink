@@ -3,13 +3,13 @@
 import { sendOtp } from '@/auth/actions';
 import { Button } from '@/components/ui/button';
 import { RESEND_OTP } from '@/lib/constants';
-import { VerifyOTP } from '@lactalink/types';
+import { VerifyOtp } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
 import { formatTime } from '@lactalink/utilities/formatters';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function SendAgain(params: VerifyOTP) {
+export default function SendAgain(params: VerifyOtp) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isSending, setIsSending] = useState(false);
 

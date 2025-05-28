@@ -20,7 +20,7 @@ import { useState } from 'react';
 
 import { signIn } from '@/auth/actions';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
-import { VerifyOTP } from '@lactalink/types';
+import { VerifyOtp } from '@lactalink/types';
 import { extractName } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -41,7 +41,7 @@ export default function SignInForm() {
 
   async function onSubmit(formData: SignInSchema) {
     const { email } = formData;
-    const type: VerifyOTP['type'] = 'signup';
+    const type: VerifyOtp['type'] = 'signup';
 
     try {
       const signInResult = await toast

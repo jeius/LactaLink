@@ -20,11 +20,11 @@ import { cn } from '@/lib/utils';
 
 import { verifyOtp } from '@/auth/actions';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { VerifyOTP } from '@lactalink/types';
+import { VerifyOtp } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
 import { toast } from 'sonner';
 
-export default function OTPForm(props: VerifyOTP) {
+export default function OTPForm(props: VerifyOtp) {
   const router = useRouter();
 
   const form = useForm<OtpSchema>({

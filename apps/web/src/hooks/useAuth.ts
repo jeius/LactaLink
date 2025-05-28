@@ -1,5 +1,6 @@
 'use client';
 
+import { getSession } from '@/auth/actions';
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -45,7 +46,7 @@ export function useAuth() {
     error,
   } = useQuery({
     queryKey: QUERY_KEYS.AUTH.SESSION,
-    queryFn: () => apiClient.auth.getSession(),
+    queryFn: () => getSession(),
     staleTime: 1000 * 60 * 10, // 5 minutes
     retry: false,
   });

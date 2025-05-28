@@ -9,13 +9,13 @@ import {
 import { Metadata } from 'next';
 
 import { Button } from '@/components/ui/button';
-import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
 import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { VerifyOTP } from '@lactalink/types';
+import { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 import { ChevronLeft } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import OTPForm from './form';
 import SendAgain from './sendAgain';
@@ -25,53 +25,42 @@ export const metadata: Metadata = {
   description: 'Verify OTP page for LactaLink',
 };
 
-const redirectKey = SEARCH_PARAMS_KEYS.REDIRECT;
-
 interface Props {
-  searchParams?: Promise<{ redirect?: string } | Omit<VerifyOTP, 'options'>>;
+  searchParams?: Promise<VerifyOtpSearchParams>;
 }
 
 export default async function Page({ searchParams }: Props) {
-  const params = (searchParams && (await searchParams)) || {};
-
-  const redirect = ('redirect' in params && params.redirect) || null;
   const backToSignIn = new URL('/auth/sign-in', getServerSideURL());
-  if (redirect) {
-    backToSignIn.searchParams.set(redirectKey, redirect);
-  }
-
   const imgUrl = new URL('/images/verification.png', getServerSideURL());
 
-  if (!('type' in params)) {
-    const msg = 'Unable to send verification code, verification type not provided.';
-    encodedRedirect('/error', msg);
-    return null;
+  const params = searchParams && (await searchParams);
+
+  if (!params) {
+    notFound();
   }
 
-  const type = params.type;
-  const email = 'email' in params && typeof params.email === 'string' ? params.email : undefined;
-  const phone = 'phone' in params && typeof params.phone === 'string' ? params.phone : undefined;
-  const recepient = email || phone;
+  if (!params.type) {
+    const msg = 'Unable to send verification code, verification type not provided.';
+    encodedRedirect('/error', msg);
+  }
 
-  if (!recepient) {
+  if (!('email' in params) && !('phone' in params)) {
     const msg = 'Unable to send verification code, email or phone not provided.';
     encodedRedirect('/error', msg);
     return null;
   }
 
-  let options: VerifyOTP | null = null;
-
-  if (email && (type === 'recovery' || type === 'signup' || type === 'email_change')) {
-    options = { email, type };
-  } else if (phone && (type === 'phone_change' || type === 'sms')) {
-    options = { phone, type };
-  }
-
-  if (!options) {
-    const msg = 'Unable to send verification code, invalid parameters provided.';
+  if ('email' in params && 'phone' in params) {
+    const msg = 'Unable to send verification code, either email or phone must only be provided.';
     encodedRedirect('/error', msg);
     return null;
   }
+
+  const recepient = 'email' in params ? params.email : params.phone;
+  const options: VerifyOtp =
+    'email' in params
+      ? { email: params.email, type: params.type }
+      : { phone: params.phone, type: params.type };
 
   return (
     <main className="min-h-[calc(100vh - 2rem)] p-5">

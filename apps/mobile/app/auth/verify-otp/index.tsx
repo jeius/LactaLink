@@ -13,38 +13,25 @@ import { Icon } from '@/components/ui/icon';
 import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { VerifyOtpParams } from '@/lib/types';
+import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import React from 'react';
 import { Dimensions } from 'react-native';
 
 export default function VerifyOTP() {
   const { height } = Dimensions.get('window');
-  const toast = useAppToast();
   const { theme } = useTheme();
-
-  const params = useLocalSearchParams<VerifyOtpParams>();
-  const recepient = 'email' in params ? params.email : params.phone;
-
   const gradientColors = [
     'transparent',
     (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
-  useEffect(() => {
-    if (!params.type) {
-      toast.show({
-        id: 'otp',
-        message: 'Verification type not found.',
-        type: 'error',
-      });
-      router.dismiss();
-    }
-  }, [toast, params.type]);
+  const searchParams = useLocalSearchParams<VerifyOtpSearchParams>();
+  const recipient = 'email' in searchParams ? searchParams.email : searchParams.phone;
+  const params: VerifyOtp = { ...searchParams };
 
   return (
     <SafeArea className="p-5">
@@ -64,15 +51,13 @@ export default function VerifyOTP() {
                 Verification
               </Text>
               <HStack className="flex-wrap items-center">
-                {recepient && (
-                  <Text size="md" className="text-typography-700">
-                    A six digit code has been sent to{' '}
-                    <Text bold className="text-typography-700">
-                      {recepient}
-                    </Text>
-                    .
+                <Text size="md" className="text-typography-700">
+                  A six digit code has been sent to{' '}
+                  <Text bold className="text-typography-700">
+                    {recipient}
                   </Text>
-                )}
+                  .
+                </Text>
               </HStack>
             </VStack>
           </VStack>

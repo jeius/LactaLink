@@ -15,11 +15,10 @@ import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
 import { RESET_PASSWORD_TOAST_ID } from '@/lib/constants';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { VerifyOtpParams } from '@/lib/types';
 import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApiClient } from '@lactalink/api';
-import { emailSchema } from '@lactalink/types';
+import { emailSchema, VerifyOtpSearchParams } from '@lactalink/types';
 import { router } from 'expo-router';
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
@@ -59,7 +58,7 @@ export default function ForgotPassword() {
       await apiClient.auth.resetPasswordForEmail(email);
       toast.close(RESET_PASSWORD_TOAST_ID);
 
-      const params: VerifyOtpParams = { email, type: 'recovery' };
+      const params: VerifyOtpSearchParams = { email, type: 'recovery' };
       router.push({ pathname: '/auth/verify-otp', params });
     } catch (error) {
       showErrorToastWithId(error, RESET_PASSWORD_TOAST_ID);

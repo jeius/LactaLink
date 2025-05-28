@@ -1,7 +1,8 @@
 import { getAppToast } from '@/hooks/useAppToast';
 import { SIGN_UP_TOAST_ID } from '@/lib/constants';
-import { SignUpSchema, VerifyOtpParams } from '@/lib/types';
+import { SignUpSchema } from '@/lib/types';
 import { getApiClient } from '@lactalink/api';
+import { VerifyOtpSearchParams } from '@lactalink/types';
 import { router } from 'expo-router';
 
 export async function signUp({ email, password }: SignUpSchema) {
@@ -22,6 +23,6 @@ export async function signUp({ email, password }: SignUpSchema) {
     type: 'success',
   });
 
-  const params: VerifyOtpParams = { email: email, type: 'signup' };
+  const params: VerifyOtpSearchParams = { email: email, type: 'signup' };
   router.push({ pathname: '/auth/verify-otp', params });
 }

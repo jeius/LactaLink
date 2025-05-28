@@ -41,7 +41,9 @@ export type AuthResult = { data: Extract<MeUser, { user: User }> } | { error: Au
 
 export type OTPType = Pick<ResendParams, 'type'> | Extract<SbEmailOtpType, 'recovery'>;
 
-type SbEmailOtp = Extract<ResendParams, { type: SbEmailOtpType }>;
+export type ResendEmailOtp = Extract<ResendParams, { type: SbEmailOtpType }>;
+
+export type ResendEmailOtpSearchParams = Omit<ResendEmailOtp, 'options'>;
 
 type RecoveryOtpType = Extract<VerifyOtpParams['type'], 'recovery'>;
 
@@ -50,10 +52,18 @@ export type RecoveryEmailOtp = {
   email: string;
 };
 
-export type EmailOtpType = Extract<SbEmailOtpType, SbEmailOtp['type'] | RecoveryOtpType>;
+export type EmailOtpType = Extract<SbEmailOtpType, ResendEmailOtp['type'] | RecoveryOtpType>;
 
-export type EmailOtp = Omit<Extract<ResendParams, { type: EmailOtpType }>, 'type'> & {
+export type EmailOtp = Omit<Extract<ResendParams, { email: string }>, 'type'> & {
   type: EmailOtpType;
 };
 
-export type VerifyOTP = EmailOtp | Exclude<ResendParams, { type: EmailOtpType }>;
+export type PhoneOtp = Exclude<ResendParams, EmailOtp>;
+
+export type VerifyOtp = EmailOtp | PhoneOtp;
+
+export type EmailOtpSearchParams = Omit<EmailOtp, 'options'>;
+
+export type PhoneOtpSearchParams = Omit<PhoneOtp, 'options'>;
+
+export type VerifyOtpSearchParams = EmailOtpSearchParams | PhoneOtpSearchParams;

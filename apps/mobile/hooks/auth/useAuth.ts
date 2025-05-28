@@ -12,7 +12,7 @@ export function useAuth() {
   useEffect(() => {
     const subscription = apiClient.auth.onAuthStateChange((event) => {
       // Invalidate session query on any auth state change
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
 
       // Handle specific events if needed
       switch (event) {
@@ -42,11 +42,12 @@ export function useAuth() {
   const {
     data: session,
     isLoading,
+    isFetching,
     isError,
     refetch,
     error,
   } = useQuery({
-    queryKey: QUERY_KEYS.AUTH.SESSION,
+    queryKey: QUERY_KEYS.AUTH.ALL,
     queryFn: () => apiClient.auth.getSession(),
     staleTime: 1000 * 60 * 10, // 5 minutes
     retry: false,
@@ -59,6 +60,7 @@ export function useAuth() {
 
     // Loading states
     isLoading,
+    isFetching,
     isError,
     error,
 
