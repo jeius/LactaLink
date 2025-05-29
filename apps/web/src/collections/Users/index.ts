@@ -2,7 +2,7 @@ import { signOut } from '@/auth/actions';
 import { SupabaseStrategy } from '@/auth/strategy';
 import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { adminAccessControl } from './access/admin';
+import { adminAccessControl, ownerOrAdminAccessControl } from './access';
 import { appendPermissions } from './hooks/afterMe';
 
 export const Users: CollectionConfig<'users'> = {
@@ -22,7 +22,7 @@ export const Users: CollectionConfig<'users'> = {
   },
   access: {
     admin: adminAccessControl,
-    read: adminAccessControl,
+    read: ownerOrAdminAccessControl,
     create: () => true,
   },
   disableDuplicate: true,

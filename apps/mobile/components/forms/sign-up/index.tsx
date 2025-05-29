@@ -11,9 +11,8 @@ import { FormFieldProps } from '@/components/form-field';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
 
 import { signUp } from '@/auth';
-import { SIGN_UP_TOAST_ID } from '@/lib/constants';
-import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
+import { toast } from 'sonner-native';
 
 const FIELDS: FormFieldProps<SignUpSchema>[] = [
   {
@@ -46,18 +45,19 @@ export default function SignUpForm() {
   });
 
   async function onSubmit(formData: SignUpSchema) {
-    try {
-      await signUp(formData);
-    } catch (error) {
-      showErrorToastWithId(error, SIGN_UP_TOAST_ID);
-
-      const code = extractAuthErrorCode(error);
-      const message = extractErrorMessage(error);
-      if (code === 'email_exists') {
-        form.setError('email', { message, type: 'duplicate' });
-        carouselRef.current?.scrollTo({ index: 0, animated: true });
-      }
-    }
+    toast.promise(signUp(formData), {
+      loading: 'Creating account...',
+      success: (msg: string) => msg,
+      error: (error) => {
+        const code = extractAuthErrorCode(error);
+        const message = extractErrorMessage(error);
+        if (code === 'email_exists') {
+          form.setError('email', { message, type: 'duplicate' });
+          carouselRef.current?.scrollTo({ index: 0, animated: true });
+        }
+        return message;
+      },
+    });
   }
 
   return (

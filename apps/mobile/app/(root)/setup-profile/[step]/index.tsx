@@ -14,7 +14,6 @@ import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
-import { useAppToast } from '@/hooks/useAppToast';
 
 import { uploadFile } from '@/lib/api/file';
 import { createAddresses } from '@/lib/api/profile/createAddresses';
@@ -29,29 +28,28 @@ import {
 } from '@/lib/constants/setupProfile';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
-import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 
 import { useApiClient } from '@lactalink/api';
 import { SetupProfileSchema, User } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
-const TOAST_ID = 'setup-profile';
 
 type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
   const { user, refetchSession } = useAuth();
   const apiClient = useApiClient();
-  const toast = useAppToast();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
   const { cleanUpForm } = useSetupForm();
-  const form = useFormContext<SetupProfileSchema>();
 
+  const form = useFormContext<SetupProfileSchema>();
   const profileType = form.getValues('profileType');
 
   const title: Record<ProfileType, string> = {
@@ -70,13 +68,7 @@ export default function Step() {
   const RenderBlock = block[step];
 
   async function onSubmit(formData: SetupProfileSchema) {
-    toast.show({
-      id: TOAST_ID,
-      message: 'Creating profile...',
-      type: 'loading',
-    });
-
-    try {
+    const createPromise = async () => {
       if (!user) throw new Error('User not found.');
 
       const { addresses, avatar, ...rest } = formData;
@@ -106,19 +98,18 @@ export default function Step() {
         },
       });
 
-      toast.show({
-        id: TOAST_ID,
-        type: 'success',
-        message: 'Profile created successfully.',
-      });
-
       cleanUpForm();
       await refetchSession({ throwOnError: true });
       router.dismissTo('/home');
-    } catch (error) {
-      console.error('Submit', error);
-      showErrorToastWithId(error, TOAST_ID);
-    }
+
+      return 'Profile created successfully!';
+    };
+
+    toast.promise(createPromise(), {
+      loading: 'Creating profile...',
+      success: (msg) => msg,
+      error: (error) => extractErrorMessage(error),
+    });
   }
 
   async function handleNext() {

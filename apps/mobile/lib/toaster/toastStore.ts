@@ -22,7 +22,7 @@
 
 import { useToast } from '@/components/ui/toast';
 import { create } from 'zustand';
-import { ToastShowArgs, errorToast, loadingToast, successToast } from '../toaster';
+import { ToastShowArgs, errorToast, loadingToast, successToast } from '.';
 
 type ToastStore = {
   toast: ReturnType<typeof useToast> | null;

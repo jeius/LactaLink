@@ -10,7 +10,6 @@ import { redirect } from 'next/navigation';
 export const signIn = async (credentials: SignInSchema) => {
   const apiClient = await getServerApi();
   const email = credentials.email;
-  const type: VerifyOtp['type'] = 'signup';
   try {
     const user = await apiClient.auth.signIn(credentials);
     return { success: true, user };
@@ -18,7 +17,7 @@ export const signIn = async (credentials: SignInSchema) => {
     const code = extractAuthErrorCode(error);
 
     if (code === 'email_not_confirmed') {
-      await apiClient.auth.sendVerification({ email, type });
+      await apiClient.auth.sendVerification({ email, type: 'signup' });
       return { success: false, needsVerification: true };
     }
 

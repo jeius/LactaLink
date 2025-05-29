@@ -1,24 +1,13 @@
-import { getAppToast } from '@/hooks/useAppToast';
 import { extractErrorMessage } from '@lactalink/utilities';
+import { toast } from 'sonner-native';
 
 export const showErrorToast = (error: unknown) => {
-  const toast = getAppToast();
   const message = extractErrorMessage(error);
-  toast.closeAll();
-  toast.show({
-    id: 'error-toast',
-    type: 'error',
-    message: message || 'An unexpected error occurred.',
-  });
+  toast.dismiss();
+  toast.error(message, { id: 'error-toast', closeButton: false });
 };
 
 export const showErrorToastWithId = (error: unknown, id: string) => {
-  const toast = getAppToast();
   const message = extractErrorMessage(error);
-  toast.closeAll();
-  toast.show({
-    id,
-    type: 'error',
-    message: message || 'An unexpected error occurred.',
-  });
+  toast.error(message, { id, closeButton: false });
 };

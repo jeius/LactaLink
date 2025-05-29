@@ -1,4 +1,4 @@
-import { Toaster } from '@/lib/toaster';
+import { Toaster } from '@/components/sonner';
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import React from 'react';
 import { View, ViewProps } from 'react-native';
@@ -28,8 +28,9 @@ export function GluestackUIProvider({
     <View className="relative flex-1" style={[config[mode as keyof Config], props.style]}>
       <OverlayProvider>
         <View className="absolute inset-0">{props.children}</View>
-        <Toaster />
       </OverlayProvider>
+
+      <Toaster />
     </View>
   );
 }

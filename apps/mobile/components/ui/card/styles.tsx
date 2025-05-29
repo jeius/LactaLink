@@ -1,6 +1,6 @@
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-const baseStyle = isWeb ? 'flex flex-col relative z-0 overflow-hidden' : 'overflow-hidden';
+const baseStyle = isWeb ? 'flex flex-col relative z-0 overflow-hidden' : 'overflow-hidden max-w-md';
 
 export const cardStyle = tva({
   base: baseStyle,

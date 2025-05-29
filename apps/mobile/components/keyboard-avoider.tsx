@@ -17,6 +17,7 @@ type Props = {
   scrollViewProps?: ScrollViewProps;
   containerStyle?: StyleProp<ViewStyle>;
   scrollViewRef?: RefObject<ScrollView>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
 const KeyboardAvoidingWrapper: React.FC<Props> = ({
@@ -25,6 +26,7 @@ const KeyboardAvoidingWrapper: React.FC<Props> = ({
   scrollViewProps,
   containerStyle,
   scrollViewRef,
+  contentContainerStyle,
 }) => {
   return (
     <KeyboardAvoidingView
@@ -35,7 +37,7 @@ const KeyboardAvoidingWrapper: React.FC<Props> = ({
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={[{ flexGrow: 1 }, contentContainerStyle]}
           keyboardShouldPersistTaps="handled"
           {...scrollViewProps}
         >

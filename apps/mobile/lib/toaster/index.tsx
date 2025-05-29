@@ -21,7 +21,7 @@ import { VStack } from '@/components/ui/vstack';
 import { InterfaceToastProps } from '@gluestack-ui/toast/lib/types';
 import React, { FC, useEffect } from 'react';
 import { Dimensions, View } from 'react-native';
-import { useToastStore } from '../stores/toastStore';
+import { useToastStore } from './toastStore';
 
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import { ToastProvider } from '@gluestack-ui/toast';

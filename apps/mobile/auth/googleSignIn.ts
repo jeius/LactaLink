@@ -1,5 +1,5 @@
 import { getApiClient } from '@lactalink/api';
-import { User } from '@lactalink/types';
+import { extractName } from '@lactalink/utilities';
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -7,8 +7,9 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import { AuthError } from '@supabase/supabase-js';
+import { router } from 'expo-router';
 
-export async function signInWithGoogle(): Promise<User> {
+export async function signInWithGoogle() {
   try {
     const apiClient = getApiClient();
     await GoogleSignin.hasPlayServices();
@@ -24,7 +25,12 @@ export async function signInWithGoogle(): Promise<User> {
       throw new Error('No Google ID Token found');
     }
 
-    return await apiClient.auth.signInWithIdToken({ token: idToken, provider: 'google' });
+    const user = await apiClient.auth.signInWithIdToken({ token: idToken, provider: 'google' });
+    const name = extractName(user) || user.email;
+
+    router.replace('/home');
+
+    return `👋 Welcome! ${name}`;
   } catch (error) {
     let message = 'An unknown error occured. Please try again later!';
     let code = 'google_sign_in_error';

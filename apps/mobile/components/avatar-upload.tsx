@@ -5,7 +5,6 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useAppToast } from '@/hooks/useAppToast';
 import { MAX_AVATAR_SIZE } from '@/lib/constants';
 import { AvatarSchema, SetupProfileSchema } from '@lactalink/types';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +19,7 @@ import { Pressable } from './ui/pressable';
 import { VStack } from './ui/vstack';
 
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
+import { showErrorToast } from '@/lib/utils/showErrorToast';
 
 const containerStyle = tva({
   base: 'h-64 w-full',
@@ -48,7 +48,6 @@ export default function AvatarUpload({
   const [isPressed, setIsPressed] = useState(false);
   const [isModalOpen, showModal] = useState(false);
 
-  const toast = useAppToast();
   const { user } = useAuth();
   const lastImageUri = useRef<string | null>(value?.url || null);
 
@@ -85,11 +84,7 @@ export default function AvatarUpload({
     pickedImage: ImagePicker.ImagePickerAsset
   ): Promise<AvatarSchema | undefined> {
     if (pickedImage.fileSize && pickedImage.fileSize > MAX_AVATAR_SIZE) {
-      toast.show({
-        id: 'avatar-image-picker',
-        type: 'error',
-        message: 'Selected image exceeds the 5MB size limit.',
-      });
+      showErrorToast('Selected image exceeds the 5MB size limit.');
       return;
     }
 

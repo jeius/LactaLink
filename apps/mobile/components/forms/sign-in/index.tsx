@@ -11,11 +11,15 @@ import { FormProvider, useForm } from 'react-hook-form';
 
 import { signIn } from '@/auth';
 import { FormField } from '@/components/form-field';
-import { router } from 'expo-router';
+import { extractErrorMessage } from '@lactalink/utilities';
+import { useRouter } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
+import { toast } from 'sonner-native';
 
 export default function SignInForm() {
+  const router = useRouter();
+
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -24,7 +28,11 @@ export default function SignInForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(formData: SignInSchema) {
-    await signIn(formData);
+    toast.promise(signIn(formData), {
+      loading: 'Signing in...',
+      success: (message: string) => message,
+      error: (error) => extractErrorMessage(error),
+    });
   }
 
   return (

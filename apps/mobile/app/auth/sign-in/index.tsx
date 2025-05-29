@@ -27,7 +27,7 @@ export default function SignIn() {
   ] as const;
 
   return (
-    <SafeArea>
+    <SafeArea className="items-stretch">
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.23 }}>
         <Image
           size="full"

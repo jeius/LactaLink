@@ -28,9 +28,9 @@ export default function SignUp() {
   ] as const;
 
   return (
-    <SafeArea className="p-5">
-      <KeyboardAvoidingWrapper>
-        <Card className="my-auto max-w-md p-0">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
+        <Card className="m-5 p-0">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
             <Image
               size="none"

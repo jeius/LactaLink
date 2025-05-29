@@ -4,10 +4,13 @@ import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
+import { router } from 'expo-router';
 import { useTheme } from './providers/theme-provider';
 import SafeArea from './safe-area';
+import { Button, ButtonText } from './ui/button';
 import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -34,7 +37,12 @@ export function AppInitializer({ children }: Props) {
     console.warn(error);
     return (
       <SafeArea className="items-center justify-center">
-        <Text size="sm">{error.message}</Text>
+        <VStack space="lg">
+          <Text size="sm">{error.message}</Text>
+          <Button action="default" onPress={() => router.back()}>
+            <ButtonText>Go to back.</ButtonText>
+          </Button>
+        </VStack>
       </SafeArea>
     );
   }

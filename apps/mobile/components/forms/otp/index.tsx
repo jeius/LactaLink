@@ -7,9 +7,11 @@ import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { otpSchema, OtpSchema, VerifyOtp } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { OtpInput } from 'react-native-otp-entry';
+import { toast } from 'sonner-native';
 
 export default function OTPForm(props: VerifyOtp) {
   const {
@@ -28,7 +30,11 @@ export default function OTPForm(props: VerifyOtp) {
   const outlineColor = getHexColor(theme, 'outline', 200);
 
   async function onSubmit({ otp: token }: OtpSchema) {
-    await verifyOTP({ ...props, token });
+    toast.promise(verifyOTP({ ...props, token }), {
+      loading: 'Verifying code...',
+      success: (msg) => msg,
+      error: (error) => extractErrorMessage(error),
+    });
   }
 
   return (

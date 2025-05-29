@@ -1,3 +1,4 @@
+import { resetPassword } from '@/auth';
 import { FormField } from '@/components/form-field';
 import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
 import { useTheme } from '@/components/providers/theme-provider';
@@ -11,19 +12,17 @@ import { HStack } from '@/components/ui/hstack';
 import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAppToast } from '@/hooks/useAppToast';
 import { getHexColor } from '@/lib/colors';
-import { RESET_PASSWORD_TOAST_ID } from '@/lib/constants';
 import { ASSET_IMAGES } from '@/lib/constants/images';
-import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useApiClient } from '@lactalink/api';
-import { emailSchema, VerifyOtpSearchParams } from '@lactalink/types';
+import { emailSchema } from '@lactalink/types';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { router } from 'expo-router';
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Dimensions } from 'react-native';
+import { toast } from 'sonner-native';
 import { z } from 'zod';
 
 const schema = z.object({ email: emailSchema });
@@ -31,8 +30,6 @@ type Schema = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
   const { height } = Dimensions.get('window');
-  const toast = useAppToast();
-  const apiClient = useApiClient();
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -48,28 +45,18 @@ export default function ForgotPassword() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit({ email }: Schema) {
-    toast.show({
-      id: RESET_PASSWORD_TOAST_ID,
-      message: 'Requesting reset...',
-      type: 'loading',
+    toast.promise(resetPassword(email), {
+      loading: 'Requesting reset...',
+      success: (msg) => msg,
+      error: (error) => extractErrorMessage(error),
     });
-
-    try {
-      await apiClient.auth.resetPasswordForEmail(email);
-      toast.close(RESET_PASSWORD_TOAST_ID);
-
-      const params: VerifyOtpSearchParams = { email, type: 'recovery' };
-      router.push({ pathname: '/auth/verify-otp', params });
-    } catch (error) {
-      showErrorToastWithId(error, RESET_PASSWORD_TOAST_ID);
-    }
   }
 
   return (
-    <SafeArea className="p-5">
-      <KeyboardAvoidingWrapper>
-        <VStack className="my-auto">
-          <Card className="max-w-md p-0">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
+        <VStack className="m-5">
+          <Card className="p-0">
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
               <Image
                 size="full"

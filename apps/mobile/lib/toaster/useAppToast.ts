@@ -7,7 +7,7 @@
  * Both are backed by the ToastStore, which must be initialized by the Toast component at the app root.
  */
 
-import { useToastStore } from '@/lib/stores/toastStore';
+import { useToastStore } from '@/lib/toaster/toastStore';
 
 /**
  * getAppToast returns toast actions for use outside React components.

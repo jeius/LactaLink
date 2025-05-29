@@ -1,21 +1,16 @@
+import { updatePassword } from '@/auth';
 import { FormField } from '@/components/form-field';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { useAppToast } from '@/hooks/useAppToast';
-import { UPDATE_PASSWORD_TOAST_ID } from '@/lib/constants';
-import { showErrorToastWithId } from '@/lib/utils/showErrorToast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useApiClient } from '@lactalink/api';
 import { resetPasswordSchema, ResetPasswordSchema } from '@lactalink/types';
-import { router } from 'expo-router';
+import { extractErrorMessage } from '@lactalink/utilities';
 import { LockIcon } from 'lucide-react-native';
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner-native';
 
 export default function ResetPasswordForm() {
-  const toast = useAppToast();
-  const apiClient = useApiClient();
-
   const form = useForm<ResetPasswordSchema>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
@@ -24,22 +19,11 @@ export default function ResetPasswordForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit({ password }: ResetPasswordSchema) {
-    const id = UPDATE_PASSWORD_TOAST_ID;
-    toast.show({ id, type: 'loading', message: 'Updating password...' });
-
-    try {
-      await apiClient.auth.updatePassword(password);
-
-      toast.show({ id, type: 'success', message: 'Password updated.' });
-
-      if (router.canDismiss()) {
-        router.dismiss();
-      } else {
-        router.replace('/auth/sign-in');
-      }
-    } catch (error) {
-      showErrorToastWithId(error, id);
-    }
+    toast.promise(updatePassword(password), {
+      loading: 'Updating password...',
+      success: (msg) => msg,
+      error: (error) => extractErrorMessage(error),
+    });
   }
 
   return (
