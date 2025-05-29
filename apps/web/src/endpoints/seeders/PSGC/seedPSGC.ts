@@ -4,9 +4,11 @@ import {
   BarangayPSGC,
   CityMunicipalityPSGC,
   CollectionSlugPSGC,
+  ExistingDocs,
   IslandGroupPSGC,
   ProvincePSGC,
   RawAndExistingDocs,
+  RawPSGCDataMap,
   RegionPSGC,
   SlugPSGC,
 } from '@lactalink/types';
@@ -20,7 +22,7 @@ const init: RequestInit = {
   },
 };
 
-async function fetchJson<T = unknown>(collection: SlugPSGC): Promise<T> {
+async function fetchPSGCFromExternal<T = unknown>(collection: SlugPSGC): Promise<T> {
   const url = `${PSGC_API_URL}/api/${collection}.json`;
   const res = await fetch(url, init);
 
@@ -32,13 +34,13 @@ async function fetchJson<T = unknown>(collection: SlugPSGC): Promise<T> {
   return data;
 }
 
-type FilterParams<T extends { code: string }> = {
-  data: T[]; // Array of items with optional code
+type FilterParams<T extends CollectionSlugPSGC> = {
+  data: RawPSGCDataMap[T][]; // Array of items with optional code
   collection: CollectionSlugPSGC;
   payload: Payload;
 };
 
-async function filterData<T extends { code: string }>({
+async function filterData<T extends CollectionSlugPSGC>({
   collection,
   data,
   payload,
@@ -51,16 +53,16 @@ async function filterData<T extends { code: string }>({
     select: { code: true },
   });
 
-  const existingDocs: Record<string, string> = {}; //code:id pairs
+  const existingDocs: ExistingDocs<T> = new Map();
   for (const doc of docs) {
-    existingDocs[doc.code] = doc.id;
+    existingDocs.set(doc.code, doc.id);
   }
 
   const title = formatCamelCaseCaps(collection);
   payload.logger.info(`> Filtering raw ${title} data from PSGC...`);
   payload.logger.info(`> Found ${totalDocs} existing docs in the system's ${title}.`);
 
-  const filteredData = data.filter(({ code }) => Boolean(!existingDocs[code]));
+  const filteredData = data.filter(({ code }) => Boolean(!existingDocs.get(code)));
   payload.logger.info(`> ${title} to create: ${filteredData.length}`);
   payload.logger.info('>');
 
@@ -73,31 +75,40 @@ export const seedPSGCHandler = createPayloadHandler({
   handler: async ({ payload }) => {
     payload.logger.info('>>> Starting seed of PSGC data...');
 
-    payload.logger.info('> Fetching island groups from PSGC');
-    const islandGroups = await fetchJson<IslandGroupPSGC[]>('island-groups');
+    // Fetch all data in parallel
+    payload.logger.info('> Fetching all PSGC data in parallel...');
+    const [islandGroups, regions, provinces, citiesMunicipalities, barangays] = await Promise.all([
+      fetchPSGCFromExternal<IslandGroupPSGC[]>('island-groups'),
+      fetchPSGCFromExternal<RegionPSGC[]>('regions'),
+      fetchPSGCFromExternal<ProvincePSGC[]>('provinces'),
+      fetchPSGCFromExternal<CityMunicipalityPSGC[]>('cities-municipalities'),
+      fetchPSGCFromExternal<BarangayPSGC[]>('barangays'),
+    ]);
 
-    payload.logger.info('> Fetching regions from PSGC');
-    const regions = await fetchJson<RegionPSGC[]>('regions');
+    payload.logger.info('> All PSGC data fetched successfully');
 
-    payload.logger.info('> Fetching provinces from PSGC');
-    const provinces = await fetchJson<ProvincePSGC[]>('provinces');
-
-    payload.logger.info('> Fetching cities/municipalities from PSGC');
-    const citiesMunicipalities = await fetchJson<CityMunicipalityPSGC[]>('cities-municipalities');
-
-    payload.logger.info('> Fetching barangays from PSGC');
-    const barangays = await fetchJson<BarangayPSGC[]>('barangays');
+    // Filter data in parallel as well
+    payload.logger.info('> Filtering PSGC data by excluding existing data in the database...');
+    const [
+      filteredIslandGroups,
+      filteredRegions,
+      filteredProvinces,
+      filteredCitiesMunicipalities,
+      filteredBarangays,
+    ] = await Promise.all([
+      filterData({ collection: 'islandGroups', data: islandGroups, payload }),
+      filterData({ collection: 'regions', data: regions, payload }),
+      filterData({ collection: 'provinces', data: provinces, payload }),
+      filterData({ collection: 'citiesMunicipalities', data: citiesMunicipalities, payload }),
+      filterData({ collection: 'barangays', data: barangays, payload }),
+    ]);
 
     const data = {
-      islandGroups: await filterData({ collection: 'islandGroups', data: islandGroups, payload }),
-      regions: await filterData({ collection: 'regions', data: regions, payload }),
-      provinces: await filterData({ collection: 'provinces', data: provinces, payload }),
-      citiesMunicipalities: await filterData({
-        collection: 'citiesMunicipalities',
-        data: citiesMunicipalities,
-        payload,
-      }),
-      barangays: await filterData({ collection: 'barangays', data: barangays, payload }),
+      islandGroups: filteredIslandGroups,
+      regions: filteredRegions,
+      provinces: filteredProvinces,
+      citiesMunicipalities: filteredCitiesMunicipalities,
+      barangays: filteredBarangays,
     };
 
     return data;

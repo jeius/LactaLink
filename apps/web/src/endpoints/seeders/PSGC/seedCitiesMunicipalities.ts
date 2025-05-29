@@ -1,38 +1,33 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type {
-  CityMunicipality,
-  CityMunicipalityPSGC,
-  CollectionSlugPSGC,
-  ExistingDocs,
-  IncomingCityMunicipalityData,
-} from '@lactalink/types';
+import type { CityMunicipality, ExistingDocs, IncomingData, ProvincePSGC } from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { getExistingOrThrow } from './utils/getExistingOrThrow';
 import { seed } from './utils/seeder';
 
-const collection: CollectionSlugPSGC = 'citiesMunicipalities';
+const collection = 'citiesMunicipalities';
 
 export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   const { payload, user, t, json } = req;
 
-  const {
-    citiesMunicipalities,
-    existingIslandGroups,
-    existingRegions,
-    existingProvinces,
-  }: IncomingCityMunicipalityData = json ? await json() : {};
+  const { data, existingData }: IncomingData<'citiesMunicipalities'> = json ? await json() : {};
 
-  if (!citiesMunicipalities || !existingIslandGroups || !existingRegions || !existingProvinces) {
+  const {
+    islandGroups: existingIslandGroups,
+    provinces: existingProvinces,
+    regions: existingRegions,
+  } = existingData;
+
+  if (!data || !existingIslandGroups || !existingRegions || !existingProvinces) {
     throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const { rawData, existingDocs } = citiesMunicipalities;
+  const { rawData, existingDocs } = data;
   const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  return await seed<CityMunicipalityPSGC, CityMunicipality>({
+  return await seed({
     collection,
     payload,
     user,
@@ -53,7 +48,7 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
         collectionLabel
       );
 
-      const provinceID = getExistingOrThrow(
+      const provinceID = getExistingOrThrow<ProvincePSGC | false>(
         existingProvinces,
         item.provinceCode,
         'Province ID',

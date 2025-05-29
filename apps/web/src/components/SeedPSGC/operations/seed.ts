@@ -3,16 +3,7 @@
  */
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import {
-  ApiFetchResponse,
-  CollectionSlugPSGC,
-  ExistingDocs,
-  IncomingBarangayData,
-  IncomingCityMunicipalityData,
-  IncomingIslandGroupData,
-  IncomingProvinceData,
-  IncomingRegionData,
-} from '@lactalink/types';
+import { ApiFetchResponse, CollectionSlugPSGC, ExistingDocs, IncomingData } from '@lactalink/types';
 import { getChunks } from '@lactalink/utilities';
 import { formatCamelCase, formatCamelCaseCaps, toKebabCase } from '@lactalink/utilities/formatters';
 
@@ -22,27 +13,11 @@ import { formatCamelCase, formatCamelCaseCaps, toKebabCase } from '@lactalink/ut
 const BATCH_SIZE = 100;
 
 /**
- * Represents the structure of incoming data for a specific collection.
- */
-type IncomingData<T, Slug> = Slug extends keyof T ? T : never;
-
-/**
- * Represents the possible types of seed data for PSGC collections.
- */
-type SeedData =
-  | IncomingIslandGroupData
-  | IncomingRegionData
-  | IncomingProvinceData
-  | IncomingCityMunicipalityData
-  | IncomingBarangayData;
-
-/**
  * Parameters required for the `seed` function.
  *
- * @template T - The type of the seed data.
  * @template Slug - The type of the collection slug.
  */
-type SeedParams<T, Slug> = {
+type SeedParams<Slug extends CollectionSlugPSGC> = {
   /**
    * The name of the collection to seed.
    */
@@ -56,43 +31,16 @@ type SeedParams<T, Slug> = {
   /**
    * The incoming data to seed into the collection.
    */
-  incomingData: IncomingData<T, Slug>;
+  incomingData: IncomingData<Slug>;
 };
 
-/**
- * Seeds data into a specified PSGC collection in batches.
- *
- * @template T - The type of the seed data.
- * @template Slug - The type of the collection slug.
- *
- * @param {SeedParams<T, Slug>} params - The parameters for the seeding operation.
- * @returns {Promise<ExistingDocs>} - A map of existing documents after seeding.
- *
- * @description
- * This function processes raw data in batches and sends each batch to the server for seeding.
- * It ensures that the seeding operation is efficient and avoids overloading the server.
- * The function:
- * - Splits the raw data into smaller batches.
- * - Sends each batch to the server via an API call.
- * - Logs the progress and handles errors for each batch.
- * - Merges the results of all batches into the `existingDocs` map.
- *
- * @example
- * const seedParams = {
- *   collection: 'regions',
- *   incomingData: { regions: { rawData: [...], existingDocs: {} } },
- *   payload,
- * };
- * const existingDocs = await seed(seedParams);
- */
-export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>({
+export async function seed<Slug extends CollectionSlugPSGC>({
   collection,
   batchSize = BATCH_SIZE,
   incomingData,
-}: SeedParams<T, Slug>): Promise<ExistingDocs> {
-  type Placeholder = Record<Slug, { rawData: object[]; existingDocs: ExistingDocs }>;
-  const { rawData, existingDocs } = (incomingData as Placeholder)[collection];
-  const batches = getChunks(rawData, batchSize);
+}: SeedParams<Slug>): Promise<ExistingDocs<Slug>> {
+  const { data } = incomingData;
+  const batches = getChunks(data.rawData, batchSize);
 
   console.log(`>`);
   console.log(`>>> Seeding ${formatCamelCase(collection)}...`);
@@ -100,12 +48,13 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
   // Skip seeding if there is no raw data.
   if (batches.length === 0) {
     console.log(`>> ${formatCamelCaseCaps(collection)} already seeded, skipping...`);
-    return existingDocs;
+    return data.existingDocs;
   }
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batchRawData = batches[batchIndex];
-    (incomingData as Placeholder)[collection].rawData = batchRawData;
+
+    if (batchRawData) incomingData.data.rawData = batchRawData;
 
     console.log(`>>> Seeding ${formatCamelCaseCaps(collection)}, batch ${batchIndex}`);
 
@@ -133,11 +82,11 @@ export async function seed<T extends SeedData, Slug extends CollectionSlugPSGC>(
 
     const resData: ApiFetchResponse<ExistingDocs> = await res.json();
     if ('data' in resData && resData.data) {
-      Object.assign(existingDocs, resData.data);
+      Object.assign(data.existingDocs, resData.data);
     } else {
       throw new Error(`Batch ${batchIndex} failed: ${resData.message}`);
     }
   }
 
-  return existingDocs;
+  return data.existingDocs;
 }

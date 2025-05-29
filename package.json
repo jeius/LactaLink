@@ -6,7 +6,7 @@
     "dev": "turbo dev",
     "dev:mobile": "turbo dev --filter=\"{./apps/mobile}...\"",
     "dev:web": "turbo dev --filter=\"{./apps/web}...\"",
-    "generate:types": "turbo generate:types --filter=\"{./packages/types}...\"",
+    "generate:types": "turbo generate:types --filter=\"{./apps/web}...\"",
     "generate:importmap": "turbo generate:importmap --filter=\"{./apps/web}...\"",
     "generate:schema": "turbo generate:schema --filter=\"{./apps/web}...\"",
     "lint": "turbo lint",

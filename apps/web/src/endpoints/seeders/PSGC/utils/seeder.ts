@@ -3,56 +3,29 @@
  * These include types for PSGC inputs, outputs, and user roles.
  */
 import {
-  Barangay,
-  BarangayPSGC,
-  CityMunicipality,
-  CityMunicipalityPSGC,
+  CollectionPSGC,
   CollectionSlugPSGC,
   ExistingDocs,
-  IslandGroup,
-  IslandGroupPSGC,
-  Province,
-  ProvincePSGC,
-  Region,
-  RegionPSGC,
+  RawPSGCDataMap,
   User,
 } from '@lactalink/types';
 import { batchProcess } from '@lactalink/utilities';
 import { Payload } from 'payload';
 
 /**
- * Represents the input types for the PSGC seeder.
- * These are specific to the PSGC hierarchy (e.g., IslandGroupPSGC, RegionPSGC).
- */
-type PSGCInput = IslandGroupPSGC | RegionPSGC | ProvincePSGC | CityMunicipalityPSGC | BarangayPSGC;
-
-/**
- * Represents the output types for the PSGC seeder.
- * These correspond to the actual entities (e.g., IslandGroup, Region).
- */
-type Output = IslandGroup | Region | Province | CityMunicipality | Barangay;
-
-/**
  * Represents the data structure for the resolved data.
  * Excludes metadata fields like `createdAt`, `id`, `sizes`, and `updatedAt`.
  */
-type Data<T> = Omit<T, 'createdAt' | 'id' | 'sizes' | 'updatedAt'>;
+type Data<T extends CollectionSlugPSGC> = Omit<
+  CollectionPSGC<T>,
+  'createdAt' | 'id' | 'sizes' | 'updatedAt'
+>;
 
-/**
- * Represents the resolved data type after processing the input.
- */
-type ResolvedData<T> = Data<T>;
-
-/**
- * Options required for the seed function.
- * @template T - The input type (PSGCInput).
- * @template K - The output type (Output).
- */
-type SeedOptions<T, K> = {
+type SeedOptions<Slug extends CollectionSlugPSGC = CollectionSlugPSGC> = {
   /**
    * The name of the collection where the data will be seeded.
    */
-  collection: CollectionSlugPSGC;
+  collection: Slug;
 
   /**
    * The Payload instance used for database operations.
@@ -72,46 +45,32 @@ type SeedOptions<T, K> = {
   /**
    * The raw data to be seeded.
    */
-  rawData: T[];
+  rawData: RawPSGCDataMap[Slug][];
 
   /**
    * A map of existing documents to avoid duplicate entries.
    * Keys are document codes, and values are document IDs.
    */
-  existingDocs: ExistingDocs;
+  existingDocs: ExistingDocs<Slug>;
 
   /**
    * A function to resolve raw input data into the desired format.
    * Can return a promise or a resolved data object.
    */
-  resolveData: (item: T) => Promise<ResolvedData<K>> | ResolvedData<K>;
+  resolveData: (item: RawPSGCDataMap[Slug]) => Promise<Data<Slug>> | Data<Slug>;
 };
 
-/**
- * Data seeder only for Island Groups, Regions, Provinces, Cities/Municipalities, Barangays.
- *
- * @template T - The input type (PSGCInput).
- * @template K - The output type (Output).
- *
- * @param {SeedOptions<T, K>} options - The options for the seeding operation.
- * @returns {Promise<ExistingDocs>} - A map of existing documents after seeding.
- *
- * @description
- * This function iterates over the raw data, resolves each item into the desired format,
- * and creates a new document in the specified collection if it doesn't already exist.
- * The function ensures no duplicate entries by checking the `existingDocs` map.
- */
-export async function seed<T extends PSGCInput, K extends Output>({
+export async function seed<Slug extends CollectionSlugPSGC>({
   collection,
   payload,
   user,
   rawData,
   existingDocs,
   resolveData: resolveData,
-}: SeedOptions<T, K>): Promise<ExistingDocs> {
+}: SeedOptions<Slug>): Promise<ExistingDocs<Slug>> {
   await batchProcess(rawData, 500, async (item) => {
     // Skip items that already exist in the `existingDocs` map.
-    if (existingDocs[item.code]) return;
+    if (existingDocs.get(item.code)) return;
 
     // Resolve the raw data into the desired format.
     const data = await resolveData(item);
@@ -120,12 +79,13 @@ export async function seed<T extends PSGCInput, K extends Output>({
     const newDoc = await payload.create({
       collection,
       user,
-      data,
-      select: { code: true },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: data as any,
+      select: { code: true, id: true },
     });
 
     // Add the new document to the `existingDocs` map.
-    existingDocs[newDoc.code] = newDoc.id;
+    existingDocs.set(newDoc.code, newDoc.id);
   });
 
   // Return the updated map of existing documents.

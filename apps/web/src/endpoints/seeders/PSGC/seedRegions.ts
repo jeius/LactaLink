@@ -1,33 +1,29 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type {
-  CollectionSlugPSGC,
-  ExistingDocs,
-  IncomingRegionData,
-  Region,
-  RegionPSGC,
-} from '@lactalink/types';
+import type { ExistingDocs, IncomingData } from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { getExistingOrThrow } from './utils/getExistingOrThrow';
 import { seed } from './utils/seeder';
 
-const collection: CollectionSlugPSGC = 'regions';
+const collection = 'regions';
 
 export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   const { payload, user, t, json } = req;
 
-  const { regions, existingIslandGroups }: IncomingRegionData = json ? await json() : {};
+  const { data, existingData }: IncomingData<'regions'> = json ? await json() : {};
 
-  if (!regions || !existingIslandGroups) {
+  const { islandGroups: existingIslandGroups } = existingData;
+
+  if (!data || !existingIslandGroups) {
     throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const { rawData, existingDocs } = regions;
+  const { rawData, existingDocs } = data;
   const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  return await seed<RegionPSGC, Region>({
+  return await seed({
     collection,
     payload,
     user,

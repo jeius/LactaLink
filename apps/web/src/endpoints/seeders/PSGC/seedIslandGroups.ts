@@ -1,11 +1,6 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import {
-  ExistingDocs,
-  IncomingIslandGroupData,
-  IslandGroup,
-  IslandGroupPSGC,
-} from '@lactalink/types';
+import { ExistingDocs, IncomingData } from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
@@ -16,15 +11,15 @@ const collection = 'islandGroups';
 async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   const { payload, user, t, json } = req;
 
-  const { islandGroups }: IncomingIslandGroupData = json ? await json() : {};
+  const { data }: IncomingData<'islandGroups'> = json ? await json() : {};
 
-  if (!islandGroups) {
+  if (!data) {
     throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const { rawData, existingDocs } = islandGroups;
+  const { rawData, existingDocs } = data;
 
-  return await seed<IslandGroupPSGC, IslandGroup>({
+  return await seed({
     collection,
     payload,
     user,

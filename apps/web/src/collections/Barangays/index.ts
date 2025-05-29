@@ -38,7 +38,6 @@ export const Barangays: CollectionConfig<'barangays'> = {
       type: 'relationship',
       label: 'City/Municipality',
       relationTo: 'citiesMunicipalities',
-      required: true,
       maxDepth: 0,
     },
     {

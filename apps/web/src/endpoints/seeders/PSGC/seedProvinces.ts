@@ -1,35 +1,29 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type {
-  CollectionSlugPSGC,
-  ExistingDocs,
-  IncomingProvinceData,
-  Province,
-  ProvincePSGC,
-} from '@lactalink/types';
+import type { ExistingDocs, IncomingData } from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { getExistingOrThrow } from './utils/getExistingOrThrow';
 import { seed } from './utils/seeder';
 
-const collection: CollectionSlugPSGC = 'provinces';
+const collection = 'provinces';
 
 export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   const { payload, user, t, json } = req;
 
-  const { provinces, existingIslandGroups, existingRegions }: IncomingProvinceData = json
-    ? await json()
-    : {};
+  const { data, existingData }: IncomingData<'provinces'> = json ? await json() : {};
 
-  if (!provinces || !existingIslandGroups || !existingRegions) {
+  const { islandGroups: existingIslandGroups, regions: existingRegions } = existingData;
+
+  if (!data || !existingIslandGroups || !existingRegions) {
     throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const { rawData, existingDocs } = provinces;
+  const { rawData, existingDocs } = data;
   const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  return await seed<ProvincePSGC, Province>({
+  return await seed({
     collection,
     payload,
     user,

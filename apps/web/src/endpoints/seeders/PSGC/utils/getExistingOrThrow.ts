@@ -1,42 +1,31 @@
+import { CollectionPSGC, ExistingDocs, RawPSGCData } from '@lactalink/types';
 import { status } from 'http-status';
 import { APIError } from 'payload';
 
-/**
- * Retrieves a value from a map by its key or throws an error if the key does not exist.
- *
- * @template T - The type of the value stored in the map.
- *
- * @param {Record<string, T>} map - The map containing key-value pairs.
- * @param {string | boolean} key - The key to look up in the map. If the key is a boolean, it returns an empty value.
- * @param {string} label - A descriptive label for the missing value (used in the error message).
- * @param {string} collectionLabel - A label for the collection being processed (used in the error message).
- * @returns {T} - The value associated with the key in the map.
- *
- * @throws {APIError} - Throws an error if the key does not exist in the map.
- *
- * @description
- * This utility function is used to ensure that a required value exists in a map. If the key is not found,
- * it throws an `APIError` with a descriptive message and a `NOT_FOUND` status code.
- *
- * @example
- * const map = { region1: 'Region 1', region2: 'Region 2' };
- * const value = getExistingOrThrow(map, 'region1', 'Region', 'Regions');
- * console.log(value); // 'Region 1'
- *
- * // Throws an error:
- * getExistingOrThrow(map, 'region3', 'Region', 'Regions');
- */
-export function getExistingOrThrow<T>(
-  map: Record<string, T>,
-  key: string | boolean,
+type CollectionId<T extends RawPSGCData | boolean> = T extends RawPSGCData
+  ? CollectionPSGC['id']
+  : T extends boolean
+    ? undefined
+    : never;
+
+type KeyType<T extends RawPSGCData | boolean> = T extends RawPSGCData ? T['code'] : boolean;
+
+export function getExistingOrThrow<T extends RawPSGCData | boolean = RawPSGCData>(
+  map: ExistingDocs,
+  key: KeyType<T>,
   label: string,
   collectionLabel: string
-): T {
+): CollectionId<T> {
   // Return an empty value if the key is a boolean
-  if (typeof key === 'boolean') return '' as T;
+  if (typeof key === 'boolean') {
+    console.warn(
+      `Warning: Key is a boolean (${key}). Returning an empty id for ${label} in ${collectionLabel}.`
+    );
+    return undefined as CollectionId<T>;
+  }
 
   // Retrieve the value from the map
-  const value = map[key];
+  const value = map.get(key);
 
   // Throw an error if the value does not exist
   if (!value) {
@@ -44,5 +33,5 @@ export function getExistingOrThrow<T>(
   }
 
   // Return the value
-  return value;
+  return value as CollectionId<T>;
 }

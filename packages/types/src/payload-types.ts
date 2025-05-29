@@ -224,7 +224,7 @@ export interface Barangay {
   code: string;
   subMunicipalityCode?: string | null;
   districtCode?: string | null;
-  cityMunicipality: string | CityMunicipality;
+  cityMunicipality?: (string | null) | CityMunicipality;
   province?: (string | null) | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;

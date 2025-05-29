@@ -48,21 +48,24 @@ export const seedPSGC = async (): Promise<{ message: string; error?: CustomError
     // Seed Island Groups
     const existingIslandGroups = await seed({
       collection: 'islandGroups',
-      incomingData: { islandGroups },
+      incomingData: { data: islandGroups, existingData: null },
     });
 
     // Seed Regions
     const existingRegions = await seed({
       collection: 'regions',
       batchSize: SEED_REGIONS_BATCH_SIZE,
-      incomingData: { regions, existingIslandGroups },
+      incomingData: { data: regions, existingData: { islandGroups: existingIslandGroups } },
     });
 
     // Seed Provinces
     const existingProvinces = await seed({
       collection: 'provinces',
       batchSize: SEED_PROVINCES_BATCH_SIZE,
-      incomingData: { provinces, existingIslandGroups, existingRegions },
+      incomingData: {
+        data: provinces,
+        existingData: { islandGroups: existingIslandGroups, regions: existingRegions },
+      },
     });
 
     // Seed Cities/Municipalities
@@ -70,10 +73,12 @@ export const seedPSGC = async (): Promise<{ message: string; error?: CustomError
       collection: 'citiesMunicipalities',
       batchSize: SEED_CITIES_MUNICIPALITIES_BATCH_SIZE,
       incomingData: {
-        citiesMunicipalities,
-        existingIslandGroups,
-        existingRegions,
-        existingProvinces,
+        data: citiesMunicipalities,
+        existingData: {
+          islandGroups: existingIslandGroups,
+          regions: existingRegions,
+          provinces: existingProvinces,
+        },
       },
     });
 
@@ -82,11 +87,13 @@ export const seedPSGC = async (): Promise<{ message: string; error?: CustomError
       collection: 'barangays',
       batchSize: SEED_BARANGAYS_BATCH_SIZE,
       incomingData: {
-        barangays,
-        existingIslandGroups,
-        existingRegions,
-        existingProvinces,
-        existingCitiesMunicipalities,
+        data: barangays,
+        existingData: {
+          islandGroups: existingIslandGroups,
+          regions: existingRegions,
+          provinces: existingProvinces,
+          citiesMunicipalities: existingCitiesMunicipalities,
+        },
       },
     });
 

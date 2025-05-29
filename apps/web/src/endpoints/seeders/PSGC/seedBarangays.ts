@@ -1,33 +1,28 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type {
-  Barangay,
-  BarangayPSGC,
-  CollectionSlugPSGC,
-  ExistingDocs,
-  IncomingBarangayData,
-} from '@lactalink/types';
+import type { BarangayPSGC, ExistingDocs, IncomingData } from '@lactalink/types';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { getExistingOrThrow } from './utils/getExistingOrThrow';
 import { seed } from './utils/seeder';
 
-const collection: CollectionSlugPSGC = 'barangays';
+const collection = 'barangays';
 
 export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
   const { payload, user, t, json } = req;
 
+  const { data, existingData }: IncomingData<'barangays'> = json ? await json() : {};
+
   const {
-    barangays,
-    existingIslandGroups,
-    existingRegions,
-    existingProvinces,
-    existingCitiesMunicipalities,
-  }: IncomingBarangayData = json ? await json() : {};
+    islandGroups: existingIslandGroups,
+    provinces: existingProvinces,
+    regions: existingRegions,
+    citiesMunicipalities: existingCitiesMunicipalities,
+  } = existingData;
 
   if (
-    !barangays ||
+    !data ||
     !existingIslandGroups ||
     !existingRegions ||
     !existingProvinces ||
@@ -36,10 +31,10 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
     throw new APIError(t('error:missingRequiredData'), HttpStatus.NOT_FOUND);
   }
 
-  const { rawData, existingDocs } = barangays;
+  const { rawData, existingDocs } = data;
   const collectionLabel = payload.collections[collection].config.labels.singular as string;
 
-  return await seed<BarangayPSGC, Barangay>({
+  return await seed({
     collection,
     payload,
     user,
@@ -69,7 +64,7 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
 
       const cityMuncipalityCode = item.cityCode || item.municipalityCode;
 
-      const cityMuncipalityID = getExistingOrThrow(
+      const cityMuncipalityID = getExistingOrThrow<BarangayPSGC | false>(
         existingCitiesMunicipalities,
         cityMuncipalityCode,
         'City/Municipality ID',
@@ -87,7 +82,7 @@ export async function seedHandler(req: PayloadRequest): Promise<ExistingDocs> {
         districtCode,
         subMunicipalityCode,
         cityMunicipality: cityMuncipalityID,
-        province: provinceID ? provinceID : undefined,
+        province: provinceID,
         region: regionID,
         islandGroup: islandGroupID,
       };

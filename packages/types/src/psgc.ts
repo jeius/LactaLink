@@ -1,4 +1,5 @@
 import { ApiFetchResponse } from './api';
+import { Collection, CollectionSlug } from './collections';
 
 export type SlugPSGC =
   | 'island-groups'
@@ -7,12 +8,10 @@ export type SlugPSGC =
   | 'cities-municipalities'
   | 'barangays';
 
-export type CollectionSlugPSGC =
-  | 'islandGroups'
-  | 'regions'
-  | 'provinces'
-  | 'citiesMunicipalities'
-  | 'barangays';
+export type CollectionSlugPSGC = Extract<
+  CollectionSlug,
+  'islandGroups' | 'regions' | 'provinces' | 'citiesMunicipalities' | 'barangays'
+>;
 
 export type IslandGroupPSGC = {
   name: string;
@@ -76,49 +75,78 @@ export type BarangayPSGC = {
   islandGroupCode: string;
 };
 
-export type ExistingDocs = Record<string, string>;
+export type RawPSGCData =
+  | IslandGroupPSGC
+  | RegionPSGC
+  | ProvincePSGC
+  | CityMunicipalityPSGC
+  | BarangayPSGC;
 
-export type RawAndExistingDocs<T> = {
-  rawData: T[];
-  existingDocs: ExistingDocs;
+export type RawPSGCDataMap = {
+  islandGroups: IslandGroupPSGC;
+  regions: RegionPSGC;
+  provinces: ProvincePSGC;
+  citiesMunicipalities: CityMunicipalityPSGC;
+  barangays: BarangayPSGC;
 };
 
-export type IncomingIslandGroupData = {
-  islandGroups: RawAndExistingDocs<IslandGroupPSGC>;
+export type CollectionPSGC<T extends CollectionSlugPSGC | unknown = unknown> = T extends unknown
+  ? Collection<CollectionSlugPSGC>
+  : Collection<T>;
+
+export type ExistingDocs<T extends CollectionSlugPSGC = CollectionSlugPSGC> = Map<
+  RawPSGCDataMap[T]['code'],
+  CollectionPSGC<T>['id']
+>;
+
+export type RawAndExistingDocs<T extends CollectionSlugPSGC = CollectionSlugPSGC> = {
+  rawData: RawPSGCDataMap[T][];
+  existingDocs: ExistingDocs<T>;
 };
 
-export type IncomingRegionData = {
-  existingIslandGroups: ExistingDocs;
-  regions: RawAndExistingDocs<RegionPSGC>;
+type RegionsExistingDocsData = {
+  islandGroups: ExistingDocs<'islandGroups'>;
 };
 
-export type IncomingProvinceData = {
-  existingIslandGroups: ExistingDocs;
-  existingRegions: ExistingDocs;
-  provinces: RawAndExistingDocs<ProvincePSGC>;
+type ProvincesExistingDocsData = {
+  islandGroups: ExistingDocs<'islandGroups'>;
+  regions: ExistingDocs<'regions'>;
+};
+type CitiesMunicipalitiesExistingDocsData = {
+  islandGroups: ExistingDocs<'islandGroups'>;
+  regions: ExistingDocs<'regions'>;
+  provinces: ExistingDocs<'provinces'>;
+};
+type BarangaysExistingDocsData = {
+  islandGroups: ExistingDocs<'islandGroups'>;
+  regions: ExistingDocs<'regions'>;
+  provinces: ExistingDocs<'provinces'>;
+  citiesMunicipalities: ExistingDocs<'citiesMunicipalities'>;
 };
 
-export type IncomingCityMunicipalityData = {
-  existingIslandGroups: ExistingDocs;
-  existingRegions: ExistingDocs;
-  existingProvinces: ExistingDocs;
-  citiesMunicipalities: RawAndExistingDocs<CityMunicipalityPSGC>;
-};
+export type ExistingDocsData<T extends CollectionSlugPSGC> = T extends 'islandGroups'
+  ? null
+  : T extends 'regions'
+    ? RegionsExistingDocsData
+    : T extends 'provinces'
+      ? ProvincesExistingDocsData
+      : T extends 'citiesMunicipalities'
+        ? CitiesMunicipalitiesExistingDocsData
+        : T extends 'barangays'
+          ? BarangaysExistingDocsData
+          : never;
 
-export type IncomingBarangayData = {
-  existingIslandGroups: ExistingDocs;
-  existingRegions: ExistingDocs;
-  existingProvinces: ExistingDocs;
-  existingCitiesMunicipalities: ExistingDocs;
-  barangays: RawAndExistingDocs<BarangayPSGC>;
+export type IncomingData<T extends CollectionSlugPSGC> = {
+  data: RawAndExistingDocs<T>;
+  existingData: ExistingDocsData<T>;
 };
 
 export type PSGCResponseData = {
-  islandGroups: RawAndExistingDocs<IslandGroupPSGC>;
-  provinces: RawAndExistingDocs<ProvincePSGC>;
-  regions: RawAndExistingDocs<RegionPSGC>;
-  citiesMunicipalities: RawAndExistingDocs<CityMunicipalityPSGC>;
-  barangays: RawAndExistingDocs<BarangayPSGC>;
+  islandGroups: RawAndExistingDocs<'islandGroups'>;
+  provinces: RawAndExistingDocs<'provinces'>;
+  regions: RawAndExistingDocs<'regions'>;
+  citiesMunicipalities: RawAndExistingDocs<'citiesMunicipalities'>;
+  barangays: RawAndExistingDocs<'barangays'>;
 };
 
 export type PSGCResponse = ApiFetchResponse<PSGCResponseData>;
