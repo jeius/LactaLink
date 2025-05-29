@@ -45,7 +45,9 @@ export default function SignUpForm() {
   });
 
   async function onSubmit(formData: SignUpSchema) {
-    toast.promise(signUp(formData), {
+    const signUpPromise = signUp(formData);
+
+    toast.promise(signUpPromise, {
       loading: 'Creating account...',
       success: (msg: string) => msg,
       error: (error) => {
@@ -58,6 +60,8 @@ export default function SignUpForm() {
         return message;
       },
     });
+
+    await signUpPromise;
   }
 
   return (

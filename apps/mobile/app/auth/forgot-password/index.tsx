@@ -45,11 +45,15 @@ export default function ForgotPassword() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit({ email }: Schema) {
-    toast.promise(resetPassword(email), {
+    const resetPromise = resetPassword(email);
+
+    toast.promise(resetPromise, {
       loading: 'Requesting reset...',
       success: (msg) => msg,
       error: (error) => extractErrorMessage(error),
     });
+
+    await resetPromise;
   }
 
   return (

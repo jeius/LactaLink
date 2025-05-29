@@ -30,7 +30,7 @@ export async function signInWithGoogle() {
 
     router.replace('/home');
 
-    return `👋 Welcome! ${name}`;
+    return `Welcome! ${name}`;
   } catch (error) {
     let message = 'An unknown error occured. Please try again later!';
     let code = 'google_sign_in_error';

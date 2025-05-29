@@ -53,12 +53,11 @@ export default function AvatarUpload({
 
   const localDir = FileSystem.documentDirectory!;
 
-  const { data: defaultAvatar, refetch } = useQuery<AvatarSchema | undefined>({
-    initialData: undefined,
+  const { data: googlePicture, refetch } = useQuery<AvatarSchema | null>({
     staleTime: Infinity,
     queryKey: ['avatar', 'download', user?.picture],
     queryFn: async () => {
-      if (!user || !user.picture) return;
+      if (!user || !user.picture) return null;
 
       const namePrefix = filenameProp?.trim().split('.')[0] || user.email.split('@')[0];
       const filename = `${namePrefix}_avatar.jpeg`;
@@ -75,10 +74,10 @@ export default function AvatarUpload({
   });
 
   useEffect(() => {
-    if (value === undefined && defaultAvatar) {
-      onChange?.(defaultAvatar);
+    if (value === undefined && googlePicture) {
+      onChange?.(googlePicture);
     }
-  }, [defaultAvatar, onChange, value]);
+  }, [googlePicture, onChange, value]);
 
   async function transformImage(
     pickedImage: ImagePicker.ImagePickerAsset
@@ -241,10 +240,12 @@ export default function AvatarUpload({
                 <ButtonIcon as={UploadIcon} />
                 <ButtonText>Upload</ButtonText>
               </Button>
-              <Button variant="link" action="secondary" onPress={useGooglePicture}>
-                <ButtonIcon as={ImageIcon} />
-                <ButtonText>Use Google Picture</ButtonText>
-              </Button>
+              {googlePicture && (
+                <Button variant="link" action="secondary" onPress={useGooglePicture}>
+                  <ButtonIcon as={ImageIcon} />
+                  <ButtonText>Use Google Picture</ButtonText>
+                </Button>
+              )}
             </VStack>
           </ModalBody>
         </ModalContent>

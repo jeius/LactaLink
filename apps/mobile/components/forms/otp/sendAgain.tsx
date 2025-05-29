@@ -13,19 +13,23 @@ export default function SendAgain(params: VerifyOtp) {
   const handleResend = async () => {
     if (secondsLeft > 0) return;
     setIsSending(true);
-    toast.promise(sendOtp(params), {
+
+    const sendOtpPromise = sendOtp(params);
+
+    toast.promise(sendOtpPromise, {
       loading: 'Sending verification code...',
       success: (msg) => {
         setSecondsLeft(RESEND_OTP);
-        setIsSending(false);
         return msg;
       },
       error: (error) => {
         setSecondsLeft(0);
-        setIsSending(false);
         return extractErrorMessage(error);
       },
     });
+
+    await sendOtpPromise;
+    setIsSending(false);
   };
 
   useEffect(() => {

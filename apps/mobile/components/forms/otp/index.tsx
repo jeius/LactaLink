@@ -30,11 +30,15 @@ export default function OTPForm(props: VerifyOtp) {
   const outlineColor = getHexColor(theme, 'outline', 200);
 
   async function onSubmit({ otp: token }: OtpSchema) {
-    toast.promise(verifyOTP({ ...props, token }), {
+    const verifyPromise = verifyOTP({ ...props, token });
+
+    toast.promise(verifyPromise, {
       loading: 'Verifying code...',
       success: (msg) => msg,
       error: (error) => extractErrorMessage(error),
     });
+
+    await verifyPromise;
   }
 
   return (
@@ -73,7 +77,7 @@ export default function OTPForm(props: VerifyOtp) {
         <Text className="text-error-500">{errors['otp']?.message}</Text>
       </Box>
 
-      <Button size="lg" onPress={handleSubmit(onSubmit)}>
+      <Button isDisabled={isSubmitting} size="lg" onPress={handleSubmit(onSubmit)}>
         <ButtonText>Verify</ButtonText>
       </Button>
     </VStack>

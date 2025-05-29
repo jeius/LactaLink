@@ -22,7 +22,7 @@ export async function signIn(formData: SignInSchema) {
 
     router.replace('/home');
 
-    return `👋 Welcome back! ${name}`;
+    return `Welcome back! ${name}`;
   } catch (error) {
     const code = extractAuthErrorCode(error);
     if (code === 'email_not_confirmed') {

@@ -13,7 +13,7 @@ export const Protected: FC<SafeAreaProps> = (props) => {
     if (!isLoading && !isFetching) {
       if (!session && pathname !== '/auth/sign-in') {
         console.log('No session found, redirecting to sign-in');
-        router.push('/auth/sign-in');
+        router.replace('/auth/sign-in');
       }
       if (user && !user.profile && pathname !== '/setup-profile') {
         console.log('User profile not set up, redirecting to setup-profile');

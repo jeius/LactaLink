@@ -19,11 +19,15 @@ export default function ResetPasswordForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit({ password }: ResetPasswordSchema) {
-    toast.promise(updatePassword(password), {
+    const updatePromise = updatePassword(password);
+
+    toast.promise(updatePromise, {
       loading: 'Updating password...',
       success: (msg) => msg,
       error: (error) => extractErrorMessage(error),
     });
+
+    await updatePromise;
   }
 
   return (
@@ -51,7 +55,12 @@ export default function ResetPasswordForm() {
           inputIcon={LockIcon}
         />
 
-        <Button size="lg" className="mt-4" onPress={form.handleSubmit(onSubmit)}>
+        <Button
+          isDisabled={isSubmitting}
+          size="lg"
+          className="mt-4"
+          onPress={form.handleSubmit(onSubmit)}
+        >
           <ButtonText>{isSubmitting ? 'Updating...' : 'Confirm'}</ButtonText>
         </Button>
       </VStack>

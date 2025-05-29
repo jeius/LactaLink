@@ -19,17 +19,17 @@ export default function GoogleButtonWrapper({
 
   async function handleGoogleAuth() {
     setIsSubmitting(true);
-    toast.promise(signInWithGoogle(), {
+
+    const googleSignInPromise = signInWithGoogle();
+
+    toast.promise(googleSignInPromise, {
       loading: 'Signing in with Google...',
-      success: (msg) => {
-        setIsSubmitting(false);
-        return msg;
-      },
-      error: (error) => {
-        setIsSubmitting(false);
-        return extractErrorMessage(error);
-      },
+      success: (msg) => msg,
+      error: (error) => extractErrorMessage(error),
     });
+
+    await googleSignInPromise;
+    setIsSubmitting(false);
   }
 
   return (

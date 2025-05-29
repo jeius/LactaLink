@@ -9,7 +9,7 @@ export const Toaster: React.FC = () => {
   const { theme } = useTheme();
   return (
     <Sonner
-      position="bottom-center"
+      position="top-center"
       // offset={100}
       duration={3000}
       swipeToDismissDirection="left"

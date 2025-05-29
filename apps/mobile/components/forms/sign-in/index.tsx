@@ -28,11 +28,15 @@ export default function SignInForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(formData: SignInSchema) {
-    toast.promise(signIn(formData), {
+    const signInPromise = signIn(formData);
+
+    toast.promise(signInPromise, {
       loading: 'Signing in...',
       success: (message: string) => message,
       error: (error) => extractErrorMessage(error),
     });
+
+    await signInPromise;
   }
 
   return (
