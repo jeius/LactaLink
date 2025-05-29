@@ -45,17 +45,29 @@
     "lint:fix": {
       "dependsOn": ["^lint:fix"]
     },
-    "generate:types": {
-      "inputs": ["apps/web/src/collections/**/*"],
-      "outputs": ["packages/types/src/payload-types.ts"]
+    "@lactalink/web#generate:types": {
+      "inputs": ["src/collections/**/*"],
+      "outputs": ["src/lib/types/payload-types.ts", "../../packages/types/src/payload-types.ts"]
     },
-    "generate:importmap": {
-      "inputs": ["apps/web/src/**/*"],
-      "outputs": ["apps/web/src/app/(payload)/admin/importMap.js"]
+    "@lactalink/web#generate:importmap": {
+      "inputs": ["src/**/*"],
+      "outputs": ["src/app/*/admin/importMap.js"]
     },
-    "generate:schema": {
-      "inputs": ["apps/web/src/collections/**"],
-      "outputs": ["apps/web/src/lib/db/**"]
+    "@lactalink/web#generate:schema": {
+      "inputs": ["src/collections/**/*"],
+      "outputs": ["src/lib/db/**/*"]
+    },
+    "build:android-dev": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "build:ios-dev": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "preview:android": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }

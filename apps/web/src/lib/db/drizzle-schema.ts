@@ -168,11 +168,9 @@ export const barangays = pgTable(
     code: varchar('code').notNull(),
     subMunicipalityCode: varchar('sub_municipality_code'),
     districtCode: varchar('district_code'),
-    cityMunicipality: uuid('city_municipality_id')
-      .notNull()
-      .references(() => cities_municipalities.id, {
-        onDelete: 'set null',
-      }),
+    cityMunicipality: uuid('city_municipality_id').references(() => cities_municipalities.id, {
+      onDelete: 'set null',
+    }),
     province: uuid('province_id').references(() => provinces.id, {
       onDelete: 'set null',
     }),

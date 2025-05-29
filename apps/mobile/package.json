@@ -10,12 +10,13 @@
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
     "build": "expo export --output-dir ./build --platform all",
-    "build:android": "eas build:dev --platform android --profile development",
-    "build:ios": "eas build:dev --platform ios --profile development",
+    "build:deps": "pnpm run build:packages -w",
+    "build:android-dev": "eas build:dev --platform android --profile development",
+    "build:ios-dev": "eas build:dev --platform ios --profile development",
     "preview:android": "eas build --platform android --profile preview",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
-    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc"
+    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm run build:deps"
   },
   "dependencies": {
     "@expo/html-elements": "^0.4.2",
