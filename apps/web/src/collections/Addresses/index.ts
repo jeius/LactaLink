@@ -2,6 +2,7 @@ import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateDisplayName } from './hooks/generateDisplayName';
 import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegion';
 
@@ -11,6 +12,13 @@ export const Addresses: CollectionConfig<'addresses'> = {
     group: COLLECTION_GROUP.CONTENT,
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'owner'],
+  },
+  access: {
+    admin: admin,
+    create: authenticated,
+    read: authenticated,
+    update: collectionOwnerOrAdmin,
+    delete: collectionOwnerOrAdmin,
   },
   fields: [
     {

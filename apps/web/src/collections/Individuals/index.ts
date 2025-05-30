@@ -1,10 +1,18 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateDisplayName } from './hooks/generateDisplayName';
 
 export const Individuals: CollectionConfig<'individuals'> = {
   slug: 'individuals',
+  access: {
+    admin: admin,
+    create: authenticated,
+    read: authenticated,
+    update: collectionOwnerOrAdmin,
+    delete: collectionOwnerOrAdmin,
+  },
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus', 'owner'],

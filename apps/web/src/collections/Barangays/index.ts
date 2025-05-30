@@ -1,5 +1,6 @@
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated } from '../_access-control';
 
 export const Barangays: CollectionConfig<'barangays'> = {
   slug: 'barangays',
@@ -7,6 +8,13 @@ export const Barangays: CollectionConfig<'barangays'> = {
     group: COLLECTION_GROUP.CONTENT,
     useAsTitle: 'name',
     defaultColumns: ['name', 'code', 'cityMunicipality'],
+  },
+  access: {
+    admin: admin,
+    read: authenticated,
+    create: admin,
+    update: admin,
+    delete: admin,
   },
   fields: [
     {

@@ -1,5 +1,6 @@
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated } from '../_access-control';
 
 export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
   slug: 'citiesMunicipalities',
@@ -7,6 +8,13 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
   labels: {
     plural: 'Cities/Municipalities',
     singular: 'City/Municipality',
+  },
+  access: {
+    admin: admin,
+    read: authenticated,
+    create: admin,
+    update: admin,
+    delete: admin,
   },
   admin: {
     group: COLLECTION_GROUP.CONTENT,

@@ -1,9 +1,17 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 
 export const Hospitals: CollectionConfig<'hospitals'> = {
   slug: 'hospitals',
+  access: {
+    admin: admin,
+    create: authenticated,
+    read: authenticated,
+    update: collectionOwnerOrAdmin,
+    delete: collectionOwnerOrAdmin,
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head', 'owner'],

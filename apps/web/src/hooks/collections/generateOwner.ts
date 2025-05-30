@@ -1,13 +1,5 @@
-import { Collection, User } from '@lactalink/types';
+import { CollectionWithOwner } from '@/lib/types';
 import { CollectionBeforeChangeHook } from 'payload';
-
-// Base type for any collection that may have an owner field
-type CollectionWithOwner = Extract<
-  Collection,
-  {
-    owner?: string | User | null;
-  }
->;
 
 export const generateOwner: CollectionBeforeChangeHook<CollectionWithOwner> = ({
   req,
