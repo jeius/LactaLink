@@ -71,6 +71,7 @@ export interface Config {
     avatars: Avatar;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
+    donations: Donation;
     hospitals: Hospital;
     images: Image;
     individuals: Individual;
@@ -89,6 +90,7 @@ export interface Config {
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
+    donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
@@ -134,6 +136,8 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Addresses of users, which are used to identify locations for various purposes such as shipping and identification.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses".
  */
@@ -159,6 +163,8 @@ export interface Address {
   createdAt: string;
 }
 /**
+ * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces".
  */
@@ -172,6 +178,8 @@ export interface Province {
   createdAt: string;
 }
 /**
+ * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "regions".
  */
@@ -185,6 +193,8 @@ export interface Region {
   createdAt: string;
 }
 /**
+ * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "islandGroups".
  */
@@ -196,6 +206,8 @@ export interface IslandGroup {
   createdAt: string;
 }
 /**
+ * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "citiesMunicipalities".
  */
@@ -214,6 +226,8 @@ export interface CityMunicipality {
   createdAt: string;
 }
 /**
+ * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "barangays".
  */
@@ -262,6 +276,8 @@ export interface User {
   createdAt: string;
 }
 /**
+ * Individuals profile of users, including their personal information such as name, date of birth, contact details, and other relevant attributes.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "individuals".
  */
@@ -283,6 +299,8 @@ export interface Individual {
   createdAt: string;
 }
 /**
+ * Avatars are images used to represent users in the system. They can be uploaded by users themselves or by administrators.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "avatars".
  */
@@ -321,6 +339,8 @@ export interface Avatar {
   };
 }
 /**
+ * Milk Bank profile of users, including their details such as name, type, head, and contact information.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "milkBanks".
  */
@@ -341,6 +361,8 @@ export interface MilkBank {
   createdAt: string;
 }
 /**
+ * Hospital profile of users, including their details such as name, type, head, and contact information.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hospitals".
  */
@@ -363,15 +385,67 @@ export interface Hospital {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations".
+ */
+export interface Donation {
+  id: string;
+  /**
+   * Title of the donation record.
+   */
+  title?: string | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The person donating the milk
+   */
+  donor: string | Individual;
+  /**
+   * The person receiving the milk
+   */
+  recipient?: (string | null) | Individual;
+  milkDetails: {
+    /**
+     * Amount of milk in milliliters
+     */
+    amount: number;
+    /**
+     * Date when the milk was collected
+     */
+    collectionDate: string;
+    storageType: 'FRESH' | 'FROZEN';
+    collectionMode: 'MANUAL' | 'ELECTRIC_PUMP' | 'MANUAL_PUMP';
+    /**
+     * Upload images of the milk sample
+     */
+    milkSample?: (string | Image)[] | null;
+  };
+  deliveryDetails: {
+    deliveryMode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+    /**
+     * Address for pickup, delivery, or meet-up
+     */
+    deliveryAddress?: (string | null) | Address;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+    urgency?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
+    /**
+     * Additional notes or special instructions
+     */
+    notes?: string | null;
+    /**
+     * Reason for rejection (if applicable)
+     */
+    rejectionReason?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "images".
  */
 export interface Image {
   id: string;
   alt?: string | null;
-  createdBy?: {
-    relationTo: 'users';
-    value: string | User;
-  } | null;
+  createdBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -464,6 +538,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'citiesMunicipalities';
         value: string | CityMunicipality;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: string | Donation;
       } | null)
     | ({
         relationTo: 'hospitals';
@@ -631,6 +709,37 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
   province?: T;
   region?: T;
   islandGroup?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations_select".
+ */
+export interface DonationsSelect<T extends boolean = true> {
+  title?: T;
+  createdBy?: T;
+  donor?: T;
+  recipient?: T;
+  milkDetails?:
+    | T
+    | {
+        amount?: T;
+        collectionDate?: T;
+        storageType?: T;
+        collectionMode?: T;
+        milkSample?: T;
+      };
+  deliveryDetails?:
+    | T
+    | {
+        deliveryMode?: T;
+        deliveryAddress?: T;
+        status?: T;
+        urgency?: T;
+        notes?: T;
+        rejectionReason?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

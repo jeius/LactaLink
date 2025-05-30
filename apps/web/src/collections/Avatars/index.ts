@@ -2,7 +2,7 @@ import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { admin, authenticated, collectionOwner, collectionOwnerOrAdmin } from '../_access-control';
 import { generateAlt } from './hooks/generateAlt';
 
 export const Avatars: CollectionConfig<'avatars'> = {
@@ -11,11 +11,13 @@ export const Avatars: CollectionConfig<'avatars'> = {
     admin: admin,
     create: authenticated,
     read: authenticated,
-    update: collectionOwnerOrAdmin,
+    update: collectionOwner,
     delete: collectionOwnerOrAdmin,
   },
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.PROFILES,
+    description:
+      'Avatars are images used to represent users in the system. They can be uploaded by users themselves or by administrators.',
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'owner'],
   },

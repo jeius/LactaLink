@@ -9,3 +9,10 @@ export type CollectionWithOwner = Extract<
     owner?: string | User | null;
   }
 >;
+
+export type CollectionWithCreatedBy = Extract<
+  Collection,
+  {
+    createdBy?: string | User | null;
+  }
+>;

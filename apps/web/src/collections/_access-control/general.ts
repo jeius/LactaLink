@@ -33,3 +33,30 @@ export const collectionOwnerOrAdmin: Access = ({ req }) => {
     owner: { equals: user.id },
   };
 };
+
+export const collectionCreator: Access = ({ req }) => {
+  const user = req.user;
+
+  // If no user is logged in, deny access
+  if (!user) return false;
+
+  // If the collection has an owner, check if the user is the owner
+  return {
+    createdBy: { equals: user.id },
+  };
+};
+
+export const collectionCreatorOrAdmin: Access = ({ req }) => {
+  const user = req.user;
+
+  // If no user is logged in, deny access
+  if (!user) return false;
+
+  // If the user is an admin, allow access
+  if (isAdmin(user)) return true;
+
+  // If the collection has an owner, check if the user is the owner
+  return {
+    createdBy: { equals: user.id },
+  };
+};

@@ -28,6 +28,26 @@ export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalitie
   'CITY',
   'MUNICIPALITY',
 ]);
+export const enum_donations_milk_details_storage_type = pgEnum(
+  'enum_donations_milk_details_storage_type',
+  ['FRESH', 'FROZEN']
+);
+export const enum_donations_milk_details_collection_mode = pgEnum(
+  'enum_donations_milk_details_collection_mode',
+  ['MANUAL', 'ELECTRIC_PUMP', 'MANUAL_PUMP']
+);
+export const enum_donations_delivery_details_delivery_mode = pgEnum(
+  'enum_donations_delivery_details_delivery_mode',
+  ['PICKUP', 'DELIVERY', 'MEETUP']
+);
+export const enum_donations_delivery_details_status = pgEnum(
+  'enum_donations_delivery_details_status',
+  ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED']
+);
+export const enum_donations_delivery_details_urgency = pgEnum(
+  'enum_donations_delivery_details_urgency',
+  ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+);
 export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
   'GOVERNMENT',
   'PRIVATE',
@@ -252,6 +272,97 @@ export const cities_municipalities = pgTable(
   })
 );
 
+export const donations = pgTable(
+  'donations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    donor: uuid('donor_id')
+      .notNull()
+      .references(() => individuals.id, {
+        onDelete: 'set null',
+      }),
+    recipient: uuid('recipient_id').references(() => individuals.id, {
+      onDelete: 'set null',
+    }),
+    milkDetails_amount: numeric('milk_details_amount').notNull(),
+    milkDetails_collectionDate: timestamp('milk_details_collection_date', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    milkDetails_storageType: enum_donations_milk_details_storage_type(
+      'milk_details_storage_type'
+    ).notNull(),
+    milkDetails_collectionMode: enum_donations_milk_details_collection_mode(
+      'milk_details_collection_mode'
+    ).notNull(),
+    deliveryDetails_deliveryMode: enum_donations_delivery_details_delivery_mode(
+      'delivery_details_delivery_mode'
+    ).notNull(),
+    deliveryDetails_deliveryAddress: uuid('delivery_details_delivery_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
+    deliveryDetails_status: enum_donations_delivery_details_status('delivery_details_status')
+      .notNull()
+      .default('PENDING'),
+    deliveryDetails_urgency: enum_donations_delivery_details_urgency(
+      'delivery_details_urgency'
+    ).default('MEDIUM'),
+    deliveryDetails_notes: varchar('delivery_details_notes'),
+    deliveryDetails_rejectionReason: varchar('delivery_details_rejection_reason'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    donations_created_by_idx: index('donations_created_by_idx').on(columns.createdBy),
+    donations_donor_idx: index('donations_donor_idx').on(columns.donor),
+    donations_recipient_idx: index('donations_recipient_idx').on(columns.recipient),
+    donations_delivery_details_delivery_details_delivery_address_idx: index(
+      'donations_delivery_details_delivery_details_delivery_address_idx'
+    ).on(columns.deliveryDetails_deliveryAddress),
+    donations_updated_at_idx: index('donations_updated_at_idx').on(columns.updatedAt),
+    donations_created_at_idx: index('donations_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const donations_rels = pgTable(
+  'donations_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    imagesID: uuid('images_id'),
+  },
+  (columns) => ({
+    order: index('donations_rels_order_idx').on(columns.order),
+    parentIdx: index('donations_rels_parent_idx').on(columns.parent),
+    pathIdx: index('donations_rels_path_idx').on(columns.path),
+    donations_rels_images_id_idx: index('donations_rels_images_id_idx').on(columns.imagesID),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [donations.id],
+      name: 'donations_rels_parent_fk',
+    }).onDelete('cascade'),
+    imagesIdFk: foreignKey({
+      columns: [columns['imagesID']],
+      foreignColumns: [images.id],
+      name: 'donations_rels_images_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const hospitals = pgTable(
   'hospitals',
   {
@@ -318,6 +429,9 @@ export const images = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     alt: varchar('alt'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -377,6 +491,7 @@ export const images = pgTable(
     sizes_og_filename: varchar('sizes_og_filename'),
   },
   (columns) => ({
+    images_created_by_idx: index('images_created_by_idx').on(columns.createdBy),
     images_updated_at_idx: index('images_updated_at_idx').on(columns.updatedAt),
     images_created_at_idx: index('images_created_at_idx').on(columns.createdAt),
     images_filename_idx: uniqueIndex('images_filename_idx').on(columns.filename),
@@ -401,33 +516,6 @@ export const images = pgTable(
     images_sizes_og_sizes_og_filename_idx: index('images_sizes_og_sizes_og_filename_idx').on(
       columns.sizes_og_filename
     ),
-  })
-);
-
-export const images_rels = pgTable(
-  'images_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    usersID: uuid('users_id'),
-  },
-  (columns) => ({
-    order: index('images_rels_order_idx').on(columns.order),
-    parentIdx: index('images_rels_parent_idx').on(columns.parent),
-    pathIdx: index('images_rels_path_idx').on(columns.path),
-    images_rels_users_id_idx: index('images_rels_users_id_idx').on(columns.usersID),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [images.id],
-      name: 'images_rels_parent_fk',
-    }).onDelete('cascade'),
-    usersIdFk: foreignKey({
-      columns: [columns['usersID']],
-      foreignColumns: [users.id],
-      name: 'images_rels_users_fk',
-    }).onDelete('cascade'),
   })
 );
 
@@ -751,6 +839,7 @@ export const payload_locked_documents_rels = pgTable(
     avatarsID: uuid('avatars_id'),
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
+    donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     imagesID: uuid('images_id'),
     individualsID: uuid('individuals_id'),
@@ -776,6 +865,9 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_cities_municipalities_id_idx: index(
       'payload_locked_documents_rels_cities_municipalities_id_idx'
     ).on(columns.citiesMunicipalitiesID),
+    payload_locked_documents_rels_donations_id_idx: index(
+      'payload_locked_documents_rels_donations_id_idx'
+    ).on(columns.donationsID),
     payload_locked_documents_rels_hospitals_id_idx: index(
       'payload_locked_documents_rels_hospitals_id_idx'
     ).on(columns.hospitalsID),
@@ -824,6 +916,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['citiesMunicipalitiesID']],
       foreignColumns: [cities_municipalities.id],
       name: 'payload_locked_documents_rels_cities_municipalities_fk',
+    }).onDelete('cascade'),
+    donationsIdFk: foreignKey({
+      columns: [columns['donationsID']],
+      foreignColumns: [donations.id],
+      name: 'payload_locked_documents_rels_donations_fk',
     }).onDelete('cascade'),
     hospitalsIdFk: foreignKey({
       columns: [columns['hospitalsID']],
@@ -1022,6 +1119,43 @@ export const relations_cities_municipalities = relations(cities_municipalities, 
     relationName: 'islandGroup',
   }),
 }));
+export const relations_donations_rels = relations(donations_rels, ({ one }) => ({
+  parent: one(donations, {
+    fields: [donations_rels.parent],
+    references: [donations.id],
+    relationName: '_rels',
+  }),
+  imagesID: one(images, {
+    fields: [donations_rels.imagesID],
+    references: [images.id],
+    relationName: 'images',
+  }),
+}));
+export const relations_donations = relations(donations, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [donations.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  donor: one(individuals, {
+    fields: [donations.donor],
+    references: [individuals.id],
+    relationName: 'donor',
+  }),
+  recipient: one(individuals, {
+    fields: [donations.recipient],
+    references: [individuals.id],
+    relationName: 'recipient',
+  }),
+  deliveryDetails_deliveryAddress: one(addresses, {
+    fields: [donations.deliveryDetails_deliveryAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_deliveryAddress',
+  }),
+  _rels: many(donations_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_hospitals_rels = relations(hospitals_rels, ({ one }) => ({
   parent: one(hospitals, {
     fields: [hospitals_rels.parent],
@@ -1049,21 +1183,11 @@ export const relations_hospitals = relations(hospitals, ({ one, many }) => ({
     relationName: '_rels',
   }),
 }));
-export const relations_images_rels = relations(images_rels, ({ one }) => ({
-  parent: one(images, {
-    fields: [images_rels.parent],
-    references: [images.id],
-    relationName: '_rels',
-  }),
-  usersID: one(users, {
-    fields: [images_rels.usersID],
+export const relations_images = relations(images, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [images.createdBy],
     references: [users.id],
-    relationName: 'users',
-  }),
-}));
-export const relations_images = relations(images, ({ many }) => ({
-  _rels: many(images_rels, {
-    relationName: '_rels',
+    relationName: 'createdBy',
   }),
 }));
 export const relations_individuals_rels = relations(individuals_rels, ({ one }) => ({
@@ -1195,6 +1319,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [cities_municipalities.id],
       relationName: 'citiesMunicipalities',
     }),
+    donationsID: one(donations, {
+      fields: [payload_locked_documents_rels.donationsID],
+      references: [donations.id],
+      relationName: 'donations',
+    }),
     hospitalsID: one(hospitals, {
       fields: [payload_locked_documents_rels.hospitalsID],
       references: [hospitals.id],
@@ -1269,6 +1398,11 @@ export const relations_payload_migrations = relations(payload_migrations, () => 
 
 type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
+  enum_donations_milk_details_storage_type: typeof enum_donations_milk_details_storage_type;
+  enum_donations_milk_details_collection_mode: typeof enum_donations_milk_details_collection_mode;
+  enum_donations_delivery_details_delivery_mode: typeof enum_donations_delivery_details_delivery_mode;
+  enum_donations_delivery_details_status: typeof enum_donations_delivery_details_status;
+  enum_donations_delivery_details_urgency: typeof enum_donations_delivery_details_urgency;
   enum_hospitals_type: typeof enum_hospitals_type;
   enum_individuals_gender: typeof enum_individuals_gender;
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
@@ -1279,10 +1413,11 @@ type DatabaseSchema = {
   avatars: typeof avatars;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
+  donations: typeof donations;
+  donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
   hospitals_rels: typeof hospitals_rels;
   images: typeof images;
-  images_rels: typeof images_rels;
   individuals: typeof individuals;
   individuals_rels: typeof individuals_rels;
   island_groups: typeof island_groups;
@@ -1301,9 +1436,10 @@ type DatabaseSchema = {
   relations_avatars: typeof relations_avatars;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
+  relations_donations_rels: typeof relations_donations_rels;
+  relations_donations: typeof relations_donations;
   relations_hospitals_rels: typeof relations_hospitals_rels;
   relations_hospitals: typeof relations_hospitals;
-  relations_images_rels: typeof relations_images_rels;
   relations_images: typeof relations_images;
   relations_individuals_rels: typeof relations_individuals_rels;
   relations_individuals: typeof relations_individuals;

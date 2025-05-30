@@ -25,7 +25,7 @@ export default buildConfig({
         Logo: '@/components/Logo',
         Icon: '@/components/HomeIcon',
       },
-      beforeDashboard: ['@/components/BeforeDashboard'],
+      beforeDashboard: ['@/components/admin/welcome-card'],
       providers: ['@/components/providers'],
     },
     avatar: 'default',

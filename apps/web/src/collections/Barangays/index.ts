@@ -5,7 +5,9 @@ import { admin, authenticated } from '../_access-control';
 export const Barangays: CollectionConfig<'barangays'> = {
   slug: 'barangays',
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.PSGC,
+    description:
+      'Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.',
     useAsTitle: 'name',
     defaultColumns: ['name', 'code', 'cityMunicipality'],
   },

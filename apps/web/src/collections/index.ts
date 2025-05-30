@@ -3,6 +3,7 @@ import { Addresses } from './Addresses';
 import { Avatars } from './Avatars';
 import { Barangays } from './Barangays';
 import { CitiesMunicipalities } from './CitiesMunicipalities';
+import { Donations } from './Donations';
 import { Hospitals } from './Hospitals';
 import { Images } from './Images';
 import { Individuals } from './Individuals';
@@ -17,6 +18,7 @@ const Collections: CollectionConfig[] = [
   Avatars,
   Barangays,
   CitiesMunicipalities,
+  Donations,
   Hospitals,
   Images,
   Individuals,
@@ -32,6 +34,7 @@ export {
   Avatars,
   Barangays,
   CitiesMunicipalities,
+  Donations,
   Hospitals,
   Images,
   Individuals,

@@ -5,7 +5,9 @@ import { admin, authenticated } from '../_access-control';
 export const Provinces: CollectionConfig<'provinces'> = {
   slug: 'provinces',
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.PSGC,
+    description:
+      'Provinces in the Philippines, which are administrative divisions that group cities and municipalities.',
     useAsTitle: 'name',
     defaultColumns: ['name', 'code', 'region'],
   },

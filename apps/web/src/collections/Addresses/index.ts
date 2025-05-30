@@ -9,7 +9,9 @@ import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegi
 export const Addresses: CollectionConfig<'addresses'> = {
   slug: 'addresses',
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.PROFILES,
+    description:
+      'Addresses of users, which are used to identify locations for various purposes such as shipping and identification.',
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'owner'],
   },

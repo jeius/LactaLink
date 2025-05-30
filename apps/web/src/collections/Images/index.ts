@@ -1,11 +1,23 @@
+import { createdByField } from '@/fields/createdByField';
+import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { generateAlt, generateCreatedBy } from './hooks/beforeChange';
+import {
+  admin,
+  authenticated,
+  collectionCreator,
+  collectionCreatorOrAdmin,
+} from '../_access-control';
+import { generateAlt } from './hooks/beforeChange';
 
 export const Images: CollectionConfig<'images'> = {
   slug: 'images',
   access: {
-    read: () => true,
+    admin: admin,
+    create: authenticated,
+    read: authenticated,
+    update: collectionCreator,
+    delete: collectionCreatorOrAdmin,
   },
   admin: {
     group: COLLECTION_GROUP.CONTENT,
@@ -17,14 +29,7 @@ export const Images: CollectionConfig<'images'> = {
       name: 'alt',
       type: 'text',
     },
-    {
-      name: 'createdBy',
-      type: 'relationship',
-      relationTo: ['users'],
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    createdByField,
   ],
   upload: {
     adminThumbnail: 'thumbnail',

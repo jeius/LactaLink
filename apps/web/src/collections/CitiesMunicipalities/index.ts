@@ -17,7 +17,9 @@ export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
     delete: admin,
   },
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.PSGC,
+    description:
+      'Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.',
     useAsTitle: 'name',
     defaultColumns: ['name', 'code', 'province'],
   },

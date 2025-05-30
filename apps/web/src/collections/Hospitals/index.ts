@@ -1,5 +1,6 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 
@@ -13,6 +14,9 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
+    group: COLLECTION_GROUP.PROFILES,
+    description:
+      'Hospital profile of users, including their details such as name, type, head, and contact information.',
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },

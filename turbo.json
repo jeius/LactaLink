@@ -46,7 +46,12 @@
       "dependsOn": ["^lint:fix"]
     },
     "@lactalink/web#generate:types": {
-      "inputs": ["src/collections/**/*"],
+      "inputs": [
+        "src/collections/**/*",
+        "src/hooks/collections/**/*",
+        "src/fields/**/*",
+        "src/lib/constants/**/*"
+      ],
       "outputs": ["src/lib/types/payload-types.ts", "../../packages/types/src/payload-types.ts"]
     },
     "@lactalink/web#generate:importmap": {
@@ -54,7 +59,12 @@
       "outputs": ["src/app/*/admin/importMap.js"]
     },
     "@lactalink/web#generate:schema": {
-      "inputs": ["src/collections/**/*"],
+      "inputs": [
+        "src/collections/**/*",
+        "src/hooks/collections/**/*",
+        "src/fields/**/*",
+        "src/lib/constants/**/*"
+      ],
       "outputs": ["src/lib/db/**/*"]
     },
     "build:android-dev": {

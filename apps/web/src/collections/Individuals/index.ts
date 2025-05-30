@@ -1,5 +1,6 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateDisplayName } from './hooks/generateDisplayName';
@@ -14,6 +15,9 @@ export const Individuals: CollectionConfig<'individuals'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
+    group: COLLECTION_GROUP.PROFILES,
+    description:
+      'Individuals profile of users, including their personal information such as name, date of birth, contact details, and other relevant attributes.',
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus', 'owner'],
   },
