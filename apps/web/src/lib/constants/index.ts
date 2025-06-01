@@ -1,4 +1,4 @@
-export * from './collectionGroup';
+export * from './collections';
 export * from './reactQueryKeys';
 export * from './storageKeys';
 

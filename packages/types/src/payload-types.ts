@@ -7,6 +7,47 @@
  */
 
 /**
+ * Delivery status for each notification channel (email, SMS, in-app, etc.). Tracks attempts, failures, and success.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationChannelStats".
+ */
+export type NotificationChannelStats = {
+  /**
+   * Delivery method for this notification (e.g., email via Resend, SMS via Twilio, in-app display).
+   */
+  channel: string | NotificationChannel;
+  /**
+   * Whether this notification is scheduled for future delivery rather than immediate sending.
+   */
+  scheduled?: boolean | null;
+  /**
+   * Future date/time when this notification should be sent via this channel.
+   */
+  scheduledFor?: string | null;
+  /**
+   * Whether the notification was successfully delivered via this channel.
+   */
+  sent?: boolean | null;
+  /**
+   * Timestamp when the notification was successfully sent via this channel.
+   */
+  sentAt?: string | null;
+  /**
+   * Number of times delivery has been attempted via this channel. Includes both successful and failed attempts.
+   */
+  attempts?: number | null;
+  /**
+   * Timestamp of the most recent delivery attempt via this channel.
+   */
+  lastAttemptAt?: string | null;
+  /**
+   * Detailed error message explaining why delivery failed. Used for troubleshooting and retry logic.
+   */
+  failureReason?: string | null;
+  id?: string | null;
+}[];
+/**
  * Supported timezones in IANA format.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -71,33 +112,53 @@ export interface Config {
     avatars: Avatar;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
+    deliveries: Delivery;
     donations: Donation;
     hospitals: Hospital;
     images: Image;
     individuals: Individual;
     islandGroups: IslandGroup;
     milkBanks: MilkBank;
+    notificationCategories: NotificationCategory;
+    notificationChannels: NotificationChannel;
+    notifications: Notification;
+    notificationTypes: NotificationType;
     provinces: Province;
     regions: Region;
+    requests: Request;
     users: User;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    donations: {
+      matchedRequests: 'requests';
+      'deliveryDetails.deliveries': 'deliveries';
+    };
+    requests: {
+      'deliveryDetails.delivery': 'deliveries';
+    };
+  };
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
+    deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
+    notificationCategories: NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
+    notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    notificationTypes: NotificationTypesSelect<false> | NotificationTypesSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
+    requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -385,6 +446,159 @@ export interface Hospital {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveries".
+ */
+export interface Delivery {
+  id: string;
+  createdBy?: (string | null) | User;
+  /**
+   * The request this delivery is for
+   */
+  request: string | Request;
+  /**
+   * The donation being delivered
+   */
+  donation: string | Donation;
+  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  status:
+    | 'PENDING'
+    | 'PENDING_CONFIRMATION'
+    | 'CONFIRMED'
+    | 'SCHEDULED'
+    | 'IN_TRANSIT'
+    | 'READY_FOR_PICKUP'
+    | 'DELIVERED'
+    | 'FAILED'
+    | 'CANCELLED';
+  pickupDetails?: {
+    address: string | Address;
+    date?: string | null;
+    timeSlot?: TimeSlot;
+    /**
+     * Special instructions for pickup (e.g., gate code, contact person)
+     */
+    instructions?: string | null;
+  };
+  deliveryDetails?: {
+    address: string | Address;
+    date?: string | null;
+    timeSlot?: TimeSlot;
+    /**
+     * Special instructions for delivery (e.g., leave at door, ring bell)
+     */
+    instructions?: string | null;
+  };
+  meetupDetails?: {
+    address: string | Address;
+    date?: string | null;
+    proposedTimeSlots?:
+      | {
+          timeSlot: TimeSlot;
+          id?: string | null;
+        }[]
+      | null;
+    confirmedTimeSlot?: string | null;
+    proposedBy?: ('DONOR' | 'REQUESTER') | null;
+    /**
+     * Instructions for the meetup location and process
+     */
+    instructions?: string | null;
+  };
+  tracking?: {
+    deliveredAt?: string | null;
+    trackingHistory?:
+      | {
+          status?: string | null;
+          timestamp?: string | null;
+          notes?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Reason why delivery failed
+     */
+    failureReason?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "requests".
+ */
+export interface Request {
+  id: string;
+  /**
+   * Title of the milk request.
+   */
+  title?: string | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The person requesting the milk
+   */
+  requester: string | Individual;
+  /**
+   * Amount of milk needed in milliliters
+   */
+  volumeNeeded: number;
+  /**
+   * The donation that fulfilled this request
+   */
+  matchedDonation?: (string | null) | Donation;
+  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
+  details: {
+    /**
+     * Date when the milk is needed
+     */
+    neededAt: string;
+    /**
+     * Preferred storage type
+     */
+    storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
+    urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    /**
+     * Reason for requesting milk donation
+     */
+    reason?: string | null;
+    /**
+     * Additional notes or special instructions from requester
+     */
+    notes?: string | null;
+  };
+  deliveryDetails: {
+    /**
+     * Preferred delivery modes of the individual. This will be used for matching.
+     */
+    preferredModes: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
+    /**
+     * Address available for pickup.
+     */
+    pickupAddress?: (string | null) | Address;
+    /**
+     * Address available for delivery.
+     */
+    deliveryAddress?: (string | null) | Address;
+    /**
+     * Address available for meet-up.
+     */
+    meetupAddress?: (string | null) | Address;
+    /**
+     * Days available for processing.
+     */
+    availableDays?:
+      | ('EVERYDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[]
+      | null;
+    delivery?: {
+      docs?: (string | Delivery)[];
+      hasNextPage?: boolean;
+      totalDocs?: number;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "donations".
  */
 export interface Donation {
@@ -398,42 +612,71 @@ export interface Donation {
    * The person donating the milk
    */
   donor: string | Individual;
+  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
   /**
-   * The person receiving the milk
+   * Total volume of milk available for donation
    */
-  recipient?: (string | null) | Individual;
-  milkDetails: {
-    /**
-     * Amount of milk in milliliters
-     */
-    amount: number;
+  volume: number;
+  /**
+   * Volume still available for allocation
+   */
+  remainingVolume?: number | null;
+  /**
+   * The requests that this donation fulfills
+   */
+  matchedRequests?: {
+    docs?: (string | Request)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  details: {
     /**
      * Date when the milk was collected
      */
-    collectionDate: string;
+    collectedAt: string;
+    /**
+     * Date when the milk expires
+     */
+    expiresAt?: string | null;
     storageType: 'FRESH' | 'FROZEN';
     collectionMode: 'MANUAL' | 'ELECTRIC_PUMP' | 'MANUAL_PUMP';
     /**
      * Upload images of the milk sample
      */
     milkSample?: (string | Image)[] | null;
-  };
-  deliveryDetails: {
-    deliveryMode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
     /**
-     * Address for pickup, delivery, or meet-up
-     */
-    deliveryAddress?: (string | null) | Address;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
-    urgency?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
-    /**
-     * Additional notes or special instructions
+     * Additional notes or special instructions from donor
      */
     notes?: string | null;
+  };
+  deliveryDetails: {
     /**
-     * Reason for rejection (if applicable)
+     * Preferred delivery modes of the individual. This will be used for matching.
      */
-    rejectionReason?: string | null;
+    preferredModes: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
+    /**
+     * Address available for pickup.
+     */
+    pickupAddress?: (string | null) | Address;
+    /**
+     * Address available for delivery.
+     */
+    deliveryAddress?: (string | null) | Address;
+    /**
+     * Address available for meet-up.
+     */
+    meetupAddress?: (string | null) | Address;
+    /**
+     * Days available for processing.
+     */
+    availableDays?:
+      | ('EVERYDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[]
+      | null;
+    deliveries?: {
+      docs?: (string | Delivery)[];
+      hasNextPage?: boolean;
+      totalDocs?: number;
+    };
   };
   updatedAt: string;
   createdAt: string;
@@ -518,6 +761,342 @@ export interface Image {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimeSlot".
+ */
+export interface TimeSlot {
+  type: 'PRESET' | 'CUSTOM';
+  presetSlot?: ('08:00-10:00' | '10:00-12:00' | '12:00-14:00' | '14:00-16:00' | '16:00-18:00' | '18:00-20:00') | null;
+  customTime?: {
+    startTime: string;
+    endTime: string;
+  };
+}
+/**
+ * Organize notification types into logical categories with consistent styling and behavior.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationCategories".
+ */
+export interface NotificationCategory {
+  id: string;
+  /**
+   * Unique identifier used in code to reference this category. Use UPPERCASE with underscores (e.g., MATCHING, DELIVERY_STATUS, SYSTEM_ALERTS)
+   */
+  key: string;
+  /**
+   * Human-readable name displayed in the admin interface and potentially in user-facing UI
+   */
+  name: string;
+  /**
+   * Detailed description of what types of notifications belong to this category. Helps admins understand when to use this category.
+   */
+  description?: string | null;
+  /**
+   * Icon name or identifier used in your UI icon system. This could be from Lucide, Heroicons, or your custom icon set.
+   */
+  icon?: string | null;
+  /**
+   * Hex color code used for UI elements like badges, icons, and category indicators. Should follow your design system colors.
+   */
+  color?: string | null;
+  /**
+   * Controls the order categories appear in lists and dropdowns. Lower numbers appear first.
+   */
+  sortOrder?: number | null;
+  /**
+   * Whether this category is currently active. Inactive categories cannot be assigned to new notification types but existing notifications remain unchanged.
+   */
+  active?: boolean | null;
+  /**
+   * Additional settings and information for this category
+   */
+  metadata?: {
+    /**
+     * Whether users can customize notification preferences for this category (e.g., enable/disable, choose delivery channels)
+     */
+    allowUserSettings?: boolean | null;
+    /**
+     * How long notifications in this category should be kept before automatic cleanup. System notifications may have longer retention.
+     */
+    retentionDays?: number | null;
+  };
+  createdBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Configure delivery channels for sending notifications through different mediums (email, SMS, push, etc.)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationChannels".
+ */
+export interface NotificationChannel {
+  id: string;
+  createdBy?: (string | null) | User;
+  /**
+   * Unique identifier used in code (e.g., RESEND_EMAIL, TWILIO_SMS, IN_APP_REAL_TIME)
+   */
+  key: string;
+  /**
+   * Human-readable name displayed in admin and user preferences
+   */
+  name: string;
+  /**
+   * The delivery method this channel uses. Determines available configuration options.
+   */
+  type: 'IN_APP' | 'EMAIL' | 'SMS' | 'PUSH' | 'WEBHOOK' | 'EXTERNAL_API';
+  /**
+   * Purpose and configuration notes for this channel
+   */
+  description?: string | null;
+  /**
+   * Whether this channel is currently active and available for notifications
+   */
+  active?: boolean | null;
+  configuration?: {
+    /**
+     * API endpoint URL for HTTP POST notifications (must be HTTPS)
+     */
+    endpoint?: string | null;
+    /**
+     * API key for external service authentication
+     */
+    apiKey?: string | null;
+    /**
+     * Email-specific settings that override PayloadCMS defaults
+     */
+    emailConfig?: {
+      /**
+       * Email address notifications are sent from (optional)
+       */
+      fromAddress?: string | null;
+      /**
+       * Display name shown to recipients (optional)
+       */
+      fromName?: string | null;
+      /**
+       * Email address for replies (recommended)
+       */
+      replyTo?: string | null;
+    };
+  };
+  templates?: {
+    /**
+     * Subject line with variables: {{title}}, {{recipientName}}, {{priority}}
+     */
+    subject?: string | null;
+    /**
+     * Raw HTML template with variables. Available: {{title}}, {{message}}, {{recipientName}}, {{actionUrl}}, {{actionLabel}}, {{priority}}
+     */
+    htmlTemplate?: string | null;
+    /**
+     * Plain text fallback for email clients that don't support HTML
+     */
+    textTemplate?: string | null;
+    /**
+     * SMS template (keep concise, ~160 characters max for single SMS)
+     */
+    smsTemplate?: string | null;
+  };
+  delivery?: {
+    /**
+     * Automatic retry behavior for failed deliveries
+     */
+    retrySettings?: {
+      /**
+       * Number of times to retry failed deliveries (0 = no retries)
+       */
+      maxRetries?: number | null;
+      /**
+       * Minutes to wait between retry attempts
+       */
+      retryDelay?: number | null;
+    };
+    /**
+     * Additional settings for channel management
+     */
+    metadata?: {
+      /**
+       * Priority when multiple channels of same type exist (lower = higher priority)
+       */
+      priority?: number | null;
+      /**
+       * Maximum notifications per hour (leave empty for no limit)
+       */
+      rateLimitPerHour?: number | null;
+      /**
+       * Comma-separated tags for organization (e.g., production, urgent, marketing)
+       */
+      tags?: string | null;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Individual notification instances with delivery tracking and user interaction data
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  createdBy?: (string | null) | User;
+  /**
+   * User who will receive this notification. Determines delivery preferences and contact methods.
+   */
+  recipient: string | User;
+  /**
+   * Template and configuration used to generate this notification. Defines category, priority, and available channels.
+   */
+  notificationType: string | NotificationType;
+  /**
+   * Overrides the default priority from notification type. Affects delivery urgency and user interface prominence.
+   */
+  priority?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
+  /**
+   * Final processed title from notification type template with variables replaced. This is what users see as the notification headline.
+   */
+  title: string;
+  /**
+   * Final processed message content from template with variables replaced. Contains the main notification text users will read.
+   */
+  message: string;
+  /**
+   * Key-value pairs of variables used to process the notification templates. Stored for audit trail and debugging purposes.
+   */
+  variables?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Whether the recipient has marked this notification as read. Updates automatically when user views notification.
+   */
+  read?: boolean | null;
+  /**
+   * Timestamp when the notification was marked as read by the recipient.
+   */
+  readAt?: string | null;
+  relatedData?: {
+    /**
+     * System entity that triggered this notification (e.g., matched donation, completed delivery). Used for context and navigation.
+     */
+    data?:
+      | ({
+          relationTo: 'requests';
+          value: string | Request;
+        } | null)
+      | ({
+          relationTo: 'donations';
+          value: string | Donation;
+        } | null)
+      | ({
+          relationTo: 'deliveries';
+          value: string | Delivery;
+        } | null);
+    /**
+     * URL for the primary action button in the notification. Typically links to relevant page in the app.
+     */
+    actionUrl?: string | null;
+    /**
+     * Text displayed on the action button. Should clearly indicate what the action does.
+     */
+    actionLabel?: string | null;
+  };
+  delivery: {
+    channelsStats: NotificationChannelStats;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationTypes".
+ */
+export interface NotificationType {
+  id: string;
+  createdBy?: (string | null) | User;
+  /**
+   * Unique identifier for this notification type (e.g., DONATION_MATCHED)
+   */
+  key: string;
+  /**
+   * Human-readable name for this notification type
+   */
+  name: string;
+  /**
+   * Category this notification type belongs to
+   */
+  category: string | NotificationCategory;
+  /**
+   * Description of when this notification is triggered
+   */
+  description?: string | null;
+  /**
+   * Priority level of this notification type
+   */
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  template: NotificationTypeTemplate;
+  /**
+   * Default channels for this notification type
+   */
+  defaultChannels?: (string | NotificationChannel)[] | null;
+  triggers?: NotificationTypeTrigger;
+  /**
+   * Whether this notification type is currently active
+   */
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTemplate".
+ */
+export interface NotificationTypeTemplate {
+  /**
+   * Title template with variables like {{amount}}, {{date}}
+   */
+  title: string;
+  /**
+   * Message template with variables
+   */
+  message: string;
+  variables?:
+    | {
+        key: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTrigger".
+ */
+export interface NotificationTypeTrigger {
+  collection?: ('requests' | 'donations' | 'deliveries' | 'system') | null;
+  event?: ('CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE' | 'SCHEDULED') | null;
+  /**
+   * JSON conditions for when to trigger this notification
+   */
+  conditions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -538,6 +1117,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'citiesMunicipalities';
         value: string | CityMunicipality;
+      } | null)
+    | ({
+        relationTo: 'deliveries';
+        value: string | Delivery;
       } | null)
     | ({
         relationTo: 'donations';
@@ -564,12 +1147,32 @@ export interface PayloadLockedDocument {
         value: string | MilkBank;
       } | null)
     | ({
+        relationTo: 'notificationCategories';
+        value: string | NotificationCategory;
+      } | null)
+    | ({
+        relationTo: 'notificationChannels';
+        value: string | NotificationChannel;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
+      } | null)
+    | ({
+        relationTo: 'notificationTypes';
+        value: string | NotificationType;
+      } | null)
+    | ({
         relationTo: 'provinces';
         value: string | Province;
       } | null)
     | ({
         relationTo: 'regions';
         value: string | Region;
+      } | null)
+    | ({
+        relationTo: 'requests';
+        value: string | Request;
       } | null)
     | ({
         relationTo: 'users';
@@ -714,31 +1317,107 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveries_select".
+ */
+export interface DeliveriesSelect<T extends boolean = true> {
+  createdBy?: T;
+  request?: T;
+  donation?: T;
+  mode?: T;
+  status?: T;
+  pickupDetails?:
+    | T
+    | {
+        address?: T;
+        date?: T;
+        timeSlot?: T | TimeSlotSelect<T>;
+        instructions?: T;
+      };
+  deliveryDetails?:
+    | T
+    | {
+        address?: T;
+        date?: T;
+        timeSlot?: T | TimeSlotSelect<T>;
+        instructions?: T;
+      };
+  meetupDetails?:
+    | T
+    | {
+        address?: T;
+        date?: T;
+        proposedTimeSlots?:
+          | T
+          | {
+              timeSlot?: T | TimeSlotSelect<T>;
+              id?: T;
+            };
+        confirmedTimeSlot?: T;
+        proposedBy?: T;
+        instructions?: T;
+      };
+  tracking?:
+    | T
+    | {
+        deliveredAt?: T;
+        trackingHistory?:
+          | T
+          | {
+              status?: T;
+              timestamp?: T;
+              notes?: T;
+              id?: T;
+            };
+        failureReason?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimeSlot_select".
+ */
+export interface TimeSlotSelect<T extends boolean = true> {
+  type?: T;
+  presetSlot?: T;
+  customTime?:
+    | T
+    | {
+        startTime?: T;
+        endTime?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "donations_select".
  */
 export interface DonationsSelect<T extends boolean = true> {
   title?: T;
   createdBy?: T;
   donor?: T;
-  recipient?: T;
-  milkDetails?:
+  status?: T;
+  volume?: T;
+  remainingVolume?: T;
+  matchedRequests?: T;
+  details?:
     | T
     | {
-        amount?: T;
-        collectionDate?: T;
+        collectedAt?: T;
+        expiresAt?: T;
         storageType?: T;
         collectionMode?: T;
         milkSample?: T;
+        notes?: T;
       };
   deliveryDetails?:
     | T
     | {
-        deliveryMode?: T;
+        preferredModes?: T;
+        pickupAddress?: T;
         deliveryAddress?: T;
-        status?: T;
-        urgency?: T;
-        notes?: T;
-        rejectionReason?: T;
+        meetupAddress?: T;
+        availableDays?: T;
+        deliveries?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -901,6 +1580,166 @@ export interface MilkBanksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationCategories_select".
+ */
+export interface NotificationCategoriesSelect<T extends boolean = true> {
+  key?: T;
+  name?: T;
+  description?: T;
+  icon?: T;
+  color?: T;
+  sortOrder?: T;
+  active?: T;
+  metadata?:
+    | T
+    | {
+        allowUserSettings?: T;
+        retentionDays?: T;
+      };
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationChannels_select".
+ */
+export interface NotificationChannelsSelect<T extends boolean = true> {
+  createdBy?: T;
+  key?: T;
+  name?: T;
+  type?: T;
+  description?: T;
+  active?: T;
+  configuration?:
+    | T
+    | {
+        endpoint?: T;
+        apiKey?: T;
+        emailConfig?:
+          | T
+          | {
+              fromAddress?: T;
+              fromName?: T;
+              replyTo?: T;
+            };
+      };
+  templates?:
+    | T
+    | {
+        subject?: T;
+        htmlTemplate?: T;
+        textTemplate?: T;
+        smsTemplate?: T;
+      };
+  delivery?:
+    | T
+    | {
+        retrySettings?:
+          | T
+          | {
+              maxRetries?: T;
+              retryDelay?: T;
+            };
+        metadata?:
+          | T
+          | {
+              priority?: T;
+              rateLimitPerHour?: T;
+              tags?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  createdBy?: T;
+  recipient?: T;
+  notificationType?: T;
+  priority?: T;
+  title?: T;
+  message?: T;
+  variables?: T;
+  read?: T;
+  readAt?: T;
+  relatedData?:
+    | T
+    | {
+        data?: T;
+        actionUrl?: T;
+        actionLabel?: T;
+      };
+  delivery?:
+    | T
+    | {
+        channelsStats?: T | NotificationChannelStatsSelect<T>;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationChannelStats_select".
+ */
+export interface NotificationChannelStatsSelect<T extends boolean = true> {
+  channel?: T;
+  scheduled?: T;
+  scheduledFor?: T;
+  sent?: T;
+  sentAt?: T;
+  attempts?: T;
+  lastAttemptAt?: T;
+  failureReason?: T;
+  id?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notificationTypes_select".
+ */
+export interface NotificationTypesSelect<T extends boolean = true> {
+  createdBy?: T;
+  key?: T;
+  name?: T;
+  category?: T;
+  description?: T;
+  priority?: T;
+  template?: T | NotificationTypeTemplateSelect<T>;
+  defaultChannels?: T;
+  triggers?: T | NotificationTypeTriggerSelect<T>;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTemplate_select".
+ */
+export interface NotificationTypeTemplateSelect<T extends boolean = true> {
+  title?: T;
+  message?: T;
+  variables?:
+    | T
+    | {
+        key?: T;
+        description?: T;
+        id?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTrigger_select".
+ */
+export interface NotificationTypeTriggerSelect<T extends boolean = true> {
+  collection?: T;
+  event?: T;
+  conditions?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces_select".
  */
 export interface ProvincesSelect<T extends boolean = true> {
@@ -920,6 +1759,39 @@ export interface RegionsSelect<T extends boolean = true> {
   code?: T;
   regionName?: T;
   islandGroup?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "requests_select".
+ */
+export interface RequestsSelect<T extends boolean = true> {
+  title?: T;
+  createdBy?: T;
+  requester?: T;
+  volumeNeeded?: T;
+  matchedDonation?: T;
+  status?: T;
+  details?:
+    | T
+    | {
+        neededAt?: T;
+        storagePreference?: T;
+        urgency?: T;
+        reason?: T;
+        notes?: T;
+      };
+  deliveryDetails?:
+    | T
+    | {
+        preferredModes?: T;
+        pickupAddress?: T;
+        deliveryAddress?: T;
+        meetupAddress?: T;
+        availableDays?: T;
+        delivery?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

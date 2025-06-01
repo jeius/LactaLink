@@ -17,8 +17,8 @@ import {
   boolean,
   timestamp,
   numeric,
-  serial,
   integer,
+  serial,
   jsonb,
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core';
@@ -28,25 +28,61 @@ export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalitie
   'CITY',
   'MUNICIPALITY',
 ]);
-export const enum_donations_milk_details_storage_type = pgEnum(
-  'enum_donations_milk_details_storage_type',
-  ['FRESH', 'FROZEN']
+export const enum_time_slot_type = pgEnum('enum_time_slot_type', ['PRESET', 'CUSTOM']);
+export const enum_time_slot_preset = pgEnum('enum_time_slot_preset', [
+  '08:00-10:00',
+  '10:00-12:00',
+  '12:00-14:00',
+  '14:00-16:00',
+  '16:00-18:00',
+  '18:00-20:00',
+]);
+export const enum_deliveries_mode = pgEnum('enum_deliveries_mode', [
+  'PICKUP',
+  'DELIVERY',
+  'MEETUP',
+]);
+export const enum_deliveries_status = pgEnum('enum_deliveries_status', [
+  'PENDING',
+  'PENDING_CONFIRMATION',
+  'CONFIRMED',
+  'SCHEDULED',
+  'IN_TRANSIT',
+  'READY_FOR_PICKUP',
+  'DELIVERED',
+  'FAILED',
+  'CANCELLED',
+]);
+export const enum_deliveries_meetup_details_proposed_by = pgEnum(
+  'enum_deliveries_meetup_details_proposed_by',
+  ['DONOR', 'REQUESTER']
 );
-export const enum_donations_milk_details_collection_mode = pgEnum(
-  'enum_donations_milk_details_collection_mode',
+export const enum_delivery_modes = pgEnum('enum_delivery_modes', ['PICKUP', 'DELIVERY', 'MEETUP']);
+export const enum_days = pgEnum('enum_days', [
+  'EVERYDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+]);
+export const enum_donations_status = pgEnum('enum_donations_status', [
+  'AVAILABLE',
+  'PARTIALLY_ALLOCATED',
+  'FULLY_ALLOCATED',
+  'COMPLETED',
+  'EXPIRED',
+  'CANCELLED',
+]);
+export const enum_donations_details_storage_type = pgEnum('enum_donations_details_storage_type', [
+  'FRESH',
+  'FROZEN',
+]);
+export const enum_donations_details_collection_mode = pgEnum(
+  'enum_donations_details_collection_mode',
   ['MANUAL', 'ELECTRIC_PUMP', 'MANUAL_PUMP']
-);
-export const enum_donations_delivery_details_delivery_mode = pgEnum(
-  'enum_donations_delivery_details_delivery_mode',
-  ['PICKUP', 'DELIVERY', 'MEETUP']
-);
-export const enum_donations_delivery_details_status = pgEnum(
-  'enum_donations_delivery_details_status',
-  ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED']
-);
-export const enum_donations_delivery_details_urgency = pgEnum(
-  'enum_donations_delivery_details_urgency',
-  ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
 );
 export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
   'GOVERNMENT',
@@ -71,6 +107,44 @@ export const enum_milk_banks_type = pgEnum('enum_milk_banks_type', [
   'PRIVATE',
   'OTHER',
 ]);
+export const enum_notification_channel_type = pgEnum('enum_notification_channel_type', [
+  'IN_APP',
+  'EMAIL',
+  'SMS',
+  'PUSH',
+  'WEBHOOK',
+  'EXTERNAL_API',
+]);
+export const enum_priority_level = pgEnum('enum_priority_level', [
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+  'CRITICAL',
+]);
+export const enum_notification_trigger_collection = pgEnum('enum_notification_trigger_collection', [
+  'requests',
+  'donations',
+  'deliveries',
+  'system',
+]);
+export const enum_notification_trigger_event = pgEnum('enum_notification_trigger_event', [
+  'CREATE',
+  'UPDATE',
+  'DELETE',
+  'STATUS_CHANGE',
+  'SCHEDULED',
+]);
+export const enum_requests_status = pgEnum('enum_requests_status', [
+  'PENDING',
+  'MATCHED',
+  'FULFILLED',
+  'CANCELLED',
+  'EXPIRED',
+]);
+export const enum_requests_details_storage_preference = pgEnum(
+  'enum_requests_details_storage_preference',
+  ['FRESH', 'FROZEN', 'EITHER']
+);
 export const enum_users_role = pgEnum('enum_users_role', ['AUTHENTICATED', 'ADMIN']);
 export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
   'INDIVIDUAL',
@@ -272,6 +346,210 @@ export const cities_municipalities = pgTable(
   })
 );
 
+export const deliveries_meetup_details_proposed_time_slots = pgTable(
+  'deliveries_meetup_details_proposed_time_slots',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    timeSlot_type: enum_time_slot_type('time_slot_type').default('PRESET'),
+    timeSlot_presetSlot: enum_time_slot_preset('time_slot_preset_slot'),
+    timeSlot_customTime_startTime: timestamp('time_slot_custom_time_start_time', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    timeSlot_customTime_endTime: timestamp('time_slot_custom_time_end_time', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+  },
+  (columns) => ({
+    _orderIdx: index('deliveries_meetup_details_proposed_time_slots_order_idx').on(columns._order),
+    _parentIDIdx: index('deliveries_meetup_details_proposed_time_slots_parent_id_idx').on(
+      columns._parentID
+    ),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [deliveries.id],
+      name: 'deliveries_meetup_details_proposed_time_slots_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const deliveries_tracking_tracking_history = pgTable(
+  'deliveries_tracking_tracking_history',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    status: varchar('status'),
+    timestamp: timestamp('timestamp', { mode: 'string', withTimezone: true, precision: 3 }),
+    notes: varchar('notes'),
+  },
+  (columns) => ({
+    _orderIdx: index('deliveries_tracking_tracking_history_order_idx').on(columns._order),
+    _parentIDIdx: index('deliveries_tracking_tracking_history_parent_id_idx').on(columns._parentID),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [deliveries.id],
+      name: 'deliveries_tracking_tracking_history_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const deliveries = pgTable(
+  'deliveries',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    request: uuid('request_id')
+      .notNull()
+      .references(() => requests.id, {
+        onDelete: 'set null',
+      }),
+    donation: uuid('donation_id')
+      .notNull()
+      .references(() => donations.id, {
+        onDelete: 'set null',
+      }),
+    mode: enum_deliveries_mode('mode').notNull(),
+    status: enum_deliveries_status('status').notNull().default('PENDING'),
+    pickupDetails_address: uuid('pickup_details_address_id').references(() => addresses.id, {
+      onDelete: 'set null',
+    }),
+    pickupDetails_date: timestamp('pickup_details_date', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    pickupDetails_timeSlot_type: enum_time_slot_type('pickup_details_time_slot_type').default(
+      'PRESET'
+    ),
+    pickupDetails_timeSlot_presetSlot: enum_time_slot_preset(
+      'pickup_details_time_slot_preset_slot'
+    ),
+    pickupDetails_timeSlot_customTime_startTime: timestamp(
+      'pickup_details_time_slot_custom_time_start_time',
+      { mode: 'string', withTimezone: true, precision: 3 }
+    ),
+    pickupDetails_timeSlot_customTime_endTime: timestamp(
+      'pickup_details_time_slot_custom_time_end_time',
+      { mode: 'string', withTimezone: true, precision: 3 }
+    ),
+    pickupDetails_instructions: varchar('pickup_details_instructions'),
+    deliveryDetails_address: uuid('delivery_details_address_id').references(() => addresses.id, {
+      onDelete: 'set null',
+    }),
+    deliveryDetails_date: timestamp('delivery_details_date', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    deliveryDetails_timeSlot_type: enum_time_slot_type('delivery_details_time_slot_type').default(
+      'PRESET'
+    ),
+    deliveryDetails_timeSlot_presetSlot: enum_time_slot_preset(
+      'delivery_details_time_slot_preset_slot'
+    ),
+    deliveryDetails_timeSlot_customTime_startTime: timestamp(
+      'delivery_details_time_slot_custom_time_start_time',
+      { mode: 'string', withTimezone: true, precision: 3 }
+    ),
+    deliveryDetails_timeSlot_customTime_endTime: timestamp(
+      'delivery_details_time_slot_custom_time_end_time',
+      { mode: 'string', withTimezone: true, precision: 3 }
+    ),
+    deliveryDetails_instructions: varchar('delivery_details_instructions'),
+    meetupDetails_address: uuid('meetup_details_address_id').references(() => addresses.id, {
+      onDelete: 'set null',
+    }),
+    meetupDetails_date: timestamp('meetup_details_date', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    meetupDetails_confirmedTimeSlot: timestamp('meetup_details_confirmed_time_slot', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    meetupDetails_proposedBy: enum_deliveries_meetup_details_proposed_by(
+      'meetup_details_proposed_by'
+    ),
+    meetupDetails_instructions: varchar('meetup_details_instructions'),
+    tracking_deliveredAt: timestamp('tracking_delivered_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    tracking_failureReason: varchar('tracking_failure_reason'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    deliveries_created_by_idx: index('deliveries_created_by_idx').on(columns.createdBy),
+    deliveries_request_idx: index('deliveries_request_idx').on(columns.request),
+    deliveries_donation_idx: index('deliveries_donation_idx').on(columns.donation),
+    deliveries_pickup_details_pickup_details_address_idx: index(
+      'deliveries_pickup_details_pickup_details_address_idx'
+    ).on(columns.pickupDetails_address),
+    deliveries_delivery_details_delivery_details_address_idx: index(
+      'deliveries_delivery_details_delivery_details_address_idx'
+    ).on(columns.deliveryDetails_address),
+    deliveries_meetup_details_meetup_details_address_idx: index(
+      'deliveries_meetup_details_meetup_details_address_idx'
+    ).on(columns.meetupDetails_address),
+    deliveries_updated_at_idx: index('deliveries_updated_at_idx').on(columns.updatedAt),
+    deliveries_created_at_idx: index('deliveries_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const donations_delivery_details_preferred_modes = pgTable(
+  'donations_delivery_details_preferred_modes',
+  {
+    order: integer('order').notNull(),
+    parent: uuid('parent_id').notNull(),
+    value: enum_delivery_modes('value'),
+    id: uuid('id').defaultRandom().primaryKey(),
+  },
+  (columns) => ({
+    orderIdx: index('donations_delivery_details_preferred_modes_order_idx').on(columns.order),
+    parentIdx: index('donations_delivery_details_preferred_modes_parent_idx').on(columns.parent),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [donations.id],
+      name: 'donations_delivery_details_preferred_modes_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const donations_delivery_details_available_days = pgTable(
+  'donations_delivery_details_available_days',
+  {
+    order: integer('order').notNull(),
+    parent: uuid('parent_id').notNull(),
+    value: enum_days('value'),
+    id: uuid('id').defaultRandom().primaryKey(),
+  },
+  (columns) => ({
+    orderIdx: index('donations_delivery_details_available_days_order_idx').on(columns.order),
+    parentIdx: index('donations_delivery_details_available_days_parent_idx').on(columns.parent),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [donations.id],
+      name: 'donations_delivery_details_available_days_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const donations = pgTable(
   'donations',
   {
@@ -285,38 +563,41 @@ export const donations = pgTable(
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    recipient: uuid('recipient_id').references(() => individuals.id, {
-      onDelete: 'set null',
-    }),
-    milkDetails_amount: numeric('milk_details_amount').notNull(),
-    milkDetails_collectionDate: timestamp('milk_details_collection_date', {
+    status: enum_donations_status('status').notNull().default('AVAILABLE'),
+    amount: numeric('amount').notNull().default('50'),
+    remainingAmount: numeric('remaining_amount'),
+    details_collectedAt: timestamp('details_collected_at', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }).notNull(),
-    milkDetails_storageType: enum_donations_milk_details_storage_type(
-      'milk_details_storage_type'
-    ).notNull(),
-    milkDetails_collectionMode: enum_donations_milk_details_collection_mode(
-      'milk_details_collection_mode'
-    ).notNull(),
-    deliveryDetails_deliveryMode: enum_donations_delivery_details_delivery_mode(
-      'delivery_details_delivery_mode'
-    ).notNull(),
+    details_expiresAt: timestamp('details_expires_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    details_storageType: enum_donations_details_storage_type('details_storage_type').notNull(),
+    details_collectionMode:
+      enum_donations_details_collection_mode('details_collection_mode').notNull(),
+    details_notes: varchar('details_notes'),
+    deliveryDetails_pickupAddress: uuid('delivery_details_pickup_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
     deliveryDetails_deliveryAddress: uuid('delivery_details_delivery_address_id').references(
       () => addresses.id,
       {
         onDelete: 'set null',
       }
     ),
-    deliveryDetails_status: enum_donations_delivery_details_status('delivery_details_status')
-      .notNull()
-      .default('PENDING'),
-    deliveryDetails_urgency: enum_donations_delivery_details_urgency(
-      'delivery_details_urgency'
-    ).default('MEDIUM'),
-    deliveryDetails_notes: varchar('delivery_details_notes'),
-    deliveryDetails_rejectionReason: varchar('delivery_details_rejection_reason'),
+    deliveryDetails_meetupAddress: uuid('delivery_details_meetup_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -327,10 +608,15 @@ export const donations = pgTable(
   (columns) => ({
     donations_created_by_idx: index('donations_created_by_idx').on(columns.createdBy),
     donations_donor_idx: index('donations_donor_idx').on(columns.donor),
-    donations_recipient_idx: index('donations_recipient_idx').on(columns.recipient),
+    donations_delivery_details_delivery_details_pickup_address_idx: index(
+      'donations_delivery_details_delivery_details_pickup_address_idx'
+    ).on(columns.deliveryDetails_pickupAddress),
     donations_delivery_details_delivery_details_delivery_address_idx: index(
       'donations_delivery_details_delivery_details_delivery_address_idx'
     ).on(columns.deliveryDetails_deliveryAddress),
+    donations_delivery_details_delivery_details_meetup_address_idx: index(
+      'donations_delivery_details_delivery_details_meetup_address_idx'
+    ).on(columns.deliveryDetails_meetupAddress),
     donations_updated_at_idx: index('donations_updated_at_idx').on(columns.updatedAt),
     donations_created_at_idx: index('donations_created_at_idx').on(columns.createdAt),
   })
@@ -663,6 +949,314 @@ export const milk_banks_rels = pgTable(
   })
 );
 
+export const notification_categories = pgTable(
+  'notification_categories',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    key: varchar('key').notNull(),
+    name: varchar('name').notNull(),
+    description: varchar('description'),
+    color: varchar('color'),
+    icon: varchar('icon'),
+    sortOrder: numeric('sort_order').default('0'),
+    active: boolean('active').default(true),
+    metadata_allowUserSettings: boolean('metadata_allow_user_settings').default(true),
+    metadata_retentionDays: numeric('metadata_retention_days').default('30'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    notification_categories_created_by_idx: index('notification_categories_created_by_idx').on(
+      columns.createdBy
+    ),
+    notification_categories_key_idx: uniqueIndex('notification_categories_key_idx').on(columns.key),
+    notification_categories_updated_at_idx: index('notification_categories_updated_at_idx').on(
+      columns.updatedAt
+    ),
+    notification_categories_created_at_idx: index('notification_categories_created_at_idx').on(
+      columns.createdAt
+    ),
+  })
+);
+
+export const notification_channels = pgTable(
+  'notification_channels',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    key: varchar('key').notNull(),
+    name: varchar('name').notNull(),
+    type: enum_notification_channel_type('type').notNull(),
+    description: varchar('description'),
+    active: boolean('active').default(true),
+    configuration_endpoint: varchar('configuration_endpoint'),
+    configuration_apiKey: varchar('configuration_api_key'),
+    configuration_emailConfig_fromAddress: varchar('configuration_email_config_from_address'),
+    configuration_emailConfig_fromName: varchar('configuration_email_config_from_name'),
+    configuration_emailConfig_replyTo: varchar('configuration_email_config_reply_to'),
+    templates_subject: varchar('templates_subject'),
+    templates_htmlTemplate: jsonb('templates_html_template'),
+    templates_textTemplate: varchar('templates_text_template'),
+    templates_smsTemplate: varchar('templates_sms_template'),
+    delivery_retrySettings_maxRetries: numeric('delivery_retry_settings_max_retries').default('3'),
+    delivery_retrySettings_retryDelay: numeric('delivery_retry_settings_retry_delay').default('5'),
+    delivery_metadata_priority: numeric('delivery_metadata_priority').default('1'),
+    delivery_metadata_rateLimitPerHour: numeric('delivery_metadata_rate_limit_per_hour'),
+    delivery_metadata_tags: varchar('delivery_metadata_tags'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    notification_channels_created_by_idx: index('notification_channels_created_by_idx').on(
+      columns.createdBy
+    ),
+    notification_channels_key_idx: uniqueIndex('notification_channels_key_idx').on(columns.key),
+    notification_channels_updated_at_idx: index('notification_channels_updated_at_idx').on(
+      columns.updatedAt
+    ),
+    notification_channels_created_at_idx: index('notification_channels_created_at_idx').on(
+      columns.createdAt
+    ),
+  })
+);
+
+export const notifications_delivery_channels_stats = pgTable(
+  'notifications_delivery_channels_stats',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    channel: uuid('channel_id')
+      .notNull()
+      .references(() => notification_channels.id, {
+        onDelete: 'set null',
+      }),
+    scheduled: boolean('scheduled').default(false),
+    scheduledFor: timestamp('scheduled_for', { mode: 'string', withTimezone: true, precision: 3 }),
+    sent: boolean('sent').default(false),
+    sentAt: timestamp('sent_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    attempts: numeric('attempts').default('0'),
+    lastAttemptAt: timestamp('last_attempt_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    failureReason: varchar('failure_reason'),
+  },
+  (columns) => ({
+    _orderIdx: index('notifications_delivery_channels_stats_order_idx').on(columns._order),
+    _parentIDIdx: index('notifications_delivery_channels_stats_parent_id_idx').on(
+      columns._parentID
+    ),
+    notifications_delivery_channels_stats_channel_idx: index(
+      'notifications_delivery_channels_stats_channel_idx'
+    ).on(columns.channel),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [notifications.id],
+      name: 'notifications_delivery_channels_stats_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    recipient: uuid('recipient_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    notificationType: uuid('notification_type_id')
+      .notNull()
+      .references(() => notification_types.id, {
+        onDelete: 'set null',
+      }),
+    priority: enum_priority_level('priority').default('MEDIUM'),
+    title: varchar('title').notNull(),
+    message: varchar('message').notNull(),
+    variables: jsonb('variables'),
+    read: boolean('read').default(false),
+    readAt: timestamp('read_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    relatedData_actionUrl: varchar('related_data_action_url'),
+    relatedData_actionLabel: varchar('related_data_action_label'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    notifications_created_by_idx: index('notifications_created_by_idx').on(columns.createdBy),
+    notifications_recipient_idx: index('notifications_recipient_idx').on(columns.recipient),
+    notifications_notification_type_idx: index('notifications_notification_type_idx').on(
+      columns.notificationType
+    ),
+    notifications_updated_at_idx: index('notifications_updated_at_idx').on(columns.updatedAt),
+    notifications_created_at_idx: index('notifications_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const notifications_rels = pgTable(
+  'notifications_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    requestsID: uuid('requests_id'),
+    donationsID: uuid('donations_id'),
+    deliveriesID: uuid('deliveries_id'),
+  },
+  (columns) => ({
+    order: index('notifications_rels_order_idx').on(columns.order),
+    parentIdx: index('notifications_rels_parent_idx').on(columns.parent),
+    pathIdx: index('notifications_rels_path_idx').on(columns.path),
+    notifications_rels_requests_id_idx: index('notifications_rels_requests_id_idx').on(
+      columns.requestsID
+    ),
+    notifications_rels_donations_id_idx: index('notifications_rels_donations_id_idx').on(
+      columns.donationsID
+    ),
+    notifications_rels_deliveries_id_idx: index('notifications_rels_deliveries_id_idx').on(
+      columns.deliveriesID
+    ),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [notifications.id],
+      name: 'notifications_rels_parent_fk',
+    }).onDelete('cascade'),
+    requestsIdFk: foreignKey({
+      columns: [columns['requestsID']],
+      foreignColumns: [requests.id],
+      name: 'notifications_rels_requests_fk',
+    }).onDelete('cascade'),
+    donationsIdFk: foreignKey({
+      columns: [columns['donationsID']],
+      foreignColumns: [donations.id],
+      name: 'notifications_rels_donations_fk',
+    }).onDelete('cascade'),
+    deliveriesIdFk: foreignKey({
+      columns: [columns['deliveriesID']],
+      foreignColumns: [deliveries.id],
+      name: 'notifications_rels_deliveries_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const notification_types_template_variables = pgTable(
+  'notification_types_template_variables',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    key: varchar('key').notNull(),
+    description: varchar('description'),
+  },
+  (columns) => ({
+    _orderIdx: index('notification_types_template_variables_order_idx').on(columns._order),
+    _parentIDIdx: index('notification_types_template_variables_parent_id_idx').on(
+      columns._parentID
+    ),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [notification_types.id],
+      name: 'notification_types_template_variables_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const notification_types = pgTable(
+  'notification_types',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    key: varchar('key').notNull(),
+    name: varchar('name').notNull(),
+    category: uuid('category_id')
+      .notNull()
+      .references(() => notification_categories.id, {
+        onDelete: 'set null',
+      }),
+    description: varchar('description'),
+    priority: enum_priority_level('priority').notNull().default('MEDIUM'),
+    template_title: varchar('template_title').notNull(),
+    template_message: varchar('template_message').notNull(),
+    triggers_collection: enum_notification_trigger_collection('triggers_collection'),
+    triggers_event: enum_notification_trigger_event('triggers_event'),
+    triggers_conditions: jsonb('triggers_conditions'),
+    active: boolean('active').default(true),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    notification_types_created_by_idx: index('notification_types_created_by_idx').on(
+      columns.createdBy
+    ),
+    notification_types_key_idx: uniqueIndex('notification_types_key_idx').on(columns.key),
+    notification_types_category_idx: index('notification_types_category_idx').on(columns.category),
+    notification_types_updated_at_idx: index('notification_types_updated_at_idx').on(
+      columns.updatedAt
+    ),
+    notification_types_created_at_idx: index('notification_types_created_at_idx').on(
+      columns.createdAt
+    ),
+  })
+);
+
+export const notification_types_rels = pgTable(
+  'notification_types_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    notificationChannelsID: uuid('notification_channels_id'),
+  },
+  (columns) => ({
+    order: index('notification_types_rels_order_idx').on(columns.order),
+    parentIdx: index('notification_types_rels_parent_idx').on(columns.parent),
+    pathIdx: index('notification_types_rels_path_idx').on(columns.path),
+    notification_types_rels_notification_channels_id_idx: index(
+      'notification_types_rels_notification_channels_id_idx'
+    ).on(columns.notificationChannelsID),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [notification_types.id],
+      name: 'notification_types_rels_parent_fk',
+    }).onDelete('cascade'),
+    notificationChannelsIdFk: foreignKey({
+      columns: [columns['notificationChannelsID']],
+      foreignColumns: [notification_channels.id],
+      name: 'notification_types_rels_notification_channels_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const provinces = pgTable(
   'provinces',
   {
@@ -719,6 +1313,118 @@ export const regions = pgTable(
     regions_island_group_idx: index('regions_island_group_idx').on(columns.islandGroup),
     regions_updated_at_idx: index('regions_updated_at_idx').on(columns.updatedAt),
     regions_created_at_idx: index('regions_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const requests_delivery_details_preferred_modes = pgTable(
+  'requests_delivery_details_preferred_modes',
+  {
+    order: integer('order').notNull(),
+    parent: uuid('parent_id').notNull(),
+    value: enum_delivery_modes('value'),
+    id: uuid('id').defaultRandom().primaryKey(),
+  },
+  (columns) => ({
+    orderIdx: index('requests_delivery_details_preferred_modes_order_idx').on(columns.order),
+    parentIdx: index('requests_delivery_details_preferred_modes_parent_idx').on(columns.parent),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [requests.id],
+      name: 'requests_delivery_details_preferred_modes_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const requests_delivery_details_available_days = pgTable(
+  'requests_delivery_details_available_days',
+  {
+    order: integer('order').notNull(),
+    parent: uuid('parent_id').notNull(),
+    value: enum_days('value'),
+    id: uuid('id').defaultRandom().primaryKey(),
+  },
+  (columns) => ({
+    orderIdx: index('requests_delivery_details_available_days_order_idx').on(columns.order),
+    parentIdx: index('requests_delivery_details_available_days_parent_idx').on(columns.parent),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [requests.id],
+      name: 'requests_delivery_details_available_days_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const requests = pgTable(
+  'requests',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    requester: uuid('requester_id')
+      .notNull()
+      .references(() => individuals.id, {
+        onDelete: 'set null',
+      }),
+    amount: numeric('amount').notNull(),
+    matchedDonation: uuid('matched_donation_id').references(() => donations.id, {
+      onDelete: 'set null',
+    }),
+    status: enum_requests_status('status').notNull().default('PENDING'),
+    details_neededAt: timestamp('details_needed_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    details_storagePreference: enum_requests_details_storage_preference(
+      'details_storage_preference'
+    ),
+    details_urgency: enum_priority_level('details_urgency').notNull().default('LOW'),
+    details_reason: varchar('details_reason'),
+    details_notes: varchar('details_notes'),
+    deliveryDetails_pickupAddress: uuid('delivery_details_pickup_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
+    deliveryDetails_deliveryAddress: uuid('delivery_details_delivery_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
+    deliveryDetails_meetupAddress: uuid('delivery_details_meetup_address_id').references(
+      () => addresses.id,
+      {
+        onDelete: 'set null',
+      }
+    ),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    requests_created_by_idx: index('requests_created_by_idx').on(columns.createdBy),
+    requests_requester_idx: index('requests_requester_idx').on(columns.requester),
+    requests_matched_donation_idx: index('requests_matched_donation_idx').on(
+      columns.matchedDonation
+    ),
+    requests_delivery_details_delivery_details_pickup_address_idx: index(
+      'requests_delivery_details_delivery_details_pickup_address_idx'
+    ).on(columns.deliveryDetails_pickupAddress),
+    requests_delivery_details_delivery_details_delivery_address_idx: index(
+      'requests_delivery_details_delivery_details_delivery_address_idx'
+    ).on(columns.deliveryDetails_deliveryAddress),
+    requests_delivery_details_delivery_details_meetup_address_idx: index(
+      'requests_delivery_details_delivery_details_meetup_address_idx'
+    ).on(columns.deliveryDetails_meetupAddress),
+    requests_updated_at_idx: index('requests_updated_at_idx').on(columns.updatedAt),
+    requests_created_at_idx: index('requests_created_at_idx').on(columns.createdAt),
   })
 );
 
@@ -839,14 +1545,20 @@ export const payload_locked_documents_rels = pgTable(
     avatarsID: uuid('avatars_id'),
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
+    deliveriesID: uuid('deliveries_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     imagesID: uuid('images_id'),
     individualsID: uuid('individuals_id'),
     islandGroupsID: uuid('island_groups_id'),
     milkBanksID: uuid('milk_banks_id'),
+    notificationCategoriesID: uuid('notification_categories_id'),
+    notificationChannelsID: uuid('notification_channels_id'),
+    notificationsID: uuid('notifications_id'),
+    notificationTypesID: uuid('notification_types_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
+    requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
   },
   (columns) => ({
@@ -865,6 +1577,9 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_cities_municipalities_id_idx: index(
       'payload_locked_documents_rels_cities_municipalities_id_idx'
     ).on(columns.citiesMunicipalitiesID),
+    payload_locked_documents_rels_deliveries_id_idx: index(
+      'payload_locked_documents_rels_deliveries_id_idx'
+    ).on(columns.deliveriesID),
     payload_locked_documents_rels_donations_id_idx: index(
       'payload_locked_documents_rels_donations_id_idx'
     ).on(columns.donationsID),
@@ -883,12 +1598,27 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_milk_banks_id_idx: index(
       'payload_locked_documents_rels_milk_banks_id_idx'
     ).on(columns.milkBanksID),
+    payload_locked_documents_rels_notification_categories_id_idx: index(
+      'payload_locked_documents_rels_notification_categories_id_idx'
+    ).on(columns.notificationCategoriesID),
+    payload_locked_documents_rels_notification_channels_id_idx: index(
+      'payload_locked_documents_rels_notification_channels_id_idx'
+    ).on(columns.notificationChannelsID),
+    payload_locked_documents_rels_notifications_id_idx: index(
+      'payload_locked_documents_rels_notifications_id_idx'
+    ).on(columns.notificationsID),
+    payload_locked_documents_rels_notification_types_id_idx: index(
+      'payload_locked_documents_rels_notification_types_id_idx'
+    ).on(columns.notificationTypesID),
     payload_locked_documents_rels_provinces_id_idx: index(
       'payload_locked_documents_rels_provinces_id_idx'
     ).on(columns.provincesID),
     payload_locked_documents_rels_regions_id_idx: index(
       'payload_locked_documents_rels_regions_id_idx'
     ).on(columns.regionsID),
+    payload_locked_documents_rels_requests_id_idx: index(
+      'payload_locked_documents_rels_requests_id_idx'
+    ).on(columns.requestsID),
     payload_locked_documents_rels_users_id_idx: index(
       'payload_locked_documents_rels_users_id_idx'
     ).on(columns.usersID),
@@ -916,6 +1646,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['citiesMunicipalitiesID']],
       foreignColumns: [cities_municipalities.id],
       name: 'payload_locked_documents_rels_cities_municipalities_fk',
+    }).onDelete('cascade'),
+    deliveriesIdFk: foreignKey({
+      columns: [columns['deliveriesID']],
+      foreignColumns: [deliveries.id],
+      name: 'payload_locked_documents_rels_deliveries_fk',
     }).onDelete('cascade'),
     donationsIdFk: foreignKey({
       columns: [columns['donationsID']],
@@ -947,6 +1682,26 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [milk_banks.id],
       name: 'payload_locked_documents_rels_milk_banks_fk',
     }).onDelete('cascade'),
+    notificationCategoriesIdFk: foreignKey({
+      columns: [columns['notificationCategoriesID']],
+      foreignColumns: [notification_categories.id],
+      name: 'payload_locked_documents_rels_notification_categories_fk',
+    }).onDelete('cascade'),
+    notificationChannelsIdFk: foreignKey({
+      columns: [columns['notificationChannelsID']],
+      foreignColumns: [notification_channels.id],
+      name: 'payload_locked_documents_rels_notification_channels_fk',
+    }).onDelete('cascade'),
+    notificationsIdFk: foreignKey({
+      columns: [columns['notificationsID']],
+      foreignColumns: [notifications.id],
+      name: 'payload_locked_documents_rels_notifications_fk',
+    }).onDelete('cascade'),
+    notificationTypesIdFk: foreignKey({
+      columns: [columns['notificationTypesID']],
+      foreignColumns: [notification_types.id],
+      name: 'payload_locked_documents_rels_notification_types_fk',
+    }).onDelete('cascade'),
     provincesIdFk: foreignKey({
       columns: [columns['provincesID']],
       foreignColumns: [provinces.id],
@@ -956,6 +1711,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['regionsID']],
       foreignColumns: [regions.id],
       name: 'payload_locked_documents_rels_regions_fk',
+    }).onDelete('cascade'),
+    requestsIdFk: foreignKey({
+      columns: [columns['requestsID']],
+      foreignColumns: [requests.id],
+      name: 'payload_locked_documents_rels_requests_fk',
     }).onDelete('cascade'),
     usersIdFk: foreignKey({
       columns: [columns['usersID']],
@@ -1119,6 +1879,84 @@ export const relations_cities_municipalities = relations(cities_municipalities, 
     relationName: 'islandGroup',
   }),
 }));
+export const relations_deliveries_meetup_details_proposed_time_slots = relations(
+  deliveries_meetup_details_proposed_time_slots,
+  ({ one }) => ({
+    _parentID: one(deliveries, {
+      fields: [deliveries_meetup_details_proposed_time_slots._parentID],
+      references: [deliveries.id],
+      relationName: 'meetupDetails_proposedTimeSlots',
+    }),
+  })
+);
+export const relations_deliveries_tracking_tracking_history = relations(
+  deliveries_tracking_tracking_history,
+  ({ one }) => ({
+    _parentID: one(deliveries, {
+      fields: [deliveries_tracking_tracking_history._parentID],
+      references: [deliveries.id],
+      relationName: 'tracking_trackingHistory',
+    }),
+  })
+);
+export const relations_deliveries = relations(deliveries, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [deliveries.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  request: one(requests, {
+    fields: [deliveries.request],
+    references: [requests.id],
+    relationName: 'request',
+  }),
+  donation: one(donations, {
+    fields: [deliveries.donation],
+    references: [donations.id],
+    relationName: 'donation',
+  }),
+  pickupDetails_address: one(addresses, {
+    fields: [deliveries.pickupDetails_address],
+    references: [addresses.id],
+    relationName: 'pickupDetails_address',
+  }),
+  deliveryDetails_address: one(addresses, {
+    fields: [deliveries.deliveryDetails_address],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_address',
+  }),
+  meetupDetails_address: one(addresses, {
+    fields: [deliveries.meetupDetails_address],
+    references: [addresses.id],
+    relationName: 'meetupDetails_address',
+  }),
+  meetupDetails_proposedTimeSlots: many(deliveries_meetup_details_proposed_time_slots, {
+    relationName: 'meetupDetails_proposedTimeSlots',
+  }),
+  tracking_trackingHistory: many(deliveries_tracking_tracking_history, {
+    relationName: 'tracking_trackingHistory',
+  }),
+}));
+export const relations_donations_delivery_details_preferred_modes = relations(
+  donations_delivery_details_preferred_modes,
+  ({ one }) => ({
+    parent: one(donations, {
+      fields: [donations_delivery_details_preferred_modes.parent],
+      references: [donations.id],
+      relationName: 'deliveryDetails_preferredModes',
+    }),
+  })
+);
+export const relations_donations_delivery_details_available_days = relations(
+  donations_delivery_details_available_days,
+  ({ one }) => ({
+    parent: one(donations, {
+      fields: [donations_delivery_details_available_days.parent],
+      references: [donations.id],
+      relationName: 'deliveryDetails_availableDays',
+    }),
+  })
+);
 export const relations_donations_rels = relations(donations_rels, ({ one }) => ({
   parent: one(donations, {
     fields: [donations_rels.parent],
@@ -1142,15 +1980,26 @@ export const relations_donations = relations(donations, ({ one, many }) => ({
     references: [individuals.id],
     relationName: 'donor',
   }),
-  recipient: one(individuals, {
-    fields: [donations.recipient],
-    references: [individuals.id],
-    relationName: 'recipient',
+  deliveryDetails_preferredModes: many(donations_delivery_details_preferred_modes, {
+    relationName: 'deliveryDetails_preferredModes',
+  }),
+  deliveryDetails_pickupAddress: one(addresses, {
+    fields: [donations.deliveryDetails_pickupAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_pickupAddress',
   }),
   deliveryDetails_deliveryAddress: one(addresses, {
     fields: [donations.deliveryDetails_deliveryAddress],
     references: [addresses.id],
     relationName: 'deliveryDetails_deliveryAddress',
+  }),
+  deliveryDetails_meetupAddress: one(addresses, {
+    fields: [donations.deliveryDetails_meetupAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_meetupAddress',
+  }),
+  deliveryDetails_availableDays: many(donations_delivery_details_available_days, {
+    relationName: 'deliveryDetails_availableDays',
   }),
   _rels: many(donations_rels, {
     relationName: '_rels',
@@ -1245,6 +2094,120 @@ export const relations_milk_banks = relations(milk_banks, ({ one, many }) => ({
     relationName: '_rels',
   }),
 }));
+export const relations_notification_categories = relations(notification_categories, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [notification_categories.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+}));
+export const relations_notification_channels = relations(notification_channels, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [notification_channels.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+}));
+export const relations_notifications_delivery_channels_stats = relations(
+  notifications_delivery_channels_stats,
+  ({ one }) => ({
+    _parentID: one(notifications, {
+      fields: [notifications_delivery_channels_stats._parentID],
+      references: [notifications.id],
+      relationName: 'delivery_channelsStats',
+    }),
+    channel: one(notification_channels, {
+      fields: [notifications_delivery_channels_stats.channel],
+      references: [notification_channels.id],
+      relationName: 'channel',
+    }),
+  })
+);
+export const relations_notifications_rels = relations(notifications_rels, ({ one }) => ({
+  parent: one(notifications, {
+    fields: [notifications_rels.parent],
+    references: [notifications.id],
+    relationName: '_rels',
+  }),
+  requestsID: one(requests, {
+    fields: [notifications_rels.requestsID],
+    references: [requests.id],
+    relationName: 'requests',
+  }),
+  donationsID: one(donations, {
+    fields: [notifications_rels.donationsID],
+    references: [donations.id],
+    relationName: 'donations',
+  }),
+  deliveriesID: one(deliveries, {
+    fields: [notifications_rels.deliveriesID],
+    references: [deliveries.id],
+    relationName: 'deliveries',
+  }),
+}));
+export const relations_notifications = relations(notifications, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [notifications.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  recipient: one(users, {
+    fields: [notifications.recipient],
+    references: [users.id],
+    relationName: 'recipient',
+  }),
+  notificationType: one(notification_types, {
+    fields: [notifications.notificationType],
+    references: [notification_types.id],
+    relationName: 'notificationType',
+  }),
+  delivery_channelsStats: many(notifications_delivery_channels_stats, {
+    relationName: 'delivery_channelsStats',
+  }),
+  _rels: many(notifications_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations_notification_types_template_variables = relations(
+  notification_types_template_variables,
+  ({ one }) => ({
+    _parentID: one(notification_types, {
+      fields: [notification_types_template_variables._parentID],
+      references: [notification_types.id],
+      relationName: 'template_variables',
+    }),
+  })
+);
+export const relations_notification_types_rels = relations(notification_types_rels, ({ one }) => ({
+  parent: one(notification_types, {
+    fields: [notification_types_rels.parent],
+    references: [notification_types.id],
+    relationName: '_rels',
+  }),
+  notificationChannelsID: one(notification_channels, {
+    fields: [notification_types_rels.notificationChannelsID],
+    references: [notification_channels.id],
+    relationName: 'notificationChannels',
+  }),
+}));
+export const relations_notification_types = relations(notification_types, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [notification_types.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  category: one(notification_categories, {
+    fields: [notification_types.category],
+    references: [notification_categories.id],
+    relationName: 'category',
+  }),
+  template_variables: many(notification_types_template_variables, {
+    relationName: 'template_variables',
+  }),
+  _rels: many(notification_types_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_provinces = relations(provinces, ({ one }) => ({
   region: one(regions, {
     fields: [provinces.region],
@@ -1262,6 +2225,64 @@ export const relations_regions = relations(regions, ({ one }) => ({
     fields: [regions.islandGroup],
     references: [island_groups.id],
     relationName: 'islandGroup',
+  }),
+}));
+export const relations_requests_delivery_details_preferred_modes = relations(
+  requests_delivery_details_preferred_modes,
+  ({ one }) => ({
+    parent: one(requests, {
+      fields: [requests_delivery_details_preferred_modes.parent],
+      references: [requests.id],
+      relationName: 'deliveryDetails_preferredModes',
+    }),
+  })
+);
+export const relations_requests_delivery_details_available_days = relations(
+  requests_delivery_details_available_days,
+  ({ one }) => ({
+    parent: one(requests, {
+      fields: [requests_delivery_details_available_days.parent],
+      references: [requests.id],
+      relationName: 'deliveryDetails_availableDays',
+    }),
+  })
+);
+export const relations_requests = relations(requests, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [requests.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  requester: one(individuals, {
+    fields: [requests.requester],
+    references: [individuals.id],
+    relationName: 'requester',
+  }),
+  matchedDonation: one(donations, {
+    fields: [requests.matchedDonation],
+    references: [donations.id],
+    relationName: 'matchedDonation',
+  }),
+  deliveryDetails_preferredModes: many(requests_delivery_details_preferred_modes, {
+    relationName: 'deliveryDetails_preferredModes',
+  }),
+  deliveryDetails_pickupAddress: one(addresses, {
+    fields: [requests.deliveryDetails_pickupAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_pickupAddress',
+  }),
+  deliveryDetails_deliveryAddress: one(addresses, {
+    fields: [requests.deliveryDetails_deliveryAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_deliveryAddress',
+  }),
+  deliveryDetails_meetupAddress: one(addresses, {
+    fields: [requests.deliveryDetails_meetupAddress],
+    references: [addresses.id],
+    relationName: 'deliveryDetails_meetupAddress',
+  }),
+  deliveryDetails_availableDays: many(requests_delivery_details_available_days, {
+    relationName: 'deliveryDetails_availableDays',
   }),
 }));
 export const relations_users_rels = relations(users_rels, ({ one }) => ({
@@ -1319,6 +2340,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [cities_municipalities.id],
       relationName: 'citiesMunicipalities',
     }),
+    deliveriesID: one(deliveries, {
+      fields: [payload_locked_documents_rels.deliveriesID],
+      references: [deliveries.id],
+      relationName: 'deliveries',
+    }),
     donationsID: one(donations, {
       fields: [payload_locked_documents_rels.donationsID],
       references: [donations.id],
@@ -1349,6 +2375,26 @@ export const relations_payload_locked_documents_rels = relations(
       references: [milk_banks.id],
       relationName: 'milkBanks',
     }),
+    notificationCategoriesID: one(notification_categories, {
+      fields: [payload_locked_documents_rels.notificationCategoriesID],
+      references: [notification_categories.id],
+      relationName: 'notificationCategories',
+    }),
+    notificationChannelsID: one(notification_channels, {
+      fields: [payload_locked_documents_rels.notificationChannelsID],
+      references: [notification_channels.id],
+      relationName: 'notificationChannels',
+    }),
+    notificationsID: one(notifications, {
+      fields: [payload_locked_documents_rels.notificationsID],
+      references: [notifications.id],
+      relationName: 'notifications',
+    }),
+    notificationTypesID: one(notification_types, {
+      fields: [payload_locked_documents_rels.notificationTypesID],
+      references: [notification_types.id],
+      relationName: 'notificationTypes',
+    }),
     provincesID: one(provinces, {
       fields: [payload_locked_documents_rels.provincesID],
       references: [provinces.id],
@@ -1358,6 +2404,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.regionsID],
       references: [regions.id],
       relationName: 'regions',
+    }),
+    requestsID: one(requests, {
+      fields: [payload_locked_documents_rels.requestsID],
+      references: [requests.id],
+      relationName: 'requests',
     }),
     usersID: one(users, {
       fields: [payload_locked_documents_rels.usersID],
@@ -1398,21 +2449,37 @@ export const relations_payload_migrations = relations(payload_migrations, () => 
 
 type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
-  enum_donations_milk_details_storage_type: typeof enum_donations_milk_details_storage_type;
-  enum_donations_milk_details_collection_mode: typeof enum_donations_milk_details_collection_mode;
-  enum_donations_delivery_details_delivery_mode: typeof enum_donations_delivery_details_delivery_mode;
-  enum_donations_delivery_details_status: typeof enum_donations_delivery_details_status;
-  enum_donations_delivery_details_urgency: typeof enum_donations_delivery_details_urgency;
+  enum_time_slot_type: typeof enum_time_slot_type;
+  enum_time_slot_preset: typeof enum_time_slot_preset;
+  enum_deliveries_mode: typeof enum_deliveries_mode;
+  enum_deliveries_status: typeof enum_deliveries_status;
+  enum_deliveries_meetup_details_proposed_by: typeof enum_deliveries_meetup_details_proposed_by;
+  enum_delivery_modes: typeof enum_delivery_modes;
+  enum_days: typeof enum_days;
+  enum_donations_status: typeof enum_donations_status;
+  enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
+  enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
   enum_hospitals_type: typeof enum_hospitals_type;
   enum_individuals_gender: typeof enum_individuals_gender;
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
   enum_milk_banks_type: typeof enum_milk_banks_type;
+  enum_notification_channel_type: typeof enum_notification_channel_type;
+  enum_priority_level: typeof enum_priority_level;
+  enum_notification_trigger_collection: typeof enum_notification_trigger_collection;
+  enum_notification_trigger_event: typeof enum_notification_trigger_event;
+  enum_requests_status: typeof enum_requests_status;
+  enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
   addresses: typeof addresses;
   avatars: typeof avatars;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
+  deliveries_meetup_details_proposed_time_slots: typeof deliveries_meetup_details_proposed_time_slots;
+  deliveries_tracking_tracking_history: typeof deliveries_tracking_tracking_history;
+  deliveries: typeof deliveries;
+  donations_delivery_details_preferred_modes: typeof donations_delivery_details_preferred_modes;
+  donations_delivery_details_available_days: typeof donations_delivery_details_available_days;
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
@@ -1423,8 +2490,19 @@ type DatabaseSchema = {
   island_groups: typeof island_groups;
   milk_banks: typeof milk_banks;
   milk_banks_rels: typeof milk_banks_rels;
+  notification_categories: typeof notification_categories;
+  notification_channels: typeof notification_channels;
+  notifications_delivery_channels_stats: typeof notifications_delivery_channels_stats;
+  notifications: typeof notifications;
+  notifications_rels: typeof notifications_rels;
+  notification_types_template_variables: typeof notification_types_template_variables;
+  notification_types: typeof notification_types;
+  notification_types_rels: typeof notification_types_rels;
   provinces: typeof provinces;
   regions: typeof regions;
+  requests_delivery_details_preferred_modes: typeof requests_delivery_details_preferred_modes;
+  requests_delivery_details_available_days: typeof requests_delivery_details_available_days;
+  requests: typeof requests;
   users: typeof users;
   users_rels: typeof users_rels;
   payload_locked_documents: typeof payload_locked_documents;
@@ -1436,6 +2514,11 @@ type DatabaseSchema = {
   relations_avatars: typeof relations_avatars;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
+  relations_deliveries_meetup_details_proposed_time_slots: typeof relations_deliveries_meetup_details_proposed_time_slots;
+  relations_deliveries_tracking_tracking_history: typeof relations_deliveries_tracking_tracking_history;
+  relations_deliveries: typeof relations_deliveries;
+  relations_donations_delivery_details_preferred_modes: typeof relations_donations_delivery_details_preferred_modes;
+  relations_donations_delivery_details_available_days: typeof relations_donations_delivery_details_available_days;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals_rels: typeof relations_hospitals_rels;
@@ -1446,8 +2529,19 @@ type DatabaseSchema = {
   relations_island_groups: typeof relations_island_groups;
   relations_milk_banks_rels: typeof relations_milk_banks_rels;
   relations_milk_banks: typeof relations_milk_banks;
+  relations_notification_categories: typeof relations_notification_categories;
+  relations_notification_channels: typeof relations_notification_channels;
+  relations_notifications_delivery_channels_stats: typeof relations_notifications_delivery_channels_stats;
+  relations_notifications_rels: typeof relations_notifications_rels;
+  relations_notifications: typeof relations_notifications;
+  relations_notification_types_template_variables: typeof relations_notification_types_template_variables;
+  relations_notification_types_rels: typeof relations_notification_types_rels;
+  relations_notification_types: typeof relations_notification_types;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
+  relations_requests_delivery_details_preferred_modes: typeof relations_requests_delivery_details_preferred_modes;
+  relations_requests_delivery_details_available_days: typeof relations_requests_delivery_details_available_days;
+  relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;

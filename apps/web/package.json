@@ -22,6 +22,7 @@
     "@lactalink/api": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@payloadcms/db-postgres": "latest",
+    "@payloadcms/email-resend": "^3.40.0",
     "@payloadcms/next": "latest",
     "@payloadcms/plugin-nested-docs": "latest",
     "@payloadcms/plugin-search": "latest",

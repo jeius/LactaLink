@@ -1,6 +1,14 @@
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { uuid } from '@payloadcms/db-postgres/drizzle/pg-core';
-import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { resendAdapter } from '@payloadcms/email-resend';
+import {
+  AlignFeature,
+  BoldFeature,
+  FixedToolbarFeature,
+  HeadingFeature,
+  lexicalEditor,
+  ParagraphFeature,
+} from '@payloadcms/richtext-lexical';
 import path from 'path';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
@@ -34,7 +42,6 @@ export default buildConfig({
   },
   collections: Collections,
   serverURL: getServerSideURL(),
-  editor: lexicalEditor(),
   endpoints: Endpoints,
   sharp,
   plugins,
@@ -43,6 +50,23 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, './lib/types/payload-types.ts'),
   },
+  editor: lexicalEditor({
+    features: ({ rootFeatures }) => {
+      return [
+        ...rootFeatures,
+        FixedToolbarFeature(),
+        HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+        BoldFeature(),
+        ParagraphFeature(),
+        AlignFeature(),
+      ];
+    },
+  }),
+  email: resendAdapter({
+    defaultFromAddress: 'no-reply@lactalink.com',
+    defaultFromName: 'LactaLink',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   db: postgresAdapter({
     idType: 'uuid',
     allowIDOnCreate: true,

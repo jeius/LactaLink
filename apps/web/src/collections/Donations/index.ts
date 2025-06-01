@@ -1,4 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
+import { deliveryTabFields } from '@/fields/deliveryTabFields';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
@@ -17,7 +18,7 @@ export const Donations: CollectionConfig<'donations'> = {
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
     useAsTitle: 'title',
-    defaultColumns: ['title', 'donor', 'createdBy', 'createdAt'],
+    defaultColumns: ['donor', 'amount', 'remainingAmount', 'status', 'createdAt'],
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateTitle],
@@ -34,46 +35,91 @@ export const Donations: CollectionConfig<'donations'> = {
     },
     createdByField,
     {
-      name: 'donor',
-      type: 'relationship',
-      relationTo: 'individuals',
-      required: true,
-      admin: {
-        description: 'The person donating the milk',
-      },
+      type: 'row',
+      fields: [
+        {
+          name: 'donor',
+          type: 'relationship',
+          relationTo: 'individuals',
+          required: true,
+          admin: {
+            description: 'The person donating the milk',
+          },
+        },
+        {
+          name: 'status',
+          label: 'Donation Status',
+          type: 'select',
+          required: true,
+          defaultValue: 'AVAILABLE',
+          options: [
+            { label: 'Available', value: 'AVAILABLE' },
+            { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
+            { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
+            { label: 'Completed', value: 'COMPLETED' },
+            { label: 'Expired', value: 'EXPIRED' },
+            { label: 'Cancelled', value: 'CANCELLED' },
+          ],
+        },
+      ],
     },
     {
-      name: 'recipient',
-      type: 'relationship',
-      relationTo: 'individuals',
+      type: 'row',
+      fields: [
+        {
+          name: 'volume',
+          label: 'Total Volume (mL)',
+          type: 'number',
+          required: true,
+          defaultValue: 50,
+          min: 20,
+          admin: {
+            description: 'Total volume of milk available for donation',
+          },
+        },
+        {
+          name: 'remainingVolume',
+          label: 'Remaining Volume (mL)',
+          type: 'number',
+          admin: {
+            description: 'Volume still available for allocation',
+            readOnly: true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'matchedRequests',
+      type: 'join',
+      on: 'matchedDonation',
+      collection: 'requests',
+      hasMany: true,
       admin: {
-        description: 'The person receiving the milk',
+        description: 'The requests that this donation fulfills',
       },
     },
     {
       type: 'tabs',
       tabs: [
         {
-          name: 'milkDetails',
+          name: 'details',
           label: 'Milk Details',
           fields: [
             {
-              name: 'amount',
-              label: 'Amount (mL)',
-              type: 'number',
-              required: true,
-              min: 1,
-              admin: {
-                description: 'Amount of milk in milliliters',
-              },
-            },
-            {
-              name: 'collectionDate',
-              label: 'Collection Date',
+              name: 'collectedAt',
+              label: 'Date Collected',
               type: 'date',
               required: true,
               admin: {
                 description: 'Date when the milk was collected',
+              },
+            },
+            {
+              name: 'expiresAt',
+              label: 'Expiration Date',
+              type: 'date',
+              admin: {
+                description: 'Date when the milk expires',
               },
             },
             {
@@ -103,8 +149,16 @@ export const Donations: CollectionConfig<'donations'> = {
               label: 'Milk Sample',
               relationTo: 'images',
               hasMany: true,
+              maxRows: 5,
               admin: {
                 description: 'Upload images of the milk sample',
+              },
+            },
+            {
+              name: 'notes',
+              type: 'textarea',
+              admin: {
+                description: 'Additional notes or special instructions from donor',
               },
             },
           ],
@@ -113,65 +167,12 @@ export const Donations: CollectionConfig<'donations'> = {
           name: 'deliveryDetails',
           label: 'Delivery Details',
           fields: [
+            ...deliveryTabFields({ defaultPreferredModes: ['PICKUP'] }),
             {
-              name: 'deliveryMode',
-              label: 'Delivery Mode',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'Pickup', value: 'PICKUP' },
-                { label: 'Delivery', value: 'DELIVERY' },
-                { label: 'Meet-up', value: 'MEETUP' },
-              ],
-            },
-            {
-              name: 'deliveryAddress',
-              label: 'Delivery/Pickup Address',
-              type: 'relationship',
-              relationTo: 'addresses',
-              admin: {
-                description: 'Address for pickup, delivery, or meet-up',
-              },
-            },
-            {
-              name: 'status',
-              type: 'select',
-              required: true,
-              defaultValue: 'PENDING',
-              options: [
-                { label: 'Pending', value: 'PENDING' },
-                { label: 'Approved', value: 'APPROVED' },
-                { label: 'Rejected', value: 'REJECTED' },
-                { label: 'Completed', value: 'COMPLETED' },
-                { label: 'Cancelled', value: 'CANCELLED' },
-              ],
-            },
-            {
-              name: 'urgency',
-              type: 'select',
-              defaultValue: 'MEDIUM',
-              options: [
-                { label: 'Low', value: 'LOW' },
-                { label: 'Medium', value: 'MEDIUM' },
-                { label: 'High', value: 'HIGH' },
-                { label: 'Critical', value: 'CRITICAL' },
-              ],
-            },
-            {
-              name: 'notes',
-              type: 'textarea',
-              admin: {
-                description: 'Additional notes or special instructions',
-              },
-            },
-            {
-              name: 'rejectionReason',
-              label: 'Rejection Reason',
-              type: 'textarea',
-              admin: {
-                condition: (data) => data.status === 'REJECTED',
-                description: 'Reason for rejection (if applicable)',
-              },
+              name: 'deliveries',
+              type: 'join',
+              on: 'donation',
+              collection: 'deliveries',
             },
           ],
         },

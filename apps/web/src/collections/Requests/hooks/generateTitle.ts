@@ -1,11 +1,11 @@
-import { Donation } from '@lactalink/types';
+import { Request } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const generateTitle: CollectionBeforeChangeHook<Donation> = async ({ data, req }) => {
-  if (!data.donor || !data.amount) return data;
+export const generateTitle: CollectionBeforeChangeHook<Request> = async ({ data, req }) => {
+  if (!data.requester || !data.amount) return data;
 
-  const id = extractID(data.donor);
+  const id = extractID(data.requester);
 
   const doc = await req.payload.findByID({
     collection: 'individuals',
