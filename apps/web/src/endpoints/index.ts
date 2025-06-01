@@ -1,4 +1,5 @@
 import { Endpoint } from 'payload';
+import { seedNotificationsHandler } from './seeders/Notifications';
 import { seedBarangaysHandler } from './seeders/PSGC/seedBarangays';
 import { seedCitiesMunicipalitiesHandler } from './seeders/PSGC/seedCitiesMunicipalities';
 import { seedIslandGroupsHandler } from './seeders/PSGC/seedIslandGroups';
@@ -47,5 +48,10 @@ export const Endpoints: Endpoint[] = [
     method: 'post',
     path: '/seed/status',
     handler: seedStatusHandler,
+  },
+  {
+    method: 'get',
+    path: '/seed/notifications',
+    handler: seedNotificationsHandler,
   },
 ];

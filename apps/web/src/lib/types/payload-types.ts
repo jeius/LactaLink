@@ -1021,6 +1021,14 @@ export interface Notification {
  */
 export interface NotificationType {
   id: string;
+  /**
+   * Whether this notification type is currently active
+   */
+  active?: boolean | null;
+  /**
+   * Default channels for this notification type
+   */
+  defaultChannels?: (string | NotificationChannel)[] | null;
   createdBy?: (string | null) | User;
   /**
    * Unique identifier for this notification type (e.g., DONATION_MATCHED)
@@ -1031,29 +1039,41 @@ export interface NotificationType {
    */
   name: string;
   /**
-   * Category this notification type belongs to
-   */
-  category: string | NotificationCategory;
-  /**
    * Description of when this notification is triggered
    */
   description?: string | null;
   /**
+   * Category this notification type belongs to
+   */
+  category: string | NotificationCategory;
+  /**
    * Priority level of this notification type
    */
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  template: NotificationTypeTemplate;
-  /**
-   * Default channels for this notification type
-   */
-  defaultChannels?: (string | NotificationChannel)[] | null;
   triggers?: NotificationTypeTrigger;
-  /**
-   * Whether this notification type is currently active
-   */
-  active?: boolean | null;
+  template: NotificationTypeTemplate;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTrigger".
+ */
+export interface NotificationTypeTrigger {
+  collection?: ('requests' | 'donations' | 'deliveries' | 'system') | null;
+  event?: ('CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE' | 'SCHEDULED') | null;
+  /**
+   * JSON conditions for when to trigger this notification
+   */
+  conditions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1086,26 +1106,6 @@ export interface NotificationTypeTemplate {
         defaultValue?: string | null;
         id?: string | null;
       }[]
-    | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NotificationTypeTrigger".
- */
-export interface NotificationTypeTrigger {
-  collection?: ('requests' | 'donations' | 'deliveries' | 'system') | null;
-  event?: ('CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE' | 'SCHEDULED') | null;
-  /**
-   * JSON conditions for when to trigger this notification
-   */
-  conditions?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
     | null;
 }
 /**
@@ -1715,18 +1715,27 @@ export interface NotificationChannelStatsSelect<T extends boolean = true> {
  * via the `definition` "notificationTypes_select".
  */
 export interface NotificationTypesSelect<T extends boolean = true> {
+  active?: T;
+  defaultChannels?: T;
   createdBy?: T;
   key?: T;
   name?: T;
-  category?: T;
   description?: T;
+  category?: T;
   priority?: T;
-  template?: T | NotificationTypeTemplateSelect<T>;
-  defaultChannels?: T;
   triggers?: T | NotificationTypeTriggerSelect<T>;
-  active?: T;
+  template?: T | NotificationTypeTemplateSelect<T>;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTrigger_select".
+ */
+export interface NotificationTypeTriggerSelect<T extends boolean = true> {
+  collection?: T;
+  event?: T;
+  conditions?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1745,15 +1754,6 @@ export interface NotificationTypeTemplateSelect<T extends boolean = true> {
         defaultValue?: T;
         id?: T;
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NotificationTypeTrigger_select".
- */
-export interface NotificationTypeTriggerSelect<T extends boolean = true> {
-  collection?: T;
-  event?: T;
-  conditions?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -115,11 +115,24 @@ export const enum_notification_channel_type = pgEnum('enum_notification_channel_
   'WEBHOOK',
   'EXTERNAL_API',
 ]);
+export const enum_notification_retry_strategy = pgEnum('enum_notification_retry_strategy', [
+  'FIXED',
+  'EXPONENTIAL',
+  'LINEAR',
+]);
 export const enum_priority_level = pgEnum('enum_priority_level', [
   'LOW',
   'MEDIUM',
   'HIGH',
   'CRITICAL',
+]);
+export const enum_js_types = pgEnum('enum_js_types', [
+  'string',
+  'number',
+  'boolean',
+  'date',
+  'array',
+  'object',
 ]);
 export const enum_notification_trigger_collection = pgEnum('enum_notification_trigger_collection', [
   'requests',
@@ -564,8 +577,8 @@ export const donations = pgTable(
         onDelete: 'set null',
       }),
     status: enum_donations_status('status').notNull().default('AVAILABLE'),
-    amount: numeric('amount').notNull().default('50'),
-    remainingAmount: numeric('remaining_amount'),
+    volume: numeric('volume').notNull().default('50'),
+    remainingVolume: numeric('remaining_volume'),
     details_collectedAt: timestamp('details_collected_at', {
       mode: 'string',
       withTimezone: true,
@@ -953,18 +966,18 @@ export const notification_categories = pgTable(
   'notification_categories',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
     key: varchar('key').notNull(),
     name: varchar('name').notNull(),
     description: varchar('description'),
-    color: varchar('color'),
     icon: varchar('icon'),
+    color: varchar('color'),
     sortOrder: numeric('sort_order').default('0'),
     active: boolean('active').default(true),
     metadata_allowUserSettings: boolean('metadata_allow_user_settings').default(true),
     metadata_retentionDays: numeric('metadata_retention_days').default('30'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -973,10 +986,10 @@ export const notification_categories = pgTable(
       .notNull(),
   },
   (columns) => ({
+    notification_categories_key_idx: uniqueIndex('notification_categories_key_idx').on(columns.key),
     notification_categories_created_by_idx: index('notification_categories_created_by_idx').on(
       columns.createdBy
     ),
-    notification_categories_key_idx: uniqueIndex('notification_categories_key_idx').on(columns.key),
     notification_categories_updated_at_idx: index('notification_categories_updated_at_idx').on(
       columns.updatedAt
     ),
@@ -1004,11 +1017,14 @@ export const notification_channels = pgTable(
     configuration_emailConfig_fromName: varchar('configuration_email_config_from_name'),
     configuration_emailConfig_replyTo: varchar('configuration_email_config_reply_to'),
     templates_subject: varchar('templates_subject'),
-    templates_htmlTemplate: jsonb('templates_html_template'),
+    templates_htmlTemplate: varchar('templates_html_template'),
     templates_textTemplate: varchar('templates_text_template'),
     templates_smsTemplate: varchar('templates_sms_template'),
     delivery_retrySettings_maxRetries: numeric('delivery_retry_settings_max_retries').default('3'),
     delivery_retrySettings_retryDelay: numeric('delivery_retry_settings_retry_delay').default('5'),
+    delivery_retrySettings_strategy: enum_notification_retry_strategy(
+      'delivery_retry_settings_strategy'
+    ).default('FIXED'),
     delivery_metadata_priority: numeric('delivery_metadata_priority').default('1'),
     delivery_metadata_rateLimitPerHour: numeric('delivery_metadata_rate_limit_per_hour'),
     delivery_metadata_tags: varchar('delivery_metadata_tags'),
@@ -1170,6 +1186,9 @@ export const notification_types_template_variables = pgTable(
     id: varchar('id').primaryKey(),
     key: varchar('key').notNull(),
     description: varchar('description'),
+    type: enum_js_types('type'),
+    required: boolean('required').default(true),
+    defaultValue: varchar('default_value'),
   },
   (columns) => ({
     _orderIdx: index('notification_types_template_variables_order_idx').on(columns._order),
@@ -1367,7 +1386,7 @@ export const requests = pgTable(
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    amount: numeric('amount').notNull(),
+    volumeNeeded: numeric('volume_needed').notNull(),
     matchedDonation: uuid('matched_donation_id').references(() => donations.id, {
       onDelete: 'set null',
     }),
@@ -2464,7 +2483,9 @@ type DatabaseSchema = {
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
   enum_milk_banks_type: typeof enum_milk_banks_type;
   enum_notification_channel_type: typeof enum_notification_channel_type;
+  enum_notification_retry_strategy: typeof enum_notification_retry_strategy;
   enum_priority_level: typeof enum_priority_level;
+  enum_js_types: typeof enum_js_types;
   enum_notification_trigger_collection: typeof enum_notification_trigger_collection;
   enum_notification_trigger_event: typeof enum_notification_trigger_event;
   enum_requests_status: typeof enum_requests_status;
