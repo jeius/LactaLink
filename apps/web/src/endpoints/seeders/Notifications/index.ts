@@ -11,6 +11,20 @@ export async function seedNotificationSystem(payload: Payload) {
         description: 'Notifications related to matching donations and requests',
         color: '#3B82F6', // Blue
         icon: 'match-icon',
+        active: true,
+        sortOrder: 2,
+      },
+    }),
+    payload.create({
+      collection: 'notificationCategories',
+      data: {
+        key: 'DELIVERY',
+        name: 'Delivery Notifications',
+        description: 'Notifications related to matching donations and requests',
+        color: '#3B82F6', // Blue
+        icon: 'truck',
+        active: true,
+        sortOrder: 2,
       },
     }),
   ]);
@@ -24,9 +38,13 @@ export async function seedNotificationSystem(payload: Payload) {
         name: 'In-App Notifications',
         type: 'IN_APP',
         active: true,
-        retrySettings: {
-          maxRetries: 3,
-          retryDelay: 5000, // 5 seconds
+        description: 'Notifications displayed within the LactaLink app',
+        delivery: {
+          metadata: { priority: 0, tags: 'development' },
+          retrySettings: {
+            maxRetries: 3,
+            retryDelay: 5000, // 5 seconds
+          },
         },
       },
     }),
@@ -42,7 +60,7 @@ export async function seedNotificationSystem(payload: Payload) {
         category: categories[0].id, // Use the first category created
         description: 'Triggered when a donation is matched with a request',
         priority: 'HIGH',
-        defaultChannels: [channels[0].id], // Use the first channel created
+        defaultChannels: channels.map((channel) => channel.id),
         triggers: {
           collection: 'donations',
           event: 'CREATE',
@@ -50,9 +68,9 @@ export async function seedNotificationSystem(payload: Payload) {
         template: {
           title: 'Donation Matched',
           message:
-            'Your donation of {{amount}} mL has been matched with a request from {{requesterName}}.',
+            'Your donation of {{volume}}mL has been matched with a request from {{requesterName}}.',
           variables: [
-            { key: 'amount', description: 'Amount of milk in mL' },
+            { key: 'volume', description: 'Volume of milk in mL' },
             { key: 'requesterName', description: 'Name of the requester.' },
             { key: 'requestId', description: 'ID of the matched request' },
           ],

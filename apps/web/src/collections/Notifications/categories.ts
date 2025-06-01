@@ -99,8 +99,8 @@ export const NotificationCategories: CollectionConfig<'notificationCategories'> 
       type: 'text',
       admin: {
         description:
-          'Icon name or identifier used in your UI icon system. This could be from Lucide, Heroicons, or your custom icon set.',
-        placeholder: 'heart-handshake',
+          'Icon name for the notification icon. Only supports icon names from Lucide.dev as of the current version. Please refer to the Lucide.dev documentation for available icons.',
+        placeholder: 'handshake',
         condition: (data) => data.active !== false,
       },
     },

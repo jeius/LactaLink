@@ -67,6 +67,11 @@
       ],
       "outputs": ["src/lib/db/**/*"]
     },
+    "@lactalink/types#build": {
+      "dependsOn": ["@lactalink/web#generate:types"],
+      "inputs": ["src/**/*"],
+      "outputs": ["dist/**/*"]
+    },
     "build:android-dev": {
       "dependsOn": ["^build"],
       "cache": false

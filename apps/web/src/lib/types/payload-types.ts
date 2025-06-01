@@ -792,7 +792,7 @@ export interface NotificationCategory {
    */
   description?: string | null;
   /**
-   * Icon name or identifier used in your UI icon system. This could be from Lucide, Heroicons, or your custom icon set.
+   * Icon name for the notification icon. Only supports icon names from Lucide.dev as of the current version. Please refer to the Lucide.dev documentation for available icons.
    */
   icon?: string | null;
   /**
@@ -911,6 +911,7 @@ export interface NotificationChannel {
        * Minutes to wait between retry attempts
        */
       retryDelay?: number | null;
+      strategy?: ('FIXED' | 'EXPONENTIAL' | 'LINEAR') | null;
     };
     /**
      * Additional settings for channel management
@@ -1060,7 +1061,7 @@ export interface NotificationType {
  */
 export interface NotificationTypeTemplate {
   /**
-   * Title template with variables like {{amount}}, {{date}}
+   * Title template with variables like {{volume}}, {{date}}
    */
   title: string;
   /**
@@ -1071,6 +1072,18 @@ export interface NotificationTypeTemplate {
     | {
         key: string;
         description?: string | null;
+        /**
+         * Expected data type for this variable (optional)
+         */
+        type?: ('string' | 'number' | 'boolean' | 'date' | 'array' | 'object') | null;
+        /**
+         * Whether this variable is required
+         */
+        required?: boolean | null;
+        /**
+         * Default value if not provided (optional)
+         */
+        defaultValue?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1640,6 +1653,7 @@ export interface NotificationChannelsSelect<T extends boolean = true> {
           | {
               maxRetries?: T;
               retryDelay?: T;
+              strategy?: T;
             };
         metadata?:
           | T
@@ -1726,6 +1740,9 @@ export interface NotificationTypeTemplateSelect<T extends boolean = true> {
     | {
         key?: T;
         description?: T;
+        type?: T;
+        required?: T;
+        defaultValue?: T;
         id?: T;
       };
 }

@@ -83,8 +83,8 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Title template with variables like {{amount}}, {{date}}',
-            placeholder: 'Your Request for {{amount}}mL Has Been Matched!',
+            description: 'Title template with variables like {{volume}}, {{date}}',
+            placeholder: 'Your Request for {{volume}}mL Has Been Matched!',
           },
         },
         {
@@ -95,7 +95,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
           admin: {
             description: 'Message template with variables',
             placeholder:
-              'Great news! Your request for {{amount}}mL of milk has been matched with a donor.',
+              'Great news! Your request for {{volume}}mL of milk has been matched with a donor.',
           },
         },
         {
@@ -109,7 +109,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
               type: 'text',
               required: true,
               admin: {
-                placeholder: 'amount',
+                placeholder: 'volume',
               },
             },
             {
@@ -117,7 +117,41 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
               label: 'Description',
               type: 'text',
               admin: {
-                placeholder: 'Amount of milk in mL',
+                placeholder: 'Volume of milk in mL',
+              },
+            },
+            {
+              name: 'type',
+              label: 'Expected Type',
+              type: 'select',
+              enumName: 'enum_js_types',
+              options: [
+                { label: 'String', value: 'string' },
+                { label: 'Number', value: 'number' },
+                { label: 'Boolean', value: 'boolean' },
+                { label: 'Date', value: 'date' },
+                { label: 'Array', value: 'array' },
+                { label: 'Object', value: 'object' },
+              ],
+              admin: {
+                description: 'Expected data type for this variable (optional)',
+              },
+            },
+            {
+              name: 'required',
+              label: 'Required',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                description: 'Whether this variable is required',
+              },
+            },
+            {
+              name: 'defaultValue',
+              label: 'Default Value',
+              type: 'text',
+              admin: {
+                description: 'Default value if not provided (optional)',
               },
             },
           ],

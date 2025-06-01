@@ -35,6 +35,18 @@ export const deliveryTab: Tab = {
             description: 'Minutes to wait between retry attempts',
           },
         },
+        {
+          name: 'strategy',
+          label: 'Retry Strategy',
+          type: 'select',
+          enumName: 'enum_notification_retry_strategy',
+          defaultValue: 'FIXED',
+          options: [
+            { label: 'Fixed Delay', value: 'FIXED' },
+            { label: 'Exponential Backoff', value: 'EXPONENTIAL' },
+            { label: 'Linear Backoff', value: 'LINEAR' },
+          ],
+        },
       ],
     },
 

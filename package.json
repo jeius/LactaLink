@@ -17,7 +17,7 @@
     "build:android-dev": "turbo build:android-dev --filter=\"@lactalink/mobile\"",
     "build:ios-dev": "turbo build:ios-dev --filter=\"@lactalink/mobile\"",
     "build:web": "turbo build --filter=\"{./apps/web}...\"",
-    "build:types": "turbo build --filter=\"{./packages/types}...\"",
+    "build:types": "turbo @lactalink/types#build",
     "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
     "build:api": "turbo build --filter=\"{./packages/api}...\"",
     "build:packages": "turbo build --filter=\"{./packages/*}...\"",
