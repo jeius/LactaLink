@@ -36,8 +36,6 @@ export const NOTIFICATION_TRIGGER_EVENT_OPTIONS = [
   { label: 'Create', value: 'CREATE' },
   { label: 'Update', value: 'UPDATE' },
   { label: 'Delete', value: 'DELETE' },
-  { label: 'Status Change', value: 'STATUS_CHANGE' },
-  { label: 'Scheduled', value: 'SCHEDULED' },
 ];
 
 export const NOTIFICATION_TRIGGER_COLLECTION_OPTIONS = [

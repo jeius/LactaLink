@@ -27,137 +27,17 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
     beforeChange: [generateCreatedBy],
   },
   fields: [
-    createdByField,
     {
-      name: 'key',
-      label: 'Unique Key',
-      type: 'text',
-      required: true,
-      unique: true,
+      name: 'active',
+      label: 'Active',
+      type: 'checkbox',
+      defaultValue: true,
       admin: {
-        description: 'Unique identifier for this notification type (e.g., DONATION_MATCHED)',
+        description: 'Whether this notification type is currently active',
+        position: 'sidebar',
       },
     },
-    {
-      name: 'name',
-      label: 'Display Name',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Human-readable name for this notification type',
-      },
-    },
-    {
-      name: 'category',
-      label: 'Category',
-      type: 'relationship',
-      relationTo: 'notificationCategories',
-      required: true,
-      admin: {
-        description: 'Category this notification type belongs to',
-      },
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      admin: {
-        description: 'Description of when this notification is triggered',
-      },
-    },
-    priorityLevel({
-      name: 'priority',
-      label: 'Default Priority Level',
-      admin: {
-        description: 'Priority level of this notification type',
-      },
-    }),
-    {
-      name: 'template',
-      label: 'Message Template',
-      interfaceName: 'NotificationTypeTemplate',
-      type: 'group',
-      fields: [
-        {
-          name: 'title',
-          label: 'Title Template',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'Title template with variables like {{volume}}, {{date}}',
-            placeholder: 'Your Request for {{volume}}mL Has Been Matched!',
-          },
-        },
-        {
-          name: 'message',
-          label: 'Message Template',
-          type: 'textarea',
-          required: true,
-          admin: {
-            description: 'Message template with variables',
-            placeholder:
-              'Great news! Your request for {{volume}}mL of milk has been matched with a donor.',
-          },
-        },
-        {
-          name: 'variables',
-          label: 'Available Variables',
-          type: 'array',
-          fields: [
-            {
-              name: 'key',
-              label: 'Variable Key',
-              type: 'text',
-              required: true,
-              admin: {
-                placeholder: 'volume',
-              },
-            },
-            {
-              name: 'description',
-              label: 'Description',
-              type: 'text',
-              admin: {
-                placeholder: 'Volume of milk in mL',
-              },
-            },
-            {
-              name: 'type',
-              label: 'Expected Type',
-              type: 'select',
-              enumName: 'enum_js_types',
-              options: [
-                { label: 'String', value: 'string' },
-                { label: 'Number', value: 'number' },
-                { label: 'Boolean', value: 'boolean' },
-                { label: 'Date', value: 'date' },
-                { label: 'Array', value: 'array' },
-                { label: 'Object', value: 'object' },
-              ],
-              admin: {
-                description: 'Expected data type for this variable (optional)',
-              },
-            },
-            {
-              name: 'required',
-              label: 'Required',
-              type: 'checkbox',
-              defaultValue: true,
-              admin: {
-                description: 'Whether this variable is required',
-              },
-            },
-            {
-              name: 'defaultValue',
-              label: 'Default Value',
-              type: 'text',
-              admin: {
-                description: 'Default value if not provided (optional)',
-              },
-            },
-          ],
-        },
-      ],
-    },
+
     {
       name: 'defaultChannels',
       label: 'Default Delivery Channels',
@@ -166,46 +46,265 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
       hasMany: true,
       admin: {
         description: 'Default channels for this notification type',
+        position: 'sidebar',
       },
     },
+
+    createdByField,
+
     {
-      name: 'triggers',
-      label: 'Trigger Conditions',
-      interfaceName: 'NotificationTypeTrigger',
-      type: 'group',
+      type: 'row',
       fields: [
         {
-          name: 'collection',
-          label: 'Trigger Collection',
-          type: 'select',
-          enumName: 'enum_notification_trigger_collection',
-          options: NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
-        },
-        {
-          name: 'event',
-          label: 'Trigger Event',
-          type: 'select',
-          enumName: 'enum_notification_trigger_event',
-          options: NOTIFICATION_TRIGGER_EVENT_OPTIONS,
-        },
-        {
-          name: 'conditions',
-          label: 'Trigger Conditions',
-          type: 'json',
+          name: 'key',
+          label: 'Unique Key',
+          type: 'text',
+          required: true,
+          unique: true,
           admin: {
-            description: 'JSON conditions for when to trigger this notification',
+            description: 'Unique identifier for this notification type (e.g., DONATION_MATCHED)',
+            width: '50%',
+          },
+        },
+        {
+          name: 'name',
+          label: 'Display Name',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Human-readable name for this notification type',
+            width: '50%',
           },
         },
       ],
     },
+
     {
-      name: 'active',
-      label: 'Active',
-      type: 'checkbox',
-      defaultValue: true,
+      name: 'description',
+      type: 'textarea',
       admin: {
-        description: 'Whether this notification type is currently active',
+        description: 'Description of when this notification is triggered',
       },
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'category',
+          label: 'Category',
+          type: 'relationship',
+          relationTo: 'notificationCategories',
+          required: true,
+          admin: {
+            description: 'Category this notification type belongs to',
+            width: '50%',
+          },
+        },
+        priorityLevel({
+          name: 'priority',
+          label: 'Default Priority Level',
+          admin: {
+            description: 'Priority level of this notification type',
+            width: '50%',
+          },
+        }),
+      ],
+    },
+
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Trigger',
+          fields: [
+            {
+              name: 'trigger',
+              label: 'Trigger Conditions',
+              interfaceName: 'NotificationTypeTrigger',
+              required: true,
+              type: 'group',
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'collection',
+                      label: 'Trigger Collection',
+                      required: true,
+                      type: 'select',
+                      enumName: 'enum_notification_trigger_collection',
+                      options: NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
+                    },
+                    {
+                      name: 'event',
+                      label: 'Trigger Event',
+                      required: true,
+                      type: 'select',
+                      enumName: 'enum_notification_trigger_event',
+                      options: NOTIFICATION_TRIGGER_EVENT_OPTIONS,
+                    },
+                  ],
+                },
+                {
+                  name: 'conditions',
+                  label: 'Trigger Conditions',
+                  type: 'json',
+                  admin: {
+                    description:
+                      'JSON conditions for when to trigger this notification. Use "exists" to check for field existence, "changed" to check for changes, or direct value matches.',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+
+        {
+          label: 'Template',
+          fields: [
+            {
+              name: 'template',
+              label: 'Notification Template',
+              interfaceName: 'NotificationTypeTemplate',
+              type: 'group',
+              fields: [
+                {
+                  name: 'title',
+                  label: 'Title Template',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Title template with variables like {{volume}}, {{date}}',
+                    placeholder: 'Your Request for {{volume}}mL Has Been Matched!',
+                  },
+                },
+                {
+                  name: 'message',
+                  label: 'Message Template',
+                  type: 'textarea',
+                  required: true,
+                  admin: {
+                    description: 'Message template with variables',
+                    placeholder:
+                      'Great news! Your request for {{volume}}mL of milk has been matched with a donor.',
+                  },
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'actionUrl',
+                      label: 'Action URL',
+                      type: 'text',
+                      admin: {
+                        description:
+                          'URL to redirect user when they click the notification. Use {{id}} for dynamic IDs.',
+                        placeholder: '/requests/{{id}}',
+                        width: '60%',
+                      },
+                    },
+                    {
+                      name: 'actionLabel',
+                      label: 'Action Label',
+                      type: 'text',
+                      defaultValue: 'View Details',
+                      admin: {
+                        description: 'Text for the action button in the notification',
+                        placeholder: 'View Request',
+                      },
+                    },
+                  ],
+                },
+                {
+                  name: 'variables',
+                  label: 'Available Variables',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'required',
+                      label: 'Required',
+                      type: 'checkbox',
+                      defaultValue: true,
+                      admin: {
+                        description: 'Whether this variable is required',
+                      },
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'key',
+                          label: 'Variable Key',
+                          type: 'text',
+                          required: true,
+                          admin: {
+                            placeholder: 'volume',
+                            width: '60%',
+                            description: 'Key for this variable, used in templates like {{volume}}',
+                          },
+                        },
+                        {
+                          name: 'type',
+                          label: 'Expected Type',
+                          required: true,
+                          type: 'select',
+                          enumName: 'enum_js_types',
+                          options: [
+                            { label: 'String', value: 'string' },
+                            { label: 'Number', value: 'number' },
+                            { label: 'Boolean', value: 'boolean' },
+                            { label: 'Date', value: 'date' },
+                            { label: 'Array', value: 'array' },
+                            { label: 'Object', value: 'object' },
+                          ],
+                          admin: {
+                            description: 'Expected data type for this variable (optional)',
+                            placeholder: 'number',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'path',
+                          label: 'Data Path',
+                          type: 'text',
+                          required: true,
+                          admin: {
+                            description:
+                              'Path to the data in the document, e.g. donor.displayName or request.volume. Make sure the path exists in the document and holds the value of the variable.',
+                            placeholder: 'request.volume',
+                            width: '60%',
+                          },
+                        },
+                        {
+                          name: 'defaultValue',
+                          label: 'Default Value',
+                          type: 'text',
+                          admin: {
+                            description: 'Default value if not provided (optional)',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'description',
+                      label: 'Description',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'Volume of milk in mL',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
   ],
 };

@@ -37,6 +37,7 @@ export const enum_time_slot_preset = pgEnum('enum_time_slot_preset', [
   '16:00-18:00',
   '18:00-20:00',
 ]);
+export const enum_proposedBy = pgEnum('enum_proposedBy', ['DONOR', 'REQUESTER']);
 export const enum_deliveries_mode = pgEnum('enum_deliveries_mode', [
   'PICKUP',
   'DELIVERY',
@@ -53,10 +54,6 @@ export const enum_deliveries_status = pgEnum('enum_deliveries_status', [
   'FAILED',
   'CANCELLED',
 ]);
-export const enum_deliveries_meetup_details_proposed_by = pgEnum(
-  'enum_deliveries_meetup_details_proposed_by',
-  ['DONOR', 'REQUESTER']
-);
 export const enum_delivery_modes = pgEnum('enum_delivery_modes', ['PICKUP', 'DELIVERY', 'MEETUP']);
 export const enum_days = pgEnum('enum_days', [
   'EVERYDAY',
@@ -144,8 +141,6 @@ export const enum_notification_trigger_event = pgEnum('enum_notification_trigger
   'CREATE',
   'UPDATE',
   'DELETE',
-  'STATUS_CHANGE',
-  'SCHEDULED',
 ]);
 export const enum_requests_status = pgEnum('enum_requests_status', [
   'PENDING',
@@ -359,12 +354,13 @@ export const cities_municipalities = pgTable(
   })
 );
 
-export const deliveries_meetup_details_proposed_time_slots = pgTable(
-  'deliveries_meetup_details_proposed_time_slots',
+export const deliveries_details_proposed_time_slots = pgTable(
+  'deliveries_details_proposed_time_slots',
   {
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
+    date: timestamp('date', { mode: 'string', withTimezone: true, precision: 3 }),
     timeSlot_type: enum_time_slot_type('time_slot_type').default('PRESET'),
     timeSlot_presetSlot: enum_time_slot_preset('time_slot_preset_slot'),
     timeSlot_customTime_startTime: timestamp('time_slot_custom_time_start_time', {
@@ -377,16 +373,44 @@ export const deliveries_meetup_details_proposed_time_slots = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    proposedBy: enum_proposedBy('proposed_by'),
   },
   (columns) => ({
-    _orderIdx: index('deliveries_meetup_details_proposed_time_slots_order_idx').on(columns._order),
-    _parentIDIdx: index('deliveries_meetup_details_proposed_time_slots_parent_id_idx').on(
+    _orderIdx: index('deliveries_details_proposed_time_slots_order_idx').on(columns._order),
+    _parentIDIdx: index('deliveries_details_proposed_time_slots_parent_id_idx').on(
       columns._parentID
     ),
     _parentIDFk: foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [deliveries.id],
-      name: 'deliveries_meetup_details_proposed_time_slots_parent_id_fk',
+      name: 'deliveries_details_proposed_time_slots_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const deliveries_details_proposed_addresses = pgTable(
+  'deliveries_details_proposed_addresses',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    address: uuid('address_id').references(() => addresses.id, {
+      onDelete: 'set null',
+    }),
+    proposedBy: enum_proposedBy('proposed_by'),
+  },
+  (columns) => ({
+    _orderIdx: index('deliveries_details_proposed_addresses_order_idx').on(columns._order),
+    _parentIDIdx: index('deliveries_details_proposed_addresses_parent_id_idx').on(
+      columns._parentID
+    ),
+    deliveries_details_proposed_addresses_address_idx: index(
+      'deliveries_details_proposed_addresses_address_idx'
+    ).on(columns.address),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [deliveries.id],
+      name: 'deliveries_details_proposed_addresses_parent_id_fk',
     }).onDelete('cascade'),
   })
 );
@@ -431,69 +455,31 @@ export const deliveries = pgTable(
       }),
     mode: enum_deliveries_mode('mode').notNull(),
     status: enum_deliveries_status('status').notNull().default('PENDING'),
-    pickupDetails_address: uuid('pickup_details_address_id').references(() => addresses.id, {
-      onDelete: 'set null',
-    }),
-    pickupDetails_date: timestamp('pickup_details_date', {
+    details_confirmedTimeSlot_date: timestamp('details_confirmed_time_slot_date', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }),
-    pickupDetails_timeSlot_type: enum_time_slot_type('pickup_details_time_slot_type').default(
-      'PRESET'
+    details_confirmedTimeSlot_timeSlot_type: enum_time_slot_type(
+      'details_confirmed_time_slot_time_slot_type'
+    ).default('PRESET'),
+    details_confirmedTimeSlot_timeSlot_presetSlot: enum_time_slot_preset(
+      'details_confirmed_time_slot_time_slot_preset_slot'
     ),
-    pickupDetails_timeSlot_presetSlot: enum_time_slot_preset(
-      'pickup_details_time_slot_preset_slot'
-    ),
-    pickupDetails_timeSlot_customTime_startTime: timestamp(
-      'pickup_details_time_slot_custom_time_start_time',
+    details_confirmedTimeSlot_timeSlot_customTime_startTime: timestamp(
+      'details_confirmed_time_slot_time_slot_custom_time_start_time',
       { mode: 'string', withTimezone: true, precision: 3 }
     ),
-    pickupDetails_timeSlot_customTime_endTime: timestamp(
-      'pickup_details_time_slot_custom_time_end_time',
+    details_confirmedTimeSlot_timeSlot_customTime_endTime: timestamp(
+      'details_confirmed_time_slot_time_slot_custom_time_end_time',
       { mode: 'string', withTimezone: true, precision: 3 }
     ),
-    pickupDetails_instructions: varchar('pickup_details_instructions'),
-    deliveryDetails_address: uuid('delivery_details_address_id').references(() => addresses.id, {
-      onDelete: 'set null',
-    }),
-    deliveryDetails_date: timestamp('delivery_details_date', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-    deliveryDetails_timeSlot_type: enum_time_slot_type('delivery_details_time_slot_type').default(
-      'PRESET'
-    ),
-    deliveryDetails_timeSlot_presetSlot: enum_time_slot_preset(
-      'delivery_details_time_slot_preset_slot'
-    ),
-    deliveryDetails_timeSlot_customTime_startTime: timestamp(
-      'delivery_details_time_slot_custom_time_start_time',
-      { mode: 'string', withTimezone: true, precision: 3 }
-    ),
-    deliveryDetails_timeSlot_customTime_endTime: timestamp(
-      'delivery_details_time_slot_custom_time_end_time',
-      { mode: 'string', withTimezone: true, precision: 3 }
-    ),
-    deliveryDetails_instructions: varchar('delivery_details_instructions'),
-    meetupDetails_address: uuid('meetup_details_address_id').references(() => addresses.id, {
-      onDelete: 'set null',
-    }),
-    meetupDetails_date: timestamp('meetup_details_date', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-    meetupDetails_confirmedTimeSlot: timestamp('meetup_details_confirmed_time_slot', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-    meetupDetails_proposedBy: enum_deliveries_meetup_details_proposed_by(
-      'meetup_details_proposed_by'
-    ),
-    meetupDetails_instructions: varchar('meetup_details_instructions'),
+    details_confirmedAddress: uuid('details_confirmed_address_id')
+      .notNull()
+      .references(() => addresses.id, {
+        onDelete: 'set null',
+      }),
+    details_instructions: varchar('details_instructions'),
     tracking_deliveredAt: timestamp('tracking_delivered_at', {
       mode: 'string',
       withTimezone: true,
@@ -511,15 +497,9 @@ export const deliveries = pgTable(
     deliveries_created_by_idx: index('deliveries_created_by_idx').on(columns.createdBy),
     deliveries_request_idx: index('deliveries_request_idx').on(columns.request),
     deliveries_donation_idx: index('deliveries_donation_idx').on(columns.donation),
-    deliveries_pickup_details_pickup_details_address_idx: index(
-      'deliveries_pickup_details_pickup_details_address_idx'
-    ).on(columns.pickupDetails_address),
-    deliveries_delivery_details_delivery_details_address_idx: index(
-      'deliveries_delivery_details_delivery_details_address_idx'
-    ).on(columns.deliveryDetails_address),
-    deliveries_meetup_details_meetup_details_address_idx: index(
-      'deliveries_meetup_details_meetup_details_address_idx'
-    ).on(columns.meetupDetails_address),
+    deliveries_details_details_confirmed_address_idx: index(
+      'deliveries_details_details_confirmed_address_idx'
+    ).on(columns.details_confirmedAddress),
     deliveries_updated_at_idx: index('deliveries_updated_at_idx').on(columns.updatedAt),
     deliveries_created_at_idx: index('deliveries_created_at_idx').on(columns.createdAt),
   })
@@ -1184,11 +1164,12 @@ export const notification_types_template_variables = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    key: varchar('key').notNull(),
-    description: varchar('description'),
-    type: enum_js_types('type'),
     required: boolean('required').default(true),
+    key: varchar('key').notNull(),
+    type: enum_js_types('type').notNull(),
+    path: varchar('path').notNull(),
     defaultValue: varchar('default_value'),
+    description: varchar('description'),
   },
   (columns) => ({
     _orderIdx: index('notification_types_template_variables_order_idx').on(columns._order),
@@ -1207,24 +1188,26 @@ export const notification_types = pgTable(
   'notification_types',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    active: boolean('active').default(true),
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
     key: varchar('key').notNull(),
     name: varchar('name').notNull(),
+    description: varchar('description'),
     category: uuid('category_id')
       .notNull()
       .references(() => notification_categories.id, {
         onDelete: 'set null',
       }),
-    description: varchar('description'),
     priority: enum_priority_level('priority').notNull().default('MEDIUM'),
+    trigger_collection: enum_notification_trigger_collection('trigger_collection').notNull(),
+    trigger_event: enum_notification_trigger_event('trigger_event').notNull(),
+    trigger_conditions: jsonb('trigger_conditions'),
     template_title: varchar('template_title').notNull(),
     template_message: varchar('template_message').notNull(),
-    triggers_collection: enum_notification_trigger_collection('triggers_collection'),
-    triggers_event: enum_notification_trigger_event('triggers_event'),
-    triggers_conditions: jsonb('triggers_conditions'),
-    active: boolean('active').default(true),
+    template_actionUrl: varchar('template_action_url'),
+    template_actionLabel: varchar('template_action_label').default('View Details'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -1898,13 +1881,28 @@ export const relations_cities_municipalities = relations(cities_municipalities, 
     relationName: 'islandGroup',
   }),
 }));
-export const relations_deliveries_meetup_details_proposed_time_slots = relations(
-  deliveries_meetup_details_proposed_time_slots,
+export const relations_deliveries_details_proposed_time_slots = relations(
+  deliveries_details_proposed_time_slots,
   ({ one }) => ({
     _parentID: one(deliveries, {
-      fields: [deliveries_meetup_details_proposed_time_slots._parentID],
+      fields: [deliveries_details_proposed_time_slots._parentID],
       references: [deliveries.id],
-      relationName: 'meetupDetails_proposedTimeSlots',
+      relationName: 'details_proposedTimeSlots',
+    }),
+  })
+);
+export const relations_deliveries_details_proposed_addresses = relations(
+  deliveries_details_proposed_addresses,
+  ({ one }) => ({
+    _parentID: one(deliveries, {
+      fields: [deliveries_details_proposed_addresses._parentID],
+      references: [deliveries.id],
+      relationName: 'details_proposedAddresses',
+    }),
+    address: one(addresses, {
+      fields: [deliveries_details_proposed_addresses.address],
+      references: [addresses.id],
+      relationName: 'address',
     }),
   })
 );
@@ -1934,23 +1932,16 @@ export const relations_deliveries = relations(deliveries, ({ one, many }) => ({
     references: [donations.id],
     relationName: 'donation',
   }),
-  pickupDetails_address: one(addresses, {
-    fields: [deliveries.pickupDetails_address],
-    references: [addresses.id],
-    relationName: 'pickupDetails_address',
+  details_proposedTimeSlots: many(deliveries_details_proposed_time_slots, {
+    relationName: 'details_proposedTimeSlots',
   }),
-  deliveryDetails_address: one(addresses, {
-    fields: [deliveries.deliveryDetails_address],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_address',
+  details_proposedAddresses: many(deliveries_details_proposed_addresses, {
+    relationName: 'details_proposedAddresses',
   }),
-  meetupDetails_address: one(addresses, {
-    fields: [deliveries.meetupDetails_address],
+  details_confirmedAddress: one(addresses, {
+    fields: [deliveries.details_confirmedAddress],
     references: [addresses.id],
-    relationName: 'meetupDetails_address',
-  }),
-  meetupDetails_proposedTimeSlots: many(deliveries_meetup_details_proposed_time_slots, {
-    relationName: 'meetupDetails_proposedTimeSlots',
+    relationName: 'details_confirmedAddress',
   }),
   tracking_trackingHistory: many(deliveries_tracking_tracking_history, {
     relationName: 'tracking_trackingHistory',
@@ -2470,9 +2461,9 @@ type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
   enum_time_slot_type: typeof enum_time_slot_type;
   enum_time_slot_preset: typeof enum_time_slot_preset;
+  enum_proposedBy: typeof enum_proposedBy;
   enum_deliveries_mode: typeof enum_deliveries_mode;
   enum_deliveries_status: typeof enum_deliveries_status;
-  enum_deliveries_meetup_details_proposed_by: typeof enum_deliveries_meetup_details_proposed_by;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
   enum_donations_status: typeof enum_donations_status;
@@ -2496,7 +2487,8 @@ type DatabaseSchema = {
   avatars: typeof avatars;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
-  deliveries_meetup_details_proposed_time_slots: typeof deliveries_meetup_details_proposed_time_slots;
+  deliveries_details_proposed_time_slots: typeof deliveries_details_proposed_time_slots;
+  deliveries_details_proposed_addresses: typeof deliveries_details_proposed_addresses;
   deliveries_tracking_tracking_history: typeof deliveries_tracking_tracking_history;
   deliveries: typeof deliveries;
   donations_delivery_details_preferred_modes: typeof donations_delivery_details_preferred_modes;
@@ -2535,7 +2527,8 @@ type DatabaseSchema = {
   relations_avatars: typeof relations_avatars;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
-  relations_deliveries_meetup_details_proposed_time_slots: typeof relations_deliveries_meetup_details_proposed_time_slots;
+  relations_deliveries_details_proposed_time_slots: typeof relations_deliveries_details_proposed_time_slots;
+  relations_deliveries_details_proposed_addresses: typeof relations_deliveries_details_proposed_addresses;
   relations_deliveries_tracking_tracking_history: typeof relations_deliveries_tracking_tracking_history;
   relations_deliveries: typeof relations_deliveries;
   relations_donations_delivery_details_preferred_modes: typeof relations_donations_delivery_details_preferred_modes;

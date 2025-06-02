@@ -71,181 +71,183 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
       type: 'tabs',
       tabs: [
         {
-          name: 'pickupDetails',
-          label: 'Pickup Details',
-          admin: {
-            condition: (data) => data.mode === 'PICKUP',
-          },
+          label: 'Details',
           fields: [
             {
-              name: 'address',
-              label: 'Pickup Address',
-              type: 'relationship',
-              relationTo: 'addresses',
-              required: true,
-            },
-            {
-              name: 'date',
-              label: 'Pickup Date',
-              type: 'date',
-              admin: {
-                condition: (data) =>
-                  ['SCHEDULED', 'IN_TRANSIT', 'READY_FOR_PICKUP'].includes(data.status),
-              },
-            },
-            timeSlotField({
-              condition: (data) =>
-                ['SCHEDULED', 'IN_TRANSIT', 'READY_FOR_PICKUP'].includes(data.status),
-            }),
-            {
-              name: 'instructions',
-              label: 'Pickup Instructions',
-              type: 'textarea',
-              admin: {
-                description: 'Special instructions for pickup (e.g., gate code, contact person)',
-              },
-            },
-          ],
-        },
-        {
-          name: 'deliveryDetails',
-          label: 'Delivery Details',
-          admin: {
-            condition: (data) => data.mode === 'DELIVERY',
-          },
-          fields: [
-            {
-              name: 'address',
-              label: 'Delivery Address',
-              type: 'relationship',
-              relationTo: 'addresses',
-              required: true,
-            },
-            {
-              name: 'date',
-              label: 'Delivery Date',
-              type: 'date',
-              admin: {
-                condition: (data) => ['SCHEDULED', 'IN_TRANSIT'].includes(data.status),
-              },
-            },
-            timeSlotField({
-              condition: (data) =>
-                ['SCHEDULED', 'IN_TRANSIT', 'READY_FOR_PICKUP'].includes(data.status),
-            }),
-            {
-              name: 'instructions',
-              label: 'Delivery Instructions',
-              type: 'textarea',
-              admin: {
-                description: 'Special instructions for delivery (e.g., leave at door, ring bell)',
-              },
-            },
-          ],
-        },
-        {
-          name: 'meetupDetails',
-          label: 'Meetup Details',
-          admin: {
-            condition: (data) => data.mode === 'MEETUP',
-          },
-          fields: [
-            {
-              name: 'address',
-              label: 'Meetup Location',
-              type: 'relationship',
-              relationTo: 'addresses',
-              required: true,
-            },
-            {
-              name: 'date',
-              label: 'Meetup Date',
-              type: 'date',
-              admin: {
-                condition: (data) => ['CONFIRMED', 'SCHEDULED'].includes(data.status),
-              },
-            },
-            {
-              name: 'proposedTimeSlots',
-              label: 'Proposed Time Slots',
-              type: 'array',
-              fields: [timeSlotField()],
-              admin: {
-                condition: (data) => data.status === 'PENDING_CONFIRMATION',
-              },
-            },
-            {
-              name: 'confirmedTimeSlot',
-              label: 'Confirmed Time Slot',
-              type: 'date',
-              admin: {
-                condition: (data) => ['CONFIRMED', 'SCHEDULED'].includes(data.status),
-              },
-            },
-            {
-              name: 'proposedBy',
-              label: 'Initially Proposed By',
-              type: 'select',
-              options: [
-                { label: 'Donor', value: 'DONOR' },
-                { label: 'Requester', value: 'REQUESTER' },
-              ],
-              admin: {
-                readOnly: true,
-              },
-            },
-            {
-              name: 'instructions',
-              label: 'Meetup Instructions',
-              type: 'textarea',
-              admin: {
-                description: 'Instructions for the meetup location and process',
-              },
-            },
-          ],
-        },
-        {
-          name: 'tracking',
-          label: 'Tracking & Status',
-          fields: [
-            {
-              name: 'deliveredAt',
-              label: 'Delivered At',
-              type: 'date',
-              admin: {
-                condition: (data) => data.status === 'DELIVERED',
-              },
-            },
-            {
-              name: 'trackingHistory',
-              label: 'Status History',
-              type: 'array',
-              admin: {
-                readOnly: true,
-              },
+              name: 'details',
+              label: 'Delivery Details',
+              type: 'group',
               fields: [
                 {
-                  name: 'status',
-                  type: 'text',
+                  name: 'proposedTimeSlots',
+                  label: 'Proposed Time Slots',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'date',
+                      label: 'Proposed Date',
+                      type: 'date',
+                      required: true,
+                      admin: {
+                        description: 'Proposed date for the delivery, pickup, or meetup',
+                      },
+                    },
+                    timeSlotField({
+                      label: 'Proposed Time Slot',
+                      required: true,
+                      description: 'Proposed time slot for the delivery, pickup, or meetup',
+                    }),
+                    {
+                      name: 'proposedBy',
+                      label: 'Proposed By',
+                      type: 'select',
+                      enumName: 'enum_proposedBy',
+                      required: true,
+                      options: [
+                        { label: 'Donor', value: 'DONOR' },
+                        { label: 'Requester', value: 'REQUESTER' },
+                      ],
+                      admin: {
+                        readOnly: true,
+                        description: 'Indicates who proposed this time slot',
+                      },
+                    },
+                  ],
+                  admin: {
+                    condition: (data) => data.status === 'PENDING_CONFIRMATION',
+                    description: 'List of proposed date and time slots for negotiation',
+                  },
                 },
                 {
-                  name: 'timestamp',
-                  type: 'date',
+                  name: 'confirmedTimeSlot',
+                  label: 'Confirmed Time Slot',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'date',
+                      label: 'Confirmed Date',
+                      type: 'date',
+                      required: true,
+                      admin: {
+                        description: 'The confirmed date for the delivery, pickup, or meetup',
+                      },
+                    },
+                    timeSlotField({
+                      label: 'Confirmed Time Slot',
+                      required: true,
+                      description: 'The confirmed time slot for the delivery, pickup, or meetup',
+                    }),
+                  ],
+                  admin: {
+                    condition: (data) => ['CONFIRMED', 'SCHEDULED'].includes(data.status),
+                    description:
+                      'The confirmed date and time slot for the delivery, pickup, or meetup',
+                  },
                 },
                 {
-                  name: 'notes',
+                  name: 'proposedAddresses',
+                  label: 'Proposed Addresses',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'address',
+                      label: 'Proposed Address',
+                      type: 'relationship',
+                      relationTo: 'addresses',
+                      required: true,
+                    },
+                    {
+                      name: 'proposedBy',
+                      label: 'Proposed By',
+                      type: 'select',
+                      required: true,
+                      enumName: 'enum_proposedBy',
+                      options: [
+                        { label: 'Donor', value: 'DONOR' },
+                        { label: 'Requester', value: 'REQUESTER' },
+                      ],
+                      admin: {
+                        readOnly: true,
+                        description: 'Indicates who proposed this address',
+                      },
+                    },
+                  ],
+                  admin: {
+                    description: 'List of proposed addresses for negotiation',
+                    condition: (data) => data.status === 'PENDING_CONFIRMATION',
+                  },
+                },
+                {
+                  name: 'confirmedAddress',
+                  label: 'Confirmed Address',
+                  type: 'relationship',
+                  relationTo: 'addresses',
+                  required: true,
+                  admin: {
+                    description: 'The confirmed address for the delivery, pickup, or meetup',
+                  },
+                },
+                {
+                  name: 'instructions',
+                  label: 'Instructions',
                   type: 'textarea',
+                  admin: {
+                    description:
+                      'Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)',
+                  },
                 },
               ],
             },
+          ],
+        },
+        {
+          label: 'Tracking',
+          fields: [
             {
-              name: 'failureReason',
-              label: 'Failure Reason',
-              type: 'textarea',
-              admin: {
-                condition: (data) => data.status === 'FAILED',
-                description: 'Reason why delivery failed',
-              },
+              name: 'tracking',
+              label: 'Tracking & Status',
+              type: 'group',
+              fields: [
+                {
+                  name: 'deliveredAt',
+                  label: 'Delivered At',
+                  type: 'date',
+                  admin: {
+                    condition: (data) => data.status === 'DELIVERED',
+                  },
+                },
+                {
+                  name: 'failureReason',
+                  label: 'Failure Reason',
+                  type: 'textarea',
+                  admin: {
+                    condition: (data) => data.status === 'FAILED',
+                    description: 'Reason why the delivery failed',
+                  },
+                },
+                {
+                  name: 'trackingHistory',
+                  label: 'Status History',
+                  type: 'array',
+                  admin: {
+                    readOnly: true,
+                  },
+                  fields: [
+                    {
+                      name: 'status',
+                      type: 'text',
+                    },
+                    {
+                      name: 'timestamp',
+                      type: 'date',
+                    },
+                    {
+                      name: 'notes',
+                      type: 'textarea',
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

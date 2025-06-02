@@ -470,42 +470,62 @@ export interface Delivery {
     | 'DELIVERED'
     | 'FAILED'
     | 'CANCELLED';
-  pickupDetails?: {
-    address: string | Address;
-    date?: string | null;
-    timeSlot?: TimeSlot;
+  details: {
     /**
-     * Special instructions for pickup (e.g., gate code, contact person)
+     * List of proposed date and time slots for negotiation
      */
-    instructions?: string | null;
-  };
-  deliveryDetails?: {
-    address: string | Address;
-    date?: string | null;
-    timeSlot?: TimeSlot;
-    /**
-     * Special instructions for delivery (e.g., leave at door, ring bell)
-     */
-    instructions?: string | null;
-  };
-  meetupDetails?: {
-    address: string | Address;
-    date?: string | null;
     proposedTimeSlots?:
       | {
+          /**
+           * Proposed date for the delivery, pickup, or meetup
+           */
+          date: string;
           timeSlot: TimeSlot;
+          /**
+           * Indicates who proposed this time slot
+           */
+          proposedBy: 'DONOR' | 'REQUESTER';
           id?: string | null;
         }[]
       | null;
-    confirmedTimeSlot?: string | null;
-    proposedBy?: ('DONOR' | 'REQUESTER') | null;
     /**
-     * Instructions for the meetup location and process
+     * The confirmed date and time slot for the delivery, pickup, or meetup
+     */
+    confirmedTimeSlot?: {
+      /**
+       * The confirmed date for the delivery, pickup, or meetup
+       */
+      date: string;
+      timeSlot: TimeSlot;
+    };
+    /**
+     * List of proposed addresses for negotiation
+     */
+    proposedAddresses?:
+      | {
+          address: string | Address;
+          /**
+           * Indicates who proposed this address
+           */
+          proposedBy: 'DONOR' | 'REQUESTER';
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * The confirmed address for the delivery, pickup, or meetup
+     */
+    confirmedAddress: string | Address;
+    /**
+     * Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)
      */
     instructions?: string | null;
   };
   tracking?: {
     deliveredAt?: string | null;
+    /**
+     * Reason why the delivery failed
+     */
+    failureReason?: string | null;
     trackingHistory?:
       | {
           status?: string | null;
@@ -514,10 +534,6 @@ export interface Delivery {
           id?: string | null;
         }[]
       | null;
-    /**
-     * Reason why delivery failed
-     */
-    failureReason?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -760,6 +776,8 @@ export interface Image {
   };
 }
 /**
+ * The confirmed time slot for the delivery, pickup, or meetup
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TimeSlot".
  */
@@ -1021,6 +1039,14 @@ export interface Notification {
  */
 export interface NotificationType {
   id: string;
+  /**
+   * Whether this notification type is currently active
+   */
+  active?: boolean | null;
+  /**
+   * Default channels for this notification type
+   */
+  defaultChannels?: (string | NotificationChannel)[] | null;
   createdBy?: (string | null) | User;
   /**
    * Unique identifier for this notification type (e.g., DONATION_MATCHED)
@@ -1031,29 +1057,41 @@ export interface NotificationType {
    */
   name: string;
   /**
-   * Category this notification type belongs to
-   */
-  category: string | NotificationCategory;
-  /**
    * Description of when this notification is triggered
    */
   description?: string | null;
   /**
+   * Category this notification type belongs to
+   */
+  category: string | NotificationCategory;
+  /**
    * Priority level of this notification type
    */
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  trigger: NotificationTypeTrigger;
   template: NotificationTypeTemplate;
-  /**
-   * Default channels for this notification type
-   */
-  defaultChannels?: (string | NotificationChannel)[] | null;
-  triggers?: NotificationTypeTrigger;
-  /**
-   * Whether this notification type is currently active
-   */
-  active?: boolean | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTrigger".
+ */
+export interface NotificationTypeTrigger {
+  collection: 'requests' | 'donations' | 'deliveries' | 'system';
+  event: 'CREATE' | 'UPDATE' | 'DELETE';
+  /**
+   * JSON conditions for when to trigger this notification. Use "exists" to check for field existence, "changed" to check for changes, or direct value matches.
+   */
+  conditions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1068,44 +1106,39 @@ export interface NotificationTypeTemplate {
    * Message template with variables
    */
   message: string;
+  /**
+   * URL to redirect user when they click the notification. Use {{id}} for dynamic IDs.
+   */
+  actionUrl?: string | null;
+  /**
+   * Text for the action button in the notification
+   */
+  actionLabel?: string | null;
   variables?:
     | {
-        key: string;
-        description?: string | null;
-        /**
-         * Expected data type for this variable (optional)
-         */
-        type?: ('string' | 'number' | 'boolean' | 'date' | 'array' | 'object') | null;
         /**
          * Whether this variable is required
          */
         required?: boolean | null;
         /**
+         * Key for this variable, used in templates like {{volume}}
+         */
+        key: string;
+        /**
+         * Expected data type for this variable (optional)
+         */
+        type: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object';
+        /**
+         * Path to the data in the document, e.g. donor.displayName or request.volume. Make sure the path exists in the document and holds the value of the variable.
+         */
+        path: string;
+        /**
          * Default value if not provided (optional)
          */
         defaultValue?: string | null;
+        description?: string | null;
         id?: string | null;
       }[]
-    | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NotificationTypeTrigger".
- */
-export interface NotificationTypeTrigger {
-  collection?: ('requests' | 'donations' | 'deliveries' | 'system') | null;
-  event?: ('CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE' | 'SCHEDULED') | null;
-  /**
-   * JSON conditions for when to trigger this notification
-   */
-  conditions?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
     | null;
 }
 /**
@@ -1338,41 +1371,38 @@ export interface DeliveriesSelect<T extends boolean = true> {
   donation?: T;
   mode?: T;
   status?: T;
-  pickupDetails?:
+  details?:
     | T
     | {
-        address?: T;
-        date?: T;
-        timeSlot?: T | TimeSlotSelect<T>;
-        instructions?: T;
-      };
-  deliveryDetails?:
-    | T
-    | {
-        address?: T;
-        date?: T;
-        timeSlot?: T | TimeSlotSelect<T>;
-        instructions?: T;
-      };
-  meetupDetails?:
-    | T
-    | {
-        address?: T;
-        date?: T;
         proposedTimeSlots?:
           | T
           | {
+              date?: T;
               timeSlot?: T | TimeSlotSelect<T>;
+              proposedBy?: T;
               id?: T;
             };
-        confirmedTimeSlot?: T;
-        proposedBy?: T;
+        confirmedTimeSlot?:
+          | T
+          | {
+              date?: T;
+              timeSlot?: T | TimeSlotSelect<T>;
+            };
+        proposedAddresses?:
+          | T
+          | {
+              address?: T;
+              proposedBy?: T;
+              id?: T;
+            };
+        confirmedAddress?: T;
         instructions?: T;
       };
   tracking?:
     | T
     | {
         deliveredAt?: T;
+        failureReason?: T;
         trackingHistory?:
           | T
           | {
@@ -1381,7 +1411,6 @@ export interface DeliveriesSelect<T extends boolean = true> {
               notes?: T;
               id?: T;
             };
-        failureReason?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1715,36 +1744,18 @@ export interface NotificationChannelStatsSelect<T extends boolean = true> {
  * via the `definition` "notificationTypes_select".
  */
 export interface NotificationTypesSelect<T extends boolean = true> {
+  active?: T;
+  defaultChannels?: T;
   createdBy?: T;
   key?: T;
   name?: T;
-  category?: T;
   description?: T;
+  category?: T;
   priority?: T;
+  trigger?: T | NotificationTypeTriggerSelect<T>;
   template?: T | NotificationTypeTemplateSelect<T>;
-  defaultChannels?: T;
-  triggers?: T | NotificationTypeTriggerSelect<T>;
-  active?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NotificationTypeTemplate_select".
- */
-export interface NotificationTypeTemplateSelect<T extends boolean = true> {
-  title?: T;
-  message?: T;
-  variables?:
-    | T
-    | {
-        key?: T;
-        description?: T;
-        type?: T;
-        required?: T;
-        defaultValue?: T;
-        id?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1754,6 +1765,27 @@ export interface NotificationTypeTriggerSelect<T extends boolean = true> {
   collection?: T;
   event?: T;
   conditions?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NotificationTypeTemplate_select".
+ */
+export interface NotificationTypeTemplateSelect<T extends boolean = true> {
+  title?: T;
+  message?: T;
+  actionUrl?: T;
+  actionLabel?: T;
+  variables?:
+    | T
+    | {
+        required?: T;
+        key?: T;
+        type?: T;
+        path?: T;
+        defaultValue?: T;
+        description?: T;
+        id?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

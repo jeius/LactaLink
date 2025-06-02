@@ -3,18 +3,25 @@ import { Condition, Field } from 'payload';
 interface TimeSlotFieldOptions {
   defaultType?: 'PRESET' | 'CUSTOM';
   condition?: Condition;
+  label?: string;
+  required?: boolean;
+  description?: string;
 }
 
 export const timeSlotField = ({
   condition,
   defaultType = 'PRESET',
+  label = 'Time Slot',
+  required = false,
+  description,
 }: TimeSlotFieldOptions = {}): Field => {
   return {
     name: 'timeSlot',
-    label: 'Time Slot',
+    label,
     type: 'group',
     interfaceName: 'TimeSlot',
-    admin: { condition },
+    required,
+    admin: { condition, description },
     fields: [
       {
         name: 'type',

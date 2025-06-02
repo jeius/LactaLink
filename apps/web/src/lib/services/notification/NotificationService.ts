@@ -1,4 +1,6 @@
+import { getRequestCollection } from '@/lib/utils/getRequestEntity';
 import {
+  Collection,
   Notification,
   NotificationCategory,
   NotificationChannel,
@@ -7,21 +9,59 @@ import {
   User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { Payload, Where } from 'payload';
+import { Operation, Payload, PayloadRequest, Where } from 'payload';
 import { ChannelFactory } from './channels';
 import { TemplateProcessor } from './processors';
 import { CreateNotificationParams } from './types';
 import { TemplateValidator } from './validators';
+import { TriggerValidator } from './validators/TriggerValidator';
 
 export class NotificationService {
   private templateValidator: TemplateValidator;
   private templateProcessor: TemplateProcessor;
   private channelFactory: ChannelFactory;
+  private payload: Payload;
 
-  constructor(private payload: Payload) {
+  constructor(private payloadReq: PayloadRequest) {
+    this.payload = payloadReq.payload;
     this.templateValidator = new TemplateValidator();
     this.templateProcessor = new TemplateProcessor();
-    this.channelFactory = new ChannelFactory(payload);
+    this.channelFactory = new ChannelFactory(payloadReq.payload);
+  }
+
+  async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
+    const collection = getRequestCollection(this.payloadReq);
+    const collectionSlug = collection.config.slug;
+
+    // Fetch notification types with matching triggers
+    const notificationTypes = await this.payload.find({
+      collection: 'notificationTypes',
+      where: {
+        'trigger.collection': { equals: collectionSlug },
+        'trigger.event': { equals: operation.toUpperCase() },
+      },
+    });
+
+    const resolvedData: {
+      relatedData: NonNullable<Notification['relatedData']>;
+      variables: Record<string, unknown>;
+      notificationType: NotificationType;
+    }[] = [];
+
+    for (const notificationType of notificationTypes.docs) {
+      const trigger = notificationType.trigger;
+      const trigValidator = new TriggerValidator(trigger, doc, previousDoc);
+
+      if (trigValidator.validate()) {
+        resolvedData.push({
+          relatedData: this.resolveRelatedData(notificationType, doc),
+          variables: this.resolveVariables(notificationType, doc),
+          notificationType: notificationType,
+        });
+      }
+    }
+
+    return resolvedData;
   }
 
   /**
@@ -30,48 +70,59 @@ export class NotificationService {
    * builds channel stats, and creates the notification in the database.
    * It also sends the notification immediately if not scheduled for later.
    */
-  async createNotification(params: CreateNotificationParams): Promise<Notification> {
-    const notificationType = await this.getNotificationTypeByKey(params.typeKey);
+  async createNotification({
+    doc,
+    recipient,
+    previousDoc,
+    operation,
+    additionalVariables = {},
+  }: CreateNotificationParams): Promise<Notification[]> {
+    const data = await this.handleTriggers(operation, doc, previousDoc);
+    const notifications: Notification[] = [];
 
-    // Validate variables
-    this.templateValidator.validate(notificationType, params.variables);
+    for (const { notificationType, relatedData, variables } of data) {
+      const allVariables = { ...variables, ...additionalVariables };
 
-    // Process templates
-    const title =
-      params.overrides?.title ||
-      this.templateProcessor.process(notificationType.template.title, params.variables);
-    const message =
-      params.overrides?.message ||
-      this.templateProcessor.process(notificationType.template.message, params.variables);
+      this.templateValidator.validate(notificationType, allVariables, {
+        allowExtraVariables: true,
+      });
 
-    // Build channel stats
-    const channelsStats = await this.buildChannelStats(
-      params.overrides?.channels || this.getDefaultChannels(notificationType),
-      params.overrides?.scheduledFor
-    );
+      // Process templates
+      const title = this.templateProcessor.process(notificationType.template.title, allVariables);
+      const message = this.templateProcessor.process(
+        notificationType.template.message,
+        allVariables
+      );
 
-    // Create notification
-    const notification = await this.payload.create({
-      collection: 'notifications',
-      data: {
-        recipient: params.recipient,
-        notificationType: notificationType.id,
-        priority: params.overrides?.priority || notificationType.priority,
-        title,
-        message,
-        variables: params.variables,
-        read: false,
-        relatedData: params.relatedData,
-        delivery: { channelsStats },
-      },
-    });
+      // Build channel stats
+      const channelsStats = await this.buildChannelStats(this.getDefaultChannels(notificationType));
 
-    // Send if not scheduled
-    if (!params.overrides?.scheduledFor) {
-      await this.sendNotification(notification.id);
+      // Create notification
+      const notification = await this.payload.create({
+        collection: 'notifications',
+        data: {
+          recipient,
+          notificationType: notificationType.id,
+          priority: notificationType.priority,
+          title,
+          message,
+          variables: allVariables,
+          read: false,
+          relatedData,
+          delivery: { channelsStats },
+        },
+      });
+
+      // Send if not scheduled
+      for (const stat of channelsStats) {
+        if (!stat.scheduled) {
+          await this.sendNotification(notification.id);
+        }
+      }
+      notifications.push(notification);
     }
 
-    return notification;
+    return notifications;
   }
 
   /**
@@ -199,40 +250,10 @@ export class NotificationService {
     return channels;
   }
 
-  private async getNotificationTypeByKey(typeKey: string): Promise<NotificationType> {
-    const notificationType = await this.payload.find({
-      collection: 'notificationTypes',
-      where: {
-        key: { equals: typeKey },
-        active: { equals: true },
-      },
-      depth: 2, // Include category and default channels
-      pagination: false,
-      limit: 1,
-    });
-
-    if (!notificationType.docs.length) {
-      throw new Error(`Notification type ${typeKey} not found or inactive`);
-    }
-
-    const type = notificationType.docs[0];
-    if (!type?.template || !type.template.title || !type.template.message) {
-      throw new Error(`Notification type ${typeKey} is missing required templates`);
-    }
-
-    return type;
-  }
-
   private async getNotificationById(notificationId: Notification['id']): Promise<Notification> {
     const notification = await this.payload.findByID({
       collection: 'notifications',
       id: notificationId,
-      populate: {
-        users: { profile: true, profileType: true, email: true, phone: true },
-        individuals: { displayName: true },
-        hospitals: { name: true },
-        milkBanks: { name: true },
-      },
       depth: 3,
     });
 
@@ -256,5 +277,85 @@ export class NotificationService {
         },
       },
     });
+  }
+
+  private resolveRelatedData(
+    notificationType: NotificationType,
+    doc: Collection
+  ): NonNullable<Notification['relatedData']> {
+    const template = notificationType.template;
+    const collection = getRequestCollection(this.payloadReq);
+    const collectionSlug = collection.config.slug as 'deliveries' | 'donations' | 'requests';
+
+    if (template.actionUrl && template.actionLabel) {
+      return {
+        data: { relationTo: collectionSlug, value: doc.id },
+        actionUrl: template.actionUrl.replace('{{id}}', doc.id),
+        actionLabel: template.actionLabel,
+      };
+    }
+    return {
+      data: { relationTo: collectionSlug, value: doc.id },
+      actionUrl: `/${collectionSlug}/${doc.id}`,
+      actionLabel: `View ${collection.config.labels.singular}`,
+    };
+  }
+
+  private resolveVariables(
+    notificationType: NotificationType,
+    doc: Collection
+  ): Record<string, unknown> {
+    const variables: Record<string, unknown> = {};
+    const template = notificationType.template;
+
+    if (!template || !template.variables) {
+      return variables; // No variables to resolve
+    }
+
+    for (const { key, path, defaultValue } of template.variables) {
+      if (!path) {
+        variables[key] = defaultValue; // Use default value if no path is provided
+        continue;
+      }
+
+      // Resolve the value from the document using the path
+      const value = this.resolvePath(doc, path);
+
+      // Use the resolved value or default
+      variables[key] = value !== undefined ? value : defaultValue;
+    }
+
+    return variables;
+  }
+
+  // Helper method to resolve nested paths
+  private resolvePath(obj: Collection, path: string): unknown {
+    const parts = path.split('.');
+    let current: Collection | unknown = obj;
+
+    for (const part of parts) {
+      if (current === undefined || current === null) {
+        return undefined; // Stop if the path doesn't exist
+      }
+
+      // Check if the current field is an array (e.g., matchedRequests.docs)
+      if (Array.isArray(current)) {
+        current = current[0]; // Default to the first element in the array
+      }
+
+      if (typeof current !== 'object' || current === null) {
+        return undefined; // If we hit a non-object, stop
+      }
+
+      // Traverse the object for the current part
+      current = (current as Record<string, unknown>)[part];
+    }
+
+    // If the final value is still an array, return the first element
+    if (Array.isArray(current)) {
+      return current[0];
+    }
+
+    return current;
   }
 }

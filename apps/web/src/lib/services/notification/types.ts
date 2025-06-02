@@ -1,10 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Notification,
-  NotificationChannel,
-  NotificationChannelStats,
-  NotificationType,
-} from '@lactalink/types';
+import { Collection, Notification } from '@lactalink/types';
+import { Operation } from 'payload';
 
 export interface VariableValidationOptions {
   allowExtraVariables?: boolean;
@@ -13,17 +8,11 @@ export interface VariableValidationOptions {
 }
 
 export interface CreateNotificationParams {
-  recipient: Notification['recipient'];
-  typeKey: NotificationType['key'];
-  variables?: Record<string, unknown>;
-  relatedData?: NonNullable<Notification['relatedData']>;
-  overrides?: {
-    priority?: Notification['priority'];
-    channels?: NotificationChannel['id'][]; // Array of channel IDs
-    scheduledFor?: NotificationChannelStats[number]['scheduledFor'];
-    title?: Notification['title']; // Manual override for title
-    message?: Notification['message']; // Manual override for message
-  };
+  recipient: Extract<Notification['recipient'], string | number>;
+  operation: Operation;
+  doc: Collection;
+  previousDoc?: Collection | null;
+  additionalVariables?: Record<string, unknown>;
 }
 
 export interface TemplateProcessorOptions {
