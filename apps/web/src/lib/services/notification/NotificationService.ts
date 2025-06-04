@@ -1,4 +1,3 @@
-import { getRequestCollection } from '@/lib/utils/getRequestEntity';
 import {
   Collection,
   Notification,
@@ -9,7 +8,15 @@ import {
   User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { Operation, Payload, PayloadRequest, Where } from 'payload';
+import _ from 'lodash';
+import {
+  Field,
+  Operation,
+  Payload,
+  PayloadRequest,
+  SanitizedCollectionConfig,
+  Where,
+} from 'payload';
 import { ChannelFactory } from './channels';
 import { TemplateProcessor } from './processors';
 import { CreateNotificationParams } from './types';
@@ -22,7 +29,10 @@ export class NotificationService {
   private channelFactory: ChannelFactory;
   private payload: Payload;
 
-  constructor(private payloadReq: PayloadRequest) {
+  constructor(
+    private payloadReq: PayloadRequest,
+    private collection: SanitizedCollectionConfig
+  ) {
     this.payload = payloadReq.payload;
     this.templateValidator = new TemplateValidator();
     this.templateProcessor = new TemplateProcessor();
@@ -30,8 +40,7 @@ export class NotificationService {
   }
 
   async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
-    const collection = getRequestCollection(this.payloadReq);
-    const collectionSlug = collection.config.slug;
+    const collectionSlug = this.collection.slug;
 
     // Fetch notification types with matching triggers
     const notificationTypes = await this.payload.find({
@@ -77,7 +86,9 @@ export class NotificationService {
     operation,
     additionalVariables = {},
   }: CreateNotificationParams): Promise<Notification[]> {
-    const data = await this.handleTriggers(operation, doc, previousDoc);
+    const fullDoc = await this.prepareFullDoc(doc, operation);
+
+    const data = await this.handleTriggers(operation, fullDoc, previousDoc);
     const notifications: Notification[] = [];
 
     for (const { notificationType, relatedData, variables } of data) {
@@ -100,6 +111,7 @@ export class NotificationService {
       // Create notification
       const notification = await this.payload.create({
         collection: 'notifications',
+        depth: 3,
         data: {
           recipient,
           notificationType: notificationType.id,
@@ -113,10 +125,15 @@ export class NotificationService {
         },
       });
 
+      this.payload.logger.info(
+        notification,
+        `Created notification ${notification.id} for ${recipient}`
+      );
+
       // Send if not scheduled
       for (const stat of channelsStats) {
         if (!stat.scheduled) {
-          await this.sendNotification(notification.id);
+          await this.sendNotification(notification);
         }
       }
       notifications.push(notification);
@@ -130,9 +147,7 @@ export class NotificationService {
    * This method will send the notification immediately if no channels are scheduled,
    * or schedule it for later if specified.
    */
-  async sendNotification(notificationId: Notification['id']): Promise<Notification> {
-    const notification = await this.getNotificationById(notificationId);
-
+  async sendNotification(notification: Notification): Promise<Notification> {
     const updatedStats: NotificationChannelStats = await Promise.all(
       notification.delivery.channelsStats.map(async (stat) => {
         const channel = await this.channelFactory.createChannel(extractID(stat.channel));
@@ -140,7 +155,7 @@ export class NotificationService {
       })
     );
 
-    await this.updateDeliveryStats(notificationId, updatedStats);
+    await this.updateDeliveryStats(notification.id, updatedStats);
     return notification;
   }
 
@@ -250,20 +265,6 @@ export class NotificationService {
     return channels;
   }
 
-  private async getNotificationById(notificationId: Notification['id']): Promise<Notification> {
-    const notification = await this.payload.findByID({
-      collection: 'notifications',
-      id: notificationId,
-      depth: 3,
-    });
-
-    if (!notification) {
-      throw new Error(`Notification with ID ${notificationId} not found`);
-    }
-
-    return notification;
-  }
-
   private async updateDeliveryStats(
     notificationId: Notification['id'],
     updatedStats: NotificationChannelStats
@@ -284,20 +285,19 @@ export class NotificationService {
     doc: Collection
   ): NonNullable<Notification['relatedData']> {
     const template = notificationType.template;
-    const collection = getRequestCollection(this.payloadReq);
-    const collectionSlug = collection.config.slug as 'deliveries' | 'donations' | 'requests';
+    const collectionSlug = this.collection.slug as 'deliveries' | 'donations' | 'requests';
 
     if (template.actionUrl && template.actionLabel) {
       return {
-        data: { relationTo: collectionSlug, value: doc.id },
+        // data: { relationTo: collectionSlug, value: doc.id },
         actionUrl: template.actionUrl.replace('{{id}}', doc.id),
         actionLabel: template.actionLabel,
       };
     }
     return {
-      data: { relationTo: collectionSlug, value: doc.id },
+      // data: { relationTo: collectionSlug, value: doc.id },
       actionUrl: `/${collectionSlug}/${doc.id}`,
-      actionLabel: `View ${collection.config.labels.singular}`,
+      actionLabel: `View ${this.collection.labels.singular}`,
     };
   }
 
@@ -319,7 +319,7 @@ export class NotificationService {
       }
 
       // Resolve the value from the document using the path
-      const value = this.resolvePath(doc, path);
+      const value = _.get(doc, path, undefined);
 
       // Use the resolved value or default
       variables[key] = value !== undefined ? value : defaultValue;
@@ -328,34 +328,137 @@ export class NotificationService {
     return variables;
   }
 
-  // Helper method to resolve nested paths
-  private resolvePath(obj: Collection, path: string): unknown {
-    const parts = path.split('.');
-    let current: Collection | unknown = obj;
+  private async prepareFullDoc(doc: Collection, operation: Operation): Promise<Collection> {
+    this.payload.logger.info(doc, `Preparing full document for collection ${this.collection.slug}`);
+    // this.payload.logger.info(
+    //   this.collection.fields,
+    //   `Fields in collection ${this.collection.slug}`
+    // );
 
-    for (const part of parts) {
-      if (current === undefined || current === null) {
-        return undefined; // Stop if the path doesn't exist
-      }
+    if (operation === 'update') {
+      const fullDoc = await this.payload.findByID({
+        collection: this.collection.slug,
+        id: doc.id,
+        depth: 2,
+        populate: {
+          users: { email: true, profile: true, profileType: true, phone: true },
+          individuals: { displayName: true, owner: true, addresses: true },
+          hospitals: { name: true, addresses: true, owner: true },
+          milkBanks: { name: true, addresses: true, owner: true },
+          addresses: { displayName: true, owner: true, default: true, name: true },
+        },
+      });
 
-      // Check if the current field is an array (e.g., matchedRequests.docs)
-      if (Array.isArray(current)) {
-        current = current[0]; // Default to the first element in the array
-      }
+      this.payload.logger.info(
+        fullDoc,
+        `Fetched full document for update operation on ${this.collection.slug}`
+      );
 
-      if (typeof current !== 'object' || current === null) {
-        return undefined; // If we hit a non-object, stop
-      }
-
-      // Traverse the object for the current part
-      current = (current as Record<string, unknown>)[part];
+      return fullDoc;
     }
 
-    // If the final value is still an array, return the first element
-    if (Array.isArray(current)) {
-      return current[0];
+    // Initialize an empty object to hold the full document
+    const fullDoc: Partial<Collection> = {};
+
+    const resolveField = async (
+      field: Field,
+      parentDoc: Partial<Collection>,
+      parentPath: string = ''
+    ) => {
+      const fieldPath =
+        'name' in field && field.name
+          ? parentPath
+            ? `${parentPath}.${field.name}`
+            : field.name
+          : parentPath;
+
+      switch (field.type) {
+        case 'relationship':
+          // Resolve the related document
+          if (Array.isArray(field.relationTo)) {
+            // Handle multiple relations
+            const relatedDocs = await Promise.all(
+              field.relationTo.map(async (relation) => {
+                return await this.payload.findByID({
+                  collection: relation,
+                  id: _.get(parentDoc, fieldPath),
+                  depth: field.maxDepth || 2,
+                });
+              })
+            );
+
+            // Set the resolved documents in the fullDoc
+            _.set(fullDoc, fieldPath, relatedDocs.filter(Boolean));
+          } else {
+            const relatedDoc = await this.payload.findByID({
+              collection: field.relationTo,
+              id: _.get(parentDoc, fieldPath),
+              depth: field.maxDepth || 2,
+            });
+
+            // Set the resolved document in the fullDoc
+            _.set(fullDoc, fieldPath, relatedDoc || null);
+          }
+
+          break;
+
+        case 'group':
+          // Recursively resolve fields in a group or tab
+          for (const subField of field.fields) {
+            await resolveField(subField, parentDoc, fieldPath);
+          }
+          break;
+
+        case 'tabs':
+          // Recursively resolve fields in a group or tab
+          for (const tab of field.tabs) {
+            for (const subField of tab.fields) {
+              await resolveField(subField, parentDoc, fieldPath);
+            }
+          }
+          break;
+
+        case 'array': {
+          // Resolve fields in an array
+          const arrayItems = _.get(parentDoc, fieldPath, []);
+          const resolvedArray = await Promise.all(
+            arrayItems.map(async (item: Collection, index: number) => {
+              const resolvedItem: Partial<Collection> = {};
+              for (const subField of field.fields) {
+                await resolveField(subField, item, `${fieldPath}[${index}]`);
+              }
+              return resolvedItem;
+            })
+          );
+
+          // Set the resolved array in the fullDoc
+          _.set(fullDoc, fieldPath, resolvedArray);
+          break;
+        }
+
+        case 'row':
+          // Resolve fields in a row
+          for (const subField of field.fields) {
+            await resolveField(subField, parentDoc, parentPath);
+          }
+          break;
+
+        default:
+          // Copy non-relationship fields directly
+          _.set(fullDoc, fieldPath, _.get(parentDoc, fieldPath));
+          break;
+      }
+    };
+
+    // Iterate through all fields in the collection
+    for (const field of this.collection.fields) {
+      await resolveField(field, doc);
     }
 
-    return current;
+    this.payload.logger.info(
+      fullDoc,
+      `Resolved full document for collection ${this.collection.slug}`
+    );
+    return fullDoc as Collection;
   }
 }

@@ -3,7 +3,7 @@ import { extractID } from '@lactalink/utilities';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateTitle: CollectionBeforeChangeHook<Request> = async ({ data, req }) => {
-  if (!data.requester || !data.amount) return data;
+  if (!data.requester || !data.volumeNeeded) return data;
 
   const id = extractID(data.requester);
 
@@ -16,7 +16,7 @@ export const generateTitle: CollectionBeforeChangeHook<Request> = async ({ data,
 
   const name = doc.displayName || `${doc.givenName || ''} ${doc.familyName || ''}`.trim();
 
-  data.title = `${name} | ${data.amount} mL`;
+  data.title = `${name} | ${data.volumeNeeded} mL`;
 
   return data;
 };

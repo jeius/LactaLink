@@ -1,4 +1,5 @@
 import { Collection, NotificationTypeTrigger } from '@lactalink/types';
+import _ from 'lodash';
 
 export class TriggerValidator {
   private doc: Collection;
@@ -29,20 +30,19 @@ export class TriggerValidator {
       throw new Error('Invalid conditions format. Expected an object or boolean.');
     }
 
-    return Object.entries(conditions).every(([k, value]) => {
-      const key = k as keyof Collection;
-
-      // If the key does not exist in the document, we cannot evaluate it
+    return Object.entries(conditions).every(([key, value]) => {
+      // Check for field existence
       if (
         typeof value === 'object' &&
         value !== null &&
         'exists' in value &&
         typeof (value as { exists: unknown }).exists !== 'undefined'
       ) {
-        // Check for field existence
-        return (value as { exists: boolean }).exists
-          ? this.doc[key] !== undefined && this.doc[key] !== null
-          : this.doc[key] === undefined || this.doc[key] === null;
+        const exists = (value as { exists: boolean }).exists;
+        const fieldValue = _.get(this.doc, key);
+        return exists
+          ? fieldValue !== undefined && fieldValue !== null
+          : fieldValue === undefined || fieldValue === null;
       }
 
       // Check for field change
@@ -54,15 +54,15 @@ export class TriggerValidator {
       ) {
         if (!this.previousDoc) {
           // If no previous doc, treat as changed if current value exists
-          return Boolean(this.doc[key]);
+          return Boolean(_.get(this.doc, key));
         }
 
-        // Check if the field has changed
-        return this.doc[key] !== this.previousDoc[key];
+        // Use Lodash to check if the field has changed
+        return !_.isEqual(_.get(this.doc, key), _.get(this.previousDoc, key));
       }
 
       // Check for value match
-      return this.doc[key] === value;
+      return _.isEqual(_.get(this.doc, key), value);
     });
   }
 }

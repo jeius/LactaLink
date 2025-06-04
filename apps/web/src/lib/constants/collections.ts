@@ -15,7 +15,6 @@ export const DELIVERY_OPTIONS = {
 } as const;
 
 export const DAYS = {
-  EVERYDAY: { label: 'Everyday', value: 'EVERYDAY' },
   MONDAY: { label: 'Monday', value: 'MONDAY' },
   TUESDAY: { label: 'Tuesday', value: 'TUESDAY' },
   WEDNESDAY: { label: 'Wednesday', value: 'WEDNESDAY' },
@@ -53,3 +52,5 @@ export const NOTIFICATION_CHANNEL_TYPE_OPTIONS = [
   { label: 'Webhook', value: 'WEBHOOK' },
   { label: 'External API', value: 'EXTERNAL_API' },
 ];
+
+export const MILK_EXPIRY_DAYS = 3;

@@ -8,25 +8,27 @@ export const createDonationNotification: CollectionAfterChangeHook<Donation> = a
   previousDoc,
   operation,
   req,
+  collection,
 }) => {
   try {
-    const notificationService = new NotificationService(req);
-    const recipient = extractID(doc.donor);
-
-    const fullDoc = await req.payload.findByID({
-      collection: 'donations',
-      id: doc.id,
-      depth: 5,
-      joins: {
-        matchedRequests: { sort: '-createdAt', count: true },
-      },
+    const notificationService = new NotificationService(req, collection);
+    const donor = await req.payload.findByID({
+      collection: 'individuals',
+      id: extractID(doc.donor),
+      depth: 0,
+      select: { owner: true },
     });
 
+    if (!donor.owner) {
+      req.payload.logger.warn(`No owner found for donor ${donor.id} in donation ${doc.id}`);
+      return doc; // Skip notification if no owner
+    }
+
     const sentNotifications = await notificationService.createNotification({
-      doc: fullDoc,
+      doc,
       previousDoc,
       operation,
-      recipient,
+      recipient: extractID(donor.owner),
     });
 
     req.payload.logger.info(
@@ -38,4 +40,6 @@ export const createDonationNotification: CollectionAfterChangeHook<Donation> = a
       `Error creating notification for donation ${doc.id} (${operation})`
     );
   }
+
+  return doc;
 };

@@ -118,6 +118,7 @@ export interface Config {
     images: Image;
     individuals: Individual;
     islandGroups: IslandGroup;
+    milkBags: MilkBag;
     milkBanks: MilkBank;
     notificationCategories: NotificationCategory;
     notificationChannels: NotificationChannel;
@@ -136,6 +137,10 @@ export interface Config {
       matchedRequests: 'requests';
       'deliveryDetails.deliveries': 'deliveries';
     };
+    milkBags: {
+      donation: 'donations';
+      request: 'requests';
+    };
     requests: {
       'deliveryDetails.delivery': 'deliveries';
     };
@@ -151,6 +156,7 @@ export interface Config {
     images: ImagesSelect<false> | ImagesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
+    milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     notificationCategories: NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
@@ -548,11 +554,23 @@ export interface Request {
    * Title of the milk request.
    */
   title?: string | null;
+  /**
+   * The donor who is requested to fulfill this request
+   */
+  requestedDonor?: (string | null) | Individual;
   createdBy?: (string | null) | User;
+  /**
+   * Date when the request was matched with a donation
+   */
+  matchedAt?: string | null;
   /**
    * The person requesting the milk
    */
   requester: string | Individual;
+  /**
+   * Current status of the request
+   */
+  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
   /**
    * Amount of milk needed in milliliters
    */
@@ -561,7 +579,6 @@ export interface Request {
    * The donation that fulfilled this request
    */
   matchedDonation?: (string | null) | Donation;
-  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
   details: {
     /**
      * Date when the milk is needed
@@ -572,6 +589,14 @@ export interface Request {
      */
     storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
     urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    /**
+     * Milk bags that fulfilled this request. If empty, it means the request is still pending.
+     */
+    bags?: (string | MilkBag)[] | null;
+    /**
+     * Image of the person or baby receiving the milk
+     */
+    image?: (string | null) | Image;
     /**
      * Reason for requesting milk donation
      */
@@ -601,9 +626,7 @@ export interface Request {
     /**
      * Days available for processing.
      */
-    availableDays?:
-      | ('EVERYDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[]
-      | null;
+    availableDays?: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[] | null;
     delivery?: {
       docs?: (string | Delivery)[];
       hasNextPage?: boolean;
@@ -623,20 +646,20 @@ export interface Donation {
    * Title of the donation record.
    */
   title?: string | null;
+  /**
+   * Total volume of milk donated.
+   */
+  volume?: number | null;
+  /**
+   * Volume still available for allocation
+   */
+  remainingVolume?: number | null;
   createdBy?: (string | null) | User;
   /**
    * The person donating the milk
    */
   donor: string | Individual;
   status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
-  /**
-   * Total volume of milk available for donation
-   */
-  volume: number;
-  /**
-   * Volume still available for allocation
-   */
-  remainingVolume?: number | null;
   /**
    * The requests that this donation fulfills
    */
@@ -647,15 +670,17 @@ export interface Donation {
   };
   details: {
     /**
-     * Date when the milk was collected
+     * Type of storage for the milk
      */
-    collectedAt: string;
-    /**
-     * Date when the milk expires
-     */
-    expiresAt?: string | null;
     storageType: 'FRESH' | 'FROZEN';
+    /**
+     * How the milk was collected
+     */
     collectionMode: 'MANUAL' | 'ELECTRIC_PUMP' | 'MANUAL_PUMP';
+    /**
+     * Select the milk bags used for this donation
+     */
+    bags: (string | MilkBag)[];
     /**
      * Upload images of the milk sample
      */
@@ -685,14 +710,60 @@ export interface Donation {
     /**
      * Days available for processing.
      */
-    availableDays?:
-      | ('EVERYDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[]
-      | null;
+    availableDays?: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[] | null;
     deliveries?: {
       docs?: (string | Delivery)[];
       hasNextPage?: boolean;
       totalDocs?: number;
     };
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkBags".
+ */
+export interface MilkBag {
+  id: string;
+  code?: string | null;
+  title?: string | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The individual donating the milk bag
+   */
+  donor: string | Individual;
+  /**
+   * Volume of milk in milliliters
+   */
+  volume: number;
+  /**
+   * Current status of the milk bag
+   */
+  status: 'AVAILABLE' | 'ALLOCATED' | 'EXPIRED' | 'DISCARDED';
+  /**
+   * Date when the milk was collected
+   */
+  collectedAt: string;
+  /**
+   * Date when the milk expires
+   */
+  expiresAt?: string | null;
+  /**
+   * The donation this milk bag is part of
+   */
+  donation?: {
+    docs?: (string | Donation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * The request this milk bag fulfills.
+   */
+  request?: {
+    docs?: (string | Request)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   updatedAt: string;
   createdAt: string;
@@ -1189,6 +1260,10 @@ export interface PayloadLockedDocument {
         value: string | IslandGroup;
       } | null)
     | ({
+        relationTo: 'milkBags';
+        value: string | MilkBag;
+      } | null)
+    | ({
         relationTo: 'milkBanks';
         value: string | MilkBank;
       } | null)
@@ -1435,19 +1510,18 @@ export interface TimeSlotSelect<T extends boolean = true> {
  */
 export interface DonationsSelect<T extends boolean = true> {
   title?: T;
+  volume?: T;
+  remainingVolume?: T;
   createdBy?: T;
   donor?: T;
   status?: T;
-  volume?: T;
-  remainingVolume?: T;
   matchedRequests?: T;
   details?:
     | T
     | {
-        collectedAt?: T;
-        expiresAt?: T;
         storageType?: T;
         collectionMode?: T;
+        bags?: T;
         milkSample?: T;
         notes?: T;
       };
@@ -1601,6 +1675,24 @@ export interface IndividualsSelect<T extends boolean = true> {
 export interface IslandGroupsSelect<T extends boolean = true> {
   name?: T;
   code?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkBags_select".
+ */
+export interface MilkBagsSelect<T extends boolean = true> {
+  code?: T;
+  title?: T;
+  createdBy?: T;
+  donor?: T;
+  volume?: T;
+  status?: T;
+  collectedAt?: T;
+  expiresAt?: T;
+  donation?: T;
+  request?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1817,17 +1909,21 @@ export interface RegionsSelect<T extends boolean = true> {
  */
 export interface RequestsSelect<T extends boolean = true> {
   title?: T;
+  requestedDonor?: T;
   createdBy?: T;
+  matchedAt?: T;
   requester?: T;
+  status?: T;
   volumeNeeded?: T;
   matchedDonation?: T;
-  status?: T;
   details?:
     | T
     | {
         neededAt?: T;
         storagePreference?: T;
         urgency?: T;
+        bags?: T;
+        image?: T;
         reason?: T;
         notes?: T;
       };

@@ -4,8 +4,9 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
+import { initialize } from './hooks/initialize';
+import { updateStatus } from './hooks/updateStatus';
 
 export const Donations: CollectionConfig<'donations'> = {
   slug: 'donations',
@@ -19,11 +20,12 @@ export const Donations: CollectionConfig<'donations'> = {
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
     useAsTitle: 'title',
-    defaultColumns: ['donor', 'amount', 'remainingAmount', 'status', 'createdAt'],
+    defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateTitle],
-    afterChange: [createDonationNotification],
+    beforeChange: [generateCreatedBy, initialize, generateTitle],
+    beforeRead: [updateStatus],
+    // afterChange: [createDonationNotification],
   },
   fields: [
     {
@@ -31,6 +33,27 @@ export const Donations: CollectionConfig<'donations'> = {
       type: 'text',
       admin: {
         description: 'Title of the donation record.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'volume',
+      label: 'Total Volume (mL)',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        description: 'Total volume of milk donated.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'remainingVolume',
+      label: 'Remaining Volume (mL)',
+      type: 'number',
+      admin: {
+        description: 'Volume still available for allocation',
         readOnly: true,
         position: 'sidebar',
       },
@@ -65,36 +88,15 @@ export const Donations: CollectionConfig<'donations'> = {
         },
       ],
     },
-    {
-      type: 'row',
-      fields: [
-        {
-          name: 'volume',
-          label: 'Total Volume (mL)',
-          type: 'number',
-          required: true,
-          defaultValue: 50,
-          min: 20,
-          admin: {
-            description: 'Total volume of milk available for donation',
-          },
-        },
-        {
-          name: 'remainingVolume',
-          label: 'Remaining Volume (mL)',
-          type: 'number',
-          admin: {
-            description: 'Volume still available for allocation',
-            readOnly: true,
-          },
-        },
-      ],
-    },
+
     {
       name: 'matchedRequests',
+      label: 'Matched Requests',
       type: 'join',
       on: 'matchedDonation',
       collection: 'requests',
+      defaultSort: '-createdAt',
+      maxDepth: 2,
       admin: {
         description: 'The requests that this donation fulfills',
       },
@@ -103,77 +105,96 @@ export const Donations: CollectionConfig<'donations'> = {
       type: 'tabs',
       tabs: [
         {
-          name: 'details',
-          label: 'Milk Details',
+          label: 'Details',
           fields: [
             {
-              name: 'collectedAt',
-              label: 'Date Collected',
-              type: 'date',
-              required: true,
-              admin: {
-                description: 'Date when the milk was collected',
-              },
-            },
-            {
-              name: 'expiresAt',
-              label: 'Expiration Date',
-              type: 'date',
-              admin: {
-                description: 'Date when the milk expires',
-              },
-            },
-            {
-              name: 'storageType',
-              label: 'Storage Type',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'Fresh (Refrigerated)', value: 'FRESH' },
-                { label: 'Frozen', value: 'FROZEN' },
+              name: 'details',
+              label: 'Milk Details',
+              type: 'group',
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'storageType',
+                      label: 'Storage Type',
+                      type: 'select',
+                      required: true,
+                      admin: {
+                        description: 'Type of storage for the milk',
+                        width: '50%',
+                      },
+                      options: [
+                        { label: 'Fresh (Refrigerated)', value: 'FRESH' },
+                        { label: 'Frozen', value: 'FROZEN' },
+                      ],
+                    },
+                    {
+                      name: 'collectionMode',
+                      label: 'Collection Mode',
+                      type: 'select',
+                      required: true,
+                      admin: {
+                        description: 'How the milk was collected',
+                        width: '50%',
+                      },
+                      options: [
+                        { label: 'Hand Expression', value: 'MANUAL' },
+                        { label: 'Electric Pump', value: 'ELECTRIC_PUMP' },
+                        { label: 'Manual Pump', value: 'MANUAL_PUMP' },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  name: 'bags',
+                  label: 'Milk Bags',
+                  type: 'relationship',
+                  relationTo: 'milkBags',
+                  required: true,
+                  hasMany: true,
+                  admin: {
+                    description: 'Select the milk bags used for this donation',
+                  },
+                },
+                {
+                  type: 'upload',
+                  name: 'milkSample',
+                  label: 'Milk Sample',
+                  relationTo: 'images',
+                  hasMany: true,
+                  maxRows: 5,
+                  admin: {
+                    description: 'Upload images of the milk sample',
+                  },
+                },
+                {
+                  name: 'notes',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Additional notes or special instructions from donor',
+                  },
+                },
               ],
-            },
-            {
-              name: 'collectionMode',
-              label: 'Collection Mode',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'Hand Expression', value: 'MANUAL' },
-                { label: 'Electric Pump', value: 'ELECTRIC_PUMP' },
-                { label: 'Manual Pump', value: 'MANUAL_PUMP' },
-              ],
-            },
-            {
-              type: 'upload',
-              name: 'milkSample',
-              label: 'Milk Sample',
-              relationTo: 'images',
-              hasMany: true,
-              maxRows: 5,
-              admin: {
-                description: 'Upload images of the milk sample',
-              },
-            },
-            {
-              name: 'notes',
-              type: 'textarea',
-              admin: {
-                description: 'Additional notes or special instructions from donor',
-              },
             },
           ],
         },
         {
-          name: 'deliveryDetails',
-          label: 'Delivery Details',
+          label: 'Delivery',
           fields: [
-            ...deliveryTabFields({ defaultPreferredModes: ['PICKUP'] }),
             {
-              name: 'deliveries',
-              type: 'join',
-              on: 'donation',
-              collection: 'deliveries',
+              name: 'deliveryDetails',
+              label: 'Delivery Details',
+              type: 'group',
+              fields: [
+                ...deliveryTabFields({ defaultPreferredModes: ['PICKUP'] }),
+                {
+                  name: 'deliveries',
+                  type: 'join',
+                  on: 'donation',
+                  collection: 'deliveries',
+                },
+              ],
             },
           ],
         },

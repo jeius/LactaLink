@@ -52,6 +52,10 @@ export const typesData: Omit<
     trigger: {
       collection: 'donations',
       event: 'UPDATE',
+      conditions: {
+        status: 'PARTIALLY_ALLOCATED',
+        matchedRequests: { changed: true },
+      },
     },
     template: {
       title: 'Your donation has been matched!',
@@ -76,14 +80,14 @@ export const typesData: Omit<
           key: 'requesterName',
           description: 'Name of the requester',
           type: 'string',
-          path: 'matchedRequest.docs.requester.displayName',
+          path: 'matchedRequest.docs[0].requester.displayName',
           required: true,
         },
         {
           key: 'requestId',
           description: 'ID of the matched request',
           type: 'string',
-          path: 'matchedRequest.docs.id',
+          path: 'matchedRequest.docs[0].id',
           required: true,
         },
       ],
@@ -98,6 +102,10 @@ export const typesData: Omit<
     trigger: {
       collection: 'donations',
       event: 'UPDATE',
+      conditions: {
+        status: 'FULLY_ALLOCATED',
+        remainingVolume: 0,
+      },
     },
     template: {
       title: 'Your donation has been fully allocated!',

@@ -8,24 +8,26 @@ export const requestAfterChange: CollectionAfterChangeHook<Request> = async ({
   previousDoc,
   operation,
   req,
+  collection,
 }) => {
-  const notificationService = new NotificationService(req);
-  const recipient = extractID(doc.requester);
+  try {
+    const notificationService = new NotificationService(req, collection);
+    const recipient = extractID(doc.requester);
 
-  const fullDoc = await req.payload.findByID({
-    collection: 'requests',
-    id: doc.id,
-    depth: 5,
-  });
+    // const sentNotifications = await notificationService.createNotification({
+    //   doc: fullDoc,
+    //   previousDoc,
+    //   operation,
+    //   recipient,
+    // });
 
-  const sentNotifications = await notificationService.createNotification({
-    doc: fullDoc,
-    previousDoc,
-    operation,
-    recipient,
-  });
-
-  req.payload.logger.info(
-    `Sent ${sentNotifications.length} notifications for donation ${doc.id} (${operation})`
-  );
+    // req.payload.logger.info(
+    //   `Sent ${sentNotifications.length} notifications for donation ${doc.id} (${operation})`
+    // );
+  } catch (error) {
+    req.payload.logger.error(
+      error,
+      `Error creating notification for request ${doc.id} (${operation}):`
+    );
+  }
 };
