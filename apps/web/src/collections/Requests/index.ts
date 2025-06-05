@@ -3,13 +3,13 @@ import { deliveryTabFields } from '@/fields/deliveryTabFields';
 import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
+import { Request } from '@lactalink/types';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { filterMatchedDonationOptions, filterMilkBagsOptions } from './filterOptions';
 import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
-import { updateMilkBag } from './hooks/updateMilkBag';
-import { updateStatus } from './hooks/updateStatus';
+import { updateMilkBag, updateStatus } from './hooks/update';
 
 export const Requests: CollectionConfig<'requests'> = {
   slug: 'requests',
@@ -171,11 +171,22 @@ export const Requests: CollectionConfig<'requests'> = {
                   type: 'relationship',
                   relationTo: 'milkBags',
                   hasMany: true,
+                  filterOptions: filterMilkBagsOptions,
+                  validate: async (value, { data }: { data: Partial<Request> }) => {
+                    if (data.matchedDonation && (!value || value.length === 0)) {
+                      return 'At least one milk bag is required when a matched donation exists.';
+                    }
+                    return true;
+                  },
+                  access: {
+                    create: () => false,
+                    read: () => true,
+                    update: () => true,
+                  },
                   admin: {
                     description:
                       'Milk bags that fulfilled this request. If empty, it means the request is still pending.',
                   },
-                  filterOptions: filterMilkBagsOptions,
                 },
                 {
                   type: 'upload',

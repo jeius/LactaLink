@@ -156,6 +156,12 @@ export const Donations: CollectionConfig<'donations'> = {
                   required: true,
                   hasMany: true,
                   filterOptions: filterMilkBagsOptions,
+                  validate: (value) => {
+                    if (!value || value.length === 0) {
+                      return 'At least one milk bag must be selected';
+                    }
+                    return true;
+                  },
                   admin: {
                     description: 'Select the milk bags used for this donation',
                   },

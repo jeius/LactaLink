@@ -21,7 +21,7 @@ export const filterMilkBagsOptions: FilterOptions<Request> = async ({ data, req 
   }
 
   return {
-    and: [{ donor: { equals: extractID(donation.donor) } }, { status: { equals: 'AVAILABLE' } }],
+    and: [{ id: { in: bagIds } }, { status: { equals: 'AVAILABLE' } }],
   } as Where;
 };
 

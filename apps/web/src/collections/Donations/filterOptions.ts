@@ -2,7 +2,7 @@ import { Donation } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import { FilterOptions, Where } from 'payload';
 
-export const filterMilkBagsOptions: FilterOptions<Donation> = async ({ data, req }) => {
+export const filterMilkBagsOptions: FilterOptions<Donation> = async ({ data }) => {
   if (!data?.donor) {
     return false;
   }

@@ -1202,7 +1202,7 @@ export interface NotificationTypeTemplate {
         /**
          * Path to the data in the document, e.g. donor.displayName or request.volume. Make sure the path exists in the document and holds the value of the variable.
          */
-        path: string;
+        path?: string | null;
         /**
          * Default value if not provided (optional)
          */

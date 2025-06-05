@@ -9,7 +9,6 @@ export const createRequestNotification: CollectionAfterChangeHook<Request> = asy
   operation,
   req,
   collection,
-  context,
 }) => {
   try {
     const notificationService = new NotificationService(req, collection);

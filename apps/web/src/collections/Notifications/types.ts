@@ -201,7 +201,6 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                         description:
                           'URL to redirect user when they click the notification. Use {{id}} for dynamic IDs.',
                         placeholder: '/requests/{{id}}',
-                        width: '60%',
                       },
                     },
                     {
@@ -240,7 +239,6 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                           required: true,
                           admin: {
                             placeholder: 'volume',
-                            width: '60%',
                             description: 'Key for this variable, used in templates like {{volume}}',
                           },
                         },
@@ -272,12 +270,10 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                           name: 'path',
                           label: 'Data Path',
                           type: 'text',
-                          required: true,
                           admin: {
                             description:
                               'Path to the data in the document, e.g. donor.displayName or request.volume. Make sure the path exists in the document and holds the value of the variable.',
                             placeholder: 'request.volume',
-                            width: '60%',
                           },
                         },
                         {
