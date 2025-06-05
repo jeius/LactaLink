@@ -9,6 +9,7 @@ export const createDonationNotification: CollectionAfterChangeHook<Donation> = a
   operation,
   req,
   collection,
+  context,
 }) => {
   try {
     const notificationService = new NotificationService(req, collection);

@@ -1,32 +1,38 @@
+import { getUpdatedDonationStatus } from '@/lib/utils/collections/getUpdatedDonationStatus';
 import { Donation } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { CollectionBeforeReadHook } from 'payload';
+import { CollectionBeforeChangeHook } from 'payload';
 
-export const updateStatus: CollectionBeforeReadHook<Donation> = async ({ doc, req, context }) => {
+export const updateStatus: CollectionBeforeChangeHook<Donation> = async ({
+  data,
+  req,
+  context,
+  operation,
+}) => {
   // Check if the context has the skipDonationUpdate flag
-  if (context.skipDonationUpdate) {
+  if (context.skipDonationUpdateHook || operation !== 'update') {
     req.payload.logger.info(
-      { donationId: doc.id },
+      { donationId: data.id },
       'Skipping donation status update due to context flag'
     );
-    return doc;
+    return data;
   }
 
-  if (!doc?.details?.bags || doc.details.bags.length === 0) {
+  if (!data?.details?.bags || data.details.bags.length === 0) {
     req.payload.logger.warn(
-      { donationId: doc.id },
+      { donationId: data.id },
       'No milk bags found for this donation, skipping status update'
     );
-    return doc; // No bags to process, return the original document
+    return data; // No bags to process, return the original document
   }
 
   req.payload.logger.info(
-    { donationId: doc.id, bagsCount: doc.details.bags.length },
+    { donationId: data.id, bagsCount: data.details.bags.length },
     'Updating donation status based on milk bags'
   );
 
-  const bagDocs = await Promise.all(
-    doc.details.bags.map((bag) => {
+  const milkBags = await Promise.all(
+    data.details.bags.map((bag) => {
       return req.payload.findByID({
         collection: 'milkBags',
         id: extractID(bag),
@@ -36,59 +42,28 @@ export const updateStatus: CollectionBeforeReadHook<Donation> = async ({ doc, re
     })
   );
 
-  const allBagsExpired = bagDocs.every((bag) => bag.status === 'EXPIRED');
-  const totalVolume = bagDocs
-    .filter((bag) => bag.status !== 'DISCARDED')
-    .reduce((sum, bag) => sum + bag.volume, 0);
-  const remainingVolume = bagDocs
-    .filter((bag) => bag.status === 'AVAILABLE')
-    .reduce((sum, bag) => sum + bag.volume, 0);
-
-  let updatedStatus = doc.status;
-
-  // Determine the new status based on conditions
-  if (allBagsExpired && doc.status !== 'EXPIRED') {
-    updatedStatus = 'EXPIRED';
-  } else if (remainingVolume === 0 && doc.status !== 'FULLY_ALLOCATED') {
-    updatedStatus = 'FULLY_ALLOCATED';
-  } else if (remainingVolume < totalVolume && doc.status !== 'PARTIALLY_ALLOCATED') {
-    updatedStatus = 'PARTIALLY_ALLOCATED';
-  } else if (remainingVolume === totalVolume && doc.status !== 'AVAILABLE') {
-    updatedStatus = 'AVAILABLE';
-  }
+  const { volume, remainingVolume, status } = getUpdatedDonationStatus(milkBags, data.status);
 
   // Only update the database if there are changes to status, volume, or remainingVolume
   if (
-    updatedStatus !== doc.status ||
-    totalVolume !== doc.volume ||
-    remainingVolume !== doc.remainingVolume
+    status !== data.status ||
+    volume !== data.volume ||
+    remainingVolume !== data.remainingVolume
   ) {
     req.payload.logger.info(
       {
-        donationId: doc.id,
-        updatedStatus,
-        totalVolume,
+        donationId: data.id,
+        updatedStatus: status,
+        totalVolume: volume,
         remainingVolume,
       },
       'Updating donation status and volumes'
     );
 
-    await req.payload.update({
-      collection: 'donations',
-      id: doc.id,
-      data: {
-        status: updatedStatus,
-        volume: totalVolume,
-        remainingVolume: remainingVolume,
-      },
-      req,
-    });
-
-    // Update the document in memory
-    doc.status = updatedStatus;
-    doc.volume = totalVolume;
-    doc.remainingVolume = remainingVolume;
+    data.status = status;
+    data.volume = volume;
+    data.remainingVolume = remainingVolume;
   }
 
-  return doc;
+  return data;
 };

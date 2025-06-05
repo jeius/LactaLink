@@ -4,6 +4,8 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { filterMilkBagsOptions } from './filterOptions';
+import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initialize } from './hooks/initialize';
 import { updateStatus } from './hooks/updateStatus';
@@ -23,9 +25,8 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy, initialize, generateTitle],
-    beforeRead: [updateStatus],
-    // afterChange: [createDonationNotification],
+    beforeChange: [initialize, generateCreatedBy, generateTitle, updateStatus],
+    afterChange: [createDonationNotification],
   },
   fields: [
     {
@@ -96,9 +97,10 @@ export const Donations: CollectionConfig<'donations'> = {
       on: 'matchedDonation',
       collection: 'requests',
       defaultSort: '-createdAt',
-      maxDepth: 2,
+      maxDepth: 1,
       admin: {
         description: 'The requests that this donation fulfills',
+        defaultColumns: ['title', 'status'],
       },
     },
     {
@@ -153,6 +155,7 @@ export const Donations: CollectionConfig<'donations'> = {
                   relationTo: 'milkBags',
                   required: true,
                   hasMany: true,
+                  filterOptions: filterMilkBagsOptions,
                   admin: {
                     description: 'Select the milk bags used for this donation',
                   },

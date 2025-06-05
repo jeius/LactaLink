@@ -54,7 +54,7 @@ export const typesData: Omit<
       event: 'UPDATE',
       conditions: {
         status: 'PARTIALLY_ALLOCATED',
-        matchedRequests: { changed: true },
+        remainingVolume: { changed: true },
       },
     },
     template: {
@@ -80,14 +80,14 @@ export const typesData: Omit<
           key: 'requesterName',
           description: 'Name of the requester',
           type: 'string',
-          path: 'matchedRequest.docs[0].requester.displayName',
+          path: 'matchedRequests.docs[0].requester.displayName',
           required: true,
         },
         {
           key: 'requestId',
           description: 'ID of the matched request',
           type: 'string',
-          path: 'matchedRequest.docs[0].id',
+          path: 'matchedRequests.docs[0].id',
           required: true,
         },
       ],
@@ -130,7 +130,7 @@ export const typesData: Omit<
           key: 'recipientCount',
           description: 'Number of families helped',
           type: 'number',
-          path: 'matchedRequest.totalDocs',
+          path: 'matchedRequests.totalDocs',
           required: true,
         },
       ],
@@ -193,6 +193,10 @@ export const typesData: Omit<
     trigger: {
       collection: 'requests',
       event: 'UPDATE',
+      conditions: {
+        status: 'MATCHED',
+        matchedDonation: { changed: true },
+      },
     },
     template: {
       title: 'Great news! Your request has been matched',

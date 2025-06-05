@@ -7,14 +7,13 @@ export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
   context,
 }) => {
   // If the document is already expired, no need to check again
-  if (doc.status === 'EXPIRED') {
+  if (doc.status === 'EXPIRED' || context.skipUpdateExpireStatus) {
     return doc;
   }
 
   const now = new Date();
   if (doc.expiresAt && new Date(doc.expiresAt) < now) {
     doc.status = 'EXPIRED';
-    context.skipDonationUpdate = true;
 
     req.payload.logger.info(
       { milkBagId: doc.id, expiresAt: doc.expiresAt },
@@ -22,6 +21,7 @@ export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
     );
 
     // Persist to database
+    req.context.skipUpdateExpireStatus = true;
     await req.payload.update({
       collection: 'milkBags',
       id: doc.id,

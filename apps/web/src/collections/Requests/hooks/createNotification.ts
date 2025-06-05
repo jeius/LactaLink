@@ -3,31 +3,45 @@ import { Request } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import { CollectionAfterChangeHook } from 'payload';
 
-export const requestAfterChange: CollectionAfterChangeHook<Request> = async ({
+export const createRequestNotification: CollectionAfterChangeHook<Request> = async ({
   doc,
   previousDoc,
   operation,
   req,
   collection,
+  context,
 }) => {
   try {
     const notificationService = new NotificationService(req, collection);
-    const recipient = extractID(doc.requester);
 
-    // const sentNotifications = await notificationService.createNotification({
-    //   doc: fullDoc,
-    //   previousDoc,
-    //   operation,
-    //   recipient,
-    // });
+    const requester = await req.payload.findByID({
+      collection: 'individuals',
+      id: extractID(doc.requester),
+      depth: 0,
+      select: { owner: true },
+    });
 
-    // req.payload.logger.info(
-    //   `Sent ${sentNotifications.length} notifications for donation ${doc.id} (${operation})`
-    // );
+    if (!requester.owner) {
+      req.payload.logger.warn(`No owner found for donor ${requester.id} in donation ${doc.id}`);
+      return doc; // Skip notification if no owner
+    }
+
+    const sentNotifications = await notificationService.createNotification({
+      doc,
+      previousDoc,
+      operation,
+      recipient: extractID(requester.owner),
+    });
+
+    req.payload.logger.info(
+      `Sent ${sentNotifications.length} notifications for request ${doc.id} (${operation})`
+    );
   } catch (error) {
     req.payload.logger.error(
       error,
       `Error creating notification for request ${doc.id} (${operation}):`
     );
   }
+
+  return doc;
 };

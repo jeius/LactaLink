@@ -5,7 +5,8 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { filterMilkBagsOptions } from './filterOptions';
+import { filterMatchedDonationOptions, filterMilkBagsOptions } from './filterOptions';
+import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { updateMilkBag } from './hooks/updateMilkBag';
 import { updateStatus } from './hooks/updateStatus';
@@ -26,7 +27,7 @@ export const Requests: CollectionConfig<'requests'> = {
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateTitle, updateStatus],
-    afterChange: [updateMilkBag],
+    afterChange: [updateMilkBag, createRequestNotification],
   },
   fields: [
     {
@@ -109,6 +110,7 @@ export const Requests: CollectionConfig<'requests'> = {
           name: 'matchedDonation',
           type: 'relationship',
           relationTo: 'donations',
+          filterOptions: filterMatchedDonationOptions,
           admin: {
             description: 'The donation that fulfilled this request',
             width: '50%',

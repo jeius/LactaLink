@@ -9,6 +9,10 @@ export async function seedNotificationSystem(payload: Payload) {
 
   // Clear existing data in notification collections
   await payload.delete({
+    collection: 'notifications',
+    where: {},
+  });
+  await payload.delete({
     collection: 'notificationTypes',
     where: {},
   });

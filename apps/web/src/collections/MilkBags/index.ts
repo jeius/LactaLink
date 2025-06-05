@@ -116,6 +116,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       on: 'details.bags',
       admin: {
         description: 'The donation this milk bag is part of',
+        defaultColumns: ['title', 'status'],
       },
     },
     {
@@ -125,6 +126,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       on: 'details.bags',
       admin: {
         description: 'The request this milk bag fulfills.',
+        defaultColumns: ['title', 'status'],
       },
     },
   ],

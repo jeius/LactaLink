@@ -11,13 +11,29 @@ export const filterMilkBagsOptions: FilterOptions<Request> = async ({ data, req 
     collection: 'donations',
     id: extractID(data.matchedDonation),
     depth: 0,
-    select: { donor: true },
+    select: { details: { bags: true }, donor: true },
   });
 
+  const bagIds = donation.details.bags.map((bag) => extractID(bag));
+
+  if (bagIds.length === 0) {
+    return false; // No bags to filter
+  }
+
   return {
-    and: [
-      { 'donation.donor': { equals: extractID(donation.donor) } },
-      { status: { equals: 'AVAILABLE' } },
-    ],
+    and: [{ donor: { equals: extractID(donation.donor) } }, { status: { equals: 'AVAILABLE' } }],
   } as Where;
+};
+
+export const filterMatchedDonationOptions: FilterOptions<Request> = async ({ data }) => {
+  const volumeNeeded = data?.volumeNeeded;
+  const where: Where[] = [{ remainingVolume: { greater_than: 0 } }];
+
+  if (volumeNeeded) {
+    where.push({ remainingVolume: { greater_than_equal: volumeNeeded } });
+  }
+
+  return {
+    and: where,
+  };
 };
