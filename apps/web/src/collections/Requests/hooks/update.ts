@@ -27,12 +27,24 @@ export const updateMilkBag: CollectionAfterChangeHook<Request> = async ({ doc, r
   );
 
   if (doc.matchedDonation) {
+    const { matchedRequests } = await req.payload.findByID({
+      collection: 'donations',
+      id: extractID(doc.matchedDonation),
+      depth: 0,
+      select: { matchedRequests: true },
+    });
+
+    const newMatchedRequests =
+      matchedRequests && matchedRequests.length > 0
+        ? [...extractID(matchedRequests), doc.id]
+        : [doc.id];
+
     await req.payload.update({
       collection: 'donations',
       id: extractID(doc.matchedDonation),
       req,
       data: {
-        status: 'PARTIALLY_ALLOCATED',
+        matchedRequests: newMatchedRequests,
       },
     });
   }

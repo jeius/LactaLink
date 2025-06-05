@@ -178,11 +178,6 @@ export const Requests: CollectionConfig<'requests'> = {
                     }
                     return true;
                   },
-                  access: {
-                    create: () => false,
-                    read: () => true,
-                    update: () => true,
-                  },
                   admin: {
                     description:
                       'Milk bags that fulfilled this request. If empty, it means the request is still pending.',

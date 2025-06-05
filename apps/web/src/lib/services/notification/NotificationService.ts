@@ -97,9 +97,7 @@ export class NotificationService {
     for (const { notificationType, relatedData, variables } of data) {
       const allVariables = { ...variables, ...additionalVariables };
 
-      this.templateValidator.validate(notificationType, allVariables, {
-        allowExtraVariables: true,
-      });
+      this.templateValidator.validate(notificationType, allVariables);
 
       // Process templates
       const title = this.templateProcessor.process(notificationType.template.title, allVariables);
@@ -290,7 +288,7 @@ export class NotificationService {
     resolver: FieldResolver,
     operation: Operation
   ): Promise<Collection> {
-    this.payload.logger.info(doc, `Preparing full document for collection ${this.collection.slug}`);
+    this.payload.logger.info(`Preparing full document for collection ${this.collection.slug}`);
     // this.payload.logger.info(this.collection.fields, 'Collection fields');
 
     // Initialize an empty object to hold the full document

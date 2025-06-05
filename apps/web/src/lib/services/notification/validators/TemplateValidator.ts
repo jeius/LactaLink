@@ -28,7 +28,7 @@ export class TemplateValidator {
     providedVariables: Record<string, unknown> = {},
     options: VariableValidationOptions = {}
   ): void {
-    const { allowExtraVariables = true, allowEmptyValues = false, strictMode = false } = options;
+    const { allowExtraVariables = true, allowEmptyValues = true, strictMode = true } = options;
 
     const templateVariables = notificationType.template?.variables || [];
     const expectedKeys = new Set(templateVariables.map((v) => v.key));
@@ -105,8 +105,40 @@ export class TemplateValidator {
   ) {
     for (const variable of templateVariables) {
       const value = providedVariables[variable.key];
-      if (value !== undefined && typeof value !== variable.type) {
-        errors.push(`Variable "${variable.key}" should be of type "${variable.type}"`);
+      if (value === undefined && variable.required) {
+        errors.push(`Variable "${variable.key}" is required but not provided`);
+      } else if (value === undefined && !variable.required) {
+        continue;
+      } else if (value !== undefined) {
+        switch (variable.type) {
+          case 'date': {
+            const dateValue = new Date(value as string);
+            if (isNaN(dateValue.getTime())) {
+              errors.push(`Variable "${variable.key}" should be a valid date`);
+            }
+            break;
+          }
+
+          case 'number': {
+            if (typeof value !== 'number' || isNaN(value as number)) {
+              errors.push(`Variable "${variable.key}" should be a valid number`);
+            }
+            break;
+          }
+
+          case 'array': {
+            if (!Array.isArray(value)) {
+              errors.push(`Variable "${variable.key}" should be an array`);
+            }
+            break;
+          }
+
+          default:
+            if (typeof value !== variable.type) {
+              errors.push(`Variable "${variable.key}" should be of type "${variable.type}"`);
+            }
+            break;
+        }
       }
     }
   }

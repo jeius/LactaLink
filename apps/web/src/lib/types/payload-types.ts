@@ -134,7 +134,6 @@ export interface Config {
   };
   collectionsJoins: {
     donations: {
-      matchedRequests: 'requests';
       'deliveryDetails.deliveries': 'deliveries';
     };
     milkBags: {
@@ -663,11 +662,7 @@ export interface Donation {
   /**
    * The requests that this donation fulfills
    */
-  matchedRequests?: {
-    docs?: (string | Request)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
+  matchedRequests?: (string | Request)[] | null;
   details: {
     /**
      * Type of storage for the milk

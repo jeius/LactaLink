@@ -1,4 +1,4 @@
-import { Collection, Notification, NotificationType } from '@lactalink/types';
+import { Collection, Config, Notification, NotificationType } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import _ from 'lodash';
 import { Field, Payload, SanitizedCollectionConfig } from 'payload';
@@ -237,12 +237,18 @@ export class FieldResolver {
     return variables;
   }
 
-  private populateOptions = {
+  private populateOptions: Partial<Config['collectionsSelect']> = {
     users: { email: true, profile: true, profileType: true, phone: true },
     individuals: { displayName: true, owner: true, addresses: true },
     hospitals: { name: true, addresses: true, owner: true },
     milkBanks: { name: true, addresses: true, owner: true },
     addresses: { displayName: true, owner: true, default: true, name: true },
-    avatar: { url: true, alt: true },
-  } as const;
+    regions: { name: true, code: true },
+    provinces: { name: true, code: true },
+    citiesMunicipalities: { name: true, code: true },
+    barangays: { name: true, code: true },
+    islandGroups: { name: true, code: true },
+    avatars: { url: true, alt: true, width: true, height: true },
+    images: { url: true, alt: true, width: true, height: true },
+  };
 }

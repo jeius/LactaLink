@@ -93,16 +93,15 @@ export const Donations: CollectionConfig<'donations'> = {
     {
       name: 'matchedRequests',
       label: 'Matched Requests',
-      type: 'join',
-      on: 'matchedDonation',
-      collection: 'requests',
-      defaultSort: '-createdAt',
-      maxDepth: 1,
+      type: 'relationship',
+      relationTo: 'requests',
+      hasMany: true,
+      maxDepth: 2,
       admin: {
         description: 'The requests that this donation fulfills',
-        defaultColumns: ['title', 'status'],
       },
     },
+
     {
       type: 'tabs',
       tabs: [
