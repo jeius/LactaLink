@@ -6,7 +6,8 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
 import React from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, GestureResponderEvent, Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const SCOPE = 'BUTTON';
 
@@ -334,19 +335,58 @@ const buttonGroupStyle = tva({
 });
 
 type IButtonProps = Omit<React.ComponentPropsWithoutRef<typeof UIButton>, 'context'> &
-  VariantProps<typeof buttonStyle> & { className?: string };
+  VariantProps<typeof buttonStyle> & { className?: string; animateOnPress?: boolean };
 
 const Button = React.forwardRef<React.ComponentRef<typeof UIButton>, IButtonProps>(function Button(
-  { className, variant = 'solid', size = 'md', action = 'primary', ...props },
+  {
+    className,
+    variant = 'solid',
+    size = 'md',
+    action = 'primary',
+    animateOnPress = true,
+    onPressIn,
+    onPressOut,
+    ...props
+  },
   ref
 ) {
+  const scale = useSharedValue(1);
+
+  const handlePressIn = (e: GestureResponderEvent) => {
+    scale.value = withSpring(0.95, {
+      damping: 15,
+      stiffness: 200,
+    });
+    if (onPressIn) {
+      onPressIn(e);
+    }
+  };
+
+  const handlePressOut = (e: GestureResponderEvent) => {
+    scale.value = withSpring(1, {
+      damping: 15,
+      stiffness: 200,
+    });
+    if (onPressOut) {
+      onPressOut(e);
+    }
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <UIButton
-      ref={ref}
-      {...props}
-      className={buttonStyle({ variant, size, action, class: className })}
-      context={{ variant, size, action }}
-    />
+    <Animated.View style={animateOnPress ? animatedStyle : undefined}>
+      <UIButton
+        ref={ref}
+        {...props}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        className={buttonStyle({ variant, size, action, class: className })}
+        context={{ variant, size, action }}
+      />
+    </Animated.View>
   );
 });
 

@@ -47,6 +47,7 @@
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-google-signin/google-signin": "^13.2.0",
     "@react-native/metro-config": "^0.78.0",
+    "@react-navigation/bottom-tabs": "^7.3.14",
     "@rnx-kit/metro-config": "^2.0.1",
     "@rnx-kit/metro-resolver-symlinks": "^0.2.1",
     "@supabase/supabase-js": "^2.49.4",

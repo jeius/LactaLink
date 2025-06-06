@@ -22,13 +22,13 @@ export default function Layout() {
   );
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="setup-profile"
-        options={{ header: () => progressBar, headerTransparent: true }}
+        options={{ header: () => progressBar, headerTransparent: true, headerShown: true }}
       />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="welcome/index" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="welcome/index" />
     </Stack>
   );
 }

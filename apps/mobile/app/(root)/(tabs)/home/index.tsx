@@ -23,7 +23,7 @@ const Home = () => {
   return (
     <Protected>
       <ThemeToggler />
-      <VStack space="lg" className="items-center">
+      <VStack space="lg" className="flex-1 items-center justify-end">
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
           <ButtonIcon as={LogOutIcon} />

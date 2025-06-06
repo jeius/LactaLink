@@ -25,9 +25,9 @@ export function GluestackUIProvider({
   style?: ViewProps['style'];
 }) {
   return (
-    <View className="relative flex-1" style={[config[mode as keyof Config], props.style]}>
+    <View className="flex-1" style={[config[mode as keyof Config], props.style]}>
       <OverlayProvider>
-        <View className="absolute inset-0">{props.children}</View>
+        <View className="bg-background-50 relative flex-1">{props.children}</View>
       </OverlayProvider>
 
       <Toaster />
