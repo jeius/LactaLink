@@ -1,5 +1,11 @@
 import { User } from '@lactalink/types';
 
+/**
+ *
+ *
+ * @param user - The user object from which to extract the name.
+ * @returns {string | null} - The extracted name from the user profile, or null if not found.
+ */
 export function extractName(user: User): string | null {
   if (user.profile) {
     const profile = user.profile.value;

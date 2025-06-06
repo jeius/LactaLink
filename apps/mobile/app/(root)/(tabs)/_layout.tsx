@@ -9,11 +9,11 @@ export default function Layout() {
       tabBar={(props: BottomTabBarProps) => <BottomTabBar {...props} />}
       screenOptions={{
         animation: 'shift',
-        headerShown: true,
+        headerShown: false,
       }}
     >
       <Tabs.Screen name="home/index" />
-      <Tabs.Screen name="transactions/index" />
+      <Tabs.Screen name="history/index" />
       <Tabs.Screen name="notifications/index" />
       <Tabs.Screen name="messages/index" />
     </Tabs>

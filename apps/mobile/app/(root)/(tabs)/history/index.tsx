@@ -3,10 +3,10 @@ import React from 'react';
 import SafeArea from '@/components/safe-area';
 import { Text } from '@/components/ui/text';
 
-export default function TransactionsPage() {
+export default function HistoryPage() {
   return (
     <SafeArea>
-      <Text>TransactionsPage</Text>
+      <Text>HistoryPage</Text>
     </SafeArea>
   );
 }

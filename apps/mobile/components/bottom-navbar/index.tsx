@@ -18,7 +18,7 @@ import { TabButton } from './tab-button';
 
 const icons: Record<string, LucideIcon> = {
   home: HomeIcon,
-  transactions: ListCheckIcon,
+  history: ListCheckIcon,
   notifications: BellIcon,
   messages: MessageCircleIcon,
 };

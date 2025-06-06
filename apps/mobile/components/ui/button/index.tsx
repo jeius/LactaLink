@@ -337,7 +337,9 @@ const buttonGroupStyle = tva({
 type IButtonProps = Omit<React.ComponentPropsWithoutRef<typeof UIButton>, 'context'> &
   VariantProps<typeof buttonStyle> & { className?: string; animateOnPress?: boolean };
 
-const Button = React.forwardRef<React.ComponentRef<typeof UIButton>, IButtonProps>(function Button(
+const Button: React.ForwardRefExoticComponent<
+  IButtonProps & React.RefAttributes<React.ComponentRef<typeof UIButton>>
+> = React.forwardRef<React.ComponentRef<typeof UIButton>, IButtonProps>(function Button(
   {
     className,
     variant = 'solid',
@@ -393,7 +395,9 @@ const Button = React.forwardRef<React.ComponentRef<typeof UIButton>, IButtonProp
 type IButtonTextProps = React.ComponentPropsWithoutRef<typeof UIButton.Text> &
   VariantProps<typeof buttonTextStyle> & { className?: string };
 
-const ButtonText = React.forwardRef<React.ComponentRef<typeof UIButton.Text>, IButtonTextProps>(
+const ButtonText: React.ForwardRefExoticComponent<
+  IButtonTextProps & React.RefAttributes<React.ComponentRef<typeof UIButton.Text>>
+> = React.forwardRef<React.ComponentRef<typeof UIButton.Text>, IButtonTextProps>(
   function ButtonText({ className, variant, size, action, ...props }, ref) {
     const {
       variant: parentVariant,
@@ -431,45 +435,42 @@ type IButtonIcon = React.ComponentPropsWithoutRef<typeof UIButton.Icon> &
     width?: number;
   };
 
-const ButtonIcon = React.forwardRef<React.ComponentRef<typeof UIButton.Icon>, IButtonIcon>(
-  function ButtonIcon({ className, size, ...props }, ref) {
-    const {
-      variant: parentVariant,
-      size: parentSize,
-      action: parentAction,
-    } = useStyleContext(SCOPE);
+const ButtonIcon: React.ForwardRefExoticComponent<
+  IButtonIcon & React.RefAttributes<React.ComponentRef<typeof UIButton.Icon>>
+> = React.forwardRef<React.ComponentRef<typeof UIButton.Icon>, IButtonIcon>(function ButtonIcon(
+  { className, size, ...props },
+  ref
+) {
+  const { variant: parentVariant, size: parentSize, action: parentAction } = useStyleContext(SCOPE);
 
-    if (typeof size === 'number') {
-      return (
-        <UIButton.Icon
-          ref={ref}
-          {...props}
-          className={buttonIconStyle({ class: className })}
-          size={size}
-        />
-      );
-    } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
-      return (
-        <UIButton.Icon ref={ref} {...props} className={buttonIconStyle({ class: className })} />
-      );
-    }
+  if (typeof size === 'number') {
     return (
       <UIButton.Icon
-        {...props}
-        className={buttonIconStyle({
-          parentVariants: {
-            size: parentSize,
-            variant: parentVariant,
-            action: parentAction,
-          },
-          size,
-          class: className,
-        })}
         ref={ref}
+        {...props}
+        className={buttonIconStyle({ class: className })}
+        size={size}
       />
     );
+  } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
+    return <UIButton.Icon ref={ref} {...props} className={buttonIconStyle({ class: className })} />;
   }
-);
+  return (
+    <UIButton.Icon
+      {...props}
+      className={buttonIconStyle({
+        parentVariants: {
+          size: parentSize,
+          variant: parentVariant,
+          action: parentAction,
+        },
+        size,
+        class: className,
+      })}
+      ref={ref}
+    />
+  );
+});
 
 type IButtonGroupProps = React.ComponentPropsWithoutRef<typeof UIButton.Group> &
   VariantProps<typeof buttonGroupStyle>;

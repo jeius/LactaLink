@@ -1,4 +1,5 @@
 import { AnimatedProgress } from '@/components/animated/progress';
+import { TabsHeader } from '@/components/tabs-header';
 import { Box } from '@/components/ui/box';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
@@ -27,7 +28,13 @@ export default function Layout() {
         name="setup-profile"
         options={{ header: () => progressBar, headerTransparent: true, headerShown: true }}
       />
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          header: () => <TabsHeader />,
+          headerShown: true,
+        }}
+      />
       <Stack.Screen name="welcome/index" />
     </Stack>
   );
