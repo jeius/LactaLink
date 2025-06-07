@@ -1,5 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
-import { deliveryTabFields } from '@/fields/deliveryTabFields';
+import { deliveryDetailsField } from '@/fields/deliveryTabFields';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
@@ -190,19 +190,12 @@ export const Donations: CollectionConfig<'donations'> = {
         {
           label: 'Delivery',
           fields: [
+            deliveryDetailsField({ defaultPreferredModes: ['PICKUP'] }),
             {
-              name: 'deliveryDetails',
-              label: 'Delivery Details',
-              type: 'group',
-              fields: [
-                ...deliveryTabFields({ defaultPreferredModes: ['PICKUP'] }),
-                {
-                  name: 'deliveries',
-                  type: 'join',
-                  on: 'donation',
-                  collection: 'deliveries',
-                },
-              ],
+              name: 'deliveries',
+              type: 'join',
+              on: 'donation',
+              collection: 'deliveries',
             },
           ],
         },

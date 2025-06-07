@@ -134,14 +134,14 @@ export interface Config {
   };
   collectionsJoins: {
     donations: {
-      'deliveryDetails.deliveries': 'deliveries';
+      deliveries: 'deliveries';
     };
     milkBags: {
       donation: 'donations';
       request: 'requests';
     };
     requests: {
-      'deliveryDetails.delivery': 'deliveries';
+      delivery: 'deliveries';
     };
   };
   collectionsSelect: {
@@ -605,32 +605,27 @@ export interface Request {
      */
     notes?: string | null;
   };
-  deliveryDetails: {
-    /**
-     * Preferred delivery modes of the individual. This will be used for matching.
-     */
-    preferredModes: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
-    /**
-     * Address available for pickup.
-     */
-    pickupAddress?: (string | null) | Address;
-    /**
-     * Address available for delivery.
-     */
-    deliveryAddress?: (string | null) | Address;
-    /**
-     * Address available for meet-up.
-     */
-    meetupAddress?: (string | null) | Address;
-    /**
-     * Days available for processing.
-     */
-    availableDays?: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[] | null;
-    delivery?: {
-      docs?: (string | Delivery)[];
-      hasNextPage?: boolean;
-      totalDocs?: number;
-    };
+  deliveryDetails?:
+    | {
+        /**
+         * Preferred delivery modes of the individual. This will be used for matching.
+         */
+        preferredModes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+        /**
+         * Address available for pickup, delivery, or meet-up.
+         */
+        address: string | Address;
+        /**
+         * Days available for pickup, delivery, or meet-up.
+         */
+        availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+        id?: string | null;
+      }[]
+    | null;
+  delivery?: {
+    docs?: (string | Delivery)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   updatedAt: string;
   createdAt: string;
@@ -685,32 +680,27 @@ export interface Donation {
      */
     notes?: string | null;
   };
-  deliveryDetails: {
-    /**
-     * Preferred delivery modes of the individual. This will be used for matching.
-     */
-    preferredModes: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
-    /**
-     * Address available for pickup.
-     */
-    pickupAddress?: (string | null) | Address;
-    /**
-     * Address available for delivery.
-     */
-    deliveryAddress?: (string | null) | Address;
-    /**
-     * Address available for meet-up.
-     */
-    meetupAddress?: (string | null) | Address;
-    /**
-     * Days available for processing.
-     */
-    availableDays?: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[] | null;
-    deliveries?: {
-      docs?: (string | Delivery)[];
-      hasNextPage?: boolean;
-      totalDocs?: number;
-    };
+  deliveryDetails?:
+    | {
+        /**
+         * Preferred delivery modes of the individual. This will be used for matching.
+         */
+        preferredModes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+        /**
+         * Address available for pickup, delivery, or meet-up.
+         */
+        address: string | Address;
+        /**
+         * Days available for pickup, delivery, or meet-up.
+         */
+        availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+        id?: string | null;
+      }[]
+    | null;
+  deliveries?: {
+    docs?: (string | Delivery)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   updatedAt: string;
   createdAt: string;
@@ -1524,12 +1514,11 @@ export interface DonationsSelect<T extends boolean = true> {
     | T
     | {
         preferredModes?: T;
-        pickupAddress?: T;
-        deliveryAddress?: T;
-        meetupAddress?: T;
+        address?: T;
         availableDays?: T;
-        deliveries?: T;
+        id?: T;
       };
+  deliveries?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1926,12 +1915,11 @@ export interface RequestsSelect<T extends boolean = true> {
     | T
     | {
         preferredModes?: T;
-        pickupAddress?: T;
-        deliveryAddress?: T;
-        meetupAddress?: T;
+        address?: T;
         availableDays?: T;
-        delivery?: T;
+        id?: T;
       };
+  delivery?: T;
   updatedAt?: T;
   createdAt?: T;
 }

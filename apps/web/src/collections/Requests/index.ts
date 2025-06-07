@@ -1,5 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
-import { deliveryTabFields } from '@/fields/deliveryTabFields';
+import { deliveryDetailsField } from '@/fields/deliveryTabFields';
 import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
@@ -213,19 +213,12 @@ export const Requests: CollectionConfig<'requests'> = {
         {
           label: 'Delivery',
           fields: [
+            deliveryDetailsField(),
             {
-              name: 'deliveryDetails',
-              label: 'Delivery Details',
-              type: 'group',
-              fields: [
-                ...deliveryTabFields(),
-                {
-                  name: 'delivery',
-                  type: 'join',
-                  on: 'request',
-                  collection: 'deliveries',
-                },
-              ],
+              name: 'delivery',
+              type: 'join',
+              on: 'request',
+              collection: 'deliveries',
             },
           ],
         },
