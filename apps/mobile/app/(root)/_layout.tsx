@@ -1,9 +1,13 @@
 import { AnimatedProgress } from '@/components/animated/progress';
-import { TabsHeader } from '@/components/tabs-header';
+import { HeaderAvatar } from '@/components/header/avatar';
+import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
+import { getHexColor } from '@/lib/colors';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
+import { extractName } from '@lactalink/utilities';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
+  const { user } = useAuth();
+  const { theme } = useTheme();
+
+  const userName = user && extractName(user);
+  const headerBgColor = getHexColor(theme, 'background', 0);
+  const headerTintColor = getHexColor(theme, 'typography', 900);
+
   const { currentPageIndex, progress } = usePagination(STEPS);
 
   const hideProgressBar = currentPageIndex < 0;
@@ -23,19 +34,43 @@ export default function Layout() {
   );
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: true,
+        headerRight: () => <HeaderAvatar />,
+        headerTitleStyle: {
+          fontFamily: 'Jakarta-SemiBold',
+          fontSize: 18,
+        },
+        headerStyle: { backgroundColor: headerBgColor?.toString() },
+        headerBackButtonDisplayMode: 'minimal',
+        headerBackVisible: false,
+        headerTintColor: headerTintColor?.toString(),
+      }}
+    >
+      <Stack.Screen name="welcome/index" options={{ headerShown: false }} />
+
       <Stack.Screen
         name="setup-profile"
-        options={{ header: () => progressBar, headerTransparent: true, headerShown: true }}
+        options={{ header: () => progressBar, headerTransparent: true }}
       />
+
       <Stack.Screen
         name="(tabs)"
         options={{
-          header: () => <TabsHeader />,
-          headerShown: true,
+          headerTitle: (userName && `Welcome, ${userName}!`) || 'Welcome!',
         }}
       />
-      <Stack.Screen name="welcome/index" />
+
+      <Stack.Screen
+        name="donations"
+        options={{ headerTitle: 'Donations', headerBackVisible: true }}
+      />
+
+      <Stack.Screen
+        name="requests"
+        options={{ headerTitle: 'Requests', headerBackVisible: true }}
+      />
     </Stack>
   );
 }

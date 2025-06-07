@@ -1,4 +1,5 @@
 import { ONBOARDING_IMAGES } from '@/lib/constants/images';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { AnimatedPressable } from '../animated/pressable';
 import LogoIcon from '../icons/logo-icon';
@@ -12,21 +13,20 @@ import { VStack } from '../ui/vstack';
 
 export function MainTabButton() {
   const [open, setOpen] = React.useState(false);
+  const router = useRouter();
 
   const handleModalTrigger = () => {
     setOpen((prev) => !prev);
   };
 
   const handleDonatePressed = () => {
-    // Handle donate action
-    console.log('Donate button pressed');
     setOpen(false);
+    router.push('/donations/create');
   };
 
   const handleRequestPressed = () => {
-    // Handle request action
-    console.log('Request button pressed');
     setOpen(false);
+    router.push('/requests/create');
   };
 
   return (
