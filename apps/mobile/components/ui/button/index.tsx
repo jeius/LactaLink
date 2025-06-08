@@ -378,8 +378,8 @@ const Button: React.ForwardRefExoticComponent<
     transform: [{ scale: scale.value }],
   }));
 
-  return (
-    <Animated.View style={animateOnPress ? animatedStyle : undefined}>
+  return animateOnPress ? (
+    <Animated.View style={animatedStyle}>
       <UIButton
         ref={ref}
         {...props}
@@ -389,6 +389,15 @@ const Button: React.ForwardRefExoticComponent<
         context={{ variant, size, action }}
       />
     </Animated.View>
+  ) : (
+    <UIButton
+      ref={ref}
+      {...props}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      className={buttonStyle({ variant, size, action, class: className })}
+      context={{ variant, size, action }}
+    />
   );
 });
 

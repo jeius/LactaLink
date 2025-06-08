@@ -13,7 +13,6 @@ import { VStack } from '@/components/ui/vstack';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
-import { useSetupForm } from '@/hooks/forms/useSetupForm';
 
 import { uploadFile } from '@/lib/api/file';
 import { createAddresses } from '@/lib/api/profile/createAddresses';
@@ -26,6 +25,7 @@ import {
   SETUP_PROFILE_STEPS,
   TYPE_FIELDS,
 } from '@/lib/constants/setupProfile';
+import { setupProfileStorage } from '@/lib/localStorage';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
@@ -47,7 +47,6 @@ export default function Step() {
   const apiClient = useApiClient();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
-  const { cleanUpForm } = useSetupForm();
 
   const form = useFormContext<SetupProfileSchema>();
   const profileType = form.getValues('profileType');
@@ -66,6 +65,8 @@ export default function Step() {
   };
 
   const RenderBlock = block[step];
+
+  const cleanUpForm = () => setupProfileStorage.clearAll();
 
   async function onSubmit(formData: SetupProfileSchema) {
     const createPromise = async () => {

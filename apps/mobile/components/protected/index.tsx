@@ -11,13 +11,13 @@ export const Protected: FC<SafeAreaProps> = (props) => {
 
   useEffect(() => {
     if (!isLoading && !isFetching) {
-      if (!session && pathname !== '/auth/sign-in') {
+      if (!session && !pathname.includes('/auth/sign-in')) {
         console.log('No session found, redirecting to sign-in');
-        router.replace('/auth/sign-in');
+        router.dismissTo('/auth/sign-in');
       }
-      if (user && !user.profile && pathname !== '/setup-profile') {
+      if (user && !user.profile && !pathname.includes('/setup-profile')) {
         console.log('User profile not set up, redirecting to setup-profile');
-        router.replace('/setup-profile');
+        router.dismissTo('/setup-profile');
       }
     }
   }, [user, session, isLoading, isFetching, pathname]);

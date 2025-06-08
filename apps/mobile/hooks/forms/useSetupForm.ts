@@ -41,10 +41,6 @@ export function useSetupForm() {
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
 
-  function cleanUpForm() {
-    storage.delete(storageKey);
-  }
-
   const { debounced: debouncedSave, cancel } = useDebouncedCallback(
     (value: DeepPartial<SetupProfileSchema>) => {
       storage.set(storageKey, JSON.stringify(value));
@@ -64,5 +60,5 @@ export function useSetupForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.watch, debouncedSave, cancel]);
 
-  return { form, cleanUpForm };
+  return form;
 }

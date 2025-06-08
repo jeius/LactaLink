@@ -14,20 +14,20 @@ export default function Layout() {
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
   const { user, isFetching, isLoading, session } = useAuth();
-  const { form } = useSetupForm();
+  const form = useSetupForm();
 
   const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isFetching) {
       // Redirect to sign-in if no user is found and not already on the sign-in page
-      if (!user && !session && pathname !== '/auth/sign-in') {
+      if (!user && !session && !pathname.includes('/auth/sign-in')) {
         console.log('No user found, redirecting to sign-in');
-        router.replace('/auth/sign-in');
+        router.dismissTo('/auth/sign-in');
       }
       // If user exists and profile is already setup, redirect to home
-      if (user && user.profile && pathname !== '/home') {
-        router.replace('/home');
+      if (user && user.profile && !pathname.includes('/setup-profile')) {
+        router.dismissTo('/home');
       }
     }
   }, [user, isLoading, session, isFetching, pathname]);

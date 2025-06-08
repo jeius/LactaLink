@@ -8,11 +8,10 @@ import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { VStack } from '@/components/ui/vstack';
 
+import { useRouter } from 'expo-router';
 import { Dimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
-
-import { router } from 'expo-router';
 
 import SafeArea from '@/components/safe-area';
 import { MMKV_KEYS } from '@/lib/constants';
@@ -22,6 +21,7 @@ const gradientColors = ['#FEB4BA', '#FFE6E8', '#FFF3F4'] as const;
 
 const Home = () => {
   const { setTheme } = useTheme();
+  const router = useRouter();
 
   const { height, width } = Dimensions.get('window');
   const progress = useSharedValue<number>(0);
@@ -68,6 +68,7 @@ const Home = () => {
         <Button
           variant="link"
           size="sm"
+          animateOnPress={false}
           className="absolute right-0 top-0 z-10 h-min w-min p-5"
           action="primary"
           style={{ opacity: isLastSlide ? 0 : 1 }}
