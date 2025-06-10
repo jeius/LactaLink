@@ -33,6 +33,10 @@
       "types": "./dist/interfaces/index.d.ts",
       "default": "./dist/interfaces/index.js"
     },
+    "./enums": {
+      "types": "./dist/enums/index.d.ts",
+      "default": "./dist/enums/index.js"
+    },
     "./supabase": {
       "types": "./dist/supabase-types.d.ts",
       "default": "./dist/supabase-types.js"
@@ -49,12 +53,11 @@
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
-    "payload": "^3.34.0"
-  },
-  "dependencies": {
-    "zod": "^3.24.3"
+    "payload": "^3.34.0",
+    "zod": "^3.25.57"
   },
   "peerDependencies": {
-    "@supabase/supabase-js": "^2.49.4"
+    "@supabase/supabase-js": "^2.49.4",
+    "zod": "^3.25.0"
   }
 }

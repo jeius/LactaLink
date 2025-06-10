@@ -1,10 +1,9 @@
-import { signInSchema } from '@lactalink/types';
-import { z } from 'zod';
+import { SignInSchema, signInSchema } from '@lactalink/types/dist/forms/auth';
 
 export * from './profile';
 
 export const signUpSchema = signInSchema;
-export type SignUpSchema = z.infer<typeof signUpSchema>;
+export type SignUpSchema = SignInSchema;
 
 export type NativeFile = {
   uri: string;

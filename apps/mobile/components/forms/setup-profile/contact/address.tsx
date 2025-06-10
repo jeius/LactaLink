@@ -134,8 +134,8 @@ export default function Addresses() {
                       collection: 'citiesMunicipalities',
                       searchPath: 'name',
                       searchPlaceholder: 'Search city or municipality here...',
-                      where: addresses[i].province
-                        ? { province: { equals: addresses[i].province } }
+                      where: addresses[i]?.province
+                        ? { province: { equals: addresses[i]?.province } }
                         : undefined,
                     }}
                   />
@@ -149,10 +149,10 @@ export default function Addresses() {
                       collection: 'barangays',
                       searchPath: 'name',
                       searchPlaceholder: 'Search barangay here...',
-                      where: addresses[i].cityMunicipality
-                        ? { cityMunicipality: { equals: addresses[i].cityMunicipality } }
-                        : addresses[i].province
-                          ? { province: { equals: addresses[i].province } }
+                      where: addresses[i]?.cityMunicipality
+                        ? { cityMunicipality: { equals: addresses[i]?.cityMunicipality } }
+                        : addresses[i]?.province
+                          ? { province: { equals: addresses[i]?.province } }
                           : undefined,
                     }}
                   />
@@ -179,8 +179,8 @@ export default function Addresses() {
 
                   <HStack space="xl" className="mt-5 flex-1 justify-between">
                     <Checkbox
-                      value={`address-${addresses[i].name}-checkbox`}
-                      isChecked={addresses[i].default}
+                      value={`address-${addresses[i]?.name}-checkbox`}
+                      isChecked={addresses[i]?.default}
                       onChange={() => {
                         handleSetDefault(i);
                       }}

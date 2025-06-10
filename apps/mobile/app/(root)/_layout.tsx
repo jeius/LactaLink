@@ -2,7 +2,7 @@ import { AnimatedProgress } from '@/components/animated/progress';
 import { HeaderAvatar } from '@/components/header/avatar';
 import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { getHexColor } from '@/lib/colors';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
-  const { user } = useAuth();
+  const { user } = useCheckAuth();
   const { theme } = useTheme();
 
   const userName = user && extractName(user);
@@ -62,10 +62,7 @@ export default function Layout() {
         }}
       />
 
-      <Stack.Screen
-        name="donations"
-        options={{ headerTitle: 'Donations', headerBackVisible: true }}
-      />
+      <Stack.Screen name="donations" options={{ headerShown: false }} />
 
       <Stack.Screen
         name="requests"

@@ -23,7 +23,7 @@ import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Dimensions } from 'react-native';
 import { toast } from 'sonner-native';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const schema = z.object({ email: emailSchema });
 type Schema = z.infer<typeof schema>;

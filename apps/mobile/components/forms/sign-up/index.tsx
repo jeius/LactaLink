@@ -39,7 +39,7 @@ export default function SignUpForm() {
   const carouselRef = useRef<ICarouselInstance>(null);
   const { width } = Dimensions.get('window');
 
-  const form = useForm<SignUpSchema>({
+  const form = useForm({
     resolver: zodResolver(signUpSchema),
     defaultValues: { email: '', password: '' },
   });

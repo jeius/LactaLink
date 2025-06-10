@@ -1,26 +1,11 @@
-import { useAuth } from '@/hooks/auth/useAuth';
-import { router, usePathname } from 'expo-router';
-import { FC, useEffect } from 'react';
+import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
+import { FC } from 'react';
 import SafeArea, { SafeAreaProps } from '../safe-area';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 
 export const Protected: FC<SafeAreaProps> = (props) => {
-  const { user, session, isLoading, isFetching } = useAuth();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (!isLoading && !isFetching) {
-      if (!session && !pathname.includes('/auth/sign-in')) {
-        console.log('No session found, redirecting to sign-in');
-        router.dismissTo('/auth/sign-in');
-      }
-      if (user && !user.profile && !pathname.includes('/setup-profile')) {
-        console.log('User profile not set up, redirecting to setup-profile');
-        router.dismissTo('/setup-profile');
-      }
-    }
-  }, [user, session, isLoading, isFetching, pathname]);
+  const { isLoading, isFetching } = useCheckAuth();
 
   if (isLoading) {
     return (

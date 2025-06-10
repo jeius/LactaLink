@@ -8,29 +8,6 @@ export const COLLECTION_GROUP = {
   TICKET: 'Ticket Management',
 };
 
-export const DELIVERY_OPTIONS = {
-  PICKUP: { label: 'Pickup', value: 'PICKUP' },
-  DELIVERY: { label: 'Delivery', value: 'DELIVERY' },
-  MEETUP: { label: 'Meet-up', value: 'MEETUP' },
-} as const;
-
-export const DAYS = {
-  MONDAY: { label: 'Monday', value: 'MONDAY' },
-  TUESDAY: { label: 'Tuesday', value: 'TUESDAY' },
-  WEDNESDAY: { label: 'Wednesday', value: 'WEDNESDAY' },
-  THURSDAY: { label: 'Thursday', value: 'THURSDAY' },
-  FRIDAY: { label: 'Friday', value: 'FRIDAY' },
-  SATURDAY: { label: 'Saturday', value: 'SATURDAY' },
-  SUNDAY: { label: 'Sunday', value: 'SUNDAY' },
-} as const;
-
-export const PRIORITY_LEVEL_OPTIONS = [
-  { label: 'Low', value: 'LOW' },
-  { label: 'Medium', value: 'MEDIUM' },
-  { label: 'High', value: 'HIGH' },
-  { label: 'Critical', value: 'CRITICAL' },
-];
-
 export const NOTIFICATION_TRIGGER_EVENT_OPTIONS = [
   { label: 'Create', value: 'CREATE' },
   { label: 'Update', value: 'UPDATE' },

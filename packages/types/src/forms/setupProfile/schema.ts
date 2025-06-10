@@ -1,28 +1,12 @@
-import z from 'zod';
-import { CollectionData } from '../../collections';
-import { Avatar } from '../../payload-types';
+import { z } from 'zod/v4';
 
-function nullTransform(val: string) {
-  if (typeof val === 'string' && val.trim() === '') {
-    return null;
-  }
-  return val;
-}
-
-export const avatarSchema = z.custom<CollectionData<Avatar>>();
-
-export const addressSchema = z.object({
-  name: z.string().transform(nullTransform).optional().nullable(),
-  street: z.string().transform(nullTransform).optional().nullable(),
-  province: z.string().min(1, 'Required.'),
-  cityMunicipality: z.string().min(1, 'Required.'),
-  barangay: z.string().transform(nullTransform).optional().nullable(),
-  zipCode: z.string().min(1, 'Required.'),
-  default: z.boolean().optional(),
-});
+import { GENDER_TYPES, MARITAL_STATUS, ORGANIZATION_TYPES, PROFILE_TYPES } from '../../enums';
+import { addressSchema } from '../address';
+import { imageSchema } from '../file';
+import { nullTransform } from '../transformers';
 
 const baseSchema = z.object({
-  addresses: z.array(addressSchema).min(1, 'Required atleast one address.'),
+  addresses: z.array(addressSchema).nonempty('Required atleast one address.'),
   phone: z
     .string()
     .max(16, 'Invalid phone number. (Max length 16)')
@@ -32,35 +16,55 @@ const baseSchema = z.object({
     .transform(nullTransform)
     .optional()
     .nullable(),
-  avatar: avatarSchema.optional().nullable(),
+  avatar: imageSchema.optional().nullable(),
 });
 
 export const individualSchema = z.object({
-  profileType: z.literal('INDIVIDUAL'),
-  givenName: z.string().min(1, 'Required'),
+  profileType: z.literal(PROFILE_TYPES.individual.value),
+  givenName: z.string().nonempty('Required'),
   middleName: z.string().transform(nullTransform).optional().nullable(),
-  familyName: z.string().min(1, 'Required'),
-  birth: z.string().min(1, 'Required'),
-  dependents: z.number().positive().optional(),
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
-  maritalStatus: z.enum(['SINGLE', 'MARRIED', 'SEPARATED', 'WIDOWED', 'DIVORCED', 'N/A']),
+  familyName: z.string().nonempty('Required'),
+  birth: z.string().nonempty('Required'),
+  dependents: z.number().min(0).positive().optional(),
+  gender: z
+    .enum(
+      Object.values(GENDER_TYPES).map((item) => item.value),
+      'Required'
+    )
+    .nonoptional(),
+  maritalStatus: z
+    .enum(
+      Object.values(MARITAL_STATUS).map((item) => item.value),
+      'Required'
+    )
+    .nonoptional(),
 });
 
 export const hospitalSchema = z.object({
-  profileType: z.literal('HOSPITAL'),
-  name: z.string().min(1, 'Required.'),
+  profileType: z.literal(PROFILE_TYPES.hospital.value),
+  name: z.string().nonempty('Required.'),
   description: z.string().transform(nullTransform).optional().nullable(),
   head: z.string().transform(nullTransform).optional().nullable(),
   hospitalID: z.string().transform(nullTransform).optional().nullable(),
-  type: z.enum(['GOVERNMENT', 'PRIVATE', 'OTHER']),
+  type: z
+    .enum(
+      Object.values(ORGANIZATION_TYPES).map((item) => item.value),
+      'Required'
+    )
+    .nonoptional(),
 });
 
 export const milkBankSchema = z.object({
-  profileType: z.literal('MILK_BANK'),
-  name: z.string().min(1, 'Required.'),
+  profileType: z.literal(PROFILE_TYPES.milkBank.value),
+  name: z.string().nonempty('Required.'),
   description: z.string().transform(nullTransform).optional().nullable(),
   head: z.string().transform(nullTransform).optional().nullable(),
-  type: z.enum(['GOVERNMENT', 'PRIVATE', 'OTHER']),
+  type: z
+    .enum(
+      Object.values(ORGANIZATION_TYPES).map((item) => item.value),
+      'Required'
+    )
+    .nonoptional(),
 });
 
 export const setupProfileSchema = z

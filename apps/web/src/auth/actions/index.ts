@@ -3,7 +3,7 @@
 import { getServerApi } from '@/lib/api/getServerApi';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { SignInSchema, SignUpSchema, User, VerifyOtp } from '@lactalink/types';
-import { extractAuthErrorCode } from '@lactalink/utilities';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
 import { ResendParams, VerifyOtpParams } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
@@ -39,6 +39,11 @@ export const signOut = async () => {
     const apiClient = await getServerApi();
     await apiClient.auth.signOut();
   } catch (error) {
+    const msg = extractErrorMessage(error);
+    if (msg.toLowerCase().includes('session missing')) {
+      // This is a common error when the session is already cleared or expired.
+      return;
+    }
     console.warn('Error during sign out:', error);
   }
 };

@@ -4,10 +4,10 @@ import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
-import { router } from 'expo-router';
+import { RefreshCwIcon } from 'lucide-react-native';
 import { useTheme } from './providers/theme-provider';
 import SafeArea from './safe-area';
-import { Button, ButtonText } from './ui/button';
+import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
@@ -22,7 +22,7 @@ type Props = {
 export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   const { isLoading: isThemeLoading } = useTheme();
-  const { isLoading: isAuthLoading, error } = useAuth();
+  const { isLoading: isAuthLoading, error, refetchSession } = useAuth();
 
   const isAppReady = !isThemeLoading && !isAuthLoading;
 
@@ -38,9 +38,14 @@ export function AppInitializer({ children }: Props) {
     return (
       <SafeArea className="items-center justify-center">
         <VStack space="lg">
-          <Text size="sm">{error.message}</Text>
-          <Button action="default" onPress={() => router.back()}>
-            <ButtonText>Go to back.</ButtonText>
+          <VStack space="sm" className="items-center justify-center">
+            <Text size="lg" className="font-JakartaSemiBold">
+              {error.message}
+            </Text>
+          </VStack>
+          <Button action="default" onPress={() => refetchSession()}>
+            <ButtonIcon as={RefreshCwIcon} width={18} height={18} />
+            <ButtonText>Refresh</ButtonText>
           </Button>
         </VStack>
       </SafeArea>

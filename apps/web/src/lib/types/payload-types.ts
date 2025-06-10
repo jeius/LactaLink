@@ -666,7 +666,7 @@ export interface Donation {
     /**
      * How the milk was collected
      */
-    collectionMode: 'MANUAL' | 'ELECTRIC_PUMP' | 'MANUAL_PUMP';
+    collectionMode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
     /**
      * Select the milk bags used for this donation
      */
@@ -838,7 +838,7 @@ export interface Image {
  * via the `definition` "TimeSlot".
  */
 export interface TimeSlot {
-  type: 'PRESET' | 'CUSTOM';
+  type: 'CUSTOM' | 'PRESET';
   presetSlot?: ('08:00-10:00' | '10:00-12:00' | '12:00-14:00' | '14:00-16:00' | '16:00-18:00' | '18:00-20:00') | null;
   customTime?: {
     startTime: string;

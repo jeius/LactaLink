@@ -28,7 +28,7 @@ export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalitie
   'CITY',
   'MUNICIPALITY',
 ]);
-export const enum_time_slot_type = pgEnum('enum_time_slot_type', ['PRESET', 'CUSTOM']);
+export const enum_time_slot_type = pgEnum('enum_time_slot_type', ['CUSTOM', 'PRESET']);
 export const enum_time_slot_preset = pgEnum('enum_time_slot_preset', [
   '08:00-10:00',
   '10:00-12:00',
@@ -54,7 +54,6 @@ export const enum_deliveries_status = pgEnum('enum_deliveries_status', [
   'FAILED',
   'CANCELLED',
 ]);
-export const enum_delivery_modes = pgEnum('enum_delivery_modes', ['PICKUP', 'DELIVERY', 'MEETUP']);
 export const enum_days = pgEnum('enum_days', [
   'MONDAY',
   'TUESDAY',
@@ -64,6 +63,7 @@ export const enum_days = pgEnum('enum_days', [
   'SATURDAY',
   'SUNDAY',
 ]);
+export const enum_delivery_modes = pgEnum('enum_delivery_modes', ['PICKUP', 'DELIVERY', 'MEETUP']);
 export const enum_donations_status = pgEnum('enum_donations_status', [
   'AVAILABLE',
   'PARTIALLY_ALLOCATED',
@@ -78,7 +78,7 @@ export const enum_donations_details_storage_type = pgEnum('enum_donations_detail
 ]);
 export const enum_donations_details_collection_mode = pgEnum(
   'enum_donations_details_collection_mode',
-  ['MANUAL', 'ELECTRIC_PUMP', 'MANUAL_PUMP']
+  ['MANUAL', 'MANUAL_PUMP', 'ELECTRIC_PUMP']
 );
 export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
   'GOVERNMENT',
@@ -510,30 +510,11 @@ export const deliveries = pgTable(
   })
 );
 
-export const donations_delivery_details_preferred_modes = pgTable(
-  'donations_delivery_details_preferred_modes',
-  {
-    order: integer('order').notNull(),
-    parent: uuid('parent_id').notNull(),
-    value: enum_delivery_modes('value'),
-    id: uuid('id').defaultRandom().primaryKey(),
-  },
-  (columns) => ({
-    orderIdx: index('donations_delivery_details_preferred_modes_order_idx').on(columns.order),
-    parentIdx: index('donations_delivery_details_preferred_modes_parent_idx').on(columns.parent),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [donations.id],
-      name: 'donations_delivery_details_preferred_modes_parent_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const donations_delivery_details_available_days = pgTable(
   'donations_delivery_details_available_days',
   {
     order: integer('order').notNull(),
-    parent: uuid('parent_id').notNull(),
+    parent: varchar('parent_id').notNull(),
     value: enum_days('value'),
     id: uuid('id').defaultRandom().primaryKey(),
   },
@@ -542,8 +523,35 @@ export const donations_delivery_details_available_days = pgTable(
     parentIdx: index('donations_delivery_details_available_days_parent_idx').on(columns.parent),
     parentFk: foreignKey({
       columns: [columns['parent']],
-      foreignColumns: [donations.id],
+      foreignColumns: [donations_delivery_details.id],
       name: 'donations_delivery_details_available_days_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const donations_delivery_details = pgTable(
+  'donations_delivery_details',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    preferredModes: enum_delivery_modes('preferred_modes').notNull(),
+    address: uuid('address_id')
+      .notNull()
+      .references(() => addresses.id, {
+        onDelete: 'set null',
+      }),
+  },
+  (columns) => ({
+    _orderIdx: index('donations_delivery_details_order_idx').on(columns._order),
+    _parentIDIdx: index('donations_delivery_details_parent_id_idx').on(columns._parentID),
+    donations_delivery_details_address_idx: index('donations_delivery_details_address_idx').on(
+      columns.address
+    ),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donations.id],
+      name: 'donations_delivery_details_parent_id_fk',
     }).onDelete('cascade'),
   })
 );
@@ -568,24 +576,6 @@ export const donations = pgTable(
     details_collectionMode:
       enum_donations_details_collection_mode('details_collection_mode').notNull(),
     details_notes: varchar('details_notes'),
-    deliveryDetails_pickupAddress: uuid('delivery_details_pickup_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
-    deliveryDetails_deliveryAddress: uuid('delivery_details_delivery_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
-    deliveryDetails_meetupAddress: uuid('delivery_details_meetup_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -596,15 +586,6 @@ export const donations = pgTable(
   (columns) => ({
     donations_created_by_idx: index('donations_created_by_idx').on(columns.createdBy),
     donations_donor_idx: index('donations_donor_idx').on(columns.donor),
-    donations_delivery_details_delivery_details_pickup_address_idx: index(
-      'donations_delivery_details_delivery_details_pickup_address_idx'
-    ).on(columns.deliveryDetails_pickupAddress),
-    donations_delivery_details_delivery_details_delivery_address_idx: index(
-      'donations_delivery_details_delivery_details_delivery_address_idx'
-    ).on(columns.deliveryDetails_deliveryAddress),
-    donations_delivery_details_delivery_details_meetup_address_idx: index(
-      'donations_delivery_details_delivery_details_meetup_address_idx'
-    ).on(columns.deliveryDetails_meetupAddress),
     donations_updated_at_idx: index('donations_updated_at_idx').on(columns.updatedAt),
     donations_created_at_idx: index('donations_created_at_idx').on(columns.createdAt),
   })
@@ -1367,30 +1348,11 @@ export const regions = pgTable(
   })
 );
 
-export const requests_delivery_details_preferred_modes = pgTable(
-  'requests_delivery_details_preferred_modes',
-  {
-    order: integer('order').notNull(),
-    parent: uuid('parent_id').notNull(),
-    value: enum_delivery_modes('value'),
-    id: uuid('id').defaultRandom().primaryKey(),
-  },
-  (columns) => ({
-    orderIdx: index('requests_delivery_details_preferred_modes_order_idx').on(columns.order),
-    parentIdx: index('requests_delivery_details_preferred_modes_parent_idx').on(columns.parent),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [requests.id],
-      name: 'requests_delivery_details_preferred_modes_parent_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const requests_delivery_details_available_days = pgTable(
   'requests_delivery_details_available_days',
   {
     order: integer('order').notNull(),
-    parent: uuid('parent_id').notNull(),
+    parent: varchar('parent_id').notNull(),
     value: enum_days('value'),
     id: uuid('id').defaultRandom().primaryKey(),
   },
@@ -1399,8 +1361,35 @@ export const requests_delivery_details_available_days = pgTable(
     parentIdx: index('requests_delivery_details_available_days_parent_idx').on(columns.parent),
     parentFk: foreignKey({
       columns: [columns['parent']],
-      foreignColumns: [requests.id],
+      foreignColumns: [requests_delivery_details.id],
       name: 'requests_delivery_details_available_days_parent_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const requests_delivery_details = pgTable(
+  'requests_delivery_details',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    preferredModes: enum_delivery_modes('preferred_modes').notNull(),
+    address: uuid('address_id')
+      .notNull()
+      .references(() => addresses.id, {
+        onDelete: 'set null',
+      }),
+  },
+  (columns) => ({
+    _orderIdx: index('requests_delivery_details_order_idx').on(columns._order),
+    _parentIDIdx: index('requests_delivery_details_parent_id_idx').on(columns._parentID),
+    requests_delivery_details_address_idx: index('requests_delivery_details_address_idx').on(
+      columns.address
+    ),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [requests.id],
+      name: 'requests_delivery_details_parent_id_fk',
     }).onDelete('cascade'),
   })
 );
@@ -1441,24 +1430,6 @@ export const requests = pgTable(
     }),
     details_reason: varchar('details_reason'),
     details_notes: varchar('details_notes'),
-    deliveryDetails_pickupAddress: uuid('delivery_details_pickup_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
-    deliveryDetails_deliveryAddress: uuid('delivery_details_delivery_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
-    deliveryDetails_meetupAddress: uuid('delivery_details_meetup_address_id').references(
-      () => addresses.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -1476,15 +1447,6 @@ export const requests = pgTable(
     requests_details_details_image_idx: index('requests_details_details_image_idx').on(
       columns.details_image
     ),
-    requests_delivery_details_delivery_details_pickup_address_idx: index(
-      'requests_delivery_details_delivery_details_pickup_address_idx'
-    ).on(columns.deliveryDetails_pickupAddress),
-    requests_delivery_details_delivery_details_delivery_address_idx: index(
-      'requests_delivery_details_delivery_details_delivery_address_idx'
-    ).on(columns.deliveryDetails_deliveryAddress),
-    requests_delivery_details_delivery_details_meetup_address_idx: index(
-      'requests_delivery_details_delivery_details_meetup_address_idx'
-    ).on(columns.deliveryDetails_meetupAddress),
     requests_updated_at_idx: index('requests_updated_at_idx').on(columns.updatedAt),
     requests_created_at_idx: index('requests_created_at_idx').on(columns.createdAt),
   })
@@ -2043,23 +2005,31 @@ export const relations_deliveries = relations(deliveries, ({ one, many }) => ({
     relationName: 'tracking_trackingHistory',
   }),
 }));
-export const relations_donations_delivery_details_preferred_modes = relations(
-  donations_delivery_details_preferred_modes,
-  ({ one }) => ({
-    parent: one(donations, {
-      fields: [donations_delivery_details_preferred_modes.parent],
-      references: [donations.id],
-      relationName: 'deliveryDetails_preferredModes',
-    }),
-  })
-);
 export const relations_donations_delivery_details_available_days = relations(
   donations_delivery_details_available_days,
   ({ one }) => ({
-    parent: one(donations, {
+    parent: one(donations_delivery_details, {
       fields: [donations_delivery_details_available_days.parent],
+      references: [donations_delivery_details.id],
+      relationName: 'availableDays',
+    }),
+  })
+);
+export const relations_donations_delivery_details = relations(
+  donations_delivery_details,
+  ({ one, many }) => ({
+    _parentID: one(donations, {
+      fields: [donations_delivery_details._parentID],
       references: [donations.id],
-      relationName: 'deliveryDetails_availableDays',
+      relationName: 'deliveryDetails',
+    }),
+    address: one(addresses, {
+      fields: [donations_delivery_details.address],
+      references: [addresses.id],
+      relationName: 'address',
+    }),
+    availableDays: many(donations_delivery_details_available_days, {
+      relationName: 'availableDays',
     }),
   })
 );
@@ -2096,26 +2066,8 @@ export const relations_donations = relations(donations, ({ one, many }) => ({
     references: [individuals.id],
     relationName: 'donor',
   }),
-  deliveryDetails_preferredModes: many(donations_delivery_details_preferred_modes, {
-    relationName: 'deliveryDetails_preferredModes',
-  }),
-  deliveryDetails_pickupAddress: one(addresses, {
-    fields: [donations.deliveryDetails_pickupAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_pickupAddress',
-  }),
-  deliveryDetails_deliveryAddress: one(addresses, {
-    fields: [donations.deliveryDetails_deliveryAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_deliveryAddress',
-  }),
-  deliveryDetails_meetupAddress: one(addresses, {
-    fields: [donations.deliveryDetails_meetupAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_meetupAddress',
-  }),
-  deliveryDetails_availableDays: many(donations_delivery_details_available_days, {
-    relationName: 'deliveryDetails_availableDays',
+  deliveryDetails: many(donations_delivery_details, {
+    relationName: 'deliveryDetails',
   }),
   _rels: many(donations_rels, {
     relationName: '_rels',
@@ -2355,23 +2307,31 @@ export const relations_regions = relations(regions, ({ one }) => ({
     relationName: 'islandGroup',
   }),
 }));
-export const relations_requests_delivery_details_preferred_modes = relations(
-  requests_delivery_details_preferred_modes,
-  ({ one }) => ({
-    parent: one(requests, {
-      fields: [requests_delivery_details_preferred_modes.parent],
-      references: [requests.id],
-      relationName: 'deliveryDetails_preferredModes',
-    }),
-  })
-);
 export const relations_requests_delivery_details_available_days = relations(
   requests_delivery_details_available_days,
   ({ one }) => ({
-    parent: one(requests, {
+    parent: one(requests_delivery_details, {
       fields: [requests_delivery_details_available_days.parent],
+      references: [requests_delivery_details.id],
+      relationName: 'availableDays',
+    }),
+  })
+);
+export const relations_requests_delivery_details = relations(
+  requests_delivery_details,
+  ({ one, many }) => ({
+    _parentID: one(requests, {
+      fields: [requests_delivery_details._parentID],
       references: [requests.id],
-      relationName: 'deliveryDetails_availableDays',
+      relationName: 'deliveryDetails',
+    }),
+    address: one(addresses, {
+      fields: [requests_delivery_details.address],
+      references: [addresses.id],
+      relationName: 'address',
+    }),
+    availableDays: many(requests_delivery_details_available_days, {
+      relationName: 'availableDays',
     }),
   })
 );
@@ -2413,26 +2373,8 @@ export const relations_requests = relations(requests, ({ one, many }) => ({
     references: [images.id],
     relationName: 'details_image',
   }),
-  deliveryDetails_preferredModes: many(requests_delivery_details_preferred_modes, {
-    relationName: 'deliveryDetails_preferredModes',
-  }),
-  deliveryDetails_pickupAddress: one(addresses, {
-    fields: [requests.deliveryDetails_pickupAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_pickupAddress',
-  }),
-  deliveryDetails_deliveryAddress: one(addresses, {
-    fields: [requests.deliveryDetails_deliveryAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_deliveryAddress',
-  }),
-  deliveryDetails_meetupAddress: one(addresses, {
-    fields: [requests.deliveryDetails_meetupAddress],
-    references: [addresses.id],
-    relationName: 'deliveryDetails_meetupAddress',
-  }),
-  deliveryDetails_availableDays: many(requests_delivery_details_available_days, {
-    relationName: 'deliveryDetails_availableDays',
+  deliveryDetails: many(requests_delivery_details, {
+    relationName: 'deliveryDetails',
   }),
   _rels: many(requests_rels, {
     relationName: '_rels',
@@ -2612,8 +2554,8 @@ type DatabaseSchema = {
   enum_proposedBy: typeof enum_proposedBy;
   enum_deliveries_mode: typeof enum_deliveries_mode;
   enum_deliveries_status: typeof enum_deliveries_status;
-  enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
+  enum_delivery_modes: typeof enum_delivery_modes;
   enum_donations_status: typeof enum_donations_status;
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
@@ -2640,8 +2582,8 @@ type DatabaseSchema = {
   deliveries_details_proposed_addresses: typeof deliveries_details_proposed_addresses;
   deliveries_tracking_tracking_history: typeof deliveries_tracking_tracking_history;
   deliveries: typeof deliveries;
-  donations_delivery_details_preferred_modes: typeof donations_delivery_details_preferred_modes;
   donations_delivery_details_available_days: typeof donations_delivery_details_available_days;
+  donations_delivery_details: typeof donations_delivery_details;
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
@@ -2663,8 +2605,8 @@ type DatabaseSchema = {
   notification_types_rels: typeof notification_types_rels;
   provinces: typeof provinces;
   regions: typeof regions;
-  requests_delivery_details_preferred_modes: typeof requests_delivery_details_preferred_modes;
   requests_delivery_details_available_days: typeof requests_delivery_details_available_days;
+  requests_delivery_details: typeof requests_delivery_details;
   requests: typeof requests;
   requests_rels: typeof requests_rels;
   users: typeof users;
@@ -2682,8 +2624,8 @@ type DatabaseSchema = {
   relations_deliveries_details_proposed_addresses: typeof relations_deliveries_details_proposed_addresses;
   relations_deliveries_tracking_tracking_history: typeof relations_deliveries_tracking_tracking_history;
   relations_deliveries: typeof relations_deliveries;
-  relations_donations_delivery_details_preferred_modes: typeof relations_donations_delivery_details_preferred_modes;
   relations_donations_delivery_details_available_days: typeof relations_donations_delivery_details_available_days;
+  relations_donations_delivery_details: typeof relations_donations_delivery_details;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals_rels: typeof relations_hospitals_rels;
@@ -2705,8 +2647,8 @@ type DatabaseSchema = {
   relations_notification_types: typeof relations_notification_types;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
-  relations_requests_delivery_details_preferred_modes: typeof relations_requests_delivery_details_preferred_modes;
   relations_requests_delivery_details_available_days: typeof relations_requests_delivery_details_available_days;
+  relations_requests_delivery_details: typeof relations_requests_delivery_details;
   relations_requests_rels: typeof relations_requests_rels;
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;

@@ -1,7 +1,8 @@
 import { createdByField } from '@/fields/createdByField';
 import { timeSlotField } from '@/fields/timeSlot';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP, DELIVERY_OPTIONS } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants';
+import { DELIVERY_OPTIONS } from '@lactalink/types/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 

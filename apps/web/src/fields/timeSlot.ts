@@ -1,3 +1,4 @@
+import { TIME_SLOT_TYPES, TIME_SLOTS } from '@lactalink/types';
 import { Condition, Field } from 'payload';
 
 interface TimeSlotFieldOptions {
@@ -30,24 +31,14 @@ export const timeSlotField = ({
         enumName: 'enum_time_slot_type',
         required: true,
         defaultValue: defaultType,
-        options: [
-          { label: 'Choose from preset slots', value: 'PRESET' },
-          { label: 'Set custom time', value: 'CUSTOM' },
-        ],
+        options: Object.values(TIME_SLOT_TYPES),
       },
       {
         name: 'presetSlot',
         label: 'Preset Time Slot',
         type: 'select',
         enumName: 'enum_time_slot_preset',
-        options: [
-          { label: '8:00 AM - 10:00 AM', value: '08:00-10:00' },
-          { label: '10:00 AM - 12:00 PM', value: '10:00-12:00' },
-          { label: '12:00 PM - 2:00 PM', value: '12:00-14:00' },
-          { label: '2:00 PM - 4:00 PM', value: '14:00-16:00' },
-          { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
-          { label: '6:00 PM - 8:00 PM', value: '18:00-20:00' },
-        ],
+        options: Object.values(TIME_SLOTS),
         admin: {
           condition: (_, siblingData) => siblingData?.type === 'PRESET',
         },

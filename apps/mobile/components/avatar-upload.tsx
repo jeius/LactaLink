@@ -1,12 +1,11 @@
 import { Text } from '@/components/ui/text';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import * as crypto from 'expo-crypto';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useAuth } from '@/hooks/auth/useAuth';
-import { MAX_AVATAR_SIZE } from '@/lib/constants';
-import { AvatarSchema, SetupProfileSchema } from '@lactalink/types';
+import { MAX_IMAGE_SIZE } from '@/lib/constants';
+import { ImageSchema, SetupProfileSchema } from '@lactalink/types';
 import { useQuery } from '@tanstack/react-query';
 import { CameraIcon, ImageIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -53,8 +52,8 @@ export default function AvatarUpload({
 
   const localDir = FileSystem.documentDirectory!;
 
-  const { data: googlePicture, refetch } = useQuery<AvatarSchema | null>({
-    staleTime: Infinity,
+  const { data: googlePicture } = useQuery<ImageSchema | null>({
+    staleTime: 1000 * 60 * 20, // 20 minutes
     queryKey: ['avatar', 'download', user?.picture],
     queryFn: async () => {
       if (!user || !user.picture) return null;
@@ -65,10 +64,10 @@ export default function AvatarUpload({
       const downloaded = await FileSystem.downloadAsync(user.picture, fileUri);
 
       return {
-        id: crypto.randomUUID(),
         filename: filename,
         mimeType: downloaded.mimeType || 'image/jpeg',
         url: downloaded.uri,
+        alt: 'Google Profile Picture',
       };
     },
   });
@@ -81,8 +80,8 @@ export default function AvatarUpload({
 
   async function transformImage(
     pickedImage: ImagePicker.ImagePickerAsset
-  ): Promise<AvatarSchema | undefined> {
-    if (pickedImage.fileSize && pickedImage.fileSize > MAX_AVATAR_SIZE) {
+  ): Promise<ImageSchema | undefined> {
+    if (pickedImage.fileSize && pickedImage.fileSize > MAX_IMAGE_SIZE) {
       showErrorToast('Selected image exceeds the 5MB size limit.');
       return;
     }
@@ -104,7 +103,6 @@ export default function AvatarUpload({
     const filename = namePrefix + `_avatar.${type}`;
 
     return {
-      id: crypto.randomUUID(),
       filename,
       mimeType: pickedImage.mimeType || 'image/jpeg',
       filesize: pickedImage.fileSize,
@@ -147,10 +145,7 @@ export default function AvatarUpload({
 
   async function useGooglePicture() {
     showModal(false);
-    if (onChange) {
-      const { data } = await refetch();
-      onChange(data);
-    }
+    onChange?.(googlePicture);
   }
 
   async function handleRemove() {

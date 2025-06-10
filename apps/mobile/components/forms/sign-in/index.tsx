@@ -20,7 +20,7 @@ import { toast } from 'sonner-native';
 export default function SignInForm() {
   const router = useRouter();
 
-  const form = useForm<SignInSchema>({
+  const form = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
   });

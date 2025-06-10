@@ -14,7 +14,7 @@ import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 
-import { uploadFile } from '@/lib/api/file';
+import { uploadImage } from '@/lib/api/file';
 import { createAddresses } from '@/lib/api/profile/createAddresses';
 import { createProfile } from '@/lib/api/profile/createProfile';
 import { ICONS } from '@/lib/constants';
@@ -74,7 +74,7 @@ export default function Step() {
 
       const { addresses, avatar, ...rest } = formData;
 
-      const avatarDoc = avatar && (await uploadFile('avatars', avatar));
+      const avatarDoc = avatar && (await uploadImage('avatars', avatar));
       const addressDocs = await createAddresses(addresses);
 
       const createdProfile = await createProfile({

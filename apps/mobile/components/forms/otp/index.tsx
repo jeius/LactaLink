@@ -5,9 +5,12 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { otpSchema, OtpSchema, VerifyOtp } from '@lactalink/types';
+
+import { OtpSchema, otpSchema, VerifyOtp } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
+
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { OtpInput } from 'react-native-otp-entry';
@@ -18,7 +21,7 @@ export default function OTPForm(props: VerifyOtp) {
     control,
     formState: { isSubmitting, errors },
     handleSubmit,
-  } = useForm<OtpSchema>({
+  } = useForm({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: '' },
   });

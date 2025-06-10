@@ -2,7 +2,13 @@ import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionOwner, collectionOwnerOrAdmin } from '../_access-control';
+import {
+  admin,
+  anyone,
+  authenticated,
+  collectionOwner,
+  collectionOwnerOrAdmin,
+} from '../_access-control';
 import { generateAlt } from './hooks/generateAlt';
 
 export const Avatars: CollectionConfig<'avatars'> = {
@@ -10,7 +16,7 @@ export const Avatars: CollectionConfig<'avatars'> = {
   access: {
     admin: admin,
     create: authenticated,
-    read: authenticated,
+    read: anyone,
     update: collectionOwner,
     delete: collectionOwnerOrAdmin,
   },

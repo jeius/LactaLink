@@ -1,25 +1,22 @@
-import { useAuth } from '@/hooks/auth/useAuth';
 import { setupProfileStorage as storage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SetupProfileSchema, setupProfileSchema } from '@lactalink/types';
+import { SetupProfileSchema, setupProfileSchema, User } from '@lactalink/types';
 import { useDebouncedCallback } from '@lactalink/utilities';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 
 const storageKeyPrefix = 'setup-profile-form';
 
-function getInitialData(id?: string): SetupProfileSchema | undefined {
+function getInitialData(id?: string): DeepPartial<SetupProfileSchema> | undefined {
   if (!id) return;
   const storageKey = `${storageKeyPrefix}-${id}`;
   const raw = storage.getString(storageKey);
   return raw && JSON.parse(raw);
 }
 
-export function useSetupForm() {
-  const { user } = useAuth();
+export function useSetupForm(user: User) {
   const initialData = getInitialData(user?.id);
 
-  // Create form instance
   const form = useForm<SetupProfileSchema>({
     resolver: zodResolver(setupProfileSchema),
     mode: 'onTouched',

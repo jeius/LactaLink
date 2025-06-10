@@ -18,11 +18,11 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^5.1.1",
     "@lactalink/api": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@payloadcms/db-postgres": "latest",
-    "@payloadcms/email-resend": "^3.40.0",
+    "@payloadcms/email-resend": "latest",
     "@payloadcms/next": "latest",
     "@payloadcms/plugin-nested-docs": "latest",
     "@payloadcms/plugin-search": "latest",
@@ -57,7 +57,7 @@
     "tailwind-merge": "^3.1.0",
     "tailwindcss": "^4.1.4",
     "tw-animate-css": "^1.2.5",
-    "zod": "^3.24.3",
+    "zod": "^3.25.57",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@ import { createdByField } from '@/fields/createdByField';
 import { deliveryDetailsField } from '@/fields/deliveryTabFields';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/types/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { filterMilkBagsOptions } from './filterOptions';
@@ -125,10 +126,7 @@ export const Donations: CollectionConfig<'donations'> = {
                         description: 'Type of storage for the milk',
                         width: '50%',
                       },
-                      options: [
-                        { label: 'Fresh (Refrigerated)', value: 'FRESH' },
-                        { label: 'Frozen', value: 'FROZEN' },
-                      ],
+                      options: Object.values(STORAGE_TYPES),
                     },
                     {
                       name: 'collectionMode',
@@ -139,11 +137,7 @@ export const Donations: CollectionConfig<'donations'> = {
                         description: 'How the milk was collected',
                         width: '50%',
                       },
-                      options: [
-                        { label: 'Hand Expression', value: 'MANUAL' },
-                        { label: 'Electric Pump', value: 'ELECTRIC_PUMP' },
-                        { label: 'Manual Pump', value: 'MANUAL_PUMP' },
-                      ],
+                      options: Object.values(COLLECTION_MODES),
                     },
                   ],
                 },
