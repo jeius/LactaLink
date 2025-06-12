@@ -1,8 +1,8 @@
 import Logo from '@/assets/svgs/logo.svg';
-import SignInForm from '@/components/forms/sign-in';
-import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
-import { useTheme } from '@/components/providers/theme-provider';
-import SafeArea from '@/components/safe-area';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import SignInForm from '@/components/forms/SignInForm';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import SafeArea from '@/components/SafeArea';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';

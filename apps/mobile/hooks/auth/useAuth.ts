@@ -1,5 +1,6 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
+import { Hospital, Individual, MilkBank } from '@lactalink/types';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -53,9 +54,17 @@ export function useAuth() {
     retry: false,
   });
 
+  const user = session?.user || null;
+  const profile = (session?.user?.profile?.value || null) as
+    | Individual
+    | Hospital
+    | MilkBank
+    | null;
+
   return {
     // Session data
-    user: session?.user || null,
+    user,
+    profile,
     session,
 
     // Loading states

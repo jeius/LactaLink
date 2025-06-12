@@ -1,4 +1,4 @@
-import { Toaster } from '@/components/sonner';
+import { Toaster } from '@/components/Toaster';
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import React from 'react';
 import { View, ViewProps } from 'react-native';

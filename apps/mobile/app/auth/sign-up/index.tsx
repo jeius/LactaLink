@@ -1,4 +1,4 @@
-import GoogleButtonWrapper from '@/components/google-button-wrapper';
+import GoogleButtonWrapper from '@/components/GoogleButtonWrapper';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -10,10 +10,10 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
 
-import SignUpForm from '@/components/forms/sign-up';
-import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
-import { useTheme } from '@/components/providers/theme-provider';
-import SafeArea from '@/components/safe-area';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import SignUpForm from '@/components/forms/SignUpForm';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/image';
 import { getHexColor } from '@/lib/colors/getColor';

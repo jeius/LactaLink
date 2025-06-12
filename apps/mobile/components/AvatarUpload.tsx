@@ -38,7 +38,7 @@ export type AvatarUploadProps = {
   filename?: string;
 };
 
-export default function AvatarUpload({
+export function AvatarUpload({
   containerClassname,
   onChange,
   value,

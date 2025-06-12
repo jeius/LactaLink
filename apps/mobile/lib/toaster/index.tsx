@@ -8,7 +8,7 @@
  * The ToastStore is initialized via the Toast component, allowing toast actions to be triggered globally.
  */
 
-import { DraggableWrapper } from '@/components/draggable-wrapper';
+import { DraggableWrapper } from '@/components/DraggableWrapper';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import {

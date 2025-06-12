@@ -1,6 +1,6 @@
 import { MoonIcon, SunIcon } from 'lucide-react-native';
 import React from 'react';
-import { useTheme } from '../providers/theme-provider';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon } from '../ui/button';
 

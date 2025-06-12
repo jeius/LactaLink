@@ -28,24 +28,28 @@ import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-export type InfiniteScrollComboBoxProps<T extends CollectionSlug> = {
-  value?: string;
-  onChange?: (val: string) => void;
+export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
   collection: T;
   limit?: number;
-  placeholder?: string;
   where?: Where;
   searchPath: keyof Collection<T>;
   searchPlaceholder?: string;
-  isDisabled?: boolean;
 };
+
+export type InfiniteScrollComboBoxProps<T extends CollectionSlug = CollectionSlug> =
+  ComboboxType<T> & {
+    value?: string;
+    onChange?: (val: string) => void;
+    placeholder?: string;
+    isDisabled?: boolean;
+  };
 
 function isNearBottom(nativeEvent: NativeScrollEvent, threshold = 300) {
   const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
   return layoutMeasurement.height + contentOffset.y >= contentSize.height - threshold;
 }
 
-export default function InfiniteScrollComboBox<T extends CollectionSlug>({
+export default function InfiniteScrollComboBox<T extends CollectionSlug = CollectionSlug>({
   collection,
   limit = 20,
   where: whereParam,

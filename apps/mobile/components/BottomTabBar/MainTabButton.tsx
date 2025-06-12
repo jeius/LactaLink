@@ -1,15 +1,17 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
+import LogoIcon from '@/components/icons/LogoIcon';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Image } from '@/components/ui/image';
+import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+
 import { ONBOARDING_IMAGES } from '@/lib/constants/images';
+
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { AnimatedPressable } from '../animated/pressable';
-import LogoIcon from '../icons/logo-icon';
-import { Box } from '../ui/box';
-import { Button, ButtonIcon } from '../ui/button';
-import { Card } from '../ui/card';
-import { Image } from '../ui/image';
-import { Modal, ModalBackdrop, ModalContent } from '../ui/modal';
-import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
 
 export function MainTabButton() {
   const [open, setOpen] = React.useState(false);
@@ -21,7 +23,7 @@ export function MainTabButton() {
 
   const handleDonatePressed = () => {
     setOpen(false);
-    router.push('/donations/create');
+    router.push('/donations/create/details');
   };
 
   const handleRequestPressed = () => {

@@ -1,6 +1,11 @@
-import { Href, usePathname, useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 
-export function usePagination<T extends string>(routes: T[]) {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export function usePagination<T extends SearchParams = SearchParams>(
+  routes: string[],
+  searchParams?: T
+) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -14,8 +19,9 @@ export function usePagination<T extends string>(routes: T[]) {
 
   function handleNext() {
     if (hasNextPage) {
-      const page = routes[currentPageIndex + 1] as Href;
-      router.push(page);
+      const page = routes[currentPageIndex + 1] || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push({ pathname: page as any, params: searchParams });
     }
   }
 
@@ -28,6 +34,7 @@ export function usePagination<T extends string>(routes: T[]) {
   return {
     pages: enumPages,
     pathname,
+    searchParams,
     currentPageIndex,
     progress,
     nextPage: handleNext,

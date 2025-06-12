@@ -128,6 +128,11 @@ interface DraggableWrapperProps extends ComponentPropsWithoutRef<typeof Animated
    * Disables dragging if set to `true`. Defaults to `false`.
    */
   disabled?: boolean;
+
+  /**
+   * Animation type for dismiss action. Can be 'slide', 'fade', or 'both'. Defaults to 'slide'.
+   */
+  dismissAnimationType?: 'slide' | 'fade' | 'both';
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -164,8 +169,9 @@ const DraggableWrapper = forwardRef<DraggableWrapperRef, DraggableWrapperProps>(
       onFail,
       dismissThresholdRatio = 0.5,
       dismissDistanceMultiplier = 2,
-      fadeOnDismiss = false,
+      fadeOnDismiss = true,
       scaleOnDismiss = false,
+      dismissAnimationType = 'slide',
       springConfig = { damping: 20, stiffness: 350 },
       timingConfig = { duration: 300 },
       disabled = false,
@@ -189,33 +195,48 @@ const DraggableWrapper = forwardRef<DraggableWrapperRef, DraggableWrapperProps>(
         translateX.value = withSpring(0, springConfig);
         translateY.value = withSpring(0, springConfig);
         opacity.value = withTiming(1, { duration: 200 });
+        scale.value = withSpring(1, springConfig);
       },
       dismiss: () => {
-        const screenWidth = Dimensions.get('window').width;
-        const screenHeight = Dimensions.get('window').height;
+        const screenWidth = SCREEN_WIDTH * dismissDistanceMultiplier;
+        const screenHeight = SCREEN_HEIGHT * dismissDistanceMultiplier;
 
-        const animateOutX =
-          direction === 'horizontal' || direction === 'both'
-            ? withSpring(
-                Math.sign(translateX.value) >= 0 ? screenWidth : -screenWidth,
-                springConfig
-              )
-            : translateX.value;
+        if (dismissAnimationType === 'slide' || dismissAnimationType === 'both') {
+          const animateOutX =
+            direction === 'horizontal' || direction === 'both'
+              ? withSpring(
+                  Math.sign(translateX.value) >= 0 ? screenWidth : -screenWidth,
+                  springConfig
+                )
+              : translateX.value;
 
-        const animateOutY =
-          direction === 'vertical' || direction === 'both'
-            ? withSpring(
-                Math.sign(translateY.value) >= 0 ? screenHeight : -screenHeight,
-                springConfig
-              )
-            : translateY.value;
+          const animateOutY =
+            direction === 'vertical' || direction === 'both'
+              ? withSpring(
+                  Math.sign(translateY.value) >= 0 ? screenHeight : -screenHeight,
+                  springConfig
+                )
+              : translateY.value;
 
-        translateX.value = animateOutX;
-        translateY.value = animateOutY;
+          translateX.value = animateOutX;
+          translateY.value = animateOutY;
+        }
 
-        opacity.value = withTiming(0, { duration: 150 }, (isFinished) => {
-          if (isFinished && onDismiss) runOnJS(onDismiss)();
-        });
+        if (dismissAnimationType === 'fade' || dismissAnimationType === 'both') {
+          opacity.value = withTiming(0, { duration: 150 });
+        }
+
+        if (scaleOnDismiss) {
+          scale.value = withTiming(0.8, timingConfig);
+        }
+
+        if (fadeOnDismiss) {
+          opacity.value = withTiming(0, timingConfig, (isFinished) => {
+            if (isFinished && onDismiss) runOnJS(onDismiss)();
+          });
+        } else {
+          if (onDismiss) runOnJS(onDismiss)();
+        }
       },
     }));
 
@@ -252,18 +273,38 @@ const DraggableWrapper = forwardRef<DraggableWrapperRef, DraggableWrapperProps>(
         }
 
         if (outOfBounds && onDismiss) {
-          if (fadeOnDismiss) opacity.value = withTiming(0, timingConfig);
-          if (scaleOnDismiss) scale.value = withTiming(0.8, timingConfig);
+          if (dismissAnimationType === 'fade' || dismissAnimationType === 'both') {
+            opacity.value = withTiming(0, timingConfig);
+          }
+          if (dismissAnimationType === 'slide' || dismissAnimationType === 'both') {
+            if (direction === 'horizontal' || direction === 'both') {
+              translateX.value = withTiming(
+                finalX * dismissDistanceMultiplier,
+                timingConfig,
+                () => {
+                  runOnJS(onDismiss)();
+                }
+              );
+            }
 
-          if (direction === 'horizontal' || direction === 'both') {
-            translateX.value = withTiming(finalX * dismissDistanceMultiplier, timingConfig, () => {
-              runOnJS(onDismiss)();
-            });
+            if (direction === 'vertical' || direction === 'both') {
+              translateY.value = withTiming(
+                finalY * dismissDistanceMultiplier,
+                timingConfig,
+                () => {
+                  runOnJS(onDismiss)();
+                }
+              );
+            }
           }
 
-          if (direction === 'vertical' || direction === 'both') {
-            translateY.value = withTiming(finalY * dismissDistanceMultiplier, timingConfig, () => {
-              runOnJS(onDismiss)();
+          if (scaleOnDismiss) {
+            scale.value = withTiming(0.8, timingConfig);
+          }
+
+          if (fadeOnDismiss) {
+            opacity.value = withTiming(0, timingConfig, (isFinished) => {
+              if (isFinished && onDismiss) runOnJS(onDismiss)();
             });
           }
         } else {

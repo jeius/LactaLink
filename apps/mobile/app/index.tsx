@@ -3,7 +3,7 @@ import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Redirect } from 'expo-router';
 
-export default function Page() {
+export default function EntryPage() {
   const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING);
   const { session } = useAuth();
 

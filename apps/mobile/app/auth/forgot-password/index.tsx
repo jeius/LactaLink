@@ -1,8 +1,8 @@
 import { resetPassword } from '@/auth';
-import { FormField } from '@/components/form-field';
-import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
-import { useTheme } from '@/components/providers/theme-provider';
-import SafeArea from '@/components/safe-area';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { FormField } from '@/components/FormField';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import SafeArea from '@/components/SafeArea';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -89,7 +89,7 @@ export default function ForgotPassword() {
               <FormProvider {...form}>
                 <FormField
                   name="email"
-                  inputType="text"
+                  fieldType="text"
                   variant="underlined"
                   autoCapitalize="none"
                   autoComplete="email"

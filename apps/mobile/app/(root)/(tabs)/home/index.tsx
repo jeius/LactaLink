@@ -1,5 +1,5 @@
-import { Protected } from '@/components/protected';
-import ThemeToggler from '@/components/theme-toggler';
+import { Protected } from '@/components/Protected';
+import ThemeToggler from '@/components/ThemeToggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { LogOutIcon } from 'lucide-react-native';

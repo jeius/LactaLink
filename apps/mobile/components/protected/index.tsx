@@ -1,6 +1,6 @@
 import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
 import { FC } from 'react';
-import SafeArea, { SafeAreaProps } from '../safe-area';
+import SafeArea, { SafeAreaProps } from '../SafeArea';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 

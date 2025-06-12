@@ -1,6 +1,6 @@
 import { Text } from 'react-native';
 import { Toaster as Sonner } from 'sonner-native';
-import { useTheme } from './providers/theme-provider';
+import { useTheme } from './AppProvider/ThemeProvider';
 import { Spinner } from './ui/spinner';
 
 import '../global.css';

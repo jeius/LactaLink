@@ -1,4 +1,4 @@
-import { OptionsCardItem } from '@/components/option-cards';
+import { OptionsCardItem } from '@/components/cards/OptionsCards';
 import { ICONS } from '@/lib/constants';
 import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
 

@@ -1,5 +1,5 @@
-import { AppInitializer } from '@/components/appInitializer';
-import AppProvider from '@/components/providers';
+import { AppInitializer } from '@/components/AppInitializer';
+import AppProvider from '@/components/AppProvider';
 import '@/global.css';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';

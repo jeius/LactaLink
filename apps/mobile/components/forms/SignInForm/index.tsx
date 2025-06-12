@@ -1,6 +1,6 @@
 'use client';
 
-import GoogleButtonWrapper from '@/components/google-button-wrapper';
+import GoogleButtonWrapper from '@/components/GoogleButtonWrapper';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
@@ -10,7 +10,7 @@ import { signInSchema, type SignInSchema } from '@lactalink/types';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { signIn } from '@/auth';
-import { FormField } from '@/components/form-field';
+import { FormField } from '@/components/FormField';
 import { extractErrorMessage } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
@@ -45,7 +45,7 @@ export default function SignInForm() {
         <FormField
           name="email"
           label="Email"
-          inputType="text"
+          fieldType="text"
           placeholder="Enter email address"
           autoCorrect={false}
           autoCapitalize="none"
@@ -58,7 +58,7 @@ export default function SignInForm() {
           <FormField
             name="password"
             label="Password"
-            inputType="password"
+            fieldType="password"
             placeholder="Enter your password"
             autoCorrect={false}
             autoCapitalize="none"

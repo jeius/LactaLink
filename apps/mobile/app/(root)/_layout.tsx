@@ -1,6 +1,6 @@
 import { AnimatedProgress } from '@/components/animated/progress';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { HeaderAvatar } from '@/components/header/avatar';
-import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
 import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
 import { usePagination } from '@/hooks/forms/usePagination';

@@ -19,21 +19,27 @@ export const textAreaSchema = z
 
 export const milkBagSchema = z.object({
   donor: z.uuid().nonempty('Required'),
-  volume: z.number().min(20, 'Atleast 20mL of milk is specified.').positive().default(20),
-  collectedAt: z.iso.datetime().default(() => new Date().toISOString()),
-  quantity: z.number().min(1, 'Atleast 1 milk bag is specified.').positive().default(1),
+  volume: z.number().min(20, 'Atleast 20mL of milk is specified.').positive(),
+  collectedAt: z.iso.datetime(),
+  quantity: z.number().min(1, 'Atleast 1 milk bag is specified.').positive(),
 });
 
 export const donationDetailsSchema = z.object({
-  storageType: z.enum(Object.values(STORAGE_TYPES).map((item) => item.value)),
-  collectionMode: z.enum(Object.values(COLLECTION_MODES).map((item) => item.value)),
+  storageType: z.enum(
+    Object.values(STORAGE_TYPES).map((item) => item.value),
+    'Required'
+  ),
+  collectionMode: z.enum(
+    Object.values(COLLECTION_MODES).map((item) => item.value),
+    'Required'
+  ),
   bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
   milkSample: z.array(imageSchema).optional().nullable(),
   notes: textAreaSchema.describe('Additional Notes'),
 });
 
 export const requestDetailsSchema = z.object({
-  neededAt: z.iso.datetime().default(() => new Date().toISOString()),
+  neededAt: z.iso.datetime(),
   storagePreference: z
     .enum([...Object.values(STORAGE_TYPES).map((item) => item.value), 'EITHER'])
     .default('EITHER'),

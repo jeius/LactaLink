@@ -1,5 +1,5 @@
 import { updatePassword } from '@/auth';
-import { FormField } from '@/components/form-field';
+import { FormField } from '@/components/FormField';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,7 +37,7 @@ export default function ResetPasswordForm() {
           name="password"
           label="New Password"
           placeholder="Enter unique password"
-          inputType="password"
+          fieldType="password"
           autoCorrect={false}
           autoCapitalize="none"
           autoComplete={'new-password'}
@@ -47,7 +47,7 @@ export default function ResetPasswordForm() {
         <FormField
           name="confirmPassword"
           label="Confirm Password"
-          inputType="password"
+          fieldType="password"
           placeholder="Confirm your password"
           autoCorrect={false}
           autoCapitalize="none"

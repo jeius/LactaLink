@@ -1,4 +1,4 @@
-import { FormField, FormFieldProps } from '@/components/form-field';
+import { FormField, FormFieldProps } from '@/components/FormField';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
@@ -12,7 +12,7 @@ import { useFormContext } from 'react-hook-form';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
 
 type FormSlideProps = {
-  carouselRef: RefObject<ICarouselInstance>;
+  carouselRef: RefObject<ICarouselInstance | null>;
   onSubmit: (data: SignUpSchema) => Promise<void>;
   formFieldProps: FormFieldProps<SignUpSchema>;
 };

@@ -43,7 +43,7 @@ const buttonStyle = tva({
       secondary:
         'bg-secondary-500 border-secondary-500 data-[hover=true]:bg-secondary-400 data-[hover=true]:border-secondary-400 data-[active=true]:bg-secondary-600 data-[active=true]:border-secondary-600 data-[focus-visible=true]:web:ring-indicator-info',
       positive:
-        'bg-success-500 border-success-500 data-[hover=true]:bg-success-400 data-[hover=true]:border-success-400 data-[active=true]:bg-success-600 data-[active=true]:border-success-600 data-[focus-visible=true]:web:ring-indicator-info',
+        'bg-success-400 border-success-400 data-[hover=true]:bg-success-300 data-[hover=true]:border-success-300 data-[active=true]:bg-success-500 data-[active=true]:border-success-500 data-[focus-visible=true]:web:ring-indicator-info',
       negative:
         'bg-error-500 border-error-500 data-[hover=true]:bg-error-400 data-[hover=true]:border-error-400 data-[active=true]:bg-error-600 data-[active=true]:border-error-600 data-[focus-visible=true]:web:ring-indicator-info',
       default:
@@ -212,7 +212,7 @@ const buttonTextStyle = tva({
 });
 
 const buttonIconStyle = tva({
-  base: 'fill-none',
+  base: 'text-typography-0 data-[disabled=true]:text-typography-400 fill-none',
   parentVariants: {
     action: {
       primary:

@@ -1,12 +1,11 @@
-import { BottomTabBar } from '@/components/bottom-navbar';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBar } from '@/components/BottomTabBar';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
   return (
     <Tabs
-      tabBar={(props: BottomTabBarProps) => <BottomTabBar {...props} />}
+      tabBar={(props) => <BottomTabBar {...props} />}
       screenOptions={{
         animation: 'shift',
         headerShown: false,

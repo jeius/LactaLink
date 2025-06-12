@@ -1,4 +1,4 @@
-import { FormField, FormFieldProps } from '@/components/form-field';
+import { FormField, FormFieldProps } from '@/components/FormField';
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileType } from '@/lib/types';
@@ -24,7 +24,7 @@ export default function ProfileDetails() {
       {
         label: 'Hospital Name',
         name: 'name',
-        inputType: 'text',
+        fieldType: 'text',
         inputIcon: HospitalIcon,
         placeholder: 'Enter your hospital name.',
         autoCapitalize: 'words',
@@ -34,13 +34,13 @@ export default function ProfileDetails() {
       {
         name: 'description',
         label: 'Description',
-        inputType: 'textarea',
+        fieldType: 'textarea',
         placeholder: 'Enter brief description of the hospital.',
       },
       {
         name: 'head',
         label: 'Hospital Head',
-        inputType: 'text',
+        fieldType: 'text',
         inputIcon: User2Icon,
         placeholder: 'e.g. John M. Doe',
         helperText: 'Enter the name of head/president if applicable.',
@@ -51,7 +51,7 @@ export default function ProfileDetails() {
       {
         name: 'hospitalID',
         label: 'Hospital ID',
-        inputType: 'text',
+        fieldType: 'text',
         inputIcon: HashIcon,
         placeholder: 'e.g. I-1, V-3',
         helperText: 'Enter hospital ID if applicable.',
@@ -60,7 +60,7 @@ export default function ProfileDetails() {
       {
         name: 'type',
         label: 'Is your hospital?',
-        inputType: 'options-cards',
+        fieldType: 'options-cards',
         options: buildingTypeOptions,
       },
     ],
@@ -68,7 +68,7 @@ export default function ProfileDetails() {
       {
         label: 'Milk Bank Name',
         name: 'name',
-        inputType: 'text',
+        fieldType: 'text',
         inputIcon: HospitalIcon,
         placeholder: 'Enter your Milk Bank name.',
         autoCapitalize: 'words',
@@ -78,13 +78,13 @@ export default function ProfileDetails() {
       {
         name: 'description',
         label: 'Description',
-        inputType: 'textarea',
+        fieldType: 'textarea',
         placeholder: 'Enter brief description of the Milk Bank.',
       },
       {
         name: 'head',
         label: 'Milk Bank Head',
-        inputType: 'text',
+        fieldType: 'text',
         inputIcon: User2Icon,
         placeholder: 'e.g. John M. Doe',
         helperText: 'Enter the name of head/president if applicable.',
@@ -95,7 +95,7 @@ export default function ProfileDetails() {
       {
         name: 'type',
         label: 'Is your Milk Bank?',
-        inputType: 'options-cards',
+        fieldType: 'options-cards',
         options: buildingTypeOptions,
       },
     ],
@@ -103,7 +103,7 @@ export default function ProfileDetails() {
       {
         name: 'givenName',
         label: 'Given Name',
-        inputType: 'text',
+        fieldType: 'text',
         placeholder: 'Enter your given name.',
         autoCapitalize: 'words',
         autoComplete: 'name-given',
@@ -113,7 +113,7 @@ export default function ProfileDetails() {
       {
         name: 'middleName',
         label: 'Middle Name',
-        inputType: 'text',
+        fieldType: 'text',
         placeholder: 'Enter your middle name.',
         autoCapitalize: 'words',
         autoComplete: 'name-middle',
@@ -123,7 +123,7 @@ export default function ProfileDetails() {
       {
         name: 'familyName',
         label: 'Family Name',
-        inputType: 'text',
+        fieldType: 'text',
         placeholder: 'Enter your family name.',
         autoCapitalize: 'words',
         autoComplete: 'name-family',
@@ -132,27 +132,30 @@ export default function ProfileDetails() {
       {
         name: 'dependents',
         label: 'Number of Dependents',
-        inputType: 'number',
+        fieldType: 'number',
         placeholder: 'e.g. 2',
         keyboardType: 'number-pad',
-        className: 'max-w-48',
+        className: 'max-w-40',
+        showStepButtons: true,
+        step: 1,
+        min: 0,
         inputIcon: BabyIcon,
       },
       {
         name: 'birth',
         label: 'Date of Birth',
-        inputType: 'date',
+        fieldType: 'date',
       },
       {
         name: 'gender',
         label: 'Gender',
-        inputType: 'options-cards',
+        fieldType: 'options-cards',
         options: genderOptions,
       },
       {
         name: 'maritalStatus',
         label: 'Marital Status',
-        inputType: 'options-cards',
+        fieldType: 'options-cards',
         options: maritalStatusOptions,
       },
     ],
