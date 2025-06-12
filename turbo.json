@@ -80,6 +80,10 @@
       "dependsOn": ["^build"],
       "cache": false
     },
+    "build:init": {
+      "dependsOn": ["^build:init"],
+      "cache": false
+    },
     "preview:android": {
       "dependsOn": ["^build"],
       "cache": false

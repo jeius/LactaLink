@@ -25,6 +25,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "build:init": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "generate:sb-types": "node scripts/generate-supabase-types.js"

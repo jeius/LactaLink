@@ -45,6 +45,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "build:init": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
   },
