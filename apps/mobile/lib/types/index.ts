@@ -1,4 +1,4 @@
-import { SignInSchema, signInSchema } from '@lactalink/types/dist/forms/auth';
+import { SignInSchema, signInSchema } from '@lactalink/types';
 
 export * from './profile';
 

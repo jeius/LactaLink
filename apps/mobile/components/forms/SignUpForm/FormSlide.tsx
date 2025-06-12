@@ -12,7 +12,7 @@ import { useFormContext } from 'react-hook-form';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
 
 type FormSlideProps = {
-  carouselRef: RefObject<ICarouselInstance>;
+  carouselRef: RefObject<ICarouselInstance | null>;
   onSubmit: (data: SignUpSchema) => Promise<void>;
   formFieldProps: FormFieldProps<SignUpSchema>;
 };

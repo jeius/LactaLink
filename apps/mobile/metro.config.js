@@ -1,4 +1,3 @@
-// Learn more: https://docs.expo.dev/guides/monorepos/
 const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 const { FileStore } = require('metro-cache');
@@ -14,6 +13,7 @@ const monorepoRoot = path.resolve(projectDir, '../..');
 const defaultConfig = getDefaultConfig(projectDir);
 
 const monorepoPackages = {
+  '@lactalink/api': path.resolve(monorepoRoot, 'packages/api'),
   '@lactalink/types': path.resolve(monorepoRoot, 'packages/types'),
   '@lactalink/utilities': path.resolve(monorepoRoot, 'packages/utilities'),
   '@lactalink/eslint-config': path.resolve(monorepoRoot, 'packages/eslint-config'),
