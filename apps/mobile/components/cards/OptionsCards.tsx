@@ -5,14 +5,14 @@ import { Noop } from 'react-hook-form';
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { Box } from './ui/box';
-import { Card } from './ui/card';
-import { HStack } from './ui/hstack';
-import { Icon } from './ui/icon';
-import { Image } from './ui/image';
-import { Pressable } from './ui/pressable';
-import { Text } from './ui/text';
-import { VStack } from './ui/vstack';
+import { Box } from '../ui/box';
+import { Card } from '../ui/card';
+import { HStack } from '../ui/hstack';
+import { Icon } from '../ui/icon';
+import { Image } from '../ui/image';
+import { Pressable } from '../ui/pressable';
+import { Text } from '../ui/text';
+import { VStack } from '../ui/vstack';
 
 const cardStyle = tva({
   base: 'bg-background-50 min-h-32 max-w-32 rounded-2xl',
@@ -23,7 +23,11 @@ const cardStyle = tva({
   },
 });
 
-export type OptionsCardItem<T = string> = {
+const containerStyle = tva({
+  base: 'relative w-full',
+});
+
+export type OptionsCardItem<T = unknown> = {
   label: string;
   value: T;
   image?: {
@@ -38,6 +42,7 @@ export type OptionsCardsProps<T> = {
   value?: T;
   isDisabled?: boolean;
   onBlur?: Noop;
+  containerClassName?: string;
 };
 
 const SCROLL_AMOUNT = 150;
@@ -47,6 +52,7 @@ export function OptionsCards<T>({
   onChange: setValue,
   value: selected,
   isDisabled: disabled,
+  containerClassName,
 }: OptionsCardsProps<T>) {
   const scrollRef = useRef<ScrollView>(null);
   const [isScrollable, setIsScrollable] = useState(false);
@@ -99,7 +105,7 @@ export function OptionsCards<T>({
   };
 
   return (
-    <Box disabled={disabled} className="relative w-full">
+    <Box disabled={disabled} className={containerStyle({ className: containerClassName })}>
       <ScrollView
         ref={scrollRef}
         horizontal

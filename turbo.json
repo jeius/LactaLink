@@ -73,15 +73,15 @@
       "outputs": ["dist/**/*"]
     },
     "build:android-dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@lactalink/mobile#build:android-dev"],
       "cache": false
     },
     "build:ios-dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@lactalink/mobile#build:ios-dev"],
       "cache": false
     },
     "preview:android": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@lactalink/mobile#preview:android"],
       "cache": false
     }
   }

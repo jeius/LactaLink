@@ -1,4 +1,4 @@
-import SafeArea from '@/components/safe-area';
+import SafeArea from '@/components/SafeArea';
 import { Spinner } from '@/components/ui/spinner';
 import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';

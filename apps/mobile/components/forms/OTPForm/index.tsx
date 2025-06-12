@@ -1,5 +1,5 @@
 import { verifyOTP } from '@/auth';
-import { useTheme } from '@/components/providers/theme-provider';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';

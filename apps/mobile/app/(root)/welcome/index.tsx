@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { OnboardingItem } from '@/components/onboarding';
 import { OnboardingData, onboardingData } from '@/components/onboarding/data';
-import { useTheme } from '@/components/providers/theme-provider';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
@@ -13,7 +13,7 @@ import { Dimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
-import SafeArea from '@/components/safe-area';
+import SafeArea from '@/components/SafeArea';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 

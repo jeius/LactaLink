@@ -1,4 +1,4 @@
-import { FormField } from '@/components/form-field';
+import { FormField } from '@/components/FormField';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
@@ -12,7 +12,7 @@ import React, { createRef, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { HintBox } from './hint-box';
 
-import { DraggableWrapper, DraggableWrapperRef } from '@/components/draggable-wrapper';
+import { DraggableWrapper, DraggableWrapperRef } from '@/components/DraggableWrapper';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
 
@@ -106,8 +106,8 @@ export default function Addresses() {
                 <VStack space="lg">
                   <FormField
                     name={`addresses.${i}.name`}
-                    inputType="text"
-                    textInputVariant="underlined"
+                    fieldType="text"
+                    variant="underlined"
                     placeholder="e.g. Home, Workplace"
                     autoCapitalize="words"
                     helperText="Name of your address."
@@ -116,51 +116,49 @@ export default function Addresses() {
                   <FormField
                     name={`addresses.${i}.province`}
                     label="Province"
-                    inputType="combobox"
+                    fieldType="combobox"
                     placeholder="Select province..."
-                    comboboxProps={{
-                      collection: 'provinces',
-                      searchPath: 'name',
-                      searchPlaceholder: 'Search province here...',
-                    }}
+                    collection="provinces"
+                    searchPath="name"
+                    searchPlaceholder="Search province here..."
                   />
 
                   <FormField
                     name={`addresses.${i}.cityMunicipality`}
                     label="City or Municipality"
-                    inputType="combobox"
+                    fieldType="combobox"
                     placeholder="Select city or municipality..."
-                    comboboxProps={{
-                      collection: 'citiesMunicipalities',
-                      searchPath: 'name',
-                      searchPlaceholder: 'Search city or municipality here...',
-                      where: addresses[i]?.province
+                    collection="citiesMunicipalities"
+                    searchPath="name"
+                    searchPlaceholder="Search city or municipality here..."
+                    where={
+                      addresses[i]?.province
                         ? { province: { equals: addresses[i]?.province } }
-                        : undefined,
-                    }}
+                        : undefined
+                    }
                   />
 
                   <FormField
                     name={`addresses.${i}.barangay`}
                     label="Barangay"
-                    inputType="combobox"
+                    fieldType="combobox"
                     placeholder="Select barangay..."
-                    comboboxProps={{
-                      collection: 'barangays',
-                      searchPath: 'name',
-                      searchPlaceholder: 'Search barangay here...',
-                      where: addresses[i]?.cityMunicipality
+                    collection="barangays"
+                    searchPath="name"
+                    searchPlaceholder="Search barangay here..."
+                    where={
+                      addresses[i]?.cityMunicipality
                         ? { cityMunicipality: { equals: addresses[i]?.cityMunicipality } }
                         : addresses[i]?.province
                           ? { province: { equals: addresses[i]?.province } }
-                          : undefined,
-                    }}
+                          : undefined
+                    }
                   />
 
                   <FormField
                     name={`addresses.${i}.street`}
                     label="Street Address"
-                    inputType="text"
+                    fieldType="text"
                     placeholder="e.g. Block 9, Sudlonon St."
                     autoCapitalize="words"
                     autoComplete="street-address"
@@ -170,14 +168,14 @@ export default function Addresses() {
                   <FormField
                     name={`addresses.${i}.zipCode`}
                     label="Zip Code"
-                    inputType="text"
+                    fieldType="text"
                     placeholder="e.g. 9200"
                     keyboardType="number-pad"
                     textContentType="postalCode"
                     className="max-w-32"
                   />
 
-                  <HStack space="xl" className="mt-5 flex-1 justify-between">
+                  <HStack space="xl" className="mt-5 justify-between">
                     <Checkbox
                       value={`address-${addresses[i]?.name}-checkbox`}
                       isChecked={addresses[i]?.default}

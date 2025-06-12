@@ -1,4 +1,4 @@
-import AvatarUpload from '@/components/avatar-upload';
+import { AvatarUpload } from '@/components/AvatarUpload';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';

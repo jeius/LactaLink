@@ -16,7 +16,7 @@ export const SUPABASE_URL = EXPO_PUBLIC_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const VERCEL_BYPASS_TOKEN = VERCEL_AUTOMATION_BYPASS_SECRET;
 
-export const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
 export const OTP_TOAST_ID = 'otp';
 export const SIGN_IN_TOAST_ID = 'sign-in';

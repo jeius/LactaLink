@@ -21,6 +21,7 @@
     "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
     "build:api": "turbo build --filter=\"{./packages/api}...\"",
     "build:packages": "turbo build --filter=\"{./packages/*}...\"",
+    "dev:packages": "turbo dev --filter=\"{./packages/*}...\"",
     "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo",
     "refresh": "pnpm run clean:all && pnpm install"
   },

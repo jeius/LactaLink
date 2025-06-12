@@ -5,9 +5,9 @@ import React, { useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Dimensions } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
-import { FormSlide } from './form-slide';
+import { FormSlide } from './FormSlide';
 
-import { FormFieldProps } from '@/components/form-field';
+import { FormFieldProps } from '@/components/FormField';
 import { signUpSchema, SignUpSchema } from '@/lib/types';
 
 import { signUp } from '@/auth';
@@ -17,7 +17,7 @@ import { toast } from 'sonner-native';
 const FIELDS: FormFieldProps<SignUpSchema>[] = [
   {
     name: 'email',
-    inputType: 'text',
+    fieldType: 'text',
     placeholder: 'name@example.com',
     inputIcon: MailIcon,
     autoCapitalize: 'none',
@@ -26,7 +26,7 @@ const FIELDS: FormFieldProps<SignUpSchema>[] = [
   },
   {
     name: 'password',
-    inputType: 'password',
+    fieldType: 'password',
     placeholder: 'Enter unique password',
     helperText: 'Enter at least 8 characters long.',
     autoComplete: 'new-password',

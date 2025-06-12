@@ -1,7 +1,7 @@
 import Verified from '@/assets/icons/account-verified.svg';
 import { VStack } from '@/components/ui/vstack';
 
-import SafeArea from '@/components/safe-area';
+import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';

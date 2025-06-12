@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import ReactQuery from './react-query';
-import { ThemeProvider } from './theme-provider';
+import { ReactQuery } from './ReactQuery';
+import { ThemeProvider } from './ThemeProvider';
 
 export default function AppProvider({ children }: { children: ReactNode }) {
   return (

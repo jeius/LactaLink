@@ -1,4 +1,4 @@
-import SafeArea from '@/components/safe-area';
+import SafeArea from '@/components/SafeArea';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';

@@ -13,22 +13,17 @@ export function HeaderAvatar() {
   const name = user && extractName(user);
   const avatar = (user?.profile?.value as Individual | Hospital | MilkBank)
     ?.avatar as AvatarType | null;
-  const avatarUrl = avatar?.thumbnailURL || avatar?.url || null;
-  const avatarWidth = avatar?.sizes?.thumbnail?.width || 300;
-  const avatarHeight = avatar?.sizes?.thumbnail?.height || 300;
+  const avatarUrl = avatar?.sizes?.thumbnail?.url || avatar?.url || null;
 
   return (
     <>
       {isLoading && <Skeleton className="h-12 w-12" speed={4} variant="circular" />}
 
       {!isLoading && (
-        <Avatar>
+        <Avatar className="border-primary-600 border-2">
           <AvatarFallbackText>{name || 'User'}</AvatarFallbackText>
           {avatarUrl && (
-            <AvatarImage
-              alt={avatar?.alt || 'User Avatar'}
-              source={{ uri: avatarUrl, width: avatarWidth, height: avatarHeight }}
-            />
+            <AvatarImage alt={avatar?.alt || 'User Avatar'} source={{ uri: avatarUrl }} />
           )}
         </Avatar>
       )}

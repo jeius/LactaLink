@@ -13,8 +13,8 @@ import {
 import { useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { MainTabButton } from './main-button';
-import { TabButton } from './tab-button';
+import { MainTabButton } from './MainTabButton';
+import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon> = {
   home: HomeIcon,
@@ -70,6 +70,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
               const event: { defaultPrevented: boolean } = navigation.emit({
                 type: 'tabPress',
                 target: route.key,
+                canPreventDefault: true,
               });
 
               if (!isFocused && !event.defaultPrevented) {

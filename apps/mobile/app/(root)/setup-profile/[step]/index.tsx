@@ -2,8 +2,7 @@ import ProfileAvatar from '@/components/forms/setup-profile/avatar';
 import ProfileContact from '@/components/forms/setup-profile/contact';
 import ProfileDetails from '@/components/forms/setup-profile/details';
 import ProfileTypeForm from '@/components/forms/setup-profile/type';
-import KeyboardAvoidingWrapper from '@/components/keyboard-avoider';
-import SafeArea from '@/components/safe-area';
+import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -36,6 +35,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
@@ -126,13 +126,13 @@ export default function Step() {
       avatar: AVATAR_FIELDS,
     };
 
-    const validationResults = await Promise.all(
-      profileFields[step].map((field) => form.trigger(field))
-    );
+    const allValid = await form.trigger(profileFields[step]);
 
-    const allValid = validationResults.every(Boolean);
-
-    if (allValid) nextPage();
+    if (allValid) {
+      nextPage();
+    } else {
+      toast.error('There are some invalid fields. Please fix them before proceeding.');
+    }
   }
 
   function handleBack() {
@@ -145,7 +145,7 @@ export default function Step() {
 
   return (
     <SafeArea className="mt-5">
-      <KeyboardAvoidingWrapper>
+      <ScrollView className="flex-1" contentContainerClassName="grow">
         <VStack space="xl" className="relative grow px-5 py-5">
           <Box className="grow">
             {step === 'type' ? (
@@ -179,7 +179,7 @@ export default function Step() {
             </Button>
           </VStack>
         </VStack>
-      </KeyboardAvoidingWrapper>
+      </ScrollView>
     </SafeArea>
   );
 }

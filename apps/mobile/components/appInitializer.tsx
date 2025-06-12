@@ -5,8 +5,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
 import { RefreshCwIcon } from 'lucide-react-native';
-import { useTheme } from './providers/theme-provider';
-import SafeArea from './safe-area';
+import { useTheme } from './AppProvider/ThemeProvider';
+import SafeArea from './SafeArea';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
