@@ -1,12 +1,13 @@
-import GoogleIcon from '@/assets/svgs/google.svg';
 import { signInWithGoogle } from '@/auth';
+import { ICONS } from '@/lib/constants';
 import { extractErrorMessage } from '@lactalink/utilities';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
 import { toast } from 'sonner-native';
-import { Button, ButtonIcon, ButtonText } from '../ui/button';
+import { Button, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
+import { Image } from '../ui/image';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
@@ -51,7 +52,7 @@ export default function GoogleButtonWrapper({
         onPress={handleGoogleAuth}
       >
         <ButtonText>Google</ButtonText>
-        <ButtonIcon as={GoogleIcon} size="lg" />
+        <Image source={ICONS.googleIcon} alt="Google Icon" size="2xs" />
       </Button>
     </VStack>
   );
