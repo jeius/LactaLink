@@ -27,8 +27,6 @@
     "refresh": "pnpm run clean:all && pnpm install"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.12",
     "shx": "^0.4.0",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"

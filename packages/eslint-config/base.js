@@ -4,48 +4,50 @@
  * @type {import("eslint").Linter.Config[]}
  * */
 module.exports = {
-  extends: ['eslint:recommended', 'prettier'],
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier', 'turbo'],
-  ignorePatterns: ['node_modules', 'build', 'dist', '.turbo'],
+  extends: ["eslint:recommended", "prettier"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "prettier", "turbo"],
+  ignorePatterns: ["node_modules", "build", "dist", ".turbo"],
   env: {
     node: true,
     browser: true,
   },
   rules: {
-    'no-unused-vars': 'off',
-    '@typescript-eslint/ban-ts-comment': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-unused-vars': [
-      'warn',
+    "no-unused-vars": "off",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
       {
-        vars: 'all',
-        args: 'after-used',
+        vars: "all",
+        args: "after-used",
         ignoreRestSiblings: false,
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        destructuredArrayIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^(_|ignore)',
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^(_|ignore)",
       },
     ],
-    'prettier/prettier': [
-      'warn',
+    "prettier/prettier": [
+      "warn",
       {
-        endOfLine: 'auto',
+        endOfLine: "auto",
         printWidth: 100,
         tabWidth: 2,
         singleQuote: true,
         semi: true,
-        trailingComma: 'es5',
+        trailingComma: "es5",
+        plugins: ["prettier-plugin-tailwindcss"],
+        tailwindFunctions: ["tva"],
       },
     ],
   },
   overrides: [
     {
-      files: ['*.cjs', '*.js'],
+      files: ["*.cjs", "*.js"],
       rules: {
-        '@typescript-eslint/no-var-requires': 'off',
-        'no-undef': 'off',
+        "@typescript-eslint/no-var-requires": "off",
+        "no-undef": "off",
       },
     },
   ],
