@@ -10,7 +10,7 @@
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
     "build": "expo export --output-dir ./build --platform all",
-    "build:deps": "pnpm -w run build:packages",
+    "build:deps": "pnpm -w run init:packages",
     "build:android-dev": "eas build:dev --platform android --profile development",
     "build:ios-dev": "eas build:dev --platform ios --profile development",
     "preview:android": "eas build --platform android --profile preview",

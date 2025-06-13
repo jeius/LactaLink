@@ -1,8 +1,8 @@
 {
   "npm.packageManager": "pnpm",
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.useEditorConfig": false,
+  "prettier.useEditorConfig": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "tailwindCSS.experimental.classRegex": [
     ["tva\\((([^()]*|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]

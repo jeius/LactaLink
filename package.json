@@ -17,19 +17,22 @@
     "build:android-dev": "turbo build:android-dev --filter=\"@lactalink/mobile\"",
     "build:ios-dev": "turbo build:ios-dev --filter=\"@lactalink/mobile\"",
     "build:web": "turbo build --filter=\"{./apps/web}...\"",
-    "build:types": "turbo @lactalink/types#build",
+    "build:types": "pnpm generate:types && turbo build --filter=\"{./packages/types}...\"",
     "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
     "build:api": "turbo build --filter=\"{./packages/api}...\"",
     "build:packages": "turbo build --filter=\"{./packages/*}...\"",
     "init:packages": "turbo build:init --filter=\"{./packages/*}...\"",
     "dev:packages": "turbo dev --filter=\"{./packages/*}...\"",
-    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo */*/tsconfig.tsbuildinfo || true",
+    "clean:all": "node clean-monorepo.js",
     "refresh": "pnpm clean:all && pnpm install && pnpm run build:packages"
   },
   "devDependencies": {
+    "glob": "^11.0.3",
     "shx": "^0.4.0",
     "turbo": "^2.5.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12"
   },
   "packageManager": "pnpm@9.15.7",
   "engines": {
