@@ -23,12 +23,13 @@ const monorepoPackages = {
 /** @type {import('expo/metro-config').MetroConfig} */
 const monorepoConfig = {
   resolver: {
-    disableHierarchicalLookup: true,
+    disableHierarchicalLookup: false,
+    unstable_enablePackageExports: false,
+    extraNodeModules: monorepoPackages,
     nodeModulesPaths: [
       path.resolve(projectDir, 'node_modules'),
       path.resolve(monorepoRoot, 'node_modules'),
     ],
-    extraNodeModules: monorepoPackages,
     resolveRequest: (context, moduleName, platform) => {
       try {
         // Symlinks resolver throws when it can't find what we're looking for.

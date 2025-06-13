@@ -23,8 +23,8 @@
     "build:packages": "turbo build --filter=\"{./packages/*}...\"",
     "init:packages": "turbo build:init --filter=\"{./packages/*}...\"",
     "dev:packages": "turbo dev --filter=\"{./packages/*}...\"",
-    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo */*/tsconfig.tsbuildinfo",
-    "refresh": "pnpm run clean:all && pnpm install"
+    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo */*/tsconfig.tsbuildinfo || true",
+    "refresh": "pnpm clean:all && pnpm install && pnpm run build:packages"
   },
   "devDependencies": {
     "shx": "^0.4.0",

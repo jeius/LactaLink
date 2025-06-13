@@ -43,6 +43,13 @@
         }
       ],
       [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow LactaLink to access your location"
+        }
+      ],
+      [
         "expo-font",
         {
           "fonts": [
