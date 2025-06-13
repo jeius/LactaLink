@@ -11,4 +11,6 @@ export const ICONS = {
   office: 'company_office',
   townHall: 'town_hall',
   buildingOther: 'unknown_building',
+  verifiedAccount: 'account_verified',
+  googleIcon: 'google',
 };

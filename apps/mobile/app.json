@@ -22,6 +22,7 @@
       }
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo/adaptive_icon.png",
         "monochromeImage": "./assets/logo/adaptive_icon.png",
@@ -39,6 +40,13 @@
         "expo-asset",
         {
           "assets": ["./assets/images", "./assets/icons", "./assets/logo"]
+        }
+      ],
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow LactaLink to access your location"
         }
       ],
       [

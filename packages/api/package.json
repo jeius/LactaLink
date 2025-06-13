@@ -25,6 +25,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "build:init": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "generate:sb-types": "node scripts/generate-supabase-types.js"
@@ -40,13 +41,15 @@
     "@lactalink/utilities": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
-    "@types/react": "^19.1.2",
+    "@types/react": "^19.0.14",
     "dotenv": "^16.5.0",
-    "react": "18.3.1",
+    "react": "19.0.0",
     "zustand": "^5.0.5"
   },
   "peerDependencies": {
     "@supabase/supabase-js": "^2.49.4",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "@types/react": "^19.0.14",
+    "react": "19.0.0"
   }
 }

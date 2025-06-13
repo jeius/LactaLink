@@ -67,17 +67,16 @@
       ],
       "outputs": ["src/lib/db/**/*"]
     },
-    "@lactalink/types#build": {
-      "dependsOn": ["@lactalink/web#generate:types"],
-      "inputs": ["src/**/*"],
-      "outputs": ["dist/**/*"]
-    },
     "build:android-dev": {
       "dependsOn": ["^build", "@lactalink/mobile#build:android-dev"],
       "cache": false
     },
     "build:ios-dev": {
       "dependsOn": ["^build", "@lactalink/mobile#build:ios-dev"],
+      "cache": false
+    },
+    "build:init": {
+      "dependsOn": ["^build:init"],
       "cache": false
     },
     "preview:android": {

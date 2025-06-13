@@ -21,16 +21,15 @@
     "build:utils": "turbo build --filter=\"{./packages/utilities}...\"",
     "build:api": "turbo build --filter=\"{./packages/api}...\"",
     "build:packages": "turbo build --filter=\"{./packages/*}...\"",
+    "init:packages": "turbo build:init --filter=\"{./packages/*}...\"",
     "dev:packages": "turbo dev --filter=\"{./packages/*}...\"",
-    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo",
-    "refresh": "pnpm run clean:all && pnpm install"
+    "clean:all": "shx rm -rf ./node_modules */node_modules */*/node_modules .turbo */.turbo */*/.turbo */dist */*/dist */*/.next */*/.expo */*/tsconfig.tsbuildinfo || true",
+    "refresh": "pnpm clean:all && pnpm install && pnpm run build:packages"
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.11",
-    "turbo": "^2.4.4",
-    "typescript": "^5.5.4",
-    "shx": "^0.4.0"
+    "shx": "^0.4.0",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@9.15.7",
   "engines": {
