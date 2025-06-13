@@ -55,10 +55,10 @@
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
     "payload": "^3.34.0",
-    "zod": "^3.25.57"
+    "zod": "^3.25.64"
   },
   "peerDependencies": {
     "@supabase/supabase-js": "^2.49.4",
-    "zod": "^3.25.0"
+    "zod": "^3.25.64"
   }
 }
