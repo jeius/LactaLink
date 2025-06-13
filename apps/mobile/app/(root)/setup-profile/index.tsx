@@ -1,4 +1,4 @@
-import Verified from '@/assets/icons/account-verified.svg';
+import Verified from '@/assets/svgs/account-verified.svg';
 import { VStack } from '@/components/ui/vstack';
 
 import SafeArea from '@/components/SafeArea';

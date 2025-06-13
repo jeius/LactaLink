@@ -1,4 +1,4 @@
-import GoogleIcon from '@/assets/icons/google.svg';
+import GoogleIcon from '@/assets/svgs/google.svg';
 import { signInWithGoogle } from '@/auth';
 import { extractErrorMessage } from '@lactalink/utilities';
 import React, { useState } from 'react';
