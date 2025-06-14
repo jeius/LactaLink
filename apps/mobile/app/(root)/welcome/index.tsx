@@ -123,7 +123,7 @@ const Home = () => {
         <Box className="w-full p-5 pt-2">
           <Button
             size="xl"
-            className="shadow-primary-800 w-full rounded-2xl shadow-md"
+            className="w-full rounded-2xl shadow-md shadow-primary-800"
             onPress={handleNext}
           >
             <ButtonText size="lg" className="font-JakartaMedium">

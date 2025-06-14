@@ -1,17 +1,19 @@
 'use client';
 
 import { getTheme, updateTheme } from '@/lib/api/theme';
-import { getHexColor } from '@/lib/colors';
 import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import React, { createContext, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
+
+import { getHexColor } from '@/lib/colors';
+import * as NavigationBar from 'expo-navigation-bar';
+import * as SystemUI from 'expo-system-ui';
 
 interface ThemeContextType {
   theme: 'light' | 'dark';
@@ -63,12 +65,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       Storage.set(MMKV_KEYS.THEME, theme);
       saveThemeToServer(theme);
 
+      const bgColor = getHexColor(theme, 'background', 50);
+      SystemUI.setBackgroundColorAsync(bgColor || null);
+
       if (Platform.OS === 'android') {
-        const bgColor = getHexColor(theme, 'background', 50);
-        if (bgColor) {
-          NavigationBar.setBackgroundColorAsync(bgColor.toString());
-          NavigationBar.setButtonStyleAsync(theme);
-        }
+        NavigationBar.setStyle(theme);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,7 +85,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>
-      <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
+      <StatusBar
+        animated={true}
+        hideTransitionAnimation="slide"
+        style={theme === 'light' ? 'dark' : 'light'}
+      />
     </ThemeContext.Provider>
   );
 };

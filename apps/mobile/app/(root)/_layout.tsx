@@ -21,6 +21,7 @@ export default function Layout() {
   const userName = user && extractName(user);
   const headerBgColor = getHexColor(theme, 'background', 0);
   const headerTintColor = getHexColor(theme, 'typography', 900);
+  const bgColor = getHexColor(theme, 'background', 50);
 
   const { currentPageIndex, progress } = usePagination(STEPS);
 
@@ -46,6 +47,7 @@ export default function Layout() {
         headerBackButtonDisplayMode: 'minimal',
         headerBackVisible: false,
         headerTintColor: headerTintColor?.toString(),
+        contentStyle: { backgroundColor: bgColor },
       }}
     >
       <Stack.Screen name="welcome/index" options={{ headerShown: false }} />
