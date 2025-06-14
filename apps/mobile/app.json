@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo/icon.png",
-    "backgroundColor": "#fff4f5",
+    "backgroundColor": "#f6f6f6",
     "primaryColor": "#FE828C",
     "scheme": "lactalink",
     "userInterfaceStyle": "automatic",
@@ -28,7 +28,8 @@
         "monochromeImage": "./assets/logo/adaptive_icon.png",
         "backgroundColor": "#FE828C"
       },
-      "package": "com.lactalink.mobile"
+      "package": "com.lactalink.mobile",
+      "permissions": ["SCHEDULE_EXACT_ALARM"]
     },
     "androidStatusBar": {
       "translucent": true
@@ -47,6 +48,14 @@
         {
           "requestLocationPermission": true,
           "locationPermission": "Allow LactaLink to access your location"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow LactaLink to use your location.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
         }
       ],
       [
@@ -74,6 +83,24 @@
           "dark": {
             "image": "./assets/logo/splash_icon_dark.png",
             "backgroundColor": "#272625"
+          }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo/logo_icon.png",
+          "color": "#FFE6E8",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "parentTheme": "Default",
+            "enforceNavigationBarContrast": false
           }
         }
       ],
