@@ -21,7 +21,7 @@ const Home = () => {
   }
 
   return (
-    <Protected>
+    <Protected safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
       <VStack space="lg" className="flex-1 items-center justify-end">
         <Button action="default" onPress={handleSignOut}>

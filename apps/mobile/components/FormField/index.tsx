@@ -1,10 +1,22 @@
-import { AlertCircleIcon, EyeClosedIcon, EyeIcon } from 'lucide-react-native';
+import {
+  AlertCircleIcon,
+  CheckCheckIcon,
+  CopyMinusIcon,
+  EyeClosedIcon,
+  EyeIcon,
+} from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Controller, FieldValues, useFormContext, useFormState } from 'react-hook-form';
+import {
+  Controller,
+  FieldValues,
+  PathValue,
+  useFormContext,
+  useFormState,
+  useWatch,
+} from 'react-hook-form';
 
 import { OptionsCards } from '@/components/cards/OptionsCards';
 import InfiniteScrollComboBox from '@/components/ComboBox';
-import { Button, ButtonGroup, ButtonText } from '@/components/ui/button';
 import {
   FormControl,
   FormControlError,
@@ -22,11 +34,13 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CollectionSlug } from '@lactalink/types';
 
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
+import { Icon } from '../ui/icon';
+import { ButtonGroupInput, ButtonGroupInputType } from './ButtonGroupInput';
 import { DateInput, DateInputType } from './DateInput';
 import { ImageUploadField, ImageUploadFieldType } from './ImageField';
 import { NumberInput, NumberInputType } from './NumberInput';
 import {
-  ButtonGroupProps,
   ComboboxProps,
   FieldType,
   FormFieldProps,
@@ -37,6 +51,10 @@ import {
 
 const containerStyle = tva({
   base: 'max-w-md',
+});
+
+const labelIconStyle = tva({
+  base: 'text-primary-500',
 });
 
 function FormField<
@@ -52,12 +70,22 @@ function FormField<
   fieldType,
   placeholder,
   containerClassName,
+  containerStyle: style,
+  labelIcon,
+  labelIconProps,
   ...props
 }: FormFieldProps<T, TFieldType, TSlug>) {
-  const { trigger, getFieldState, getValues } = useFormContext<T>();
+  const { trigger, getFieldState, setValue } = useFormContext<T>();
   const { isSubmitting, isValidating: _ } = useFormState({ name });
 
-  const value = getValues(name);
+  const currentValue = useWatch({ name });
+
+  const isAllSelected =
+    fieldType === 'button-group' &&
+    'options' in props &&
+    Array.isArray(currentValue) &&
+    Array.isArray(props.options) &&
+    currentValue.length === props.options.length;
 
   const { error: fieldError, invalid } = getFieldState(name);
   // console.log('Field Error:', name, fieldError);
@@ -74,26 +102,54 @@ function FormField<
   const dateInputProps = fieldType === 'date' ? (props as DateInputType) : undefined;
   const optionsCardsProps =
     fieldType === 'options-cards' ? (props as unknown as Options) : undefined;
-  const buttonGroupProps =
-    fieldType === 'button-group' ? (props as unknown as ButtonGroupProps) : undefined;
   const imageProps = fieldType === 'image' ? (props as ImageUploadFieldType) : undefined;
+  const buttonGroupProps =
+    fieldType === 'button-group' ? (props as unknown as ButtonGroupInputType<unknown>) : undefined;
+
+  const {
+    size: labelIconSize = 'xl',
+    className: labelIconClassName,
+    ...restOfLabelIconProps
+  } = labelIconProps || {};
+
+  function handleSelectAll() {
+    if (buttonGroupProps?.allowMultipleSelection) {
+      const allOptions = buttonGroupProps.options.map((option) => option.value);
+      const newValue = Array.isArray(currentValue || [])
+        ? [...new Set([...currentValue, ...allOptions])]
+        : allOptions;
+
+      if (isAllSelected) {
+        setValue(name, [] as PathValue<T, typeof name>, { shouldValidate: invalid });
+      } else {
+        setValue(name, newValue as PathValue<T, typeof name>, { shouldValidate: invalid });
+      }
+    }
+  }
 
   return (
     <FormControl
       isInvalid={invalid}
       isDisabled={isSubmitting}
       className={containerStyle({ class: containerClassName })}
+      style={style}
     >
-      {label && (
-        <FormControlLabel className="justify-between">
-          <FormControlLabelText>{label}</FormControlLabelText>
-          {imageProps?.showCount && Array.isArray(value) && (
-            <FormControlLabelText size="sm" className="text-typography-700 font-sans">
-              {value.length || 0}/{imageProps.selectionLimit}
-            </FormControlLabelText>
-          )}
-        </FormControlLabel>
-      )}
+      <FormControlLabel className="justify-between gap-2">
+        {label && <FormControlLabelText>{label}</FormControlLabelText>}
+        {imageProps?.showCount && Array.isArray(currentValue) && (
+          <FormControlLabelText size="sm" className="text-typography-700 font-sans">
+            {currentValue.length || 0}/{imageProps.selectionLimit}
+          </FormControlLabelText>
+        )}
+        {labelIcon && (
+          <Icon
+            {...restOfLabelIconProps}
+            as={labelIcon}
+            size={labelIconSize}
+            className={labelIconStyle({ class: labelIconClassName })}
+          />
+        )}
+      </FormControlLabel>
 
       <Controller
         name={name}
@@ -184,30 +240,22 @@ function FormField<
                 />
               );
 
-            case 'button-group':
+            case 'button-group': {
+              const { options = [], ...rest } = buttonGroupProps || {};
               return (
-                <ButtonGroup
-                  {...buttonGroupProps}
-                  flexDirection="row"
-                  className="flex-wrap"
+                <ButtonGroupInput
+                  {...rest}
+                  options={options}
+                  value={field.value}
                   isDisabled={field.disabled}
-                >
-                  {(buttonGroupProps?.options || []).map((option) => (
-                    <Button
-                      key={option.value}
-                      variant={field.value === option.value ? 'solid' : 'outline'}
-                      action={invalid ? 'negative' : 'primary'}
-                      size="sm"
-                      onPress={() => {
-                        field.onChange(option.value);
-                        if (invalid) trigger(name);
-                      }}
-                    >
-                      <ButtonText>{option.label}</ButtonText>
-                    </Button>
-                  ))}
-                </ButtonGroup>
+                  isInvalid={invalid}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    if (invalid) trigger(name);
+                  }}
+                />
               );
+            }
 
             case 'combobox':
               if (!comboboxProps) return <Text>Missing combobox props...</Text>;
@@ -273,18 +321,22 @@ function FormField<
         <FormControlErrorIcon as={errorIcon} />
         <FormControlErrorText>{fieldError?.message}</FormControlErrorText>
       </FormControlError>
+
+      {buttonGroupProps?.allowMultipleSelection && (
+        <Button
+          size="sm"
+          action={isAllSelected ? 'negative' : 'positive'}
+          variant={'outline'}
+          onPress={handleSelectAll}
+        >
+          <ButtonIcon as={isAllSelected ? CopyMinusIcon : CheckCheckIcon} />
+          <ButtonText>{isAllSelected ? 'Unselect All' : 'Select All'}</ButtonText>
+        </Button>
+      )}
     </FormControl>
   );
 }
 
 export { FormField };
 
-export type {
-  ButtonGroupProps,
-  ComboboxProps,
-  FieldType,
-  FormFieldProps,
-  Options,
-  TInputField,
-  TTextareaInput,
-};
+export type { ComboboxProps, FieldType, FormFieldProps, Options };

@@ -29,10 +29,44 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
+  /**
+   * The collection from which the items will be fetched.
+   * This should be a valid collection slug like 'users', 'products', etc.
+   */
   collection: T;
+  /**
+   * Optional limit for the number of items to fetch per request.
+   * This can be used to control the number of items displayed in the dropdown.
+   * Default is 20.
+   */
   limit?: number;
+  /**
+   * Optional where clause to filter the results.
+   * This can be used to limit the results based on certain conditions.
+   * For example, you can filter by owner, status, etc.
+   */
   where?: Where;
+  /**
+   * Path to the field in the collection that will be used for searching.
+   * This should be a field that contains text data, like a name or title.
+   */
   searchPath: keyof Collection<T>;
+  /**
+   * Path to the label field in the collection.
+   * This will be used to display the label in the dropdown.
+   * If not provided, it will default to the searchPath.
+   */
+  labelPath?: keyof Collection<T>;
+  /**
+   * Path to the description field in the collection.
+   * If provided, it will be used to show additional information in the dropdown.
+   * @todo Not implemented yet
+   */
+  descriptionPath?: keyof Collection<T>;
+  /**
+   * Placeholder text for the search input.
+   * This will be displayed when the input is empty.
+   */
   searchPlaceholder?: string;
 };
 
@@ -57,6 +91,8 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug = Collec
   value: selected,
   onChange: onSelectionChanged,
   searchPath,
+  labelPath = searchPath,
+  descriptionPath,
   searchPlaceholder = 'Search here...',
   isDisabled: disabled,
 }: InfiniteScrollComboBoxProps<T>) {
@@ -77,10 +113,10 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug = Collec
           collection,
           depth: 0,
           //@ts-expect-error typescript cant infer here.
-          select: { [searchPath]: true },
+          select: { [labelPath]: true },
         });
 
-        return (res[searchPath] as string) || '';
+        return (res[labelPath] as string) || '';
       }
       return '';
     },
@@ -108,7 +144,9 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug = Collec
         depth: 0,
         sort: searchPath,
         //@ts-expect-error typescript cant infer here.
-        select: { [searchPath]: true },
+        select: descriptionPath
+          ? { [searchPath]: true, [labelPath]: true, [descriptionPath]: true }
+          : { [searchPath]: true, [labelPath]: true },
       });
     },
     getNextPageParam: ({ nextPage }) => nextPage,
@@ -215,7 +253,7 @@ export default function InfiniteScrollComboBox<T extends CollectionSlug = Collec
           <Box className="w-full p-5">
             <Input>
               <InputField
-                //@ts-expect-error gluestack-ref-issue
+                //@ts-expect-error gluestack-ref-type-issue
                 ref={inputRef}
                 defaultValue={searchDefault}
                 onChangeText={setSearch}

@@ -1,6 +1,6 @@
-import { DeliveryDetailsForm } from '@/components/forms/donation-request/delivery';
-import { DonationDetailsForm } from '@/components/forms/donation-request/donation-details';
-import { Box } from '@/components/ui/box';
+import { DeliveryDetailsForm } from '@/components/forms/donation-request/DeliveryDetailsForm';
+import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
+import SafeArea from '@/components/SafeArea';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 
@@ -41,7 +41,9 @@ export default function CreateDonation() {
 
   const RenderBlock = block[step];
 
-  async function onSubmit(data: CreateDonationSchema) {}
+  async function onSubmit(data: CreateDonationSchema) {
+    console.log('Submitting Donation:', data);
+  }
 
   async function handleNext() {
     if (!hasNextPage) {
@@ -54,9 +56,6 @@ export default function CreateDonation() {
       details: DONATION_DETAILS_FIELDS,
     };
 
-    const values = form.getValues();
-    console.log('Form Values:', values);
-
     const allValid = await form.trigger(fields[step]);
 
     if (allValid) {
@@ -67,16 +66,16 @@ export default function CreateDonation() {
   }
 
   return (
-    <Box className="bg-background-50 flex-1">
-      <ScrollView>
-        <VStack space="lg" className="m-5">
+    <SafeArea safeTop={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <VStack space="lg">
           <RenderBlock />
 
-          <Button size="lg" className="mt-4" onPress={handleNext}>
+          <Button size="lg" className="m-5" onPress={handleNext}>
             <ButtonText>{hasNextPage ? 'Next' : 'Create'}</ButtonText>
           </Button>
         </VStack>
       </ScrollView>
-    </Box>
+    </SafeArea>
   );
 }

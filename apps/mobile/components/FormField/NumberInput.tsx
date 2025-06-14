@@ -1,8 +1,9 @@
-import React, { ComponentPropsWithoutRef, FC } from 'react';
+import React, { ComponentPropsWithoutRef, FC, useEffect, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { useDebouncedCallback } from '@lactalink/utilities';
 import { LucideIcon, LucideProps, MinusIcon, PlusIcon } from 'lucide-react-native';
 
 const inputFieldStyle = tva({
@@ -44,6 +45,21 @@ export function NumberInput({
   onChange,
   ...props
 }: NumberInputProps) {
+  const [localValue, setLocalValue] = useState(value);
+
+  const { debounced: handleChange, cancel } = useDebouncedCallback((val?: number) => {
+    onChange?.(val);
+  }, 300);
+
+  useEffect(() => {
+    handleChange(localValue);
+
+    // Cleanup function to cancel any pending debounced calls
+    return () => {
+      cancel();
+    };
+  }, [cancel, handleChange, localValue]);
+
   return (
     <Input variant={variant} isDisabled={disabled} className={className}>
       {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
@@ -53,10 +69,10 @@ export function NumberInput({
           <Button
             size="sm"
             variant="link"
-            isDisabled={disabled || (value || 0) <= min}
+            isDisabled={disabled || (localValue || 0) <= min}
             className="px-3"
             onPress={() => {
-              onChange?.((value || 0) - (step || 1));
+              setLocalValue((localValue || 0) - (step || 1));
             }}
           >
             <ButtonIcon as={MinusIcon} />
@@ -67,9 +83,16 @@ export function NumberInput({
       <InputField
         {...props}
         className={inputFieldStyle({ isStepButtonsVisible: showStepButtons })}
-        defaultValue={value === undefined ? value : String(value)}
+        value={localValue === undefined ? localValue : String(localValue)}
         onChangeText={(val) => {
-          onChange?.(val ? Number(val) : undefined);
+          if (val === '') {
+            setLocalValue(undefined);
+            return;
+          } else if (isNaN(Number(val))) {
+            setLocalValue(0);
+            return;
+          }
+          setLocalValue(Number(val));
         }}
         aria-disabled={disabled}
         placeholder={placeholder}
@@ -80,10 +103,10 @@ export function NumberInput({
           <Button
             size="sm"
             variant="link"
-            isDisabled={disabled || (value || 0) >= max}
+            isDisabled={disabled || (localValue || 0) >= max}
             className="px-3"
             onPress={() => {
-              onChange?.((value || 0) + (step || 1));
+              setLocalValue((localValue || 0) + (step || 1));
             }}
           >
             <ButtonIcon as={PlusIcon} />

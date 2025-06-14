@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/text';
 
 export default function MessagesPage() {
   return (
-    <SafeArea>
+    <SafeArea safeTop={false}>
       <Text>MessagesPage</Text>
     </SafeArea>
   );

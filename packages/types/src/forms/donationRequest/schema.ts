@@ -19,9 +19,9 @@ export const textAreaSchema = z
 
 export const milkBagSchema = z.object({
   donor: z.uuid().nonempty('Required'),
-  volume: z.number().min(20, 'Atleast 20mL of milk is specified.').positive(),
-  collectedAt: z.iso.datetime(),
-  quantity: z.number().min(1, 'Atleast 1 milk bag is specified.').positive(),
+  volume: z.number('Required').min(20, 'Atleast 20mL').positive(),
+  collectedAt: z.iso.datetime('Required'),
+  quantity: z.number('Required').min(1, 'Atleast 1 bag').positive(),
 });
 
 export const donationDetailsSchema = z.object({
@@ -40,10 +40,8 @@ export const donationDetailsSchema = z.object({
 
 export const requestDetailsSchema = z.object({
   neededAt: z.iso.datetime(),
-  storagePreference: z
-    .enum([...Object.values(STORAGE_TYPES).map((item) => item.value), 'EITHER'])
-    .default('EITHER'),
-  urgency: z.enum(Object.values(PRIORITY_LEVELS).map((item) => item.value)).default('MEDIUM'),
+  storagePreference: z.enum([...Object.values(STORAGE_TYPES).map((item) => item.value), 'EITHER']),
+  urgency: z.enum(Object.values(PRIORITY_LEVELS).map((item) => item.value)),
   bags: z.array(milkBagSchema).optional().nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
@@ -51,22 +49,20 @@ export const requestDetailsSchema = z.object({
 });
 
 export const deliverySchema = z.object({
+  address: z.uuid().nonempty('Required'),
   prefferedModes: z
     .array(z.enum(Object.values(DELIVERY_OPTIONS).map((item) => item.value)))
-    .min(1, 'Atleast one delivery mode is selected.')
-    .default(Object.values(DELIVERY_OPTIONS).map((item) => item.value)),
-  address: z.uuid().nonempty('Required'),
+    .min(1, 'Atleast one delivery mode is selected.'),
   availableDays: z
     .array(z.enum(Object.values(DAYS).map((item) => item.value)))
-    .min(1, 'Atleast one day is selected.')
-    .default(Object.values(DAYS).map((item) => item.value)),
+    .min(1, 'Atleast one day is selected.'),
 });
 
 export const createDonationSchema = z.object({
   donor: z.uuid().nonempty('Required'),
   recipient: z.uuid().optional().nullable(),
   details: donationDetailsSchema,
-  deliveryDetails: z.array(deliverySchema),
+  deliveryDetails: deliverySchema,
 });
 
 export const createRequestSchema = z.object({

@@ -114,6 +114,7 @@ export function ImageUploadField({
                     size="xs"
                     action="negative"
                     className="rounded-md opacity-90"
+                    animateOnPress={false}
                     onPress={() => {
                       draggableRefs.current?.dismiss();
                     }}
@@ -204,6 +205,7 @@ function ImageArray({
                           size="xs"
                           action="negative"
                           className="rounded-md opacity-90"
+                          animateOnPress={false}
                           onPress={() => {
                             draggableRefs.current[i]?.dismiss();
                           }}
@@ -250,6 +252,7 @@ function ImageArray({
                       size="xs"
                       action="negative"
                       className="rounded-md opacity-90"
+                      animateOnPress={false}
                       onPress={() => {
                         draggableRefs.current[0]?.dismiss();
                       }}

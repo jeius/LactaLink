@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MainTabButton } from './MainTabButton';
 import { TabButton } from './TabButton';
 
@@ -25,6 +26,7 @@ const icons: Record<string, LucideIcon> = {
 
 export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const insets = useSafeAreaInsets();
 
   const buttonWidth = dimensions.width / state.routes.length;
   const translateX = useSharedValue(buttonWidth * state.index);
@@ -53,6 +55,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
         left: 20,
         right: 20,
         zIndex: 1,
+        paddingBottom: insets.bottom,
       }}
     >
       <Box className="bg-background-0 relative rounded-3xl p-2 shadow-md">

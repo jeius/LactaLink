@@ -28,7 +28,7 @@ export default function SignUp() {
   ] as const;
 
   return (
-    <SafeArea className="items-stretch">
+    <SafeArea>
       <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
         <Card className="m-5 p-0">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
@@ -81,7 +81,7 @@ export default function SignUp() {
               <ButtonText className="text-primary-500">Privacy Policiy</ButtonText>
             </Button>
 
-            <Text size="sm" className="text-typography-600 -ml-2">
+            <Text size="sm" className="-ml-2 text-typography-600">
               .
             </Text>
           </HStack>

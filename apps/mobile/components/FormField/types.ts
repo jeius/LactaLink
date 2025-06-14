@@ -6,8 +6,10 @@ import { InputField } from '@/components/ui/input';
 import { TextareaInput } from '@/components/ui/textarea';
 import { CollectionSlug } from '@lactalink/types';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
+import { StyleProp, ViewStyle } from 'react-native';
 import { ComboboxType } from '../ComboBox';
-import { ButtonGroup } from '../ui/button';
+import { Icon } from '../ui/icon';
+import { ButtonGroupInputType } from './ButtonGroupInput';
 import { DateInputType } from './DateInput';
 import { ImageUploadFieldType } from './ImageField';
 import { NumberInputType } from './NumberInput';
@@ -24,22 +26,25 @@ type FieldType =
   | 'image';
 
 type TInputField = ComponentPropsWithoutRef<typeof InputField>;
+
 type TTextareaInput = ComponentPropsWithoutRef<typeof TextareaInput>;
 
-type TButtonGroup = ComponentPropsWithoutRef<typeof ButtonGroup>;
 type ComboboxProps<T extends CollectionSlug> = ComboboxType<T>;
+
 type Options = { options: OptionsCardItem<string | number>[] };
-type ButtonGroupProps = Omit<TButtonGroup, 'children'> & Options;
 
 type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> = {
   inputIcon?: FC<LucideProps> | LucideIcon;
   errorIcon?: FC<LucideProps> | LucideIcon;
+  labelIcon?: FC<LucideProps> | LucideIcon;
+  labelIconProps?: ComponentPropsWithoutRef<typeof Icon>;
   name: FieldPath<T>;
   label?: string;
   helperText?: string;
   fieldType: TFieldType;
   placeholder?: string;
   containerClassName?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 };
 
 type FormFieldProps<
@@ -60,14 +65,13 @@ type FormFieldProps<
             : TFieldType extends 'options-cards'
               ? Options
               : TFieldType extends 'button-group'
-                ? ButtonGroupProps
+                ? ButtonGroupInputType<unknown>
                 : TFieldType extends 'image'
                   ? ImageUploadFieldType
                   : never);
 
 export type {
   BaseProps,
-  ButtonGroupProps,
   ComboboxProps,
   FieldType,
   FormFieldProps,

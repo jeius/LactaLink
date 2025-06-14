@@ -12,7 +12,7 @@ import { Noop } from 'react-hook-form';
 import { Platform } from 'react-native';
 
 const inputStyle = tva({
-  base: 'max-w-60',
+  base: 'max-w-sm',
 });
 
 type TInput = Pick<

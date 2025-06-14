@@ -12,7 +12,10 @@ export function createNativeFile(data: FileData): NativeFile {
   return { uri: data.url, name: data.filename, type: data.mimeType };
 }
 
-export async function uploadImage(collection: FileCollectionSlug, data: ImageSchema) {
+export async function uploadImage<TSlug extends FileCollectionSlug = FileCollectionSlug>(
+  collection: TSlug,
+  data: ImageSchema
+) {
   const apiClient = getApiClient();
 
   const file = createNativeFile(data);
@@ -21,7 +24,7 @@ export async function uploadImage(collection: FileCollectionSlug, data: ImageSch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fd.append('file', file as any); // Cast to any to satisfy FormData type requirements
 
-  const args: CreateFileArgs<FileCollectionSlug> = { data: fd, collection };
+  const args: CreateFileArgs<TSlug> = { data: fd, collection };
 
   const res = await apiClient.createFile(args);
   return res;
