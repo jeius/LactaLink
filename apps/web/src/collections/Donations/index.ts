@@ -1,5 +1,4 @@
 import { createdByField } from '@/fields/createdByField';
-import { deliveryDetailsField } from '@/fields/deliveryTabFields';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/types/enums';
@@ -184,7 +183,17 @@ export const Donations: CollectionConfig<'donations'> = {
         {
           label: 'Delivery',
           fields: [
-            deliveryDetailsField({ defaultPreferredModes: ['PICKUP'] }),
+            {
+              name: 'deliveryDetails',
+              label: 'Delivery Details',
+              type: 'relationship',
+              relationTo: 'deliveryPreferences',
+              hasMany: true,
+              required: true,
+              admin: {
+                description: 'Delivery preferences for the milk donation',
+              },
+            },
             {
               name: 'deliveries',
               type: 'join',

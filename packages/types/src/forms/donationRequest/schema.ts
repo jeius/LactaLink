@@ -27,11 +27,11 @@ export const milkBagSchema = z.object({
 export const donationDetailsSchema = z.object({
   storageType: z.enum(
     Object.values(STORAGE_TYPES).map((item) => item.value),
-    'Required'
+    'Select one option'
   ),
   collectionMode: z.enum(
     Object.values(COLLECTION_MODES).map((item) => item.value),
-    'Required'
+    'Select one option'
   ),
   bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
   milkSample: z.array(imageSchema).optional().nullable(),
@@ -49,10 +49,12 @@ export const requestDetailsSchema = z.object({
 });
 
 export const deliverySchema = z.object({
+  id: z.uuid().optional().nullable(),
   address: z.uuid().nonempty('Required'),
-  prefferedModes: z
-    .array(z.enum(Object.values(DELIVERY_OPTIONS).map((item) => item.value)))
-    .min(1, 'Atleast one delivery mode is selected.'),
+  preferredMode: z.enum(
+    Object.values(DELIVERY_OPTIONS).map((item) => item.value),
+    'Select one option'
+  ),
   availableDays: z
     .array(z.enum(Object.values(DAYS).map((item) => item.value)))
     .min(1, 'Atleast one day is selected.'),
@@ -62,12 +64,12 @@ export const createDonationSchema = z.object({
   donor: z.uuid().nonempty('Required'),
   recipient: z.uuid().optional().nullable(),
   details: donationDetailsSchema,
-  deliveryDetails: deliverySchema,
+  deliveryDetails: z.array(deliverySchema).min(1, 'Atleast one delivery detail is required.'),
 });
 
 export const createRequestSchema = z.object({
   requester: z.uuid().nonempty('Required'),
   requestedDonor: z.uuid().optional().nullable(),
   details: requestDetailsSchema,
-  deliveryDetails: deliverySchema,
+  deliveryDetails: z.array(deliverySchema).min(1, 'Atleast one delivery detail is required.'),
 });

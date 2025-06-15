@@ -1,6 +1,6 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_GROUP, ORGANIZATION_TYPES } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 
@@ -55,11 +55,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
           label: 'Milk Bank Type',
           type: 'select',
           admin: { width: '50%' },
-          options: [
-            { label: 'Government', value: 'GOVERNMENT' },
-            { label: 'Private', value: 'PRIVATE' },
-            { label: 'Other', value: 'OTHER' },
-          ],
+          options: Object.values(ORGANIZATION_TYPES),
         },
       ],
     },

@@ -6,5 +6,6 @@ export const createdByField: Field = {
   relationTo: 'users',
   admin: {
     position: 'sidebar',
+    readOnly: true,
   },
 };

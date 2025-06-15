@@ -1,6 +1,6 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_GROUP, GENDER_TYPES, MARITAL_STATUS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateDisplayName } from './hooks/generateDisplayName';
@@ -107,11 +107,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
           type: 'radio',
           required: true,
           admin: { width: '50%' },
-          options: [
-            { label: 'Male', value: 'MALE' },
-            { label: 'Female', value: 'FEMALE' },
-            { label: 'Other', value: 'OTHER' },
-          ],
+          options: Object.values(GENDER_TYPES),
         },
       ],
     },
@@ -124,14 +120,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
           type: 'select',
           required: true,
           admin: { width: '50%' },
-          options: [
-            { label: 'Single', value: 'SINGLE' },
-            { label: 'Married', value: 'MARRIED' },
-            { label: 'Widowed', value: 'WIDOWED' },
-            { label: 'Divorced', value: 'DIVORCED' },
-            { label: 'Separated', value: 'SEPARATED' },
-            { label: 'Prefer not to say', value: 'N/A' },
-          ],
+          options: Object.values(MARITAL_STATUS),
         },
       ],
     },

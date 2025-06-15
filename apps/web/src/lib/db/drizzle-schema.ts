@@ -93,9 +93,9 @@ export const enum_individuals_gender = pgEnum('enum_individuals_gender', [
 export const enum_individuals_marital_status = pgEnum('enum_individuals_marital_status', [
   'SINGLE',
   'MARRIED',
+  'SEPARATED',
   'WIDOWED',
   'DIVORCED',
-  'SEPARATED',
   'N/A',
 ]);
 export const enum_milk_bag_status = pgEnum('enum_milk_bag_status', [
@@ -510,49 +510,60 @@ export const deliveries = pgTable(
   })
 );
 
-export const donations_delivery_details_available_days = pgTable(
-  'donations_delivery_details_available_days',
+export const delivery_preferences_available_days = pgTable(
+  'delivery_preferences_available_days',
   {
     order: integer('order').notNull(),
-    parent: varchar('parent_id').notNull(),
+    parent: uuid('parent_id').notNull(),
     value: enum_days('value'),
     id: uuid('id').defaultRandom().primaryKey(),
   },
   (columns) => ({
-    orderIdx: index('donations_delivery_details_available_days_order_idx').on(columns.order),
-    parentIdx: index('donations_delivery_details_available_days_parent_idx').on(columns.parent),
+    orderIdx: index('delivery_preferences_available_days_order_idx').on(columns.order),
+    parentIdx: index('delivery_preferences_available_days_parent_idx').on(columns.parent),
     parentFk: foreignKey({
       columns: [columns['parent']],
-      foreignColumns: [donations_delivery_details.id],
-      name: 'donations_delivery_details_available_days_parent_fk',
+      foreignColumns: [delivery_preferences.id],
+      name: 'delivery_preferences_available_days_parent_fk',
     }).onDelete('cascade'),
   })
 );
 
-export const donations_delivery_details = pgTable(
-  'donations_delivery_details',
+export const delivery_preferences = pgTable(
+  'delivery_preferences',
   {
-    _order: integer('_order').notNull(),
-    _parentID: uuid('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    preferredModes: enum_delivery_modes('preferred_modes').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    preferredMode: enum_delivery_modes('preferred_mode').notNull(),
     address: uuid('address_id')
       .notNull()
       .references(() => addresses.id, {
         onDelete: 'set null',
       }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
   },
   (columns) => ({
-    _orderIdx: index('donations_delivery_details_order_idx').on(columns._order),
-    _parentIDIdx: index('donations_delivery_details_parent_id_idx').on(columns._parentID),
-    donations_delivery_details_address_idx: index('donations_delivery_details_address_idx').on(
-      columns.address
+    delivery_preferences_created_by_idx: index('delivery_preferences_created_by_idx').on(
+      columns.createdBy
     ),
-    _parentIDFk: foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [donations.id],
-      name: 'donations_delivery_details_parent_id_fk',
-    }).onDelete('cascade'),
+    delivery_preferences_owner_idx: index('delivery_preferences_owner_idx').on(columns.owner),
+    delivery_preferences_address_idx: index('delivery_preferences_address_idx').on(columns.address),
+    delivery_preferences_updated_at_idx: index('delivery_preferences_updated_at_idx').on(
+      columns.updatedAt
+    ),
+    delivery_preferences_created_at_idx: index('delivery_preferences_created_at_idx').on(
+      columns.createdAt
+    ),
   })
 );
 
@@ -601,6 +612,7 @@ export const donations_rels = pgTable(
     requestsID: uuid('requests_id'),
     milkBagsID: uuid('milk_bags_id'),
     imagesID: uuid('images_id'),
+    deliveryPreferencesID: uuid('delivery_preferences_id'),
   },
   (columns) => ({
     order: index('donations_rels_order_idx').on(columns.order),
@@ -611,6 +623,9 @@ export const donations_rels = pgTable(
       columns.milkBagsID
     ),
     donations_rels_images_id_idx: index('donations_rels_images_id_idx').on(columns.imagesID),
+    donations_rels_delivery_preferences_id_idx: index(
+      'donations_rels_delivery_preferences_id_idx'
+    ).on(columns.deliveryPreferencesID),
     parentFk: foreignKey({
       columns: [columns['parent']],
       foreignColumns: [donations.id],
@@ -630,6 +645,11 @@ export const donations_rels = pgTable(
       columns: [columns['imagesID']],
       foreignColumns: [images.id],
       name: 'donations_rels_images_fk',
+    }).onDelete('cascade'),
+    deliveryPreferencesIdFk: foreignKey({
+      columns: [columns['deliveryPreferencesID']],
+      foreignColumns: [delivery_preferences.id],
+      name: 'donations_rels_delivery_preferences_fk',
     }).onDelete('cascade'),
   })
 );
@@ -703,6 +723,9 @@ export const images = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -748,21 +771,10 @@ export const images = pgTable(
     sizes_large_mimeType: varchar('sizes_large_mime_type'),
     sizes_large_filesize: numeric('sizes_large_filesize'),
     sizes_large_filename: varchar('sizes_large_filename'),
-    sizes_xlarge_url: varchar('sizes_xlarge_url'),
-    sizes_xlarge_width: numeric('sizes_xlarge_width'),
-    sizes_xlarge_height: numeric('sizes_xlarge_height'),
-    sizes_xlarge_mimeType: varchar('sizes_xlarge_mime_type'),
-    sizes_xlarge_filesize: numeric('sizes_xlarge_filesize'),
-    sizes_xlarge_filename: varchar('sizes_xlarge_filename'),
-    sizes_og_url: varchar('sizes_og_url'),
-    sizes_og_width: numeric('sizes_og_width'),
-    sizes_og_height: numeric('sizes_og_height'),
-    sizes_og_mimeType: varchar('sizes_og_mime_type'),
-    sizes_og_filesize: numeric('sizes_og_filesize'),
-    sizes_og_filename: varchar('sizes_og_filename'),
   },
   (columns) => ({
     images_created_by_idx: index('images_created_by_idx').on(columns.createdBy),
+    images_owner_idx: index('images_owner_idx').on(columns.owner),
     images_updated_at_idx: index('images_updated_at_idx').on(columns.updatedAt),
     images_created_at_idx: index('images_created_at_idx').on(columns.createdAt),
     images_filename_idx: uniqueIndex('images_filename_idx').on(columns.filename),
@@ -781,12 +793,6 @@ export const images = pgTable(
     images_sizes_large_sizes_large_filename_idx: index(
       'images_sizes_large_sizes_large_filename_idx'
     ).on(columns.sizes_large_filename),
-    images_sizes_xlarge_sizes_xlarge_filename_idx: index(
-      'images_sizes_xlarge_sizes_xlarge_filename_idx'
-    ).on(columns.sizes_xlarge_filename),
-    images_sizes_og_sizes_og_filename_idx: index('images_sizes_og_sizes_og_filename_idx').on(
-      columns.sizes_og_filename
-    ),
   })
 );
 
@@ -1348,52 +1354,6 @@ export const regions = pgTable(
   })
 );
 
-export const requests_delivery_details_available_days = pgTable(
-  'requests_delivery_details_available_days',
-  {
-    order: integer('order').notNull(),
-    parent: varchar('parent_id').notNull(),
-    value: enum_days('value'),
-    id: uuid('id').defaultRandom().primaryKey(),
-  },
-  (columns) => ({
-    orderIdx: index('requests_delivery_details_available_days_order_idx').on(columns.order),
-    parentIdx: index('requests_delivery_details_available_days_parent_idx').on(columns.parent),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [requests_delivery_details.id],
-      name: 'requests_delivery_details_available_days_parent_fk',
-    }).onDelete('cascade'),
-  })
-);
-
-export const requests_delivery_details = pgTable(
-  'requests_delivery_details',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: uuid('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    preferredModes: enum_delivery_modes('preferred_modes').notNull(),
-    address: uuid('address_id')
-      .notNull()
-      .references(() => addresses.id, {
-        onDelete: 'set null',
-      }),
-  },
-  (columns) => ({
-    _orderIdx: index('requests_delivery_details_order_idx').on(columns._order),
-    _parentIDIdx: index('requests_delivery_details_parent_id_idx').on(columns._parentID),
-    requests_delivery_details_address_idx: index('requests_delivery_details_address_idx').on(
-      columns.address
-    ),
-    _parentIDFk: foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [requests.id],
-      name: 'requests_delivery_details_parent_id_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const requests = pgTable(
   'requests',
   {
@@ -1460,12 +1420,16 @@ export const requests_rels = pgTable(
     parent: uuid('parent_id').notNull(),
     path: varchar('path').notNull(),
     milkBagsID: uuid('milk_bags_id'),
+    deliveryPreferencesID: uuid('delivery_preferences_id'),
   },
   (columns) => ({
     order: index('requests_rels_order_idx').on(columns.order),
     parentIdx: index('requests_rels_parent_idx').on(columns.parent),
     pathIdx: index('requests_rels_path_idx').on(columns.path),
     requests_rels_milk_bags_id_idx: index('requests_rels_milk_bags_id_idx').on(columns.milkBagsID),
+    requests_rels_delivery_preferences_id_idx: index(
+      'requests_rels_delivery_preferences_id_idx'
+    ).on(columns.deliveryPreferencesID),
     parentFk: foreignKey({
       columns: [columns['parent']],
       foreignColumns: [requests.id],
@@ -1475,6 +1439,11 @@ export const requests_rels = pgTable(
       columns: [columns['milkBagsID']],
       foreignColumns: [milk_bags.id],
       name: 'requests_rels_milk_bags_fk',
+    }).onDelete('cascade'),
+    deliveryPreferencesIdFk: foreignKey({
+      columns: [columns['deliveryPreferencesID']],
+      foreignColumns: [delivery_preferences.id],
+      name: 'requests_rels_delivery_preferences_fk',
     }).onDelete('cascade'),
   })
 );
@@ -1597,6 +1566,7 @@ export const payload_locked_documents_rels = pgTable(
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
     deliveriesID: uuid('deliveries_id'),
+    deliveryPreferencesID: uuid('delivery_preferences_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     imagesID: uuid('images_id'),
@@ -1632,6 +1602,9 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_deliveries_id_idx: index(
       'payload_locked_documents_rels_deliveries_id_idx'
     ).on(columns.deliveriesID),
+    payload_locked_documents_rels_delivery_preferences_id_idx: index(
+      'payload_locked_documents_rels_delivery_preferences_id_idx'
+    ).on(columns.deliveryPreferencesID),
     payload_locked_documents_rels_donations_id_idx: index(
       'payload_locked_documents_rels_donations_id_idx'
     ).on(columns.donationsID),
@@ -1706,6 +1679,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['deliveriesID']],
       foreignColumns: [deliveries.id],
       name: 'payload_locked_documents_rels_deliveries_fk',
+    }).onDelete('cascade'),
+    deliveryPreferencesIdFk: foreignKey({
+      columns: [columns['deliveryPreferencesID']],
+      foreignColumns: [delivery_preferences.id],
+      name: 'payload_locked_documents_rels_delivery_preferences_fk',
     }).onDelete('cascade'),
     donationsIdFk: foreignKey({
       columns: [columns['donationsID']],
@@ -2005,34 +1983,36 @@ export const relations_deliveries = relations(deliveries, ({ one, many }) => ({
     relationName: 'tracking_trackingHistory',
   }),
 }));
-export const relations_donations_delivery_details_available_days = relations(
-  donations_delivery_details_available_days,
+export const relations_delivery_preferences_available_days = relations(
+  delivery_preferences_available_days,
   ({ one }) => ({
-    parent: one(donations_delivery_details, {
-      fields: [donations_delivery_details_available_days.parent],
-      references: [donations_delivery_details.id],
+    parent: one(delivery_preferences, {
+      fields: [delivery_preferences_available_days.parent],
+      references: [delivery_preferences.id],
       relationName: 'availableDays',
     }),
   })
 );
-export const relations_donations_delivery_details = relations(
-  donations_delivery_details,
-  ({ one, many }) => ({
-    _parentID: one(donations, {
-      fields: [donations_delivery_details._parentID],
-      references: [donations.id],
-      relationName: 'deliveryDetails',
-    }),
-    address: one(addresses, {
-      fields: [donations_delivery_details.address],
-      references: [addresses.id],
-      relationName: 'address',
-    }),
-    availableDays: many(donations_delivery_details_available_days, {
-      relationName: 'availableDays',
-    }),
-  })
-);
+export const relations_delivery_preferences = relations(delivery_preferences, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [delivery_preferences.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [delivery_preferences.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  address: one(addresses, {
+    fields: [delivery_preferences.address],
+    references: [addresses.id],
+    relationName: 'address',
+  }),
+  availableDays: many(delivery_preferences_available_days, {
+    relationName: 'availableDays',
+  }),
+}));
 export const relations_donations_rels = relations(donations_rels, ({ one }) => ({
   parent: one(donations, {
     fields: [donations_rels.parent],
@@ -2054,6 +2034,11 @@ export const relations_donations_rels = relations(donations_rels, ({ one }) => (
     references: [images.id],
     relationName: 'images',
   }),
+  deliveryPreferencesID: one(delivery_preferences, {
+    fields: [donations_rels.deliveryPreferencesID],
+    references: [delivery_preferences.id],
+    relationName: 'deliveryPreferences',
+  }),
 }));
 export const relations_donations = relations(donations, ({ one, many }) => ({
   createdBy: one(users, {
@@ -2065,9 +2050,6 @@ export const relations_donations = relations(donations, ({ one, many }) => ({
     fields: [donations.donor],
     references: [individuals.id],
     relationName: 'donor',
-  }),
-  deliveryDetails: many(donations_delivery_details, {
-    relationName: 'deliveryDetails',
   }),
   _rels: many(donations_rels, {
     relationName: '_rels',
@@ -2105,6 +2087,11 @@ export const relations_images = relations(images, ({ one }) => ({
     fields: [images.createdBy],
     references: [users.id],
     relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [images.owner],
+    references: [users.id],
+    relationName: 'owner',
   }),
 }));
 export const relations_individuals_rels = relations(individuals_rels, ({ one }) => ({
@@ -2307,34 +2294,6 @@ export const relations_regions = relations(regions, ({ one }) => ({
     relationName: 'islandGroup',
   }),
 }));
-export const relations_requests_delivery_details_available_days = relations(
-  requests_delivery_details_available_days,
-  ({ one }) => ({
-    parent: one(requests_delivery_details, {
-      fields: [requests_delivery_details_available_days.parent],
-      references: [requests_delivery_details.id],
-      relationName: 'availableDays',
-    }),
-  })
-);
-export const relations_requests_delivery_details = relations(
-  requests_delivery_details,
-  ({ one, many }) => ({
-    _parentID: one(requests, {
-      fields: [requests_delivery_details._parentID],
-      references: [requests.id],
-      relationName: 'deliveryDetails',
-    }),
-    address: one(addresses, {
-      fields: [requests_delivery_details.address],
-      references: [addresses.id],
-      relationName: 'address',
-    }),
-    availableDays: many(requests_delivery_details_available_days, {
-      relationName: 'availableDays',
-    }),
-  })
-);
 export const relations_requests_rels = relations(requests_rels, ({ one }) => ({
   parent: one(requests, {
     fields: [requests_rels.parent],
@@ -2345,6 +2304,11 @@ export const relations_requests_rels = relations(requests_rels, ({ one }) => ({
     fields: [requests_rels.milkBagsID],
     references: [milk_bags.id],
     relationName: 'milkBags',
+  }),
+  deliveryPreferencesID: one(delivery_preferences, {
+    fields: [requests_rels.deliveryPreferencesID],
+    references: [delivery_preferences.id],
+    relationName: 'deliveryPreferences',
   }),
 }));
 export const relations_requests = relations(requests, ({ one, many }) => ({
@@ -2372,9 +2336,6 @@ export const relations_requests = relations(requests, ({ one, many }) => ({
     fields: [requests.details_image],
     references: [images.id],
     relationName: 'details_image',
-  }),
-  deliveryDetails: many(requests_delivery_details, {
-    relationName: 'deliveryDetails',
   }),
   _rels: many(requests_rels, {
     relationName: '_rels',
@@ -2439,6 +2400,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.deliveriesID],
       references: [deliveries.id],
       relationName: 'deliveries',
+    }),
+    deliveryPreferencesID: one(delivery_preferences, {
+      fields: [payload_locked_documents_rels.deliveryPreferencesID],
+      references: [delivery_preferences.id],
+      relationName: 'deliveryPreferences',
     }),
     donationsID: one(donations, {
       fields: [payload_locked_documents_rels.donationsID],
@@ -2582,8 +2548,8 @@ type DatabaseSchema = {
   deliveries_details_proposed_addresses: typeof deliveries_details_proposed_addresses;
   deliveries_tracking_tracking_history: typeof deliveries_tracking_tracking_history;
   deliveries: typeof deliveries;
-  donations_delivery_details_available_days: typeof donations_delivery_details_available_days;
-  donations_delivery_details: typeof donations_delivery_details;
+  delivery_preferences_available_days: typeof delivery_preferences_available_days;
+  delivery_preferences: typeof delivery_preferences;
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
@@ -2605,8 +2571,6 @@ type DatabaseSchema = {
   notification_types_rels: typeof notification_types_rels;
   provinces: typeof provinces;
   regions: typeof regions;
-  requests_delivery_details_available_days: typeof requests_delivery_details_available_days;
-  requests_delivery_details: typeof requests_delivery_details;
   requests: typeof requests;
   requests_rels: typeof requests_rels;
   users: typeof users;
@@ -2624,8 +2588,8 @@ type DatabaseSchema = {
   relations_deliveries_details_proposed_addresses: typeof relations_deliveries_details_proposed_addresses;
   relations_deliveries_tracking_tracking_history: typeof relations_deliveries_tracking_tracking_history;
   relations_deliveries: typeof relations_deliveries;
-  relations_donations_delivery_details_available_days: typeof relations_donations_delivery_details_available_days;
-  relations_donations_delivery_details: typeof relations_donations_delivery_details;
+  relations_delivery_preferences_available_days: typeof relations_delivery_preferences_available_days;
+  relations_delivery_preferences: typeof relations_delivery_preferences;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals_rels: typeof relations_hospitals_rels;
@@ -2647,8 +2611,6 @@ type DatabaseSchema = {
   relations_notification_types: typeof relations_notification_types;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
-  relations_requests_delivery_details_available_days: typeof relations_requests_delivery_details_available_days;
-  relations_requests_delivery_details: typeof relations_requests_delivery_details;
   relations_requests_rels: typeof relations_requests_rels;
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;

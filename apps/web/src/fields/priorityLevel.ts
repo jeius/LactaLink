@@ -1,4 +1,4 @@
-import { PRIORITY_LEVELS } from '@lactalink/types/enums';
+import { PRIORITY_LEVELS } from '@/lib/constants';
 import { Field, SelectField } from 'payload';
 
 export const priorityLevel = ({

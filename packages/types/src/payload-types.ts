@@ -113,6 +113,7 @@ export interface Config {
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
     deliveries: Delivery;
+    deliveryPreferences: DeliveryPreference;
     donations: Donation;
     hospitals: Hospital;
     images: Image;
@@ -150,6 +151,7 @@ export interface Config {
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
     deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
+    deliveryPreferences: DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
@@ -359,7 +361,7 @@ export interface Individual {
   phone?: string | null;
   dependents?: number | null;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
-  maritalStatus: 'SINGLE' | 'MARRIED' | 'WIDOWED' | 'DIVORCED' | 'SEPARATED' | 'N/A';
+  maritalStatus: 'SINGLE' | 'MARRIED' | 'SEPARATED' | 'WIDOWED' | 'DIVORCED' | 'N/A';
   addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
@@ -605,23 +607,10 @@ export interface Request {
      */
     notes?: string | null;
   };
-  deliveryDetails?:
-    | {
-        /**
-         * Preferred delivery modes of the individual. This will be used for matching.
-         */
-        preferredModes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-        /**
-         * Address available for pickup, delivery, or meet-up.
-         */
-        address: string | Address;
-        /**
-         * Days available for pickup, delivery, or meet-up.
-         */
-        availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Delivery preferences for the milk donation
+   */
+  deliveryDetails: (string | DeliveryPreference)[];
   delivery?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
@@ -680,23 +669,10 @@ export interface Donation {
      */
     notes?: string | null;
   };
-  deliveryDetails?:
-    | {
-        /**
-         * Preferred delivery modes of the individual. This will be used for matching.
-         */
-        preferredModes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-        /**
-         * Address available for pickup, delivery, or meet-up.
-         */
-        address: string | Address;
-        /**
-         * Days available for pickup, delivery, or meet-up.
-         */
-        availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Delivery preferences for the milk donation
+   */
+  deliveryDetails: (string | DeliveryPreference)[];
   deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
@@ -761,6 +737,7 @@ export interface Image {
   id: string;
   alt?: string | null;
   createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -813,23 +790,30 @@ export interface Image {
       filesize?: number | null;
       filename?: string | null;
     };
-    xlarge?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    og?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveryPreferences".
+ */
+export interface DeliveryPreference {
+  id: string;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  /**
+   * Preferred delivery modes of the individual. This will be used for matching.
+   */
+  preferredMode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  /**
+   * Address available for pickup, delivery, or meet-up.
+   */
+  address: string | Address;
+  /**
+   * Days available for pickup, delivery, or meet-up.
+   */
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * The confirmed time slot for the delivery, pickup, or meetup
@@ -1225,6 +1209,10 @@ export interface PayloadLockedDocument {
         value: string | Delivery;
       } | null)
     | ({
+        relationTo: 'deliveryPreferences';
+        value: string | DeliveryPreference;
+      } | null)
+    | ({
         relationTo: 'donations';
         value: string | Donation;
       } | null)
@@ -1491,6 +1479,19 @@ export interface TimeSlotSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveryPreferences_select".
+ */
+export interface DeliveryPreferencesSelect<T extends boolean = true> {
+  createdBy?: T;
+  owner?: T;
+  preferredMode?: T;
+  address?: T;
+  availableDays?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "donations_select".
  */
 export interface DonationsSelect<T extends boolean = true> {
@@ -1510,14 +1511,7 @@ export interface DonationsSelect<T extends boolean = true> {
         milkSample?: T;
         notes?: T;
       };
-  deliveryDetails?:
-    | T
-    | {
-        preferredModes?: T;
-        address?: T;
-        availableDays?: T;
-        id?: T;
-      };
+  deliveryDetails?: T;
   deliveries?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1546,6 +1540,7 @@ export interface HospitalsSelect<T extends boolean = true> {
 export interface ImagesSelect<T extends boolean = true> {
   alt?: T;
   createdBy?: T;
+  owner?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1601,26 +1596,6 @@ export interface ImagesSelect<T extends boolean = true> {
               filename?: T;
             };
         large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        og?:
           | T
           | {
               url?: T;
@@ -1911,14 +1886,7 @@ export interface RequestsSelect<T extends boolean = true> {
         reason?: T;
         notes?: T;
       };
-  deliveryDetails?:
-    | T
-    | {
-        preferredModes?: T;
-        address?: T;
-        availableDays?: T;
-        id?: T;
-      };
+  deliveryDetails?: T;
   delivery?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -1,6 +1,6 @@
 import { signOut } from '@/auth/actions';
 import { SupabaseStrategy } from '@/auth/strategy';
-import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
+import { COLLECTION_GROUP, DOC_LOCK_DURATION, PROFILE_TYPES } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, userOwnerOrAdmin } from '../_access-control';
 import { appendPermissions } from './hooks/afterMe';
@@ -66,20 +66,7 @@ export const Users: CollectionConfig<'users'> = {
           type: 'select',
           defaultValue: 'INDIVIDUAL',
           admin: { width: '50%' },
-          options: [
-            {
-              label: 'Individual',
-              value: 'INDIVIDUAL',
-            },
-            {
-              label: 'Hospital',
-              value: 'HOSPITAL',
-            },
-            {
-              label: 'Milk Bank',
-              value: 'MILK_BANK',
-            },
-          ],
+          options: Object.values(PROFILE_TYPES),
         },
         {
           name: 'profile',

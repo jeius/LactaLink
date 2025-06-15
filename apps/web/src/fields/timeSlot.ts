@@ -1,4 +1,4 @@
-import { TIME_SLOT_TYPES, TIME_SLOTS } from '@lactalink/types';
+import { TIME_SLOT_TYPES, TIME_SLOTS } from '@/lib/constants';
 import { Condition, Field } from 'payload';
 
 interface TimeSlotFieldOptions {

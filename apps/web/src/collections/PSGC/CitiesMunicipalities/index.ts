@@ -1,6 +1,6 @@
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated } from '../_access-control';
+import { admin, authenticated } from '../../_access-control';
 
 export const CitiesMunicipalities: CollectionConfig<'citiesMunicipalities'> = {
   slug: 'citiesMunicipalities',

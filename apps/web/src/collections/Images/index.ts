@@ -1,5 +1,7 @@
 import { createdByField } from '@/fields/createdByField';
+import { ownerField } from '@/fields/ownerField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import {
@@ -24,12 +26,16 @@ export const Images: CollectionConfig<'images'> = {
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'createdBy'],
   },
+  hooks: {
+    beforeChange: [generateAlt, generateCreatedBy, generateOwner],
+  },
   fields: [
     {
       name: 'alt',
       type: 'text',
     },
     createdByField,
+    ownerField,
   ],
   upload: {
     adminThumbnail: 'thumbnail',
@@ -57,19 +63,6 @@ export const Images: CollectionConfig<'images'> = {
         name: 'large',
         width: 1400,
       },
-      {
-        name: 'xlarge',
-        width: 1920,
-      },
-      {
-        name: 'og',
-        width: 1200,
-        height: 630,
-        crop: 'center',
-      },
     ],
-  },
-  hooks: {
-    beforeChange: [generateAlt, generateCreatedBy],
   },
 };

@@ -1,15 +1,15 @@
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated } from '../_access-control';
+import { admin, authenticated } from '../../_access-control';
 
-export const Regions: CollectionConfig<'regions'> = {
-  slug: 'regions',
+export const IslandGroups: CollectionConfig<'islandGroups'> = {
+  slug: 'islandGroups',
   admin: {
     group: COLLECTION_GROUP.PSGC,
     description:
-      'Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.',
+      'Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'code', 'islandGroup'],
+    defaultColumns: ['name', 'code'],
   },
   access: {
     admin: admin,
@@ -30,16 +30,6 @@ export const Regions: CollectionConfig<'regions'> = {
       required: true,
       unique: true,
       index: true,
-    },
-    {
-      name: 'regionName',
-      type: 'text',
-    },
-    {
-      name: 'islandGroup',
-      type: 'relationship',
-      relationTo: 'islandGroups',
-      required: true,
     },
   ],
 };
