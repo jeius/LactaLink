@@ -3,12 +3,13 @@ import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { DAYS, DELIVERY_OPTIONS } from '@lactalink/types';
+import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { CalendarDaysIcon, MapPinIcon, TruckIcon } from 'lucide-react-native';
 import React from 'react';
 
 export function DeliveryDetailsForm() {
   const { user } = useAuth();
+  // TODO: Revise this form to implement useArrayFields.
   return (
     <VStack space="lg" className="m-5">
       <Text size="lg" className="font-JakartaSemiBold">
@@ -16,14 +17,13 @@ export function DeliveryDetailsForm() {
       </Text>
       <Card className="max-w-sm">
         <FormField
-          name="deliveryDetails.prefferedModes"
+          name="deliveryDetails.preferredMode"
           fieldType="button-group"
           options={Object.values(DELIVERY_OPTIONS)}
           labelIcon={TruckIcon}
           label="Preferred Delivery Modes"
-          helperText="You can select multiple delivery modes."
           containerClassName="gap-2"
-          allowMultipleSelection
+          helperText="Select your preferred mode of delivery."
         />
       </Card>
       <Card className="max-w-sm">
@@ -43,7 +43,7 @@ export function DeliveryDetailsForm() {
           name="deliveryDetails.address"
           fieldType="combobox"
           label="Preferred Address"
-          helperText="Select your preffered address for delivery."
+          helperText="Select your preferred address for delivery."
           labelIcon={MapPinIcon}
           containerClassName="gap-2"
           collection="addresses"

@@ -2,7 +2,7 @@ import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/types';
+import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
 import React from 'react';
 import MilkBagsField from './milkbags';
 

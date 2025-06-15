@@ -1,17 +1,20 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { getApiClient } from '@lactalink/api';
 import {
   Address,
   createDonationSchema,
   CreateDonationSchema,
-  DAYS,
   Hospital,
   Individual,
   MilkBank,
   User,
 } from '@lactalink/types';
 import { useDebouncedCallback } from '@lactalink/utilities';
+
+import { DAYS } from '@/lib/constants';
+
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 
@@ -23,8 +26,20 @@ type Params = {
   profile: Individual | Hospital | MilkBank | null;
 };
 
-function getInitialData({ user, recipientId, profile }: Params): CreateDonationSchema | undefined {
+async function getInitialData({
+  user,
+  recipientId,
+  profile,
+}: Params): Promise<CreateDonationSchema | undefined> {
   if (!user) return undefined;
+
+  const apiClient = getApiClient();
+  const deliveryPreferences = await apiClient.find({
+    collection: 'deliveryPreferences',
+    where: { owner: { equals: user.id } },
+    depth: 0,
+    pagination: false,
+  });
 
   const id = user.id;
   const storageKey = `${storageKeyPrefix}-${id}`;
@@ -32,13 +47,31 @@ function getInitialData({ user, recipientId, profile }: Params): CreateDonationS
 
   const initialData: DeepPartial<CreateDonationSchema> | undefined = raw && JSON.parse(raw);
   const donor = profile?.id;
+
   const defaultAddressId = (
     profile?.addresses.find((address) => (address as Address)?.default) as Address | undefined
   )?.id;
 
+  const deliveryDetails =
+    deliveryPreferences.length > 0
+      ? deliveryPreferences
+      : initialData?.deliveryDetails?.map((detail) => ({
+          id: detail?.id,
+          preferredMode: detail?.preferredMode || 'PICKUP',
+          address: detail?.address || defaultAddressId || '',
+          availableDays: detail?.availableDays || Object.values(DAYS).map((day) => day.value),
+        })) || [
+          {
+            preferredMode: 'PICKUP',
+            address: defaultAddressId || '',
+            availableDays: Object.values(DAYS).map((day) => day.value),
+          },
+        ];
+
   return {
     donor: initialData?.donor || donor,
     recipient: initialData?.recipient || recipientId,
+    deliveryDetails,
     details: {
       notes: initialData?.details?.notes || '',
       collectionMode: initialData?.details?.collectionMode,
@@ -48,17 +81,20 @@ function getInitialData({ user, recipientId, profile }: Params): CreateDonationS
         { donor, volume: 20, quantity: 1, collectedAt: new Date().toISOString() },
       ],
     },
-    deliveryDetails: {
-      prefferedModes: initialData?.deliveryDetails?.prefferedModes || ['PICKUP'],
-      address: initialData?.deliveryDetails?.address || defaultAddressId || '',
-      availableDays:
-        initialData?.deliveryDetails?.availableDays || Object.values(DAYS).map((day) => day.value),
-    },
   } as CreateDonationSchema;
 }
 
 export const useCreateDonationForm = ({ recipientId, user, profile }: Params) => {
-  const initialData = user && getInitialData({ recipientId, user, profile });
+  const { data: initialData, refetch } = useQuery({
+    queryKey: ['create-donation-form', user?.id],
+    queryFn: () => {
+      return getInitialData({ recipientId, user, profile });
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
+  });
 
   const form = useForm({
     resolver: zodResolver(createDonationSchema),
@@ -94,24 +130,28 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
    * and save the user preference to local storage.
    */
   useEffect(() => {
-    if (isSubmitSuccessful) {
-      donationStorage.delete(storageKey);
+    async function saveUserPreference() {
+      if (isSubmitSuccessful) {
+        donationStorage.delete(storageKey);
 
-      // Pick the preffered values from the form
-      const {
-        details: { notes, collectionMode, storageType },
-        deliveryDetails: { prefferedModes, availableDays },
-      } = getValues();
+        // Pick the preffered values from the form
+        const {
+          details: { notes, collectionMode, storageType },
+          deliveryDetails,
+        } = (await refetch()).data || getValues();
 
-      const values: DeepPartial<CreateDonationSchema> = {
-        details: { notes, collectionMode, storageType },
-        deliveryDetails: { prefferedModes, availableDays },
-      };
+        const values: DeepPartial<CreateDonationSchema> = {
+          details: { notes, collectionMode, storageType },
+          deliveryDetails,
+        };
 
-      // Save the preffered values to local storage
-      donationStorage.set(storageKey, JSON.stringify(values));
+        // Save the preffered values to local storage
+        donationStorage.set(storageKey, JSON.stringify(values));
+      }
     }
-  }, [isSubmitSuccessful, getValues, storageKey]);
+
+    saveUserPreference();
+  }, [isSubmitSuccessful, getValues, storageKey, refetch]);
 
   return form;
 };
