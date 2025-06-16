@@ -23,6 +23,7 @@ import {
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { sql, relations } from '@payloadcms/db-postgres/drizzle';
+import { geometryColumn } from '@payloadcms/db-postgres';
 export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalities_type', [
   'NONE',
   'CITY',
@@ -195,6 +196,7 @@ export const addresses = pgTable(
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    coordinates: geometryColumn('coordinates'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),

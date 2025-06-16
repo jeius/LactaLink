@@ -20,7 +20,7 @@ const baseSchema = z.object({
 });
 
 export const individualSchema = z.object({
-  profileType: z.literal(PROFILE_TYPES.individual.value),
+  profileType: z.literal(PROFILE_TYPES.INDIVIDUAL.value),
   givenName: z.string().nonempty('Required'),
   middleName: z.string().transform(nullTransform).optional().nullable(),
   familyName: z.string().nonempty('Required'),
@@ -41,7 +41,7 @@ export const individualSchema = z.object({
 });
 
 export const hospitalSchema = z.object({
-  profileType: z.literal(PROFILE_TYPES.hospital.value),
+  profileType: z.literal(PROFILE_TYPES.HOSPITAL.value),
   name: z.string().nonempty('Required.'),
   description: z.string().transform(nullTransform).optional().nullable(),
   head: z.string().transform(nullTransform).optional().nullable(),
@@ -55,7 +55,7 @@ export const hospitalSchema = z.object({
 });
 
 export const milkBankSchema = z.object({
-  profileType: z.literal(PROFILE_TYPES.milkBank.value),
+  profileType: z.literal(PROFILE_TYPES.MILK_BANK.value),
   name: z.string().nonempty('Required.'),
   description: z.string().transform(nullTransform).optional().nullable(),
   head: z.string().transform(nullTransform).optional().nullable(),

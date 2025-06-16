@@ -227,6 +227,11 @@ export interface Address {
   region?: (string | null) | Region;
   islandGroup?: (string | null) | IslandGroup;
   owner?: (string | null) | User;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  coordinates?: [number, number] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1329,6 +1334,7 @@ export interface AddressesSelect<T extends boolean = true> {
   region?: T;
   islandGroup?: T;
   owner?: T;
+  coordinates?: T;
   updatedAt?: T;
   createdAt?: T;
 }

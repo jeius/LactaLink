@@ -13,7 +13,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
     description:
       'Addresses of users, which are used to identify locations for various purposes such as shipping and identification.',
     useAsTitle: 'displayName',
-    defaultColumns: ['displayName', 'owner'],
+    defaultColumns: ['displayName', 'name', 'default', 'owner'],
   },
   access: {
     admin: admin,
@@ -101,6 +101,14 @@ export const Addresses: CollectionConfig<'addresses'> = {
       },
     },
     ownerField,
+    {
+      name: 'coordinates',
+      type: 'point',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
   ],
   hooks: {
     beforeChange: [generateDisplayName, generateOwner, generateIslandGroupAndRegion],

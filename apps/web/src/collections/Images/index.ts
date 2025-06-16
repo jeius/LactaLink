@@ -6,6 +6,7 @@ import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import {
   admin,
+  anyone,
   authenticated,
   collectionCreator,
   collectionCreatorOrAdmin,
@@ -17,7 +18,7 @@ export const Images: CollectionConfig<'images'> = {
   access: {
     admin: admin,
     create: authenticated,
-    read: authenticated,
+    read: anyone,
     update: collectionCreator,
     delete: collectionCreatorOrAdmin,
   },

@@ -12,8 +12,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     error,
     isError,
   } = useQuery({
+    initialData: 'system',
     queryKey: QUERY_KEYS.THEME,
-    queryFn: getTheme,
+    queryFn: () => getTheme() || null,
   });
 
   if (isError) {
@@ -23,7 +24,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <NextThemeProvider
       attribute="data-theme"
-      defaultTheme={theme || 'system'}
+      defaultTheme={theme}
       enableSystem
       storageKey={STORAGE_KEYS.THEME}
     >
