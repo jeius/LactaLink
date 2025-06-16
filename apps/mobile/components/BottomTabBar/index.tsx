@@ -3,6 +3,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 
+import { useRouter } from 'expo-router';
 import {
   BellIcon,
   HomeIcon,
@@ -14,7 +15,8 @@ import { useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MainTabButton } from './MainTabButton';
+import LogoIcon from '../icons/LogoIcon';
+import { Button, ButtonIcon } from '../ui/button';
 import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon> = {
@@ -27,6 +29,7 @@ const icons: Record<string, LucideIcon> = {
 export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const buttonWidth = dimensions.width / state.routes.length;
   const translateX = useSharedValue(buttonWidth * state.index);
@@ -101,7 +104,20 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             transform: [{ translateX: '-40%' }, { translateY: '-70%' }],
           }}
         >
-          <MainTabButton />
+          <Button
+            size="lg"
+            animateOnPress
+            onPress={() => router.push('/map')}
+            className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
+          >
+            <ButtonIcon
+              as={LogoIcon}
+              width={40}
+              height={40}
+              className="fill-primary-0 dark:fill-primary-400"
+              style={{ transform: [{ translateX: -1 }, { translateY: -1 }] }}
+            />
+          </Button>
         </Box>
       </Box>
     </Box>

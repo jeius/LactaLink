@@ -12,8 +12,11 @@ import React from 'react';
 import { toast } from 'sonner-native';
 
 import ComboBox from '@/components/ComboBox';
+import { useRouter } from 'expo-router';
 
 const Home = () => {
+  const router = useRouter();
+
   function handleSignOut() {
     toast.promise(signOut(), {
       loading: 'Signing out...',
@@ -34,13 +37,10 @@ const Home = () => {
         <Button
           action="secondary"
           onPress={() => {
-            toast.loading('Loading', {
-              id: crypto.randomUUID(),
-              description: 'This is a loading toast',
-            });
+            router.push('/setup-profile');
           }}
         >
-          <ButtonText>Show loading toast</ButtonText>
+          <ButtonText>Go to setup profile</ButtonText>
         </Button>
 
         <Button

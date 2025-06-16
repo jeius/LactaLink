@@ -13,7 +13,10 @@ import { CreateDonationSchema } from '@lactalink/types';
 import { MilkIcon, PlusCircleIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { useFieldArray } from 'react-hook-form';
+import { Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+
+const DEVICE_WIDTH = Dimensions.get('window').width;
 
 export default function MilkBagsField() {
   const { profile } = useAuth();
@@ -27,7 +30,7 @@ export default function MilkBagsField() {
     // Scroll to the end of the list after adding a new item
     // Delaying the scroll to ensure the new item is rendered
     setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
+      flatListRef.current?.scrollToIndex({ animated: true, index: fields.length });
     }, 200);
   }
 
@@ -51,76 +54,15 @@ export default function MilkBagsField() {
         data={fields}
         keyExtractor={(item) => item.id}
         horizontal
-        renderItem={(item) => {
-          const i = item.index;
-          return (
-            <Card className="relative mx-5" style={{ maxWidth: 325, marginBottom: 12 }}>
-              <VStack space="md">
-                <HStack space="md">
-                  <FormField
-                    name={`details.bags.${i}.volume`}
-                    label="Volume (mL)"
-                    fieldType="number"
-                    placeholder="e.g. 20"
-                    keyboardType="numeric"
-                    inputIcon={MilkIcon}
-                    showStepButtons
-                    step={10}
-                    min={20}
-                    containerStyle={{ maxWidth: 160, width: '100%' }}
-                    helperText="Minimum 20 mL"
-                  />
-                  <FormField
-                    name={`details.bags.${i}.quantity`}
-                    label="Quantity"
-                    fieldType="number"
-                    placeholder="e.g. 2"
-                    keyboardType="numeric"
-                    showStepButtons
-                    step={1}
-                    min={1}
-                    containerStyle={{ maxWidth: 115, width: '100%' }}
-                    helperText="Minimum 1 bag"
-                  />
-                </HStack>
-                <VStack space="md">
-                  <FormField
-                    name={`details.bags.${i}.collectedAt`}
-                    label="Date collected"
-                    fieldType="date"
-                    mode="date"
-                    placeholder="Select date..."
-                    containerStyle={{ maxWidth: 180, width: '100%' }}
-                  />
-                  <FormField
-                    name={`details.bags.${i}.collectedAt`}
-                    label="Time collected"
-                    inputIcon={TimerIcon}
-                    placeholder="Select time..."
-                    fieldType="date"
-                    mode="time"
-                    showSetNowButton
-                    containerStyle={{ maxWidth: 180, width: '100%' }}
-                  />
-                </VStack>
-              </VStack>
-              <Box className="absolute bottom-0 right-0">
-                <Button
-                  isDisabled={disableRemove}
-                  action="negative"
-                  variant="link"
-                  className="h-fit w-fit p-5"
-                  animateOnPress={false}
-                  onPress={() => {
-                    handleRemove(i);
-                  }}
-                >
-                  <ButtonIcon as={Trash2Icon} size="xl" />
-                </Button>
-              </Box>
-            </Card>
-          );
-        }}
+        renderItem={({ index }) => (
+          <RenderCard index={index} onRemove={handleRemove} disableRemove={disableRemove} />
+        )}
+        contentContainerStyle={{ paddingRight: 20 }}
+        getItemLayout={(_, index) => ({
+          length: DEVICE_WIDTH - 40, // Width of each item
+          offset: (DEVICE_WIDTH - 40 + 20) * index, // Item width + marginLeft (20)
+          index,
+        })}
       />
       <Button
         animateOnPress={false}
@@ -134,5 +76,83 @@ export default function MilkBagsField() {
         <ButtonText>Add Milk Bag</ButtonText>
       </Button>
     </VStack>
+  );
+}
+
+type RenderCardProps = {
+  index: number;
+  onRemove: (index: number) => void;
+  disableRemove?: boolean;
+};
+function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderCardProps) {
+  return (
+    <Card
+      className="relative"
+      style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}
+    >
+      <VStack space="md">
+        <HStack space="md">
+          <FormField
+            name={`details.bags.${i}.volume`}
+            label="Volume (mL)"
+            fieldType="number"
+            placeholder="e.g. 20"
+            keyboardType="numeric"
+            inputIcon={MilkIcon}
+            showStepButtons
+            step={10}
+            min={20}
+            containerStyle={{ maxWidth: 160, width: '100%' }}
+            helperText="Minimum 20 mL"
+          />
+          <FormField
+            name={`details.bags.${i}.quantity`}
+            label="Quantity"
+            fieldType="number"
+            placeholder="e.g. 2"
+            keyboardType="numeric"
+            showStepButtons
+            step={1}
+            min={1}
+            containerStyle={{ maxWidth: 115, width: '100%' }}
+            helperText="Minimum 1 bag"
+          />
+        </HStack>
+        <VStack space="md">
+          <FormField
+            name={`details.bags.${i}.collectedAt`}
+            label="Date collected"
+            fieldType="date"
+            mode="date"
+            placeholder="Select date..."
+            containerStyle={{ maxWidth: 180, width: '100%' }}
+          />
+          <FormField
+            name={`details.bags.${i}.collectedAt`}
+            label="Time collected"
+            inputIcon={TimerIcon}
+            placeholder="Select time..."
+            fieldType="date"
+            mode="time"
+            showSetNowButton
+            containerStyle={{ maxWidth: 180, width: '100%' }}
+          />
+        </VStack>
+      </VStack>
+      <Box className="absolute bottom-0 right-0">
+        <Button
+          isDisabled={disableRemove}
+          action="negative"
+          variant="link"
+          className="h-fit w-fit p-5"
+          animateOnPress={false}
+          onPress={() => {
+            handleRemove(i);
+          }}
+        >
+          <ButtonIcon as={Trash2Icon} size="xl" />
+        </Button>
+      </Box>
+    </Card>
   );
 }

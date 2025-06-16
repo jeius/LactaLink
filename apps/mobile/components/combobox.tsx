@@ -258,11 +258,11 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
       <Actionsheet isOpen={open} onClose={() => setOpen(false)}>
         <ActionsheetBackdrop />
         <ActionsheetContent className="p-0" style={{ paddingBottom: keyboardBottomInset }}>
-          <ActionsheetDragIndicatorWrapper className="pb-1 pt-3">
+          <ActionsheetDragIndicatorWrapper className="py-3">
             <ActionsheetDragIndicator />
           </ActionsheetDragIndicatorWrapper>
 
-          <Box className="w-full p-5">
+          <Box className="w-full p-5 pt-0">
             <Input>
               <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
               <InputField
@@ -326,7 +326,7 @@ function ComboBoxItem({
 }: ComboBoxItemProps) {
   const [isPressed, setIsPressed] = useState(false);
   const style = tva({
-    base: 'items-center px-4 py-2',
+    base: 'items-center px-4 py-3',
     variants: {
       isSelected: { true: 'bg-primary-200' },
       isPressed: { true: 'bg-background-100' },

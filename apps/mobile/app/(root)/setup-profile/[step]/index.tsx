@@ -2,6 +2,7 @@ import ProfileAvatar from '@/components/forms/setup-profile/avatar';
 import ProfileContact from '@/components/forms/setup-profile/contact';
 import ProfileDetails from '@/components/forms/setup-profile/details';
 import ProfileTypeForm from '@/components/forms/setup-profile/type';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -35,7 +36,6 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
@@ -144,15 +144,15 @@ export default function Step() {
   }
 
   return (
-    <SafeArea className="mt-5">
-      <ScrollView className="flex-1" contentContainerClassName="grow">
-        <VStack space="xl" className="relative grow px-5 py-5">
+    <SafeArea>
+      <KeyboardAvoidingWrapper>
+        <VStack space="xl" className="relative grow pb-5 pt-10">
           <Box className="grow">
             {step === 'type' ? (
               <RenderBlock />
             ) : (
               <VStack space="lg">
-                <VStack space="sm">
+                <VStack space="sm" className="px-5">
                   <HStack space="md" className="items-center">
                     <Image source={ICONS.information} alt="Information icon" size="xs" />
                     <Text size="xl" bold>
@@ -170,7 +170,7 @@ export default function Step() {
             )}
           </Box>
 
-          <VStack className="mt-5">
+          <VStack className="mx-5 mt-5">
             <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
               <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
             </Button>
@@ -179,7 +179,7 @@ export default function Step() {
             </Button>
           </VStack>
         </VStack>
-      </ScrollView>
+      </KeyboardAvoidingWrapper>
     </SafeArea>
   );
 }

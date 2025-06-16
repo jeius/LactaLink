@@ -1,8 +1,10 @@
 /* eslint-disable import/no-unresolved */
 import {
+  ANDROID_MAPS_API_KEY as AndroidKey,
   EXPO_PUBLIC_API_URL,
   EXPO_PUBLIC_SUPABASE_ANON_KEY,
   EXPO_PUBLIC_SUPABASE_URL,
+  IOS_MAPS_API_KEY as IosKey,
   VERCEL_AUTOMATION_BYPASS_SECRET,
 } from '@env';
 
@@ -15,6 +17,8 @@ export const RESEND_OTP = 90; // seconds
 export const SUPABASE_URL = EXPO_PUBLIC_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const VERCEL_BYPASS_TOKEN = VERCEL_AUTOMATION_BYPASS_SECRET;
+export const ANDROID_MAPS_API_KEY = AndroidKey;
+export const IOS_MAPS_API_KEY = IosKey;
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 

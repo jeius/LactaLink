@@ -2,6 +2,11 @@ import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useAuth } from './useAuth';
 
+/**
+ * For development purposes, you can set this to true to bypass the auth check.
+ */
+const BYPASS: boolean = true;
+
 export const useCheckAuth = () => {
   const auth = useAuth();
   const { session, user, profile, isLoading, isFetching, isError } = auth;
@@ -10,7 +15,7 @@ export const useCheckAuth = () => {
   const hasRedirected = useRef(false); // Prevent infinite loop
 
   useEffect(() => {
-    if (!isLoading && !isFetching && !hasRedirected.current && !isError) {
+    if (!isLoading && !isFetching && !hasRedirected.current && !isError && !BYPASS) {
       if (!user && !session && !pathname.includes('/auth')) {
         console.log('No user found, redirecting to sign-in');
         hasRedirected.current = true; // Prevent further redirection

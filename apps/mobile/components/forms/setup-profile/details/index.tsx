@@ -163,7 +163,7 @@ export default function ProfileDetails() {
 
   return (
     profileType && (
-      <Card>
+      <Card className="mx-5">
         <VStack space="lg">
           {FormMap[profileType].map((props, i) => (
             <FormField key={i} {...props} />

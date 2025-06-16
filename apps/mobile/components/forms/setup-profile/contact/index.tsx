@@ -9,7 +9,7 @@ import Addresses from './address';
 export default function ProfileContact() {
   return (
     <VStack space="xl">
-      <Card>
+      <Card className="mx-5">
         <FormField
           name="phone"
           label="Phone Number"

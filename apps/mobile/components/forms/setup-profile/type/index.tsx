@@ -86,7 +86,7 @@ export default function ProfileType() {
   }
 
   return (
-    <VStack space="lg">
+    <VStack space="lg" className="mx-5">
       <Center>
         <Text bold size="xl">
           Choose your profile type

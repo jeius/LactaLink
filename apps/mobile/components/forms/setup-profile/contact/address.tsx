@@ -6,20 +6,33 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { AddressSchema, SetupProfileSchema } from '@lactalink/types';
-import { Motion } from '@legendapp/motion';
-import { CheckIcon, PlusIcon, Trash2Icon } from 'lucide-react-native';
-import React, { createRef, useEffect, useRef } from 'react';
+import {
+  CheckIcon,
+  LandmarkIcon,
+  MapPinHouseIcon,
+  MountainIcon,
+  PlusIcon,
+  Trash2Icon,
+} from 'lucide-react-native';
+import React, { memo, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { HintBox } from './hint-box';
+import { HintAlert } from '../../../HintAlert';
 
-import { DraggableWrapper, DraggableWrapperRef } from '@/components/DraggableWrapper';
+import { MapTileButton } from '@/components/map-views/MapTileButton';
+import { Box } from '@/components/ui/box';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCurrentLocation } from '@/hooks/location/useCurrentLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
+import { Coordinates } from 'expo-maps';
+import { Dimensions, ListRenderItem } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 
 const storageKey = MMKV_KEYS.SETUP_PROFILE.ADDRESS_COUNT;
+const DEVICE_WIDTH = Dimensions.get('window').width;
 
 export default function Addresses() {
-  const draggableRefs = useRef<DraggableWrapperRef[]>([]);
+  const flatListRef = useRef<FlatList<AddressSchema & { id: string }>>(null);
   const { setValue, getValues, watch, control } = useFormContext<SetupProfileSchema>();
   const { fields, append, remove } = useFieldArray({ control, name: 'addresses' });
 
@@ -44,12 +57,6 @@ export default function Addresses() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    draggableRefs.current = fields.map(
-      (_, i) => draggableRefs.current[i] ?? createRef<DraggableWrapperRef>().current!
-    );
-  }, [fields]);
-
   function incrementCount() {
     setupProfileStorage.set(storageKey, createdAddressCount + 1);
   }
@@ -57,10 +64,21 @@ export default function Addresses() {
   function handleAdd() {
     incrementCount();
     append(defaultValue);
+    // Scroll to the end of the list after adding a new item
+    // Delaying the scroll to ensure the new item is rendered
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ animated: true, index: fields.length });
+    }, 200);
   }
 
   function handleRemove(index: number) {
-    remove(index);
+    if (fields.length < 2) return;
+    flatListRef.current?.scrollToIndex({ animated: true, index: Math.max(0, index - 1) });
+    // Delay the removal to allow the scroll animation to complete
+    // This is a workaround to avoid the list jumping back to the first item
+    setTimeout(() => {
+      remove(index);
+    }, 50);
   }
 
   function handleSetDefault(index: number) {
@@ -72,145 +90,190 @@ export default function Addresses() {
     });
   }
 
+  const renderItem: ListRenderItem<AddressSchema> = ({ index }) => (
+    <RenderCard
+      addresses={addresses}
+      index={index}
+      onRemove={handleRemove}
+      onSetDefault={handleSetDefault}
+      disableRemove={addresses.length < 2}
+    />
+  );
+
   return (
-    <VStack space="md">
-      <Text size="lg" className="font-JakartaMedium">
+    <VStack>
+      <Text size="lg" className="font-JakartaMedium mx-5">
         Addresses
       </Text>
 
-      <HintBox />
+      <Box className="mx-5 py-2">
+        <HintAlert message="You can add more addresses." />
+      </Box>
 
-      {fields?.map((field, i) => {
-        return (
-          <DraggableWrapper
-            disabled
-            key={field.id}
-            ref={(ref) => {
-              draggableRefs.current[i] = ref!;
-            }}
-            onDismiss={() => handleRemove(i)}
-          >
-            <Motion.View
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{
-                default: { type: 'tween', duration: 200 },
-                y: {
-                  type: 'spring',
-                  damping: 20,
-                  stiffness: 300,
-                },
-              }}
-            >
-              <Card>
-                <VStack space="lg">
-                  <FormField
-                    name={`addresses.${i}.name`}
-                    fieldType="text"
-                    variant="underlined"
-                    placeholder="e.g. Home, Workplace"
-                    autoCapitalize="words"
-                    helperText="Name of your address."
-                  />
+      <VStack>
+        <FlatList
+          data={fields}
+          ref={flatListRef}
+          horizontal
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingRight: 20 }}
+          getItemLayout={(_, index) => ({
+            length: DEVICE_WIDTH - 40, // Width of each item
+            offset: (DEVICE_WIDTH - 40 + 20) * index, // Item width + marginLeft (20)
+            index,
+          })}
+        />
 
-                  <FormField
-                    name={`addresses.${i}.province`}
-                    label="Province"
-                    fieldType="combobox"
-                    placeholder="Select province..."
-                    collection="provinces"
-                    searchPath="name"
-                    searchPlaceholder="Search province here..."
-                  />
-
-                  <FormField
-                    name={`addresses.${i}.cityMunicipality`}
-                    label="City or Municipality"
-                    fieldType="combobox"
-                    placeholder="Select city or municipality..."
-                    collection="citiesMunicipalities"
-                    searchPath="name"
-                    searchPlaceholder="Search city or municipality here..."
-                    where={
-                      addresses[i]?.province
-                        ? { province: { equals: addresses[i]?.province } }
-                        : undefined
-                    }
-                  />
-
-                  <FormField
-                    name={`addresses.${i}.barangay`}
-                    label="Barangay"
-                    fieldType="combobox"
-                    placeholder="Select barangay..."
-                    collection="barangays"
-                    searchPath="name"
-                    searchPlaceholder="Search barangay here..."
-                    where={
-                      addresses[i]?.cityMunicipality
-                        ? { cityMunicipality: { equals: addresses[i]?.cityMunicipality } }
-                        : addresses[i]?.province
-                          ? { province: { equals: addresses[i]?.province } }
-                          : undefined
-                    }
-                  />
-
-                  <FormField
-                    name={`addresses.${i}.street`}
-                    label="Street Address"
-                    fieldType="text"
-                    placeholder="e.g. Block 9, Sudlonon St."
-                    autoCapitalize="words"
-                    autoComplete="street-address"
-                    textContentType="fullStreetAddress"
-                  />
-
-                  <FormField
-                    name={`addresses.${i}.zipCode`}
-                    label="Zip Code"
-                    fieldType="text"
-                    placeholder="e.g. 9200"
-                    keyboardType="number-pad"
-                    textContentType="postalCode"
-                    className="max-w-32"
-                  />
-
-                  <HStack space="xl" className="mt-5 justify-between">
-                    <Checkbox
-                      value={`address-${addresses[i]?.name}-checkbox`}
-                      isChecked={addresses[i]?.default}
-                      onChange={() => {
-                        handleSetDefault(i);
-                      }}
-                    >
-                      <CheckboxIndicator>
-                        <CheckboxIcon as={CheckIcon} />
-                      </CheckboxIndicator>
-                      <CheckboxLabel>Set as default address</CheckboxLabel>
-                    </Checkbox>
-                    <Button
-                      isDisabled={addresses.length < 2}
-                      variant="link"
-                      action="negative"
-                      className="px-2"
-                      onPress={() => {
-                        draggableRefs.current[i]?.dismiss();
-                      }}
-                    >
-                      <ButtonIcon size="md" as={Trash2Icon} />
-                    </Button>
-                  </HStack>
-                </VStack>
-              </Card>
-            </Motion.View>
-          </DraggableWrapper>
-        );
-      })}
-
-      <Button variant="link" action="primary" className="px-2" onPress={handleAdd}>
-        <ButtonIcon size="md" as={PlusIcon} />
-        <ButtonText className="text-primary-500">Add Address</ButtonText>
-      </Button>
+        <Button variant="link" action="positive" className="mx-auto" onPress={handleAdd}>
+          <ButtonIcon size="md" as={PlusIcon} />
+          <ButtonText>Add Address</ButtonText>
+        </Button>
+      </VStack>
     </VStack>
+  );
+}
+
+type RenderCardProps = {
+  addresses: AddressSchema[];
+  index: number;
+  onRemove: (index: number) => void;
+  onSetDefault: (index: number) => void;
+  disableRemove?: boolean;
+};
+function RenderCard({
+  addresses,
+  index: i,
+  onRemove,
+  onSetDefault,
+  disableRemove = false,
+}: RenderCardProps) {
+  const { location, isLoading } = useCurrentLocation();
+  const coordinates: Coordinates = addresses[i]?.coordinates || location?.coords || {};
+
+  const MemoizedMapTileButton = memo(MapTileButton, (prevProps, nextProps) => {
+    // Prevent re-rendering if coordinates haven't changed
+    return (
+      prevProps.coordinates?.latitude === nextProps.coordinates?.latitude &&
+      prevProps.coordinates?.longitude === nextProps.coordinates?.longitude
+    );
+  });
+
+  return (
+    <Card style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}>
+      <VStack space="lg">
+        <FormField
+          name={`addresses.${i}.name`}
+          fieldType="text"
+          variant="underlined"
+          placeholder="e.g. Home, Workplace"
+          autoCapitalize="words"
+          helperText="Name of your address."
+        />
+
+        <FormField
+          name={`addresses.${i}.province`}
+          label="Province"
+          fieldType="combobox"
+          placeholder="Select province..."
+          collection="provinces"
+          searchPath="name"
+          searchPlaceholder="Search province here..."
+          icon={MountainIcon}
+          iconPosition="left"
+        />
+
+        <FormField
+          name={`addresses.${i}.cityMunicipality`}
+          label="City or Municipality"
+          fieldType="combobox"
+          placeholder="Select city or municipality..."
+          collection="citiesMunicipalities"
+          searchPath="name"
+          searchPlaceholder="Search city or municipality here..."
+          icon={LandmarkIcon}
+          iconPosition="left"
+          where={
+            addresses[i]?.province ? { province: { equals: addresses[i]?.province } } : undefined
+          }
+        />
+
+        <FormField
+          name={`addresses.${i}.barangay`}
+          label="Barangay"
+          fieldType="combobox"
+          placeholder="Select barangay..."
+          collection="barangays"
+          searchPath="name"
+          searchPlaceholder="Search barangay here..."
+          icon={MapPinHouseIcon}
+          iconPosition="left"
+          where={
+            addresses[i]?.cityMunicipality
+              ? { cityMunicipality: { equals: addresses[i]?.cityMunicipality } }
+              : addresses[i]?.province
+                ? { province: { equals: addresses[i]?.province } }
+                : undefined
+          }
+        />
+
+        <FormField
+          name={`addresses.${i}.street`}
+          label="Street Address"
+          fieldType="text"
+          placeholder="e.g. Block 9, Sudlonon St."
+          autoCapitalize="words"
+          autoComplete="street-address"
+          textContentType="fullStreetAddress"
+        />
+
+        <FormField
+          name={`addresses.${i}.zipCode`}
+          label="Zip Code"
+          fieldType="text"
+          placeholder="e.g. 9200"
+          keyboardType="number-pad"
+          textContentType="postalCode"
+          className="max-w-32"
+        />
+
+        <HStack space="xl" className="justify-between">
+          <Checkbox
+            value={`address-${addresses[i]?.name}-checkbox`}
+            isChecked={addresses[i]?.default}
+            onChange={() => {
+              onSetDefault(i);
+            }}
+          >
+            <CheckboxIndicator>
+              <CheckboxIcon as={CheckIcon} />
+            </CheckboxIndicator>
+            <CheckboxLabel>Set as default address</CheckboxLabel>
+          </Checkbox>
+          <Button
+            isDisabled={disableRemove}
+            variant="link"
+            action="negative"
+            className="px-2"
+            onPress={() => onRemove(i)}
+          >
+            <ButtonIcon size="md" as={Trash2Icon} />
+          </Button>
+        </HStack>
+
+        <Box className="relative h-28 w-full overflow-hidden rounded-lg shadow">
+          {isLoading ? (
+            <Skeleton className="h-full w-full" speed={4} />
+          ) : (
+            <MemoizedMapTileButton coordinates={coordinates} />
+          )}
+          {!isLoading && (
+            <Box className="absolute inset-0 items-center justify-center">
+              <Text className="font-JakartaMedium">Tap to pin the location.</Text>
+            </Box>
+          )}
+        </Box>
+      </VStack>
+    </Card>
   );
 }
