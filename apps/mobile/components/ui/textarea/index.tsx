@@ -13,7 +13,7 @@ const UITextarea = createTextarea({
 });
 
 const textareaStyle = tva({
-  base: 'border-outline-500 data-[hover=true]:border-outline-300 data-[focus=true]:border-indicator-primary data-[focus=true]:data-[hover=true]:border-primary-400 data-[disabled=true]:bg-outline-400 data-[disabled=true]:data-[hover=true]:border-outline-400 w-full border data-[disabled=true]:opacity-40',
+  base: 'bg-background-0 border-outline-500 data-[hover=true]:border-outline-300 data-[focus=true]:border-indicator-primary data-[focus=true]:data-[hover=true]:border-primary-400 data-[disabled=true]:bg-outline-400 data-[disabled=true]:data-[hover=true]:border-outline-400 w-full border data-[disabled=true]:opacity-40',
   variants: {
     variant: {
       default:

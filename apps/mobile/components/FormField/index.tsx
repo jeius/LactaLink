@@ -16,7 +16,7 @@ import {
 } from 'react-hook-form';
 
 import { OptionsCards } from '@/components/cards/OptionsCards';
-import InfiniteScrollComboBox from '@/components/ComboBox';
+import ComboBox from '@/components/ComboBox';
 import {
   FormControl,
   FormControlError,
@@ -260,7 +260,7 @@ function FormField<
             case 'combobox':
               if (!comboboxProps) return <Text>Missing combobox props...</Text>;
               return (
-                <InfiniteScrollComboBox
+                <ComboBox
                   {...comboboxProps}
                   value={field.value}
                   isDisabled={field.disabled}

@@ -2,7 +2,7 @@ import { Protected } from '@/components/Protected';
 import ThemeToggler from '@/components/ThemeToggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { LogOutIcon } from 'lucide-react-native';
+import { LogOutIcon, MapPinIcon } from 'lucide-react-native';
 
 import * as crypto from 'expo-crypto';
 
@@ -10,6 +10,8 @@ import { signOut } from '@/auth';
 import { delay, extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
+
+import ComboBox from '@/components/ComboBox';
 
 const Home = () => {
   function handleSignOut() {
@@ -23,7 +25,7 @@ const Home = () => {
   return (
     <Protected safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
-      <VStack space="lg" className="flex-1 items-center justify-end">
+      <VStack space="lg" className="flex-1 items-center justify-center">
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
           <ButtonIcon as={LogOutIcon} />
@@ -80,6 +82,15 @@ const Home = () => {
         >
           <ButtonText>Show error toast</ButtonText>
         </Button>
+
+        <ComboBox
+          collection="barangays"
+          searchPath="name"
+          labelPath="code"
+          descriptionPath="name"
+          icon={MapPinIcon}
+          iconPosition="left"
+        />
       </VStack>
     </Protected>
   );

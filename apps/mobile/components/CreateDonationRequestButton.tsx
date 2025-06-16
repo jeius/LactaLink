@@ -1,7 +1,6 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import LogoIcon from '@/components/icons/LogoIcon';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/image';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
@@ -11,11 +10,27 @@ import { VStack } from '@/components/ui/vstack';
 import { ONBOARDING_IMAGES } from '@/lib/constants/images';
 
 import { useRouter } from 'expo-router';
-import React from 'react';
+import { LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
+import { ComponentProps, FC, useState } from 'react';
 
-export function MainTabButton() {
-  const [open, setOpen] = React.useState(false);
+interface Props extends ComponentProps<typeof Button> {
+  label?: string;
+  icon?: LucideIcon | FC<LucideProps>;
+  iconSize?: number | ComponentProps<typeof Button>['size'];
+}
+
+export function CreateDonationRequestButton({
+  label,
+  icon = PlusIcon,
+  iconSize = 22,
+  ...props
+}: Props) {
+  const [open, setOpen] = useState(false);
   const router = useRouter();
+
+  const iconSizeValue = typeof iconSize === 'string' ? iconSize : undefined;
+  const iconHeight = typeof iconSize === 'number' ? iconSize : undefined;
+  const iconWidth = typeof iconSize === 'number' ? iconSize : undefined;
 
   const handleModalTrigger = () => {
     setOpen((prev) => !prev);
@@ -33,20 +48,11 @@ export function MainTabButton() {
 
   return (
     <>
-      <Button
-        size="lg"
-        animateOnPress
-        onPress={handleModalTrigger}
-        className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
-      >
-        <ButtonIcon
-          as={LogoIcon}
-          width={40}
-          height={40}
-          className="fill-primary-0 dark:fill-primary-400"
-          style={{ transform: [{ translateX: -1 }, { translateY: -1 }] }}
-        />
+      <Button {...props} onPress={handleModalTrigger}>
+        <ButtonIcon as={icon} size={iconSizeValue} height={iconHeight} width={iconWidth} />
+        {label && <ButtonText>{label}</ButtonText>}
       </Button>
+
       <Modal isOpen={open} onClose={handleModalTrigger} className="bg-transparent">
         <ModalBackdrop />
         <ModalContent className="border-0 bg-transparent p-0 shadow-none">

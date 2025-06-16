@@ -11,3 +11,5 @@ export const QUERY_KEYS = {
     VALUES: ['setup-profile', 'values'],
   },
 };
+
+export const INFINITE_QUERY_KEY = ['infinite'];

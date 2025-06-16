@@ -197,7 +197,7 @@ export const colorsConfig: ColorsConfig = {
       '950': '#F6F3F9',
     },
     background: {
-      '0': '#121212',
+      '0': '#1b1b1a',
       '50': '#272625',
       '100': '#414040',
       '200': '#535252',

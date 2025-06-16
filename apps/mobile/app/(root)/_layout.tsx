@@ -66,10 +66,9 @@ export default function Layout() {
 
       <Stack.Screen name="donations" options={{ headerShown: false }} />
 
-      <Stack.Screen
-        name="requests"
-        options={{ headerTitle: 'Requests', headerBackVisible: true }}
-      />
+      <Stack.Screen name="requests" options={{ headerShown: false }} />
+
+      <Stack.Screen name="map/index" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -46,7 +46,7 @@ const skeletonStyle = tva({
 
 type SkeletonProps = ViewProps & VariantProps<typeof skeletonStyle>;
 
-export default function Skeleton({
+export default function ShimmerSkeleton({
   className,
   height = 'md',
   width: boxWidth = 'full',
