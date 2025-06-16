@@ -1,6 +1,11 @@
 import { z } from 'zod/v4';
 import { emptyTransform, nullTransform } from '../transformers';
 
+export const coordinatesSchema = z.object({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+});
+
 export const addressSchema = z.object({
   name: z.string().transform(emptyTransform).optional(),
   street: z.string().transform(nullTransform).optional().nullable(),
@@ -8,7 +13,9 @@ export const addressSchema = z.object({
   cityMunicipality: z.string().nonempty('Required.'),
   barangay: z.string().transform(nullTransform).optional().nullable(),
   zipCode: z.string().nonempty('Required.'),
+  coordinates: coordinatesSchema.optional(),
   default: z.boolean().optional(),
 });
 
 export type AddressSchema = z.infer<typeof addressSchema>;
+export type CoordinatesSchema = z.infer<typeof coordinatesSchema>;

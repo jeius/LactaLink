@@ -36,14 +36,14 @@ export const Provinces: CollectionConfig<'provinces'> = {
       type: 'relationship',
       relationTo: 'regions',
       required: true,
-      maxDepth: 0,
+      maxDepth: 1,
     },
     {
       name: 'islandGroup',
       type: 'relationship',
       relationTo: 'islandGroups',
       required: true,
-      maxDepth: 0,
+      maxDepth: 1,
     },
   ],
 };
