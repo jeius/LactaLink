@@ -145,6 +145,7 @@ export default function ProfileDetails() {
         name: 'birth',
         label: 'Date of Birth',
         fieldType: 'date',
+        style: { maxWidth: 160 },
       },
       {
         name: 'gender',

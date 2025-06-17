@@ -1,6 +1,5 @@
 import { Collection, CollectionSlug, Where } from '@lactalink/types';
 import { useDebounce } from '@lactalink/utilities';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -21,7 +20,6 @@ import { TextInput } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from './ui/box';
 import { Button, ButtonIcon } from './ui/button';
-import { Divider } from './ui/divider';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
 import { Pressable } from './ui/pressable';
@@ -29,17 +27,20 @@ import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-import useKeyboardBottomInset from '@/hooks/useKeyboardBottomInset';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
+import { ListRenderItem } from '@shopify/flash-list';
 import { Dimensions } from 'react-native';
 import { RefreshControl } from './RefreshControl';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-} from './ui/actionsheet';
+  BottomSheet,
+  BottomSheetBackdrop,
+  BottomSheetDragIndicator,
+  BottomSheetFlashList,
+  BottomSheetModalPortal,
+  BottomSheetTextInput,
+  BottomSheetTrigger,
+} from './ui/bottom-sheet';
 import { HStack } from './ui/hstack';
 
 export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
@@ -125,9 +126,9 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
 }: InfiniteScrollComboBoxProps<T>) {
   const apiClient = useApiClient();
   const inputRef = useRef<TextInput>(null);
+  const bottomSheetModalRef = useRef<BottomSheetModalType>(null);
 
   const insets = useSafeAreaInsets();
-  const keyboardBottomInset = useKeyboardBottomInset();
 
   const [searchDefault, setSearchDefault] = useState('');
   const [open, setOpen] = useState(false);
@@ -157,7 +158,6 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
-  const listRef = useRef<FlashList<Collection<T>> | null>(null);
 
   const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
   const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
@@ -195,8 +195,20 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   }
 
   function handleSelectionChange(value: string) {
-    setSelected(value);
-    setSelectedProps?.(value);
+    handleClose();
+    setTimeout(() => {
+      setSelected(value);
+      setSelectedProps?.(value);
+    }, 50); // Delay to ensure the bottom sheet closes before setting the value
+  }
+
+  function handleOpen() {
+    bottomSheetModalRef.current?.present();
+    setOpen(true);
+  }
+
+  function handleClose() {
+    bottomSheetModalRef.current?.dismiss();
     setOpen(false);
   }
 
@@ -226,8 +238,8 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   }
 
   return (
-    <>
-      <Pressable className="w-full" onPress={() => setOpen(true)} disabled={disabled}>
+    <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
+      <BottomSheetTrigger className="w-full" disabled={disabled}>
         <Input pointerEvents="box-none" size="md" isDisabled={disabled}>
           <InputField
             value={isFetchingLabel ? 'Loading...' : selectedLabel || ''}
@@ -249,63 +261,64 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
             )}
             {isFetchingLabel && <Spinner size="small" className="mx-2" />}
           </InputSlot>
-          <InputSlot onPress={() => setOpen(true)}>
+          <InputSlot onPress={handleOpen}>
             <InputIcon as={ChevronDownIcon} className="mr-3" />
           </InputSlot>
         </Input>
-      </Pressable>
-
-      <Actionsheet isOpen={open} onClose={() => setOpen(false)}>
-        <ActionsheetBackdrop />
-        <ActionsheetContent className="p-0" style={{ paddingBottom: keyboardBottomInset }}>
-          <ActionsheetDragIndicatorWrapper className="py-3">
-            <ActionsheetDragIndicator />
-          </ActionsheetDragIndicatorWrapper>
-
-          <Box className="w-full p-5 pt-0">
-            <Input>
-              <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
-              <InputField
-                //@ts-expect-error gluestack-ref-type-issue
-                ref={inputRef}
-                defaultValue={searchDefault}
-                onChangeText={setSearch}
-                placeholder={searchPlaceholder}
-              />
-              {search && (
-                <InputSlot onPress={clearSearch} className="pr-3">
-                  <Icon as={XIcon} size="sm" className="text-secondary-400" />
-                </InputSlot>
-              )}
-            </Input>
-          </Box>
-
-          <Divider orientation="horizontal" className="shadow-sm" />
-
-          <Box className="h-64 w-full" style={{ marginBottom: insets.bottom }}>
-            <FlashList
-              data={items}
-              ref={listRef}
-              estimatedItemSize={50}
-              renderItem={renderItem}
-              estimatedListSize={{ height: 200, width: DEVICE_WIDTH }}
-              onEndReachedThreshold={0.2}
-              keyExtractor={(item) => item.id}
-              extraData={{ selected: selected }}
-              ListEmptyComponent={EmptyComponent}
-              contentContainerStyle={{ paddingBottom: 12 }}
-              ListFooterComponentStyle={{ marginBottom: 12 }}
-              refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-              ListHeaderComponent={isLoading ? <Spinner size="large" className="mt-4" /> : null}
-              ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
-              onEndReached={() => {
-                if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-              }}
+      </BottomSheetTrigger>
+      <BottomSheetModalPortal
+        snapPoints={['45%']}
+        enableDynamicSizing={false}
+        handleComponent={BottomSheetDragIndicator}
+        backdropComponent={BottomSheetBackdrop}
+        enableBlurKeyboardOnGesture={false}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustPan"
+        enableContentPanningGesture={false}
+        bottomInset={insets.bottom}
+      >
+        <Box className="bg-background-0 w-full p-5 pt-0 shadow">
+          <Input>
+            <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
+            <BottomSheetTextInput
+              ref={inputRef}
+              defaultValue={searchDefault}
+              onChangeText={setSearch}
+              placeholder={searchPlaceholder}
             />
-          </Box>
-        </ActionsheetContent>
-      </Actionsheet>
-    </>
+            {search && (
+              <InputSlot onPress={clearSearch} className="pr-3">
+                <Icon as={XIcon} size="sm" className="text-secondary-400" />
+              </InputSlot>
+            )}
+          </Input>
+        </Box>
+
+        <Box className="h-full w-full">
+          <BottomSheetFlashList
+            data={items}
+            renderItem={renderItem}
+            estimatedItemSize={50}
+            automaticallyAdjustKeyboardInsets
+            keyboardShouldPersistTaps="always"
+            onEndReachedThreshold={0.2}
+            keyExtractor={(item) => item.id}
+            extraData={{ selected: selected }}
+            ListEmptyComponent={EmptyComponent}
+            contentContainerStyle={{ paddingBottom: 12 }}
+            ListFooterComponentStyle={{ marginBottom: 12 }}
+            estimatedListSize={{ height: 256, width: DEVICE_WIDTH }}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            ListHeaderComponent={isLoading ? <Spinner size="large" className="mt-4" /> : null}
+            ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+          />
+        </Box>
+      </BottomSheetModalPortal>
+    </BottomSheet>
   );
 }
 

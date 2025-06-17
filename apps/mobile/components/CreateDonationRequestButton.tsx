@@ -12,6 +12,7 @@ import { ONBOARDING_IMAGES } from '@/lib/constants/images';
 import { useRouter } from 'expo-router';
 import { LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
 import { ComponentProps, FC, useState } from 'react';
+import { GestureResponderEvent } from 'react-native';
 
 interface Props extends ComponentProps<typeof Button> {
   label?: string;
@@ -23,6 +24,7 @@ export function CreateDonationRequestButton({
   label,
   icon = PlusIcon,
   iconSize = 22,
+  onPress,
   ...props
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -32,18 +34,19 @@ export function CreateDonationRequestButton({
   const iconHeight = typeof iconSize === 'number' ? iconSize : undefined;
   const iconWidth = typeof iconSize === 'number' ? iconSize : undefined;
 
-  const handleModalTrigger = () => {
+  const handleModalTrigger = (event: GestureResponderEvent) => {
     setOpen((prev) => !prev);
+    onPress?.(event);
   };
 
   const handleDonatePressed = () => {
     setOpen(false);
-    router.push('/donations/create/details');
+    router.replace('/donations/create/details');
   };
 
   const handleRequestPressed = () => {
     setOpen(false);
-    router.push('/requests/create');
+    router.replace('/requests/create');
   };
 
   return (

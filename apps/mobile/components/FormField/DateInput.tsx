@@ -12,13 +12,10 @@ import { Noop } from 'react-hook-form';
 import { Platform } from 'react-native';
 
 const inputStyle = tva({
-  base: 'max-w-sm',
+  base: '',
 });
 
-type TInput = Pick<
-  ComponentPropsWithoutRef<typeof InputField>,
-  'variant' | 'className' | 'placeholder'
->;
+type TInput = Pick<ComponentPropsWithoutRef<typeof Input>, 'variant' | 'className' | 'style'>;
 
 export type DateInputType = TInput & {
   /**
@@ -42,6 +39,12 @@ export type DateInputType = TInput & {
    * Defaults to 'Set Now'.
    */
   setNowLabel?: string;
+
+  /**
+   * Placeholder text for the input field.
+   * Defaults to 'Select date...'.
+   */
+  placeholder?: string;
 };
 
 export type DateInputProps<T extends string = string> = DateInputType & {
@@ -97,6 +100,7 @@ export function DateInput({
   hideIcon = false,
   isDisabled,
   className,
+  style,
   placeholder = 'Select date...',
   mode = 'date',
   icon = CalendarRangeIcon,
@@ -154,7 +158,11 @@ export function DateInput({
 
   return (
     <VStack space="md">
-      <Input isDisabled={isDisabled} className={inputStyle({ class: className })}>
+      <Input
+        isDisabled={isDisabled}
+        className={inputStyle({ className })}
+        style={[{ maxWidth: 200 }, style]}
+      >
         {!hideIcon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
         <InputSlot onPress={togglePicker} className="grow">
           <InputField

@@ -54,7 +54,7 @@ const modalStyle = tva({
 });
 
 const modalBackdropStyle = tva({
-  base: 'bg-background-dark web:cursor-default absolute bottom-0 left-0 right-0 top-0',
+  base: 'bg-background-100 web:cursor-default absolute bottom-0 left-0 right-0 top-0',
 });
 
 const modalContentStyle = tva({
