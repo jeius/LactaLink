@@ -14,6 +14,7 @@ export default function Layout() {
         animation: 'shift',
         headerShown: false,
         sceneStyle: { backgroundColor: bgColor },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen name="home/index" />
