@@ -318,9 +318,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={isLoading ? <Spinner size="large" className="mt-4" /> : null}
             ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-            }}
+            onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
           />
         </Box>
       </BottomSheetModalPortal>

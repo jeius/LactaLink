@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -37,7 +38,7 @@ export function AnimatedPressable({ children, onPress, containerStyle }: Animate
 
         // Trigger the onPress callback
         if (onPress) {
-          onPress();
+          runOnJS(onPress)();
         }
       })
       .onTouchesDown(() => {

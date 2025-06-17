@@ -5,10 +5,13 @@ import { toast } from 'sonner-native';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Button, ButtonIcon } from '@/components/ui/button';
+import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
+import { Address, DeliveryPreference, STORAGE_TYPES } from '@lactalink/types';
 import { CameraPosition, Coordinates, GoogleMaps } from 'expo-maps';
 import {
   GoogleMapsColorScheme,
   GoogleMapsMapType,
+  GoogleMapsMarker,
   GoogleMapsViewType,
 } from 'expo-maps/build/google/GoogleMaps.types';
 import { LocateFixedIcon, SearchIcon } from 'lucide-react-native';
@@ -43,6 +46,75 @@ export function GoogleMapView() {
   const googleMapsColorScheme: GoogleMapsColorScheme =
     theme === 'dark' ? GoogleMapsColorScheme.DARK : GoogleMapsColorScheme.LIGHT;
 
+  const {
+    data: donations,
+    isLoading: isLoadingDonations,
+    isFetching: isFetchingDonations,
+    refetch: refetchDonations,
+  } = useFetchBySlug('donations', true, {
+    where: { status: { equals: 'AVAILABLE' } },
+  });
+
+  const {
+    data: requests,
+    isLoading: isLoadingRequests,
+    isFetching: isFetchingRequests,
+    refetch: refetchRequests,
+  } = useFetchBySlug('requests', true, {
+    where: { status: { equals: 'PENDING' } },
+  });
+
+  const markers: GoogleMapsMarker[] = [];
+
+  if (donations && donations.length > 0) {
+    for (const donation of donations) {
+      const volume = donation.remainingVolume || 0;
+      const storageType = donation.details.storageType;
+      const address = (donation.deliveryDetails as DeliveryPreference[])?.[0]?.address as
+        | Address
+        | undefined;
+      const [latitude, longitude] = (address && address.coordinates) || [];
+
+      console.log('Donation coordinates:', latitude, longitude);
+
+      if (latitude && longitude) {
+        const marker: GoogleMapsMarker = {
+          id: donation.id,
+          coordinates: { latitude, longitude },
+          title: donation.title || `Donation | ${volume} mL`,
+          showCallout: true,
+          draggable: false,
+          snippet: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
+        };
+        markers.push(marker);
+      }
+    }
+  }
+
+  if (requests && requests.length > 0) {
+    for (const request of requests) {
+      const volume = request.volumeNeeded || 0;
+      const address = (request.deliveryDetails as DeliveryPreference[])?.[0]?.address as
+        | Address
+        | undefined;
+      const [latitude, longitude] = (address && address.coordinates) || [];
+
+      console.log('Request coordinates:', latitude, longitude);
+
+      if (latitude && longitude) {
+        const marker: GoogleMapsMarker = {
+          id: request.id,
+          coordinates: { latitude, longitude },
+          title: request.title || `Request | ${volume} mL`,
+          showCallout: true,
+          draggable: false,
+          snippet: `${volume} mL of milk requested.`,
+        };
+        markers.push(marker);
+      }
+    }
+  }
+
   useEffect(() => {
     if (error) {
       console.error('Error retrieving location:', error);
@@ -53,6 +125,40 @@ export function GoogleMapView() {
   function setCameraPostionToCurrentLocation() {
     if (mapRef.current && currentLocation) {
       mapRef.current.setCameraPosition(cameraPosition);
+    }
+  }
+
+  function handleMarkerClicked(marker: GoogleMapsMarker) {
+    if (!marker.id) return;
+    const donation = donations?.find((d) => d.id === marker.id);
+    const request = requests?.find((r) => r.id === marker.id);
+
+    if (donation) {
+      setSelectedItem({
+        slug: 'donations',
+        id: donation.id,
+      });
+    } else if (request) {
+      setSelectedItem({
+        slug: 'requests',
+        id: request.id,
+      });
+    } else {
+      setSelectedItem({});
+    }
+  }
+
+  function handleMapClicked(_event: { coordinates: Coordinates }) {
+    setSelectedItem({});
+  }
+
+  function handleSelectionChange(id: string) {
+    const coord = markers.find((marker) => marker.id === id)?.coordinates;
+    if (coord && mapRef.current) {
+      mapRef.current.setCameraPosition({
+        zoom: 19,
+        coordinates: coord,
+      });
     }
   }
 
@@ -68,14 +174,18 @@ export function GoogleMapView() {
     <Box className="flex-1" style={{ marginBottom: inset.bottom }}>
       <GoogleMaps.View
         ref={mapRef}
+        markers={markers}
         cameraPosition={cameraPosition}
         colorScheme={googleMapsColorScheme}
         userLocation={currentLocation && { coordinates: currentLocation, followUserLocation: true }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        onMarkerClick={handleMarkerClicked}
+        onMapClick={handleMapClicked}
         uiSettings={{
           zoomControlsEnabled: false,
           rotationGesturesEnabled: true,
           myLocationButtonEnabled: false,
+          mapToolbarEnabled: false,
         }}
         properties={{
           mapType: GoogleMapsMapType.NORMAL,
@@ -110,7 +220,7 @@ export function GoogleMapView() {
         </Box>
       </VStack>
 
-      <MapBottomSheet {...selectedItem} />
+      <MapBottomSheet {...selectedItem} onSelected={handleSelectionChange} />
     </Box>
   );
 }

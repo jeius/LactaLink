@@ -13,3 +13,4 @@ export const QUERY_KEYS = {
 };
 
 export const INFINITE_QUERY_KEY = ['infinite'];
+export const COLLECTION_QUERY_KEY = ['collection'];

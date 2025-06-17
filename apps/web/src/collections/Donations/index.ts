@@ -25,7 +25,7 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [initialize, generateCreatedBy, generateTitle, updateStatus],
+    beforeChange: [initialize, generateCreatedBy, updateStatus, generateTitle],
     afterChange: [createDonationNotification],
   },
   fields: [

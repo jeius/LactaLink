@@ -12,7 +12,7 @@ export const ORGANIZATION_TYPES = {
 
 export const GENDER_TYPES = {
   MALE: { label: 'Male', value: 'MALE' },
-  FEMALE: { label: 'Femaile', value: 'FEMALE' },
+  FEMALE: { label: 'Female', value: 'FEMALE' },
   OTHER: { label: 'Other', value: 'OTHER' },
 } as const;
 

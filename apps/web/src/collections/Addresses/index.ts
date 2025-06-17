@@ -106,7 +106,6 @@ export const Addresses: CollectionConfig<'addresses'> = {
       type: 'point',
       admin: {
         position: 'sidebar',
-        readOnly: true,
       },
     },
   ],
