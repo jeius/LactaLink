@@ -5,7 +5,7 @@ import { EmailChannel } from './EmailChannel';
 import { InAppChannel } from './InAppChannel';
 import { PushChannel } from './PushChannel';
 import { SMSChannel } from './SMSChannel';
-import { WebhookChannel } from './WebHookChannel';
+import { WebhookChannel } from './WebhookChannel';
 
 /**
  * Factory class for creating notification channel instances.
