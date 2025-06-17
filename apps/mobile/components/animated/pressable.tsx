@@ -1,40 +1,61 @@
-import React from 'react';
-import { GestureResponderEvent, PressableProps } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { Pressable } from '../ui/pressable';
+import React, { useMemo } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  WithSpringConfig,
+} from 'react-native-reanimated';
 
-export function AnimatedPressable({ children, onPressIn, onPressOut, ...props }: PressableProps) {
+export interface AnimatedPressableProps {
+  children: React.ReactNode;
+  containerStyle?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+}
+
+export function AnimatedPressable({ children, onPress, containerStyle }: AnimatedPressableProps) {
   const scale = useSharedValue(1);
 
-  const handlePressIn = (e: GestureResponderEvent) => {
-    scale.value = withSpring(0.95, {
+  const springConfig: WithSpringConfig = useMemo(
+    () => ({
       damping: 15,
       stiffness: 200,
-    });
-    if (onPressIn) {
-      onPressIn(e);
-    }
-  };
+    }),
+    []
+  );
 
-  const handlePressOut = (e: GestureResponderEvent) => {
-    scale.value = withSpring(1, {
-      damping: 15,
-      stiffness: 200,
-    });
-    if (onPressOut) {
-      onPressOut(e);
-    }
-  };
+  const tapGesture = useMemo(() => {
+    return Gesture.Tap()
+      .onBegin(() => {
+        // Scale down when the gesture begins
+        scale.value = withSpring(0.95, springConfig);
+      })
+      .onEnd(() => {
+        // Scale back up when the gesture ends
+        scale.value = withSpring(1, springConfig);
+
+        // Trigger the onPress callback
+        if (onPress) {
+          onPress();
+        }
+      })
+      .onTouchesDown(() => {
+        // Scale back up when the gesture ends
+        scale.value = withSpring(0.95, springConfig);
+      })
+      .onTouchesCancelled(() => {
+        scale.value = withSpring(1, springConfig);
+      });
+  }, [scale, springConfig, onPress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   return (
-    <Animated.View style={animatedStyle}>
-      <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        {children}
-      </Pressable>
-    </Animated.View>
+    <GestureDetector gesture={tapGesture}>
+      <Animated.View style={[animatedStyle, containerStyle]}>{children}</Animated.View>
+    </GestureDetector>
   );
 }

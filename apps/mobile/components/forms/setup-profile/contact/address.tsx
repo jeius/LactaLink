@@ -14,7 +14,7 @@ import {
   PlusIcon,
   Trash2Icon,
 } from 'lucide-react-native';
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { HintAlert } from '../../../HintAlert';
 
@@ -71,33 +71,42 @@ export default function Addresses() {
     }, 200);
   }
 
-  function handleRemove(index: number) {
-    if (fields.length < 2) return;
-    flatListRef.current?.scrollToIndex({ animated: true, index: Math.max(0, index - 1) });
-    // Delay the removal to allow the scroll animation to complete
-    // This is a workaround to avoid the list jumping back to the first item
-    setTimeout(() => {
-      remove(index);
-    }, 50);
-  }
+  const handleRemove = useCallback(
+    (index: number) => {
+      if (fields.length < 2) return;
+      flatListRef.current?.scrollToIndex({ animated: true, index: Math.max(0, index - 1) });
+      // Delay the removal to allow the scroll animation to complete
+      // This is a workaround to avoid the list jumping back to the first item
+      setTimeout(() => {
+        remove(index);
+      }, 50);
+    },
+    [fields.length, remove]
+  );
 
-  function handleSetDefault(index: number) {
-    const currentDefault = getValues(`addresses.${index}.default`);
-    if (currentDefault) return;
+  const handleSetDefault = useCallback(
+    (index: number) => {
+      const currentDefault = getValues(`addresses.${index}.default`);
+      if (currentDefault) return;
 
-    addresses.forEach((_, i) => {
-      setValue(`addresses.${i}.default`, i === index);
-    });
-  }
+      addresses.forEach((_, i) => {
+        setValue(`addresses.${i}.default`, i === index);
+      });
+    },
+    [addresses, getValues, setValue]
+  );
 
-  const renderItem: ListRenderItem<AddressSchema> = ({ index }) => (
-    <RenderCard
-      addresses={addresses}
-      index={index}
-      onRemove={handleRemove}
-      onSetDefault={handleSetDefault}
-      disableRemove={addresses.length < 2}
-    />
+  const renderItem: ListRenderItem<AddressSchema> = useCallback(
+    ({ index }) => (
+      <RenderCard
+        addresses={addresses}
+        index={index}
+        onRemove={handleRemove}
+        onSetDefault={handleSetDefault}
+        disableRemove={addresses.length < 2}
+      />
+    ),
+    [addresses, handleRemove, handleSetDefault]
   );
 
   return (

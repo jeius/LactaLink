@@ -1,7 +1,7 @@
 import { Collection, CollectionSlug, Where } from '@lactalink/types';
 import { useDebounce } from '@lactalink/utilities';
 import { useQuery } from '@tanstack/react-query';
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   InfiniteFetchOptions,
@@ -194,39 +194,45 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
     inputRef.current?.clear();
   }
 
-  function handleSelectionChange(value: string) {
-    handleClose();
-    setTimeout(() => {
-      setSelected(value);
-      setSelectedProps?.(value);
-    }, 50); // Delay to ensure the bottom sheet closes before setting the value
-  }
-
   function handleOpen() {
     bottomSheetModalRef.current?.present();
     setOpen(true);
   }
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     bottomSheetModalRef.current?.dismiss();
     setOpen(false);
-  }
+  }, []);
 
-  const renderItem: ListRenderItem<Collection<T>> = ({ item, extraData: { selected } }) => {
-    const isSelected = selected === item.id;
-    return (
-      <ComboBoxItem
-        label={String(item[labelPath])}
-        description={descriptionPath && String(item[descriptionPath])}
-        isSelected={isSelected}
-        onPress={() => handleSelectionChange(item.id)}
-        icon={icon}
-        iconPosition={iconPosition}
-      />
-    );
-  };
+  const handleSelectionChange = useCallback(
+    (value: string) => {
+      handleClose();
+      setTimeout(() => {
+        setSelected(value);
+        setSelectedProps?.(value);
+      }, 50); // Delay to ensure the bottom sheet closes before setting the value
+    },
+    [handleClose, setSelected, setSelectedProps]
+  );
 
-  function EmptyComponent() {
+  const renderItem = useCallback<ListRenderItem<Collection<T>>>(
+    ({ item, extraData: { selected } }) => {
+      const isSelected = selected === item.id;
+      return (
+        <ComboBoxItem
+          label={String(item[labelPath])}
+          description={descriptionPath && String(item[descriptionPath])}
+          isSelected={isSelected}
+          onPress={() => handleSelectionChange(item.id)}
+          icon={icon}
+          iconPosition={iconPosition}
+        />
+      );
+    },
+    [labelPath, descriptionPath, icon, iconPosition, handleSelectionChange]
+  );
+
+  const EmptyComponent = useCallback(() => {
     return (
       !isLoading && (
         <VStack space="lg" className="mx-auto items-center p-4">
@@ -235,7 +241,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
         </VStack>
       )
     );
-  }
+  }, [isLoading]);
 
   return (
     <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
@@ -306,8 +312,8 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
             keyExtractor={(item) => item.id}
             extraData={{ selected: selected }}
             ListEmptyComponent={EmptyComponent}
-            contentContainerStyle={{ paddingBottom: 12 }}
-            ListFooterComponentStyle={{ marginBottom: 12 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom }}
+            ListFooterComponentStyle={{ marginBottom: 36 }}
             estimatedListSize={{ height: 256, width: DEVICE_WIDTH }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={isLoading ? <Spinner size="large" className="mt-4" /> : null}
