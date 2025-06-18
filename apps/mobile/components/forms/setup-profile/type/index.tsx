@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import React, { ReactNode, useEffect } from 'react';
 
-import { Image } from '@/components/ui/image';
+import { Image } from '@/components/Image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { SetupProfileSchema } from '@lactalink/types';
 import { useFormContext } from 'react-hook-form';
@@ -101,7 +101,12 @@ export default function ProfileType() {
               <AnimatedScaleWrapper isSelected={isSelected}>
                 <Card className={cardStyle({ selected: isSelected })}>
                   <Box className={imageBoxStyle({ variant: styleVariant })}>
-                    <Image alt={image.alt} source={image.uri} size="full" />
+                    <Image
+                      alt={image.alt}
+                      source={image.uri}
+                      contentFit="contain"
+                      style={{ height: '100%', width: '100%' }}
+                    />
                   </Box>
                   <VStack space="md" className="items-start">
                     <Box className={titleBoxStyle({ variant: styleVariant })}>

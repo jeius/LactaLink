@@ -3,6 +3,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
+import { Image } from '@/components/Image';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { MAX_IMAGE_SIZE } from '@/lib/constants';
 import { ImageSchema, SetupProfileSchema } from '@lactalink/types';
@@ -13,7 +14,6 @@ import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { HStack } from './ui/hstack';
 import { Icon } from './ui/icon';
-import { Image } from './ui/image';
 import { Pressable } from './ui/pressable';
 import { VStack } from './ui/vstack';
 
@@ -49,6 +49,13 @@ export function AvatarUpload({
 
   const { user } = useAuth();
   const lastImageUri = useRef<string | null>(value?.url || null);
+
+  const baseOptions: ImagePicker.ImagePickerOptions = {
+    allowsEditing: true,
+    quality: 1,
+    aspect: [1, 1],
+    mediaTypes: 'images',
+  };
 
   const localDir = FileSystem.documentDirectory!;
 
@@ -112,14 +119,7 @@ export function AvatarUpload({
     };
   }
 
-  async function pickFromLibrary() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      quality: 1,
-      aspect: [1, 1],
-      mediaTypes: 'images',
-    });
-
+  async function handleChange(result: ImagePicker.ImagePickerResult) {
     if (!result.canceled && result.assets[0]) {
       showModal(false);
       const avatar = await transformImage(result.assets[0]);
@@ -127,20 +127,17 @@ export function AvatarUpload({
     }
   }
 
+  async function pickFromLibrary() {
+    const result = await ImagePicker.launchImageLibraryAsync(baseOptions);
+    await handleChange(result);
+  }
+
   async function pickFromCamera() {
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 1,
-      aspect: [1, 1],
-      mediaTypes: 'images',
+      ...baseOptions,
       cameraType: ImagePicker.CameraType.front,
     });
-
-    if (!result.canceled && result.assets[0]) {
-      showModal(false);
-      const avatar = await transformImage(result.assets[0]);
-      if (avatar) onChange?.(avatar);
-    }
+    await handleChange(result);
   }
 
   async function useGooglePicture() {
@@ -189,15 +186,9 @@ export function AvatarUpload({
         <VStack space="xl" className="grow items-center justify-center">
           {value.url && (
             <Image
-              source={{
-                uri: value.url,
-                height: value?.height || 300,
-                width: value?.width || 300,
-              }}
-              resizeMethod="scale"
+              source={{ uri: value.url }}
               alt={value?.alt || 'Avatar Image'}
-              size="2xl"
-              className="mx-auto aspect-square rounded-full"
+              style={{ width: 150, aspectRatio: 1, borderRadius: 9999 }}
             />
           )}
           <HStack space="2xl" className="w-full justify-center">

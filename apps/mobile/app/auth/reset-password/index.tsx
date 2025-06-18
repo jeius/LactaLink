@@ -5,11 +5,14 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
-import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+
 import { getHexColor } from '@/lib/colors';
 import { ASSET_IMAGES } from '@/lib/constants/images';
+
+import { Image } from 'expo-image';
+
 import React from 'react';
 import { Dimensions } from 'react-native';
 
@@ -29,10 +32,10 @@ export default function ResetPassword() {
           <VStack>
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
               <Image
-                size="full"
-                resizeMode="cover"
-                className="h-80"
-                alt="Forgot Password"
+                contentFit="cover"
+                contentPosition={{ top: 5 }}
+                style={{ height: '100%', width: '100%' }}
+                alt="Forgot Password Image"
                 source={ASSET_IMAGES.forgotPassword}
               />
               <GradientBackground colors={gradientColors} className="opacity-40" />

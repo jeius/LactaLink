@@ -51,14 +51,15 @@ const Home = () => {
     router.replace('/auth/sign-in');
   }
 
-  function handleScrollEnd() {
-    Storage.set(MMKV_KEYS.ONBOARDING, true);
+  function handleScrollEnd(index: number) {
+    if (index === lastPage) {
+      Storage.set(MMKV_KEYS.ONBOARDING, true);
+    }
   }
 
   useEffect(() => {
     setTheme('light');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setTheme]);
 
   return (
     <SafeArea className="justify-between">
@@ -123,7 +124,7 @@ const Home = () => {
         <Box className="w-full p-5 pt-2">
           <Button
             size="xl"
-            className="w-full rounded-2xl shadow-md shadow-primary-800"
+            className="shadow-primary-800 w-full rounded-2xl shadow-md"
             onPress={handleNext}
           >
             <ButtonText size="lg" className="font-JakartaMedium">

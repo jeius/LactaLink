@@ -50,7 +50,7 @@ export async function signOut() {
   const apiClient = getApiClient();
   await apiClient.auth.signOut();
   if (router.canDismiss()) {
-    router.dismiss();
+    router.dismissTo('/auth/sign-in');
   } else {
     router.replace('/auth/sign-in');
   }

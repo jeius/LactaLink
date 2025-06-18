@@ -19,11 +19,10 @@ export type ListProps = {
 
 export default function List({ items }: ListProps) {
   return (
-    <VStack space="md">
+    <VStack space="md" className="w-full">
       {items &&
         items.map(({ icon, iconPosition, content, variant }, i) => {
           const isHorizontal = iconPosition === 'left' || iconPosition === 'right';
-          const isVertical = iconPosition === 'top' || iconPosition === 'bottom';
 
           if (isHorizontal)
             return (
@@ -39,7 +38,7 @@ export default function List({ items }: ListProps) {
                 <Text className={itemStyle({ variant })}>{content}</Text>
               </HStack>
             );
-          else if (isVertical)
+          else
             return (
               <VStack
                 key={i}

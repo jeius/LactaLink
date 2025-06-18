@@ -10,13 +10,13 @@ import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { ASSET_IMAGES } from '@/lib/constants/images';
 import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
@@ -38,7 +38,13 @@ export default function VerifyOTP() {
       <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
         <Card className="m-5 p-0">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
-            <Image size="full" alt="Phone email verification" source={ASSET_IMAGES.verification} />
+            <Image
+              contentFit="cover"
+              contentPosition={{ top: '50%' }}
+              style={{ height: '100%', width: '100%' }}
+              alt="Phone email verification"
+              source={ASSET_IMAGES.verification}
+            />
 
             <GradientBackground colors={gradientColors} className="opacity-40" />
 

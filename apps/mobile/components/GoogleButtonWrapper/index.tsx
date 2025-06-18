@@ -1,4 +1,5 @@
 import { signInWithGoogle } from '@/auth';
+import { Image } from '@/components/Image';
 import { ICONS } from '@/lib/constants';
 import { extractErrorMessage } from '@lactalink/utilities';
 import React, { useState } from 'react';
@@ -7,7 +8,6 @@ import { toast } from 'sonner-native';
 import { Button, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
-import { Image } from '../ui/image';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
@@ -29,8 +29,7 @@ export default function GoogleButtonWrapper({
       error: (error) => extractErrorMessage(error),
     });
 
-    await googleSignInPromise;
-    setIsSubmitting(false);
+    await googleSignInPromise.finally(() => setIsSubmitting(false));
   }
 
   return (
@@ -52,7 +51,7 @@ export default function GoogleButtonWrapper({
         onPress={handleGoogleAuth}
       >
         <ButtonText>Google</ButtonText>
-        <Image source={ICONS.googleIcon} alt="Google Icon" size="2xs" />
+        <Image source={ICONS.googleIcon} alt="Google Icon" style={{ width: 24, height: 24 }} />
       </Button>
     </VStack>
   );

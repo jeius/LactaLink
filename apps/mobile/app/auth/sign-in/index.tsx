@@ -1,19 +1,21 @@
 import Logo from '@/assets/svgs/logo.svg';
+
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SignInForm from '@/components/forms/SignInForm';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
-
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+
 import { getHexColor } from '@/lib/colors';
 import { ASSET_IMAGES } from '@/lib/constants/images';
+
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
@@ -30,8 +32,9 @@ export default function SignIn() {
     <SafeArea className="items-stretch">
       <Box className="relative w-full overflow-hidden" style={{ height: height * 0.23 }}>
         <Image
-          size="full"
-          resizeMode="cover"
+          contentFit="cover"
+          contentPosition={{ top: 5 }}
+          style={{ height: '100%', width: '100%' }}
           alt="Mother Breastfeeding"
           source={ASSET_IMAGES.signIn}
         />

@@ -1,6 +1,5 @@
 import {
   CheckCircle2Icon,
-  ChevronsRightIcon,
   EditIcon,
   HeartIcon,
   LockIcon,
@@ -28,14 +27,6 @@ export const onboardingData: OnboardingData[] = [
     image: { alt: 'Connectivity', uri: ONBOARDING_IMAGES.onboarding1 },
     description:
       'Every drop counts! LactaLink helps mothers donate and receive breast milk safely and conveniently.',
-    footer: [
-      {
-        icon: ChevronsRightIcon,
-        iconPosition: 'right',
-        content: 'Swipe to learn more!',
-        variant: 'muted',
-      },
-    ],
   },
   {
     id: '2',

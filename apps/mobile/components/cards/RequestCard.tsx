@@ -7,10 +7,12 @@ import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '../ui/avat
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
-import { Image } from '../ui/image';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+
+import { Image } from '@/components/Image';
+import { BLUR_HASH } from '@/lib/constants/images';
 
 const priorityLevelColors: Record<keyof typeof PRIORITY_LEVELS, string> = {
   LOW: 'bg-success-400',
@@ -25,7 +27,7 @@ interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
 
 export default function RequestCard({ data, ...props }: RequestCardProps) {
   const {
-    details: { urgency, image: milkSample, neededAt },
+    details: { urgency, image, neededAt },
     volumeNeeded,
     requester,
   } = data;
@@ -36,8 +38,8 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
     'Unknown Donor';
   const userAvatar = (requester as Individual)?.avatar as AvatarType | null;
 
-  const milkSampleUrl = (milkSample as ImageType | null)?.sizes?.medium?.url || null;
-  const milkSampleAlt = (milkSample as ImageType | null)?.alt || 'Milk Sample Image';
+  const requestImage = image as ImageType | null;
+  const imageUrl = requestImage?.sizes?.medium?.url || requestImage?.url || null;
 
   return (
     <AnimatedPressable {...props}>
@@ -45,12 +47,14 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
         <VStack space="md">
           <Box className="bg-tertiary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
-              {milkSampleUrl ? (
+              {imageUrl ? (
                 <Image
-                  source={{ uri: milkSampleUrl }}
-                  size="full"
-                  resizeMode="cover"
-                  alt={milkSampleAlt}
+                  source={{ uri: imageUrl }}
+                  contentFit="cover"
+                  contentPosition={'center'}
+                  style={{ width: '100%', height: '100%' }}
+                  placeholder={{ blurhash: BLUR_HASH }}
+                  alt={'Request Image'}
                 />
               ) : (
                 <Text className="text-tertiary-900 m-auto">No Image</Text>

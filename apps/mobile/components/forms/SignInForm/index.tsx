@@ -70,16 +70,14 @@ export default function SignInForm() {
             <Button
               variant="link"
               size="sm"
-              action="secondary"
-              className="justify-start"
+              action="default"
+              className="px-0"
               isDisabled={isSubmitting}
               onPress={() => {
                 router.push('/auth/forgot-password');
               }}
             >
-              <ButtonText className="text-typography-700 font-JakartaMedium w-min">
-                Forgot Password?
-              </ButtonText>
+              <ButtonText className="font-JakartaMedium">Forgot Password?</ButtonText>
             </Button>
           </HStack>
         </VStack>

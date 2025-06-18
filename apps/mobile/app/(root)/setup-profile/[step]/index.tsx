@@ -2,12 +2,12 @@ import ProfileAvatar from '@/components/forms/setup-profile/avatar';
 import ProfileContact from '@/components/forms/setup-profile/contact';
 import ProfileDetails from '@/components/forms/setup-profile/details';
 import ProfileTypeForm from '@/components/forms/setup-profile/type';
+import { Image } from '@/components/Image';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
-import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -154,7 +154,11 @@ export default function Step() {
               <VStack space="lg">
                 <VStack space="sm" className="px-5">
                   <HStack space="md" className="items-center">
-                    <Image source={ICONS.information} alt="Information icon" size="xs" />
+                    <Image
+                      source={ICONS.information}
+                      alt="Information icon"
+                      style={{ width: 40, height: 40 }}
+                    />
                     <Text size="xl" bold>
                       {title[profileType]} Information
                     </Text>

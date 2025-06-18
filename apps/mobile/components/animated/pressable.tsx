@@ -11,11 +11,15 @@ import Animated, {
 
 export interface AnimatedPressableProps {
   children: React.ReactNode;
-  containerStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
 }
 
-export function AnimatedPressable({ children, onPress, containerStyle }: AnimatedPressableProps) {
+export function AnimatedPressable({
+  children,
+  onPress,
+  style: containerStyle,
+}: AnimatedPressableProps) {
   const scale = useSharedValue(1);
 
   const springConfig: WithSpringConfig = useMemo(

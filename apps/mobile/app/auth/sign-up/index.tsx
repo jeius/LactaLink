@@ -1,23 +1,23 @@
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import SignUpForm from '@/components/forms/SignUpForm';
 import GoogleButtonWrapper from '@/components/GoogleButtonWrapper';
-
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+
+import { getHexColor } from '@/lib/colors/getColor';
+import { ASSET_IMAGES } from '@/lib/constants/images';
+
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions } from 'react-native';
-
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import SignUpForm from '@/components/forms/SignUpForm';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
-import SafeArea from '@/components/SafeArea';
-import { Card } from '@/components/ui/card';
-import { Image } from '@/components/ui/image';
-import { getHexColor } from '@/lib/colors/getColor';
-import { ASSET_IMAGES } from '@/lib/constants/images';
 
 export default function SignUp() {
   const { height } = Dimensions.get('window');
@@ -33,9 +33,9 @@ export default function SignUp() {
         <Card className="m-5 p-0">
           <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
             <Image
-              size="none"
-              resizeMode="cover"
-              className="h-80 w-full"
+              contentFit="cover"
+              contentPosition={{ top: 5 }}
+              style={{ width: '100%', height: '100%' }}
               alt="Mother Breastfeeding in chair"
               source={ASSET_IMAGES.signUp}
             />
@@ -81,7 +81,7 @@ export default function SignUp() {
               <ButtonText className="text-primary-500">Privacy Policiy</ButtonText>
             </Button>
 
-            <Text size="sm" className="-ml-2 text-typography-600">
+            <Text size="sm" className="text-typography-600 -ml-2">
               .
             </Text>
           </HStack>

@@ -1,8 +1,8 @@
+import { Image } from '@/components/Image';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { CarouselRenderItem } from 'react-native-reanimated-carousel';
-import { Image } from '../ui/image';
 import { OnboardingData } from './data';
 import List from './list';
 
@@ -18,9 +18,9 @@ export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
         <Image
           alt={image.alt}
           source={image.uri}
-          size="none"
-          resizeMode="contain"
-          className="m-auto h-full w-full"
+          contentFit="contain"
+          style={{ width: '100%', height: '100%' }}
+          recyclingKey={`onboarding-image-${index}`}
         />
       </Box>
       <VStack space="xl" className="w-full items-center p-6">

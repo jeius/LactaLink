@@ -1,8 +1,8 @@
+import { Image } from '@/components/Image';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
-import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -41,7 +41,11 @@ export default function Setup() {
       <Card className="m-5">
         <VStack space="2xl">
           <VStack className="items-center">
-            <Image source={ICONS.verifiedAccount} alt="Verified Icon" size="sm" />
+            <Image
+              source={ICONS.verifiedAccount}
+              alt="Verified Icon"
+              style={{ width: 60, height: 60 }}
+            />
             <Text size="2xl" bold className="mt-2">
               Account Verified
             </Text>

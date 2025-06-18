@@ -1,12 +1,12 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { DraggableWrapper, DraggableWrapperRef } from '@/components/DraggableWrapper';
+import { Image } from '@/components/Image';
 import { ImageUpload, ImageUploadProps, ImageUploadRef } from '@/components/ImageUpload';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Image } from '@/components/ui/image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { ImageSchema } from '@lactalink/types';
 import { Motion } from '@legendapp/motion';
@@ -105,8 +105,10 @@ export function ImageUploadField({
                   <Image
                     alt={data[0].alt || 'Image'}
                     source={{ uri: data[0].url }}
-                    resizeMode="cover"
-                    size="full"
+                    contentFit="cover"
+                    contentPosition={'center'}
+                    style={{ width: '100%', height: '100%' }}
+                    recyclingKey={`image-upload-${data[0].filename}`}
                   />
                 )}
                 <Box className="absolute right-0 top-0">
@@ -196,8 +198,10 @@ function ImageArray({
                         <Image
                           alt={values[i].alt || 'Image'}
                           source={{ uri: values[i].url }}
-                          resizeMode="cover"
-                          size="full"
+                          contentFit="cover"
+                          contentPosition={'center'}
+                          style={{ width: '100%', height: '100%' }}
+                          recyclingKey={`image-upload-${field.id}`}
                         />
                       )}
                       <Box className="absolute right-0 top-0">
@@ -243,8 +247,10 @@ function ImageArray({
                     <Image
                       alt={values[0].alt || 'Image'}
                       source={{ uri: values[0].url }}
-                      resizeMode="cover"
-                      size="full"
+                      contentFit="cover"
+                      contentPosition={'center'}
+                      style={{ width: '100%', height: '100%' }}
+                      recyclingKey={`image-upload-${fields[0]!.id}`}
                     />
                   )}
                   <Box className="absolute right-0 top-0">

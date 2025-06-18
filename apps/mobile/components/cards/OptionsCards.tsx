@@ -1,3 +1,4 @@
+import { Image } from '@/components/Image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react-native';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
@@ -9,7 +10,6 @@ import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
-import { Image } from '../ui/image';
 import { Pressable } from '../ui/pressable';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
@@ -140,7 +140,9 @@ export function OptionsCards<T>({
                     <Text size="sm" className="font-JakartaMedium">
                       {label}
                     </Text>
-                    {image && <Image alt={image.alt} source={image.uri} size="sm" />}
+                    {image && (
+                      <Image alt={image.alt} source={image.uri} style={{ width: 60, height: 60 }} />
+                    )}
                   </VStack>
                 </Card>
               </Pressable>

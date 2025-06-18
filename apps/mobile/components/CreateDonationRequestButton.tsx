@@ -1,8 +1,8 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
+import { Image } from '@/components/Image';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Image } from '@/components/ui/image';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -57,19 +57,22 @@ export function CreateDonationRequestButton({
       </Button>
 
       <Modal isOpen={open} onClose={handleModalTrigger} className="bg-transparent">
-        <ModalBackdrop />
+        <ModalBackdrop className="bg-background-0" />
         <ModalContent className="border-0 bg-transparent p-0 shadow-none">
-          <VStack space="4xl">
-            <AnimatedPressable onPress={handleDonatePressed}>
+          <VStack space="2xl" className="w-full items-center">
+            <Text size="2xl" className="font-JakartaSemiBold text-center">
+              Do you want to donate or request milk?
+            </Text>
+
+            <AnimatedPressable onPress={handleDonatePressed} style={{ width: '100%' }}>
               <Card size="xl" className="bg-primary-100 border-primary-400 relative h-44 p-0">
                 <Image
                   alt="Donate"
                   source={ONBOARDING_IMAGES.onboarding2}
-                  resizeMode="cover"
-                  className="mx-auto h-full w-72"
-                  width={250}
+                  contentFit="contain"
+                  style={{ width: '100%', height: '100%' }}
                 />
-                <Box className="absolute inset-0 items-center justify-center">
+                <Box className="absolute inset-0 items-start justify-end p-2">
                   <Box className="bg-primary-400 rounded-xl p-3 opacity-90">
                     <Text size="xl" className="font-JakartaSemiBold text-primary-900">
                       Donate
@@ -79,15 +82,15 @@ export function CreateDonationRequestButton({
               </Card>
             </AnimatedPressable>
 
-            <AnimatedPressable onPress={handleRequestPressed}>
+            <AnimatedPressable onPress={handleRequestPressed} style={{ width: '100%' }}>
               <Card size="xl" className="bg-secondary-50 border-secondary-200 relative h-44 p-0">
                 <Image
                   alt="Request"
                   source={ONBOARDING_IMAGES.onboarding3}
-                  resizeMode="cover"
-                  className="mx-auto h-full w-64"
+                  contentFit="contain"
+                  style={{ width: '100%', height: '100%' }}
                 />
-                <Box className="absolute inset-0 items-center justify-center">
+                <Box className="absolute inset-0 items-start justify-end p-2">
                   <Box className="bg-secondary-300 rounded-xl p-3 opacity-90">
                     <Text size="xl" className="font-JakartaSemiBold text-secondary-900">
                       Request

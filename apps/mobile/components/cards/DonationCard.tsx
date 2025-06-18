@@ -6,10 +6,12 @@ import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '../ui/avat
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
-import { Image } from '../ui/image';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+
+import { Image } from '@/components/Image';
+import { BLUR_HASH } from '@/lib/constants/images';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Donation;
@@ -26,8 +28,8 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
     (donor as Individual)?.displayName || (donor as Individual)?.givenName || 'Unknown Donor';
   const donorAvatar = (donor as Individual)?.avatar as AvatarType | null;
 
-  const milkSampleUrl = (milkSample as ImageType[] | null)?.[0]?.sizes?.medium?.url || null;
-  const milkSampleAlt = (milkSample as ImageType[] | null)?.[0]?.alt || 'Milk Sample Image';
+  const milkSamples = milkSample as ImageType[] | null;
+  const milkSampleUrl = milkSamples?.[0]?.sizes?.medium?.url || milkSamples?.[0]?.url || null;
 
   return (
     <AnimatedPressable {...props}>
@@ -38,9 +40,13 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
               {milkSampleUrl ? (
                 <Image
                   source={{ uri: milkSampleUrl }}
-                  size="full"
-                  resizeMode="cover"
-                  alt={milkSampleAlt}
+                  contentFit="cover"
+                  contentPosition="center"
+                  style={{ width: '100%', height: '100%' }}
+                  alt={`Donation Milk Sample`}
+                  placeholder={{ blurhash: BLUR_HASH }}
+                  cachePolicy={'memory-disk'}
+                  recyclingKey={`donation-image-${data.id}`}
                 />
               ) : (
                 <Text className="m-auto">No Image</Text>

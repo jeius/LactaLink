@@ -1,8 +1,9 @@
 'use client';
+import { appendHeaders } from '@/lib/utils/appendHeaders';
 import { createImage } from '@gluestack-ui/image';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Platform, Image as RNImage } from 'react-native';
 
 const imageStyle = tva({
@@ -30,11 +31,13 @@ const Image = React.forwardRef<
   React.ComponentRef<typeof UIImage>,
   ImageProps & { className?: string }
 >(function Image({ size = 'md', className, ...props }, ref) {
+  const transformedSource = useMemo(() => appendHeaders(props), [props]) as ImageProps['source'];
   return (
     <UIImage
       className={imageStyle({ size, class: className })}
       {...props}
       ref={ref}
+      source={transformedSource}
       // @ts-expect-error : web only
       style={Platform.OS === 'web' ? { height: 'revert-layer', width: 'revert-layer' } : undefined}
     />
