@@ -4,13 +4,13 @@ import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
+import SafeArea from '@/components/SafeArea';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { RefreshCwIcon } from 'lucide-react-native';
 import { useTheme } from './AppProvider/ThemeProvider';
-import SafeArea from './SafeArea';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
-import { Spinner } from './ui/spinner';
-import { Text } from './ui/text';
-import { VStack } from './ui/vstack';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
