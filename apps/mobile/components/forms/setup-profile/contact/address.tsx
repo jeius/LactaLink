@@ -21,7 +21,7 @@ import { HintAlert } from '../../../HintAlert';
 import { MapTileButton } from '@/components/map-views/MapTileButton';
 import { Box } from '@/components/ui/box';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCurrentLocation } from '@/hooks/location/useCurrentLocation';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
 import { Coordinates } from 'expo-maps';

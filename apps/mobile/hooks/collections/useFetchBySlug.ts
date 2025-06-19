@@ -3,29 +3,31 @@ import { useApiClient } from '@lactalink/api';
 import { CollectionSlug, FindArgs } from '@lactalink/types';
 import { useQuery } from '@tanstack/react-query';
 
-export type FetchOptions<T extends CollectionSlug> = Pick<
-  FindArgs<T, true>,
-  'depth' | 'where' | 'sort' | 'select' | 'limit'
+export type FetchOptions<T extends CollectionSlug> = Omit<
+  Partial<FindArgs<T, true>>,
+  'page' | 'pagination'
 >;
 
 export function useFetchBySlug<TSlug extends CollectionSlug>(
-  collection: TSlug,
   enabled: boolean,
   options: FetchOptions<TSlug> = {}
 ) {
   const apiClient = useApiClient();
+  const { collection } = options;
 
   return useQuery({
     enabled,
     queryKey: [...COLLECTION_QUERY_KEY, collection, JSON.stringify(options)],
-    queryFn: () =>
-      apiClient.find({
+    queryFn: () => {
+      if (!collection) return null;
+      return apiClient.find({
         collection,
         pagination: false,
         depth: 3,
         limit: 10,
         ...options,
-      }),
+      });
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

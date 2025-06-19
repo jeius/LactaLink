@@ -3,7 +3,7 @@ import React, { ComponentPropsWithoutRef, FC, useEffect, useState } from 'react'
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useDebouncedCallback } from '@lactalink/utilities';
+import { debounce } from 'lodash';
 import { LucideIcon, LucideProps, MinusIcon, PlusIcon } from 'lucide-react-native';
 
 const inputFieldStyle = tva({
@@ -47,7 +47,7 @@ export function NumberInput({
 }: NumberInputProps) {
   const [localValue, setLocalValue] = useState(value);
 
-  const { debounced: handleChange, cancel } = useDebouncedCallback((val?: number) => {
+  const handleChange = debounce((val?: number) => {
     onChange?.(val);
   }, 300);
 
@@ -56,9 +56,9 @@ export function NumberInput({
 
     // Cleanup function to cancel any pending debounced calls
     return () => {
-      cancel();
+      handleChange.cancel();
     };
-  }, [cancel, handleChange, localValue]);
+  }, [handleChange, localValue]);
 
   return (
     <Input variant={variant} isDisabled={disabled} className={className}>

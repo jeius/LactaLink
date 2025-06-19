@@ -4,14 +4,19 @@ export async function createAddresses(addresses: AddressSchema[]): Promise<Addre
   const client = getApiClient();
 
   const results = await Promise.allSettled(
-    addresses.map((data) =>
-      client.create({
+    addresses.map((data) => {
+      const { coordinates: { latitude, longitude } = {}, ...rest } = data;
+
+      const coordinates: [number, number] | undefined =
+        latitude && longitude ? [longitude, latitude] : undefined;
+
+      return client.create({
         collection: 'addresses',
-        data,
+        data: { ...rest, coordinates },
         select: { id: true },
         depth: 0,
-      })
-    )
+      });
+    })
   );
 
   const fulfilled = results.filter(

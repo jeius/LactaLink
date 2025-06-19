@@ -9,6 +9,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { RefreshCwIcon } from 'lucide-react-native';
 import { useTheme } from './AppProvider/ThemeProvider';
 
@@ -22,9 +23,11 @@ type Props = {
 export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   const { isLoading: isThemeLoading } = useTheme();
-  const { isLoading: isAuthLoading, error, refetchSession } = useAuth();
+  const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
+  const { isLoading: isLocationLoading, error: locationError } = useCurrentLocation();
 
-  const isAppReady = !isThemeLoading && !isAuthLoading;
+  const isAppReady = !isThemeLoading && !isAuthLoading && !isLocationLoading;
+  const error = authError || locationError;
 
   // Hide the splash screen once the app is ready
   useEffect(() => {

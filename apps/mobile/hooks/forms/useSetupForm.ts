@@ -1,7 +1,7 @@
 import { setupProfileStorage as storage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SetupProfileSchema, setupProfileSchema, User } from '@lactalink/types';
-import { useDebouncedCallback } from '@lactalink/utilities';
+import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 
@@ -38,11 +38,9 @@ export function useSetupForm(user: User) {
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
 
-  const { debounced: debouncedSave, cancel } = useDebouncedCallback(
-    (value: DeepPartial<SetupProfileSchema>) => {
-      storage.set(storageKey, JSON.stringify(value));
-    }
-  );
+  const debouncedSave = debounce((value: DeepPartial<SetupProfileSchema>) => {
+    storage.set(storageKey, JSON.stringify(value));
+  });
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -51,11 +49,11 @@ export function useSetupForm(user: User) {
 
     return () => {
       subscription.unsubscribe();
-      cancel(); // cancel pending debounced calls
+      debouncedSave.cancel();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.watch, debouncedSave, cancel]);
+  }, [form.watch, debouncedSave]);
 
   return form;
 }

@@ -10,11 +10,11 @@ import {
   MilkBank,
   User,
 } from '@lactalink/types';
-import { useDebouncedCallback } from '@lactalink/utilities';
 
 import { DAYS } from '@/lib/constants';
 
 import { useQuery } from '@tanstack/react-query';
+import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 
@@ -35,7 +35,7 @@ async function getInitialData({
 
   const apiClient = getApiClient();
   const deliveryPreferences = await apiClient.find({
-    collection: 'deliveryPreferences',
+    collection: 'delivery-preferences',
     where: { owner: { equals: user.id } },
     depth: 0,
     pagination: false,
@@ -106,11 +106,9 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
   const isSubmitSuccessful = form.formState.isSubmitSuccessful;
   const getValues = form.getValues;
 
-  const { debounced: debouncedSave, cancel } = useDebouncedCallback(
-    (value: DeepPartial<CreateDonationSchema>) => {
-      donationStorage.set(storageKey, JSON.stringify(value));
-    }
-  );
+  const debouncedSave = debounce((value: DeepPartial<CreateDonationSchema>) => {
+    donationStorage.set(storageKey, JSON.stringify(value));
+  });
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -119,11 +117,11 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
 
     return () => {
       subscription.unsubscribe();
-      cancel(); // cancel pending debounced calls
+      debouncedSave.cancel();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.watch, debouncedSave, cancel]);
+  }, [form.watch, debouncedSave]);
 
   /**
    * When the form is successfully submitted, clear the local storage

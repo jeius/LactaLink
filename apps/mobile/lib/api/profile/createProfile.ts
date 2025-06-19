@@ -1,6 +1,7 @@
 import { getApiClient } from '@lactalink/api';
 import {
   Config,
+  CreateArgs,
   ExtractKeys,
   Hospital,
   HospitalSchema,
@@ -8,7 +9,6 @@ import {
   IndividualSchema,
   MilkBank,
   MilkBankSchema,
-  S,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 
@@ -17,7 +17,7 @@ type Output = Individual | Hospital | MilkBank;
 type BaseFields = Pick<Output, 'addresses' | 'avatar'>;
 type Data = Input & BaseFields;
 type Slug = ExtractKeys<Config['collections'], Output>;
-type Options = Omit<S<Slug>, 'collection'>;
+type Options = Omit<CreateArgs<Slug>, 'collection' | 'data'>;
 
 const defaultOptions: Options = {
   depth: 0,
