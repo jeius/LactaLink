@@ -62,5 +62,8 @@
     "@supabase/supabase-js": "^2.49.4",
     "@types/react": "^19.0.14",
     "react": "19.0.0"
+  },
+  "dependencies": {
+    "geolib": "^3.3.4"
   }
 }

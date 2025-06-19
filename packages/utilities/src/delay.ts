@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Delays the execution of code for a specified amount of time.
@@ -23,51 +23,47 @@ export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function useDebounce<T>(value: T, delay = 200): T {
+export function useDebounce<T>(
+  value: T,
+  delay = 300,
+  options: { leading?: boolean; trailing?: boolean } = { leading: false, trailing: true }
+): T {
+  const { leading = false, trailing = true } = options;
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-export function useDebouncedCallback<T extends (...args: never[]) => void>(
-  callback: T,
-  delay: number = 300
-) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const callbackRef = useRef(callback);
+  const lastCallTimeRef = useRef<number | null>(null);
+  const leadingCalledRef = useRef(false);
 
-  // Always store the latest callback
   useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
+    const now = Date.now();
 
-  const debounced = useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callbackRef.current(...args);
-      }, delay);
-    },
-    [delay]
-  );
+    // Handle leading edge
+    if (leading && !leadingCalledRef.current) {
+      setDebouncedValue(value);
+      leadingCalledRef.current = true;
+      lastCallTimeRef.current = now;
+    }
 
-  const cancel = useCallback(() => {
+    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-  }, []);
 
-  return { debounced, cancel };
+    // Handle trailing edge
+    timeoutRef.current = setTimeout(() => {
+      if (trailing && (!leading || now - (lastCallTimeRef.current || 0) >= delay)) {
+        setDebouncedValue(value);
+      }
+      leadingCalledRef.current = false; // Reset leading call
+    }, delay);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [value, delay, leading, trailing]);
+
+  return debouncedValue;
 }

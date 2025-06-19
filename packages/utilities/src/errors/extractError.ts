@@ -24,20 +24,29 @@ import { isAuthApiError, isAuthError } from '@supabase/supabase-js';
  * const message = extractErrorMessage(unknownError); // 'An unexpected error occurred.'
  * ```
  */
-export function extractErrorMessage<T = unknown>(error: T): string {
-  if (error && typeof error === 'object' && 'message' in error)
-    return String((error as { message: unknown }).message);
-  else if (Array.isArray(error)) {
+export function extractErrorMessage<T extends { message: string } | unknown = unknown>(
+  error: T
+): string {
+  if (error === null || error === undefined) {
+    return 'No error found.';
+  }
+
+  if (Array.isArray(error)) {
     const errorMessages = error.map((err) => {
       if (typeof err === 'object' && 'message' in err) {
-        return String((err as { message: unknown }).message);
+        return String(err.message);
       } else if (typeof err === 'string') {
         return err;
       }
       return 'Unknown error.';
     });
     return errorMessages.join(', ');
+  } else if (typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  } else if (typeof error === 'string') {
+    return error;
   }
+
   return 'Unknown error.';
 }
 

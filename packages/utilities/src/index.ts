@@ -4,5 +4,6 @@ export * from './delay';
 export * from './errors';
 export * from './extractors';
 export * from './formatters';
+export * from './geo-utils';
 export * from './mergeHeaders';
-export * from './typeGuards';
+export * from './type-guards';
