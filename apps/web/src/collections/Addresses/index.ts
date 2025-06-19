@@ -23,6 +23,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
     delete: collectionOwnerOrAdmin,
   },
   fields: [
+    ownerField,
     {
       type: 'row',
       fields: [
@@ -100,13 +101,19 @@ export const Addresses: CollectionConfig<'addresses'> = {
         readOnly: true,
       },
     },
-    ownerField,
     {
       name: 'coordinates',
       type: 'point',
       admin: {
         position: 'sidebar',
       },
+    },
+    {
+      name: 'deliveryPreferences',
+      label: 'Related Delivery Preferences',
+      type: 'join',
+      on: 'address',
+      collection: 'delivery-preferences',
     },
   ],
   hooks: {

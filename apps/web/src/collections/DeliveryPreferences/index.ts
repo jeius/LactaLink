@@ -11,8 +11,8 @@ import { CollectionConfig } from 'payload';
 import { authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { filterOptions } from './filterOptions';
 
-export const DeliveryPreferences: CollectionConfig<'deliveryPreferences'> = {
-  slug: 'deliveryPreferences',
+export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
+  slug: 'delivery-preferences',
   admin: {
     useAsTitle: 'owner',
     defaultColumns: ['owner', 'preferredMode', 'address', 'availableDays'],
@@ -38,6 +38,7 @@ export const DeliveryPreferences: CollectionConfig<'deliveryPreferences'> = {
           label: 'Preferred Delivery Modes',
           type: 'select',
           enumName: 'enum_delivery_modes',
+          hasMany: true,
           required: true,
           options: Object.values(DELIVERY_OPTIONS),
           admin: {
@@ -73,6 +74,26 @@ export const DeliveryPreferences: CollectionConfig<'deliveryPreferences'> = {
           },
         },
       ],
+    },
+    {
+      name: 'donations',
+      label: 'Related Donations',
+      type: 'join',
+      on: 'deliveryDetails',
+      collection: 'donations',
+      admin: {
+        defaultColumns: ['donor', 'remainingVolume', 'status'],
+      },
+    },
+    {
+      name: 'requests',
+      label: 'Related Requests',
+      type: 'join',
+      on: 'deliveryDetails',
+      collection: 'requests',
+      admin: {
+        defaultColumns: ['requester', 'volumeNeeded', 'status'],
+      },
     },
   ],
 };

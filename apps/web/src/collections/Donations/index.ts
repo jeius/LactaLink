@@ -187,7 +187,7 @@ export const Donations: CollectionConfig<'donations'> = {
               name: 'deliveryDetails',
               label: 'Delivery Details',
               type: 'relationship',
-              relationTo: 'deliveryPreferences',
+              relationTo: 'delivery-preferences',
               hasMany: true,
               required: true,
               admin: {
