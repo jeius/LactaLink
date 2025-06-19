@@ -113,7 +113,7 @@ export interface Config {
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
     deliveries: Delivery;
-    deliveryPreferences: DeliveryPreference;
+    'delivery-preferences': DeliveryPreference;
     donations: Donation;
     hospitals: Hospital;
     images: Image;
@@ -134,6 +134,13 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    addresses: {
+      deliveryPreferences: 'delivery-preferences';
+    };
+    'delivery-preferences': {
+      donations: 'donations';
+      requests: 'requests';
+    };
     donations: {
       deliveries: 'deliveries';
     };
@@ -151,7 +158,7 @@ export interface Config {
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
     deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
-    deliveryPreferences: DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
+    'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
@@ -211,6 +218,7 @@ export interface UserAuthOperations {
  */
 export interface Address {
   id: string;
+  owner?: (string | null) | User;
   /**
    * e.g. Home, Workplace.
    */
@@ -226,95 +234,16 @@ export interface Address {
   displayName?: string | null;
   region?: (string | null) | Region;
   islandGroup?: (string | null) | IslandGroup;
-  owner?: (string | null) | User;
   /**
    * @minItems 2
    * @maxItems 2
    */
   coordinates?: [number, number] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "provinces".
- */
-export interface Province {
-  id: string;
-  name: string;
-  code: string;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "regions".
- */
-export interface Region {
-  id: string;
-  name: string;
-  code: string;
-  regionName?: string | null;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "islandGroups".
- */
-export interface IslandGroup {
-  id: string;
-  name: string;
-  code: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citiesMunicipalities".
- */
-export interface CityMunicipality {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  isCapital: boolean;
-  code: string;
-  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
-  districtCode?: string | null;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "barangays".
- */
-export interface Barangay {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  code: string;
-  subMunicipalityCode?: string | null;
-  districtCode?: string | null;
-  cityMunicipality?: (string | null) | CityMunicipality;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
+  deliveryPreferences?: {
+    docs?: (string | DeliveryPreference)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -457,95 +386,179 @@ export interface Hospital {
   createdAt: string;
 }
 /**
+ * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deliveries".
+ * via the `definition` "provinces".
  */
-export interface Delivery {
+export interface Province {
+  id: string;
+  name: string;
+  code: string;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regions".
+ */
+export interface Region {
+  id: string;
+  name: string;
+  code: string;
+  regionName?: string | null;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "islandGroups".
+ */
+export interface IslandGroup {
+  id: string;
+  name: string;
+  code: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citiesMunicipalities".
+ */
+export interface CityMunicipality {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  isCapital: boolean;
+  code: string;
+  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
+  districtCode?: string | null;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "barangays".
+ */
+export interface Barangay {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  code: string;
+  subMunicipalityCode?: string | null;
+  districtCode?: string | null;
+  cityMunicipality?: (string | null) | CityMunicipality;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-preferences".
+ */
+export interface DeliveryPreference {
   id: string;
   createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
   /**
-   * The request this delivery is for
+   * Preferred delivery modes of the individual. This will be used for matching.
    */
-  request: string | Request;
+  preferredMode: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
   /**
-   * The donation being delivered
+   * Address available for pickup, delivery, or meet-up.
    */
-  donation: string | Donation;
-  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-  status:
-    | 'PENDING'
-    | 'PENDING_CONFIRMATION'
-    | 'CONFIRMED'
-    | 'SCHEDULED'
-    | 'IN_TRANSIT'
-    | 'READY_FOR_PICKUP'
-    | 'DELIVERED'
-    | 'FAILED'
-    | 'CANCELLED';
+  address: string | Address;
+  /**
+   * Days available for pickup, delivery, or meet-up.
+   */
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+  donations?: {
+    docs?: (string | Donation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  requests?: {
+    docs?: (string | Request)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations".
+ */
+export interface Donation {
+  id: string;
+  /**
+   * Title of the donation record.
+   */
+  title?: string | null;
+  /**
+   * Total volume of milk donated.
+   */
+  volume?: number | null;
+  /**
+   * Volume still available for allocation
+   */
+  remainingVolume?: number | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The person donating the milk
+   */
+  donor: string | Individual;
+  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  /**
+   * The requests that this donation fulfills
+   */
+  matchedRequests?: (string | Request)[] | null;
   details: {
     /**
-     * List of proposed date and time slots for negotiation
+     * Type of storage for the milk
      */
-    proposedTimeSlots?:
-      | {
-          /**
-           * Proposed date for the delivery, pickup, or meetup
-           */
-          date: string;
-          timeSlot: TimeSlot;
-          /**
-           * Indicates who proposed this time slot
-           */
-          proposedBy: 'DONOR' | 'REQUESTER';
-          id?: string | null;
-        }[]
-      | null;
+    storageType: 'FRESH' | 'FROZEN';
     /**
-     * The confirmed date and time slot for the delivery, pickup, or meetup
+     * How the milk was collected
      */
-    confirmedTimeSlot?: {
-      /**
-       * The confirmed date for the delivery, pickup, or meetup
-       */
-      date: string;
-      timeSlot: TimeSlot;
-    };
+    collectionMode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
     /**
-     * List of proposed addresses for negotiation
+     * Select the milk bags used for this donation
      */
-    proposedAddresses?:
-      | {
-          address: string | Address;
-          /**
-           * Indicates who proposed this address
-           */
-          proposedBy: 'DONOR' | 'REQUESTER';
-          id?: string | null;
-        }[]
-      | null;
+    bags: (string | MilkBag)[];
     /**
-     * The confirmed address for the delivery, pickup, or meetup
+     * Upload images of the milk sample
      */
-    confirmedAddress: string | Address;
+    milkSample?: (string | Image)[] | null;
     /**
-     * Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)
+     * Additional notes or special instructions from donor
      */
-    instructions?: string | null;
+    notes?: string | null;
   };
-  tracking?: {
-    deliveredAt?: string | null;
-    /**
-     * Reason why the delivery failed
-     */
-    failureReason?: string | null;
-    trackingHistory?:
-      | {
-          status?: string | null;
-          timestamp?: string | null;
-          notes?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+  /**
+   * Delivery preferences for the milk donation
+   */
+  deliveryDetails: (string | DeliveryPreference)[];
+  deliveries?: {
+    docs?: (string | Delivery)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   updatedAt: string;
   createdAt: string;
@@ -617,68 +630,6 @@ export interface Request {
    */
   deliveryDetails: (string | DeliveryPreference)[];
   delivery?: {
-    docs?: (string | Delivery)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donations".
- */
-export interface Donation {
-  id: string;
-  /**
-   * Title of the donation record.
-   */
-  title?: string | null;
-  /**
-   * Total volume of milk donated.
-   */
-  volume?: number | null;
-  /**
-   * Volume still available for allocation
-   */
-  remainingVolume?: number | null;
-  createdBy?: (string | null) | User;
-  /**
-   * The person donating the milk
-   */
-  donor: string | Individual;
-  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
-  /**
-   * The requests that this donation fulfills
-   */
-  matchedRequests?: (string | Request)[] | null;
-  details: {
-    /**
-     * Type of storage for the milk
-     */
-    storageType: 'FRESH' | 'FROZEN';
-    /**
-     * How the milk was collected
-     */
-    collectionMode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
-    /**
-     * Select the milk bags used for this donation
-     */
-    bags: (string | MilkBag)[];
-    /**
-     * Upload images of the milk sample
-     */
-    milkSample?: (string | Image)[] | null;
-    /**
-     * Additional notes or special instructions from donor
-     */
-    notes?: string | null;
-  };
-  /**
-   * Delivery preferences for the milk donation
-   */
-  deliveryDetails: (string | DeliveryPreference)[];
-  deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -799,24 +750,95 @@ export interface Image {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deliveryPreferences".
+ * via the `definition` "deliveries".
  */
-export interface DeliveryPreference {
+export interface Delivery {
   id: string;
   createdBy?: (string | null) | User;
-  owner?: (string | null) | User;
   /**
-   * Preferred delivery modes of the individual. This will be used for matching.
+   * The request this delivery is for
    */
-  preferredMode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  request: string | Request;
   /**
-   * Address available for pickup, delivery, or meet-up.
+   * The donation being delivered
    */
-  address: string | Address;
-  /**
-   * Days available for pickup, delivery, or meet-up.
-   */
-  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+  donation: string | Donation;
+  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  status:
+    | 'PENDING'
+    | 'PENDING_CONFIRMATION'
+    | 'CONFIRMED'
+    | 'SCHEDULED'
+    | 'IN_TRANSIT'
+    | 'READY_FOR_PICKUP'
+    | 'DELIVERED'
+    | 'FAILED'
+    | 'CANCELLED';
+  details: {
+    /**
+     * List of proposed date and time slots for negotiation
+     */
+    proposedTimeSlots?:
+      | {
+          /**
+           * Proposed date for the delivery, pickup, or meetup
+           */
+          date: string;
+          timeSlot: TimeSlot;
+          /**
+           * Indicates who proposed this time slot
+           */
+          proposedBy: 'DONOR' | 'REQUESTER';
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * The confirmed date and time slot for the delivery, pickup, or meetup
+     */
+    confirmedTimeSlot?: {
+      /**
+       * The confirmed date for the delivery, pickup, or meetup
+       */
+      date: string;
+      timeSlot: TimeSlot;
+    };
+    /**
+     * List of proposed addresses for negotiation
+     */
+    proposedAddresses?:
+      | {
+          address: string | Address;
+          /**
+           * Indicates who proposed this address
+           */
+          proposedBy: 'DONOR' | 'REQUESTER';
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * The confirmed address for the delivery, pickup, or meetup
+     */
+    confirmedAddress: string | Address;
+    /**
+     * Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)
+     */
+    instructions?: string | null;
+  };
+  tracking?: {
+    deliveredAt?: string | null;
+    /**
+     * Reason why the delivery failed
+     */
+    failureReason?: string | null;
+    trackingHistory?:
+      | {
+          status?: string | null;
+          timestamp?: string | null;
+          notes?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1214,7 +1236,7 @@ export interface PayloadLockedDocument {
         value: string | Delivery;
       } | null)
     | ({
-        relationTo: 'deliveryPreferences';
+        relationTo: 'delivery-preferences';
         value: string | DeliveryPreference;
       } | null)
     | ({
@@ -1324,6 +1346,7 @@ export interface PayloadMigration {
  * via the `definition` "addresses_select".
  */
 export interface AddressesSelect<T extends boolean = true> {
+  owner?: T;
   name?: T;
   default?: T;
   province?: T;
@@ -1333,8 +1356,8 @@ export interface AddressesSelect<T extends boolean = true> {
   displayName?: T;
   region?: T;
   islandGroup?: T;
-  owner?: T;
   coordinates?: T;
+  deliveryPreferences?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1485,7 +1508,7 @@ export interface TimeSlotSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deliveryPreferences_select".
+ * via the `definition` "delivery-preferences_select".
  */
 export interface DeliveryPreferencesSelect<T extends boolean = true> {
   createdBy?: T;
@@ -1493,6 +1516,8 @@ export interface DeliveryPreferencesSelect<T extends boolean = true> {
   preferredMode?: T;
   address?: T;
   availableDays?: T;
+  donations?: T;
+  requests?: T;
   updatedAt?: T;
   createdAt?: T;
 }

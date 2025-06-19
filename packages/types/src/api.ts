@@ -81,7 +81,10 @@ export type FindArgs<Slug extends CollectionSlug, Paginated extends boolean> = B
   Paginated
 >;
 
-export type FindByIDArgs<Slug extends CollectionSlug> = BaseArgsWithoutPagination<Slug> & {
+export type FindByIDArgs<Slug extends CollectionSlug> = Omit<
+  BaseArgsWithoutPagination<Slug>,
+  'limit' | 'sort'
+> & {
   id: Collection<Slug>['id'];
 };
 

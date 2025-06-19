@@ -6,6 +6,7 @@ export * from './collections';
 export * from './enums';
 export type * from './errors';
 export * from './forms';
+export * from './geo-types';
 export type * from './interfaces';
 export type * from './payload-types';
 export type * from './preferences';
