@@ -19,7 +19,8 @@
       "channel": "development",
       "environment": "development",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://localhost:3000"
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000",
+        "EXPO_PUBLIC_ENVIRONMENT": "development"
       }
     },
     "preview": {
