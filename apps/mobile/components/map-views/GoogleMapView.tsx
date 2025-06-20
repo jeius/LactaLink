@@ -1,20 +1,24 @@
-import { useCurrentLocation } from '@/hooks/location/useCurrentLocation';
+import { useCurrentLocation, useLocationUpdates } from '@/hooks/location/useLocation';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { debounce, isEqual } from 'lodash';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner-native';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { Address, DeliveryPreference, STORAGE_TYPES } from '@lactalink/types';
-import { CameraPosition, Coordinates, GoogleMaps } from 'expo-maps';
+import { createAndroidMarkers } from '@/lib/utils/createMarkers';
+import { Populate } from '@lactalink/types';
+
+import { CameraPosition, Coordinates, GoogleMaps, Coordinates as MapCoordinates } from 'expo-maps';
 import {
   GoogleMapsColorScheme,
   GoogleMapsMapType,
   GoogleMapsMarker,
   GoogleMapsViewType,
 } from 'expo-maps/build/google/GoogleMaps.types';
-import { LocateFixedIcon, SearchIcon } from 'lucide-react-native';
+
+import { LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CreateDonationRequestButton } from '../CreateDonationRequestButton';
 import SafeArea from '../SafeArea';
@@ -25,108 +29,93 @@ import { VStack } from '../ui/vstack';
 import { MapBottomSheet, MapBottomSheetProps } from './MapBottomSheet';
 
 export function GoogleMapView() {
-  const inset = useSafeAreaInsets();
-  const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps>({});
-
-  const { location, error, isLoading, isFetching } = useCurrentLocation();
   const { theme } = useTheme();
+  const inset = useSafeAreaInsets();
   const mapRef = useRef<GoogleMapsViewType>(null);
 
-  const currentLocation: Coordinates | undefined =
-    (location && { latitude: location.coords.latitude, longitude: location.coords.longitude }) ||
-    undefined;
+  const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
+  const [followUser, setFollowUser] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(16);
+  const debouncedSetZoom = debounce(setCurrentZoom, 100);
+  const debouncedSetFollowUser = debounce(setFollowUser, 100, { trailing: true });
 
-  const cameraPosition: CameraPosition | undefined =
-    (location && {
-      zoom: 16,
-      coordinates: currentLocation,
-    }) ||
-    undefined;
+  const {
+    location: initialLoc,
+    error: initialError,
+    isLoading: initialLoading,
+  } = useCurrentLocation();
+  const {
+    location: { coords } = {},
+    error: locError,
+    isLoading: isLocLoading,
+    animated,
+  } = useLocationUpdates();
+
+  const error = initialError || locError;
+  const isLoading = initialLoading || isLocLoading;
+
+  const initialPosition: CameraPosition = {
+    zoom: 16,
+    coordinates: {
+      latitude: animated.latitude,
+      longitude: animated.longitude,
+    },
+  };
+
+  const currentPos: CameraPosition = useMemo(
+    () => ({
+      zoom: currentZoom,
+      coordinates: {
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
+      },
+    }),
+    [coords, currentZoom]
+  );
 
   const googleMapsColorScheme: GoogleMapsColorScheme =
     theme === 'dark' ? GoogleMapsColorScheme.DARK : GoogleMapsColorScheme.LIGHT;
 
-  const {
-    data: donations,
-    isLoading: isLoadingDonations,
-    isFetching: isFetchingDonations,
-    refetch: refetchDonations,
-  } = useFetchBySlug('donations', true, {
+  const populate: Populate = {
+    users: { profile: true },
+    addresses: { coordinates: true, displayName: true },
+    'delivery-preferences': { address: true, availableDays: true, preferredMode: true },
+  };
+
+  const { data: donations } = useFetchBySlug(true, {
+    collection: 'donations',
     where: { status: { equals: 'AVAILABLE' } },
+    populate,
   });
 
-  const {
-    data: requests,
-    isLoading: isLoadingRequests,
-    isFetching: isFetchingRequests,
-    refetch: refetchRequests,
-  } = useFetchBySlug('requests', true, {
+  const { data: requests } = useFetchBySlug(true, {
+    collection: 'requests',
     where: { status: { equals: 'PENDING' } },
+    populate,
   });
 
-  const markers: GoogleMapsMarker[] = [];
+  const markers = createAndroidMarkers({ donations, requests });
 
-  if (donations && donations.length > 0) {
-    for (const donation of donations) {
-      const volume = donation.remainingVolume || 0;
-      const storageType = donation.details.storageType;
-      const address = (donation.deliveryDetails as DeliveryPreference[])?.[0]?.address as
-        | Address
-        | undefined;
-      const [latitude, longitude] = (address && address.coordinates) || [];
-
-      console.log('Donation coordinates:', latitude, longitude);
-
-      if (latitude && longitude) {
-        const marker: GoogleMapsMarker = {
-          id: donation.id,
-          coordinates: { latitude, longitude },
-          title: donation.title || `Donation | ${volume} mL`,
-          showCallout: true,
-          draggable: false,
-          snippet: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
-        };
-        markers.push(marker);
-      }
+  const moveToCurrentPos = useCallback(() => {
+    if (mapRef.current && currentPos) {
+      mapRef.current.setCameraPosition(currentPos);
     }
-  }
-
-  if (requests && requests.length > 0) {
-    for (const request of requests) {
-      const volume = request.volumeNeeded || 0;
-      const address = (request.deliveryDetails as DeliveryPreference[])?.[0]?.address as
-        | Address
-        | undefined;
-      const [latitude, longitude] = (address && address.coordinates) || [];
-
-      console.log('Request coordinates:', latitude, longitude);
-
-      if (latitude && longitude) {
-        const marker: GoogleMapsMarker = {
-          id: request.id,
-          coordinates: { latitude, longitude },
-          title: request.title || `Request | ${volume} mL`,
-          showCallout: true,
-          draggable: false,
-          snippet: `${volume} mL of milk requested.`,
-        };
-        markers.push(marker);
-      }
-    }
-  }
+  }, [mapRef, currentPos]);
 
   useEffect(() => {
     if (error) {
       console.error('Error retrieving location:', error);
       toast.error(error.message);
     }
-  }, [error]);
-
-  function setCameraPostionToCurrentLocation() {
-    if (mapRef.current && currentLocation) {
-      mapRef.current.setCameraPosition(cameraPosition);
+    if (followUser) {
+      moveToCurrentPos();
     }
-  }
+
+    return () => {
+      debouncedSetZoom.cancel();
+      debouncedSetFollowUser.cancel();
+    };
+  }, [debouncedSetFollowUser, debouncedSetZoom, error, followUser, moveToCurrentPos]);
 
   function handleMarkerClicked(marker: GoogleMapsMarker) {
     if (!marker.id) return;
@@ -144,21 +133,48 @@ export function GoogleMapView() {
         id: request.id,
       });
     } else {
-      setSelectedItem({});
+      setSelectedItem(null);
     }
   }
 
-  function handleMapClicked(_event: { coordinates: Coordinates }) {
-    setSelectedItem({});
+  function handleMapClicked(_event: { coordinates: MapCoordinates }) {
+    setSelectedItem(null);
   }
 
-  function handleSelectionChange(id: string) {
+  function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
+    const { id, slug: _ } = value;
     const coord = markers.find((marker) => marker.id === id)?.coordinates;
     if (coord && mapRef.current) {
       mapRef.current.setCameraPosition({
-        zoom: 19,
+        zoom: 18,
         coordinates: coord,
       });
+    }
+    setSelectedItem(value);
+  }
+
+  function handleCameraMoved({
+    zoom,
+    coordinates,
+  }: {
+    zoom: number;
+    coordinates: Coordinates;
+  }): void {
+    debouncedSetZoom(zoom);
+    debouncedSetFollowUser(false);
+
+    const roundedCoords = {
+      latitude: parseFloat((coordinates.latitude || 0).toFixed(4)),
+      longitude: parseFloat((coordinates.longitude || 0).toFixed(4)),
+    };
+
+    const roundedPosCoords = {
+      latitude: parseFloat((currentPos.coordinates?.latitude || 0).toFixed(4)),
+      longitude: parseFloat((currentPos.coordinates?.longitude || 0).toFixed(4)),
+    };
+
+    if (isEqual(roundedCoords, roundedPosCoords)) {
+      debouncedSetFollowUser.cancel();
     }
   }
 
@@ -175,12 +191,13 @@ export function GoogleMapView() {
       <GoogleMaps.View
         ref={mapRef}
         markers={markers}
-        cameraPosition={cameraPosition}
+        cameraPosition={initialPosition}
         colorScheme={googleMapsColorScheme}
-        userLocation={currentLocation && { coordinates: currentLocation, followUserLocation: true }}
+        userLocation={{ coordinates: currentPos.coordinates || {}, followUserLocation: followUser }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         onMarkerClick={handleMarkerClicked}
         onMapClick={handleMapClicked}
+        onCameraMove={handleCameraMoved}
         uiSettings={{
           zoomControlsEnabled: false,
           rotationGesturesEnabled: true,
@@ -195,8 +212,6 @@ export function GoogleMapView() {
       />
 
       <VStack className="relative flex-1" style={{ marginTop: inset.top }}>
-        {isFetching && <Spinner size={'small'} className="absolute right-3 top-3 z-50" />}
-
         <Box style={{ position: 'absolute', right: 16, top: '40%' }}>
           <VStack space="md" className="shrink">
             <CreateDonationRequestButton
@@ -204,10 +219,14 @@ export function GoogleMapView() {
               className="h-fit w-fit rounded-full p-3"
             />
             <Button
-              className="h-fit w-fit rounded-full p-3"
-              onPress={setCameraPostionToCurrentLocation}
+              className={`h-fit w-fit rounded-full p-3 ${followUser ? 'bg-primary-600' : ''}`}
+              onPress={() => setFollowUser((prev) => !prev)}
+              accessibilityLabel="Follow user location"
+              accessibilityHint="Toggles following the user's current location"
+              accessibilityRole="button"
+              accessibilityState={{ selected: followUser }}
             >
-              <ButtonIcon as={LocateFixedIcon} height={22} width={22} />
+              <ButtonIcon as={!followUser ? LocateFixedIcon : LocateIcon} height={22} width={22} />
             </Button>
           </VStack>
         </Box>
@@ -220,7 +239,7 @@ export function GoogleMapView() {
         </Box>
       </VStack>
 
-      <MapBottomSheet {...selectedItem} onSelected={handleSelectionChange} />
+      <MapBottomSheet value={selectedItem} onChange={handleSelectionChange} />
     </Box>
   );
 }

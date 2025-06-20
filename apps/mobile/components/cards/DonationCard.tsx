@@ -115,7 +115,7 @@ export function DonationSkeleton() {
       <VStack space="md">
         <Box className="bg-background-muted relative aspect-square h-48">
           <Box className="h-full w-full overflow-hidden">
-            <Skeleton startColor="bg-background-400" speed={4} />
+            <Skeleton startColor="bg-background-300" speed={4} />
           </Box>
 
           <VStack
@@ -124,8 +124,8 @@ export function DonationSkeleton() {
           >
             <HStack>
               <Skeleton
-                speed={4}
-                startColor="bg-background-300"
+                speed={2}
+                startColor="bg-primary-0"
                 className="h-6 w-16"
                 style={{ borderBottomRightRadius: 12 }}
               />
@@ -133,14 +133,14 @@ export function DonationSkeleton() {
 
             <VStack className="items-center">
               <Skeleton
-                speed={4}
-                startColor="bg-background-300"
+                speed={2}
+                startColor="bg-primary-0"
                 className="h-12 w-20"
                 variant="rounded"
               />
             </VStack>
 
-            <Skeleton speed={4} startColor="bg-background-300" className="h-6" />
+            <Skeleton speed={2} startColor="bg-primary-0" className="h-6" />
           </VStack>
         </Box>
 

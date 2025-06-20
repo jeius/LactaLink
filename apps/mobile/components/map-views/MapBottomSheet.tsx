@@ -3,11 +3,10 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { useApiClient } from '@lactalink/api';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
-import { useQuery } from '@tanstack/react-query';
 import { Dimensions } from 'react-native';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import InfoCard from '../cards/InfoCard';
@@ -15,71 +14,64 @@ import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
 import { RefreshControl } from '../RefreshControl';
 import {
   BottomSheet,
-  BottomSheetContent,
   BottomSheetDragIndicator,
   BottomSheetFlashList,
   BottomSheetPortal,
   BottomSheetScrollView,
 } from '../ui/bottom-sheet';
 import { Box } from '../ui/box';
-import { Card } from '../ui/card';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 const DEFAULT_SNAP_POINT = 30;
 
-type SectionId = 'donations' | 'requests' | 'hospitals' | 'milk-banks';
+type Slug = Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
+
 type Data = Donation | Request | MilkBank | Hospital | { id: string };
 type Section = {
-  id: SectionId;
+  slug: Slug;
   title: string;
   data: Data[];
   isFetchingNextPage: boolean;
   isLoading: boolean;
   fetchNextPage: () => unknown;
-  refetch: () => unknown;
   hasNextPage: boolean;
-  isFetching: boolean;
+};
+
+type Value = {
+  id: string;
+  slug: Slug;
 };
 
 export interface MapBottomSheetProps {
-  id?: string;
-  slug?: Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
-  onSelected?: (id: string) => void;
+  value?: Value | null;
+  onChange?: (id: Value) => void;
 }
 
-export function MapBottomSheet({ id, slug, onSelected }: MapBottomSheetProps) {
+export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProps) {
   const bottomSheetRef = useRef<GorhomBottomSheet>(null);
   const [open, setOpen] = useState(true);
-  const apiClient = useApiClient();
+
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
-  const hasSelectedItem = Boolean(id && slug);
+  const hasSelectedItem = Boolean(selected);
 
   const handleChanged = useCallback(
-    (id: string) => {
-      onSelected?.(id);
+    (val: Value) => {
+      onChange?.(val);
     },
-    [onSelected]
+    [onChange]
   );
 
-  const snapPoints = useMemo(
-    () =>
-      hasSelectedItem ? [DEFAULT_SNAP_POINT, '40%'] : [DEFAULT_SNAP_POINT, '40%', '60%', '80%'],
-    [hasSelectedItem]
-  );
+  const snapPoints = hasSelectedItem
+    ? [DEFAULT_SNAP_POINT, '40%']
+    : [DEFAULT_SNAP_POINT, '40%', '80%'];
 
-  const {
-    data: selected,
-    isLoading,
-    isFetching,
-  } = useQuery({
-    enabled: hasSelectedItem,
-    initialData: null,
-    queryKey: ['map-bottom-sheet', id, slug],
-    queryFn: () => (id && slug && apiClient.findByID({ id, collection: slug, depth: 3 })) || null,
-  });
+  const { isFetching: isFetchingSelected, refetch: refetchSelected } = useFetchById(
+    hasSelectedItem,
+    { id: selected?.id, collection: selected?.slug }
+  );
 
   const {
     data: infiniteDonations,
@@ -105,78 +97,28 @@ export function MapBottomSheet({ id, slug, onSelected }: MapBottomSheetProps) {
     where: { status: { equals: 'PENDING' } },
   });
 
-  const {
-    data: infiniteHospitals,
-    fetchNextPage: fetchNextHospitalsPage,
-    hasNextPage: hasNextHospitalsPage,
-    isLoading: isLoadingHospitals,
-    isFetching: isFetchingHospitals,
-    isFetchingNextPage: isFetchingNextHospitalsPage,
-    refetch: refetchHospitals,
-  } = useInfiniteFetchBySlug('hospitals', !hasSelectedItem);
-
-  const {
-    data: infiniteMilkBanks,
-    fetchNextPage: fetchNextMilkBanksPage,
-    hasNextPage: hasNextMilkBanksPage,
-    isLoading: isLoadingMilkBanks,
-    isFetching: isFetchingMilkBanks,
-    isFetchingNextPage: isFetchingNextMilkBanksPage,
-    refetch: refetchMilkBanks,
-  } = useInfiniteFetchBySlug('milkBanks', !hasSelectedItem);
-
   const sections = useMemo((): Section[] => {
     return [
       {
-        id: 'donations',
+        slug: 'donations',
         title: 'Available Donations',
         isFetchingNextPage: isFetchingNextDonationsPage,
         isLoading: isLoadingDonations,
         fetchNextPage: fetchNextDonationsPage,
-        refetch: refetchDonations,
         hasNextPage: hasNextDonationsPage,
-        isFetching: isFetchingDonations,
         data:
           infiniteDonations?.pages.flatMap((page) => page.docs) ||
           Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
       },
       {
-        id: 'requests',
+        slug: 'requests',
         title: 'Available Requests',
         isFetchingNextPage: isFetchingNextRequestsPage,
         isLoading: isLoadingRequests,
         fetchNextPage: fetchNextRequestsPage,
-        refetch: refetchRequests,
         hasNextPage: hasNextRequestsPage,
-        isFetching: isFetchingRequests,
         data:
           infiniteRequests?.pages.flatMap((page) => page.docs) ||
-          Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
-      },
-      {
-        id: 'hospitals',
-        title: 'Hospitals',
-        isFetchingNextPage: isFetchingNextHospitalsPage,
-        isLoading: isLoadingHospitals,
-        fetchNextPage: fetchNextHospitalsPage,
-        refetch: refetchHospitals,
-        hasNextPage: hasNextHospitalsPage,
-        isFetching: isFetchingHospitals,
-        data:
-          infiniteHospitals?.pages.flatMap((page) => page.docs) ||
-          Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
-      },
-      {
-        id: 'milk-banks',
-        title: 'Milk Banks',
-        isFetchingNextPage: isFetchingNextMilkBanksPage,
-        isLoading: isLoadingMilkBanks,
-        fetchNextPage: fetchNextMilkBanksPage,
-        refetch: refetchMilkBanks,
-        hasNextPage: hasNextMilkBanksPage,
-        isFetching: isFetchingMilkBanks,
-        data:
-          infiniteMilkBanks?.pages.flatMap((page) => page.docs) ||
           Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
       },
     ];
@@ -184,56 +126,72 @@ export function MapBottomSheet({ id, slug, onSelected }: MapBottomSheetProps) {
     isFetchingNextDonationsPage,
     isLoadingDonations,
     fetchNextDonationsPage,
-    refetchDonations,
     hasNextDonationsPage,
-    isFetchingDonations,
     infiniteDonations?.pages,
     isFetchingNextRequestsPage,
     isLoadingRequests,
     fetchNextRequestsPage,
-    refetchRequests,
     hasNextRequestsPage,
-    isFetchingRequests,
     infiniteRequests?.pages,
-    isFetchingNextHospitalsPage,
-    isLoadingHospitals,
-    fetchNextHospitalsPage,
-    refetchHospitals,
-    hasNextHospitalsPage,
-    isFetchingHospitals,
-    infiniteHospitals?.pages,
-    isFetchingNextMilkBanksPage,
-    isLoadingMilkBanks,
-    fetchNextMilkBanksPage,
-    refetchMilkBanks,
-    hasNextMilkBanksPage,
-    isFetchingMilkBanks,
-    infiniteMilkBanks?.pages,
   ]);
 
+  function handleGetItemType(item: Data, _idx: number, { slug }: { slug: Slug }): string {
+    if (slug === 'donations') {
+      const status = (item as Donation).status;
+      const volume = (item as Donation).remainingVolume || 0;
+      return `donation-${status}-${volume}`;
+    }
+    if (slug === 'requests') {
+      const status = (item as Request).status;
+      const volume = (item as Request).volumeNeeded || 0;
+      return `request-${status}-${volume}`;
+    }
+    return 'unknown';
+  }
+
   const renderItem: ListRenderItem<Data> = useCallback(
-    ({ item, extraData: { sectionId, isLoading } }) => {
-      if (sectionId === 'donations') {
-        if (item.id.includes('placeholder') || isLoading) {
-          return <DonationSkeleton />;
-        }
-        return <DonationCard data={item as Donation} onPress={() => handleChanged(item.id)} />;
+    ({ item, extraData: { slug, isLoading } }) => {
+      const loading = isLoading || item.id.includes('placeholder');
+
+      if (slug === 'donations') {
+        return loading ? (
+          <DonationSkeleton />
+        ) : (
+          <DonationCard
+            data={item as Donation}
+            onPress={() => handleChanged({ id: item.id, slug })}
+          />
+        );
       }
-      if (sectionId === 'requests') {
-        if (item.id.includes('placeholder') || isLoading) {
-          return <RequestSkeleton />;
-        }
-        return <RequestCard data={item as Request} onPress={() => handleChanged(item.id)} />;
+
+      if (slug === 'requests') {
+        return loading ? (
+          <RequestSkeleton />
+        ) : (
+          <RequestCard
+            data={item as Request}
+            onPress={() => handleChanged({ id: item.id, slug })}
+          />
+        );
       }
-      // Add other item renderers for requests, hospitals, milk banks as needed
-      return (
-        <Card className="aspect-square h-48 p-4">
-          <Text>{item.id}</Text>
-        </Card>
-      );
+
+      return null;
     },
     [handleChanged]
   );
+
+  function RefreshComponent() {
+    const isRefreshing = isFetchingDonations || isFetchingRequests || isFetchingSelected;
+    const onRefresh = () => {
+      if (selected) {
+        refetchSelected();
+      } else {
+        refetchDonations();
+        refetchRequests();
+      }
+    };
+    return <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />;
+  }
 
   return (
     <BottomSheet
@@ -255,65 +213,53 @@ export function MapBottomSheet({ id, slug, onSelected }: MapBottomSheetProps) {
           setOpen(index > 0);
         }}
       >
-        {selected && slug && (
-          <BottomSheetContent>
-            <InfoCard data={selected} slug={slug} />
-          </BottomSheetContent>
-        )}
+        <BottomSheetScrollView
+          refreshControl={<RefreshComponent />}
+          focusHook={useFocusEffect}
+          contentContainerClassName="gap-2 py-3"
+          onContentSizeChange={() => bottomSheetRef.current?.snapToIndex(1)}
+        >
+          {selected && <InfoCard {...selected} />}
 
-        {!hasSelectedItem && (
-          <BottomSheetScrollView focusHook={useFocusEffect} contentContainerClassName="gap-2 py-3">
-            {sections.map((section, index) => {
-              const {
-                fetchNextPage,
-                isFetching,
-                isFetchingNextPage,
-                isLoading,
-                hasNextPage,
-                title,
-                refetch,
-                data,
-              } = section;
+          {!selected &&
+            sections.map((section, index) => {
+              const { fetchNextPage, isFetchingNextPage, isLoading, hasNextPage, slug } = section;
 
-              if (data.length === 0) {
+              if (section.data.length === 0) {
                 return null;
               }
 
               return (
-                <VStack space="sm" key={`section-${section.id}-${index}`}>
+                <VStack space="sm" key={`section-${slug}-${index}`}>
                   <Text size="lg" className="font-JakartaMedium px-4">
-                    {title}
+                    {section.title}
                   </Text>
 
                   <Box style={{ height: 256, width: '100%' }}>
                     <BottomSheetFlashList
                       horizontal
-                      focusHook={useFocusEffect}
-                      data={data}
+                      data={section.data}
+                      estimatedItemSize={180}
                       renderItem={renderItem}
-                      estimatedItemSize={20}
-                      extraData={{ sectionId: section.id, isLoading }}
+                      getItemType={handleGetItemType}
+                      extraData={{ isLoading, slug }}
                       contentContainerStyle={{ paddingHorizontal: 16 }}
                       estimatedListSize={{ width: DEVICE_WIDTH, height: 256 }}
                       keyExtractor={(item, idx) => `${section.title}-${idx}-${item.id}`}
+                      ItemSeparatorComponent={() => <Box className="w-4" />}
+                      onEndReachedThreshold={0.3}
+                      onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
                       ListFooterComponent={
                         isFetchingNextPage ? (
                           <Spinner size="small" className="mx-2 my-auto" />
                         ) : null
-                      }
-                      ItemSeparatorComponent={() => <Box className="w-4" />}
-                      onEndReachedThreshold={0.2}
-                      onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
-                      refreshControl={
-                        <RefreshControl refreshing={isFetching} onRefresh={refetch} />
                       }
                     />
                   </Box>
                 </VStack>
               );
             })}
-          </BottomSheetScrollView>
-        )}
+        </BottomSheetScrollView>
       </BottomSheetPortal>
     </BottomSheet>
   );

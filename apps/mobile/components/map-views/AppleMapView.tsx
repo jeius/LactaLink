@@ -1,5 +1,5 @@
 import SafeArea from '@/components/SafeArea';
-import { useCurrentLocation } from '@/hooks/location/useCurrentLocation';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 
 import React, { useEffect } from 'react';
 import { toast } from 'sonner-native';
