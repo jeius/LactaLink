@@ -18,7 +18,7 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { HintAlert } from '../../../HintAlert';
 
-import { MapTileButton } from '@/components/map-views/MapTileButton';
+import { MapTileButton } from '@/components/map/MapTileButton';
 import { Box } from '@/components/ui/box';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentLocation } from '@/hooks/location/useLocation';

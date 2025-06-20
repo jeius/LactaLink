@@ -1,25 +1,19 @@
 import { useCurrentLocation, useLocationUpdates } from '@/hooks/location/useLocation';
+import { StyleSheet } from 'react-native';
+import RNMapView, { Camera, MarkerAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { debounce, isEqual } from 'lodash';
+import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner-native';
 
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { createAndroidMarkers } from '@/lib/utils/createMarkers';
+import { createMarkers } from '@/lib/utils/createMarkers';
 import { Populate } from '@lactalink/types';
 
-import { CameraPosition, Coordinates, GoogleMaps, Coordinates as MapCoordinates } from 'expo-maps';
-import {
-  GoogleMapsColorScheme,
-  GoogleMapsMapType,
-  GoogleMapsMarker,
-  GoogleMapsViewType,
-} from 'expo-maps/build/google/GoogleMaps.types';
-
 import { LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { CreateDonationRequestButton } from '../CreateDonationRequestButton';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
@@ -28,10 +22,11 @@ import { Spinner } from '../ui/spinner';
 import { VStack } from '../ui/vstack';
 import { MapBottomSheet, MapBottomSheetProps } from './MapBottomSheet';
 
-export function GoogleMapView() {
+export function MapView() {
+  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const inset = useSafeAreaInsets();
-  const mapRef = useRef<GoogleMapsViewType>(null);
+
+  const mapRef = useRef<RNMapView>(null);
 
   const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
   const [followUser, setFollowUser] = useState(false);
@@ -54,27 +49,29 @@ export function GoogleMapView() {
   const error = initialError || locError;
   const isLoading = initialLoading || isLocLoading;
 
-  const initialPosition: CameraPosition = {
+  const initialPosition: Camera = {
     zoom: 16,
-    coordinates: {
-      latitude: animated.latitude,
-      longitude: animated.longitude,
+    heading: initialLoc?.coords?.heading || 0,
+    pitch: 0,
+    altitude: initialLoc?.coords?.altitude || undefined,
+    center: {
+      latitude: initialLoc?.coords?.latitude || 0,
+      longitude: initialLoc?.coords?.longitude || 0,
     },
   };
 
-  const currentPos: CameraPosition = useMemo(
+  const currentPos: Partial<Camera> = useMemo(
     () => ({
       zoom: currentZoom,
-      coordinates: {
-        latitude: coords?.latitude,
-        longitude: coords?.longitude,
+      heading: coords?.heading || 0,
+      altitude: coords?.altitude || undefined,
+      center: {
+        latitude: coords?.latitude || 0,
+        longitude: coords?.longitude || 0,
       },
     }),
     [coords, currentZoom]
   );
-
-  const googleMapsColorScheme: GoogleMapsColorScheme =
-    theme === 'dark' ? GoogleMapsColorScheme.DARK : GoogleMapsColorScheme.LIGHT;
 
   const populate: Populate = {
     users: { profile: true },
@@ -94,11 +91,11 @@ export function GoogleMapView() {
     populate,
   });
 
-  const markers = createAndroidMarkers({ donations, requests });
+  const markers = createMarkers({ donations, requests });
 
   const moveToCurrentPos = useCallback(() => {
     if (mapRef.current && currentPos) {
-      mapRef.current.setCameraPosition(currentPos);
+      mapRef.current.setCamera(currentPos);
     }
   }, [mapRef, currentPos]);
 
@@ -117,65 +114,21 @@ export function GoogleMapView() {
     };
   }, [debouncedSetFollowUser, debouncedSetZoom, error, followUser, moveToCurrentPos]);
 
-  function handleMarkerClicked(marker: GoogleMapsMarker) {
-    if (!marker.id) return;
-    const donation = donations?.find((d) => d.id === marker.id);
-    const request = requests?.find((r) => r.id === marker.id);
-
-    if (donation) {
-      setSelectedItem({
-        slug: 'donations',
-        id: donation.id,
-      });
-    } else if (request) {
-      setSelectedItem({
-        slug: 'requests',
-        id: request.id,
-      });
-    } else {
-      setSelectedItem(null);
-    }
-  }
-
-  function handleMapClicked(_event: { coordinates: MapCoordinates }) {
-    setSelectedItem(null);
-  }
-
   function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
-    const { id, slug: _ } = value;
-    const coord = markers.find((marker) => marker.id === id)?.coordinates;
+    const { id: idValue, slug: slugValue } = value;
+    const marker = markers.find((marker) => {
+      const [slug, id] = (marker.identifier && marker.identifier.split('-')) || ['', ''];
+      return slug === slugValue && id === idValue;
+    });
+
+    const coord = marker?.coordinate;
     if (coord && mapRef.current) {
-      mapRef.current.setCameraPosition({
+      mapRef.current.setCamera({
         zoom: 18,
-        coordinates: coord,
+        center: { latitude: coord.latitude || 0, longitude: coord.longitude || 0 },
       });
     }
     setSelectedItem(value);
-  }
-
-  function handleCameraMoved({
-    zoom,
-    coordinates,
-  }: {
-    zoom: number;
-    coordinates: Coordinates;
-  }): void {
-    debouncedSetZoom(zoom);
-    debouncedSetFollowUser(false);
-
-    const roundedCoords = {
-      latitude: parseFloat((coordinates.latitude || 0).toFixed(4)),
-      longitude: parseFloat((coordinates.longitude || 0).toFixed(4)),
-    };
-
-    const roundedPosCoords = {
-      latitude: parseFloat((currentPos.coordinates?.latitude || 0).toFixed(4)),
-      longitude: parseFloat((currentPos.coordinates?.longitude || 0).toFixed(4)),
-    };
-
-    if (isEqual(roundedCoords, roundedPosCoords)) {
-      debouncedSetFollowUser.cancel();
-    }
   }
 
   if (isLoading) {
@@ -187,31 +140,35 @@ export function GoogleMapView() {
   }
 
   return (
-    <Box className="flex-1" style={{ marginBottom: inset.bottom }}>
-      <GoogleMaps.View
+    <Box style={{ flex: 1, marginBottom: insets.bottom }}>
+      <RNMapView
         ref={mapRef}
-        markers={markers}
-        cameraPosition={initialPosition}
-        colorScheme={googleMapsColorScheme}
-        userLocation={{ coordinates: currentPos.coordinates || {}, followUserLocation: followUser }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-        onMarkerClick={handleMarkerClicked}
-        onMapClick={handleMapClicked}
-        onCameraMove={handleCameraMoved}
-        uiSettings={{
-          zoomControlsEnabled: false,
-          rotationGesturesEnabled: true,
-          myLocationButtonEnabled: false,
-          mapToolbarEnabled: false,
-        }}
-        properties={{
-          mapType: GoogleMapsMapType.NORMAL,
-          isIndoorEnabled: false,
-          isMyLocationEnabled: true,
-        }}
-      />
+        style={StyleSheet.absoluteFill}
+        provider={PROVIDER_GOOGLE}
+        initialCamera={initialPosition}
+        userInterfaceStyle={theme}
+        showsUserLocation
+        followsUserLocation={followUser}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
+        onPress={() => setSelectedItem(undefined)}
+      >
+        {markers.map((marker) => (
+          <MarkerAnimated
+            key={marker.identifier}
+            {...marker}
+            onPress={() => {
+              if (!marker.identifier) return;
+              setSelectedItem({
+                id: marker.identifier.split('-')[1]!,
+                slug: marker.identifier.split('-')[0] as 'donations' | 'requests',
+              });
+            }}
+          />
+        ))}
+      </RNMapView>
 
-      <VStack className="relative flex-1" style={{ marginTop: inset.top }}>
+      <VStack className="relative flex-1" style={{ marginTop: insets.top }}>
         <Box style={{ position: 'absolute', right: 16, top: '40%' }}>
           <VStack space="md" className="shrink">
             <CreateDonationRequestButton
@@ -226,7 +183,7 @@ export function GoogleMapView() {
               accessibilityRole="button"
               accessibilityState={{ selected: followUser }}
             >
-              <ButtonIcon as={!followUser ? LocateFixedIcon : LocateIcon} height={22} width={22} />
+              <ButtonIcon as={followUser ? LocateFixedIcon : LocateIcon} height={22} width={22} />
             </Button>
           </VStack>
         </Box>

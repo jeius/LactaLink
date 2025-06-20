@@ -4,6 +4,7 @@ import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 import * as SplashScreen from 'expo-splash-screen';
 import { ReactNode, useEffect } from 'react';
 
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -11,7 +12,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { RefreshCwIcon } from 'lucide-react-native';
-import { useTheme } from './AppProvider/ThemeProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

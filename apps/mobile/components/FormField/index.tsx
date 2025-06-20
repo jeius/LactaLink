@@ -16,7 +16,7 @@ import {
 } from 'react-hook-form';
 
 import { OptionsCards } from '@/components/cards/OptionsCards';
-import ComboBox from '@/components/ComboBox';
+import ComboBox from '@/components/Combobox';
 import {
   FormControl,
   FormControlError,

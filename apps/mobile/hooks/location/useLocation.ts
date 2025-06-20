@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { useEffect, useState } from 'react';
-import { useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 
 export function useCurrentLocation() {
   const { data, ...rest } = useQuery({
@@ -33,28 +32,6 @@ export function useLocationUpdates() {
   const [location, setLocation] = useState(current);
   const [error, setError] = useState(currentLocError);
 
-  // Shared value for animated coordinates
-  const animatedCoords = useSharedValue({
-    latitude: current?.coords.latitude || 0,
-    longitude: current?.coords.longitude || 0,
-  });
-
-  // Derived value for safely accessing animated coordinates
-  const derivedAnimatedCoords = useDerivedValue(() => ({
-    latitude: animatedCoords.value.latitude,
-    longitude: animatedCoords.value.longitude,
-  }));
-
-  const [animated, setAnimated] = useState({
-    latitude: current?.coords.latitude || 0,
-    longitude: current?.coords.longitude || 0,
-  });
-
-  useEffect(() => {
-    console.log('Animated Location', derivedAnimatedCoords.get());
-    setAnimated(derivedAnimatedCoords.get());
-  }, [derivedAnimatedCoords]);
-
   useEffect(() => {
     const startUpdates = async () => {
       try {
@@ -74,12 +51,6 @@ export function useLocationUpdates() {
             if (data && data.locations.length > 0) {
               const newLocation = data.locations[0]!;
               setLocation(newLocation);
-
-              // Animate the transition of coordinates
-              animatedCoords.value = {
-                latitude: withTiming(newLocation.coords.latitude, { duration: 500 }),
-                longitude: withTiming(newLocation.coords.longitude, { duration: 500 }),
-              };
             }
 
             return Promise.resolve();
@@ -107,6 +78,5 @@ export function useLocationUpdates() {
     location,
     error,
     isLoading,
-    animated: animated, // Return the derived value instead
   };
 }

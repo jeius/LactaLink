@@ -7,7 +7,7 @@ import { TextareaInput } from '@/components/ui/textarea';
 import { CollectionSlug } from '@lactalink/types';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { StyleProp, ViewStyle } from 'react-native';
-import { ComboboxType } from '../ComboBox';
+import { ComboboxType } from '../Combobox';
 import { Icon } from '../ui/icon';
 import { ButtonGroupInputType } from './ButtonGroupInput';
 import { DateInputType } from './DateInput';
