@@ -267,8 +267,8 @@ importers:
         specifier: ^1.17.5
         version: 1.17.5(react-native-reanimated@3.17.5(@babel/core@7.27.4)(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-maps:
-        specifier: ^1.20.1
-        version: 1.20.1(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        specifier: ^1.24.3
+        version: 1.24.3(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-mmkv:
         specifier: ^3.3.0
         version: 3.3.0(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -8144,12 +8144,12 @@ packages:
       react-native: '*'
       react-native-reanimated: '>=3.0.0'
 
-  react-native-maps@1.20.1:
-    resolution: {integrity: sha512-NZI3B5Z6kxAb8gzb2Wxzu/+P2SlFIg1waHGIpQmazDSCRkNoHNY4g96g+xS0QPSaG/9xRBbDNnd2f2/OW6t6LQ==}
+  react-native-maps@1.24.3:
+    resolution: {integrity: sha512-cF5oTA8z24QqGIRFfDcsXLEs/gCd0RhaJ9KPv/2HiogKD5gpjh1naimZUJQ6IsEcUngSSk8iov6p2jd7dB+/bQ==}
     engines: {node: '>=18'}
     peerDependencies:
-      react: '>= 17.0.1'
-      react-native: '>= 0.64.3'
+      react: '>= 18.3.1'
+      react-native: '>= 0.76.0'
       react-native-web: '>= 0.11'
     peerDependenciesMeta:
       react-native-web:
@@ -18884,7 +18884,7 @@ snapshots:
       react-native-is-edge-to-edge: 1.1.7(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-reanimated: 3.17.5(@babel/core@7.27.4)(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
 
-  react-native-maps@1.20.1(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+  react-native-maps@1.24.3(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.27.4)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:
       '@types/geojson': 7946.0.16
       react: 19.0.0

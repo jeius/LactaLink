@@ -1,6 +1,6 @@
 import { AnimatedProgress } from '@/components/animated/progress';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { HeaderAvatar } from '@/components/header/avatar';
+import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
 import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
@@ -38,7 +38,7 @@ export default function Layout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        headerRight: () => <HeaderAvatar />,
+        headerRight: () => <Avatar />,
         headerTitleStyle: {
           fontFamily: 'Jakarta-SemiBold',
           fontSize: 18,

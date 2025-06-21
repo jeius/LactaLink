@@ -20,7 +20,7 @@ const UIAvatar = createAvatar({
 });
 
 const avatarStyle = tva({
-  base: 'bg-primary-500 relative items-center justify-center rounded-full group-[.avatar-group]/avatar-group:-ml-2.5',
+  base: 'bg-primary-500 border-primary-500 relative items-center justify-center rounded-full border-2 group-[.avatar-group]/avatar-group:-ml-2.5',
   variants: {
     size: {
       xs: 'h-6 w-6',
@@ -54,6 +54,13 @@ const avatarGroupStyle = tva({
 
 const avatarBadgeStyle = tva({
   base: 'bg-success-500 border-background-0 absolute bottom-0 right-0 h-5 w-5 rounded-full border-2',
+  variants: {
+    status: {
+      online: 'bg-success-500',
+      offline: 'bg-background-300',
+      away: 'bg-warning-500',
+    },
+  },
   parentVariants: {
     size: {
       xs: 'h-2 w-2',
@@ -91,7 +98,7 @@ type IAvatarBadgeProps = React.ComponentPropsWithoutRef<typeof UIAvatar.Badge> &
   VariantProps<typeof avatarBadgeStyle>;
 
 const AvatarBadge = React.forwardRef<React.ComponentRef<typeof UIAvatar.Badge>, IAvatarBadgeProps>(
-  function AvatarBadge({ className, size, ...props }, ref) {
+  function AvatarBadge({ className, size, status = 'online', ...props }, ref) {
     const { size: parentSize } = useStyleContext(SCOPE);
 
     return (
@@ -103,6 +110,7 @@ const AvatarBadge = React.forwardRef<React.ComponentRef<typeof UIAvatar.Badge>, 
             size: parentSize,
           },
           size,
+          status,
           class: className,
         })}
       />

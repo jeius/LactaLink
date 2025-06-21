@@ -1,5 +1,5 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { HeaderAvatar } from '@/components/header/avatar';
+import Avatar from '@/components/Avatar';
 import { getHexColor } from '@/lib/colors';
 import { Stack } from 'expo-router';
 import React from 'react';
@@ -18,7 +18,7 @@ export default function Layout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        headerRight: () => <HeaderAvatar />,
+        headerRight: () => <Avatar />,
         headerTitleStyle: {
           fontFamily: 'Jakarta-SemiBold',
           fontSize: 18,

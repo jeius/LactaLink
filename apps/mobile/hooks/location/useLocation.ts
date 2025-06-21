@@ -1,9 +1,9 @@
 import { LOCATION_UPDATES } from '@/lib/constants/taskNames';
-import { startLocationUpdates } from '@/lib/location';
+import { startBackgroundLocationUpdates, startForgroundLocationUpdates } from '@/lib/location';
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useCurrentLocation() {
   const { data, ...rest } = useQuery({
@@ -27,6 +27,37 @@ export function useCurrentLocation() {
 }
 
 export function useLocationUpdates() {
+  const subscriptionRef = useRef<{ remove: () => void } | null>(null);
+
+  const { location: current, isLoading, error: currentLocError } = useCurrentLocation();
+
+  const [location, setLocation] = useState(current);
+  const [error, setError] = useState(currentLocError);
+
+  useEffect(() => {
+    const setupSubscription = async () => {
+      const subscription = await startForgroundLocationUpdates(setLocation, (err) => {
+        setError(new Error(err));
+      });
+      subscriptionRef.current = subscription;
+    };
+
+    setupSubscription();
+
+    return () => {
+      // Clean up the subscription when the component unmounts
+      subscriptionRef.current?.remove();
+    };
+  }, []);
+
+  return {
+    location,
+    error,
+    isLoading,
+  };
+}
+
+export function useBackgroundLocationUpdates() {
   const { location: current, isLoading, error: currentLocError } = useCurrentLocation();
 
   const [location, setLocation] = useState(current);
@@ -35,7 +66,7 @@ export function useLocationUpdates() {
   useEffect(() => {
     const startUpdates = async () => {
       try {
-        await startLocationUpdates();
+        await startBackgroundLocationUpdates();
 
         // Define the task to handle location updates
         TaskManager.defineTask<{ locations: Location.LocationObject[] }>(
