@@ -10,6 +10,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useAssetsLoader } from '@/hooks/loaders/useAssetsLoader';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { RefreshCwIcon } from 'lucide-react-native';
 
@@ -24,10 +25,35 @@ export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   const { isLoading: isThemeLoading } = useTheme();
   const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
-  const { isLoading: isLocationLoading, error: locationError } = useCurrentLocation();
+  const { isSuccess: isLocationReady, error: locationError } = useCurrentLocation();
+  const { isSuccess: areAssetsReady, error: assetsError, data } = useAssetsLoader();
 
-  const isAppReady = !isThemeLoading && !isAuthLoading && !isLocationLoading;
-  const error = authError || locationError;
+  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady && areAssetsReady;
+  const error = authError || locationError || assetsError;
+
+  useEffect(() => {
+    if (isLocationReady) {
+      console.log('✔️  Location is ready');
+    }
+  }, [isLocationReady]);
+
+  useEffect(() => {
+    if (!isThemeLoading) {
+      console.log('✔️  Theme is loaded:');
+    }
+  }, [isThemeLoading]);
+
+  useEffect(() => {
+    if (!isAuthLoading) {
+      console.log('✔️  Auth is ready');
+    }
+  }, [isAuthLoading]);
+
+  useEffect(() => {
+    if (areAssetsReady) {
+      console.log('✔️  All Assets are loaded');
+    }
+  }, [areAssetsReady, data]);
 
   // Hide the splash screen once the app is ready
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { SignInSchema, signInSchema } from '@lactalink/types';
 
+export * from './assets';
 export * from './profile';
 
 export const signUpSchema = signInSchema;
