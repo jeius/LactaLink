@@ -9,10 +9,10 @@ import { VStack } from '@/components/ui/vstack';
 import { signOut } from '@/auth';
 import { usePagination } from '@/hooks/forms/usePagination';
 
-import { ICONS } from '@/lib/constants';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
+import { getIconAsset } from '@/lib/stores/assetsStore';
 import { extractErrorMessage } from '@lactalink/utilities';
 import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
 import React from 'react';
@@ -42,8 +42,8 @@ export default function Setup() {
         <VStack space="2xl">
           <VStack className="items-center">
             <Image
-              source={ICONS.verifiedAccount}
-              alt="Verified Icon"
+              source={getIconAsset('accountVerified')}
+              alt="Verified Account"
               style={{ width: 60, height: 60 }}
             />
             <Text size="2xl" bold className="mt-2">

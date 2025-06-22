@@ -9,7 +9,6 @@ import {
 } from '@env';
 
 export * from './assets';
-export * from './icons';
 export * from './queryKeys';
 export * from './storageKeys';
 

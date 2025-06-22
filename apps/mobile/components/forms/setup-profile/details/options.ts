@@ -1,22 +1,22 @@
 import { OptionsCardItem } from '@/components/cards/OptionsCards';
-import { ICONS } from '@/lib/constants';
+import { getIconAsset } from '@/lib/stores';
 import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
 
 export const genderOptions: OptionsCardItem<IndividualSchema['gender']>[] = [
   {
     value: 'FEMALE',
     label: 'Female',
-    image: { alt: 'Female Gender', uri: ICONS.female },
+    image: { alt: 'Female', source: getIconAsset('female') },
   },
   {
     value: 'MALE',
     label: 'Male',
-    image: { alt: 'Male Gender', uri: ICONS.male },
+    image: { alt: 'Male', source: getIconAsset('male') },
   },
   {
     value: 'OTHER',
     label: 'Other',
-    image: { alt: 'Unknown Gender', uri: ICONS.genderOther },
+    image: { alt: 'Other Gender', source: getIconAsset('genderOther') },
   },
 ];
 
@@ -24,27 +24,27 @@ export const maritalStatusOptions: OptionsCardItem<IndividualSchema['maritalStat
   {
     value: 'MARRIED',
     label: 'Married',
-    image: { alt: 'Married icon', uri: ICONS.married },
+    image: { alt: 'Married', source: getIconAsset('couple') },
   },
   {
     value: 'SINGLE',
     label: 'Single',
-    image: { alt: 'Single icon', uri: ICONS.single },
+    image: { alt: 'Single', source: getIconAsset('single') },
   },
   {
     value: 'WIDOWED',
     label: 'Widowed',
-    image: { alt: 'Widowed icon', uri: ICONS.widowed },
+    image: { alt: 'Widowed', source: getIconAsset('widowed') },
   },
   {
     value: 'DIVORCED',
     label: 'Divorced',
-    image: { alt: 'Divorced icon', uri: ICONS.divorced },
+    image: { alt: 'Divorced', source: getIconAsset('divorced') },
   },
   {
     value: 'SEPARATED',
     label: 'Separated',
-    image: { alt: 'Separated icon', uri: ICONS.separated },
+    image: { alt: 'Separated', source: getIconAsset('separated') },
   },
   {
     value: 'N/A',
@@ -55,7 +55,15 @@ export const maritalStatusOptions: OptionsCardItem<IndividualSchema['maritalStat
 export const buildingTypeOptions: OptionsCardItem<
   HospitalSchema['type'] | MilkBankSchema['type']
 >[] = [
-  { label: 'Government', value: 'GOVERNMENT', image: { uri: ICONS.townHall, alt: 'Government' } },
-  { label: 'Private', value: 'PRIVATE', image: { uri: ICONS.office, alt: 'Office' } },
-  { label: 'Other', value: 'OTHER', image: { uri: ICONS.buildingOther, alt: 'Unknown Building' } },
+  {
+    label: 'Government',
+    value: 'GOVERNMENT',
+    image: { source: getIconAsset('townHall'), alt: 'Government' },
+  },
+  { label: 'Private', value: 'PRIVATE', image: { source: getIconAsset('office'), alt: 'Office' } },
+  {
+    label: 'Other',
+    value: 'OTHER',
+    image: { source: getIconAsset('unknownBuilding'), alt: 'Unknown Building' },
+  },
 ];

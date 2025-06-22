@@ -41,12 +41,18 @@ export function setAssets(assets: Partial<AssetObject>) {
   }
 }
 
-export function getIconAsset(name: keyof AssetObject['icons']): Asset | null {
+export function getIconAsset(name: keyof AssetObject['icons']): Asset {
   const { assets } = useAssetsStore.getState();
-  return assets ? assets.icons[name] || null : null;
+  if (!assets) {
+    throw new Error('Assets not initialized. Please initialize assets first.');
+  }
+  return assets.icons[name];
 }
 
-export function getImageAsset(name: string): Asset | null {
+export function getImageAsset(name: string): Asset {
   const { assets } = useAssetsStore.getState();
-  return assets ? assets.images[name] || null : null;
+  if (!assets) {
+    throw new Error('Assets not initialized. Please initialize assets first.');
+  }
+  return assets.images[name]!;
 }

@@ -17,7 +17,6 @@ import { usePagination } from '@/hooks/forms/usePagination';
 import { uploadImage } from '@/lib/api/file';
 import { createAddresses } from '@/lib/api/profile/createAddresses';
 import { createProfile } from '@/lib/api/profile/createProfile';
-import { ICONS } from '@/lib/constants';
 import {
   AVATAR_FIELDS,
   CONTACT_FIELDS,
@@ -26,6 +25,7 @@ import {
   TYPE_FIELDS,
 } from '@/lib/constants/setupProfile';
 import { setupProfileStorage } from '@/lib/localStorage';
+import { getIconAsset } from '@/lib/stores';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
@@ -155,8 +155,8 @@ export default function Step() {
                 <VStack space="sm" className="px-5">
                   <HStack space="md" className="items-center">
                     <Image
-                      source={ICONS.information}
-                      alt="Information icon"
+                      source={getIconAsset('information')}
+                      alt="Information"
                       style={{ width: 40, height: 40 }}
                     />
                     <Text size="xl" bold>

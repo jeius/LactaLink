@@ -1,6 +1,6 @@
 import { signInWithGoogle } from '@/auth';
 import { Image } from '@/components/Image';
-import { ICONS } from '@/lib/constants';
+import { getIconAsset } from '@/lib/stores';
 import { extractErrorMessage } from '@lactalink/utilities';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
@@ -51,7 +51,11 @@ export default function GoogleButtonWrapper({
         onPress={handleGoogleAuth}
       >
         <ButtonText>Google</ButtonText>
-        <Image source={ICONS.googleIcon} alt="Google Icon" style={{ width: 24, height: 24 }} />
+        <Image
+          source={getIconAsset('google')}
+          alt="Google Icon"
+          style={{ width: 24, height: 24 }}
+        />
       </Button>
     </VStack>
   );

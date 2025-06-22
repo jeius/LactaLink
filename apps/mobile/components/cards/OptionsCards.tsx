@@ -1,5 +1,6 @@
 import { Image } from '@/components/Image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { ImageSource } from 'expo-image';
 import { ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react-native';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Noop } from 'react-hook-form';
@@ -32,7 +33,7 @@ export type OptionsCardItem<T = unknown> = {
   value: T;
   image?: {
     alt: string;
-    uri: string;
+    source: ImageSource | { uri: string };
   };
 };
 
@@ -141,7 +142,11 @@ export function OptionsCards<T>({
                       {label}
                     </Text>
                     {image && (
-                      <Image alt={image.alt} source={image.uri} style={{ width: 60, height: 60 }} />
+                      <Image
+                        alt={image.alt}
+                        source={image.source}
+                        style={{ width: 60, height: 60 }}
+                      />
                     )}
                   </VStack>
                 </Card>

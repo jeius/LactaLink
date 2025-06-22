@@ -39,7 +39,7 @@ export function AppInitializer({ children }: Props) {
 
   useEffect(() => {
     if (!isThemeLoading) {
-      console.log('✔️  Theme is loaded:');
+      console.log('✔️  Theme is loaded');
     }
   }, [isThemeLoading]);
 
