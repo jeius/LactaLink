@@ -3,10 +3,9 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
-import { useFetchById } from '@/hooks/collections/useFetchById';
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
+import { UseQueryResult } from '@tanstack/react-query';
 import { Dimensions } from 'react-native';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import InfoCard from '../cards/InfoCard';
@@ -20,7 +19,6 @@ import {
   BottomSheetScrollView,
 } from '../ui/bottom-sheet';
 import { Box } from '../ui/box';
-import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
@@ -32,24 +30,27 @@ type Data = Donation | Request | MilkBank | Hospital | { id: string };
 type Section = {
   slug: Slug;
   title: string;
-  data: Data[];
-  isFetchingNextPage: boolean;
-  isLoading: boolean;
-  fetchNextPage: () => unknown;
-  hasNextPage: boolean;
+  queryResult: UseQueryResult<Data[] | null, Error>;
 };
 
 type Value = {
-  id: string;
+  data: Data;
   slug: Slug;
 };
 
 export interface MapBottomSheetProps {
   value?: Value | null;
   onChange?: (id: Value) => void;
+  requestQueryResult: UseQueryResult<Request[] | null, Error>;
+  donationQueryResult: UseQueryResult<Donation[] | null, Error>;
 }
 
-export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProps) {
+export function MapBottomSheet({
+  value: selected,
+  onChange,
+  donationQueryResult,
+  requestQueryResult,
+}: MapBottomSheetProps) {
   const bottomSheetRef = useRef<GorhomBottomSheet>(null);
   const [open, setOpen] = useState(true);
 
@@ -68,72 +69,20 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
     ? [DEFAULT_SNAP_POINT, '40%']
     : [DEFAULT_SNAP_POINT, '40%', '80%'];
 
-  const { isFetching: isFetchingSelected, refetch: refetchSelected } = useFetchById(
-    hasSelectedItem,
-    { id: selected?.id, collection: selected?.slug }
-  );
-
-  const {
-    data: infiniteDonations,
-    fetchNextPage: fetchNextDonationsPage,
-    hasNextPage: hasNextDonationsPage,
-    isLoading: isLoadingDonations,
-    isFetching: isFetchingDonations,
-    isFetchingNextPage: isFetchingNextDonationsPage,
-    refetch: refetchDonations,
-  } = useInfiniteFetchBySlug('donations', !hasSelectedItem, {
-    where: { status: { equals: 'AVAILABLE' } },
-  });
-
-  const {
-    data: infiniteRequests,
-    fetchNextPage: fetchNextRequestsPage,
-    hasNextPage: hasNextRequestsPage,
-    isLoading: isLoadingRequests,
-    isFetching: isFetchingRequests,
-    isFetchingNextPage: isFetchingNextRequestsPage,
-    refetch: refetchRequests,
-  } = useInfiniteFetchBySlug('requests', !hasSelectedItem, {
-    where: { status: { equals: 'PENDING' } },
-  });
-
   const sections = useMemo((): Section[] => {
     return [
       {
         slug: 'donations',
         title: 'Available Donations',
-        isFetchingNextPage: isFetchingNextDonationsPage,
-        isLoading: isLoadingDonations,
-        fetchNextPage: fetchNextDonationsPage,
-        hasNextPage: hasNextDonationsPage,
-        data:
-          infiniteDonations?.pages.flatMap((page) => page.docs) ||
-          Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
+        queryResult: donationQueryResult,
       },
       {
         slug: 'requests',
         title: 'Available Requests',
-        isFetchingNextPage: isFetchingNextRequestsPage,
-        isLoading: isLoadingRequests,
-        fetchNextPage: fetchNextRequestsPage,
-        hasNextPage: hasNextRequestsPage,
-        data:
-          infiniteRequests?.pages.flatMap((page) => page.docs) ||
-          Array.from({ length: 5 }, (_, idx) => ({ id: `placeholder-${idx}` })),
+        queryResult: requestQueryResult,
       },
     ];
-  }, [
-    isFetchingNextDonationsPage,
-    isLoadingDonations,
-    fetchNextDonationsPage,
-    hasNextDonationsPage,
-    infiniteDonations?.pages,
-    isFetchingNextRequestsPage,
-    isLoadingRequests,
-    fetchNextRequestsPage,
-    hasNextRequestsPage,
-    infiniteRequests?.pages,
-  ]);
+  }, [donationQueryResult, requestQueryResult]);
 
   function handleGetItemType(item: Data, _idx: number, { slug }: { slug: Slug }): string {
     if (slug === 'donations') {
@@ -159,7 +108,7 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
         ) : (
           <DonationCard
             data={item as Donation}
-            onPress={() => handleChanged({ id: item.id, slug })}
+            onPress={() => handleChanged({ data: item, slug })}
           />
         );
       }
@@ -168,10 +117,7 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
         return loading ? (
           <RequestSkeleton />
         ) : (
-          <RequestCard
-            data={item as Request}
-            onPress={() => handleChanged({ id: item.id, slug })}
-          />
+          <RequestCard data={item as Request} onPress={() => handleChanged({ data: item, slug })} />
         );
       }
 
@@ -181,13 +127,11 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
   );
 
   function RefreshComponent() {
-    const isRefreshing = isFetchingDonations || isFetchingRequests || isFetchingSelected;
+    const isRefreshing = donationQueryResult.isFetching || requestQueryResult.isFetching;
     const onRefresh = () => {
-      if (selected) {
-        refetchSelected();
-      } else {
-        refetchDonations();
-        refetchRequests();
+      if (!selected) {
+        donationQueryResult.refetch();
+        requestQueryResult.refetch();
       }
     };
     return <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />;
@@ -223,11 +167,16 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
 
           {!selected &&
             sections.map((section, index) => {
-              const { fetchNextPage, isFetchingNextPage, isLoading, hasNextPage, slug } = section;
+              const { queryResult, slug } = section;
+              const { isLoading, data } = queryResult;
 
-              if (section.data.length === 0) {
+              if (data?.length === 0) {
                 return null;
               }
+
+              const placeholder = Array.from({ length: 5 }, (_, idx) => ({
+                id: `placeholder-${slug}-${idx}`,
+              }));
 
               return (
                 <VStack space="sm" key={`section-${slug}-${index}`}>
@@ -238,7 +187,7 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
                   <Box style={{ height: 256, width: '100%' }}>
                     <BottomSheetFlashList
                       horizontal
-                      data={section.data}
+                      data={data || placeholder}
                       estimatedItemSize={180}
                       renderItem={renderItem}
                       getItemType={handleGetItemType}
@@ -247,13 +196,6 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
                       estimatedListSize={{ width: DEVICE_WIDTH, height: 256 }}
                       keyExtractor={(item, idx) => `${section.title}-${idx}-${item.id}`}
                       ItemSeparatorComponent={() => <Box className="w-4" />}
-                      onEndReachedThreshold={0.3}
-                      onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
-                      ListFooterComponent={
-                        isFetchingNextPage ? (
-                          <Spinner size="small" className="mx-2 my-auto" />
-                        ) : null
-                      }
                     />
                   </Box>
                 </VStack>

@@ -8,8 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { createMarkers } from '@/lib/utils/createMarkers';
-import { ErrorSearchParams, Populate } from '@lactalink/types';
+import { Address, DeliveryPreference, ErrorSearchParams, Populate } from '@lactalink/types';
 
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
@@ -74,19 +73,21 @@ export function MapView() {
     'delivery-preferences': { address: true, availableDays: true, preferredMode: true },
   };
 
-  const { data: donations } = useFetchBySlug(true, {
+  const donationRes = useFetchBySlug(true, {
     collection: 'donations',
     where: { status: { equals: 'AVAILABLE' } },
     populate,
   });
 
-  const { data: requests } = useFetchBySlug(true, {
+  const { data: donations } = donationRes;
+
+  const requestRes = useFetchBySlug(true, {
     collection: 'requests',
     where: { status: { equals: 'PENDING' } },
     populate,
   });
 
-  const markers = createMarkers({ donations });
+  const { data: requests } = requestRes;
 
   const handleRegionChange = debounce(
     async (_region: Region, details: Details) => {
@@ -107,7 +108,9 @@ export function MapView() {
 
   useEffect(() => {
     if (initMapRef.current) {
-      if (coords && mapRef.current) {
+      const dataReady = donationRes.isSuccess && requestRes.isSuccess;
+
+      if (coords && mapRef.current && dataReady) {
         const { latitude, longitude } = coords;
         mapRef.current.setCamera({
           ...camera,
@@ -120,19 +123,23 @@ export function MapView() {
         }, 500); // Ensure the camera is set before marking the map as ready
       }
     }
-  }, [camera, coords]);
+  }, [camera, coords, donationRes.isSuccess, requestRes.isSuccess]);
 
   function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
-    const { id: idValue, slug: slugValue } = value;
-    const marker = markers.find((marker) => {
-      const [slug, id] = (marker.identifier && marker.identifier.split('-')) || ['', ''];
-      return slug === slugValue && id === idValue;
-    });
+    const { data } = value;
+    let coord: LatLng | undefined;
 
-    const coord = marker?.coordinate;
+    if ('donor' in data || 'requester' in data) {
+      const preference = data.deliveryDetails[0] as DeliveryPreference | undefined;
+      const point = (preference?.address as Address)?.coordinates;
+      if (point && point.length === 2) {
+        coord = { latitude: point[0], longitude: point[1] };
+      }
+    }
+
     if (coord && mapRef.current) {
-      mapRef.current.setCamera({
-        zoom: 18,
+      mapRef.current.animateCamera({
+        ...camera,
         center: { latitude: coord.latitude || 0, longitude: coord.longitude || 0 },
       });
     }
@@ -260,7 +267,12 @@ export function MapView() {
         </Box>
       </VStack>
 
-      <MapBottomSheet value={selectedItem} onChange={handleSelectionChange} />
+      <MapBottomSheet
+        value={selectedItem}
+        onChange={handleSelectionChange}
+        donationQueryResult={donationRes}
+        requestQueryResult={requestRes}
+      />
     </Box>
   );
 }
