@@ -49,7 +49,7 @@ export function getIconAsset(name: keyof AssetObject['icons']): Asset {
   return assets.icons[name];
 }
 
-export function getImageAsset(name: string): Asset {
+export function getImageAsset(name: keyof AssetObject['images']): Asset {
   const { assets } = useAssetsStore.getState();
   if (!assets) {
     throw new Error('Assets not initialized. Please initialize assets first.');

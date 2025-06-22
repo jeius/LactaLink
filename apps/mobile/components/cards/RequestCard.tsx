@@ -12,7 +12,7 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
-import { BLUR_HASH } from '@/lib/constants/images';
+import { BLUR_HASH } from '@/lib/constants';
 
 const priorityLevelColors: Record<keyof typeof PRIORITY_LEVELS, string> = {
   LOW: 'bg-success-400',

@@ -11,7 +11,7 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
-import { BLUR_HASH } from '@/lib/constants/images';
+import { BLUR_HASH } from '@/lib/constants';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Donation;

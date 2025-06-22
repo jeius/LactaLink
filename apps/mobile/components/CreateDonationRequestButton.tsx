@@ -7,7 +7,7 @@ import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-import { ONBOARDING_IMAGES } from '@/lib/constants/images';
+import { getImageAsset } from '@/lib/stores';
 
 import { useRouter } from 'expo-router';
 import { LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
@@ -68,7 +68,7 @@ export function CreateDonationRequestButton({
               <Card size="xl" className="bg-primary-100 border-primary-400 relative h-44 p-0">
                 <Image
                   alt="Donate"
-                  source={ONBOARDING_IMAGES.onboarding2}
+                  source={getImageAsset('onboarding2')}
                   contentFit="contain"
                   style={{ width: '100%', height: '100%' }}
                 />
@@ -86,7 +86,7 @@ export function CreateDonationRequestButton({
               <Card size="xl" className="bg-secondary-50 border-secondary-200 relative h-44 p-0">
                 <Image
                   alt="Request"
-                  source={ONBOARDING_IMAGES.onboarding3}
+                  source={getImageAsset('onboarding3')}
                   contentFit="contain"
                   style={{ width: '100%', height: '100%' }}
                 />

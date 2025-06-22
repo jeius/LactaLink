@@ -1,4 +1,3 @@
-import Logo from '@/assets/svgs/logo.svg';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import OTPForm from '@/components/forms/OTPForm';
 import SendAgain from '@/components/forms/OTPForm/SendAgain';
@@ -9,11 +8,10 @@ import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
-import { ASSET_IMAGES } from '@/lib/constants/images';
+import { getImageAsset } from '@/lib/stores';
 import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 
 import { Image } from 'expo-image';
@@ -43,12 +41,10 @@ export default function VerifyOTP() {
               contentPosition={{ top: '50%' }}
               style={{ height: '100%', width: '100%' }}
               alt="Phone email verification"
-              source={ASSET_IMAGES.verification}
+              source={getImageAsset('verification')}
             />
 
             <GradientBackground colors={gradientColors} className="opacity-40" />
-
-            <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
           </Box>
 
           <VStack>

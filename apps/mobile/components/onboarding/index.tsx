@@ -17,7 +17,7 @@ export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
       <Box className="mx-auto h-72 w-full p-4 pb-0">
         <Image
           alt={image.alt}
-          source={image.uri}
+          source={image.source}
           contentFit="contain"
           style={{ width: '100%', height: '100%' }}
           recyclingKey={`onboarding-image-${index}`}

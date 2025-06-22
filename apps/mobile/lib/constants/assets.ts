@@ -27,4 +27,20 @@ export const ICON_ASSETS = {
   widowed: require('../../assets/icons/2x/widowed.png'),
 };
 
-export const IMAGE_ASSETS = {};
+export const IMAGE_ASSETS = {
+  individual: require('../../assets/images/1x/individual_type.png'),
+  'individual_0.75x': require('../../assets/images/0.75x/individual_type.png'),
+  hospital: require('../../assets/images/1x/hospital_type.png'),
+  'hospital_0.75x': require('../../assets/images/0.75x/hospital_type.png'),
+  milkBank: require('../../assets/images/1x/milk_bank_type.png'),
+  'milkBank_0.75x': require('../../assets/images/0.75x/milk_bank_type.png'),
+  signIn: require('../../assets/images/1x/sign_in.png'),
+  signUp: require('../../assets/images/1x/sign_up.png'),
+  forgotPassword: require('../../assets/images/1x/forgot_password.png'),
+  verification: require('../../assets/images/1x/phone_verification.png'),
+  admin: require('../../assets/images/1x/admin_sign_up.png'),
+  onboarding1: require('../../assets/images/1x/onboarding1.png'),
+  onboarding2: require('../../assets/images/1x/onboarding2.png'),
+  onboarding3: require('../../assets/images/1x/onboarding3.png'),
+  onboarding4: require('../../assets/images/1x/onboarding4.png'),
+};

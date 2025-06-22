@@ -9,7 +9,6 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
-import { UserAvatarMarker } from '@/components/map/markers/UserMarker';
 import { useRouter } from 'expo-router';
 
 const Home = () => {
@@ -27,7 +26,6 @@ const Home = () => {
     <Protected safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
       <VStack space="lg" className="flex-1 items-center justify-center">
-        <UserAvatarMarker />
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
           <ButtonIcon as={LogOutIcon} />
@@ -40,6 +38,15 @@ const Home = () => {
           }}
         >
           <ButtonText>Go to setup profile</ButtonText>
+        </Button>
+
+        <Button
+          action="default"
+          onPress={() => {
+            router.push('/welcome');
+          }}
+        >
+          <ButtonText>Go to onboarding</ButtonText>
         </Button>
       </VStack>
     </Protected>

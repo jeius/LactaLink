@@ -13,7 +13,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { getHexColor } from '@/lib/colors';
-import { ASSET_IMAGES } from '@/lib/constants/images';
+import { getImageAsset } from '@/lib/stores';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
@@ -67,10 +67,10 @@ export default function ForgotPassword() {
             <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
               <Image
                 contentFit="cover"
-                contentPosition={{ top: 5 }}
+                contentPosition={{ top: -20 }}
                 style={{ height: '100%', width: '100%' }}
                 alt="Forgot Password Image"
-                source={ASSET_IMAGES.forgotPassword}
+                source={getImageAsset('forgotPassword')}
               />
               <GradientBackground colors={gradientColors} className="opacity-40" />
             </Box>

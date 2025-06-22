@@ -9,7 +9,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { getHexColor } from '@/lib/colors';
-import { ASSET_IMAGES } from '@/lib/constants/images';
+import { getImageAsset } from '@/lib/stores';
 
 import { Image } from 'expo-image';
 
@@ -36,7 +36,7 @@ export default function ResetPassword() {
                 contentPosition={{ top: 5 }}
                 style={{ height: '100%', width: '100%' }}
                 alt="Forgot Password Image"
-                source={ASSET_IMAGES.forgotPassword}
+                source={getImageAsset('forgotPassword')}
               />
               <GradientBackground colors={gradientColors} className="opacity-40" />
             </Box>

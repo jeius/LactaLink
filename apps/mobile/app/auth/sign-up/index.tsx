@@ -12,7 +12,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { getHexColor } from '@/lib/colors/getColor';
-import { ASSET_IMAGES } from '@/lib/constants/images';
+import { getImageAsset } from '@/lib/stores';
 
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -37,7 +37,7 @@ export default function SignUp() {
               contentPosition={{ top: 5 }}
               style={{ width: '100%', height: '100%' }}
               alt="Mother Breastfeeding in chair"
-              source={ASSET_IMAGES.signUp}
+              source={getImageAsset('signUp')}
             />
             <GradientBackground colors={gradientColors} className="opacity-40" />
           </Box>

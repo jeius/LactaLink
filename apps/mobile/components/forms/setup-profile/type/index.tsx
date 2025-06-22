@@ -103,7 +103,7 @@ export default function ProfileType() {
                   <Box className={imageBoxStyle({ variant: styleVariant })}>
                     <Image
                       alt={image.alt}
-                      source={image.uri}
+                      source={image.source}
                       contentFit="contain"
                       style={{ height: '100%', width: '100%' }}
                     />

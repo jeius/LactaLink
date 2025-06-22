@@ -11,14 +11,14 @@ import RNMapView, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { debounce, isEqual } from 'lodash';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner-native';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { createMarkers } from '@/lib/utils/createMarkers';
-import { Populate } from '@lactalink/types';
+import { ErrorSearchParams, Populate } from '@lactalink/types';
 
+import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
 import { AnimatedMapView } from 'react-native-maps/src/MapView';
 import { AnimatedPressable } from '../animated/pressable';
@@ -36,6 +36,7 @@ import { UserMarker } from './markers/UserMarker';
 export function MapView() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const router = useRouter();
 
   const mapRef = useRef<RNMapView>(null);
 
@@ -97,13 +98,6 @@ export function MapView() {
     { leading: true, trailing: true }
   );
 
-  useEffect(() => {
-    if (error) {
-      console.error('Error retrieving location:', error);
-      toast.error(error.message);
-    }
-  }, [error]);
-
   function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
     const { id: idValue, slug: slugValue } = value;
     const marker = markers.find((marker) => {
@@ -147,6 +141,16 @@ export function MapView() {
       const { latitude, longitude } = coords;
       mapRef.current.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
+  }
+
+  if (error) {
+    const errorParams: ErrorSearchParams = {
+      message: error.message,
+    };
+    router.replace({
+      pathname: '/error',
+      params: errorParams,
+    });
   }
 
   if (isLoading) {
