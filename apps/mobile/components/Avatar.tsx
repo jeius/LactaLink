@@ -7,21 +7,38 @@ import { Skeleton } from './ui/skeleton';
 type AvatarProps = ComponentProps<typeof UIAvatar.Avatar> & {
   showBadge?: boolean;
   status?: ComponentProps<typeof UIAvatar.AvatarBadge>['status'];
+  details?: { avatar: AvatarType; name: string };
 };
 
-export default function Avatar({ showBadge = false, status: badgeStatus, ...props }: AvatarProps) {
+export default function Avatar({
+  showBadge = false,
+  status: badgeStatus,
+  details,
+  ...props
+}: AvatarProps) {
   const { profile, isLoading } = useAuth();
+
   const avatarName =
-    (profile && ('name' in profile ? profile.name : profile.displayName)) || 'User';
-  let avatarUrl: string | null = (profile?.avatar as AvatarType | undefined)?.url || null;
+    details?.name ||
+    (profile && ('name' in profile ? profile.name : profile.displayName)) ||
+    'User';
+
+  let avatarUrl: string | null =
+    details?.avatar.url || (profile?.avatar as AvatarType | undefined)?.url || null;
 
   switch (props.size) {
     case 'xs':
-      avatarUrl = (profile?.avatar as AvatarType | undefined)?.sizes?.icon?.url || null;
+      avatarUrl =
+        details?.avatar.sizes?.icon?.url ||
+        (profile?.avatar as AvatarType | undefined)?.sizes?.icon?.url ||
+        null;
       break;
     case 'sm':
     case 'md':
-      avatarUrl = (profile?.avatar as AvatarType | undefined)?.sizes?.thumbnail?.url || avatarUrl;
+      avatarUrl =
+        details?.avatar.sizes?.thumbnail?.url ||
+        (profile?.avatar as AvatarType | undefined)?.sizes?.thumbnail?.url ||
+        avatarUrl;
       break;
     default:
       break;
@@ -34,7 +51,12 @@ export default function Avatar({ showBadge = false, status: badgeStatus, ...prop
       {!isLoading && (
         <UIAvatar.Avatar {...props}>
           <UIAvatar.AvatarFallbackText>{avatarName}</UIAvatar.AvatarFallbackText>
-          {avatarUrl && <UIAvatar.AvatarImage source={{ uri: avatarUrl }} alt={avatarName} />}
+          {avatarUrl && (
+            <UIAvatar.AvatarImage
+              source={{ uri: avatarUrl }}
+              alt={`Profile picture of ${avatarName}`}
+            />
+          )}
           {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
         </UIAvatar.Avatar>
       )}

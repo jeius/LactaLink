@@ -1,17 +1,10 @@
 import { useLocationUpdates } from '@/hooks/location/useLocation';
 import { StyleSheet } from 'react-native';
-import RNMapView, {
-  Camera,
-  Details,
-  LatLng,
-  MarkerAnimated,
-  PROVIDER_GOOGLE,
-  Region,
-} from 'react-native-maps';
+import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { debounce, isEqual } from 'lodash';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
@@ -29,8 +22,11 @@ import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
+import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { MapBottomSheet, MapBottomSheetProps } from './MapBottomSheet';
+import { DonationMarkers } from './markers/DonationMarkers';
+import { RequestMarkers } from './markers/RequestMarkers';
 import { UserMarker } from './markers/UserMarker';
 
 export function MapView() {
@@ -39,12 +35,23 @@ export function MapView() {
   const router = useRouter();
 
   const mapRef = useRef<RNMapView>(null);
+  const initMapRef = useRef(false);
 
   const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
 
   const [followUser, setFollowUser] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
 
-  const { location: { coords } = {}, error, isLoading } = useLocationUpdates();
+  const { location, error } = useLocationUpdates();
+  const coords = useMemo(() => {
+    if (location?.coords) {
+      return {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+    }
+    return undefined;
+  }, [location]);
 
   const [camera, setCamera] = useState<Camera>({
     zoom: 16,
@@ -79,7 +86,7 @@ export function MapView() {
     populate,
   });
 
-  const markers = createMarkers({ donations, requests });
+  const markers = createMarkers({ donations });
 
   const handleRegionChange = debounce(
     async (_region: Region, details: Details) => {
@@ -97,6 +104,23 @@ export function MapView() {
     50,
     { leading: true, trailing: true }
   );
+
+  useEffect(() => {
+    if (initMapRef.current) {
+      if (coords && mapRef.current) {
+        const { latitude, longitude } = coords;
+        mapRef.current.setCamera({
+          ...camera,
+          center: { latitude, longitude },
+        });
+
+        initMapRef.current = false;
+        setTimeout(() => {
+          setIsMapReady(true);
+        }, 500); // Ensure the camera is set before marking the map as ready
+      }
+    }
+  }, [camera, coords]);
 
   function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
     const { id: idValue, slug: slugValue } = value;
@@ -143,6 +167,11 @@ export function MapView() {
     }
   }
 
+  function handleMapReady() {
+    console.log('Map is ready, enabling location updates');
+    initMapRef.current = true;
+  }
+
   if (error) {
     const errorParams: ErrorSearchParams = {
       message: error.message,
@@ -153,43 +182,41 @@ export function MapView() {
     });
   }
 
-  if (isLoading) {
-    return (
-      <SafeArea className="items-center justify-center">
-        <Spinner size={'large'} />
-      </SafeArea>
-    );
-  }
-
   return (
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
       <AnimatedMapView
         ref={mapRef}
+        initialCamera={camera}
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
-        initialCamera={camera}
         userInterfaceStyle={theme}
         showsMyLocationButton={false}
+        showsUserLocation={false}
+        showsCompass={false}
         toolbarEnabled={false}
         onPress={() => setSelectedItem(undefined)}
         onRegionChange={handleRegionChange}
+        onMapReady={handleMapReady}
       >
-        <UserMarker mapRef={mapRef} followUser={followUser} coordinates={coords} />
+        {location && (
+          <UserMarker mapRef={mapRef} followUser={followUser} coordinates={location.coords} />
+        )}
 
-        {markers.map((marker) => (
-          <MarkerAnimated
-            key={marker.identifier}
-            {...marker}
-            onPress={() => {
-              if (!marker.identifier) return;
-              setSelectedItem({
-                id: marker.identifier.split('-')[1]!,
-                slug: marker.identifier.split('-')[0] as 'donations' | 'requests',
-              });
-            }}
-          />
+        {donations?.map((donation, i) => (
+          <DonationMarkers key={`${donation.id}-${i}`} data={donation} />
+        ))}
+
+        {requests?.map((request, i) => (
+          <RequestMarkers key={`${request.id}-${i}`} data={request} />
         ))}
       </AnimatedMapView>
+
+      {!isMapReady && (
+        <SafeArea className="absolute inset-0 items-center justify-center">
+          <Spinner size={'large'} />
+          <Text size="md">Loading google maps...</Text>
+        </SafeArea>
+      )}
 
       <VStack className="relative flex-1" style={{ marginTop: insets.top }}>
         <Box style={{ position: 'absolute', right: 16, top: '40%' }}>
@@ -203,12 +230,13 @@ export function MapView() {
             )}
 
             <CreateDonationRequestButton
-              action="positive"
+              action="primary"
               className="h-fit w-fit rounded-full p-3"
             />
 
             <Button
-              className={`h-fit w-fit rounded-full p-3 ${followUser ? 'bg-primary-600' : ''}`}
+              action="default"
+              className={`data-[active=true]:bg-info-700 h-fit w-fit rounded-full p-3 ${followUser ? 'bg-info-600' : 'bg-info-500'}`}
               onPress={handleLocatePress}
               accessibilityLabel="Follow user location"
               accessibilityHint="Toggles following the user's current location"

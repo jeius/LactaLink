@@ -5,16 +5,20 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { useEffect, useRef, useState } from 'react';
 
-export function useCurrentLocation() {
+export function useCurrentLocation(enable: boolean = true) {
   const { data, ...rest } = useQuery({
+    enabled: enable,
     staleTime: 1000 * 60 * 1, // 1 minutes
     queryKey: ['current-location'],
     queryFn: async () => {
+      if (!enable) return null;
+
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== Location.PermissionStatus.GRANTED) {
         throw new Error('Permission to access location was denied');
       }
 
+      console.log('🧭 Getting current location...');
       const loc = await Location.getCurrentPositionAsync({});
       return loc;
     },
@@ -26,20 +30,28 @@ export function useCurrentLocation() {
   return { location: data, ...rest };
 }
 
-export function useLocationUpdates() {
+export function useLocationUpdates(enable: boolean = true) {
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
-  const { location: current, isLoading, error: currentLocError } = useCurrentLocation();
-
-  const [location, setLocation] = useState(current);
-  const [error, setError] = useState(currentLocError);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const setupSubscription = async () => {
-      const subscription = await startForgroundLocationUpdates(setLocation, (err) => {
-        setError(new Error(err));
-      });
-      subscriptionRef.current = subscription;
+      if (!enable) {
+        // If location updates are not enabled, clear the current location and return
+        setLocation(null);
+        setError(null);
+        subscriptionRef.current?.remove();
+        return;
+      }
+
+      if (enable && !subscriptionRef.current) {
+        const subscription = await startForgroundLocationUpdates(setLocation, (err) => {
+          setError(new Error(err));
+        });
+        subscriptionRef.current = subscription;
+      }
     };
 
     setupSubscription();
@@ -48,12 +60,11 @@ export function useLocationUpdates() {
       // Clean up the subscription when the component unmounts
       subscriptionRef.current?.remove();
     };
-  }, []);
+  }, [enable]);
 
   return {
     location,
     error,
-    isLoading,
   };
 }
 
