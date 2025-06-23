@@ -9,6 +9,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
+import { DefaultMarker } from '@/components/map/markers/DefaultMarker';
 import { useRouter } from 'expo-router';
 
 const Home = () => {
@@ -26,6 +27,8 @@ const Home = () => {
     <Protected safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
       <VStack space="lg" className="flex-1 items-center justify-center">
+        <DefaultMarker size={32} />
+
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
           <ButtonIcon as={LogOutIcon} />

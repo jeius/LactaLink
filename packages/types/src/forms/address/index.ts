@@ -2,8 +2,8 @@ import { z } from 'zod/v4';
 import { emptyTransform, nullTransform } from '../transformers';
 
 export const coordinatesSchema = z.object({
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
+  latitude: z.number(),
+  longitude: z.number(),
 });
 
 export const addressSchema = z.object({

@@ -1,78 +1,82 @@
-import { AppleMaps, CameraPosition, Coordinates, GoogleMaps } from 'expo-maps';
-import { AppleMapsMarker } from 'expo-maps/build/apple/AppleMaps.types';
-import { GoogleMapsColorScheme, GoogleMapsMarker } from 'expo-maps/build/google/GoogleMaps.types';
-import React from 'react';
-import { Platform } from 'react-native';
+import { PHILIPPINES_COORDINATES } from '@/lib/constants';
+import { useState } from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import MapView, { Camera, LatLng, MapMarker, MarkerDragStartEndEvent } from 'react-native-maps';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import { Card } from '../ui/card';
+import { Modal, ModalBackdrop, ModalContent } from '../ui/modal';
 import { Pressable } from '../ui/pressable';
-import { Text } from '../ui/text';
 
 export interface MapTileButtonProps {
-  coordinates?: Coordinates;
+  coordinates?: LatLng;
   onPress?: () => void;
+  onLocationPin?: (coordinates: LatLng) => void;
 }
 
-export function MapTileButton({ coordinates = {}, onPress }: MapTileButtonProps) {
-  const isAndroid = Platform.OS === 'android';
-  const isIOS = Platform.OS === 'ios';
-
+export function MapTileButton({
+  coordinates = PHILIPPINES_COORDINATES,
+  onPress,
+  onLocationPin,
+}: MapTileButtonProps) {
   const { theme } = useTheme();
+  const [showModal, setShowModal] = useState(false);
 
-  const googleMapsColorScheme: GoogleMapsColorScheme =
-    theme === 'dark' ? GoogleMapsColorScheme.DARK : GoogleMapsColorScheme.LIGHT;
-
-  const cameraPosition: CameraPosition = { zoom: 16, coordinates };
-
-  const googleMarker: GoogleMapsMarker = { coordinates, showCallout: false };
-
-  const appleMarker: AppleMapsMarker = { coordinates };
+  const camera: Camera = { zoom: 16, center: coordinates, heading: 0, pitch: 0 };
 
   function handlePress() {
+    setShowModal(true);
     onPress?.();
   }
 
-  if (isAndroid) {
-    return (
-      <Pressable className="flex-1" onPress={handlePress}>
-        <GoogleMaps.View
-          cameraPosition={cameraPosition}
-          colorScheme={googleMapsColorScheme}
-          style={{ flex: 1 }}
-          markers={[googleMarker]}
-          uiSettings={{
-            zoomControlsEnabled: false,
-            rotationGesturesEnabled: false,
-            myLocationButtonEnabled: false,
-            compassEnabled: false,
-            indoorLevelPickerEnabled: false,
-            zoomGesturesEnabled: false,
-            scrollGesturesEnabled: false,
-            tiltGesturesEnabled: false,
-            mapToolbarEnabled: false,
-            scaleBarEnabled: false,
-            scrollGesturesEnabledDuringRotateOrZoom: false,
-            togglePitchEnabled: false,
-          }}
-          properties={{
-            isIndoorEnabled: false,
-            isMyLocationEnabled: false,
-          }}
-        />
-      </Pressable>
-    );
+  function handleDragEnd(e: MarkerDragStartEndEvent) {
+    if (Platform.OS === 'ios') {
+      return; // iOS does not support onDragEnd, use onPress instead
+    }
+    const coords = e.nativeEvent.coordinate;
+    onLocationPin?.(coords);
   }
 
-  if (isIOS) {
-    return (
+  return (
+    <>
       <Pressable className="flex-1" onPress={handlePress}>
-        <AppleMaps.View
-          cameraPosition={cameraPosition}
-          markers={[appleMarker]}
-          style={{ flex: 1 }}
-        />
+        <MapView
+          initialCamera={camera}
+          userInterfaceStyle={theme}
+          liteMode
+          style={StyleSheet.absoluteFill}
+          showsUserLocation={false}
+          showsMyLocationButton={false}
+          showsCompass={false}
+          toolbarEnabled={false}
+          showsIndoorLevelPicker={false}
+          pointerEvents="none"
+        >
+          <MapMarker coordinate={coordinates} tappable={false} pointerEvents="none" />
+        </MapView>
       </Pressable>
-    );
-  }
 
-  return <Text className="font-JakartaMedium">Unsupported Platform.</Text>;
+      <Modal onClose={() => setShowModal(false)} isOpen={showModal}>
+        <ModalBackdrop />
+        <ModalContent>
+          <Card variant="outline" size="md" className="p-0">
+            <MapView
+              initialCamera={camera}
+              userInterfaceStyle={theme}
+              liteMode
+              style={{ width: '100%', height: 300 }}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+              showsCompass={false}
+              toolbarEnabled={false}
+              showsIndoorLevelPicker={false}
+              onPress={(e) => {
+                const coords = e.nativeEvent.coordinate;
+                onLocationPin?.(coords);
+              }}
+            />
+          </Card>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 }

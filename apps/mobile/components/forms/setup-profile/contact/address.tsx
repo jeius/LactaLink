@@ -24,9 +24,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
-import { Coordinates } from 'expo-maps';
 import { Dimensions, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import { LatLng } from 'react-native-maps';
 
 const storageKey = MMKV_KEYS.SETUP_PROFILE.ADDRESS_COUNT;
 const DEVICE_WIDTH = Dimensions.get('window').width;
@@ -158,7 +158,12 @@ function RenderCard({
   disableRemove = false,
 }: RenderCardProps) {
   const { location, isLoading } = useCurrentLocation();
-  const coordinates: Coordinates = addresses[i]?.coordinates || location?.coords || {};
+  const locationCoords = location?.coords && {
+    latitude: location.coords.latitude,
+    longitude: location.coords.longitude,
+  };
+
+  const coordinates: LatLng | undefined = addresses[i]?.coordinates || locationCoords;
 
   const MemoizedMapTileButton = memo(MapTileButton, (prevProps, nextProps) => {
     // Prevent re-rendering if coordinates haven't changed
