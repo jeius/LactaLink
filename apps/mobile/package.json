@@ -97,6 +97,8 @@
     "react-native-css-interop": "^0.1.22",
     "react-native-edge-to-edge": "1.6.0",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-get-random-values": "^1.11.0",
+    "react-native-google-places-autocomplete": "^2.5.7",
     "react-native-keyboard-controller": "^1.17.5",
     "react-native-maps": "^1.24.3",
     "react-native-mmkv": "^3.3.0",
@@ -126,6 +128,11 @@
     "jscodeshift": "0.15.2"
   },
   "expo": {
+    "install": {
+      "exclude": [
+        "react-native-maps"
+      ]
+    },
     "doctor": {
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,

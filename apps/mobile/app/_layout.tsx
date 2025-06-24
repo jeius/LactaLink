@@ -1,11 +1,13 @@
 import { AppInitializer } from '@/components/AppInitializer';
 import AppProvider from '@/components/AppProvider';
-import '@/global.css';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
 import { ApiClientConfig } from '@lactalink/types';
 import { Stack } from 'expo-router';
+
+import '@/global.css';
+import 'react-native-get-random-values';
 
 const config: ApiClientConfig = {
   apiUrl: API_URL,
