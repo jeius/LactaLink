@@ -14,7 +14,7 @@ import {
   PlusIcon,
   Trash2Icon,
 } from 'lucide-react-native';
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { HintAlert } from '../../../HintAlert';
 
@@ -24,7 +24,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
-import { isEqual } from 'lodash';
 import { Dimensions, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
@@ -158,6 +157,7 @@ function RenderCard({
   onSetDefault,
   disableRemove = false,
 }: RenderCardProps) {
+  const { setValue } = useFormContext<SetupProfileSchema>();
   const { location, isLoading } = useCurrentLocation();
   const locationCoords = location?.coords && {
     latitude: location.coords.latitude,
@@ -166,10 +166,9 @@ function RenderCard({
 
   const coordinates: LatLng | undefined = addresses[i]?.coordinates || locationCoords;
 
-  const MemoizedMapTileButton = memo(MapTileButton, (prevProps, nextProps) => {
-    // Prevent re-rendering if coordinates haven't changed
-    return isEqual(prevProps.coordinates, nextProps.coordinates);
-  });
+  function handleLocationPin(coords: LatLng) {
+    setValue(`addresses.${i}.coordinates`, coords);
+  }
 
   return (
     <Card style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}>
@@ -277,7 +276,7 @@ function RenderCard({
           {isLoading ? (
             <Skeleton className="h-full w-full" speed={4} />
           ) : (
-            <MemoizedMapTileButton coordinates={coordinates} />
+            <MapTileButton coordinates={coordinates} onLocationPin={handleLocationPin} />
           )}
           {!isLoading && (
             <Box className="absolute inset-0 items-center justify-center">
