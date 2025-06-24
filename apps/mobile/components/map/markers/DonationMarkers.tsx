@@ -1,11 +1,11 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import Avatar from '@/components/Avatar';
-import LocationPin from '@/components/icons/LocationPin';
 import { Image } from '@/components/Image';
 import { getHexColor } from '@/lib/colors';
 import { STORAGE_TYPES } from '@/lib/constants';
 import { getIconAsset } from '@/lib/stores';
 
+import Avatar from '@/components/Avatar';
+import { Box } from '@/components/ui/box';
 import {
   Address,
   Avatar as AvatarType,
@@ -15,7 +15,6 @@ import {
 } from '@lactalink/types';
 import { Asset } from 'expo-asset';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
 import { MapMarkerProps, MarkerAnimated, MarkerPressEvent } from 'react-native-maps';
 import Animated, {
   useAnimatedStyle,
@@ -23,6 +22,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { DefaultMarker } from './DefaultMarker';
 
 type DeliveryDetails = {
   data: Donation;
@@ -46,7 +46,7 @@ export function DonationMarkers({
 }: DonationMarkersProps) {
   const { theme } = useTheme();
   const pinColor = getHexColor(theme, 'primary', 600);
-  const iconBgColor = getHexColor(theme, 'primary', 50);
+  const iconBgColor = getHexColor(theme, 'primary', 100);
 
   const animateValue = useSharedValue({ scale: 1, y: 0 });
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
@@ -96,26 +96,28 @@ export function DonationMarkers({
       style={markerAnimStyle}
     >
       <Animated.View style={[{ position: 'relative' }]}>
-        <LocationPin width={56} height={56} fill={pinColor} />
-        <View style={[style.circle, { backgroundColor: iconBgColor }]}>
-          {!showAvatar && (
-            <View style={style.iconContainer}>
-              <Image
-                source={iconSource[marker.deliveryPreference.preferredMode[0]!]}
-                contentFit="contain"
-                contentPosition={'center'}
-                style={[style.icon]}
-              />
-            </View>
-          )}
-
-          {showAvatar && profileAvatar && (
-            <Avatar
-              style={style.icon}
-              details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
-            />
-          )}
-        </View>
+        <DefaultMarker
+          size="xl"
+          color={pinColor}
+          circleColor={iconBgColor}
+          circleIcon={
+            !showAvatar ? (
+              <Box className="flex-1 p-1.5">
+                <Image
+                  source={iconSource[marker.deliveryPreference.preferredMode[0]!]}
+                  style={{ flex: 1 }}
+                />
+              </Box>
+            ) : (
+              profileAvatar && (
+                <Avatar
+                  className="h-full w-full"
+                  details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
+                />
+              )
+            )
+          }
+        />
       </Animated.View>
     </MarkerAnimated>
   ));
@@ -126,26 +128,3 @@ const iconSource: Record<DeliveryPreference['preferredMode'][number], Asset> = {
   PICKUP: getIconAsset('pickUp'),
   MEETUP: getIconAsset('meetUp'),
 };
-
-const iconRadius = 16;
-
-const style = StyleSheet.create({
-  icon: {
-    width: '100%',
-    height: '100%',
-  },
-  iconContainer: {
-    padding: 5,
-    width: '100%',
-    height: '100%',
-  },
-  circle: {
-    position: 'absolute',
-    top: 4,
-    left: '50%',
-    transform: [{ translateX: -iconRadius }],
-    width: iconRadius * 2,
-    height: iconRadius * 2,
-    borderRadius: iconRadius,
-  },
-});

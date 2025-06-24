@@ -242,8 +242,8 @@ export function MapView() {
             />
 
             <Button
-              action="default"
-              className={`data-[active=true]:bg-info-700 h-fit w-fit rounded-full p-3 ${followUser ? 'bg-info-600' : 'bg-info-500'}`}
+              action="info"
+              className={`h-fit w-fit rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
               onPress={handleLocatePress}
               accessibilityLabel="Follow user location"
               accessibilityHint="Toggles following the user's current location"

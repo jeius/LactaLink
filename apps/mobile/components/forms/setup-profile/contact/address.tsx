@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
+import { isEqual } from 'lodash';
 import { Dimensions, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
@@ -167,10 +168,7 @@ function RenderCard({
 
   const MemoizedMapTileButton = memo(MapTileButton, (prevProps, nextProps) => {
     // Prevent re-rendering if coordinates haven't changed
-    return (
-      prevProps.coordinates?.latitude === nextProps.coordinates?.latitude &&
-      prevProps.coordinates?.longitude === nextProps.coordinates?.longitude
-    );
+    return isEqual(prevProps.coordinates, nextProps.coordinates);
   });
 
   return (

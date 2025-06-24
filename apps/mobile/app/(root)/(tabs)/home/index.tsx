@@ -9,11 +9,19 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
-import { DefaultMarker } from '@/components/map/markers/DefaultMarker';
+import { MapTileButton } from '@/components/map/MapTileButton';
+import { Box } from '@/components/ui/box';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';
+import { LatLng } from 'react-native-maps';
 
 const Home = () => {
   const router = useRouter();
+  const { location } = useCurrentLocation();
+  const coordinates: LatLng = {
+    latitude: location?.coords.latitude || 0,
+    longitude: location?.coords.longitude || 0,
+  };
 
   function handleSignOut() {
     toast.promise(signOut(), {
@@ -27,7 +35,9 @@ const Home = () => {
     <Protected safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
       <VStack space="lg" className="flex-1 items-center justify-center">
-        <DefaultMarker size={32} />
+        <Box className="h-28 w-40">
+          <MapTileButton coordinates={coordinates} />
+        </Box>
 
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
