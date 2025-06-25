@@ -10,12 +10,13 @@ import { CollectionConfig } from 'payload';
 
 import { authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { filterOptions } from './filterOptions';
+import { generateName } from './hooks/generateName';
 
 export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
   slug: 'delivery-preferences',
   admin: {
-    useAsTitle: 'owner',
-    defaultColumns: ['owner', 'preferredMode', 'address', 'availableDays'],
+    useAsTitle: 'name',
+    defaultColumns: ['owner', 'name', 'preferredMode', 'address', 'availableDays'],
     group: COLLECTION_GROUP.DONATIONS,
   },
   access: {
@@ -25,11 +26,18 @@ export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
     delete: collectionCreatorOrAdmin,
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateOwner],
+    beforeChange: [generateCreatedBy, generateOwner, generateName],
   },
   fields: [
     createdByField,
     ownerField,
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'text',
+      hasMany: false,
+      validate: () => true,
+    },
     {
       type: 'row',
       fields: [

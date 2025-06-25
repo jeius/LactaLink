@@ -476,6 +476,7 @@ export interface DeliveryPreference {
   id: string;
   createdBy?: (string | null) | User;
   owner?: (string | null) | User;
+  name?: string | null;
   /**
    * Preferred delivery modes of the individual. This will be used for matching.
    */
@@ -1513,6 +1514,7 @@ export interface TimeSlotSelect<T extends boolean = true> {
 export interface DeliveryPreferencesSelect<T extends boolean = true> {
   createdBy?: T;
   owner?: T;
+  name?: T;
   preferredMode?: T;
   address?: T;
   availableDays?: T;

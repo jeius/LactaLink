@@ -51,10 +51,14 @@ export const requestDetailsSchema = z.object({
 export const deliverySchema = z.object({
   id: z.uuid().optional().nullable(),
   address: z.uuid().nonempty('Required'),
-  preferredMode: z.enum(
-    Object.values(DELIVERY_OPTIONS).map((item) => item.value),
-    'Select one option'
-  ),
+  preferredMode: z
+    .array(
+      z.enum(
+        Object.values(DELIVERY_OPTIONS).map((item) => item.value),
+        'Select one option'
+      )
+    )
+    .min(1, 'Atleast one delivery mode is selected.'),
   availableDays: z
     .array(z.enum(Object.values(DAYS).map((item) => item.value)))
     .min(1, 'Atleast one day is selected.'),
