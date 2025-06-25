@@ -21,6 +21,7 @@
   "dependencies": {
     "@appandflow/react-native-google-autocomplete": "^2.1.0",
     "@expo/html-elements": "^0.4.2",
+    "@gluestack-ui/accordion": "^1.0.14",
     "@gluestack-ui/actionsheet": "^0.2.53",
     "@gluestack-ui/alert": "^0.1.16",
     "@gluestack-ui/avatar": "^0.1.18",
