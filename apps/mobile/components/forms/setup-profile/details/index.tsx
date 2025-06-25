@@ -2,24 +2,18 @@ import { FormField, FormFieldProps } from '@/components/FormField';
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileType } from '@/lib/types';
-import {
-  HospitalSchema,
-  IndividualSchema,
-  MilkBankSchema,
-  SetupProfileSchema,
-} from '@lactalink/types';
+import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
 import { BabyIcon, HashIcon, HospitalIcon, User2Icon } from 'lucide-react-native';
 import React from 'react';
-import { useWatch } from 'react-hook-form';
 import { buildingTypeOptions, genderOptions, maritalStatusOptions } from './options';
 
-export default function ProfileDetails() {
-  const profileType = useWatch<SetupProfileSchema>().profileType;
+type FormMap = Record<
+  ProfileType,
+  FormFieldProps<HospitalSchema | MilkBankSchema | IndividualSchema>[]
+>;
 
-  const FormMap: Record<
-    ProfileType,
-    FormFieldProps<HospitalSchema | MilkBankSchema | IndividualSchema>[]
-  > = {
+export default function ProfileDetails({ profileType }: { profileType?: ProfileType }) {
+  const formMap: FormMap = {
     HOSPITAL: [
       {
         label: 'Hospital Name',
@@ -166,7 +160,7 @@ export default function ProfileDetails() {
     profileType && (
       <Card className="mx-5">
         <VStack space="lg">
-          {FormMap[profileType].map((props, i) => (
+          {formMap[profileType].map((props, i) => (
             <FormField key={i} {...props} />
           ))}
         </VStack>

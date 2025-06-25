@@ -59,7 +59,7 @@ export default function Step() {
 
   const block: Block = {
     type: ProfileTypeForm,
-    details: ProfileDetails,
+    details: () => <ProfileDetails profileType={profileType} />,
     contact: ProfileContact,
     avatar: ProfileAvatar,
   };
