@@ -1,22 +1,30 @@
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
-import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
-import { Stack } from 'expo-router';
+import { CollectionSlug } from '@lactalink/types';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
 export default function Layout() {
+  const { slug } = useLocalSearchParams<{ slug: CollectionSlug }>();
+
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
-  const { user, isFetching, isLoading: isAuthLoading, profile } = useCheckAuth();
-  const { form, isLoading: isFormLoading } = useCreateDonationForm({ user, profile });
+  const { user, isFetching, isLoading: isAuthLoading, profile } = useAuth();
+
+  const { form: createDonationForm, isLoading: isFormLoading } = useCreateDonationForm({
+    user,
+    profile,
+  });
 
   const isLoading = isAuthLoading || isFormLoading;
+  const form = slug === 'donations' ? createDonationForm : createDonationForm; // Assuming the same form is used for requests, adjust as necessary;
 
   if (isLoading) {
     return (

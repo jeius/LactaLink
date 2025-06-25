@@ -2,7 +2,7 @@ import { AnimatedProgress } from '@/components/animated/progress';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
-import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { getHexColor } from '@/lib/colors';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
-  const { user } = useCheckAuth();
+  const { user, profile } = useAuth();
   const { theme } = useTheme();
 
   const userName = user && extractName(user);
@@ -37,7 +37,7 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerRight: () => <Avatar />,
         headerTitleStyle: {
           fontFamily: 'Jakarta-SemiBold',
@@ -50,25 +50,20 @@ export default function Layout() {
         contentStyle: { backgroundColor: bgColor },
       }}
     >
-      <Stack.Screen name="welcome/index" options={{ headerShown: false }} />
-
-      <Stack.Screen
-        name="setup-profile"
-        options={{ header: () => progressBar, headerTransparent: true }}
-      />
+      <Stack.Protected guard={!profile}>
+        <Stack.Screen
+          name="setup-profile"
+          options={{ header: () => progressBar, headerTransparent: true, headerShown: true }}
+        />
+      </Stack.Protected>
 
       <Stack.Screen
         name="(tabs)"
         options={{
+          headerShown: true,
           headerTitle: (userName && `Welcome, ${userName}!`) || 'Welcome!',
         }}
       />
-
-      <Stack.Screen name="donations" options={{ headerShown: false }} />
-
-      <Stack.Screen name="requests" options={{ headerShown: false }} />
-
-      <Stack.Screen name="map/index" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -49,11 +49,6 @@ export async function signUp({ email, password }: SignUpSchema) {
 export async function signOut() {
   const apiClient = getApiClient();
   await apiClient.auth.signOut();
-  if (router.canDismiss()) {
-    router.dismissTo('/auth/sign-in');
-  } else {
-    router.replace('/auth/sign-in');
-  }
   return 'Signed out successfully!';
 }
 

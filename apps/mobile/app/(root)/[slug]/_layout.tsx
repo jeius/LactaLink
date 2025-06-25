@@ -1,12 +1,17 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import Avatar from '@/components/Avatar';
 import { getHexColor } from '@/lib/colors';
-import { Stack } from 'expo-router';
+import { CollectionSlug } from '@lactalink/types';
+import { capitalizeFirst } from '@lactalink/utilities';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
 export default function Layout() {
+  const { slug } = useLocalSearchParams<{ slug: CollectionSlug }>();
+  const capitalizedSlug = capitalizeFirst(slug);
+
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
@@ -30,8 +35,11 @@ export default function Layout() {
         animation,
       }}
     >
-      <Stack.Screen name="index" options={{ headerTitle: 'Donations' }} />
-      <Stack.Screen name="create" options={{ headerTitle: 'Create Donation' }} />
+      <Stack.Screen name="index" options={{ headerTitle: capitalizedSlug }} />
+      <Stack.Screen
+        name="create"
+        options={{ headerTitle: `Create ${capitalizedSlug.slice(0, -1)}` }}
+      />
     </Stack>
   );
 }

@@ -560,6 +560,7 @@ export const delivery_preferences = pgTable(
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    name: varchar('name'),
     address: uuid('address_id')
       .notNull()
       .references(() => addresses.id, {

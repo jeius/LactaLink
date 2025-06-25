@@ -7,12 +7,16 @@ import { VStack } from '@/components/ui/vstack';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { uploadImage } from '@/lib/api/file';
 
-import { DONATION_DETAILS_FIELDS, DONATION_STEPS } from '@/lib/constants/donationRequest';
-import { DonationFields, DonationSteps, DonationStepsParams } from '@/lib/types/donationRequest';
+import { DONATION_DETAILS_FIELDS, DONATION_REQUEST_STEPS } from '@/lib/constants/donationRequest';
+import {
+  DonationFields,
+  DonationRequestSteps,
+  DonationStepsParams,
+} from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getApiClient } from '@lactalink/api';
-import { CreateDonationSchema, MilkBag } from '@lactalink/types';
+import { CollectionSlug, CreateDonationSchema, MilkBag } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -21,15 +25,21 @@ import { useFormContext } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
-const STEPS = createDynamicRoute('/donations/create', DONATION_STEPS);
+type Block = Record<DonationRequestSteps, FC>;
 
-type Block = Record<DonationSteps, FC>;
+type SearchParams = DonationStepsParams & {
+  slug: Extract<CollectionSlug, 'donations' | 'requests'>;
+};
 
 export default function CreateDonation() {
-  const { step, recipientId } = useLocalSearchParams<DonationStepsParams>();
-  const { nextPage, hasNextPage } = usePagination(STEPS, {
+  const { step, recipientId, slug } = useLocalSearchParams<SearchParams>();
+  const steps = slug === 'donations' ? DONATION_REQUEST_STEPS : DONATION_REQUEST_STEPS; // Assuming the same steps are used for requests, adjust as necessary
+
+  const pages = createDynamicRoute(`/${slug}/create`, steps);
+  const { nextPage, hasNextPage } = usePagination(pages, {
     recipientId,
   });
+
   const router = useRouter();
 
   const form = useFormContext<CreateDonationSchema>();

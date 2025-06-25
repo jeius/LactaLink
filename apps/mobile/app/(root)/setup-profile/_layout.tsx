@@ -1,6 +1,6 @@
 import SafeArea from '@/components/SafeArea';
 import { Spinner } from '@/components/ui/spinner';
-import { useCheckAuth } from '@/hooks/auth/useCheckAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { Stack } from 'expo-router';
 import React from 'react';
@@ -12,7 +12,7 @@ export default function Layout() {
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
-  const { isLoading, user } = useCheckAuth();
+  const { isLoading, user } = useAuth();
 
   const form = useSetupForm(user!);
 

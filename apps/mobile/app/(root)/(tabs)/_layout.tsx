@@ -17,10 +17,10 @@ export default function Layout() {
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tabs.Screen name="home/index" />
-      <Tabs.Screen name="history/index" />
-      <Tabs.Screen name="notifications/index" />
-      <Tabs.Screen name="messages/index" />
+      <Tabs.Screen name="home" />
+      <Tabs.Screen name="history" />
+      <Tabs.Screen name="notifications" />
+      <Tabs.Screen name="messages" />
     </Tabs>
   );
 }

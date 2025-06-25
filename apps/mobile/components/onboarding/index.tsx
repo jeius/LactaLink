@@ -1,40 +1,139 @@
-import { Image } from '@/components/Image';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { CarouselRenderItem } from 'react-native-reanimated-carousel';
-import { OnboardingData } from './data';
-import List from './list';
+import { useEffect, useRef, useState } from 'react';
 
-export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
-  const {
-    index,
-    item: { image, description, subtitle, title, footer },
-  } = args;
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import GradientBackground from '@/components/ui/gradient-bg';
+import { VStack } from '@/components/ui/vstack';
+
+import { MMKV_KEYS } from '@/lib/constants';
+import Storage from '@/lib/localStorage';
+
+import { useRouter } from 'expo-router';
+import { Dimensions } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
+
+import { OnboardingItem } from './OnboardingItem';
+import { OnboardingData, onboardingData } from './data';
+
+const gradientColors = ['#FEB4BA', '#FFE6E8', '#FFF3F4'] as const;
+
+export function Welcome() {
+  const { setTheme } = useTheme();
+  const router = useRouter();
+
+  const { height, width } = Dimensions.get('window');
+  const progress = useSharedValue<number>(0);
+  const ref = useRef<ICarouselInstance>(null);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const lastPage = onboardingData.length - 1;
+
+  const isLastSlide = currentPage === lastPage;
+
+  function onPressPagination(index: number) {
+    ref.current?.scrollTo({
+      count: index - progress.value,
+      animated: true,
+    });
+  }
+
+  function handleNext() {
+    if (isLastSlide) {
+      router.replace('/auth/sign-up');
+    }
+    ref.current?.next();
+  }
+
+  function handleSkip() {
+    Storage.set(MMKV_KEYS.ONBOARDING, true);
+    router.replace('/auth/sign-in');
+  }
+
+  function handleScrollEnd(index: number) {
+    if (index === lastPage) {
+      Storage.set(MMKV_KEYS.ONBOARDING, true);
+    }
+  }
+
+  useEffect(() => {
+    setTheme('light');
+  }, [setTheme]);
 
   return (
-    <VStack key={index}>
-      <Box className="mx-auto h-72 w-full p-4 pb-0">
-        <Image
-          alt={image.alt}
-          source={image.source}
-          contentFit="contain"
-          style={{ width: '100%', height: '100%' }}
-          recyclingKey={`onboarding-image-${index}`}
+    <SafeArea className="justify-between">
+      <GradientBackground colors={gradientColors} end={{ x: 0, y: 1 }} locations={[0, 0.8, 1]} />
+
+      <VStack className="relative w-full items-end justify-start gap-0 py-4">
+        <Button
+          variant="link"
+          size="sm"
+          animateOnPress={false}
+          className="absolute right-0 top-0 z-10 h-min w-min p-5"
+          action="primary"
+          style={{ opacity: isLastSlide ? 0 : 1 }}
+          onPress={handleSkip}
+        >
+          <ButtonText size="sm" className="text-primary-600">
+            Skip
+          </ButtonText>
+        </Button>
+
+        <Carousel
+          ref={ref}
+          loop={false}
+          width={width}
+          height={height * 0.85}
+          onProgressChange={progress}
+          onSnapToItem={setCurrentPage}
+          onScrollEnd={handleScrollEnd}
+          data={onboardingData}
+          renderItem={OnboardingItem}
+          pagingEnabled
+          scrollAnimationDuration={400}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: 1,
+            parallaxScrollingOffset: 30,
+            parallaxAdjacentItemScale: 0.7,
+          }}
         />
-      </Box>
-      <VStack space="xl" className="w-full items-center p-6">
-        <VStack className="items-center">
-          <Text size="3xl" bold className="text-center">
-            {title}
-          </Text>
-          <Text className="font-JakartaMedium text-primary-700 text-base">{subtitle}</Text>
-        </VStack>
-        <Text italic size="lg" className="text-typography-950 text-center">
-          {description}
-        </Text>
-        {footer && <List items={footer} />}
+
+        <Pagination.Basic<OnboardingData>
+          progress={progress}
+          data={onboardingData}
+          dotStyle={{
+            width: 25,
+            height: 4,
+            backgroundColor: '#FEB4BA',
+            borderRadius: 4,
+          }}
+          activeDotStyle={{
+            overflow: 'hidden',
+            backgroundColor: '#CB6870',
+          }}
+          containerStyle={{
+            gap: 10,
+            marginBottom: 16,
+          }}
+          horizontal
+          onPress={onPressPagination}
+        />
+
+        <Box className="w-full p-5 pt-2">
+          <Button
+            size="xl"
+            className="shadow-primary-800 w-full rounded-2xl shadow-md"
+            onPress={handleNext}
+          >
+            <ButtonText size="lg" className="font-JakartaMedium">
+              {isLastSlide ? 'Get Started' : 'Next'}
+            </ButtonText>
+          </Button>
+        </Box>
       </VStack>
-    </VStack>
+    </SafeArea>
   );
-};
+}

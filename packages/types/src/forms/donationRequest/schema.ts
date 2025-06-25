@@ -42,7 +42,6 @@ export const requestDetailsSchema = z.object({
   neededAt: z.iso.datetime(),
   storagePreference: z.enum([...Object.values(STORAGE_TYPES).map((item) => item.value), 'EITHER']),
   urgency: z.enum(Object.values(PRIORITY_LEVELS).map((item) => item.value)),
-  bags: z.array(milkBagSchema).optional().nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
   reason: textAreaSchema,
