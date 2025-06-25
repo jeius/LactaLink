@@ -13,8 +13,10 @@ export default function Layout() {
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
-  const { user, isFetching, isLoading, profile } = useCheckAuth();
-  const form = useCreateDonationForm({ user, profile });
+  const { user, isFetching, isLoading: isAuthLoading, profile } = useCheckAuth();
+  const { form, isLoading: isFormLoading } = useCreateDonationForm({ user, profile });
+
+  const isLoading = isAuthLoading || isFormLoading;
 
   if (isLoading) {
     return (

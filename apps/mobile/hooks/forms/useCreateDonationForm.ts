@@ -2,7 +2,6 @@ import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getApiClient } from '@lactalink/api';
 import {
-  Address,
   createDonationSchema,
   CreateDonationSchema,
   Hospital,
@@ -26,11 +25,41 @@ type Params = {
   profile: Individual | Hospital | MilkBank | null;
 };
 
-async function getInitialData({
-  user,
-  recipientId,
-  profile,
-}: Params): Promise<CreateDonationSchema | undefined> {
+function getStoredData({ user, recipientId, profile }: Params): CreateDonationSchema | undefined {
+  if (!user) return undefined;
+
+  const id = user.id;
+  const storageKey = `${storageKeyPrefix}-${id}`;
+  const raw = donationStorage.getString(storageKey);
+
+  const storedData: DeepPartial<CreateDonationSchema> | undefined = raw && JSON.parse(raw);
+  const donor = profile?.id;
+  const deliveryDetails = storedData?.deliveryDetails || [
+    {
+      preferredMode: ['PICKUP'],
+      availableDays: [Object.values(DAYS).map((day) => day.value)],
+    },
+  ];
+
+  return {
+    donor: storedData?.donor || donor,
+    recipient: storedData?.recipient || recipientId,
+    deliveryDetails,
+    details: {
+      notes: storedData?.details?.notes || '',
+      collectionMode: storedData?.details?.collectionMode,
+      storageType: storedData?.details?.storageType,
+      milkSample: storedData?.details?.milkSample,
+      bags: storedData?.details?.bags || [
+        { donor, volume: 20, quantity: 1, collectedAt: new Date().toISOString() },
+      ],
+    },
+  } as CreateDonationSchema;
+}
+
+async function getDeliveryPreferences(
+  user: User | null
+): Promise<CreateDonationSchema['deliveryDetails'] | undefined> {
   if (!user) return undefined;
 
   const apiClient = getApiClient();
@@ -41,56 +70,23 @@ async function getInitialData({
     pagination: false,
   });
 
-  const id = user.id;
-  const storageKey = `${storageKeyPrefix}-${id}`;
-  const raw = donationStorage.getString(storageKey);
-
-  const initialData: DeepPartial<CreateDonationSchema> | undefined = raw && JSON.parse(raw);
-  const donor = profile?.id;
-
-  const defaultAddressId = (
-    profile?.addresses.find((address) => (address as Address)?.default) as Address | undefined
-  )?.id;
-
-  const deliveryDetails =
-    deliveryPreferences.length > 0
-      ? deliveryPreferences
-      : initialData?.deliveryDetails?.map((detail) => ({
-          id: detail?.id,
-          preferredMode: detail?.preferredMode || 'PICKUP',
-          address: detail?.address || defaultAddressId || '',
-          availableDays: detail?.availableDays || Object.values(DAYS).map((day) => day.value),
-        })) || [
-          {
-            preferredMode: 'PICKUP',
-            address: defaultAddressId || '',
-            availableDays: Object.values(DAYS).map((day) => day.value),
-          },
-        ];
-
-  return {
-    donor: initialData?.donor || donor,
-    recipient: initialData?.recipient || recipientId,
-    deliveryDetails,
-    details: {
-      notes: initialData?.details?.notes || '',
-      collectionMode: initialData?.details?.collectionMode,
-      storageType: initialData?.details?.storageType || 'FROZEN',
-      milkSample: initialData?.details?.milkSample,
-      bags: initialData?.details?.bags || [
-        { donor, volume: 20, quantity: 1, collectedAt: new Date().toISOString() },
-      ],
-    },
-  } as CreateDonationSchema;
+  return deliveryPreferences.map((detail) => ({
+    address: detail.address as string,
+    preferredMode: detail.preferredMode,
+    availableDays: detail.availableDays,
+    id: detail.id,
+  }));
 }
 
 export const useCreateDonationForm = ({ recipientId, user, profile }: Params) => {
-  const { data: initialData, refetch } = useQuery({
+  const {
+    data: deliveryDetails,
+    refetch,
+    isLoading,
+  } = useQuery({
     queryKey: ['create-donation-form', user?.id],
-    queryFn: () => {
-      return getInitialData({ recipientId, user, profile });
-    },
-    staleTime: 1000 * 60 * 60, // 1 hour
+    queryFn: () => getDeliveryPreferences(user),
+    // staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchOnMount: true,
@@ -99,7 +95,7 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
   const form = useForm({
     resolver: zodResolver(createDonationSchema),
     mode: 'onTouched',
-    defaultValues: initialData || undefined,
+    defaultValues: getStoredData({ user, recipientId, profile }),
   });
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
@@ -109,6 +105,15 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
   const debouncedSave = debounce((value: DeepPartial<CreateDonationSchema>) => {
     donationStorage.set(storageKey, JSON.stringify(value));
   });
+
+  useEffect(() => {
+    if (!isLoading && deliveryDetails?.length) {
+      form.reset({
+        ...form.getValues(),
+        deliveryDetails: deliveryDetails,
+      });
+    }
+  }, [isLoading, deliveryDetails, form, form.getValues]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -132,15 +137,22 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
       if (isSubmitSuccessful) {
         donationStorage.delete(storageKey);
 
+        const data = getValues();
+
         // Pick the preffered values from the form
-        const {
-          details: { notes, collectionMode, storageType },
-          deliveryDetails,
-        } = (await refetch()).data || getValues();
+        const deliveryDetails = (await refetch()).data;
+
+        if (deliveryDetails) {
+          data.deliveryDetails = deliveryDetails;
+        }
 
         const values: DeepPartial<CreateDonationSchema> = {
-          details: { notes, collectionMode, storageType },
-          deliveryDetails,
+          details: {
+            notes: data.details.notes,
+            collectionMode: data.details.collectionMode,
+            storageType: data.details.storageType,
+          },
+          deliveryDetails: data.deliveryDetails,
         };
 
         // Save the preffered values to local storage
@@ -151,5 +163,5 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey, refetch]);
 
-  return form;
+  return { form, isLoading };
 };

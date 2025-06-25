@@ -41,7 +41,7 @@ export default function Layout() {
         headerRight: () => <Avatar />,
         headerTitleStyle: {
           fontFamily: 'Jakarta-SemiBold',
-          fontSize: 18,
+          fontSize: 16,
         },
         headerStyle: { backgroundColor: headerBgColor?.toString() },
         headerBackButtonDisplayMode: 'minimal',

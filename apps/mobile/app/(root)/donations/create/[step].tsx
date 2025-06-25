@@ -15,7 +15,7 @@ import { getApiClient } from '@lactalink/api';
 import { CreateDonationSchema, MilkBag } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -30,9 +30,15 @@ export default function CreateDonation() {
   const { nextPage, hasNextPage } = usePagination(STEPS, {
     recipientId,
   });
+  const router = useRouter();
 
   const form = useFormContext<CreateDonationSchema>();
-  form.setValue('recipient', recipientId);
+
+  if (recipientId) {
+    form.setValue('recipient', recipientId);
+  }
+
+  const isSubmitting = form.formState.isSubmitting;
 
   const block: Block = {
     details: DonationDetailsForm,
@@ -42,7 +48,6 @@ export default function CreateDonation() {
   const RenderBlock = block[step];
 
   async function onSubmit(data: CreateDonationSchema) {
-    console.log('Submitting Donation:', data);
     const createPromise = createDonation(data);
 
     toast.promise(createPromise, {
@@ -58,6 +63,8 @@ export default function CreateDonation() {
 
     // Todo: Handle case where recipientId is provided
     // If provided, get the existing requestDoc of the recipient and update it with the new donation
+
+    router.replace('/map');
   }
 
   async function handleNext() {
@@ -86,7 +93,7 @@ export default function CreateDonation() {
         <VStack space="lg">
           <RenderBlock />
 
-          <Button size="lg" className="m-5" onPress={handleNext}>
+          <Button isDisabled={isSubmitting} size="lg" className="m-5" onPress={handleNext}>
             <ButtonText>{hasNextPage ? 'Next' : 'Create'}</ButtonText>
           </Button>
         </VStack>
@@ -127,13 +134,13 @@ async function createDonation(data: CreateDonationSchema) {
       if (id) {
         return apiClient.updateByID({
           id,
-          collection: 'deliveryPreferences',
+          collection: 'delivery-preferences',
           data: rest,
           depth: 0,
         });
       }
 
-      return apiClient.create({ collection: 'deliveryPreferences', data: rest, depth: 0 });
+      return apiClient.create({ collection: 'delivery-preferences', data: rest, depth: 0 });
     })
   );
 
