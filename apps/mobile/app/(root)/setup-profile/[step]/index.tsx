@@ -23,7 +23,7 @@ import {
   DETAILS_FIELDS,
   SETUP_PROFILE_STEPS,
   TYPE_FIELDS,
-} from '@/lib/constants/setupProfile';
+} from '@/lib/constants/profile';
 import { setupProfileStorage } from '@/lib/localStorage';
 import { getIconAsset } from '@/lib/stores';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';

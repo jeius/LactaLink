@@ -3,28 +3,72 @@ import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
-import { CollectionSlug } from '@lactalink/types';
+import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
+import {
+  DonationRequestSlug,
+  DonationStepsParams,
+  RequestStepsParams,
+} from '@/lib/types/donationRequest';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { FormProvider } from 'react-hook-form';
+import { FormProvider, UseFormReturn } from 'react-hook-form';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
+type SearchParams = DonationStepsParams &
+  RequestStepsParams & {
+    slug: DonationRequestSlug;
+  };
+
 export default function Layout() {
-  const { slug } = useLocalSearchParams<{ slug: CollectionSlug }>();
+  const { slug, recipientId, requestedDonorId } = useLocalSearchParams<SearchParams>();
+
+  console.log('recipientId:', recipientId);
+  console.log('requestedDonorId:', requestedDonorId);
 
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
 
-  const { user, isFetching, isLoading: isAuthLoading, profile } = useAuth();
+  const { user, isFetching: isAuthFetching, isLoading: isAuthLoading, profile } = useAuth();
 
-  const { form: createDonationForm, isLoading: isFormLoading } = useCreateDonationForm({
+  const {
+    form: createDonationForm,
+    isLoading: isDonationFormLoading,
+    isFetching: isDonationFormFetching,
+  } = useCreateDonationForm({
     user,
     profile,
+    recipientId,
   });
 
-  const isLoading = isAuthLoading || isFormLoading;
-  const form = slug === 'donations' ? createDonationForm : createDonationForm; // Assuming the same form is used for requests, adjust as necessary;
+  const {
+    form: createRequestForm,
+    isLoading: isRequestFormLoading,
+    isFetching: isRequestFormFetching,
+  } = useCreateRequestForm({
+    user,
+    profile,
+    requestedDonorId,
+  });
+
+  const isFormLoading = {
+    donations: isDonationFormLoading,
+    requests: isRequestFormLoading,
+  };
+
+  const isFormFetching = {
+    donations: isDonationFormFetching,
+    requests: isRequestFormFetching,
+  };
+
+  const isLoading = isAuthLoading || isFormLoading[slug];
+  const isFetching = isAuthFetching || isFormFetching[slug];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form: Record<DonationRequestSlug, UseFormReturn<any>> = {
+    donations: createDonationForm,
+    requests: createRequestForm,
+  };
 
   if (isLoading) {
     return (
@@ -35,7 +79,7 @@ export default function Layout() {
   }
 
   return (
-    <FormProvider {...form}>
+    <FormProvider {...form[slug]}>
       <Stack screenOptions={{ headerShown: false, animation }} />
       {isFetching && (
         <Box className="absolute right-3 top-3">

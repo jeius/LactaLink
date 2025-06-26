@@ -23,12 +23,12 @@ export type NumberInputType = TInputField & {
   min?: number;
   max?: number;
   icon?: LucideIcon | FC<LucideProps>;
+  isDisabled?: boolean;
 };
 
 export interface NumberInputProps extends NumberInputType {
   value?: number;
   onChange?: (value?: number) => void;
-  isDisabled?: boolean;
 }
 
 export function NumberInput({
@@ -40,12 +40,14 @@ export function NumberInput({
   step = 1,
   min = 0,
   max = Infinity,
-  isDisabled: disabled = false,
+  isDisabled = false,
   value,
   onChange,
   ...props
 }: NumberInputProps) {
   const [localValue, setLocalValue] = useState(value);
+
+  console.log('NumberInput rendered with value:', localValue);
 
   const handleChange = debounce((val?: number) => {
     onChange?.(val);
@@ -61,7 +63,7 @@ export function NumberInput({
   }, [handleChange, localValue]);
 
   return (
-    <Input variant={variant} isDisabled={disabled} className={className}>
+    <Input variant={variant} isDisabled={isDisabled} className={className}>
       {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
 
       {showStepButtons && (
@@ -69,7 +71,7 @@ export function NumberInput({
           <Button
             size="sm"
             variant="link"
-            isDisabled={disabled || (localValue || 0) <= min}
+            isDisabled={isDisabled || (localValue || 0) <= min}
             className="px-3"
             onPress={() => {
               setLocalValue((localValue || 0) - (step || 1));
@@ -83,7 +85,7 @@ export function NumberInput({
       <InputField
         {...props}
         className={inputFieldStyle({ isStepButtonsVisible: showStepButtons })}
-        value={localValue === undefined ? localValue : String(localValue)}
+        value={localValue === undefined ? undefined : String(localValue)}
         onChangeText={(val) => {
           if (val === '') {
             setLocalValue(undefined);
@@ -94,7 +96,7 @@ export function NumberInput({
           }
           setLocalValue(Number(val));
         }}
-        aria-disabled={disabled}
+        aria-disabled={isDisabled}
         placeholder={placeholder}
       />
 
@@ -103,7 +105,7 @@ export function NumberInput({
           <Button
             size="sm"
             variant="link"
-            isDisabled={disabled || (localValue || 0) >= max}
+            isDisabled={isDisabled || (localValue || 0) >= max}
             className="px-3"
             onPress={() => {
               setLocalValue((localValue || 0) + (step || 1));

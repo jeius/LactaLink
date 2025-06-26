@@ -1,4 +1,3 @@
-import { Protected } from '@/components/Protected';
 import ThemeToggler from '@/components/ThemeToggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
@@ -9,13 +8,16 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
+import { DonateRequestModal } from '@/components/DonateRequestModal';
 import { MapTileButton } from '@/components/map/MapTileButton';
+import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';
 import { LatLng } from 'react-native-maps';
 
-const Home = () => {
+export default function Home() {
   const router = useRouter();
   const { location } = useCurrentLocation();
   const coordinates: LatLng = {
@@ -32,12 +34,20 @@ const Home = () => {
   }
 
   return (
-    <Protected safeTop={false} mode="margin" className="items-stretch">
+    <SafeArea safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
       <VStack space="lg" className="flex-1 items-center justify-center">
         <Box className="h-28 w-40">
           <MapTileButton coordinates={coordinates} />
         </Box>
+
+        <DonateRequestModal
+          trigger={
+            <Box className="border-primary-400 rounded-full border p-3">
+              <Text>Donate or Request</Text>
+            </Box>
+          }
+        />
 
         <Button action="default" onPress={handleSignOut}>
           <ButtonText>Sign out</ButtonText>
@@ -56,14 +66,12 @@ const Home = () => {
         <Button
           action="default"
           onPress={() => {
-            router.push('/welcome');
+            router.push('/');
           }}
         >
           <ButtonText>Go to onboarding</ButtonText>
         </Button>
       </VStack>
-    </Protected>
+    </SafeArea>
   );
-};
-
-export default Home;
+}

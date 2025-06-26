@@ -5,7 +5,7 @@ import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { getHexColor } from '@/lib/colors';
-import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
+import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { extractName } from '@lactalink/utilities';
 import { Stack } from 'expo-router';

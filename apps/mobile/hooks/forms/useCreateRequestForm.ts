@@ -1,8 +1,8 @@
-import { donationStorage } from '@/lib/localStorage';
+import { requestStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  createDonationSchema,
-  CreateDonationSchema,
+  CreateRequestSchema,
+  createRequestSchema,
   Hospital,
   Individual,
   MilkBank,
@@ -17,47 +17,49 @@ import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 import { useFetchBySlug } from '../collections/useFetchBySlug';
 
-const storageKeyPrefix = 'create-donation-form';
+const storageKeyPrefix = 'create-request-form';
 
 type Params = {
-  recipientId?: string;
+  requestedDonorId?: string;
   user: User | null;
   profile: Individual | Hospital | MilkBank | null;
 };
 
-function getStoredData({ user, recipientId, profile }: Params): CreateDonationSchema | undefined {
+function getStoredData({
+  user,
+  requestedDonorId,
+  profile,
+}: Params): CreateRequestSchema | undefined {
   if (!user) return undefined;
 
   const id = user.id;
   const storageKey = `${storageKeyPrefix}-${id}`;
-  const raw = donationStorage.getString(storageKey);
+  const raw = requestStorage.getString(storageKey);
 
-  const storedData: DeepPartial<CreateDonationSchema> | undefined = raw && JSON.parse(raw);
-  const donor = profile?.id;
+  const storedData: DeepPartial<CreateRequestSchema> | undefined = raw && JSON.parse(raw);
+  const requester = profile?.id;
   const deliveryDetails = storedData?.deliveryDetails || [
     {
-      preferredMode: [DELIVERY_OPTIONS.PICKUP.value],
+      preferredMode: Object.values(DELIVERY_OPTIONS).map((day) => day.value),
       availableDays: Object.values(DAYS).map((day) => day.value),
     },
   ];
 
   return {
-    donor: storedData?.donor || donor,
-    recipient: storedData?.recipient || recipientId,
+    requester: storedData?.requester || requester,
+    requestedDonor: storedData?.requestedDonor || requestedDonorId,
+    volumeNeeded: storedData?.volumeNeeded || 20,
     deliveryDetails,
     details: {
+      ...storedData?.details,
+      reason: storedData?.details?.reason || '',
       notes: storedData?.details?.notes || '',
-      collectionMode: storedData?.details?.collectionMode,
-      storageType: storedData?.details?.storageType,
-      milkSample: storedData?.details?.milkSample,
-      bags: storedData?.details?.bags || [
-        { donor, volume: 20, quantity: 1, collectedAt: new Date().toISOString() },
-      ],
+      storagePreference: storedData?.details?.storagePreference || 'EITHER',
     },
-  } as CreateDonationSchema;
+  } as CreateRequestSchema;
 }
 
-export const useCreateDonationForm = ({ recipientId, user, profile }: Params) => {
+export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params) => {
   const {
     data: preferences,
     refetch,
@@ -67,20 +69,21 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
     depth: 0,
+    sort: 'createdAt',
   });
 
   const form = useForm({
-    resolver: zodResolver(createDonationSchema),
+    resolver: zodResolver(createRequestSchema),
     mode: 'onTouched',
-    defaultValues: getStoredData({ user, recipientId, profile }),
+    defaultValues: getStoredData({ user, requestedDonorId, profile }),
   });
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
   const isSubmitSuccessful = form.formState.isSubmitSuccessful;
   const getValues = form.getValues;
 
-  const debouncedSave = debounce((value: DeepPartial<CreateDonationSchema>) => {
-    donationStorage.set(storageKey, JSON.stringify(value));
+  const debouncedSave = debounce((value: DeepPartial<CreateRequestSchema>) => {
+    requestStorage.set(storageKey, JSON.stringify(value));
   }, 1000);
 
   useEffect(() => {
@@ -115,7 +118,7 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
   useEffect(() => {
     async function saveUserPreference() {
       if (isSubmitSuccessful) {
-        donationStorage.delete(storageKey);
+        requestStorage.delete(storageKey);
 
         const data = getValues();
         const preferences = (await refetch()).data;
@@ -127,17 +130,17 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
           }));
         }
 
-        const values: DeepPartial<CreateDonationSchema> = {
+        const values: DeepPartial<CreateRequestSchema> = {
           details: {
             notes: data.details.notes,
-            collectionMode: data.details.collectionMode,
-            storageType: data.details.storageType,
+            reason: data.details.reason,
+            storagePreference: data.details.storagePreference,
           },
           deliveryDetails: data.deliveryDetails,
         };
 
         // Save the preffered values to local storage
-        donationStorage.set(storageKey, JSON.stringify(values));
+        requestStorage.set(storageKey, JSON.stringify(values));
       }
     }
 

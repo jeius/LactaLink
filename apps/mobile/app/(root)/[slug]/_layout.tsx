@@ -1,15 +1,17 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import Avatar from '@/components/Avatar';
 import { getHexColor } from '@/lib/colors';
-import { CollectionSlug } from '@lactalink/types';
+import { DonationRequestSlug } from '@/lib/types/donationRequest';
 import { capitalizeFirst } from '@lactalink/utilities';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
+const ALLOWED_SLUGS: DonationRequestSlug[] = ['donations', 'requests'];
+
 export default function Layout() {
-  const { slug } = useLocalSearchParams<{ slug: CollectionSlug }>();
+  const { slug } = useLocalSearchParams<{ slug: DonationRequestSlug }>();
   const capitalizedSlug = capitalizeFirst(slug);
 
   const isIOS = Platform.OS === 'ios';
@@ -21,6 +23,7 @@ export default function Layout() {
 
   return (
     <Stack
+      initialRouteName="index"
       screenOptions={{
         headerShown: true,
         headerRight: () => <Avatar />,
@@ -36,10 +39,13 @@ export default function Layout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerTitle: capitalizedSlug }} />
-      <Stack.Screen
-        name="create"
-        options={{ headerTitle: `Create ${capitalizedSlug.slice(0, -1)}` }}
-      />
+
+      <Stack.Protected guard={ALLOWED_SLUGS.includes(slug)}>
+        <Stack.Screen
+          name="create"
+          options={{ headerTitle: `Create ${capitalizedSlug.slice(0, -1)}` }}
+        />
+      </Stack.Protected>
     </Stack>
   );
 }

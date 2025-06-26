@@ -9,7 +9,7 @@ import { VStack } from '@/components/ui/vstack';
 import { signOut } from '@/auth';
 import { usePagination } from '@/hooks/forms/usePagination';
 
-import { SETUP_PROFILE_STEPS } from '@/lib/constants/setupProfile';
+import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getIconAsset } from '@/lib/stores/assetsStore';

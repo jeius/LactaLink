@@ -140,6 +140,7 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         label: 'Date of Birth',
         fieldType: 'date',
         style: { maxWidth: 160 },
+        datePickerOptions: { maximumDate: new Date(), minimumDate: new Date('1900-01-01') },
       },
       {
         name: 'gender',

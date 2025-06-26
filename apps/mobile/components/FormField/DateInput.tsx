@@ -5,7 +5,10 @@ import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { formatDate } from '@lactalink/utilities';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker, {
+  DatePickerOptions,
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import { CalendarRangeIcon, LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { ComponentPropsWithoutRef, FC, useState } from 'react';
 import { Noop } from 'react-hook-form';
@@ -45,6 +48,8 @@ export type DateInputType = TInput & {
    * Defaults to 'Select date...'.
    */
   placeholder?: string;
+
+  datePickerOptions?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate'>;
 };
 
 export type DateInputProps<T extends string = string> = DateInputType & {
@@ -107,13 +112,14 @@ export function DateInput({
   showSetNowButton = false,
   setNowLabel = 'Set Now',
   variant: textInputVariant = 'outline',
+  datePickerOptions,
 }: DateInputProps) {
   const date = value ? new Date(value) : new Date(1999, 6, 6);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { theme } = useTheme();
   const accentColor = getHexColor(theme, 'primary', 300)?.toString();
 
-  let inputValue: string = placeholder;
+  let inputValue: string = '';
 
   if (value) {
     switch (mode) {
@@ -194,11 +200,10 @@ export function DateInput({
 
       {showDatePicker && (
         <DateTimePicker
+          {...datePickerOptions}
           mode={mode}
           display="spinner"
           value={date}
-          minimumDate={new Date(1990, 0, 1)}
-          maximumDate={new Date()}
           onChange={onDateChange}
           themeVariant="light"
           locale="en-PH"

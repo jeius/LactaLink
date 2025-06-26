@@ -24,7 +24,6 @@ export function useFetchBySlug<TSlug extends CollectionSlug>(
         collection,
         pagination: false,
         depth: 3,
-        limit: 10,
         ...options,
       });
     },

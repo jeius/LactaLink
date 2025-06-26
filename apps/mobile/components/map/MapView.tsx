@@ -16,7 +16,7 @@ import { AnimatedMapView } from 'react-native-maps/src/MapView';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
-import { CreateDonationRequestButton } from '../CreateDonationRequestButton';
+import { DonateRequestModal } from '../DonateRequestModal';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Input, InputField, InputIcon } from '../ui/input';
@@ -236,10 +236,7 @@ export function MapView() {
               </AnimatedPressable>
             )}
 
-            <CreateDonationRequestButton
-              action="primary"
-              className="h-fit w-fit rounded-full p-3"
-            />
+            <DonateRequestModal />
 
             <Button
               action="info"

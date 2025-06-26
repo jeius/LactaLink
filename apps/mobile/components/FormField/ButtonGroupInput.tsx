@@ -64,6 +64,7 @@ export function ButtonGroupInput<TValue = unknown>({
     >
       {(options || []).map((option) => (
         <Button
+          isDisabled={props.isDisabled}
           key={String(option.value)}
           variant={isSelected(option) ? 'solid' : 'outline'}
           action={isInvalid ? 'negative' : 'primary'}

@@ -116,6 +116,8 @@ export function DeliveryDetailsForm() {
                       searchPath="displayName"
                       labelPath="name"
                       descriptionPath="displayName"
+                      icon={MapPinIcon}
+                      iconPosition="left"
                     />
                   </Card>
                 </VStack>

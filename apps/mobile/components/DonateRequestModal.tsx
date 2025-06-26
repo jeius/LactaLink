@@ -1,7 +1,6 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Image } from '@/components/Image';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
@@ -10,53 +9,61 @@ import { VStack } from '@/components/ui/vstack';
 import { getImageAsset } from '@/lib/stores';
 
 import { useRouter } from 'expo-router';
-import { LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
-import { ComponentProps, FC, useState } from 'react';
+import { PlusIcon } from 'lucide-react-native';
+import { ComponentProps, ReactNode, useState } from 'react';
 import { GestureResponderEvent } from 'react-native';
+import { Icon } from './ui/icon';
 
-interface Props extends ComponentProps<typeof Button> {
-  label?: string;
-  icon?: LucideIcon | FC<LucideProps>;
-  iconSize?: number | ComponentProps<typeof Button>['size'];
+interface ModalProps extends ComponentProps<typeof Modal> {
+  trigger?: ReactNode;
 }
 
-export function CreateDonationRequestButton({
-  label,
-  icon = PlusIcon,
-  iconSize = 22,
-  onPress,
-  ...props
-}: Props) {
+export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   const [open, setOpen] = useState(false);
+  const [triggerPressed, setTriggerPressed] = useState(false);
   const router = useRouter();
-
-  const iconSizeValue = typeof iconSize === 'string' ? iconSize : undefined;
-  const iconHeight = typeof iconSize === 'number' ? iconSize : undefined;
-  const iconWidth = typeof iconSize === 'number' ? iconSize : undefined;
 
   const handleModalTrigger = (event: GestureResponderEvent) => {
     setOpen((prev) => !prev);
-    onPress?.(event);
+    onClose?.(event);
   };
 
   const handleDonatePressed = () => {
     setOpen(false);
-    router.replace('/donations/create/details');
+    router.push('/donations/create/details?recipientId=sample-recipient-id', {
+      withAnchor: true,
+    });
   };
 
   const handleRequestPressed = () => {
     setOpen(false);
-    router.replace('/requests/create/details');
+    router.push('/requests/create/details', { withAnchor: true });
   };
 
   return (
     <>
-      <Button {...props} onPress={handleModalTrigger}>
-        <ButtonIcon as={icon} size={iconSizeValue} height={iconHeight} width={iconWidth} />
-        {label && <ButtonText>{label}</ButtonText>}
-      </Button>
+      <AnimatedPressable
+        onPress={() => {
+          setOpen(true);
+        }}
+        onPressIn={() => setTriggerPressed(true)}
+        onPressOut={() => setTriggerPressed(false)}
+      >
+        {trigger || (
+          <Box
+            className={`rounded-full p-3 ${triggerPressed ? 'bg-primary-600' : 'bg-primary-400'}`}
+          >
+            <Icon as={PlusIcon} size="xl" className="text-primary-0" />
+          </Box>
+        )}
+      </AnimatedPressable>
 
-      <Modal isOpen={open} onClose={handleModalTrigger} className="bg-transparent">
+      <Modal
+        {...props}
+        isOpen={props.isOpen || open}
+        onClose={handleModalTrigger}
+        className="bg-transparent"
+      >
         <ModalBackdrop className="bg-background-0" />
         <ModalContent className="border-0 bg-transparent p-0 shadow-none">
           <VStack space="2xl" className="w-full items-center">

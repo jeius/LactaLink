@@ -88,7 +88,6 @@ function FormField<
     currentValue.length === props.options.length;
 
   const { error: fieldError, invalid } = getFieldState(name);
-  // console.log('Field Error:', name, fieldError);
 
   const [showPass, setShowPass] = useState(false);
 
@@ -134,22 +133,24 @@ function FormField<
       className={containerStyle({ class: containerClassName })}
       style={style}
     >
-      <FormControlLabel className="justify-between gap-2">
-        {label && <FormControlLabelText>{label}</FormControlLabelText>}
-        {imageProps?.showCount && Array.isArray(currentValue) && (
-          <FormControlLabelText size="sm" className="text-typography-700 font-sans">
-            {currentValue.length || 0}/{imageProps.selectionLimit}
-          </FormControlLabelText>
-        )}
-        {labelIcon && (
-          <Icon
-            {...restOfLabelIconProps}
-            as={labelIcon}
-            size={labelIconSize}
-            className={labelIconStyle({ class: labelIconClassName })}
-          />
-        )}
-      </FormControlLabel>
+      {label && (
+        <FormControlLabel className="justify-between gap-2">
+          <FormControlLabelText>{label}</FormControlLabelText>
+          {imageProps?.showCount && Array.isArray(currentValue) && (
+            <FormControlLabelText size="sm" className="text-typography-700 font-sans">
+              {currentValue.length || 0}/{imageProps.selectionLimit}
+            </FormControlLabelText>
+          )}
+          {labelIcon && (
+            <Icon
+              {...restOfLabelIconProps}
+              as={labelIcon}
+              size={labelIconSize}
+              className={labelIconStyle({ class: labelIconClassName })}
+            />
+          )}
+        </FormControlLabel>
+      )}
 
       <Controller
         name={name}
@@ -176,10 +177,11 @@ function FormField<
               return (
                 <NumberInput
                   {...numberFieldProps}
+                  keyboardType="number-pad"
                   icon={inputIcon}
                   value={field.value}
                   onBlur={field.onBlur}
-                  isDisabled={field.disabled}
+                  isDisabled={numberFieldProps?.isDisabled || field.disabled}
                   placeholder={placeholder}
                   onChange={(val) => {
                     field.onChange(val);
@@ -241,13 +243,13 @@ function FormField<
               );
 
             case 'button-group': {
-              const { options = [], ...rest } = buttonGroupProps || {};
+              const { options = [], isDisabled, ...props } = buttonGroupProps || {};
               return (
                 <ButtonGroupInput
-                  {...rest}
+                  {...props}
                   options={options}
                   value={field.value}
-                  isDisabled={field.disabled}
+                  isDisabled={isDisabled || field.disabled}
                   isInvalid={invalid}
                   onChange={(val) => {
                     field.onChange(val);
