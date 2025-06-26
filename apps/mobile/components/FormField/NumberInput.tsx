@@ -47,8 +47,6 @@ export function NumberInput({
 }: NumberInputProps) {
   const [localValue, setLocalValue] = useState(value);
 
-  console.log('NumberInput rendered with value:', localValue);
-
   const handleChange = debounce((val?: number) => {
     onChange?.(val);
   }, 300);

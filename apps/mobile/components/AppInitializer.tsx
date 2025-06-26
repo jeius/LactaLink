@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useAuth, useAuthListener } from '@/hooks/auth/useAuth';
 import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 
 import * as SplashScreen from 'expo-splash-screen';
@@ -22,7 +22,9 @@ type Props = {
 };
 
 export function AppInitializer({ children }: Props) {
+  useAuthListener();
   useGoogleSignInConfig();
+
   const { isLoading: isThemeLoading } = useTheme();
   const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
   const { isSuccess: isLocationReady, error: locationError } = useCurrentLocation();

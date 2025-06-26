@@ -63,17 +63,23 @@ export const deliverySchema = z.object({
     .min(1, 'Atleast one day is selected.'),
 });
 
-export const createDonationSchema = z.object({
-  donor: z.uuid().nonempty('Required'),
-  recipient: z.uuid().optional().nullable(),
-  details: donationDetailsSchema,
+export const deliveryDetailsSchema = z.object({
   deliveryDetails: z.array(deliverySchema).min(1, 'Atleast one delivery detail is required.'),
 });
 
-export const createRequestSchema = z.object({
-  requester: z.uuid().nonempty('Required'),
-  requestedDonor: z.uuid().optional().nullable(),
-  volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
-  details: requestDetailsSchema,
-  deliveryDetails: z.array(deliverySchema).min(1, 'Atleast one delivery detail is required.'),
-});
+export const createDonationSchema = z
+  .object({
+    donor: z.uuid().nonempty('Required'),
+    recipient: z.uuid().optional().nullable(),
+    details: donationDetailsSchema,
+  })
+  .and(deliveryDetailsSchema);
+
+export const createRequestSchema = z
+  .object({
+    requester: z.uuid().nonempty('Required'),
+    requestedDonor: z.uuid().optional().nullable(),
+    volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
+    details: requestDetailsSchema,
+  })
+  .and(deliveryDetailsSchema);

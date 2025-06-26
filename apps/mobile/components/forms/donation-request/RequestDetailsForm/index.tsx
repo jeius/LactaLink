@@ -14,8 +14,6 @@ import React, { useState } from 'react';
 export function RequestDetailsForm() {
   const [isCustomVolume, setIsCustomVolume] = useState(false);
 
-  console.log('RequestDetailsForm rendered');
-
   function handleToggleCustomVolume() {
     setIsCustomVolume((prev) => !prev);
   }

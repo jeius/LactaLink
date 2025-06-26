@@ -7,38 +7,6 @@ import { useEffect } from 'react';
 
 export function useAuth() {
   const apiClient = useApiClient();
-  const queryClient = useQueryClient();
-
-  // Set up auth state change listener
-  useEffect(() => {
-    const subscription = apiClient.auth.onAuthStateChange((event) => {
-      // Invalidate session query on any auth state change
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
-
-      // Handle specific events if needed
-      switch (event) {
-        case 'SIGNED_IN':
-          console.log('User signed in');
-          break;
-        case 'SIGNED_OUT':
-          console.log('User signed out');
-          if (GoogleSignin.hasPreviousSignIn()) {
-            GoogleSignin.signOut();
-          }
-          break;
-        case 'TOKEN_REFRESHED':
-          console.log('Token refreshed');
-          break;
-        default:
-          break;
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [apiClient, queryClient]);
 
   const {
     data: session,
@@ -76,4 +44,40 @@ export function useAuth() {
     // Manual refetch
     refetchSession: refetch,
   };
+}
+
+export function useAuthListener() {
+  const apiClient = useApiClient();
+  const queryClient = useQueryClient();
+
+  // Set up auth state change listener
+  useEffect(() => {
+    const subscription = apiClient.auth.onAuthStateChange((event) => {
+      // Invalidate session query on any auth state change
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
+
+      // Handle specific events if needed
+      switch (event) {
+        case 'SIGNED_IN':
+          console.log('User signed in');
+          break;
+        case 'SIGNED_OUT':
+          console.log('User signed out');
+          if (GoogleSignin.hasPreviousSignIn()) {
+            GoogleSignin.signOut();
+          }
+          break;
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed');
+          break;
+        default:
+          break;
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [apiClient, queryClient]);
 }

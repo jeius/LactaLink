@@ -1,6 +1,8 @@
 import { DeliveryDetailsForm } from '@/components/forms/donation-request/DeliveryDetailsForm';
 import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
 import { RequestDetailsForm } from '@/components/forms/donation-request/RequestDetailsForm';
+import { DonationReview } from '@/components/forms/donation-request/review/DonationReview';
+import { RequestReview } from '@/components/forms/donation-request/review/RequestReview';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
@@ -42,7 +44,7 @@ type SearchParams = DonationStepsParams &
 
 type FormData = CreateDonationSchema | CreateRequestSchema;
 
-export default function CreateDonation() {
+export default function CreateDonationRequest() {
   const { step, slug, ...searchParams } = useLocalSearchParams<SearchParams>();
 
   const pages = createDynamicRoute(`/${slug}/create`, DONATION_REQUEST_STEPS);
@@ -59,9 +61,15 @@ export default function CreateDonation() {
     requests: RequestDetailsForm,
   };
 
+  const reviewForm: Record<DonationRequestSlug, FC> = {
+    donations: DonationReview,
+    requests: RequestReview,
+  };
+
   const block: Block = {
     details: detailsForm[slug],
     deliveryDetails: DeliveryDetailsForm,
+    review: reviewForm[slug],
   };
 
   const RenderBlock = block[step];
@@ -70,7 +78,7 @@ export default function CreateDonation() {
     const createPromise = 'donor' in data ? createDonation(data) : createRequest(data);
 
     toast.promise(createPromise, {
-      loading: `Creating ${slug.slice(0, -1)}...`,
+      loading: `Submitting ${slug.slice(0, -1)}...`,
       success: (res: { message: string }) => {
         console.log(res.message, res);
         return res.message;
@@ -84,7 +92,7 @@ export default function CreateDonation() {
   }
 
   async function handleNext() {
-    if (!hasNextPage) {
+    if (!hasNextPage || step === 'review') {
       form.handleSubmit(onSubmit)();
       return;
     }
@@ -110,7 +118,7 @@ export default function CreateDonation() {
           <RenderBlock />
 
           <Button isDisabled={isSubmitting} size="lg" className="m-5" onPress={handleNext}>
-            <ButtonText>{hasNextPage ? 'Next' : 'Create'}</ButtonText>
+            <ButtonText>{hasNextPage ? 'Next' : 'Submit'}</ButtonText>
           </Button>
         </VStack>
       </ScrollView>

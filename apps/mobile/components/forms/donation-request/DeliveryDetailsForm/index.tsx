@@ -23,6 +23,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 import { useFieldArray } from 'react-hook-form';
 
 export function DeliveryDetailsForm() {
@@ -41,11 +42,20 @@ export function DeliveryDetailsForm() {
   }
 
   return (
-    <VStack space="md" className="w-screen max-w-md items-center py-5">
-      <Accordion variant="unfilled" defaultValue={['preference-0']}>
+    <VStack space="md" className="max-w-md py-5">
+      <VStack className="px-5">
+        <Text size="lg" className="font-JakartaSemiBold">
+          Delivery Preferences
+        </Text>
+        <Text>
+          Specify the delivery modes, available days, and address that you are comfortable with.
+        </Text>
+      </VStack>
+
+      <Accordion variant="unfilled" defaultValue={['preference-0']} className="w-auto">
         {fields.map((field, i) => {
           return (
-            <AccordionItem key={field.fieldId} value={`preference-${i}`} className="w-full">
+            <AccordionItem key={field.fieldId} value={`preference-${i}`}>
               <AccordionHeader>
                 <AccordionTrigger className="focus:web:rounded-lg">
                   {({ isExpanded }: { isExpanded: boolean }) => {
@@ -57,7 +67,7 @@ export function DeliveryDetailsForm() {
                           <AccordionIcon as={ChevronDownIcon} className="mr-3" />
                         )}
 
-                        <AccordionTitleText>
+                        <AccordionTitleText className="font-JakartaSemiBold">
                           {'name' in field && typeof field.name === 'string'
                             ? field.name
                             : `Delivery Preference ${i + 1}`}

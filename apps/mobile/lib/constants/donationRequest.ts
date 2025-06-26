@@ -2,7 +2,11 @@ import { CreateDonationSchema, CreateRequestSchema } from '@lactalink/types';
 import { FieldPath } from 'react-hook-form';
 import { DonationRequestSlug, DonationRequestSteps } from '../types/donationRequest';
 
-export const DONATION_REQUEST_STEPS: DonationRequestSteps[] = ['details', 'deliveryDetails'];
+export const DONATION_REQUEST_STEPS: DonationRequestSteps[] = [
+  'details',
+  'deliveryDetails',
+  'review',
+];
 
 export const DONATION_DETAILS_FIELDS: FieldPath<CreateDonationSchema>[] = [
   'details.bags',

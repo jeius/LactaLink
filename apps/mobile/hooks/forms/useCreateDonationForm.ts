@@ -67,6 +67,7 @@ export const useCreateDonationForm = ({ recipientId, user, profile }: Params) =>
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
     depth: 0,
+    sort: 'createdAt',
   });
 
   const form = useForm({

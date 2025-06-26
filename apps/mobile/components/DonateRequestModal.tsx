@@ -30,14 +30,20 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
 
   const handleDonatePressed = () => {
     setOpen(false);
-    router.push('/donations/create/details?recipientId=sample-recipient-id', {
-      withAnchor: true,
-    });
+    setTimeout(() => {
+      router.push('/donations/create/details', {
+        withAnchor: true,
+      });
+    }, 100); // Delay to allow modal to close before navigating
   };
 
   const handleRequestPressed = () => {
     setOpen(false);
-    router.push('/requests/create/details', { withAnchor: true });
+    setTimeout(() => {
+      router.push('/requests/create/details', {
+        withAnchor: true,
+      });
+    }, 100); // Delay to allow modal to close before navigating
   };
 
   return (
