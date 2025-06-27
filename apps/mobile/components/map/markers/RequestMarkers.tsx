@@ -29,12 +29,12 @@ type DeliveryDetails = {
 
 type MarkerDetails = MapMarkerProps & DeliveryDetails;
 
-type OnPressParams = DeliveryDetails &
+export type RequestMarkerPressEvent = DeliveryDetails &
   Pick<MapMarkerProps, 'identifier' | 'coordinate' | 'title' | 'description' | 'id'>;
 
 interface RequestMarkersProps {
   data: Request;
-  onPress?: (value: OnPressParams) => void;
+  onPress?: (event: RequestMarkerPressEvent) => void;
   showAvatar?: boolean;
 }
 export function RequestMarkers({ data, onPress, showAvatar: showAvatarProp }: RequestMarkersProps) {
@@ -75,7 +75,7 @@ export function RequestMarkers({ data, onPress, showAvatar: showAvatarProp }: Re
     transform: [{ scale: animateValue.value.scale }, { translateY: animateValue.value.y }],
   }));
 
-  function handleMarkerPress(event: MarkerPressEvent, details: OnPressParams) {
+  function handleMarkerPress(event: MarkerPressEvent, details: RequestMarkerPressEvent) {
     onPress?.(details);
     animateValue.value = { scale: withSpring(1.2), y: withTiming(-10) };
     setShowAvatar(true);

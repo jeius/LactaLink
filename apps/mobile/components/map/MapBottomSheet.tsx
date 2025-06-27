@@ -58,6 +58,8 @@ export function MapBottomSheet({
 
   const hasSelectedItem = Boolean(selected);
 
+  console.log('MapBottomSheet Rendered');
+
   const handleChanged = useCallback(
     (val: Value) => {
       onChange?.(val);

@@ -31,12 +31,12 @@ type DeliveryDetails = {
 
 type MarkerDetails = MapMarkerProps & DeliveryDetails;
 
-type OnPressParams = DeliveryDetails &
+export type DonationMarkerPressEvent = DeliveryDetails &
   Pick<MapMarkerProps, 'identifier' | 'coordinate' | 'title' | 'description' | 'id'>;
 
 interface DonationMarkersProps {
   data: Donation;
-  onPress?: (value: OnPressParams) => void;
+  onPress?: (event: DonationMarkerPressEvent) => void;
   showAvatar?: boolean;
 }
 export function DonationMarkers({
@@ -82,7 +82,7 @@ export function DonationMarkers({
     transform: [{ scale: animateValue.value.scale }, { translateY: animateValue.value.y }],
   }));
 
-  function handleMarkerPress(event: MarkerPressEvent, details: OnPressParams) {
+  function handleMarkerPress(event: MarkerPressEvent, details: DonationMarkerPressEvent) {
     onPress?.(details);
     animateValue.value = { scale: withSpring(1.2), y: withTiming(-10) };
     setShowAvatar(true);
@@ -92,7 +92,9 @@ export function DonationMarkers({
     <MarkerAnimated
       {...marker}
       key={marker.identifier}
-      onPress={(e) => handleMarkerPress(e, marker)}
+      onPress={(e) => {
+        handleMarkerPress(e, marker);
+      }}
       style={markerAnimStyle}
     >
       <Animated.View style={[{ position: 'relative' }]}>

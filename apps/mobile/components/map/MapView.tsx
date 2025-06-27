@@ -7,8 +7,7 @@ import { debounce, isEqual } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
-import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { Address, DeliveryPreference, ErrorSearchParams, Populate } from '@lactalink/types';
+import { ErrorSearchParams } from '@lactalink/types';
 
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
@@ -23,20 +22,28 @@ import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-import { MapBottomSheet, MapBottomSheetProps } from './MapBottomSheet';
-import { DonationMarkers } from './markers/DonationMarkers';
-import { RequestMarkers } from './markers/RequestMarkers';
+import { MapBottomSheetProps } from './MapBottomSheet';
+import { DonationMarkerPressEvent, DonationMarkers } from './markers/DonationMarkers';
+import { RequestMarkerPressEvent, RequestMarkers } from './markers/RequestMarkers';
 import { UserMarker } from './markers/UserMarker';
 
-export function MapView() {
+interface MapViewProps
+  extends Pick<MapBottomSheetProps, 'requestQueryResult' | 'donationQueryResult'> {
+  onSelectionChange?: (value: MapBottomSheetProps['value']) => void;
+  mapRef: React.RefObject<RNMapView | null>;
+}
+
+export function MapView({
+  onSelectionChange: setSelectedItem,
+  donationQueryResult: donationRes,
+  requestQueryResult: requestRes,
+  mapRef,
+}: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
 
-  const mapRef = useRef<RNMapView>(null);
   const initMapRef = useRef(false);
-
-  const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
 
   const [followUser, setFollowUser] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -51,6 +58,16 @@ export function MapView() {
     }
     return undefined;
   }, [location]);
+
+  if (error) {
+    const errorParams: ErrorSearchParams = {
+      message: error.message,
+    };
+    router.replace({
+      pathname: '/error',
+      params: errorParams,
+    });
+  }
 
   const [camera, setCamera] = useState<Camera>({
     zoom: 16,
@@ -67,25 +84,7 @@ export function MapView() {
     [camera, coords]
   );
 
-  const populate: Populate = {
-    users: { profile: true },
-    addresses: { coordinates: true, displayName: true },
-    'delivery-preferences': { address: true, availableDays: true, preferredMode: true },
-  };
-
-  const donationRes = useFetchBySlug(true, {
-    collection: 'donations',
-    where: { status: { equals: 'AVAILABLE' } },
-    populate,
-  });
-
   const { data: donations } = donationRes;
-
-  const requestRes = useFetchBySlug(true, {
-    collection: 'requests',
-    where: { status: { equals: 'PENDING' } },
-    populate,
-  });
 
   const { data: requests } = requestRes;
 
@@ -123,28 +122,7 @@ export function MapView() {
         }, 500); // Ensure the camera is set before marking the map as ready
       }
     }
-  }, [camera, coords, donationRes.isSuccess, requestRes.isSuccess]);
-
-  function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
-    const { data } = value;
-    let coord: LatLng | undefined;
-
-    if ('donor' in data || 'requester' in data) {
-      const preference = data.deliveryDetails[0] as DeliveryPreference | undefined;
-      const point = (preference?.address as Address)?.coordinates;
-      if (point && point.length === 2) {
-        coord = { latitude: point[0], longitude: point[1] };
-      }
-    }
-
-    if (coord && mapRef.current) {
-      mapRef.current.animateCamera({
-        ...camera,
-        center: { latitude: coord.latitude || 0, longitude: coord.longitude || 0 },
-      });
-    }
-    setSelectedItem(value);
-  }
+  }, [camera, coords, donationRes.isSuccess, requestRes.isSuccess, mapRef]);
 
   function handleCompassPress() {
     if (mapRef.current) {
@@ -179,18 +157,18 @@ export function MapView() {
     initMapRef.current = true;
   }
 
-  if (error) {
-    const errorParams: ErrorSearchParams = {
-      message: error.message,
-    };
-    router.replace({
-      pathname: '/error',
-      params: errorParams,
-    });
+  function handleDonationMarkerPress(event: DonationMarkerPressEvent) {
+    const { data } = event;
+    setSelectedItem?.({ data, slug: 'donations' });
+  }
+
+  function handleRequestMarkerPress(event: RequestMarkerPressEvent) {
+    const { data } = event;
+    setSelectedItem?.({ data, slug: 'requests' });
   }
 
   return (
-    <Box style={{ flex: 1, marginBottom: insets.bottom }}>
+    <Box style={{ flex: 1 }}>
       <AnimatedMapView
         ref={mapRef}
         initialCamera={camera}
@@ -201,7 +179,7 @@ export function MapView() {
         showsUserLocation={false}
         showsCompass={false}
         toolbarEnabled={false}
-        onPress={() => setSelectedItem(undefined)}
+        onPress={() => setSelectedItem?.(undefined)}
         onRegionChange={handleRegionChange}
         onMapReady={handleMapReady}
       >
@@ -210,11 +188,19 @@ export function MapView() {
         )}
 
         {donations?.map((donation, i) => (
-          <DonationMarkers key={`${donation.id}-${i}`} data={donation} />
+          <DonationMarkers
+            key={`${donation.id}-${i}`}
+            data={donation}
+            onPress={handleDonationMarkerPress}
+          />
         ))}
 
         {requests?.map((request, i) => (
-          <RequestMarkers key={`${request.id}-${i}`} data={request} />
+          <RequestMarkers
+            key={`${request.id}-${i}`}
+            data={request}
+            onPress={handleRequestMarkerPress}
+          />
         ))}
       </AnimatedMapView>
 
@@ -263,13 +249,6 @@ export function MapView() {
           </Input>
         </Box>
       </VStack>
-
-      <MapBottomSheet
-        value={selectedItem}
-        onChange={handleSelectionChange}
-        donationQueryResult={donationRes}
-        requestQueryResult={requestRes}
-      />
     </Box>
   );
 }
