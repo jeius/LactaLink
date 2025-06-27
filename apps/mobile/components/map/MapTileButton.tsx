@@ -114,7 +114,14 @@ export function MapTileButton({
           showsIndoorLevelPicker={false}
           pointerEvents="none"
         >
-          <MapMarker ref={markerRef} coordinate={coordinates} tappable={false} pointerEvents="none">
+          <MapMarker
+            key={coordinates.latitude + coordinates.longitude}
+            identifier={`marker-${coordinates.latitude + coordinates.longitude}`}
+            ref={markerRef}
+            coordinate={coordinates}
+            tappable={false}
+            pointerEvents="none"
+          >
             <DefaultMarker size="sm" />
           </MapMarker>
         </MapView>
@@ -147,7 +154,11 @@ export function MapTileButton({
               onRegionChangeComplete={handleRegionChangeComplete}
             />
 
-            <Text size="md" className="font-JakartaMedium absolute inset-x-0 top-0 text-center">
+            <Text
+              size="md"
+              pointerEvents="none"
+              className="font-JakartaMedium absolute inset-x-0 top-0 text-center"
+            >
               Pan the map to select a location
             </Text>
 

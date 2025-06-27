@@ -2,7 +2,6 @@ import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
 import { Avatar as AvatarType, Donation, Image as ImageType, Individual } from '@lactalink/types';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
-import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '../ui/avatar';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
@@ -12,6 +11,7 @@ import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
 import { BLUR_HASH } from '@/lib/constants';
+import Avatar from '../Avatar';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Donation;
@@ -34,7 +34,7 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
   return (
     <AnimatedPressable {...props}>
       <Card className="p-0">
-        <VStack space="md">
+        <VStack>
           <Box className="bg-primary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
               {milkSampleUrl ? (
@@ -89,16 +89,7 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
           </Box>
 
           <HStack space="sm" className="items-center p-2">
-            <Avatar size="sm">
-              <AvatarFallbackText>{donorName}</AvatarFallbackText>
-              {donorAvatar?.thumbnailURL && (
-                <AvatarImage
-                  alt={donorAvatar?.alt || 'Avatar'}
-                  source={{ uri: donorAvatar?.thumbnailURL }}
-                />
-              )}
-              <AvatarBadge />
-            </Avatar>
+            <Avatar size="sm" details={{ avatar: donorAvatar, name: donorName }} />
             <Text size="xs" className="flex-1 flex-wrap">
               {donorName}
             </Text>

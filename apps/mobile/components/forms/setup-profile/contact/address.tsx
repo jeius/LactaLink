@@ -24,15 +24,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { MMKV_KEYS } from '@/lib/constants';
 import { setupProfileStorage } from '@/lib/localStorage';
-import { Dimensions, ListRenderItem } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { Dimensions } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
 
 const storageKey = MMKV_KEYS.SETUP_PROFILE.ADDRESS_COUNT;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 
 export default function Addresses() {
-  const flatListRef = useRef<FlatList<AddressSchema & { id: string }>>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const { setValue, getValues, watch, control } = useFormContext<SetupProfileSchema>();
   const { fields, append, remove } = useFieldArray({ control, name: 'addresses' });
 
@@ -67,14 +67,14 @@ export default function Addresses() {
     // Scroll to the end of the list after adding a new item
     // Delaying the scroll to ensure the new item is rendered
     setTimeout(() => {
-      flatListRef.current?.scrollToIndex({ animated: true, index: fields.length });
+      scrollRef.current?.scrollToEnd({ animated: true });
     }, 200);
   }
 
   const handleRemove = useCallback(
     (index: number) => {
       if (fields.length < 2) return;
-      flatListRef.current?.scrollToIndex({ animated: true, index: Math.max(0, index - 1) });
+      scrollRef.current?.scrollTo({ animated: true, x: DEVICE_WIDTH });
       // Delay the removal to allow the scroll animation to complete
       // This is a workaround to avoid the list jumping back to the first item
       setTimeout(() => {
@@ -96,19 +96,6 @@ export default function Addresses() {
     [addresses, getValues, setValue]
   );
 
-  const renderItem: ListRenderItem<AddressSchema> = useCallback(
-    ({ index }) => (
-      <RenderCard
-        addresses={addresses}
-        index={index}
-        onRemove={handleRemove}
-        onSetDefault={handleSetDefault}
-        disableRemove={addresses.length < 2}
-      />
-    ),
-    [addresses, handleRemove, handleSetDefault]
-  );
-
   return (
     <VStack>
       <Text size="lg" className="font-JakartaMedium mx-5">
@@ -120,19 +107,18 @@ export default function Addresses() {
       </Box>
 
       <VStack>
-        <FlatList
-          data={fields}
-          ref={flatListRef}
-          horizontal
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingRight: 20 }}
-          getItemLayout={(_, index) => ({
-            length: DEVICE_WIDTH - 40, // Width of each item
-            offset: (DEVICE_WIDTH - 40 + 20) * index, // Item width + marginLeft (20)
-            index,
-          })}
-        />
+        <ScrollView ref={scrollRef} horizontal contentContainerStyle={{ paddingRight: 20 }}>
+          {fields.map((field, index) => (
+            <RenderCard
+              key={field.id}
+              addresses={addresses}
+              index={index}
+              onRemove={handleRemove}
+              onSetDefault={handleSetDefault}
+              disableRemove={addresses.length < 2}
+            />
+          ))}
+        </ScrollView>
 
         <Button variant="link" action="positive" className="mx-auto" onPress={handleAdd}>
           <ButtonIcon size="md" as={PlusIcon} />
@@ -279,7 +265,7 @@ function RenderCard({
             <MapTileButton coordinates={coordinates} onLocationPin={handleLocationPin} />
           )}
           {!isLoading && (
-            <Box className="absolute inset-0 items-center justify-center">
+            <Box pointerEvents="none" className="absolute inset-0 items-center justify-center">
               <Text className="font-JakartaMedium">Tap to pin the location.</Text>
             </Box>
           )}

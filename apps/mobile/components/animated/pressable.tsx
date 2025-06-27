@@ -9,9 +9,9 @@ import Animated, {
   WithSpringConfig,
 } from 'react-native-reanimated';
 
-type AnimatedPressableProps = PressableProps & {
+export interface AnimatedPressableProps extends PressableProps {
   containerStyle?: StyleProp<ViewStyle>;
-};
+}
 
 export function AnimatedPressable({ children, containerStyle, ...props }: AnimatedPressableProps) {
   const scale = useSharedValue(1);

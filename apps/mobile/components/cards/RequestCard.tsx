@@ -3,7 +3,6 @@ import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@
 import { formatDate } from '@lactalink/utilities';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
-import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '../ui/avatar';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
@@ -13,6 +12,7 @@ import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
 import { BLUR_HASH } from '@/lib/constants';
+import Avatar from '../Avatar';
 
 const priorityLevelColors: Record<keyof typeof PRIORITY_LEVELS, string> = {
   LOW: 'bg-success-400',
@@ -44,7 +44,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
   return (
     <AnimatedPressable {...props}>
       <Card className="p-0">
-        <VStack space="md">
+        <VStack>
           <Box className="bg-tertiary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
               {imageUrl ? (
@@ -106,16 +106,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
           </Box>
 
           <HStack space="sm" className="items-center p-2">
-            <Avatar size="sm">
-              <AvatarFallbackText>{name}</AvatarFallbackText>
-              {userAvatar?.thumbnailURL && (
-                <AvatarImage
-                  alt={userAvatar?.alt || 'Avatar'}
-                  source={{ uri: userAvatar?.thumbnailURL }}
-                />
-              )}
-              <AvatarBadge />
-            </Avatar>
+            <Avatar size="sm" details={{ avatar: userAvatar, name }} />
             <Text size="xs" className="flex-1 flex-wrap">
               {name}
             </Text>

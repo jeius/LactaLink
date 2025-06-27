@@ -8,7 +8,7 @@ export async function createAddresses(addresses: AddressSchema[]): Promise<Addre
       const { coordinates: { latitude, longitude } = {}, ...rest } = data;
 
       const coordinates: [number, number] | undefined =
-        latitude && longitude ? [longitude, latitude] : undefined;
+        latitude && longitude ? [latitude, longitude] : undefined;
 
       return client.create({
         collection: 'addresses',

@@ -4,27 +4,17 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
-import {
-  DonationRequestSlug,
-  DonationStepsParams,
-  RequestStepsParams,
-} from '@/lib/types/donationRequest';
+import { CreateDonationRequestParams, DonationRequestSlug } from '@/lib/types/donationRequest';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { FormProvider, UseFormReturn } from 'react-hook-form';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
-type SearchParams = DonationStepsParams &
-  RequestStepsParams & {
-    slug: DonationRequestSlug;
-  };
+type SearchParams = CreateDonationRequestParams;
 
 export default function Layout() {
   const { slug, recipientId, requestedDonorId } = useLocalSearchParams<SearchParams>();
-
-  console.log('recipientId:', recipientId);
-  console.log('requestedDonorId:', requestedDonorId);
 
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';

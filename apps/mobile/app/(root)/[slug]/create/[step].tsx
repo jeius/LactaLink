@@ -9,24 +9,19 @@ import { VStack } from '@/components/ui/vstack';
 
 import { usePagination } from '@/hooks/forms/usePagination';
 import { uploadImage } from '@/lib/api/file';
+import { upsertDeliveryPreferences } from '@/lib/api/upsert';
 
 import { DONATION_REQUEST_DETAILS, DONATION_REQUEST_STEPS } from '@/lib/constants/donationRequest';
 import {
+  CreateDonationRequestParams,
   DonationRequestFields,
   DonationRequestSlug,
   DonationRequestSteps,
-  DonationStepsParams,
-  RequestStepsParams,
 } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { ApiClient, getApiClient } from '@lactalink/api';
-import {
-  CreateDonationSchema,
-  CreateRequestSchema,
-  DeliverySchema,
-  MilkBag,
-} from '@lactalink/types';
+import { getApiClient } from '@lactalink/api';
+import { CreateDonationSchema, CreateRequestSchema, MilkBag } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -37,10 +32,7 @@ import { toast } from 'sonner-native';
 
 type Block = Record<DonationRequestSteps, FC>;
 
-type SearchParams = DonationStepsParams &
-  RequestStepsParams & {
-    slug: DonationRequestSlug;
-  };
+type SearchParams = CreateDonationRequestParams;
 
 type FormData = CreateDonationSchema | CreateRequestSchema;
 
@@ -152,7 +144,7 @@ async function createDonation(data: CreateDonationSchema) {
   const milkSampleDocs =
     milkSample && (await Promise.all(milkSample.map((sample) => uploadImage('images', sample))));
 
-  const deliveryDetailDocs = await upsertDeliveryPreferences(deliveryDetails, apiClient);
+  const deliveryDetailDocs = await upsertDeliveryPreferences(deliveryDetails);
 
   const donationDoc = await apiClient.create({
     collection: 'donations',
@@ -172,35 +164,39 @@ async function createDonation(data: CreateDonationSchema) {
   // If provided, get the existing requestDoc of the recipient and update it with the new donation
 
   return {
-    data: { donationDoc, milkBagDocs, deliveryDetailDocs },
     message: 'Donation created successfully!',
   };
 }
 
 async function createRequest(data: CreateRequestSchema) {
   const apiClient = getApiClient();
-  console.log('Creating request with data:', data);
-  // Todo: Implement request creation logic
+
+  const { deliveryDetails, details, requester, volumeNeeded, requestedDonor: _ } = data;
+
+  const { image, ...restOfDetails } = details;
+
+  const imageDoc = image && (await uploadImage('images', image));
+
+  const deliveryDetailDocs = await upsertDeliveryPreferences(deliveryDetails);
+
+  const requestDoc = await apiClient.create({
+    collection: 'requests',
+    data: {
+      requester,
+      status: 'PENDING',
+      details: {
+        ...restOfDetails,
+        image: imageDoc && extractID(imageDoc),
+      },
+      deliveryDetails: extractID(deliveryDetailDocs),
+      volumeNeeded,
+    },
+  });
+
+  // Todo: Handle case where requestedDonor is provided
+  // If provided, get the existing donationDoc of the requestedDonor and update it with the new request
+
   return {
-    data: {},
     message: 'Request created successfully!',
   };
-}
-
-async function upsertDeliveryPreferences(deliveryDetails: DeliverySchema[], apiClient: ApiClient) {
-  return await Promise.all(
-    deliveryDetails.map((detail) => {
-      const { id, ...rest } = detail;
-      if (id) {
-        return apiClient.updateByID({
-          id,
-          collection: 'delivery-preferences',
-          data: rest,
-          depth: 0,
-        });
-      }
-
-      return apiClient.create({ collection: 'delivery-preferences', data: rest, depth: 0 });
-    })
-  );
 }

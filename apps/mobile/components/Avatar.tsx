@@ -7,7 +7,7 @@ import { Skeleton } from './ui/skeleton';
 type AvatarProps = ComponentProps<typeof UIAvatar.Avatar> & {
   showBadge?: boolean;
   status?: ComponentProps<typeof UIAvatar.AvatarBadge>['status'];
-  details?: { avatar: AvatarType; name: string };
+  details?: { avatar: AvatarType | null; name: string };
 };
 
 export default function Avatar({
@@ -18,27 +18,23 @@ export default function Avatar({
 }: AvatarProps) {
   const { profile, isLoading } = useAuth();
 
-  const avatarName =
-    details?.name ||
-    (profile && ('name' in profile ? profile.name : profile.displayName)) ||
-    'User';
+  const avatar: AvatarType | null =
+    (details ? details.avatar : (profile?.avatar as AvatarType | undefined)) || null;
 
-  let avatarUrl: string | null =
-    details?.avatar.url || (profile?.avatar as AvatarType | undefined)?.url || null;
+  const avatarName =
+    (details
+      ? details.name
+      : profile && ('name' in profile ? profile.name : profile.displayName)) || 'User';
+
+  let avatarUrl: string | null = avatar?.url || null;
 
   switch (props.size) {
     case 'xs':
-      avatarUrl =
-        details?.avatar.sizes?.icon?.url ||
-        (profile?.avatar as AvatarType | undefined)?.sizes?.icon?.url ||
-        null;
+      avatarUrl = avatar?.sizes?.icon?.url || avatarUrl;
       break;
     case 'sm':
     case 'md':
-      avatarUrl =
-        details?.avatar.sizes?.thumbnail?.url ||
-        (profile?.avatar as AvatarType | undefined)?.sizes?.thumbnail?.url ||
-        avatarUrl;
+      avatarUrl = avatar?.sizes?.thumbnail?.url || avatarUrl;
       break;
     default:
       break;

@@ -184,10 +184,12 @@ export function RequestReview() {
                     {isLoading ? (
                       <Skeleton variant="rounded" speed={4} className="h-5" />
                     ) : (
-                      <HStack space="xs" className="items-center">
-                        <Icon as={MapPinIcon} size="sm" className="text-primary-500" />
-                        <Text className="font-JakartaMedium">{address}</Text>
-                      </HStack>
+                      <Text>
+                        <HStack space="xs">
+                          <Icon as={MapPinIcon} size="sm" className="text-primary-500 mt-1" />
+                          <Text className="font-JakartaMedium">{address}</Text>
+                        </HStack>
+                      </Text>
                     )}
                   </VStack>
                 </VStack>
