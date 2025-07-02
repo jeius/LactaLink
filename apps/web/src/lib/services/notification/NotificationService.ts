@@ -300,7 +300,6 @@ export class NotificationService {
     }
 
     this.payload.logger.info(
-      fullDoc,
       `Resolved full document for ${operation} operation on ${this.collection.slug}`
     );
     return fullDoc as Collection;

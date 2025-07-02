@@ -1,4 +1,5 @@
 import { MilkBag } from '@lactalink/types';
+import { extractID } from '@lactalink/utilities';
 import { CollectionBeforeReadHook } from 'payload';
 
 export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
@@ -28,6 +29,15 @@ export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
       data: { status: 'EXPIRED' },
       req,
     });
+
+    for (const donation of doc.donation?.docs || []) {
+      await req.payload.update({
+        collection: 'donations',
+        id: extractID(donation),
+        data: { status: 'EXPIRED' },
+        req,
+      });
+    }
   }
 
   return doc;
