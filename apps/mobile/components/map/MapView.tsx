@@ -97,7 +97,6 @@ export function MapView({
       }
 
       if (newCamera) {
-        console.log('New Camera Heading:', newCamera.heading);
         setCamera(newCamera);
       }
     },
@@ -179,7 +178,6 @@ export function MapView({
         showsUserLocation={false}
         showsCompass={false}
         toolbarEnabled={false}
-        onPress={() => setSelectedItem?.(undefined)}
         onRegionChange={handleRegionChange}
         onMapReady={handleMapReady}
       >

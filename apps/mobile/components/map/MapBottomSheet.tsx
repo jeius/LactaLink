@@ -6,6 +6,7 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
+import { ChevronLeftIcon } from 'lucide-react-native';
 import { Dimensions } from 'react-native';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import InfoCard from '../cards/InfoCard';
@@ -19,6 +20,7 @@ import {
   BottomSheetScrollView,
 } from '../ui/bottom-sheet';
 import { Box } from '../ui/box';
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
@@ -40,7 +42,7 @@ type Value = {
 
 export interface MapBottomSheetProps {
   value?: Value | null;
-  onChange?: (id: Value) => void;
+  onChange?: (id?: Value) => void;
   requestQueryResult: UseQueryResult<Request[] | null, Error>;
   donationQueryResult: UseQueryResult<Donation[] | null, Error>;
 }
@@ -61,7 +63,7 @@ export function MapBottomSheet({
   console.log('MapBottomSheet Rendered');
 
   const handleChanged = useCallback(
-    (val: Value) => {
+    (val?: Value) => {
       onChange?.(val);
     },
     [onChange]
@@ -69,7 +71,7 @@ export function MapBottomSheet({
 
   const snapPoints = hasSelectedItem
     ? [DEFAULT_SNAP_POINT, '40%']
-    : [DEFAULT_SNAP_POINT, '40%', '80%'];
+    : [DEFAULT_SNAP_POINT, 320, '82%'];
 
   const sections = useMemo((): Section[] => {
     return [
@@ -165,7 +167,15 @@ export function MapBottomSheet({
           contentContainerClassName="gap-2 py-3"
           onContentSizeChange={() => bottomSheetRef.current?.snapToIndex(1)}
         >
-          {selected && <InfoCard {...selected} />}
+          {selected && (
+            <VStack className="items-start px-5">
+              <Button variant="link" onPress={() => handleChanged(undefined)}>
+                <ButtonIcon as={ChevronLeftIcon} />
+                <ButtonText>Back</ButtonText>
+              </Button>
+              <InfoCard {...selected} />
+            </VStack>
+          )}
 
           {!selected &&
             sections.map((section, index) => {

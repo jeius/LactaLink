@@ -1,9 +1,12 @@
 import { MapView } from '@/components/map/MapView';
 import { Box } from '@/components/ui/box';
 
+import { DONATION_STATUS } from '@/lib/constants';
+
 import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomSheet';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { Address, DeliveryPreference, Populate } from '@lactalink/types';
+
 import React, { useRef, useState } from 'react';
 import RNMapView, { LatLng } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,11 +24,9 @@ export default function MapPage() {
 
   const donationRes = useFetchBySlug(true, {
     collection: 'donations',
-    where: { status: { equals: 'AVAILABLE' } },
+    where: { status: { in: [DONATION_STATUS.available.value, DONATION_STATUS.partially.value] } },
     populate,
   });
-
-  const { data: donations } = donationRes;
 
   const requestRes = useFetchBySlug(true, {
     collection: 'requests',
@@ -33,13 +34,11 @@ export default function MapPage() {
     populate,
   });
 
-  const { data: requests } = requestRes;
-
-  async function handleSelectionChange(value: NonNullable<MapBottomSheetProps['value']>) {
-    const { data } = value;
+  async function handleSelectionChange(value?: NonNullable<MapBottomSheetProps['value']>) {
+    const { data } = value || {};
     let coord: LatLng | undefined;
 
-    if ('donor' in data || 'requester' in data) {
+    if (data && ('donor' in data || 'requester' in data)) {
       const preference = data.deliveryDetails[0] as DeliveryPreference | undefined;
       const point = (preference?.address as Address)?.coordinates;
       if (point && point.length === 2) {
@@ -62,7 +61,7 @@ export default function MapPage() {
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
       <MapView
         mapRef={mapRef}
-        onSelectionChange={(value) => setSelectedItem(value)}
+        onSelectionChange={setSelectedItem}
         donationQueryResult={donationRes}
         requestQueryResult={requestRes}
       />

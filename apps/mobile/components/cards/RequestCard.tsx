@@ -1,6 +1,13 @@
 import { PRIORITY_LEVELS } from '@/lib/constants';
-import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
-import { formatDate } from '@lactalink/utilities';
+import {
+  Address,
+  Avatar as AvatarType,
+  DeliveryPreference,
+  Image as ImageType,
+  Individual,
+  Request,
+} from '@lactalink/types';
+import { convertDistance, formatDate, getDistance } from '@lactalink/utilities';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
@@ -11,14 +18,25 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
+import { getIconAsset } from '@/lib/stores';
+import { Asset } from 'expo-asset';
+import { MapPinIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
+import { Icon } from '../ui/icon';
 
 const priorityLevelColors: Record<keyof typeof PRIORITY_LEVELS, string> = {
   LOW: 'bg-success-400',
   MEDIUM: 'bg-secondary-400',
   HIGH: 'bg-warning-400',
   CRITICAL: 'bg-error-400',
+};
+
+const iconAssets: Record<DeliveryPreference['preferredMode'][number], Asset> = {
+  DELIVERY: getIconAsset('scooterWithBasket'),
+  PICKUP: getIconAsset('pickUp'),
+  MEETUP: getIconAsset('meetUp'),
 };
 
 interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
@@ -30,7 +48,10 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
     details: { urgency, image, neededAt },
     volumeNeeded,
     requester,
+    deliveryDetails,
   } = data;
+
+  const { location } = useCurrentLocation();
 
   const name =
     (requester as Individual)?.displayName ||
@@ -40,6 +61,20 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
 
   const requestImage = image as ImageType | null;
   const imageUrl = requestImage?.sizes?.medium?.url || requestImage?.url || null;
+
+  const preference = deliveryDetails as DeliveryPreference[];
+  const preferredMode = preference?.[0]?.preferredMode;
+  const [latitude, longitude] = (preference?.[0]?.address as Address)?.coordinates || [0, 0];
+
+  const distance =
+    location &&
+    convertDistance(
+      getDistance(
+        { latitude: location.coords.latitude, longitude: location.coords.longitude },
+        { latitude, longitude }
+      ),
+      'km'
+    );
 
   return (
     <AnimatedPressable {...props}>
@@ -67,47 +102,59 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
             >
               <HStack>
                 <VStack
-                  className={`bg-tertiary-300 px-2 py-1`}
+                  className={`bg-tertiary-300 px-3 py-1`}
                   style={{ borderBottomRightRadius: 12 }}
                 >
                   <Text size="2xs" className="text-tertiary-900">
-                    Needed At
+                    Requesting
                   </Text>
-                  <Text size="sm" className={`font-JakartaMedium text-tertiary-900`}>
-                    {formatDate(neededAt)}
+                  <Text size="xl" className="font-JakartaSemiBold text-tertiary-900">
+                    {volumeNeeded}{' '}
+                    <Text size="xs" className="font-JakartaMedium text-tertiary-900">
+                      mL
+                    </Text>
                   </Text>
                 </VStack>
               </HStack>
 
-              <VStack className="items-center">
-                <Box
-                  className={`bg-tertiary-300 flex-col items-center rounded-lg px-3 py-2 opacity-90`}
-                  style={{ minWidth: 90 }}
-                >
-                  <Text size="xs" className="text-tertiary-900">
-                    Requesting
+              <VStack className={`${priorityLevelColors[urgency]} px-2 py-1 opacity-90`}>
+                <Text size="xs" className="font-JakartaLight text-white">
+                  Urgency:{' '}
+                  <Text size="xs" className="font-JakartaMedium text-white">
+                    {PRIORITY_LEVELS[urgency].label}
                   </Text>
-                  <Text size="2xl" className="font-JakartaSemiBold text-tertiary-900">
-                    {volumeNeeded}{' '}
-                    <Text size="sm" className="font-JakartaMedium text-tertiary-900">
-                      mL
-                    </Text>
+                </Text>
+                <Text size="xs" className="font-JakartaLight text-white">
+                  Needed At:{' '}
+                  <Text size="xs" className="font-JakartaMedium text-white">
+                    {formatDate(neededAt)}
                   </Text>
-                </Box>
+                </Text>
               </VStack>
-
-              <Text
-                size="xs"
-                className={`${priorityLevelColors[urgency]} font-JakartaMedium text-background-light px-2 py-1 opacity-90`}
-              >
-                Urgency: {PRIORITY_LEVELS[urgency].label}
-              </Text>
             </VStack>
           </Box>
 
+          <HStack space="sm" className="items-center justify-between p-2 pb-1">
+            <HStack space="xs">
+              {preferredMode?.map((mode, i) => (
+                <Image
+                  key={i}
+                  source={iconAssets[mode]}
+                  alt={`${mode} icon`}
+                  style={{ width: 12, height: 12 }}
+                />
+              ))}
+            </HStack>
+
+            <HStack space="xs">
+              <Icon as={MapPinIcon} size="xs" className="text-primary-500" />
+              <Text size="xs">{distance?.toFixed(2)} km</Text>
+            </HStack>
+          </HStack>
+
           <HStack space="sm" className="items-center p-2">
             <Avatar size="sm" details={{ avatar: userAvatar, name }} />
-            <Text size="xs" className="flex-1 flex-wrap">
+            <Text size="xs" className="flex-1">
               {name}
             </Text>
           </HStack>
@@ -120,7 +167,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
 export function RequestSkeleton() {
   return (
     <Card className="p-0">
-      <VStack space="md">
+      <VStack>
         <Box className="bg-background-muted relative aspect-square h-48">
           <Box className="h-full w-full overflow-hidden">
             <Skeleton startColor="bg-background-300" speed={4} />
@@ -134,38 +181,46 @@ export function RequestSkeleton() {
               <Skeleton
                 speed={2}
                 startColor="bg-tertiary-50"
-                className="h-6 w-16"
+                className="h-12 w-20"
                 style={{ borderBottomRightRadius: 12 }}
               />
             </HStack>
 
-            <VStack className="items-center">
-              <Skeleton
-                speed={2}
-                startColor="bg-tertiary-50"
-                className="h-12 w-20"
-                variant="rounded"
-              />
-            </VStack>
-
-            <Skeleton speed={2} startColor="bg-tertiary-50" className="h-6" />
+            <Skeleton speed={2} startColor="bg-tertiary-50" className="h-12" />
           </VStack>
         </Box>
 
-        <HStack space="sm" className="items-center p-2">
-          <Skeleton
-            speed={4}
-            startColor="bg-background-300"
-            className="h-8 w-8"
-            variant="circular"
-          />
-          <Skeleton
-            speed={4}
-            startColor="bg-background-300"
-            className="h-6 w-24"
-            variant="rounded"
-          />
-        </HStack>
+        <VStack space="sm" className="p-2">
+          <HStack space="sm" className="justify-between">
+            <Skeleton
+              speed={4}
+              startColor="bg-background-300"
+              className="h-6 w-14"
+              variant="rounded"
+            />
+            <Skeleton
+              speed={4}
+              startColor="bg-background-300"
+              className="h-6 w-12"
+              variant="rounded"
+            />
+          </HStack>
+
+          <HStack space="sm" className="items-center">
+            <Skeleton
+              speed={4}
+              startColor="bg-background-300"
+              className="h-8 w-8"
+              variant="circular"
+            />
+            <Skeleton
+              speed={4}
+              startColor="bg-background-300"
+              className="h-6 w-24"
+              variant="rounded"
+            />
+          </HStack>
+        </VStack>
       </VStack>
     </Card>
   );

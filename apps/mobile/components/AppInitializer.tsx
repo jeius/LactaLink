@@ -68,7 +68,7 @@ export function AppInitializer({ children }: Props) {
     console.warn(error);
     return (
       <SafeArea className="items-center justify-center">
-        <VStack space="lg">
+        <VStack space="lg" className="p-5">
           <VStack space="sm" className="items-center justify-center">
             <Text size="lg" className="font-JakartaSemiBold">
               {error.message}
