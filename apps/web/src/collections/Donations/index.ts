@@ -1,6 +1,6 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_GROUP, DONATION_STATUS } from '@/lib/constants';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/types/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
@@ -77,15 +77,8 @@ export const Donations: CollectionConfig<'donations'> = {
           label: 'Donation Status',
           type: 'select',
           required: true,
-          defaultValue: 'AVAILABLE',
-          options: [
-            { label: 'Available', value: 'AVAILABLE' },
-            { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
-            { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
-            { label: 'Completed', value: 'COMPLETED' },
-            { label: 'Expired', value: 'EXPIRED' },
-            { label: 'Cancelled', value: 'CANCELLED' },
-          ],
+          defaultValue: DONATION_STATUS.available.value,
+          options: Object.values(DONATION_STATUS),
         },
       ],
     },

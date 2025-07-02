@@ -72,3 +72,12 @@ export const TIME_SLOTS = {
   '16:00-18:00': { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
   '18:00-20:00': { label: '6:00 PM - 8:00 PM', value: '18:00-20:00' },
 };
+
+export const DONATION_STATUS = {
+  available: { label: 'Available', value: 'AVAILABLE' },
+  partially: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
+  fully: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
+  completed: { label: 'Completed', value: 'COMPLETED' },
+  expired: { label: 'Expired', value: 'EXPIRED' },
+  cancelled: { label: 'Cancelled', value: 'CANCELLED' },
+};
