@@ -1,3 +1,5 @@
+import { DAYS } from '@lactalink/types';
+
 export * from './formatCamelCase';
 export * from './formatKebabCase';
 
@@ -95,4 +97,11 @@ export function isStartsWith<T extends string | string[] | Record<string, string
         : Object.values(prefixes);
 
   return baseList.some((base) => value.startsWith(base));
+}
+
+export function formatDaysToText(days: (keyof typeof DAYS)[]): string {
+  if (days.length === 0) return 'No days specified';
+  if (days.length === 7) return 'Any day';
+
+  return days.map((day) => DAYS[day].label).join(',');
 }
