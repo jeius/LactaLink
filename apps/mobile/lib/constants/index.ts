@@ -8,6 +8,8 @@ import {
   VERCEL_AUTOMATION_BYPASS_SECRET,
 } from '@env';
 
+import { PRIORITY_LEVELS } from '@lactalink/types';
+
 export * from './assets';
 export * from './queryKeys';
 export * from './storageKeys';
@@ -40,4 +42,11 @@ export const BLUR_HASH =
 export const PHILIPPINES_COORDINATES = {
   latitude: 12.8797,
   longitude: 121.774,
+};
+
+export const PRIORITY_LEVEL_COLORS: Record<keyof typeof PRIORITY_LEVELS, string> = {
+  LOW: 'bg-success-400',
+  MEDIUM: 'bg-secondary-400',
+  HIGH: 'bg-warning-400',
+  CRITICAL: 'bg-error-400',
 };

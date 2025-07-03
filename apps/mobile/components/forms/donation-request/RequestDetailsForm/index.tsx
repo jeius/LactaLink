@@ -29,7 +29,7 @@ export function RequestDetailsForm() {
           name="details.storagePreference"
           label="Select the type of milk you are requesting."
           fieldType="button-group"
-          options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
+          options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'Any' }]}
         />
 
         <FormField

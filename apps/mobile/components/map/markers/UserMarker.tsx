@@ -29,9 +29,15 @@ interface UserMarkerProps {
   mapRef?: React.RefObject<MapView | null>;
   followUser?: boolean;
   coordinates?: LocationObjectCoords;
+  hideHeading?: boolean;
 }
 
-export function UserMarker({ mapRef, followUser, coordinates: coords }: UserMarkerProps) {
+export function UserMarker({
+  mapRef,
+  followUser,
+  coordinates: coords,
+  hideHeading = false,
+}: UserMarkerProps) {
   const { heading } = useMagnetometer({ updateInterval: 'fast' });
 
   const roundedHeading = Math.round(heading / 10) * 10;
@@ -84,11 +90,13 @@ export function UserMarker({ mapRef, followUser, coordinates: coords }: UserMark
     >
       <View style={{ width: 60, height: 60, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ position: 'relative', padding: 4 }}>
-          <View
-            style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${heading - 45}deg` }] }]}
-          >
-            <View style={[headingStyle.arrow]} />
-          </View>
+          {!hideHeading && (
+            <View
+              style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${heading - 45}deg` }] }]}
+            >
+              <View style={[headingStyle.arrow]} />
+            </View>
+          )}
           <Avatar size="sm" className="border-primary-50" />
         </View>
       </View>

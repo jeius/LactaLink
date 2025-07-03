@@ -81,7 +81,7 @@ export function RequestReview() {
           <Text>
             Preferred Storage:{' '}
             <Text className="font-JakartaMedium">
-              {storagePreference === 'EITHER' ? 'Either' : STORAGE_TYPES[storagePreference].label}
+              {storagePreference === 'EITHER' ? 'Any' : STORAGE_TYPES[storagePreference].label}
             </Text>
           </Text>
 
@@ -93,7 +93,7 @@ export function RequestReview() {
           <Text>
             Needed At:{' '}
             <Text className="font-JakartaMedium">
-              {formatDate(neededAt)}-
+              {formatDate(neededAt)},{' '}
               {new Date(neededAt).toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',

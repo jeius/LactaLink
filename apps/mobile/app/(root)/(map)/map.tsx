@@ -71,6 +71,7 @@ export default function MapPage() {
         onChange={handleSelectionChange}
         donationQueryResult={donationRes}
         requestQueryResult={requestRes}
+        mapRef={mapRef}
       />
     </Box>
   );

@@ -1,4 +1,4 @@
-import { PRIORITY_LEVELS } from '@/lib/constants';
+import { PRIORITY_LEVEL_COLORS, PRIORITY_LEVELS } from '@/lib/constants';
 import {
   Address,
   Avatar as AvatarType,
@@ -20,24 +20,10 @@ import { VStack } from '../ui/vstack';
 import { Image } from '@/components/Image';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
-import { getIconAsset } from '@/lib/stores';
-import { Asset } from 'expo-asset';
+import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { MapPinIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { Icon } from '../ui/icon';
-
-const priorityLevelColors: Record<keyof typeof PRIORITY_LEVELS, string> = {
-  LOW: 'bg-success-400',
-  MEDIUM: 'bg-secondary-400',
-  HIGH: 'bg-warning-400',
-  CRITICAL: 'bg-error-400',
-};
-
-const iconAssets: Record<DeliveryPreference['preferredMode'][number], Asset> = {
-  DELIVERY: getIconAsset('scooterWithBasket'),
-  PICKUP: getIconAsset('pickUp'),
-  MEETUP: getIconAsset('meetUp'),
-};
 
 interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Request;
@@ -117,7 +103,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
                 </VStack>
               </HStack>
 
-              <VStack className={`${priorityLevelColors[urgency]} px-2 py-1 opacity-90`}>
+              <VStack className={`${PRIORITY_LEVEL_COLORS[urgency]} px-2 py-1 opacity-90`}>
                 <Text size="xs" className="font-JakartaLight text-white">
                   Urgency:{' '}
                   <Text size="xs" className="font-JakartaMedium text-white">
@@ -139,7 +125,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
               {preferredMode?.map((mode, i) => (
                 <Image
                   key={i}
-                  source={iconAssets[mode]}
+                  source={getDeliveryPreferenceIcon(mode)}
                   alt={`${mode} icon`}
                   style={{ width: 12, height: 12 }}
                 />

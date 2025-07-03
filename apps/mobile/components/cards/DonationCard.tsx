@@ -19,9 +19,8 @@ import { VStack } from '../ui/vstack';
 import { Image } from '@/components/Image';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
-import { getIconAsset } from '@/lib/stores';
+import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { convertDistance, getDistance } from '@lactalink/utilities';
-import { Asset } from 'expo-asset';
 import { MapPinIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { Icon } from '../ui/icon';
@@ -29,12 +28,6 @@ import { Icon } from '../ui/icon';
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Donation;
 }
-
-const iconAssets: Record<DeliveryPreference['preferredMode'][number], Asset> = {
-  DELIVERY: getIconAsset('scooterWithBasket'),
-  PICKUP: getIconAsset('pickUp'),
-  MEETUP: getIconAsset('meetUp'),
-};
 
 export default function DonationCard({ data, ...props }: DonationCardProps) {
   const {
@@ -119,7 +112,7 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
               {preferredMode?.map((mode, i) => (
                 <Image
                   key={i}
-                  source={iconAssets[mode]}
+                  source={getDeliveryPreferenceIcon(mode)}
                   alt={`${mode} icon`}
                   style={{ width: 12, height: 12 }}
                 />

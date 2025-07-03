@@ -8,6 +8,7 @@ import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import { Dimensions } from 'react-native';
+import MapView from 'react-native-maps';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import InfoCard from '../cards/InfoCard';
 import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
@@ -45,6 +46,7 @@ export interface MapBottomSheetProps {
   onChange?: (id?: Value) => void;
   requestQueryResult: UseQueryResult<Request[] | null, Error>;
   donationQueryResult: UseQueryResult<Donation[] | null, Error>;
+  mapRef?: React.RefObject<MapView | null>;
 }
 
 export function MapBottomSheet({
@@ -52,6 +54,7 @@ export function MapBottomSheet({
   onChange,
   donationQueryResult,
   requestQueryResult,
+  mapRef,
 }: MapBottomSheetProps) {
   const bottomSheetRef = useRef<GorhomBottomSheet>(null);
   const [open, setOpen] = useState(true);
@@ -59,8 +62,6 @@ export function MapBottomSheet({
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
   const hasSelectedItem = Boolean(selected);
-
-  console.log('MapBottomSheet Rendered');
 
   const handleChanged = useCallback(
     (val?: Value) => {
@@ -70,7 +71,7 @@ export function MapBottomSheet({
   );
 
   const snapPoints = hasSelectedItem
-    ? [DEFAULT_SNAP_POINT, '40%']
+    ? [DEFAULT_SNAP_POINT, '45%']
     : [DEFAULT_SNAP_POINT, 320, '82%'];
 
   const sections = useMemo((): Section[] => {
@@ -173,7 +174,7 @@ export function MapBottomSheet({
                 <ButtonIcon as={ChevronLeftIcon} />
                 <ButtonText>Back</ButtonText>
               </Button>
-              <InfoCard {...selected} />
+              <InfoCard mapRef={mapRef} {...selected} />
             </VStack>
           )}
 

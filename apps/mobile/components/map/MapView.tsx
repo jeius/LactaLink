@@ -182,7 +182,12 @@ export function MapView({
         onMapReady={handleMapReady}
       >
         {location && (
-          <UserMarker mapRef={mapRef} followUser={followUser} coordinates={location.coords} />
+          <UserMarker
+            hideHeading
+            mapRef={mapRef}
+            followUser={followUser}
+            coordinates={location.coords}
+          />
         )}
 
         {donations?.map((donation, i) => (
