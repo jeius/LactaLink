@@ -19,7 +19,6 @@
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm install && pnpm run build:deps"
   },
   "dependencies": {
-    "@appandflow/react-native-google-autocomplete": "^2.1.0",
     "@expo/html-elements": "^0.4.2",
     "@gluestack-ui/accordion": "^1.0.14",
     "@gluestack-ui/actionsheet": "^0.2.53",
