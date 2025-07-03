@@ -28,8 +28,8 @@ type Params = {
 function getStoredData({ user, recipientId, profile }: Params): CreateDonationSchema | undefined {
   if (!user) return undefined;
 
-  const id = user.id;
-  const storageKey = `${storageKeyPrefix}-${id}`;
+  const userID = user.id;
+  const storageKey = `${storageKeyPrefix}-${userID}`;
   const raw = donationStorage.getString(storageKey);
 
   const storedData: DeepPartial<CreateDonationSchema> | undefined = raw && JSON.parse(raw);

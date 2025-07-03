@@ -13,8 +13,8 @@ export type DonationRequestFields = Record<
 export type DonationRequestSlug = Extract<CollectionSlug, 'donations' | 'requests'>;
 
 export type CreateDonationRequestParams = {
-  slug: DonationRequestSlug;
   step: DonationRequestSteps;
-  recipientId?: string;
-  requestedDonorId?: string;
-};
+} & (
+  | { slug: Extract<CollectionSlug, 'donations'>; recipientId?: string }
+  | { slug: Extract<CollectionSlug, 'requests'>; requestedDonorId?: string }
+);

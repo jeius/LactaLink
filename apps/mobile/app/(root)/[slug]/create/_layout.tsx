@@ -14,7 +14,7 @@ import { StackAnimationTypes } from 'react-native-screens';
 type SearchParams = CreateDonationRequestParams;
 
 export default function Layout() {
-  const { slug, recipientId, requestedDonorId } = useLocalSearchParams<SearchParams>();
+  const searchParams = useLocalSearchParams<SearchParams>();
 
   const isIOS = Platform.OS === 'ios';
   const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
@@ -28,7 +28,7 @@ export default function Layout() {
   } = useCreateDonationForm({
     user,
     profile,
-    recipientId,
+    recipientId: searchParams.slug === 'donations' ? searchParams.recipientId : undefined,
   });
 
   const {
@@ -38,7 +38,7 @@ export default function Layout() {
   } = useCreateRequestForm({
     user,
     profile,
-    requestedDonorId,
+    requestedDonorId: searchParams.slug === 'requests' ? searchParams.requestedDonorId : undefined,
   });
 
   const isFormLoading = {
@@ -51,8 +51,8 @@ export default function Layout() {
     requests: isRequestFormFetching,
   };
 
-  const isLoading = isAuthLoading || isFormLoading[slug];
-  const isFetching = isAuthFetching || isFormFetching[slug];
+  const isLoading = isAuthLoading || isFormLoading[searchParams.slug];
+  const isFetching = isAuthFetching || isFormFetching[searchParams.slug];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form: Record<DonationRequestSlug, UseFormReturn<any>> = {
@@ -69,7 +69,7 @@ export default function Layout() {
   }
 
   return (
-    <FormProvider {...form[slug]}>
+    <FormProvider {...form[searchParams.slug]}>
       <Stack screenOptions={{ headerShown: false, animation }} />
       {isFetching && (
         <Box className="absolute right-3 top-3">

@@ -16,13 +16,13 @@ import { Textarea, TextareaInput } from '../ui/textarea';
 import { VStack } from '../ui/vstack';
 
 const urgencyStyle = tva({
-  base: 'font-JakartaSemiBold rounded-md px-2 py-0.5',
+  base: 'font-JakartaSemiBold rounded-md px-2 py-0.5 text-white',
   variants: {
     urgency: {
-      LOW: 'text-success-0 bg-success-400',
-      MEDIUM: 'text-info-0 bg-info-400',
-      HIGH: 'text-warning-0 bg-warning-400',
-      CRITICAL: 'text-error-0 bg-error-400',
+      LOW: 'bg-success-400',
+      MEDIUM: 'bg-info-400',
+      HIGH: 'bg-warning-400',
+      CRITICAL: 'bg-error-400',
     },
   },
 });
