@@ -53,6 +53,11 @@ export const STORAGE_TYPES = {
   FROZEN: { label: 'Frozen', value: 'FROZEN' },
 } as const;
 
+export const PREFERRED_STORAGE_TYPES = {
+  ...STORAGE_TYPES,
+  EITHER: { label: 'Any', value: 'EITHER' },
+} as const;
+
 export const COLLECTION_MODES = {
   MANUAL: { label: 'Hand Expression', value: 'MANUAL' },
   MANUAL_PUMP: { label: 'Manual Pump', value: 'MANUAL_PUMP' },

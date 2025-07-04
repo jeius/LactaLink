@@ -11,7 +11,7 @@ import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 
 import { COLLECTION_MODES, DAYS, DELIVERY_OPTIONS, STORAGE_TYPES } from '@/lib/constants';
 
-import { CreateDonationSchema } from '@lactalink/types';
+import { DonationSchema } from '@lactalink/types';
 import { formatDate } from '@lactalink/utilities';
 import { DotIcon, MapPinIcon, MilkIcon, TruckIcon } from 'lucide-react-native';
 import { Fragment, useMemo } from 'react';
@@ -19,7 +19,7 @@ import { Fragment, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function DonationReview() {
-  const { getValues } = useFormContext<CreateDonationSchema>();
+  const { getValues } = useFormContext<DonationSchema>();
   const {
     details: { storageType, collectionMode, bags, notes, milkSample },
     deliveryDetails: formDeliveryDetails,

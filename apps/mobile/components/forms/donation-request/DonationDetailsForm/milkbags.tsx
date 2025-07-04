@@ -8,7 +8,7 @@ import { VStack } from '@/components/ui/vstack';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 
-import { CreateDonationSchema } from '@lactalink/types';
+import { DonationSchema } from '@lactalink/types';
 
 import { MilkIcon, PlusCircleIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useRef } from 'react';
@@ -22,7 +22,7 @@ export default function MilkBagsField() {
   const { profile } = useAuth();
   const flatListRef = useRef<FlatList>(null);
 
-  const { append, remove, fields } = useFieldArray<CreateDonationSchema>({ name: 'details.bags' });
+  const { append, remove, fields } = useFieldArray<DonationSchema>({ name: 'details.bags' });
   const disableRemove = fields.length < 2;
 
   function handleAdd() {

@@ -1,20 +1,20 @@
 import { z } from 'zod/v4';
 
+import { deliveryPreferenceSchema } from '../deliveryPreference';
+import { textAreaSchema } from '../textarea';
 import {
-  createDonationSchema,
-  createRequestSchema,
-  deliveryDetailsSchema,
-  deliverySchema,
+  deliveryPreferencesSchema,
   donationDetailsSchema,
+  donationSchema,
   milkBagSchema,
   requestDetailsSchema,
-  textAreaSchema,
+  requestSchema,
 } from './schema';
 
-export type CreateDonationSchema = z.infer<typeof createDonationSchema>;
-export type CreateRequestSchema = z.infer<typeof createRequestSchema>;
-export type DeliverySchema = z.infer<typeof deliverySchema>;
-export type DeliveryDetailsSchema = z.infer<typeof deliveryDetailsSchema>;
+export type DonationSchema = z.infer<typeof donationSchema>;
+export type RequestSchema = z.infer<typeof requestSchema>;
+export type DeliveryPreferenceSchema = z.infer<typeof deliveryPreferenceSchema>;
+export type DeliveryPreferencesSchema = z.infer<typeof deliveryPreferencesSchema>;
 export type DonationDetailsSchema = z.infer<typeof donationDetailsSchema>;
 export type MilkBagSchema = z.infer<typeof milkBagSchema>;
 export type NotesSchema = z.infer<typeof textAreaSchema>;

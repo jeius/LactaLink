@@ -12,7 +12,7 @@ import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { DAYS, DELIVERY_OPTIONS, PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
-import { CreateRequestSchema } from '@lactalink/types';
+import { RequestSchema } from '@lactalink/types';
 import { formatDate } from '@lactalink/utilities';
 import { MapPinIcon, MilkIcon, TruckIcon } from 'lucide-react-native';
 import { Fragment, useMemo } from 'react';
@@ -32,7 +32,7 @@ const urgencyStyle = tva({
 });
 
 export function RequestReview() {
-  const { getValues } = useFormContext<CreateRequestSchema>();
+  const { getValues } = useFormContext<RequestSchema>();
   const {
     volumeNeeded,
     details: { storagePreference, neededAt, urgency, notes, image, reason },

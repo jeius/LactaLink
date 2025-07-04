@@ -21,7 +21,7 @@ import {
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getApiClient } from '@lactalink/api';
-import { CreateDonationSchema, CreateRequestSchema, MilkBag } from '@lactalink/types';
+import { DonationSchema, MilkBag, RequestSchema } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -34,7 +34,7 @@ type Block = Record<DonationRequestSteps, FC>;
 
 type SearchParams = CreateDonationRequestParams;
 
-type FormData = CreateDonationSchema | CreateRequestSchema;
+type FormData = DonationSchema | RequestSchema;
 
 export default function CreateDonationRequest() {
   const { step, slug, ...searchParams } = useLocalSearchParams<SearchParams>();
@@ -90,7 +90,7 @@ export default function CreateDonationRequest() {
     }
 
     const fields: DonationRequestFields = {
-      deliveryDetails: ['deliveryDetails'],
+      deliveryDetails: ['deliveryPreferences'],
       details: DONATION_REQUEST_DETAILS[slug],
     };
 
@@ -118,9 +118,9 @@ export default function CreateDonationRequest() {
   );
 }
 
-async function createDonation(data: CreateDonationSchema) {
+async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
-  const { recipient: _, details, donor, deliveryDetails } = data;
+  const { details, donor, deliveryPreferences: deliveryDetails } = data;
 
   const { bags, milkSample, ...restOfDetails } = details;
 
@@ -168,10 +168,16 @@ async function createDonation(data: CreateDonationSchema) {
   };
 }
 
-async function createRequest(data: CreateRequestSchema) {
+async function createRequest(data: RequestSchema) {
   const apiClient = getApiClient();
 
-  const { deliveryDetails, details, requester, volumeNeeded, requestedDonor: _ } = data;
+  const {
+    deliveryPreferences: deliveryDetails,
+    details,
+    requester,
+    volumeNeeded,
+    requestedDonor: _,
+  } = data;
 
   const { image, ...restOfDetails } = details;
 

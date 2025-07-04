@@ -1,11 +1,11 @@
 import { requestStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  CreateRequestSchema,
-  createRequestSchema,
   Hospital,
   Individual,
   MilkBank,
+  requestSchema,
+  RequestSchema,
   User,
 } from '@lactalink/types';
 
@@ -25,20 +25,16 @@ type Params = {
   profile: Individual | Hospital | MilkBank | null;
 };
 
-function getStoredData({
-  user,
-  requestedDonorId,
-  profile,
-}: Params): CreateRequestSchema | undefined {
+function getStoredData({ user, requestedDonorId, profile }: Params): RequestSchema | undefined {
   if (!user) return undefined;
 
   const id = user.id;
   const storageKey = `${storageKeyPrefix}-${id}`;
   const raw = requestStorage.getString(storageKey);
 
-  const storedData: DeepPartial<CreateRequestSchema> | undefined = raw && JSON.parse(raw);
+  const storedData: DeepPartial<RequestSchema> | undefined = raw && JSON.parse(raw);
   const requester = profile?.id;
-  const deliveryDetails = storedData?.deliveryDetails || [
+  const deliveryDetails = storedData?.deliveryPreferences || [
     {
       preferredMode: Object.values(DELIVERY_OPTIONS).map((day) => day.value),
       availableDays: Object.values(DAYS).map((day) => day.value),
@@ -49,14 +45,14 @@ function getStoredData({
     requester: storedData?.requester || requester,
     requestedDonor: storedData?.requestedDonor || requestedDonorId,
     volumeNeeded: storedData?.volumeNeeded || 20,
-    deliveryDetails,
+    deliveryPreferences: deliveryDetails,
     details: {
       ...storedData?.details,
       reason: storedData?.details?.reason || '',
       notes: storedData?.details?.notes || '',
       storagePreference: storedData?.details?.storagePreference || 'EITHER',
     },
-  } as CreateRequestSchema;
+  } as RequestSchema;
 }
 
 export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params) => {
@@ -73,7 +69,7 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
   });
 
   const form = useForm({
-    resolver: zodResolver(createRequestSchema),
+    resolver: zodResolver(requestSchema),
     mode: 'onTouched',
     defaultValues: getStoredData({ user, requestedDonorId, profile }),
   });
@@ -82,7 +78,7 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
   const isSubmitSuccessful = form.formState.isSubmitSuccessful;
   const getValues = form.getValues;
 
-  const debouncedSave = debounce((value: DeepPartial<CreateRequestSchema>) => {
+  const debouncedSave = debounce((value: DeepPartial<RequestSchema>) => {
     requestStorage.set(storageKey, JSON.stringify(value));
   }, 1000);
 
@@ -90,7 +86,7 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
     if (!isLoading && preferences?.length) {
       form.reset({
         ...form.getValues(),
-        deliveryDetails: preferences.map((detail) => ({
+        deliveryPreferences: preferences.map((detail) => ({
           ...detail,
           address: extractID(detail.address),
         })),
@@ -124,19 +120,19 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
         const preferences = (await refetch()).data;
 
         if (preferences?.length) {
-          data.deliveryDetails = preferences.map((detail) => ({
+          data.deliveryPreferences = preferences.map((detail) => ({
             ...detail,
             address: extractID(detail.address),
           }));
         }
 
-        const values: DeepPartial<CreateRequestSchema> = {
+        const values: DeepPartial<RequestSchema> = {
           details: {
             notes: data.details.notes,
             reason: data.details.reason,
             storagePreference: data.details.storagePreference,
           },
-          deliveryDetails: data.deliveryDetails,
+          deliveryPreferences: data.deliveryPreferences,
         };
 
         // Save the preffered values to local storage
