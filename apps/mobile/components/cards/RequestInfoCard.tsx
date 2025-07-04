@@ -127,6 +127,10 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
             />
           </Textarea>
         </VStack>
+
+        <Button>
+          <ButtonText>Donate</ButtonText>
+        </Button>
       </VStack>
     </Card>
   );
