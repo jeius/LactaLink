@@ -2,10 +2,11 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Image } from '@/components/Image';
 import { getHexColor } from '@/lib/colors';
 import { STORAGE_TYPES } from '@/lib/constants';
-import { getIconAsset } from '@/lib/stores';
 
 import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
+import { createPolygonFromRegion } from '@/lib/utils/createPolygonFromRegion';
+import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import {
   Address,
   Avatar as AvatarType,
@@ -13,9 +14,9 @@ import {
   Donation,
   Individual,
 } from '@lactalink/types';
-import { Asset } from 'expo-asset';
-import { useState } from 'react';
-import { MapMarkerProps, MarkerAnimated, MarkerPressEvent } from 'react-native-maps';
+import { isPointInPolygon } from '@lactalink/utilities';
+import { useMemo, useState } from 'react';
+import { MapMarkerProps, MarkerAnimated, MarkerPressEvent, Region } from 'react-native-maps';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -38,11 +39,13 @@ interface DonationMarkersProps {
   data: Donation;
   onPress?: (event: DonationMarkerPressEvent) => void;
   showAvatar?: boolean;
+  region?: Region;
 }
 export function DonationMarkers({
   data,
   onPress,
   showAvatar: showAvatarProp,
+  region,
 }: DonationMarkersProps) {
   const { theme } = useTheme();
   const pinColor = getHexColor(theme, 'primary', 600);
@@ -51,32 +54,10 @@ export function DonationMarkers({
   const animateValue = useSharedValue({ scale: 1, y: 0 });
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
-  const volume = data.remainingVolume || 0;
-  const storageType = data.details.storageType;
-  const preferences = data.deliveryDetails as DeliveryPreference[];
-
   const profile = data.donor as Individual;
   const profileAvatar = profile.avatar as AvatarType | null | undefined;
 
-  const markers: MarkerDetails[] = [];
-
-  for (const preference of preferences) {
-    const address = preference.address as Address;
-    const [latitude, longitude] = (address && address.coordinates) || [];
-
-    if (latitude && longitude) {
-      const marker: MarkerDetails = {
-        id: `donations-${data.id}-delivery-${preference.id}`,
-        identifier: `donations-${data.id}-delivery-${preference.id}`,
-        coordinate: { latitude, longitude },
-        title: data.title || `Donation | ${volume} mL`,
-        description: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
-        data,
-        deliveryPreference: preference,
-      };
-      markers.push(marker);
-    }
-  }
+  const markers = useMemo(() => createMarkers(data, region), [data, region]);
 
   const markerAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: animateValue.value.scale }, { translateY: animateValue.value.y }],
@@ -106,7 +87,7 @@ export function DonationMarkers({
             !showAvatar ? (
               <Box className="flex-1 p-1.5">
                 <Image
-                  source={iconSource[marker.deliveryPreference.preferredMode[0]!]}
+                  source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
                   style={{ flex: 1 }}
                 />
               </Box>
@@ -125,8 +106,39 @@ export function DonationMarkers({
   ));
 }
 
-const iconSource: Record<DeliveryPreference['preferredMode'][number], Asset> = {
-  DELIVERY: getIconAsset('scooterWithBasket'),
-  PICKUP: getIconAsset('pickUp'),
-  MEETUP: getIconAsset('meetUp'),
-};
+function createMarkers(data: Donation, region?: Region) {
+  const volume = data.remainingVolume || 0;
+  const storageType = data.details.storageType;
+  const preferences = data.deliveryDetails as DeliveryPreference[];
+
+  const markerList: MarkerDetails[] = [];
+
+  for (const preference of preferences) {
+    const address = preference.address as Address;
+    const [latitude, longitude] = (address && address.coordinates) || [];
+
+    if (latitude && longitude) {
+      const marker: MarkerDetails = {
+        id: `donations-${data.id}-delivery-${preference.id}`,
+        identifier: `donations-${data.id}-delivery-${preference.id}`,
+        coordinate: { latitude, longitude },
+        title: data.title || `Donation | ${volume} mL`,
+        description: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
+        data,
+        deliveryPreference: preference,
+      };
+
+      if (region) {
+        const polygon = createPolygonFromRegion(region);
+
+        if (isPointInPolygon({ latitude, longitude }, polygon)) {
+          markerList.push(marker);
+        }
+      } else {
+        markerList.push(marker);
+      }
+    }
+  }
+
+  return markerList;
+}

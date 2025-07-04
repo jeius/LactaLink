@@ -7,14 +7,20 @@ import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomS
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { Address, DeliveryPreference, Populate } from '@lactalink/types';
 
+import {
+  DonationMarkerPressEvent,
+  DonationMarkers,
+} from '@/components/map/markers/DonationMarkers';
+import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
 import React, { useRef, useState } from 'react';
-import RNMapView, { LatLng } from 'react-native-maps';
+import RNMapView, { Details, LatLng, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MapPage() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<RNMapView>(null);
   const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
+  const [region, setRegion] = useState<Region>();
 
   const populate: Populate = {
     users: { profile: true },
@@ -33,6 +39,11 @@ export default function MapPage() {
     where: { status: { equals: 'PENDING' } },
     populate,
   });
+
+  const dataReady = donationRes.isSuccess && requestRes.isSuccess;
+
+  const { data: donations } = donationRes;
+  const { data: requests } = requestRes;
 
   async function handleSelectionChange(value?: NonNullable<MapBottomSheetProps['value']>) {
     const { data } = value || {};
@@ -57,14 +68,53 @@ export default function MapPage() {
     setSelectedItem(value);
   }
 
+  function handleDonationMarkerPress(event: DonationMarkerPressEvent) {
+    const { data } = event;
+    setSelectedItem?.({ data, slug: 'donations' });
+  }
+
+  function handleRequestMarkerPress(event: RequestMarkerPressEvent) {
+    const { data } = event;
+    setSelectedItem?.({ data, slug: 'requests' });
+  }
+
+  function handleRegionChange(region: Region, _details: Details) {
+    setRegion(region);
+  }
+
   return (
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-      <MapView
-        mapRef={mapRef}
-        onSelectionChange={setSelectedItem}
-        donationQueryResult={donationRes}
-        requestQueryResult={requestRes}
-      />
+      <MapView mapRef={mapRef} dataReady={dataReady} onRegionChangeComplete={handleRegionChange}>
+        {selectedItem ? (
+          <>
+            {selectedItem.slug === 'donations' ? (
+              <DonationMarkers data={selectedItem.data} onPress={handleDonationMarkerPress} />
+            ) : selectedItem.slug === 'requests' ? (
+              <RequestMarkers data={selectedItem.data} onPress={handleRequestMarkerPress} />
+            ) : null}
+          </>
+        ) : (
+          <>
+            {donations?.map((donation, i) => (
+              <DonationMarkers
+                key={`${donation.id}-${i}`}
+                data={donation}
+                region={region}
+                onPress={handleDonationMarkerPress}
+              />
+            ))}
+
+            {requests?.map((request, i) => (
+              <RequestMarkers
+                key={`${request.id}-${i}`}
+                data={request}
+                region={region}
+                onPress={handleRequestMarkerPress}
+              />
+            ))}
+          </>
+        )}
+      </MapView>
 
       <MapBottomSheet
         value={selectedItem}

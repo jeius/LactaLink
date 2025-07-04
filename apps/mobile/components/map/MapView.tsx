@@ -4,7 +4,7 @@ import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { debounce, isEqual } from 'lodash';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -22,23 +22,14 @@ import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-import { MapBottomSheetProps } from './MapBottomSheet';
-import { DonationMarkerPressEvent, DonationMarkers } from './markers/DonationMarkers';
-import { RequestMarkerPressEvent, RequestMarkers } from './markers/RequestMarkers';
 import { UserMarker } from './markers/UserMarker';
 
-interface MapViewProps
-  extends Pick<MapBottomSheetProps, 'requestQueryResult' | 'donationQueryResult'> {
-  onSelectionChange?: (value: MapBottomSheetProps['value']) => void;
+interface MapViewProps extends ComponentProps<typeof RNMapView> {
   mapRef: React.RefObject<RNMapView | null>;
+  dataReady?: boolean;
 }
 
-export function MapView({
-  onSelectionChange: setSelectedItem,
-  donationQueryResult: donationRes,
-  requestQueryResult: requestRes,
-  mapRef,
-}: MapViewProps) {
+export function MapView({ dataReady = true, mapRef, children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
@@ -84,11 +75,7 @@ export function MapView({
     [camera, coords]
   );
 
-  const { data: donations } = donationRes;
-
-  const { data: requests } = requestRes;
-
-  const handleRegionChange = debounce(
+  const setCameraOnRegionChange = debounce(
     async (_region: Region, details: Details) => {
       const newCamera = await mapRef.current?.getCamera();
 
@@ -106,8 +93,6 @@ export function MapView({
 
   useEffect(() => {
     if (initMapRef.current) {
-      const dataReady = donationRes.isSuccess && requestRes.isSuccess;
-
       if (coords && mapRef.current && dataReady) {
         const { latitude, longitude } = coords;
         mapRef.current.setCamera({
@@ -121,7 +106,7 @@ export function MapView({
         }, 500); // Ensure the camera is set before marking the map as ready
       }
     }
-  }, [camera, coords, donationRes.isSuccess, requestRes.isSuccess, mapRef]);
+  }, [camera, coords, dataReady, mapRef]);
 
   function handleCompassPress() {
     if (mapRef.current) {
@@ -156,19 +141,15 @@ export function MapView({
     initMapRef.current = true;
   }
 
-  function handleDonationMarkerPress(event: DonationMarkerPressEvent) {
-    const { data } = event;
-    setSelectedItem?.({ data, slug: 'donations' });
-  }
-
-  function handleRequestMarkerPress(event: RequestMarkerPressEvent) {
-    const { data } = event;
-    setSelectedItem?.({ data, slug: 'requests' });
+  function handleRegionChange(region: Region, details: Details) {
+    props.onRegionChange?.(region, details);
+    setCameraOnRegionChange(region, details);
   }
 
   return (
     <Box style={{ flex: 1 }}>
       <AnimatedMapView
+        {...props}
         ref={mapRef}
         initialCamera={camera}
         style={StyleSheet.absoluteFill}
@@ -181,6 +162,8 @@ export function MapView({
         onRegionChange={handleRegionChange}
         onMapReady={handleMapReady}
       >
+        {children}
+
         {location && (
           <UserMarker
             hideHeading
@@ -189,22 +172,6 @@ export function MapView({
             coordinates={location.coords}
           />
         )}
-
-        {donations?.map((donation, i) => (
-          <DonationMarkers
-            key={`${donation.id}-${i}`}
-            data={donation}
-            onPress={handleDonationMarkerPress}
-          />
-        ))}
-
-        {requests?.map((request, i) => (
-          <RequestMarkers
-            key={`${request.id}-${i}`}
-            data={request}
-            onPress={handleRequestMarkerPress}
-          />
-        ))}
       </AnimatedMapView>
 
       {!isMapReady && (

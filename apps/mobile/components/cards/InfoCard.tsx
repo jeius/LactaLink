@@ -1,25 +1,22 @@
-import {
-  CollectionSlug,
-  DeliveryPreference,
-  Donation,
-  Hospital,
-  MilkBank,
-  Request,
-} from '@lactalink/types';
+import { DeliveryPreference } from '@lactalink/types';
 import React from 'react';
 import MapView, { LatLng } from 'react-native-maps';
+import { MapBottomSheetProps } from '../map/MapBottomSheet';
 import { VStack } from '../ui/vstack';
 import { DeliveryPreferencesCard } from './DeliveryPreferencesCard';
 import { DonationInfoCard } from './DonationInfoCard';
 import { RequestInfoCard } from './RequestInfoCard';
 
 interface InfoCardProps {
-  data: Donation | Request | Hospital | MilkBank | { id: string };
-  slug: Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
+  selected: MapBottomSheetProps['value'];
   mapRef?: React.RefObject<MapView | null>;
 }
 
-export default function InfoCard({ data, slug, mapRef }: InfoCardProps) {
+export default function InfoCard({ selected, mapRef }: InfoCardProps) {
+  if (!selected) return null;
+
+  const { slug, data } = selected;
+
   function handleViewOnMap(latlng: LatLng) {
     if (mapRef?.current) {
       mapRef.current.animateCamera({
@@ -29,12 +26,11 @@ export default function InfoCard({ data, slug, mapRef }: InfoCardProps) {
   }
 
   if (slug === 'donations') {
-    const donationData = data as Donation;
     return (
       <VStack space="lg" className="w-full items-center">
-        <DonationInfoCard data={donationData} />
+        <DonationInfoCard data={data} />
         <DeliveryPreferencesCard
-          preferences={donationData.deliveryDetails as DeliveryPreference[]}
+          preferences={data.deliveryDetails as DeliveryPreference[]}
           onViewOnMap={handleViewOnMap}
         />
       </VStack>
@@ -42,12 +38,11 @@ export default function InfoCard({ data, slug, mapRef }: InfoCardProps) {
   }
 
   if (slug === 'requests') {
-    const requestData = data as Request;
     return (
       <VStack space="lg" className="w-full items-center">
-        <RequestInfoCard data={requestData} />
+        <RequestInfoCard data={data} />
         <DeliveryPreferencesCard
-          preferences={requestData.deliveryDetails as DeliveryPreference[]}
+          preferences={data.deliveryDetails as DeliveryPreference[]}
           onViewOnMap={handleViewOnMap}
         />
       </VStack>

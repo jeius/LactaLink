@@ -30,16 +30,19 @@ const DEFAULT_SNAP_POINT = 30;
 type Slug = Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
 
 type Data = Donation | Request | MilkBank | Hospital | { id: string };
+
 type Section = {
   slug: Slug;
   title: string;
   queryResult: UseQueryResult<Data[] | null, Error>;
 };
 
-type Value = {
-  data: Data;
-  slug: Slug;
-};
+type Value =
+  | { slug: 'donations'; data: Donation }
+  | { slug: 'requests'; data: Request }
+  | { slug: 'hospitals'; data: Hospital }
+  | { slug: 'milkBanks'; data: MilkBank }
+  | { slug: 'placeholder'; data: { id: string } };
 
 export interface MapBottomSheetProps {
   value?: Value | null;
@@ -168,17 +171,15 @@ export function MapBottomSheet({
           contentContainerClassName="gap-2 py-3"
           onContentSizeChange={() => bottomSheetRef.current?.snapToIndex(1)}
         >
-          {selected && (
+          {selected ? (
             <VStack className="items-start px-5">
               <Button variant="link" onPress={() => handleChanged(undefined)}>
                 <ButtonIcon as={ChevronLeftIcon} />
                 <ButtonText>Back</ButtonText>
               </Button>
-              <InfoCard mapRef={mapRef} {...selected} />
+              <InfoCard mapRef={mapRef} selected={selected} />
             </VStack>
-          )}
-
-          {!selected &&
+          ) : (
             sections.map((section, index) => {
               const { queryResult, slug } = section;
               const { isLoading, data } = queryResult;
@@ -213,7 +214,8 @@ export function MapBottomSheet({
                   </Box>
                 </VStack>
               );
-            })}
+            })
+          )}
         </BottomSheetScrollView>
       </BottomSheetPortal>
     </BottomSheet>
