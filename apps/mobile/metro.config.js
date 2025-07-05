@@ -25,7 +25,6 @@ const monorepoPackages = {
 const monorepoConfig = {
   resolver: {
     disableHierarchicalLookup: false,
-    unstable_enablePackageExports: false,
     extraNodeModules: monorepoPackages,
     nodeModulesPaths: [
       path.resolve(projectDir, 'node_modules'),
