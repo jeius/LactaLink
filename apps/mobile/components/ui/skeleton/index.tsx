@@ -24,7 +24,7 @@ const Skeleton = forwardRef<React.ComponentRef<typeof Animated.View>, ISkeletonP
       children,
       startColor = 'bg-background-200',
       isLoaded = false,
-      speed = 2,
+      speed = 4,
       ...props
     },
     ref

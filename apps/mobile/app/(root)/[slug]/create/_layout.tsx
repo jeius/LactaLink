@@ -4,14 +4,14 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
-import { CreateDonationRequestParams, DonationRequestSlug } from '@/lib/types/donationRequest';
+import { DonationRequestParams, DonationRequestSlug } from '@/lib/types/donationRequest';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { FormProvider, UseFormReturn } from 'react-hook-form';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
-type SearchParams = CreateDonationRequestParams;
+type SearchParams = DonationRequestParams;
 
 export default function Layout() {
   const searchParams = useLocalSearchParams<SearchParams>();
@@ -28,7 +28,7 @@ export default function Layout() {
   } = useCreateDonationForm({
     user,
     profile,
-    recipientId: searchParams.slug === 'donations' ? searchParams.recipientId : undefined,
+    matchedRequest: searchParams.slug === 'donations' ? searchParams.matchedRequest : undefined,
   });
 
   const {

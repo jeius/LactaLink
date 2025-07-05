@@ -1,9 +1,10 @@
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import * as z from 'zod/v4';
+import { nullTransform } from './transformers';
 
 export const deliveryPreferenceSchema = z.object({
   id: z.uuid().optional(),
-  name: z.string().optional().nullable(),
+  name: z.string().transform(nullTransform).optional().nullable(),
   address: z.uuid().nonempty('Required'),
   preferredMode: z
     .array(

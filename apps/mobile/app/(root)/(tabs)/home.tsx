@@ -11,6 +11,7 @@ import { toast } from 'sonner-native';
 import SafeArea from '@/components/SafeArea';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';
+import { ScrollView } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
 
 export default function Home() {
@@ -32,30 +33,33 @@ export default function Home() {
   return (
     <SafeArea safeTop={false} mode="margin" className="items-stretch">
       <ThemeToggler />
-      <VStack space="lg" className="flex-1 items-center justify-center">
-        <Button action="default" onPress={handleSignOut}>
-          <ButtonText>Sign out</ButtonText>
-          <ButtonIcon as={LogOutIcon} />
-        </Button>
 
-        <Button
-          action="secondary"
-          onPress={() => {
-            router.push('/setup-profile');
-          }}
-        >
-          <ButtonText>Go to setup profile</ButtonText>
-        </Button>
+      <ScrollView>
+        <VStack space="lg" className="mb-20 items-center justify-center p-5">
+          <Button action="default" onPress={handleSignOut}>
+            <ButtonText>Sign out</ButtonText>
+            <ButtonIcon as={LogOutIcon} />
+          </Button>
 
-        <Button
-          action="default"
-          onPress={() => {
-            router.push('/');
-          }}
-        >
-          <ButtonText>Go to onboarding</ButtonText>
-        </Button>
-      </VStack>
+          <Button
+            action="secondary"
+            onPress={() => {
+              router.push('/setup-profile');
+            }}
+          >
+            <ButtonText>Go to setup profile</ButtonText>
+          </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              router.push('/');
+            }}
+          >
+            <ButtonText>Go to onboarding</ButtonText>
+          </Button>
+        </VStack>
+      </ScrollView>
     </SafeArea>
   );
 }

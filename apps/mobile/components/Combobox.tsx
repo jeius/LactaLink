@@ -101,8 +101,8 @@ export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
 
 export type InfiniteScrollComboBoxProps<T extends CollectionSlug = CollectionSlug> =
   ComboboxType<T> & {
-    value?: string;
-    onChange?: (val: string) => void;
+    value?: string | null;
+    onChange?: (val?: string | null) => void;
     placeholder?: string;
     isDisabled?: boolean;
   };
@@ -178,6 +178,10 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   const items = useMemo(() => data?.pages?.flatMap((page) => page.docs) || [], [data]);
 
   useEffect(() => {
+    setSelected(selectedProps);
+  }, [selectedProps]);
+
+  useEffect(() => {
     if (!open) {
       setSearchDefault((prev) => (prev !== search ? search : prev));
     }
@@ -185,7 +189,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
 
   function resetSelection() {
     clearSearch();
-    handleSelectionChange('');
+    handleSelectionChange(undefined);
   }
 
   function clearSearch() {
@@ -205,7 +209,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   }, []);
 
   const handleSelectionChange = useCallback(
-    (value: string) => {
+    (value?: string) => {
       handleClose();
       setTimeout(() => {
         setSelected(value);
@@ -284,7 +288,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
         enableContentPanningGesture={false}
         bottomInset={insets.bottom}
       >
-        <Box className="bg-background-0 w-full p-5 pt-0 shadow">
+        <Box className="bg-background-0 border-outline-100 w-full border-b p-5 pt-0 shadow">
           <Input>
             <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
             <BottomSheetTextInput

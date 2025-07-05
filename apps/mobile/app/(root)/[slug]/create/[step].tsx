@@ -13,8 +13,8 @@ import { upsertDeliveryPreferences } from '@/lib/api/upsert';
 
 import { DONATION_REQUEST_DETAILS, DONATION_REQUEST_STEPS } from '@/lib/constants/donationRequest';
 import {
-  CreateDonationRequestParams,
   DonationRequestFields,
+  DonationRequestParams,
   DonationRequestSlug,
   DonationRequestSteps,
 } from '@/lib/types/donationRequest';
@@ -32,7 +32,7 @@ import { toast } from 'sonner-native';
 
 type Block = Record<DonationRequestSteps, FC>;
 
-type SearchParams = CreateDonationRequestParams;
+type SearchParams = DonationRequestParams;
 
 type FormData = DonationSchema | RequestSchema;
 
@@ -60,7 +60,7 @@ export default function CreateDonationRequest() {
 
   const block: Block = {
     details: detailsForm[slug],
-    deliveryDetails: DeliveryDetailsForm,
+    deliveryPreferences: DeliveryDetailsForm,
     review: reviewForm[slug],
   };
 
@@ -90,7 +90,7 @@ export default function CreateDonationRequest() {
     }
 
     const fields: DonationRequestFields = {
-      deliveryDetails: ['deliveryPreferences'],
+      deliveryPreferences: ['deliveryPreferences'],
       details: DONATION_REQUEST_DETAILS[slug],
     };
 
