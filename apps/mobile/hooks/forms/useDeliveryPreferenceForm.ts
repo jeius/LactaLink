@@ -1,10 +1,7 @@
 import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  DeliveryPreference,
-  DeliveryPreferenceSchema,
-  deliveryPreferenceSchema,
-} from '@lactalink/types';
+import { DeliveryPreference } from '@lactalink/types';
+import { DeliveryPreferenceSchema, deliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { useForm } from 'react-hook-form';

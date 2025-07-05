@@ -27,6 +27,7 @@ import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
+import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
 import { ListRenderItem } from '@shopify/flash-list';
@@ -288,7 +289,10 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
         enableContentPanningGesture={false}
         bottomInset={insets.bottom}
       >
-        <Box className="bg-background-0 border-outline-100 w-full border-b p-5 pt-0 shadow">
+        <Box
+          className="bg-background-0 border-outline-100 w-full border-b p-5 pt-0"
+          style={shadow.xs}
+        >
           <Input>
             <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
             <BottomSheetTextInput

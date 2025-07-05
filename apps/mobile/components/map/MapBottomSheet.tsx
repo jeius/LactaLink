@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
+import { shadow } from '@/lib/utils/shadows';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
@@ -156,7 +157,9 @@ export function MapBottomSheet({
       <BottomSheetPortal
         snapPoints={snapPoints}
         snapToIndex={1}
-        handleComponent={(props) => <BottomSheetDragIndicator {...props} className="py-4 shadow" />}
+        handleComponent={(props) => (
+          <BottomSheetDragIndicator {...props} className="py-4" style={shadow.xs} />
+        )}
         enablePanDownToClose={false}
         enableContentPanningGesture={false}
         enableDynamicSizing={false}

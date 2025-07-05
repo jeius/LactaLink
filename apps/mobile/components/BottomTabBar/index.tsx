@@ -3,6 +3,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 
+import { shadow } from '@/lib/utils/shadows';
 import { useRouter } from 'expo-router';
 import {
   BellIcon,
@@ -61,7 +62,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
         paddingBottom: insets.bottom,
       }}
     >
-      <Box className="bg-background-0 relative rounded-3xl p-2 shadow-md">
+      <Box className="bg-background-0 relative rounded-3xl p-2" style={shadow.md}>
         <HStack onLayout={onLayout} className="relative overflow-hidden rounded-2xl">
           <Box className="absolute inset-0">
             <Animated.View style={[circleStyle]}>
@@ -96,13 +97,16 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
           })}
         </HStack>
         <Box
-          className="bg-background-0 rounded-full p-1 shadow"
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: 0,
-            transform: [{ translateX: '-40%' }, { translateY: '-70%' }],
-          }}
+          className="bg-background-0 rounded-full p-1"
+          style={[
+            {
+              position: 'absolute',
+              left: '50%',
+              top: 0,
+              transform: [{ translateX: '-40%' }, { translateY: '-70%' }],
+            },
+            shadow.xs,
+          ]}
         >
           <Button
             size="lg"
@@ -115,7 +119,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
               width={40}
               height={40}
               className="fill-primary-0 dark:fill-primary-400"
-              style={{ transform: [{ translateX: -1 }, { translateY: -1 }] }}
+              style={{ transform: [{ translateX: -1.25 }] }}
             />
           </Button>
         </Box>
