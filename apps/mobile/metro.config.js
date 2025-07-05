@@ -14,6 +14,7 @@ const defaultConfig = getDefaultConfig(projectDir);
 
 const monorepoPackages = {
   '@lactalink/api': path.resolve(monorepoRoot, 'packages/api'),
+  '@lactalink/enums': path.resolve(monorepoRoot, 'packages/enums'),
   '@lactalink/types': path.resolve(monorepoRoot, 'packages/types'),
   '@lactalink/utilities': path.resolve(monorepoRoot, 'packages/utilities'),
   '@lactalink/eslint-config': path.resolve(monorepoRoot, 'packages/eslint-config'),
