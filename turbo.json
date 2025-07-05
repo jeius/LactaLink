@@ -66,22 +66,6 @@
         "src/lib/constants/**/*"
       ],
       "outputs": ["src/lib/db/**/*"]
-    },
-    "build:android-dev": {
-      "dependsOn": ["^build", "@lactalink/mobile#build:android-dev"],
-      "cache": false
-    },
-    "build:ios-dev": {
-      "dependsOn": ["^build", "@lactalink/mobile#build:ios-dev"],
-      "cache": false
-    },
-    "build:init": {
-      "dependsOn": ["^build:init"],
-      "cache": false
-    },
-    "preview:android": {
-      "dependsOn": ["^build", "@lactalink/mobile#preview:android"],
-      "cache": false
     }
   }
 }

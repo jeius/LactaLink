@@ -1,5 +1,5 @@
+import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { DeliveryMode, Donation, Request } from '@lactalink/types';
-import { DAYS, DELIVERY_OPTIONS } from '@lactalink/types/enums';
 import { extractID } from '@lactalink/utilities';
 import { Field, FilterOptions } from 'payload';
 
