@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import * as z from 'zod/v4';
 import { emptyTransform, nullTransform } from '../transformers';
 
 export const coordinatesSchema = z.object({

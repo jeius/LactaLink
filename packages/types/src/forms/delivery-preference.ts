@@ -1,5 +1,5 @@
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
-import { z } from 'zod/v4';
+import * as z from 'zod/v4';
 
 export const deliveryPreferenceSchema = z.object({
   id: z.uuid().optional(),
@@ -17,3 +17,5 @@ export const deliveryPreferenceSchema = z.object({
     .array(z.enum(Object.values(DAYS).map((item) => item.value)))
     .min(1, 'Atleast one day is selected.'),
 });
+
+export type DeliveryPreferenceSchema = z.infer<typeof deliveryPreferenceSchema>;

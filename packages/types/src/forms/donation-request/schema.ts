@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import * as z from 'zod/v4';
 
 import {
   COLLECTION_MODES,
@@ -7,7 +7,7 @@ import {
   STORAGE_TYPES,
 } from '@lactalink/enums';
 
-import { deliveryPreferenceSchema } from '../deliveryPreference';
+import { deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
 import { textAreaSchema } from '../textarea';
 

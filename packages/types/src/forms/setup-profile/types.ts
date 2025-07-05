@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import * as z from 'zod/v4';
 import { hospitalSchema, individualSchema, milkBankSchema, setupProfileSchema } from './schema';
 
 export type IndividualSchema = z.infer<typeof individualSchema>;
