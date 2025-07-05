@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 
-import { GENDER_TYPES, MARITAL_STATUS, ORGANIZATION_TYPES, PROFILE_TYPES } from '../../enums';
+import { GENDER_TYPES, MARITAL_STATUS, ORGANIZATION_TYPES, PROFILE_TYPES } from '@lactalink/enums';
 import { addressSchema } from '../address';
 import { imageSchema } from '../file';
 import { nullTransform } from '../transformers';

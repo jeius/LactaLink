@@ -1,7 +1,11 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP, DONATION_STATUS } from '@/lib/constants';
-import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/types/enums';
+import {
+  COLLECTION_GROUP,
+  COLLECTION_MODES,
+  DONATION_STATUS,
+  STORAGE_TYPES,
+} from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { filterMilkBagsOptions } from './filterOptions';

@@ -1,5 +1,5 @@
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import { z } from 'zod/v4';
-import { DAYS, DELIVERY_OPTIONS } from '../enums';
 
 export const deliveryPreferenceSchema = z.object({
   id: z.uuid().optional(),

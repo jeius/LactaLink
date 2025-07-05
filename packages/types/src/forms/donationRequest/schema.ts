@@ -5,7 +5,7 @@ import {
   PREFERRED_STORAGE_TYPES,
   PRIORITY_LEVELS,
   STORAGE_TYPES,
-} from '../../enums';
+} from '@lactalink/enums';
 
 import { deliveryPreferenceSchema } from '../deliveryPreference';
 import { imageSchema } from '../file';

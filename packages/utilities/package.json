@@ -49,8 +49,12 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
   },
+  "dependencies": {
+    "geolib": "^3.3.4"
+  },
   "devDependencies": {
     "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/enums": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
@@ -59,11 +63,9 @@
     "react": "19.0.0"
   },
   "peerDependencies": {
+    "@lactalink/enums": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/react": "^19.0.14",
     "react": "19.0.0"
-  },
-  "dependencies": {
-    "geolib": "^3.3.4"
   }
 }

@@ -104,6 +104,9 @@ importers:
       '@lactalink/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@lactalink/enums':
+        specifier: workspace:*
+        version: link:../../packages/enums
       '@lactalink/utilities':
         specifier: workspace:*
         version: link:../../packages/utilities
@@ -354,6 +357,9 @@ importers:
       '@lactalink/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@lactalink/enums':
+        specifier: workspace:*
+        version: link:../../packages/enums
       '@lactalink/utilities':
         specifier: workspace:*
         version: link:../../packages/utilities
@@ -577,10 +583,11 @@ importers:
         version: 2.4.4(eslint@8.57.1)(turbo@2.5.4)
 
   packages/types:
-    devDependencies:
+    dependencies:
       '@lactalink/enums':
         specifier: workspace:*
         version: link:../enums
+    devDependencies:
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -627,6 +634,9 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
     devDependencies:
+      '@lactalink/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

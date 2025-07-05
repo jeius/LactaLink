@@ -20,6 +20,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@lactalink/api": "workspace:*",
+    "@lactalink/enums": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@payloadcms/db-postgres": "3.42.0",
     "@payloadcms/email-resend": "3.42.0",

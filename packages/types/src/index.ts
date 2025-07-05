@@ -1,9 +1,8 @@
-import { DELIVERY_OPTIONS } from './enums';
+import { DELIVERY_OPTIONS } from '@lactalink/enums';
 
 export type * from './api';
 export type * from './auth';
 export * from './collections';
-export * from './enums';
 export type * from './errors';
 export * from './forms';
 export * from './geo-types';

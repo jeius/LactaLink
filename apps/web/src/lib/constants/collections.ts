@@ -32,4 +32,4 @@ export const NOTIFICATION_CHANNEL_TYPE_OPTIONS = [
 
 export const MILK_EXPIRY_DAYS = 3;
 
-export * from '@lactalink/types/enums';
+export * from '@lactalink/enums';

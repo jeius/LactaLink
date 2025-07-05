@@ -8,7 +8,8 @@ import {
   VERCEL_AUTOMATION_BYPASS_SECRET,
 } from '@env';
 
-import { PRIORITY_LEVELS } from '@lactalink/types';
+import { PRIORITY_LEVELS } from '@lactalink/enums';
+export * from '@lactalink/enums';
 
 export * from './assets';
 export * from './queryKeys';
@@ -23,18 +24,6 @@ export const ANDROID_MAPS_API_KEY = AndroidKey;
 export const IOS_MAPS_API_KEY = IosKey;
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
-
-export {
-  COLLECTION_MODES,
-  DAYS,
-  DELIVERY_OPTIONS,
-  DONATION_STATUS,
-  GENDER_TYPES,
-  MARITAL_STATUS,
-  ORGANIZATION_TYPES,
-  PRIORITY_LEVELS,
-  STORAGE_TYPES,
-} from '@lactalink/types';
 
 export const BLUR_HASH =
   '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';

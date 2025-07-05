@@ -1,4 +1,4 @@
-import { DAYS } from '@lactalink/types';
+import { DAYS } from '@lactalink/enums';
 
 export * from './formatCamelCase';
 export * from './formatKebabCase';

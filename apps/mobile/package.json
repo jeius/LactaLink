@@ -44,6 +44,7 @@
     "@gorhom/bottom-sheet": "^5.1.6",
     "@hookform/resolvers": "^5.1.1",
     "@lactalink/api": "workspace:*",
+    "@lactalink/enums": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@legendapp/motion": "^2.4.0",
     "@react-native-aria/focus": "^0.2.9",
