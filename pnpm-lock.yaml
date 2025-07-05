@@ -540,6 +540,15 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/react@19.1.8)(react@19.0.0)(use-sync-external-store@1.5.0(react@19.0.0))
 
+  packages/enums:
+    devDependencies:
+      '@lactalink/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@lactalink/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+
   packages/eslint-config:
     devDependencies:
       '@typescript-eslint/eslint-plugin':
@@ -569,6 +578,9 @@ importers:
 
   packages/types:
     devDependencies:
+      '@lactalink/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

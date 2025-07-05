@@ -1,0 +1,32 @@
+{
+  "name": "@lactalink/enums",
+  "version": "1.0.0",
+  "description": "Lactalink shared enumerated types",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.d.ts",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "build:init": "tsc",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
+  },
+  "devDependencies": {
+    "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*"
+  }
+}
