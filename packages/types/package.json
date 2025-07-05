@@ -46,17 +46,17 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
-    "@lactalink/eslint-config": "workspace:*",
     "@lactalink/enums": "workspace:*",
+    "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
     "payload": "^3.34.0",
-    "zod": "^3.25.64"
+    "zod": "^3.25.74"
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
-    "zod": "^3.25.64"
+    "zod": "^3.25.74"
   }
 }
