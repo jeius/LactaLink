@@ -7,7 +7,6 @@ import {
   STORAGE_TYPES,
 } from '@lactalink/enums';
 
-import { deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
 import { textAreaSchema } from '../textarea';
 
@@ -48,8 +47,8 @@ export const requestDetailsSchema = z.object({
 
 export const deliveryPreferencesSchema = z.object({
   deliveryPreferences: z
-    .array(deliveryPreferenceSchema)
-    .min(1, 'Atleast one delivery detail is required.'),
+    .array(z.uuid().nonempty('Required'))
+    .min(1, 'Atleast one delivery preference is required.'),
 });
 
 const matchedRequestSchema = z.object({

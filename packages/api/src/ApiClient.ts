@@ -216,6 +216,28 @@ export class ApiClient implements IApiClient {
     return result.doc;
   };
 
+  delete = async <Slug extends CollectionSlug, IsPaginated extends boolean = true>(
+    args: FindArgs<Slug, IsPaginated>
+  ): Promise<FindResult<Slug, IsPaginated>> => {
+    const { collection, ...searchParams } = args;
+
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
+
+    const result = await this._makeApiRequest<FetchGetResult<Collection<Slug>>>(endpoint, 'DELETE');
+
+    return (searchParams.pagination ? result : result.docs) as FindResult<Slug, IsPaginated>;
+  };
+
+  deleteByID = async <Slug extends CollectionSlug>(
+    args: FindByIDArgs<Slug>
+  ): Promise<Collection<Slug>> => {
+    const { collection, id, ...searchParams } = args;
+    const queryParams = { ...searchParams, pagination: false };
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
+
+    return this._makeApiRequest<Collection<Slug>>(endpoint, 'DELETE');
+  };
+
   getPreference = async <TValue = unknown>(key: string): Promise<TValue> => {
     const endpoint = `/api/payload-preferences/${key}`;
     const result = await this._makeApiRequest<GetPreference<TValue>>(endpoint, 'GET');

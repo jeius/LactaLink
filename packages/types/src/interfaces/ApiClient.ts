@@ -138,6 +138,26 @@ export interface IApiClient {
   updateByID<Slug extends CollectionSlug>(args: UpdateByIDArgs<Slug>): Promise<Collection<Slug>>;
 
   /**
+   * Deletes documents in a collection with optional pagination and filtering.
+   * @template Slug - The collection slug type
+   * @template IsPaginated - Whether the results should be paginated
+   * @param args - Arguments for the delete operation including collection, query params, filters, etc.
+   * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
+   */
+  delete<Slug extends CollectionSlug, IsPaginated extends boolean = true>(
+    args: FindArgs<Slug, IsPaginated>
+  ): Promise<FindResult<Slug, IsPaginated>>;
+
+  /**
+   * Deletes a single document by its ID in the specified collection.
+   * @template Slug - The collection slug type
+   * @param args - Arguments containing the collection slug and document ID
+   * @returns Promise resolving to the deleted document
+   * @throws Error if document is not found or access is denied
+   */
+  deleteByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<Collection<Slug>>;
+
+  /**
    * Retrieves a user preference value by its key.
    * @template TValue - The expected type of the preference value
    * @param key - The preference key to retrieve
