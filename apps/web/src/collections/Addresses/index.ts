@@ -53,6 +53,20 @@ export const Addresses: CollectionConfig<'addresses'> = {
       ],
     },
     {
+      type: 'row',
+      fields: [
+        {
+          name: 'zipCode',
+          label: 'Postal/Zip Code',
+          type: 'text',
+          admin: {
+            description: 'Postal/Zip code of the address.',
+            width: '50%',
+          },
+        },
+      ],
+    },
+    {
       name: 'province',
       type: 'relationship',
       relationTo: 'provinces',
