@@ -227,6 +227,10 @@ export interface Address {
    * Set as default address.
    */
   default?: boolean | null;
+  /**
+   * Postal/Zip code of the address.
+   */
+  zipCode?: string | null;
   province: string | Province;
   cityMunicipality: string | CityMunicipality;
   barangay?: (string | null) | Barangay;
@@ -1350,6 +1354,7 @@ export interface AddressesSelect<T extends boolean = true> {
   owner?: T;
   name?: T;
   default?: T;
+  zipCode?: T;
   province?: T;
   cityMunicipality?: T;
   barangay?: T;

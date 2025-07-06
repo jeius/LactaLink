@@ -1,6 +1,7 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Address,
   DonationSchema,
   donationSchema,
   Hospital,
@@ -9,9 +10,7 @@ import {
   User,
 } from '@lactalink/types';
 
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-
-import { extractID } from '@lactalink/utilities';
+import { extractAddressValues, extractID } from '@lactalink/utilities';
 import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
@@ -35,7 +34,6 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
-    depth: 0,
     sort: 'createdAt',
   });
 
@@ -70,9 +68,9 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
       const data = form.getValues();
 
       if (preferences?.length) {
-        data.deliveryPreferences = preferences.map((detail) => ({
-          ...detail,
-          address: extractID(detail.address),
+        data.deliveryPreferences = preferences.map((pref) => ({
+          ...pref,
+          address: extractAddressValues(pref.address as Address),
         }));
       }
 
@@ -84,6 +82,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
           storagePreference: matchedRequestDoc.details.storagePreference || 'EITHER',
         };
       }
+
       form.reset(data);
     }
   }, [isLoading, preferences, form, matchedRequestDoc]);
@@ -111,14 +110,6 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
         donationStorage.delete(storageKey);
 
         const data = getValues();
-        const preferences = (await refetchPreferences()).data;
-
-        if (preferences?.length) {
-          data.deliveryPreferences = preferences.map((detail) => ({
-            ...detail,
-            address: extractID(detail.address),
-          }));
-        }
 
         const values: DeepPartial<DonationSchema> = {
           details: {
@@ -126,7 +117,6 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
             collectionMode: data.details.collectionMode,
             storageType: data.details.storageType,
           },
-          deliveryPreferences: data.deliveryPreferences,
         };
 
         // Save the preffered values to local storage
@@ -144,16 +134,10 @@ function getData({ user, profile }: Params): DonationSchema | undefined {
   const storedData = getStoredData(user);
 
   const donor = profile?.id;
-  const deliveryDetails = storedData?.deliveryPreferences || [
-    {
-      preferredMode: [DELIVERY_OPTIONS.PICKUP.value],
-      availableDays: Object.values(DAYS).map((day) => day.value),
-    },
-  ];
 
   return {
     donor: storedData?.donor || donor,
-    deliveryPreferences: deliveryDetails,
+    deliveryPreferences: storedData?.deliveryPreferences || [],
     details: {
       notes: storedData?.details?.notes || '',
       collectionMode: storedData?.details?.collectionMode,

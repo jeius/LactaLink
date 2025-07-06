@@ -1,6 +1,7 @@
 import { requestStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Address,
   Hospital,
   Individual,
   MilkBank,
@@ -9,9 +10,7 @@ import {
   User,
 } from '@lactalink/types';
 
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-
-import { extractID } from '@lactalink/utilities';
+import { extractAddressValues } from '@lactalink/utilities';
 import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
@@ -34,18 +33,12 @@ function getStoredData({ user, requestedDonorId, profile }: Params): RequestSche
 
   const storedData: DeepPartial<RequestSchema> | undefined = raw && JSON.parse(raw);
   const requester = profile?.id;
-  const deliveryDetails = storedData?.deliveryPreferences || [
-    {
-      preferredMode: Object.values(DELIVERY_OPTIONS).map((day) => day.value),
-      availableDays: Object.values(DAYS).map((day) => day.value),
-    },
-  ];
 
   return {
     requester: storedData?.requester || requester,
     requestedDonor: storedData?.requestedDonor || requestedDonorId,
     volumeNeeded: storedData?.volumeNeeded || 20,
-    deliveryPreferences: deliveryDetails,
+    deliveryPreferences: storedData?.deliveryPreferences || [],
     details: {
       ...storedData?.details,
       reason: storedData?.details?.reason || '',
@@ -64,7 +57,6 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
-    depth: 0,
     sort: 'createdAt',
   });
 
@@ -84,13 +76,16 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
 
   useEffect(() => {
     if (!isLoading && preferences?.length) {
-      form.reset({
-        ...form.getValues(),
-        deliveryPreferences: preferences.map((detail) => ({
-          ...detail,
-          address: extractID(detail.address),
-        })),
-      });
+      const data = form.getValues();
+
+      if (preferences?.length) {
+        data.deliveryPreferences = preferences.map((pref) => ({
+          ...pref,
+          address: extractAddressValues(pref.address as Address),
+        }));
+      }
+
+      form.reset(data);
     }
   }, [isLoading, preferences, form, form.getValues]);
 
@@ -117,14 +112,6 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
         requestStorage.delete(storageKey);
 
         const data = getValues();
-        const preferences = (await refetch()).data;
-
-        if (preferences?.length) {
-          data.deliveryPreferences = preferences.map((detail) => ({
-            ...detail,
-            address: extractID(detail.address),
-          }));
-        }
 
         const values: DeepPartial<RequestSchema> = {
           details: {
@@ -132,7 +119,6 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
             reason: data.details.reason,
             storagePreference: data.details.storagePreference,
           },
-          deliveryPreferences: data.deliveryPreferences,
         };
 
         // Save the preffered values to local storage

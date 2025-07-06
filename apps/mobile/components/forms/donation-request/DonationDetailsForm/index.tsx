@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
 import React from 'react';
+import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import MilkBagsField from './milkbags';
 
 export function DonationDetailsForm() {
@@ -53,6 +54,10 @@ export function DonationDetailsForm() {
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
         />
+      </Box>
+
+      <Box className="mx-5">
+        <DeliveryPreferencesForm name="deliveryPreferences" />
       </Box>
     </VStack>
   );

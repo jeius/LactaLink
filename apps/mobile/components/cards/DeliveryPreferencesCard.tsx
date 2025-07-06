@@ -18,10 +18,12 @@ import { VStack } from '../ui/vstack';
 interface DeliveryPreferencesCardProps {
   preferences: DeliveryPreference[];
   onViewOnMap?: (latlng: LatLng) => void;
+  showViewOnMapButton?: boolean;
 }
 export function DeliveryPreferencesCard({
   preferences,
   onViewOnMap,
+  showViewOnMapButton = true,
 }: DeliveryPreferencesCardProps) {
   return preferences.map(({ address, preferredMode, availableDays, name }, i) => {
     const addressName = (address as Address).displayName;
@@ -78,10 +80,12 @@ export function DeliveryPreferencesCard({
               </Text>
             </HStack>
           </VStack>
-          <Button size="md" onPress={handleViewOnMap}>
-            <ButtonIcon as={MapIcon} />
-            <ButtonText>View on Map</ButtonText>
-          </Button>
+          {showViewOnMapButton && (
+            <Button size="md" onPress={handleViewOnMap}>
+              <ButtonIcon as={MapIcon} />
+              <ButtonText>View on Map</ButtonText>
+            </Button>
+          )}
         </VStack>
       </Card>
     );
