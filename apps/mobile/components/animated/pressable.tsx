@@ -1,7 +1,11 @@
 import React from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, PressableProps } from 'react-native-gesture-handler';
-import { PressableEvent } from 'react-native-gesture-handler/lib/typescript/components/Pressable/PressableProps';
+import {
+  GestureResponderEvent,
+  Pressable,
+  PressableProps,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -25,13 +29,13 @@ export function AnimatedPressable({ children, containerStyle, ...props }: Animat
     transform: [{ scale: scale.value }],
   }));
 
-  function handlePressIn(event: PressableEvent) {
+  function handlePressIn(event: GestureResponderEvent) {
     // Scale down when the gesture begins
     scale.value = withSpring(0.95, springConfig);
     props.onPressIn?.(event);
   }
 
-  function handlePressOut(event: PressableEvent) {
+  function handlePressOut(event: GestureResponderEvent) {
     // Scale back up when the gesture ends
     scale.value = withSpring(1, springConfig);
     props.onPressOut?.(event);

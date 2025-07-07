@@ -3,7 +3,7 @@ import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { shadow } from '@/lib/utils/shadows';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Address, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalink/types';
-import { extractAddressValues } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { ListRenderItem } from '@shopify/flash-list';
 import { ListXIcon, PlusIcon, SaveIcon } from 'lucide-react-native';
@@ -59,7 +59,7 @@ export function DeliveryPreferencesBottomSheet({
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
-    populate: { addresses: { displayName: true, coordinates: true } },
+    populate: { addresses: { displayName: true, coordinates: true, name: true } },
     sort: 'createdAt',
   });
 
@@ -100,7 +100,7 @@ export function DeliveryPreferencesBottomSheet({
         } else {
           const newItem: DeliveryPreferenceSchema = {
             ...item,
-            address: extractAddressValues(item.address as Address),
+            address: extractID(item.address as Address),
           };
           setSelected((prev) => [...prev, newItem]);
         }
@@ -109,7 +109,13 @@ export function DeliveryPreferencesBottomSheet({
 
       return (
         <AnimatedPressable onPress={handlePress}>
-          <DeliveryPreferenceCard preference={item} isSelected={isSelected} />
+          <DeliveryPreferenceCard
+            preference={item}
+            isSelected={isSelected}
+            onEditPress={() => {
+              handleClose();
+            }}
+          />
         </AnimatedPressable>
       );
     },
@@ -218,7 +224,7 @@ export function DeliveryPreferencesBottomSheet({
                 }}
               >
                 <Card className="mx-auto p-4">
-                  <HStack space="md" className="w-fit justify-end">
+                  <HStack space="md" className="justify-end">
                     <Button onPress={handleSave}>
                       <ButtonIcon as={SaveIcon} />
                       <ButtonText>Apply</ButtonText>
