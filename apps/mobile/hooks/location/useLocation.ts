@@ -1,9 +1,10 @@
 import { LOCATION_UPDATES } from '@/lib/constants/taskNames';
 import { startBackgroundLocationUpdates, startForgroundLocationUpdates } from '@/lib/location';
+import { useFocusEffect } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function useCurrentLocation(enable: boolean = true) {
   const { data, ...rest } = useQuery({
@@ -36,31 +37,36 @@ export function useLocationUpdates(enable: boolean = true) {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const setupSubscription = async () => {
-      if (!enable) {
-        // If location updates are not enabled, clear the current location and return
-        setLocation(null);
-        setError(null);
+  // Handle screen focus/blur
+  useFocusEffect(
+    useCallback(() => {
+      const setupSubscription = async () => {
+        if (!enable) return;
+
+        if (!subscriptionRef.current) {
+          const subscription = await startForgroundLocationUpdates(setLocation, (err) => {
+            setError(new Error(err));
+          });
+          subscriptionRef.current = subscription;
+        }
+      };
+
+      setupSubscription();
+
+      // Cleanup when screen loses focus
+      return () => {
         subscriptionRef.current?.remove();
-        return;
-      }
+        subscriptionRef.current = null;
+      };
+    }, [enable])
+  );
 
-      if (enable && !subscriptionRef.current) {
-        const subscription = await startForgroundLocationUpdates(setLocation, (err) => {
-          setError(new Error(err));
-        });
-        subscriptionRef.current = subscription;
-      }
-    };
-
-    setupSubscription();
-
+  // General cleanup on unmount
+  useEffect(() => {
     return () => {
-      // Clean up the subscription when the component unmounts
       subscriptionRef.current?.remove();
     };
-  }, [enable]);
+  }, []);
 
   return {
     location,
