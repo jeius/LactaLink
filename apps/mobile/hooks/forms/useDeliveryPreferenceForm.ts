@@ -1,7 +1,7 @@
 import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Address, DeliveryPreference } from '@lactalink/types';
-import { DeliveryPreferenceSchema, deliveryPreferenceSchema } from '@lactalink/types/forms';
+import { Address } from '@lactalink/types';
+import { deliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractID } from '@lactalink/utilities';
 
 import { useForm } from 'react-hook-form';
@@ -21,7 +21,7 @@ export function useDeliveryPreferenceForm(id?: string) {
     collection: 'delivery-preferences',
     id: id,
     select: { name: true, address: true, availableDays: true, preferredMode: true, owner: true },
-    populate: { addresses: { displayName: true, name: true } },
+    depth: 0,
   });
 
   const {
@@ -61,20 +61,16 @@ export function useDeliveryPreferenceForm(id?: string) {
 
   useEffect(() => {
     if (isSuccess && preference) {
-      console.log('Setting form values for delivery preference:', preference);
-      form.reset(extractDeliveryPreferenceValues(preference));
+      const data = preference;
+      form.reset({
+        id: data.id,
+        name: data.name || '',
+        address: extractID(data.address as Address),
+        availableDays: data.availableDays,
+        preferredMode: data.preferredMode,
+      });
     }
   }, [form, isSuccess, preference]);
 
   return { form, isLoading, isFetching, isSuccess, data: preference, error };
-}
-
-function extractDeliveryPreferenceValues(data: DeliveryPreference): DeliveryPreferenceSchema {
-  return {
-    id: data.id,
-    name: data.name || '',
-    address: extractID(data.address as Address),
-    availableDays: data.availableDays,
-    preferredMode: data.preferredMode,
-  };
 }

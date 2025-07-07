@@ -34,6 +34,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
+    depth: 0,
     sort: 'createdAt',
   });
 

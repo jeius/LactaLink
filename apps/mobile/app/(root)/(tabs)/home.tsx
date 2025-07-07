@@ -1,7 +1,7 @@
 import ThemeToggler from '@/components/ThemeToggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { LogOutIcon, Trash2Icon } from 'lucide-react-native';
+import { LogOutIcon } from 'lucide-react-native';
 
 import { signOut } from '@/auth';
 import { extractErrorMessage } from '@lactalink/utilities';
@@ -9,7 +9,6 @@ import React from 'react';
 import { toast } from 'sonner-native';
 
 import { DonateRequestModal } from '@/components/DonateRequestModal';
-import ActionModal from '@/components/modals/ActionModal';
 import SafeArea from '@/components/SafeArea';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';
@@ -39,14 +38,6 @@ export default function Home() {
       <ScrollView>
         <VStack space="lg" className="mb-20 items-center justify-center p-5">
           <DonateRequestModal />
-          <ActionModal
-            triggerIcon={Trash2Icon}
-            triggerLabel="Delete Delivery Preference"
-            action="negative"
-            title="Confirm Delete"
-            description="Are you sure you want to delete this delivery preference? This action cannot be undone."
-            confirmLabel="Delete"
-          />
 
           <Button action="default" onPress={handleSignOut}>
             <ButtonText>Sign out</ButtonText>

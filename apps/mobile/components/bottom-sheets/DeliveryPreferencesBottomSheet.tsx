@@ -6,6 +6,7 @@ import { Address, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalin
 import { extractID } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { ListRenderItem } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
 import { ListXIcon, PlusIcon, SaveIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions } from 'react-native';
@@ -13,6 +14,7 @@ import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
 import DeliveryPreferenceCard from '../cards/DeliveryPreferenceCard';
+import FetchingSpinner from '../loaders/FetchingSpinner';
 import {
   BottomSheet,
   BottomSheetBackdrop,
@@ -43,6 +45,8 @@ export function DeliveryPreferencesBottomSheet({
 }: DeliveryPreferencesBottomSheetProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
   const defaultSelectedIDs = useRef(selectedProps || []);
@@ -90,7 +94,7 @@ export function DeliveryPreferencesBottomSheet({
   }
 
   const renderItem = useCallback<ListRenderItem<DeliveryPreference>>(
-    ({ item, extraData: { selected } }) => {
+    ({ item, extraData: { selected, isLoading } }) => {
       const selectedItems = selected as DeliveryPreferenceSchema[];
       const isSelected = selectedItems.some((selected) => selected.id === item.id);
 
@@ -112,6 +116,7 @@ export function DeliveryPreferencesBottomSheet({
           <DeliveryPreferenceCard
             preference={item}
             isSelected={isSelected}
+            isLoading={isLoading}
             onEditPress={() => {
               handleClose();
             }}
@@ -139,21 +144,18 @@ export function DeliveryPreferencesBottomSheet({
   const FooterComponent = useCallback(() => {
     const isEmpty = preferences?.length === 0;
     if (isEmpty) return null;
+
+    function handleCreateNew() {
+      router.push('/delivery-preference/create');
+      handleClose();
+    }
     return (
-      <Button size="sm" variant="link" action="default">
+      <Button size="sm" variant="link" action="default" onPress={handleCreateNew}>
         <ButtonIcon as={PlusIcon} />
         <ButtonText>Create New</ButtonText>
       </Button>
     );
-  }, [preferences]);
-
-  if (isLoading || isFetching) {
-    return (
-      <Box className="bg-background-500 h-full w-full items-center justify-center opacity-70">
-        <Spinner size="large" />
-      </Box>
-    );
-  }
+  }, [preferences?.length, router]);
 
   return (
     <BottomSheet sheetModalRef={bottomSheetModalRef}>
@@ -189,7 +191,7 @@ export function DeliveryPreferencesBottomSheet({
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
-            extraData={{ selected }}
+            extraData={{ selected, isLoading }}
             ListEmptyComponent={EmptyComponent}
             contentContainerStyle={{
               paddingBottom: insets.bottom + 24,
@@ -239,6 +241,8 @@ export function DeliveryPreferencesBottomSheet({
             )}
           </AnimatePresence>
         </VStack>
+
+        <FetchingSpinner isFetching={isFetching} />
       </BottomSheetModalPortal>
     </BottomSheet>
   );

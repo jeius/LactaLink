@@ -5,7 +5,7 @@ import { nullTransform } from './transformers';
 export const deliveryPreferenceSchema = z.object({
   id: z.uuid().optional(),
   name: z.string().transform(nullTransform).optional().nullable(),
-  address: z.uuid().nonempty('Address is required.'),
+  address: z.uuid('Address is required.').nonempty('Address is required.'),
   preferredMode: z
     .array(
       z.enum(

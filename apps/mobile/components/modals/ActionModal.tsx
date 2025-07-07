@@ -1,5 +1,5 @@
 import { LucideIcon, LucideProps } from 'lucide-react-native';
-import React, { ComponentProps, FC, useState } from 'react';
+import React, { ComponentProps, FC, ReactNode, useState } from 'react';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import {
   Modal,
@@ -22,7 +22,7 @@ interface ActionModalProps extends ButtonProps {
   confirmAction?: ButtonProps['action'];
   cancelLabel?: string;
   title?: string;
-  description?: string;
+  description?: string | ReactNode;
 }
 
 export default function ActionModal({
@@ -67,7 +67,9 @@ export default function ActionModal({
               {title}
             </Text>
           </ModalHeader>
-          <ModalBody>{<Text>{description}</Text>}</ModalBody>
+          <ModalBody>
+            {typeof description === 'string' ? <Text>{description}</Text> : description}
+          </ModalBody>
           <ModalFooter>
             <Button action="default" variant="outline" onPress={handleCancel}>
               <ButtonText>{cancelLabel}</ButtonText>
