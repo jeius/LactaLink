@@ -175,6 +175,7 @@ export const addresses = pgTable(
     }),
     name: varchar('name'),
     default: boolean('default').default(false),
+    zipCode: varchar('zip_code'),
     province: uuid('province_id')
       .notNull()
       .references(() => provinces.id, {

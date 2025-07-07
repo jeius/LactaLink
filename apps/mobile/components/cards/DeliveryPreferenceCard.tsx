@@ -4,6 +4,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Address, DeliveryPreference } from '@lactalink/types';
 import { formatDaysToText } from '@lactalink/utilities';
 import { CalendarDaysIcon, EditIcon, MapPinIcon } from 'lucide-react-native';
+import { GestureResponderEvent } from 'react-native';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon } from '../ui/button';
@@ -35,6 +36,11 @@ export default function DeliveryPreferenceCard({
   const addressName = (address as Address).displayName;
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays);
+
+  function handleEditPress(event: GestureResponderEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
 
   return (
     <Card className={cardStyle({ isSelected })}>
@@ -82,7 +88,7 @@ export default function DeliveryPreferenceCard({
         </VStack>
 
         <VStack space="md" className="bg-primary-100 justify-center p-4">
-          <Button className="h-fit w-fit p-4">
+          <Button className="h-fit w-fit p-4" onPress={handleEditPress}>
             <ButtonIcon as={EditIcon} />
           </Button>
         </VStack>

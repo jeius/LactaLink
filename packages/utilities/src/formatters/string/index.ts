@@ -103,5 +103,5 @@ export function formatDaysToText(days: (keyof typeof DAYS)[]): string {
   if (days.length === 0) return 'No days specified';
   if (days.length === 7) return 'Any day';
 
-  return days.map((day) => DAYS[day].label).join(',');
+  return days.map((day) => DAYS[day].label).join(', ');
 }
