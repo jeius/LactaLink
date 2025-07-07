@@ -1,8 +1,8 @@
 import { LOCATION_UPDATES } from '@/lib/constants/taskNames';
 import { startBackgroundLocationUpdates, startForgroundLocationUpdates } from '@/lib/location';
-import { useFocusEffect } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
+import { useFocusEffect } from 'expo-router';
 import * as TaskManager from 'expo-task-manager';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
