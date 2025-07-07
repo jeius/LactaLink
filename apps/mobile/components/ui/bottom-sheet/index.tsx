@@ -16,6 +16,7 @@ import GorhomBottomSheet, {
   SNAP_POINT_TYPE,
 } from '@gorhom/bottom-sheet';
 import { FocusScope } from '@react-native-aria/focus';
+import { useIsFocused } from '@react-navigation/native';
 import { cssInterop } from 'nativewind';
 import React, {
   createContext,
@@ -82,6 +83,7 @@ const BottomSheetContext = createContext<{
   bottomSheetModalRef: React.RefObject<GorhomBottomSheetModal | null>;
   handleClose: () => void;
   handleOpen: () => void;
+  isFocused?: boolean;
 }>({
   visible: false,
   bottomSheetRef: { current: null },
@@ -121,6 +123,8 @@ export const BottomSheet = ({
   const ref = sheetRef || bottomSheetRef;
   const modalRef = sheetModalRef || bottomSheetModalRef;
 
+  const isFocused = useIsFocused();
+
   const [visible, setVisible] = useState(defaultOpen);
 
   const handleOpen = useCallback(() => {
@@ -152,6 +156,7 @@ export const BottomSheet = ({
         bottomSheetModalRef: modalRef,
         handleClose,
         handleOpen,
+        isFocused,
       }}
     >
       {props.children}
@@ -170,7 +175,7 @@ export const BottomSheetPortal = ({
   defaultIsOpen?: boolean;
   snapToIndex?: number;
 }) => {
-  const { bottomSheetRef, handleClose, visible } = useContext(BottomSheetContext);
+  const { bottomSheetRef, handleClose, visible, isFocused } = useContext(BottomSheetContext);
   const { theme } = useTheme();
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);
@@ -185,12 +190,12 @@ export const BottomSheetPortal = ({
   );
 
   const backAction = useCallback(() => {
-    if (visible) {
+    if (visible && isFocused) {
       handleClose();
       return true; // Prevent default back button behavior
     }
     return false;
-  }, [handleClose, visible]);
+  }, [handleClose, isFocused, visible]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
@@ -228,7 +233,7 @@ export const BottomSheetModalPortal = ({
 }: Partial<IBottomSheetModalProps> & {
   snapToIndex?: number;
 }) => {
-  const { bottomSheetModalRef, handleClose, visible } = useContext(BottomSheetContext);
+  const { bottomSheetModalRef, handleClose, visible, isFocused } = useContext(BottomSheetContext);
   const { theme } = useTheme();
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);
@@ -241,12 +246,12 @@ export const BottomSheetModalPortal = ({
   );
 
   const backAction = useCallback(() => {
-    if (visible) {
+    if (visible && isFocused) {
       handleClose();
       return true; // Prevent default back button behavior
     }
     return false;
-  }, [handleClose, visible]);
+  }, [handleClose, isFocused, visible]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
