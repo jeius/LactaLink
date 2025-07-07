@@ -3,6 +3,7 @@ import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Address, DeliveryPreference } from '@lactalink/types';
 import { formatDaysToText } from '@lactalink/utilities';
+import { useRouter } from 'expo-router';
 import { CalendarDaysIcon, EditIcon, MapPinIcon } from 'lucide-react-native';
 import { GestureResponderEvent } from 'react-native';
 import { Image } from '../Image';
@@ -26,20 +27,26 @@ const cardStyle = tva({
 interface DeliveryPreferenceCardProps {
   preference: DeliveryPreference;
   isSelected?: boolean;
+  onEditPress?: () => void;
 }
 
 export default function DeliveryPreferenceCard({
   preference,
   isSelected,
+  onEditPress,
 }: DeliveryPreferenceCardProps) {
+  const router = useRouter();
+
   const { address, preferredMode, availableDays, name } = preference;
-  const addressName = (address as Address).displayName;
+  const addressDPName = (address as Address | undefined)?.displayName || 'Unknown Address';
+  const addressName = (address as Address | undefined)?.name || 'Unknown Address Name';
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays);
 
   function handleEditPress(event: GestureResponderEvent) {
+    onEditPress?.();
     event.stopPropagation();
-    event.preventDefault();
+    router.push(`/delivery-preference/edit/${preference.id}`);
   }
 
   return (
@@ -80,9 +87,14 @@ export default function DeliveryPreferenceCard({
 
             <HStack space="xs" className="items-start">
               <Icon as={MapPinIcon} className="text-primary-500" />
-              <Text size="sm" className="font-JakartaMedium flex-1">
-                {addressName}
-              </Text>
+              <VStack className="flex-1">
+                <Text size="sm" className="font-JakartaMedium">
+                  {addressName}
+                </Text>
+                <Text size="xs" className="font-JakartaMedium text-typography-700">
+                  {addressDPName}
+                </Text>
+              </VStack>
             </HStack>
           </VStack>
         </VStack>
@@ -93,6 +105,7 @@ export default function DeliveryPreferenceCard({
           </Button>
         </VStack>
       </HStack>
+
       {isSelected && (
         <Box
           className="bg-success-500 absolute right-0 top-0 px-4 py-2"

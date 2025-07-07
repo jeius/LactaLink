@@ -10,7 +10,7 @@ import {
   User,
 } from '@lactalink/types';
 
-import { extractAddressValues, extractID } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities';
 import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
@@ -70,7 +70,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
       if (preferences?.length) {
         data.deliveryPreferences = preferences.map((pref) => ({
           ...pref,
-          address: extractAddressValues(pref.address as Address),
+          address: extractID(pref.address as Address),
         }));
       }
 

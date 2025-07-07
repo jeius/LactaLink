@@ -8,7 +8,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
-import { CreateDonationRequestButton } from '@/components/CreateDonationRequestButton';
+import { DonateRequestModal } from '@/components/DonateRequestModal';
 import SafeArea from '@/components/SafeArea';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';
@@ -37,7 +37,7 @@ export default function Home() {
 
       <ScrollView>
         <VStack space="lg" className="mb-20 items-center justify-center p-5">
-          <CreateDonationRequestButton />
+          <DonateRequestModal />
 
           <Button action="default" onPress={handleSignOut}>
             <ButtonText>Sign out</ButtonText>
