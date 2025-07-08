@@ -7,6 +7,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import Animated, {
+  AnimatedStyle,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -14,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 export interface AnimatedPressableProps extends PressableProps {
-  containerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
 }
 
 export function AnimatedPressable({ children, containerStyle, ...props }: AnimatedPressableProps) {
