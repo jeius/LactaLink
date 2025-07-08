@@ -1,32 +1,34 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import GorhomBottomSheet, {
+  BottomSheetFooter,
+  BottomSheetScrollViewMethods as GorhomBottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 
-import { shadow } from '@/lib/utils/shadows';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon } from 'lucide-react-native';
-import { Dimensions } from 'react-native';
+import { Dimensions, NativeScrollEvent } from 'react-native';
 import MapView from 'react-native-maps';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
-import { RefreshControl } from '../RefreshControl';
 import {
   BottomSheet,
-  BottomSheetDragIndicator,
   BottomSheetFlashList,
   BottomSheetPortal,
   BottomSheetScrollView,
 } from '../ui/bottom-sheet';
+import { BottomSheetHandle } from '../ui/BottomSheetHandle';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
+import { FloatingScrollButton } from '../ui/FloatingScrollButton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { MapMarkerInfo } from './MapMarkerInfo';
 
-const DEFAULT_SNAP_POINT = 30;
+const DEFAULT_SNAP_POINT = 28;
 
 type Slug = Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
 
@@ -60,7 +62,10 @@ export function MapBottomSheet({
   requestQueryResult,
   mapRef,
 }: MapBottomSheetProps) {
-  const bottomSheetRef = useRef<GorhomBottomSheet>(null);
+  const sheetRef = useRef<GorhomBottomSheet>(null);
+  const scrollRef = useRef<GorhomBottomSheetScrollView>(null);
+  const [scrollEvent, setScrollEvent] = useState<NativeScrollEvent>();
+
   const [open, setOpen] = useState(true);
 
   const DEVICE_WIDTH = Dimensions.get('window').width;
@@ -75,8 +80,8 @@ export function MapBottomSheet({
   );
 
   const snapPoints = hasSelectedItem
-    ? [DEFAULT_SNAP_POINT, '45%']
-    : [DEFAULT_SNAP_POINT, 320, '82%'];
+    ? [DEFAULT_SNAP_POINT, '45%', '80%']
+    : [DEFAULT_SNAP_POINT, 320];
 
   const sections = useMemo((): Section[] => {
     return [
@@ -135,44 +140,37 @@ export function MapBottomSheet({
     [handleChanged]
   );
 
-  function RefreshComponent() {
-    const isRefreshing = donationQueryResult.isFetching || requestQueryResult.isFetching;
-    const onRefresh = () => {
-      if (!selected) {
-        donationQueryResult.refetch();
-        requestQueryResult.refetch();
-      }
-    };
-    return <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />;
-  }
-
   return (
     <BottomSheet
       open={open}
       setOpen={setOpen}
-      sheetRef={bottomSheetRef}
+      sheetRef={sheetRef}
       disableClose={true}
       snapToIndex={1}
     >
       <BottomSheetPortal
         snapPoints={snapPoints}
         snapToIndex={1}
-        handleComponent={(props) => (
-          <BottomSheetDragIndicator {...props} className="py-4" style={shadow.xs} />
-        )}
+        handleComponent={BottomSheetHandle}
         enablePanDownToClose={false}
-        enableContentPanningGesture={false}
+        enableContentPanningGesture={Boolean(selected)}
         enableDynamicSizing={false}
         animateOnMount={true}
         onChange={(index) => {
           setOpen(index > 0);
         }}
+        footerComponent={(props) => (
+          <BottomSheetFooter {...props} style={{ alignItems: 'flex-end', padding: 16 }}>
+            <FloatingScrollButton scrollViewRef={scrollRef} scrollEvent={scrollEvent} />
+          </BottomSheetFooter>
+        )}
       >
         <BottomSheetScrollView
-          refreshControl={<RefreshComponent />}
+          ref={scrollRef}
           focusHook={useFocusEffect}
           contentContainerClassName="gap-2 py-3"
-          onContentSizeChange={() => bottomSheetRef.current?.snapToIndex(1)}
+          onContentSizeChange={() => sheetRef.current?.snapToIndex(1)}
+          onScroll={({ nativeEvent }) => setScrollEvent(nativeEvent)}
         >
           {selected ? (
             <VStack className="items-start px-5">
