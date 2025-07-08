@@ -41,7 +41,7 @@ export function DeliveryPreferenceCard({
   });
 
   const address = typeof addressProp === 'string' ? addressDoc : addressProp;
-  const addressName = address?.name || 'Unknown Name';
+  const addressName = address?.name || 'Address';
   const fullAddress = address?.displayName || 'Unknown Address';
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays);

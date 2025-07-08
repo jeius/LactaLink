@@ -24,8 +24,8 @@ export default function MapPage() {
 
   const populate: Populate = {
     users: { profile: true },
-    addresses: { coordinates: true, displayName: true },
-    'delivery-preferences': { address: true, availableDays: true, preferredMode: true },
+    addresses: { coordinates: true, displayName: true, name: true },
+    'delivery-preferences': { address: true, availableDays: true, preferredMode: true, name: true },
   };
 
   const donationRes = useFetchBySlug(true, {

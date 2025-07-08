@@ -7,12 +7,13 @@ import { MapBottomSheetProps } from '../map/MapBottomSheet';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { VStack } from '../ui/vstack';
-interface InfoCardProps {
+
+interface MapMarkerInfoProps {
   selected: MapBottomSheetProps['value'];
   mapRef?: React.RefObject<MapView | null>;
 }
 
-export function MapMarkerInfo({ selected, mapRef }: InfoCardProps) {
+export function MapMarkerInfo({ selected, mapRef }: MapMarkerInfoProps) {
   if (!selected) return null;
 
   const { slug, data } = selected;

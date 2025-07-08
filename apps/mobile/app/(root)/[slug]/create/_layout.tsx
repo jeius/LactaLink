@@ -1,6 +1,5 @@
-import SafeArea from '@/components/SafeArea';
-import { Box } from '@/components/ui/box';
-import { Spinner } from '@/components/ui/spinner';
+import FetchingSpinner from '@/components/loaders/FetchingSpinner';
+import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
@@ -61,21 +60,13 @@ export default function Layout() {
   };
 
   if (isLoading) {
-    return (
-      <SafeArea className="items-center justify-center">
-        <Spinner size={'large'} />
-      </SafeArea>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <FormProvider {...form[searchParams.slug]}>
       <Stack screenOptions={{ headerShown: false, animation }} />
-      {isFetching && (
-        <Box className="absolute right-3 top-3">
-          <Spinner size={'small'} />
-        </Box>
-      )}
+      <FetchingSpinner isFetching={isFetching} />
     </FormProvider>
   );
 }

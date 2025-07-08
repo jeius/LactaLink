@@ -224,7 +224,7 @@ export const BottomSheetPortal = ({
       backdropComponent={BackDrop}
       onChange={handleSheetChanges}
       handleComponent={DragIndicator}
-      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 50 }}
+      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
       backgroundStyle={{ backgroundColor }}
       enablePanDownToClose={enablePanDownToClose}
       {...props}
@@ -280,7 +280,7 @@ export const BottomSheetModalPortal = ({
       backdropComponent={BackDrop}
       onChange={handleSheetChanges}
       handleComponent={DragIndicator}
-      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 50 }}
+      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
       backgroundStyle={{ backgroundColor }}
       enablePanDownToClose={enablePanDownToClose}
       {...props}

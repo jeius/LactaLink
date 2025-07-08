@@ -173,7 +173,9 @@ export function DeliveryPreferencesBottomSheet({
       <BottomSheetModalPortal
         snapPoints={['60%']}
         enableDynamicSizing={false}
-        handleComponent={(props) => <BottomSheetDragIndicator {...props} style={shadow.xs} />}
+        handleComponent={(props) => (
+          <BottomSheetDragIndicator {...props} className="py-4" style={shadow.xs} />
+        )}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} className="bg-background-500" />
         )}
