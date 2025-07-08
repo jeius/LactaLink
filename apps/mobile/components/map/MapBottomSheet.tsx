@@ -2,7 +2,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import GorhomBottomSheet, {
-  BottomSheetFooter,
   BottomSheetScrollViewMethods as GorhomBottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 
@@ -10,7 +9,7 @@ import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalin
 import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon } from 'lucide-react-native';
-import { Dimensions, NativeScrollEvent } from 'react-native';
+import { Dimensions } from 'react-native';
 import MapView from 'react-native-maps';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
 import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
@@ -23,7 +22,6 @@ import {
 import { BottomSheetHandle } from '../ui/BottomSheetHandle';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
-import { FloatingScrollButton } from '../ui/FloatingScrollButton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { MapMarkerInfo } from './MapMarkerInfo';
@@ -64,8 +62,6 @@ export function MapBottomSheet({
 }: MapBottomSheetProps) {
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const scrollRef = useRef<GorhomBottomSheetScrollView>(null);
-  const [scrollEvent, setScrollEvent] = useState<NativeScrollEvent>();
-
   const [open, setOpen] = useState(true);
 
   const DEVICE_WIDTH = Dimensions.get('window').width;
@@ -159,18 +155,12 @@ export function MapBottomSheet({
         onChange={(index) => {
           setOpen(index > 0);
         }}
-        footerComponent={(props) => (
-          <BottomSheetFooter {...props} style={{ alignItems: 'flex-end', padding: 16 }}>
-            <FloatingScrollButton scrollViewRef={scrollRef} scrollEvent={scrollEvent} />
-          </BottomSheetFooter>
-        )}
       >
         <BottomSheetScrollView
           ref={scrollRef}
           focusHook={useFocusEffect}
           contentContainerClassName="gap-2 py-3"
           onContentSizeChange={() => sheetRef.current?.snapToIndex(1)}
-          onScroll={({ nativeEvent }) => setScrollEvent(nativeEvent)}
         >
           {selected ? (
             <VStack className="items-start px-5">
