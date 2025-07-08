@@ -8,7 +8,7 @@ import { COLLECTION_GROUP, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 
 import { CollectionConfig } from 'payload';
 
-import { authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { filterOptions } from './filterOptions';
 import { generateName } from './hooks/generateName';
 
@@ -22,8 +22,8 @@ export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
   access: {
     read: authenticated,
     create: authenticated,
-    update: collectionCreatorOrAdmin,
-    delete: collectionCreatorOrAdmin,
+    update: collectionOwnerOrAdmin,
+    delete: collectionOwnerOrAdmin,
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateOwner, generateName],
