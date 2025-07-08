@@ -232,8 +232,7 @@ export class ApiClient implements IApiClient {
     args: FindByIDArgs<Slug>
   ): Promise<Collection<Slug>> => {
     const { collection, id, ...searchParams } = args;
-    const queryParams = { ...searchParams, pagination: false };
-    const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
 
     return this._makeApiRequest<Collection<Slug>>(endpoint, 'DELETE');
   };

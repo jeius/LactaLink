@@ -27,8 +27,8 @@ export async function apiFetch<T, Slug extends CollectionSlug = CollectionSlug>(
     const res = await fetch(url, { method, headers, body });
 
     if (!res.ok) {
-      const data = (await res.json()) as { message?: string };
-      throw new Error(data.message || 'Unknown error occured while fetching from api.');
+      const data = (await res.json()) as { message?: string } | { errors: { message?: string[] } };
+      throw new Error(extractErrorMessage('errors' in data ? data.errors : data));
     }
 
     const data = (await res.json()) as T;
