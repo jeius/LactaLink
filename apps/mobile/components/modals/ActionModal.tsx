@@ -18,6 +18,7 @@ interface ActionModalProps extends ButtonProps {
   onCancel?: () => void;
   triggerLabel?: string;
   triggerIcon?: LucideIcon | FC<LucideProps>;
+  onTriggerPress?: () => void | Promise<void>;
   confirmLabel?: string;
   confirmAction?: ButtonProps['action'];
   cancelLabel?: string;
@@ -25,7 +26,7 @@ interface ActionModalProps extends ButtonProps {
   description?: string | ReactNode;
 }
 
-export default function ActionModal({
+export function ActionModal({
   onCancel,
   onConfirm,
   triggerIcon,
@@ -35,12 +36,24 @@ export default function ActionModal({
   title = 'Confirm Action',
   description = 'Are you sure you want to proceed with this action? This action cannot be undone.',
   confirmAction,
+  onTriggerPress,
   ...props
 }: ActionModalProps) {
   const [open, setOpen] = useState(false);
 
   function toggleModal() {
     setOpen((prev) => !prev);
+  }
+
+  async function handleTriggerPress() {
+    try {
+      await onTriggerPress?.();
+    } catch (_) {
+      // If onTriggerPress throws an error, we stop the modal from opening.
+      // This is useful if the trigger is a form submit button that might fail validation.
+      return;
+    }
+    toggleModal();
   }
 
   function handleConfirm() {
@@ -55,7 +68,7 @@ export default function ActionModal({
 
   return (
     <>
-      <Button {...props} onPress={() => setOpen(true)}>
+      <Button {...props} onPress={handleTriggerPress}>
         {triggerIcon && <ButtonIcon as={triggerIcon} />}
         <ButtonText>{triggerLabel}</ButtonText>
       </Button>

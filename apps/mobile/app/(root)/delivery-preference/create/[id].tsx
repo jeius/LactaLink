@@ -3,24 +3,18 @@ import { useFormContext } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
+import { DeliveryPreferenceCard } from '@/components/cards/DeliveryPreferenceCard';
 import { FormField } from '@/components/FormField';
-import { Image } from '@/components/Image';
-import ActionModal from '@/components/modals/ActionModal';
+import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
-import { formatDaysToText } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -60,6 +54,13 @@ export default function EditPage() {
 
     form.reset(formData);
     router.back();
+  }
+
+  async function handleValidation() {
+    const isValid = await form.trigger();
+    if (!isValid) {
+      throw new Error('Form validation failed');
+    }
   }
 
   return (
@@ -131,86 +132,18 @@ export default function EditPage() {
 
           <ActionModal
             action="positive"
-            title="Review Delivery Preference"
-            description={<Description data={formData} />}
+            title="Review Submit"
+            description={
+              <DeliveryPreferenceCard preference={formData} variant="ghost" className="p-0" />
+            }
             triggerLabel="Submit"
+            onTriggerPress={handleValidation}
             onConfirm={submit}
             isDisabled={isSubmitting}
           />
         </VStack>
       </ScrollView>
     </SafeArea>
-  );
-}
-
-function Description({ data }: { data: DeliveryPreferenceSchema }) {
-  const { name, preferredMode, availableDays, address: addressID } = data;
-  const deliveryMode = preferredMode.map((mode) => DELIVERY_OPTIONS[mode].label).join(', ');
-  const availableDaysText = formatDaysToText(availableDays);
-
-  const {
-    data: address,
-    isLoading,
-    isFetching,
-  } = useFetchById(Boolean(addressID), {
-    collection: 'addresses',
-    id: addressID,
-    select: { name: true, displayName: true },
-    depth: 0,
-  });
-
-  const addressDPName = address?.displayName;
-  const addressName = address?.name;
-
-  return (
-    <VStack space="sm">
-      <Text>
-        Name: <Text className="font-JakartaMedium">{name}</Text>
-      </Text>
-      <HStack space="sm" className="flex-wrap items-center">
-        {preferredMode.map((mode, index) => {
-          const iconAsset = getDeliveryPreferenceIcon(mode);
-          return (
-            <HStack
-              key={index}
-              space="xs"
-              className="border-primary-500 items-center rounded-md border px-2 py-1"
-            >
-              <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 16, height: 16 }} />
-              <Text size="sm" className="text-primary-500 font-JakartaMedium">
-                {DELIVERY_OPTIONS[mode].label}
-              </Text>
-            </HStack>
-          );
-        })}
-      </HStack>
-
-      <HStack space="xs">
-        <Icon as={CalendarDaysIcon} className="text-primary-500" />
-        <Text className="font-JakartaMedium flex-1">{availableDaysText}</Text>
-      </HStack>
-
-      {addressDPName && addressName && (
-        <HStack space="xs">
-          <Icon as={MapPinIcon} className="text-primary-500" />
-          <VStack className="flex-1">
-            {isLoading || isFetching ? (
-              <>
-                <Skeleton variant="rounded" className="mb-1 h-5 w-40" />
-                <Skeleton variant="rounded" className="h-4" />
-              </>
-            ) : (
-              <>
-                <Text className="font-JakartaMedium">{addressName}</Text>
-                <Text size="sm" className="font-JakartaMedium text-typography-700">
-                  {addressDPName}
-                </Text>
-              </>
-            )}
-          </VStack>
-        </HStack>
-      )}
-    </VStack>
   );
 }
 

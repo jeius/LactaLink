@@ -4,13 +4,14 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
 import { FormField } from '@/components/FormField';
-import ActionModal from '@/components/modals/ActionModal';
+import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
@@ -119,6 +120,7 @@ export default function EditPage() {
                 placeholder="e.g. Home Delivery, Office Delivery"
                 helperText="Give a name to your delivery preference."
                 keyboardType="default"
+                autoCapitalize="words"
               />
             </Card>
 
@@ -171,7 +173,12 @@ export default function EditPage() {
             <ActionModal
               action="negative"
               title="Confirm Delete"
-              description={`Are you sure you want to delete "${name}"?`}
+              description={
+                <Text>
+                  Are you sure you want to delete{' '}
+                  {<Text className="font-JakartaSemiBold">{name}</Text>}?
+                </Text>
+              }
               confirmLabel="Delete"
               triggerIcon={TrashIcon}
               triggerLabel="Delete Delivery Preference"

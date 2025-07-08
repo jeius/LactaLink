@@ -11,7 +11,6 @@ import { ChevronLeftIcon } from 'lucide-react-native';
 import { Dimensions } from 'react-native';
 import MapView from 'react-native-maps';
 import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
-import InfoCard from '../cards/InfoCard';
 import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
 import { RefreshControl } from '../RefreshControl';
 import {
@@ -25,6 +24,7 @@ import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+import { MapMarkerInfo } from './MapMarkerInfo';
 
 const DEFAULT_SNAP_POINT = 30;
 
@@ -180,7 +180,7 @@ export function MapBottomSheet({
                 <ButtonIcon as={ChevronLeftIcon} />
                 <ButtonText>Back</ButtonText>
               </Button>
-              <InfoCard mapRef={mapRef} selected={selected} />
+              <MapMarkerInfo mapRef={mapRef} selected={selected} />
             </VStack>
           ) : (
             sections.map((section, index) => {

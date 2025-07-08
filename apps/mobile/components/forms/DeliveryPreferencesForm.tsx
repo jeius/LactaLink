@@ -1,11 +1,12 @@
 import { VStack } from '@/components/ui/vstack';
-import { AlertCircleIcon, TruckIcon, XIcon } from 'lucide-react-native';
+import { AlertCircleIcon, EditIcon, TruckIcon, XIcon } from 'lucide-react-native';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { DeliveryPreferenceSchema } from '@lactalink/types';
+import { useRouter } from 'expo-router';
 import { FieldPath, FieldValues, useFieldArray, useFormContext } from 'react-hook-form';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
-import { DPCard } from '../cards/DPCard';
+import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
 import { Box } from '../ui/box';
 import {
   FormControl,
@@ -25,6 +26,7 @@ export function DeliveryPreferencesForm({
   name = 'deliveryPreferences',
 }: DeliveryPreferencesFormProps) {
   const { fields, remove } = useFieldArray({ name });
+  const router = useRouter();
 
   const form = useFormContext();
   const { error } = form.getFieldState(name);
@@ -37,6 +39,10 @@ export function DeliveryPreferencesForm({
     form.setValue(name, newPreferences);
   }
 
+  function handleEditAction(id?: string) {
+    if (id) router.push(`/delivery-preference/edit/${id}`);
+  }
+
   return (
     <FormControl isInvalid={!!error} isDisabled={isSubmitting}>
       <FormControlLabel className="justify-between">
@@ -47,18 +53,33 @@ export function DeliveryPreferencesForm({
       <VStack space="md" className="max-w-md">
         {fields.map((field, i) => (
           <Box key={field.id} className="relative">
-            <DPCard preference={preferences[i]!} />
-            <Box className="absolute right-0 top-0">
-              <Button
-                action="negative"
-                variant="link"
-                className="h-fit w-fit p-4"
-                isDisabled={disableRemove}
-                onPress={() => remove(i)}
-              >
-                <ButtonIcon as={XIcon} />
-              </Button>
-            </Box>
+            <DeliveryPreferenceCard
+              preference={preferences[i]!}
+              action={
+                <VStack space="lg">
+                  <Button
+                    action="negative"
+                    variant="link"
+                    className="h-fit w-fit"
+                    isDisabled={disableRemove}
+                    onPress={() => remove(i)}
+                    hitSlop={8}
+                  >
+                    <ButtonIcon as={XIcon} />
+                  </Button>
+                  <Button
+                    action="secondary"
+                    variant="link"
+                    className="h-fit w-fit"
+                    onPress={() => handleEditAction(preferences[i]!.id)}
+                    hitSlop={8}
+                  >
+                    <ButtonIcon as={EditIcon} />
+                  </Button>
+                </VStack>
+              }
+            />
+            <Box className="absolute right-0 top-0"></Box>
           </Box>
         ))}
 

@@ -106,7 +106,7 @@ function FormField<
     fieldType === 'button-group' ? (props as unknown as ButtonGroupInputType<unknown>) : undefined;
 
   const {
-    size: labelIconSize = 'xl',
+    size: labelIconSize = 'lg',
     className: labelIconClassName,
     ...restOfLabelIconProps
   } = labelIconProps || {};

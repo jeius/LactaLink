@@ -15,7 +15,7 @@ import { AnimatedMapView } from 'react-native-maps/src/MapView';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
-import { DonateRequestModal } from '../DonateRequestModal';
+import { DonateRequestModal } from '../modals';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Input, InputField, InputIcon } from '../ui/input';

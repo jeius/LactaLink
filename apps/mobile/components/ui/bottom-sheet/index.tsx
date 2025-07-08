@@ -1,3 +1,4 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { getHexColor } from '@/lib/colors';
 import { VariantProps } from '@gluestack-ui/nativewind-utils';
@@ -95,18 +96,7 @@ const BottomSheetContext = createContext<{
 type IBottomSheetProps = React.ComponentProps<typeof GorhomBottomSheet>;
 type IBottomSheetModalProps = React.ComponentProps<typeof GorhomBottomSheetModal>;
 
-export const BottomSheet = ({
-  snapToIndex = 0,
-  onOpen,
-  onClose,
-  open,
-  setOpen,
-  defaultOpen = false,
-  sheetRef,
-  sheetModalRef,
-  disableClose = false,
-  ...props
-}: {
+interface BottomSheetProps {
   snapToIndex?: number;
   children?: React.ReactNode;
   open?: boolean;
@@ -117,7 +107,20 @@ export const BottomSheet = ({
   sheetRef?: React.RefObject<GorhomBottomSheet | null>;
   sheetModalRef?: React.RefObject<GorhomBottomSheetModal | null>;
   disableClose?: boolean;
-}) => {
+}
+
+export const BottomSheet = ({
+  snapToIndex = 0,
+  onOpen,
+  onClose,
+  open,
+  setOpen,
+  defaultOpen = false,
+  sheetRef,
+  sheetModalRef,
+  disableClose = false,
+  children,
+}: BottomSheetProps) => {
   const bottomSheetRef = useRef<GorhomBottomSheet>(null);
   const bottomSheetModalRef = useRef<GorhomBottomSheetModal>(null);
   const ref = sheetRef || bottomSheetRef;
@@ -148,6 +151,16 @@ export const BottomSheet = ({
     onClose?.();
   }, [disableClose, modalRef, onClose, ref, setOpen]);
 
+  useEffect(() => {
+    if (open !== undefined) {
+      if (open) {
+        handleOpen();
+      } else {
+        handleClose();
+      }
+    }
+  }, [handleClose, handleOpen, open]);
+
   return (
     <BottomSheetContext.Provider
       value={{
@@ -159,7 +172,7 @@ export const BottomSheet = ({
         isFocused,
       }}
     >
-      {props.children}
+      {children}
     </BottomSheetContext.Provider>
   );
 };
@@ -283,7 +296,7 @@ export const BottomSheetTrigger = ({
 }: PressableProps & { className?: string }) => {
   const { handleOpen } = useContext(BottomSheetContext);
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={(e) => {
         props.onPress && props.onPress(e);
         handleOpen();
@@ -294,7 +307,7 @@ export const BottomSheetTrigger = ({
       })}
     >
       {props.children}
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 type IBottomSheetBackdrop = React.ComponentProps<typeof GorhomBottomSheetBackdrop>;

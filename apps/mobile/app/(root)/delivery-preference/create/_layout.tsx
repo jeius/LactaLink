@@ -63,7 +63,7 @@ export default function Layout() {
           headerLeft: () => <HeaderBackButton disable={isFormDirty} message={message} />,
         }}
       />
-      <FetchingSpinner isFetching={isFetching} />
+      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
   );
 }

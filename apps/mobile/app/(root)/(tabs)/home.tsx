@@ -8,7 +8,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
-import { DonateRequestModal } from '@/components/DonateRequestModal';
+import { DonateRequestModal } from '@/components/modals/DonateRequestModal';
 import SafeArea from '@/components/SafeArea';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useRouter } from 'expo-router';

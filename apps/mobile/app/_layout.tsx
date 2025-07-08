@@ -9,6 +9,14 @@ import { ApiClientConfig } from '@lactalink/types';
 import '@/global.css';
 import 'react-native-get-random-values';
 
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false,
+});
+
 const config: ApiClientConfig = {
   apiUrl: API_URL,
   supabase,

@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { ComponentProps, ReactNode, useState } from 'react';
 import { GestureResponderEvent } from 'react-native';
-import { Icon } from './ui/icon';
+import { Icon } from '../ui/icon';
 
 interface ModalProps extends ComponentProps<typeof Modal> {
   trigger?: ReactNode;
