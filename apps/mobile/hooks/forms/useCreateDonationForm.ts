@@ -31,6 +31,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
     refetch: refetchPreferences,
     isLoading: isLoadingPreferences,
     isFetching: isFetchingPreferences,
+    error: preferencesError,
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
@@ -42,6 +43,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
     data: matchedRequestDoc,
     isLoading: isLoadingRequests,
     isFetching: isFetchingRequests,
+    error: requestsError,
   } = useFetchById(Boolean(matchedRequest), {
     collection: 'requests',
     id: matchedRequest,
@@ -49,6 +51,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
 
   const isLoading = isLoadingPreferences || isLoadingRequests;
   const isFetching = isFetchingPreferences || isFetchingRequests;
+  const error = preferencesError || requestsError;
 
   const form = useForm({
     resolver: zodResolver(donationSchema),
@@ -128,7 +131,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey, refetchPreferences]);
 
-  return { form, isLoading, isFetching };
+  return { form, isLoading, isFetching, error };
 };
 
 function getData({ user, profile }: Params): DonationSchema | undefined {

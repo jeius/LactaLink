@@ -22,3 +22,12 @@ export type DonationRequestParams = {
       matchedDonation?: string;
     }
 );
+
+export type DonationCreateSearchParams = {
+  matchedRequest?: string;
+};
+
+export type RequestSearchParams = {
+  requestedDonorId?: string;
+  matchedDonation?: string;
+};

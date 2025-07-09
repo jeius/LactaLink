@@ -54,6 +54,7 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
     refetch,
     isLoading,
     isFetching,
+    error,
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
@@ -130,5 +131,5 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey, refetch]);
 
-  return { form, isLoading, isFetching };
+  return { form, isLoading, isFetching, error };
 };

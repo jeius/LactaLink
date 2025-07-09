@@ -31,7 +31,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   const handleDonatePressed = () => {
     setOpen(false);
     setTimeout(() => {
-      router.push('/donations/create/details', {
+      router.push('/donations/create', {
         withAnchor: true,
       });
     }, 100); // Delay to allow modal to close before navigating
@@ -40,7 +40,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   const handleRequestPressed = () => {
     setOpen(false);
     setTimeout(() => {
-      router.push('/requests/create/details', {
+      router.push('/requests/create', {
         withAnchor: true,
       });
     }, 100); // Delay to allow modal to close before navigating
