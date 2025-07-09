@@ -128,7 +128,7 @@ export function DeliveryPreferencesBottomSheet({
 
   const handleCreateNew = useCallback(() => {
     handleClose();
-    router.push('/delivery-preference/create');
+    router.push('/delivery-preferences/create');
   }, [router]);
 
   const EmptyComponent = useCallback(() => {
@@ -278,7 +278,7 @@ function PreferenceCard({ isLoading, isSelected, preference, onEditPress }: Pref
   function handleEditPress(event: GestureResponderEvent) {
     onEditPress?.();
     event.stopPropagation();
-    router.push(`/delivery-preference/edit/${preference.id}`);
+    router.push(`/delivery-preferences/edit/${preference.id}`);
   }
 
   return (

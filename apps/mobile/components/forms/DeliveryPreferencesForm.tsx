@@ -40,7 +40,7 @@ export function DeliveryPreferencesForm({
   }
 
   function handleEditAction(id?: string) {
-    if (id) router.push(`/delivery-preference/edit/${id}`);
+    if (id) router.push(`/delivery-preferences/edit/${id}`);
   }
 
   return (
