@@ -1,12 +1,12 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
 export const skeletonStyle = tva({
-  base: 'w-full h-full',
+  base: 'h-full w-full',
   variants: {
     variant: {
       sharp: 'rounded-none',
       circular: 'rounded-full',
-      rounded: 'rounded-md',
+      rounded: 'rounded-lg',
     },
     speed: {
       1: 'duration-75',
@@ -17,7 +17,7 @@ export const skeletonStyle = tva({
   },
 });
 export const skeletonTextStyle = tva({
-  base: 'rounded-sm w-full',
+  base: 'w-full rounded-sm',
   variants: {
     speed: {
       1: 'duration-75',

@@ -20,7 +20,7 @@ const Skeleton = forwardRef<React.ComponentRef<typeof Animated.View>, ISkeletonP
   function Skeleton(
     {
       className,
-      variant,
+      variant = 'rounded',
       children,
       startColor = 'bg-background-200',
       isLoaded = false,
