@@ -3,8 +3,10 @@ import { BLUR_HASH, PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
 import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
 import React from 'react';
 
+import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { formatDate } from '@lactalink/utilities';
+import { useRouter } from 'expo-router';
 import Avatar from '../Avatar';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
@@ -43,6 +45,13 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
 
   const milkImage = image as ImageType | undefined | null;
   const imageUrl = milkImage?.sizes?.large?.url || milkImage?.sizes?.medium?.url || milkImage?.url;
+
+  const router = useRouter();
+
+  function handleDonatePress() {
+    const params: DonationCreateSearchParams = { matchedRequest: data.id };
+    router.push({ pathname: '/donations/create', params });
+  }
 
   return (
     <Card className="w-full">
@@ -128,7 +137,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
           </Textarea>
         </VStack>
 
-        <Button>
+        <Button onPress={handleDonatePress}>
           <ButtonText>Donate</ButtonText>
         </Button>
       </VStack>

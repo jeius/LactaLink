@@ -184,7 +184,7 @@ function ImageArray({
           <HStack space="sm" className="flex-wrap">
             {fields.map((field, i) => {
               return isLoading ? (
-                <Skeleton speed={4} variant="rounded" className="h-24 w-20" />
+                <Skeleton key={field.id} speed={4} variant="rounded" className="h-24 w-20" />
               ) : (
                 <DraggableWrapper
                   disabled

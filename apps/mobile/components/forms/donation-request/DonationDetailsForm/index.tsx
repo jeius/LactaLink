@@ -2,21 +2,30 @@ import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
+import { DonationSchema } from '@lactalink/types';
 import React from 'react';
 import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
   isLoading?: boolean;
-  matchedRequestId?: string;
+  matchedRequest?: DonationSchema['matchedRequest'];
 }
 
 export function DonationDetailsForm({
   isLoading: isLoadingProp,
-  matchedRequestId,
+  matchedRequest,
 }: DonationDetailsFormProps) {
-  const isLoading = Boolean(matchedRequestId) && isLoadingProp;
+  const hasMatchedRequest = Boolean(matchedRequest);
+  const isLoading = hasMatchedRequest && isLoadingProp;
+
+  const {} = useFetchById(hasMatchedRequest, {
+    collection: 'requests',
+    id: matchedRequest?.id,
+    populate: { users: { profile: true, profileType: true, role: true } },
+  });
 
   return (
     <VStack space="xl">
@@ -70,7 +79,9 @@ export function DonationDetailsForm({
         />
       </Box>
 
-      <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
+      {!hasMatchedRequest && (
+        <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
+      )}
     </VStack>
   );
 }

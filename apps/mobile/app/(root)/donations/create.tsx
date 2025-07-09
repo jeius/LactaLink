@@ -1,7 +1,6 @@
 import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
-import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
@@ -25,7 +24,7 @@ import { toast } from 'sonner-native';
 export default function CreateDonationRequest() {
   //#region Hooks
   const router = useRouter();
-  const { matchedRequest } = useLocalSearchParams<DonationCreateSearchParams>();
+  const { matchedRequest: matchedRequestID } = useLocalSearchParams<DonationCreateSearchParams>();
 
   const {
     user,
@@ -43,7 +42,7 @@ export default function CreateDonationRequest() {
   } = useCreateDonationForm({
     user,
     profile,
-    matchedRequest,
+    matchedRequest: matchedRequestID,
   });
   //#endregion
 
@@ -51,6 +50,7 @@ export default function CreateDonationRequest() {
   const isLoading = isAuthLoading || isFormLoading;
   const isFetching = isAuthFetching || isFormFetching;
   const error = authError || formError;
+  const matchedRequest = form.getValues('matchedRequest');
 
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
@@ -72,10 +72,6 @@ export default function CreateDonationRequest() {
     router.replace('/map');
   }
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
   if (!isLoading && error) {
     const params: ErrorSearchParams = { message: error.message };
     return <Redirect href={{ pathname: '/error', params }} />;
@@ -88,7 +84,7 @@ export default function CreateDonationRequest() {
       <SafeArea safeTop={false}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <VStack space="lg">
-            <DonationDetailsForm isLoading={isLoading} />
+            <DonationDetailsForm isLoading={isLoading} matchedRequest={matchedRequest} />
 
             <Button
               isDisabled={isSubmitting}
