@@ -4,6 +4,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
 import { FormField } from '@/components/FormField';
+import { FormBackToastAction } from '@/components/forms/FormBackToastAction';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -15,6 +16,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
+import { useFormPreventBack } from '@/hooks/useFormPreventBack';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
@@ -37,6 +39,8 @@ export default function EditPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  useFormPreventBack(<FormBackToastAction />);
 
   const { isLoading } = useDeliveryPreferenceForm(id);
 

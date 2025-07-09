@@ -5,6 +5,7 @@ import { toast } from 'sonner-native';
 
 import { DeliveryPreferenceCard } from '@/components/cards/DeliveryPreferenceCard';
 import { FormField } from '@/components/FormField';
+import { FormBackToastAction } from '@/components/forms/FormBackToastAction';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
+import { useFormPreventBack } from '@/hooks/useFormPreventBack';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
@@ -26,6 +28,8 @@ export default function EditPage() {
   const queryClient = useQueryClient();
 
   const { isLoading } = useDeliveryPreferenceForm();
+
+  useFormPreventBack(<FormBackToastAction />);
 
   const form = useFormContext<DeliveryPreferenceSchema>();
   const isSubmitting = form.formState.isSubmitting;
