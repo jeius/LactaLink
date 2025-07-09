@@ -36,6 +36,7 @@ import { CollectionSlug } from '@lactalink/types';
 
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Icon } from '../ui/icon';
+import { Skeleton } from '../ui/skeleton';
 import { ButtonGroupInput, ButtonGroupInputType } from './ButtonGroupInput';
 import { DateInput, DateInputType } from './DateInput';
 import { ImageUploadField, ImageUploadFieldType } from './ImageField';
@@ -157,8 +158,10 @@ function FormField<
         render={({ field }) => {
           switch (fieldType) {
             case 'textarea': {
-              const { className, ...rest } = textareaProps || {};
-              return (
+              const { className, isLoading, ...rest } = textareaProps || {};
+              return isLoading ? (
+                <Skeleton className="h-28" />
+              ) : (
                 <Textarea isDisabled={field.disabled} className={className}>
                   <TextareaInput
                     {...rest}
@@ -291,9 +294,16 @@ function FormField<
 
             case 'text':
             default: {
-              const { className, variant = 'outline', ...restInputProps } = inputFieldProps || {};
+              const {
+                className,
+                variant = 'outline',
+                isLoading,
+                ...restInputProps
+              } = inputFieldProps || {};
               const iconMargin = variant === 'underlined' ? 'm-3' : 'ml-3';
-              return (
+              return isLoading ? (
+                <Skeleton className="h-9" />
+              ) : (
                 <Input variant={variant} isDisabled={field.disabled} className={className}>
                   {inputIcon && (
                     <InputIcon as={inputIcon} className={`text-primary-500 ${iconMargin}`} />

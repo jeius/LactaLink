@@ -18,7 +18,11 @@ import { FlatList } from 'react-native-gesture-handler';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
 
-export default function MilkBagsField() {
+interface MilkBagsFieldProps {
+  isLoading?: boolean;
+}
+
+export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   const { profile } = useAuth();
   const flatListRef = useRef<FlatList>(null);
 
@@ -55,7 +59,12 @@ export default function MilkBagsField() {
         keyExtractor={(item) => item.id}
         horizontal
         renderItem={({ index }) => (
-          <RenderCard index={index} onRemove={handleRemove} disableRemove={disableRemove} />
+          <RenderCard
+            index={index}
+            isLoading={isLoading}
+            onRemove={handleRemove}
+            disableRemove={disableRemove}
+          />
         )}
         contentContainerStyle={{ paddingRight: 20 }}
         getItemLayout={(_, index) => ({
@@ -83,8 +92,14 @@ type RenderCardProps = {
   index: number;
   onRemove: (index: number) => void;
   disableRemove?: boolean;
+  isLoading?: boolean;
 };
-function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderCardProps) {
+function RenderCard({
+  index: i,
+  onRemove: handleRemove,
+  disableRemove,
+  isLoading,
+}: RenderCardProps) {
   return (
     <Card
       className="relative"
@@ -104,6 +119,7 @@ function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderC
             min={20}
             containerStyle={{ maxWidth: 160, width: '100%' }}
             helperText="Minimum 20 mL"
+            isLoading={isLoading}
           />
           <FormField
             name={`details.bags.${i}.quantity`}
@@ -116,6 +132,7 @@ function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderC
             min={1}
             containerStyle={{ maxWidth: 115, width: '100%' }}
             helperText="Minimum 1 bag"
+            isLoading={isLoading}
           />
         </HStack>
         <VStack space="md">
@@ -126,6 +143,7 @@ function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderC
             mode="date"
             placeholder="Select date..."
             containerStyle={{ maxWidth: 180, width: '100%' }}
+            isLoading={isLoading}
           />
           <FormField
             name={`details.bags.${i}.collectedAt`}
@@ -136,12 +154,13 @@ function RenderCard({ index: i, onRemove: handleRemove, disableRemove }: RenderC
             mode="time"
             showSetNowButton
             containerStyle={{ maxWidth: 180, width: '100%' }}
+            isLoading={isLoading}
           />
         </VStack>
       </VStack>
       <Box className="absolute bottom-0 right-0">
         <Button
-          isDisabled={disableRemove}
+          isDisabled={isLoading || disableRemove}
           action="negative"
           variant="link"
           className="h-fit w-fit p-5"

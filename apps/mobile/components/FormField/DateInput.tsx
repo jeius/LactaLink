@@ -13,6 +13,7 @@ import { CalendarRangeIcon, LucideIcon, LucideProps } from 'lucide-react-native'
 import React, { ComponentPropsWithoutRef, FC, useState } from 'react';
 import { Noop } from 'react-hook-form';
 import { Platform } from 'react-native';
+import { Skeleton } from '../ui/skeleton';
 
 const inputStyle = tva({
   base: '',
@@ -50,6 +51,7 @@ export type DateInputType = TInput & {
   placeholder?: string;
 
   datePickerOptions?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate'>;
+  isLoading?: boolean;
 };
 
 export type DateInputProps<T extends string = string> = DateInputType & {
@@ -113,6 +115,7 @@ export function DateInput({
   setNowLabel = 'Set Now',
   variant: textInputVariant = 'outline',
   datePickerOptions,
+  isLoading,
 }: DateInputProps) {
   const date = value ? new Date(value) : new Date(1999, 6, 6);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -164,39 +167,43 @@ export function DateInput({
 
   return (
     <VStack space="md">
-      <Input
-        isDisabled={isDisabled}
-        className={inputStyle({ className })}
-        style={[{ maxWidth: 200 }, style]}
-      >
-        {!hideIcon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
-        <InputSlot onPress={togglePicker} className="grow">
-          <InputField
-            onBlur={onBlur}
-            value={inputValue}
-            aria-disabled={isDisabled}
-            placeholder={placeholder}
-            textContentType="birthdate"
-            editable={false}
-            className="w-full"
-            variant={textInputVariant}
-          />
-        </InputSlot>
-
-        {showSetNowButton && (
-          <InputSlot>
-            <Button
-              variant="link"
-              size="sm"
-              className="pr-3"
-              disabled={isDisabled}
-              onPress={handleSetNow}
-            >
-              <ButtonText>{setNowLabel}</ButtonText>
-            </Button>
+      {isLoading ? (
+        <Skeleton className="h-9" />
+      ) : (
+        <Input
+          isDisabled={isDisabled}
+          className={inputStyle({ className })}
+          style={[{ maxWidth: 200 }, style]}
+        >
+          {!hideIcon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
+          <InputSlot onPress={togglePicker} className="grow">
+            <InputField
+              onBlur={onBlur}
+              value={inputValue}
+              aria-disabled={isDisabled}
+              placeholder={placeholder}
+              textContentType="birthdate"
+              editable={false}
+              className="w-full"
+              variant={textInputVariant}
+            />
           </InputSlot>
-        )}
-      </Input>
+
+          {showSetNowButton && (
+            <InputSlot>
+              <Button
+                variant="link"
+                size="sm"
+                className="pr-3"
+                disabled={isDisabled}
+                onPress={handleSetNow}
+              >
+                <ButtonText>{setNowLabel}</ButtonText>
+              </Button>
+            </InputSlot>
+          )}
+        </Input>
+      )}
 
       {showDatePicker && (
         <DateTimePicker

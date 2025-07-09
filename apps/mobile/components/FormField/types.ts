@@ -25,9 +25,9 @@ type FieldType =
   | 'button-group'
   | 'image';
 
-type TInputField = ComponentPropsWithoutRef<typeof InputField>;
+type TInputField = ComponentPropsWithoutRef<typeof InputField> & { isLoading?: boolean };
 
-type TTextareaInput = ComponentPropsWithoutRef<typeof TextareaInput>;
+type TTextareaInput = ComponentPropsWithoutRef<typeof TextareaInput> & { isLoading?: boolean };
 
 type ComboboxProps<T extends CollectionSlug> = ComboboxType<T>;
 

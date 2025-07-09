@@ -1,6 +1,7 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import React, { ComponentPropsWithoutRef } from 'react';
 import { Button, ButtonGroup, ButtonText } from '../ui/button';
+import { Skeleton } from '../ui/skeleton';
 
 const containerStyle = tva({
   base: 'flex-wrap',
@@ -12,6 +13,7 @@ export type ButtonGroupInputType<TValue> = Omit<TButtonGroup, 'children'> & {
   options: { label: string; value: TValue }[];
   allowMultipleSelection?: boolean;
   selectionLimit?: number;
+  isLoading?: boolean;
 };
 
 export interface ButtonGroupInputProps<TValue> extends ButtonGroupInputType<TValue> {
@@ -29,6 +31,7 @@ export function ButtonGroupInput<TValue = unknown>({
   isInvalid,
   flexDirection = 'row',
   className,
+  isLoading,
   ...props
 }: ButtonGroupInputProps<TValue>) {
   function handleSelectionChange(selectedValue: TValue) {
@@ -62,20 +65,24 @@ export function ButtonGroupInput<TValue = unknown>({
       flexDirection={flexDirection}
       className={containerStyle({ class: className })}
     >
-      {(options || []).map((option) => (
-        <Button
-          isDisabled={props.isDisabled}
-          key={String(option.value)}
-          variant={isSelected(option) ? 'solid' : 'outline'}
-          action={isInvalid ? 'negative' : 'primary'}
-          size="sm"
-          onPress={() => {
-            handleSelectionChange(option.value);
-          }}
-        >
-          <ButtonText>{option.label}</ButtonText>
-        </Button>
-      ))}
+      {(options || []).map((option) =>
+        isLoading ? (
+          <Skeleton speed={4} variant="rounded" className="h-9 w-24" />
+        ) : (
+          <Button
+            isDisabled={props.isDisabled}
+            key={String(option.value)}
+            variant={isSelected(option) ? 'solid' : 'outline'}
+            action={isInvalid ? 'negative' : 'primary'}
+            size="sm"
+            onPress={() => {
+              handleSelectionChange(option.value);
+            }}
+          >
+            <ButtonText>{option.label}</ButtonText>
+          </Button>
+        )
+      )}
     </ButtonGroup>
   );
 }

@@ -7,7 +7,17 @@ import React from 'react';
 import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import MilkBagsField from './milkbags';
 
-export function DonationDetailsForm() {
+interface DonationDetailsFormProps {
+  isLoading?: boolean;
+  matchedRequestId?: string;
+}
+
+export function DonationDetailsForm({
+  isLoading: isLoadingProp,
+  matchedRequestId,
+}: DonationDetailsFormProps) {
+  const isLoading = Boolean(matchedRequestId) && isLoadingProp;
+
   return (
     <VStack space="xl">
       <Text size="lg" className="font-JakartaSemiBold mx-5 mt-5">
@@ -21,6 +31,7 @@ export function DonationDetailsForm() {
           label="Select the type of milk you are donating."
           fieldType="button-group"
           options={Object.values(STORAGE_TYPES)}
+          isLoading={isLoading}
         />
 
         <FormField
@@ -29,10 +40,11 @@ export function DonationDetailsForm() {
           label="How did you collect the milk?"
           fieldType="button-group"
           options={Object.values(COLLECTION_MODES)}
+          isLoading={isLoading}
         />
       </VStack>
 
-      <MilkBagsField />
+      <MilkBagsField isLoading={isLoading} />
 
       <Box className="mx-5">
         <FormField
@@ -43,6 +55,7 @@ export function DonationDetailsForm() {
           selectionLimit={5}
           showCount
           helperText="Upload up to 5 images of the milk."
+          isLoading={isLoading}
         />
       </Box>
 
@@ -53,12 +66,11 @@ export function DonationDetailsForm() {
           fieldType="textarea"
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
+          isLoading={isLoading}
         />
       </Box>
 
-      <Box className="mx-5">
-        <DeliveryPreferencesForm name="deliveryPreferences" />
-      </Box>
+      <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
     </VStack>
   );
 }

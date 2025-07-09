@@ -11,9 +11,10 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { ImageSchema } from '@lactalink/types';
 import { Motion } from '@legendapp/motion';
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react-native';
-import React, { createRef, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FieldPath, FieldValues, useFieldArray, useFormState } from 'react-hook-form';
 import { ViewProps } from 'react-native';
+import { Skeleton } from '../ui/skeleton';
 
 const DEFAULT_LIMIT = 5;
 
@@ -27,6 +28,7 @@ export type ImageUploadFieldType = Omit<
 > & {
   className?: ViewProps['className'];
   showCount?: boolean;
+  isLoading?: boolean;
 };
 
 export interface ImageUploadFieldProps extends ImageUploadFieldType {
@@ -45,7 +47,7 @@ export function ImageUploadField({
   allowsMultipleSelection: allowMultiple = true,
   ...props
 }: ImageUploadFieldProps) {
-  const draggableRefs = useRef<DraggableWrapperRef>(null);
+  const draggableRef = useRef<DraggableWrapperRef>(null);
   const uploadRef = useRef<ImageUploadRef>(null);
 
   const { isSubmitSuccessful } = useFormState({ name });
@@ -91,11 +93,13 @@ export function ImageUploadField({
       containerClassName={containerStyle({ class: containerClassName })}
       onChange={handleSingleChange}
       render={(data) =>
-        render?.(data) || (
+        render?.(data) || props.isLoading ? (
+          <Skeleton speed={4} variant="rounded" className="h-24 w-20" />
+        ) : (
           <DraggableWrapper
             disabled
             key={value?.filename}
-            ref={draggableRefs}
+            ref={draggableRef}
             onDismiss={handleSingleRemove}
             dismissAnimationType="fade"
           >
@@ -118,7 +122,7 @@ export function ImageUploadField({
                     className="rounded-md opacity-90"
                     animateOnPress={false}
                     onPress={() => {
-                      draggableRefs.current?.dismiss();
+                      draggableRef.current?.dismiss();
                     }}
                   >
                     <ButtonIcon as={Trash2Icon} />
@@ -140,9 +144,10 @@ function ImageArray({
   className: containerClassName,
   render,
   allowsMultipleSelection: allowMultiple = true,
+  isLoading,
   ...props
 }: ImageUploadFieldProps) {
-  const draggableRefs = useRef<DraggableWrapperRef[]>([]);
+  const draggableRefs = useRef<Record<string, DraggableWrapperRef | null>>({});
   const uploadRef = useRef<ImageUploadRef>(null);
 
   const { append, remove, fields } = useFieldArray({ name });
@@ -161,13 +166,9 @@ function ImageArray({
     uploadRef.current?.remove(index);
   }
 
-  useEffect(() => {
-    if (fields) {
-      draggableRefs.current = fields.map(
-        (_, i) => draggableRefs.current[i] ?? createRef<DraggableWrapperRef>().current!
-      );
-    }
-  }, [fields]);
+  function handleDismiss(id: string) {
+    draggableRefs.current[id]?.dismiss();
+  }
 
   return (
     <ImageUpload
@@ -182,12 +183,14 @@ function ImageArray({
         render?.(values) || allowMultiple ? (
           <HStack space="sm" className="flex-wrap">
             {fields.map((field, i) => {
-              return (
+              return isLoading ? (
+                <Skeleton speed={4} variant="rounded" className="h-24 w-20" />
+              ) : (
                 <DraggableWrapper
                   disabled
                   key={field.id}
                   ref={(ref) => {
-                    draggableRefs.current[i] = ref!;
+                    draggableRefs.current[field.id] = ref!;
                   }}
                   onDismiss={() => handleRemove(i)}
                   dismissAnimationType="fade"
@@ -210,9 +213,7 @@ function ImageArray({
                           action="negative"
                           className="rounded-md opacity-90"
                           animateOnPress={false}
-                          onPress={() => {
-                            draggableRefs.current[i]?.dismiss();
-                          }}
+                          onPress={() => handleDismiss(field.id)}
                         >
                           <ButtonIcon as={Trash2Icon} />
                         </Button>
@@ -222,7 +223,7 @@ function ImageArray({
                 </DraggableWrapper>
               );
             })}
-            {!isEmpty && !limitReached && (
+            {!isEmpty && !limitReached && !isLoading && (
               <AnimatedPressable onPress={() => uploadRef.current?.upload()}>
                 <Card size="lg" className="h-24 w-20 items-center justify-center">
                   <Icon as={PlusCircleIcon} size="xl" className="text-success-500" />

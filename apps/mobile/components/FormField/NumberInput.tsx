@@ -5,6 +5,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { debounce } from 'lodash';
 import { LucideIcon, LucideProps, MinusIcon, PlusIcon } from 'lucide-react-native';
+import { Skeleton } from '../ui/skeleton';
 
 const inputFieldStyle = tva({
   base: '',
@@ -24,6 +25,7 @@ export type NumberInputType = TInputField & {
   max?: number;
   icon?: LucideIcon | FC<LucideProps>;
   isDisabled?: boolean;
+  isLoading?: boolean;
 };
 
 export interface NumberInputProps extends NumberInputType {
@@ -43,6 +45,7 @@ export function NumberInput({
   isDisabled = false,
   value,
   onChange,
+  isLoading,
   ...props
 }: NumberInputProps) {
   const [localValue, setLocalValue] = useState(value);
@@ -60,7 +63,9 @@ export function NumberInput({
     };
   }, [handleChange, localValue]);
 
-  return (
+  return isLoading ? (
+    <Skeleton className="h-9" />
+  ) : (
     <Input variant={variant} isDisabled={isDisabled} className={className}>
       {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
 
