@@ -25,6 +25,8 @@ export const ICON_ASSETS = {
   townHall: require('../../assets/icons/2x/town_hall.png'),
   unknownBuilding: require('../../assets/icons/2x/unknown_building.png'),
   widowed: require('../../assets/icons/2x/widowed.png'),
+  basicLocationPin: require('../../assets/icons/2x/basic_location_pin.png'),
+  milkBottle: require('../../assets/icons/2x/milk_bottle.png'),
 };
 
 export const IMAGE_ASSETS = {
@@ -43,4 +45,8 @@ export const IMAGE_ASSETS = {
   onboarding2: require('../../assets/images/1x/onboarding2.png'),
   onboarding3: require('../../assets/images/1x/onboarding3.png'),
   onboarding4: require('../../assets/images/1x/onboarding4.png'),
+  error404: require('../../assets/images/1x/error_404.png'),
+  'error404_0.75x': require('../../assets/images/0.75x/error_404.png'),
+  noData: require('../../assets/images/1x/no_data.png'),
+  'noData_0.75x': require('../../assets/images/0.75x/no_data.png'),
 };
