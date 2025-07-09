@@ -1,0 +1,51 @@
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { getHexColor } from '@/lib/colors';
+import { Stack } from 'expo-router';
+import { Platform } from 'react-native';
+import { StackAnimationTypes } from 'react-native-screens';
+
+const IS_IOS = Platform.OS === 'ios';
+
+type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
+
+interface UseScreenOptions {
+  animationType?: 'slide' | 'fade' | 'default';
+}
+
+export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
+  const { theme } = useTheme();
+  const headerBgColor = getHexColor(theme, 'background', 0);
+  const headerTintColor = getHexColor(theme, 'typography', 900);
+  const bgColor = getHexColor(theme, 'background', 50);
+
+  const { animationType } = args || {};
+
+  let animation: StackAnimationTypes;
+
+  switch (animationType) {
+    case 'slide':
+      animation = IS_IOS ? 'ios_from_right' : 'slide_from_right';
+      break;
+
+    case 'fade':
+      animation = 'fade';
+      break;
+
+    default:
+      animation = 'default';
+      break;
+  }
+
+  return {
+    headerShown: false,
+    headerBackVisible: false,
+    headerTitleStyle: {
+      fontFamily: 'Jakarta-SemiBold',
+      fontSize: 16,
+    },
+    headerStyle: { backgroundColor: headerBgColor?.toString() },
+    headerTintColor: headerTintColor?.toString(),
+    contentStyle: { backgroundColor: bgColor },
+    animation,
+  };
+}

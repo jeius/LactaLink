@@ -1,56 +1,48 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
-import { ArrowLeftIcon } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { ChevronLeftIcon } from 'lucide-react-native';
+import { useEffect } from 'react';
+import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
+import { LeaveToastAction } from './toasts/ToastAction';
+import { Box } from './ui/box';
+import { Button, ButtonIcon } from './ui/button';
 
 interface HeaderBackButtonProps {
-  disable: boolean;
-  message: string;
+  preventBack?: boolean;
+  message?: string;
+  toastAction?: React.ReactNode;
+  toastID?: string;
+  onPress?: (event: GestureResponderEvent) => void;
 }
 
 export function HeaderBackButton({
-  disable,
-  message = 'Unable to go back.',
+  preventBack: disable = false,
+  message = 'Are you sure you want to leave?',
+  toastAction,
+  toastID = BACK_TOAST_ID,
+  onPress,
 }: HeaderBackButtonProps) {
   const router = useRouter();
   const canGoBack = router.canGoBack();
 
-  const [toastDuration, setToastDuration] = useState<number>();
-
   useEffect(() => {
-    if (disable) {
-      setToastDuration(Infinity);
-    } else {
-      setToastDuration(undefined);
-      toast.dismiss(BACK_TOAST_ID);
+    if (!disable) {
+      toast.dismiss(toastID);
     }
-  }, [disable]);
+  }, [disable, toastID]);
 
-  function handleBackPress() {
+  function handleOnPress(event: GestureResponderEvent) {
     if (!disable) {
       router.back();
     } else {
       toast.warning(message, {
-        id: BACK_TOAST_ID,
-        action: <BackToastAction />,
-        duration: toastDuration,
+        id: toastID,
+        action: toastAction || <LeaveToastAction id={toastID} />,
+        duration: Infinity,
       });
     }
-  }
-
-  function BackToastAction() {
-    function handleLeave() {
-      router.back();
-      toast.dismiss(BACK_TOAST_ID);
-    }
-
-    return (
-      <Button size="sm" action="secondary" onPress={handleLeave}>
-        <ButtonText>Leave Anyway</ButtonText>
-      </Button>
-    );
+    onPress?.(event);
   }
 
   if (!canGoBack) {
@@ -58,8 +50,16 @@ export function HeaderBackButton({
   }
 
   return (
-    <Button variant="link" action="default" className="h-fit w-fit p-3" onPress={handleBackPress}>
-      <ButtonIcon as={ArrowLeftIcon} />
-    </Button>
+    <Box className="m-auto">
+      <Button
+        variant="link"
+        action="default"
+        className="h-fit w-fit"
+        hitSlop={16}
+        onPress={handleOnPress}
+      >
+        <ButtonIcon className="h-6 w-6" as={ChevronLeftIcon} />
+      </Button>
+    </Box>
   );
 }
