@@ -16,9 +16,15 @@ import Animated, {
 
 export interface AnimatedPressableProps extends PressableProps {
   containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
+  disableAnimation?: boolean;
 }
 
-export function AnimatedPressable({ children, containerStyle, ...props }: AnimatedPressableProps) {
+export function AnimatedPressable({
+  children,
+  containerStyle,
+  disableAnimation,
+  ...props
+}: AnimatedPressableProps) {
   const scale = useSharedValue(1);
 
   const springConfig: WithSpringConfig = {
@@ -42,7 +48,11 @@ export function AnimatedPressable({ children, containerStyle, ...props }: Animat
     props.onPressOut?.(event);
   }
 
-  return (
+  return disableAnimation ? (
+    <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      {children}
+    </Pressable>
+  ) : (
     <Animated.View style={[animatedStyle, containerStyle]}>
       <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut}>
         {children}

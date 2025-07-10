@@ -104,7 +104,7 @@ export function ImageUploadField({
             dismissAnimationType="fade"
           >
             <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Card size="lg" className="relative h-24 w-20 p-0">
+              <Card variant="filled" size="lg" className="relative h-24 w-20 p-0">
                 {data.length > 0 && data[0]?.url && (
                   <Image
                     alt={data[0].alt || 'Image'}
@@ -196,7 +196,7 @@ function ImageArray({
                   dismissAnimationType="fade"
                 >
                   <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <Card size="lg" className="relative h-24 w-20 p-0">
+                    <Card variant="filled" size="lg" className="relative h-24 w-20 p-0">
                       {values[i]?.url && (
                         <Image
                           alt={values[i].alt || 'Image'}
@@ -225,7 +225,7 @@ function ImageArray({
             })}
             {!isEmpty && !limitReached && !isLoading && (
               <AnimatedPressable onPress={() => uploadRef.current?.upload()}>
-                <Card size="lg" className="h-24 w-20 items-center justify-center">
+                <Card variant="filled" size="lg" className="h-24 w-20 items-center justify-center">
                   <Icon as={PlusCircleIcon} size="xl" className="text-success-500" />
                 </Card>
               </AnimatedPressable>
@@ -243,7 +243,7 @@ function ImageArray({
               dismissAnimationType="fade"
             >
               <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Card size="lg" className="relative h-24 w-20 p-0">
+                <Card variant="filled" size="lg" className="relative h-24 w-20 p-0">
                   {values[0]?.url && (
                     <Image
                       alt={values[0].alt || 'Image'}

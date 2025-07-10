@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
+import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
 import { UseQueryResult } from '@tanstack/react-query';
@@ -64,6 +65,10 @@ export function MapBottomSheet({
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
   const hasSelectedItem = Boolean(selected);
+
+  usePreventBackPress(hasSelectedItem, () => {
+    handleChanged(undefined);
+  });
 
   const handleChanged = useCallback(
     (val?: Value) => {
@@ -156,6 +161,7 @@ export function MapBottomSheet({
         enableContentPanningGesture={Boolean(selected)}
         enableDynamicSizing={false}
         animateOnMount={true}
+        onChange={(index) => setOpen(index > 0)}
       >
         <BottomSheetScrollView focusHook={useFocusEffect} contentContainerClassName="gap-2 py-3">
           {selected ? (

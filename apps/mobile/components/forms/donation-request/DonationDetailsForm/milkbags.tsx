@@ -102,6 +102,7 @@ function RenderCard({
 }: RenderCardProps) {
   return (
     <Card
+      variant="filled"
       className="relative"
       style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}
     >

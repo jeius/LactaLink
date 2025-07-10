@@ -1,5 +1,5 @@
 import { getHexColor } from '@/lib/colors';
-import { shadow } from '@/lib/utils/shadows';
+import { createShadow } from '@/lib/utils/shadows';
 import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 import { Theme } from '@lactalink/types';
 import React, { useMemo } from 'react';
@@ -123,7 +123,7 @@ function createStyles(theme: Theme) {
       paddingVertical: 14,
       borderBottomWidth: 1,
       borderBottomColor: getHexColor(theme, 'outline', 200),
-      ...shadow.sm,
+      ...createShadow(theme).sm,
     },
     indicator: {
       position: 'absolute',

@@ -1,4 +1,5 @@
-import { shadow } from '@/lib/utils/shadows';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { createShadow } from '@/lib/utils/shadows';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import React from 'react';
 import { View, ViewProps } from 'react-native';
@@ -10,6 +11,8 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ICardProps>(funct
   { className, size = 'xl', variant = 'elevated', ...props },
   ref
 ) {
+  const { theme } = useTheme();
+  const shadow = createShadow(theme);
   return (
     <View
       className={cardStyle({ size, variant, className: className })}
