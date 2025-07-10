@@ -12,7 +12,7 @@ import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
   isLoading?: boolean;
-  matchedRequest?: MatchedRequestSchema;
+  matchedRequest?: string;
 }
 
 export function DonationDetailsForm({
@@ -33,13 +33,13 @@ export function DonationDetailsForm({
   }
 
   return (
-    <VStack space="xl">
+    <VStack space="xl" className="py-5">
       {matchedRequest && (
-        <Box className="m-5">
+        <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
           <MatchedRequestCard
-            id={matchedRequest.id}
-            isLoading={true}
+            id={matchedRequest}
+            isLoading={isLoading}
             onChange={handleMatchedRequestChange}
           />
         </Box>

@@ -3,7 +3,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 
-import { shadow } from '@/lib/utils/shadows';
+import { createShadow } from '@/lib/utils/shadows';
 import { useRouter } from 'expo-router';
 import {
   BellIcon,
@@ -16,8 +16,11 @@ import { useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import LogoIcon from '../icons/LogoIcon';
 import { Button, ButtonIcon } from '../ui/button';
+import { Card } from '../ui/card';
+import { VStack } from '../ui/vstack';
 import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon> = {
@@ -29,15 +32,23 @@ const icons: Record<string, LucideIcon> = {
 
 export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { theme } = useTheme();
 
-  const buttonWidth = dimensions.width / state.routes.length;
-  const translateX = useSharedValue(buttonWidth * state.index);
+  const shadow = createShadow(theme);
+  const itemWidth = dimensions.width / state.routes.length;
+  const translateX = useSharedValue(itemWidth * state.index);
 
-  const onLayout = (e: LayoutChangeEvent) => {
+  const onItemLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     setDimensions({ width, height });
+  };
+
+  const onButtonLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setButtonSize({ width, height });
   };
 
   const circleStyle = useAnimatedStyle(() => ({
@@ -45,30 +56,37 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   }));
 
   useEffect(() => {
-    translateX.value = withSpring(buttonWidth * state.index, {
+    translateX.value = withSpring(itemWidth * state.index, {
       damping: 20,
       stiffness: 300,
     });
-  }, [state.index, buttonWidth, translateX]);
+  }, [state.index, itemWidth, translateX]);
 
   return (
     <Box
       style={{
         position: 'absolute',
-        bottom: 6,
-        left: 20,
-        right: 20,
+        bottom: 0,
+        left: 12,
+        right: 12,
         zIndex: 1,
-        paddingBottom: insets.bottom,
+        marginBottom: insets.bottom,
       }}
     >
-      <Box className="bg-background-0 relative rounded-3xl p-2" style={shadow.md}>
-        <HStack onLayout={onLayout} className="relative overflow-hidden rounded-2xl">
+      <Card className="relative overflow-visible rounded-full p-1">
+        <HStack onLayout={onItemLayout} className="relative w-full rounded-full">
           <Box className="absolute inset-0">
-            <Animated.View style={[circleStyle]}>
-              <Box style={{ width: buttonWidth }} className="bg-primary-400 h-full rounded-2xl" />
+            <Animated.View style={[circleStyle, { width: itemWidth, height: '100%' }]}>
+              <Box
+                style={{
+                  width: buttonSize.width + 24,
+                  height: buttonSize.height + 24,
+                }}
+                className="bg-primary-400 m-auto rounded-full"
+              />
             </Animated.View>
           </Box>
+
           {state.routes.map((route: { key: string; name: string }, index: number) => {
             const isFocused: boolean = state.index === index;
             const routeName: string = route.name.split('/')[0]!;
@@ -86,44 +104,43 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             };
 
             return (
-              <TabButton
-                key={route.key}
-                isFocused={isFocused}
-                onPress={onPress}
-                label={routeName}
-                icon={icons[routeName] || HomeIcon}
-              />
+              <Box key={route.key} className="flex-1">
+                <TabButton
+                  isFocused={isFocused}
+                  onPress={onPress}
+                  label={routeName}
+                  icon={icons[routeName] || HomeIcon}
+                  onIconLayout={onButtonLayout}
+                  className="mx-auto"
+                />
+              </Box>
             );
           })}
         </HStack>
-        <Box
-          className="bg-background-0 rounded-full p-1"
-          style={[
-            {
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              transform: [{ translateX: '-40%' }, { translateY: '-70%' }],
-            },
-            shadow.xs,
-          ]}
+        <VStack
+          className="absolute inset-x-0 top-0 items-center"
+          style={{
+            transform: [{ translateY: '-70%' }],
+          }}
         >
-          <Button
-            size="lg"
-            animateOnPress
-            onPress={() => router.push('/map')}
-            className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
-          >
-            <ButtonIcon
-              as={LogoIcon}
-              width={40}
-              height={40}
-              className="fill-primary-0 dark:fill-primary-400"
-              style={{ transform: [{ translateX: -1.25 }] }}
-            />
-          </Button>
-        </Box>
-      </Box>
+          <Box className="bg-background-0 rounded-full p-1" style={[shadow.xs]}>
+            <Button
+              size="lg"
+              animateOnPress
+              onPress={() => router.push('/map')}
+              className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
+            >
+              <ButtonIcon
+                as={LogoIcon}
+                width={40}
+                height={40}
+                className="fill-primary-0"
+                style={{ transform: [{ translateX: -1.25 }] }}
+              />
+            </Button>
+          </Box>
+        </VStack>
+      </Card>
     </Box>
   );
 };

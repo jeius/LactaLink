@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { getImageAsset } from '@/lib/stores';
-import { shadow } from '@/lib/utils/shadows';
+import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Address, DeliveryPreference, DeliveryPreferenceSchema, Where } from '@lactalink/types';
 import { checkIsOwner, extractID } from '@lactalink/utilities';
@@ -14,6 +14,7 @@ import { Dimensions, GestureResponderEvent } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
 import { Image } from '../Image';
 import FetchingSpinner from '../loaders/FetchingSpinner';
@@ -29,7 +30,6 @@ import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
-import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
@@ -38,9 +38,9 @@ type TValue<T extends boolean = false> = T extends true
   : DeliveryPreferenceSchema;
 
 interface DeliveryPreferencesBottomSheetProps<T extends boolean = false> {
-  selected?: TValue<T>;
+  selected?: TValue<T> | null;
   onChange?: (selectedIDs: TValue<T>) => void;
-  triggerComponent?: React.ReactNode;
+  triggerComponent?: (props: { onPress: (e?: GestureResponderEvent) => void }) => React.ReactNode;
   allowMultipleSelection?: T;
   preferences?: (string | DeliveryPreference)[];
 }
@@ -55,11 +55,12 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
-  const defaultSelectedIDs = useRef<TValue<T> | undefined>(selectedProps);
-  const [selected, setSelected] = useState<TValue<T> | undefined>(selectedProps);
+  const defaultSelectedIDs = useRef<TValue<T> | undefined | null>(selectedProps);
+  const [selected, setSelected] = useState<TValue<T> | undefined | null>(selectedProps);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -228,23 +229,33 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
     );
   }, [handleCreateNew, isLoading, isOwner, preferences?.length]);
 
+  function Trigger() {
+    if (triggerComponent) {
+      return triggerComponent({
+        onPress: () => {
+          setOpen(true);
+          console.log('Delivery Preferences Bottom Sheet Triggered');
+        },
+      });
+    }
+    return (
+      <Button size="sm" variant="link" action="positive" onPress={() => setOpen(true)}>
+        <ButtonIcon as={PlusIcon} className="text-success-500" />
+        <ButtonText>Add Delivery Preference</ButtonText>
+      </Button>
+    );
+  }
+
   return (
     <BottomSheet open={open} setOpen={setOpen}>
-      <BottomSheetTrigger>
-        {triggerComponent || (
-          <HStack space="xs" className="items-center">
-            <Icon size="sm" as={PlusIcon} className="text-success-500" />
-            <Text size="sm" className="font-JakartaSemiBold text-success-500">
-              Add Delivery Preference
-            </Text>
-          </HStack>
-        )}
+      <BottomSheetTrigger disableAnimation>
+        <Trigger />
       </BottomSheetTrigger>
       <BottomSheetModalPortal
         snapPoints={['60%']}
         enableDynamicSizing={false}
         handleComponent={(props) => (
-          <BottomSheetDragIndicator {...props} className="py-4" style={shadow.xs} />
+          <BottomSheetDragIndicator {...props} className="py-4" style={createShadow(theme).xs} />
         )}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} className="bg-background-500" />
@@ -353,7 +364,7 @@ function PreferenceCard({
   }
 
   return (
-    <Card className={cardStyle({ isSelected })}>
+    <Card variant="filled" className={cardStyle({ isSelected })}>
       <HStack>
         <DeliveryPreferenceCard
           preference={preference}

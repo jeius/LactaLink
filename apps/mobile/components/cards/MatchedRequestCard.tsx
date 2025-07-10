@@ -29,7 +29,7 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedRequestCardProps {
-  id: string;
+  id?: string;
   onChange?: (
     request: MatchedRequestSchema,
     deliveryPreference?: DeliveryPreferenceSchema | null
@@ -66,13 +66,13 @@ export default function MatchedRequestCard({
   const matchedRequestData = useMemo((): MatchedRequestSchema | undefined | null => {
     return (
       data && {
-        id,
+        id: data.id,
         requester: extractID(data.requester),
         storagePreference: data.details.storagePreference || 'EITHER',
         volumeNeeded: data.volumeNeeded,
       }
     );
-  }, [data, id]);
+  }, [data]);
 
   useEffect(() => {
     if (matchedRequestData) {
@@ -83,13 +83,15 @@ export default function MatchedRequestCard({
   useEffect(() => {
     if (data?.deliveryDetails && data.deliveryDetails.length > 0) {
       const pref = data.deliveryDetails[0] as DeliveryPreference | null;
-      const initialPreference: DeliveryPreferenceSchema | null = pref && {
-        id: pref.id,
-        preferredMode: pref.preferredMode,
-        address: extractID(pref.address),
-        availableDays: pref.availableDays,
-        name: pref.name,
-      };
+      const initialPreference: DeliveryPreferenceSchema | null =
+        (pref && {
+          id: pref.id,
+          preferredMode: pref.preferredMode,
+          address: extractID(pref.address),
+          availableDays: pref.availableDays,
+          name: pref.name,
+        }) ||
+        null;
 
       setSelectedPreference(initialPreference);
 
@@ -110,13 +112,13 @@ export default function MatchedRequestCard({
     <CardPlaceholder />
   ) : (
     <Card
-      className="relative w-full p-0"
-      style={{
-        borderColor: getPriorityColor(theme, urgency),
-        shadowColor: getPriorityColor(theme, urgency),
-      }}
+      className="border-outline-500 relative w-full p-0"
+      style={{ shadowColor: getPriorityColor(theme, urgency) }}
     >
-      (
+      <Box
+        className="absolute inset-0"
+        style={{ backgroundColor: getPriorityColor(theme, urgency), opacity: 0.05 }}
+      />
       <VStack>
         <HStack space="md" className="items-start p-4">
           <Avatar
@@ -165,7 +167,9 @@ export default function MatchedRequestCard({
                 style={{ width: 16, height: 16 }}
               />
             </Box>
-            <Text className="font-JakartaBold">{data?.volumeNeeded} mL</Text>
+            <Text className="font-JakartaBold" style={{ color: getPriorityColor(theme, urgency) }}>
+              {data?.volumeNeeded} mL
+            </Text>
           </HStack>
         </HStack>
 
@@ -180,17 +184,23 @@ export default function MatchedRequestCard({
             />
           )}
           <DeliveryPreferencesBottomSheet
+            selected={selectedPreference}
             preferences={data?.deliveryDetails || []}
             onChange={handlePreferenceChange}
-            triggerComponent={
-              <Button size="sm" variant="outline" action="default" pointerEvents="none">
+            triggerComponent={(props) => (
+              <Button
+                {...props}
+                animateOnPress={false}
+                size="sm"
+                variant="outline"
+                action="default"
+              >
                 <ButtonText>Choose a Delivery Preference</ButtonText>
               </Button>
-            }
+            )}
           />
         </VStack>
       </VStack>
-      )
     </Card>
   );
 }

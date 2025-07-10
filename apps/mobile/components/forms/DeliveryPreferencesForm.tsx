@@ -114,7 +114,7 @@ export function DeliveryPreferencesForm({
       <VStack space="md" className="max-w-md">
         {preferences.map(renderItem)}
 
-        <Box className="mx-auto mt-2">
+        <Box className="mx-auto">
           <DeliveryPreferencesBottomSheet
             allowMultipleSelection
             selected={preferences}

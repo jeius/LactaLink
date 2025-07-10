@@ -25,6 +25,7 @@ export function DeliveryPreferenceCard({
   preference,
   isLoading: isLoadingProp,
   action,
+  variant = 'filled',
   ...props
 }: DeliveryPreferenceCardProps) {
   const { address: addressProp, preferredMode, availableDays, name } = preference;
@@ -51,7 +52,7 @@ export function DeliveryPreferenceCard({
   });
 
   return (
-    <Card {...props} className={cardStyle({ className: props.className })}>
+    <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
       {isLoadingProp ? (
         <DeliveryPreferenceCardSkeleton />
       ) : (

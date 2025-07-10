@@ -3,6 +3,7 @@ import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms';
@@ -50,7 +51,6 @@ export default function CreateDonationRequest() {
   const isLoading = isAuthLoading || isFormLoading;
   const isFetching = isAuthFetching || isFormFetching;
   const error = authError || formError;
-  const matchedRequest = form.getValues('matchedRequest');
 
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
@@ -84,16 +84,18 @@ export default function CreateDonationRequest() {
       <SafeArea safeTop={false}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <VStack space="lg">
-            <DonationDetailsForm isLoading={isLoading} matchedRequest={matchedRequest} />
+            <DonationDetailsForm isLoading={isLoading} matchedRequest={matchedRequestID} />
 
             {!isLoading && (
-              <ActionModal
-                triggerLabel="Submit"
-                action="primary"
-                onConfirm={form.handleSubmit(onSubmit)}
-                isDisabled={isSubmitting}
-                title="Review Donation"
-              />
+              <Box className="mx-5">
+                <ActionModal
+                  triggerLabel="Submit"
+                  action="primary"
+                  onConfirm={form.handleSubmit(onSubmit)}
+                  isDisabled={isSubmitting}
+                  title="Review Donation"
+                />
+              </Box>
             )}
           </VStack>
         </ScrollView>

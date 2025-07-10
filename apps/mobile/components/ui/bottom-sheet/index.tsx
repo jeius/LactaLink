@@ -1,5 +1,6 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { getHexColor } from '@/lib/colors';
 import { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
@@ -30,7 +31,7 @@ import React, {
   useState,
 } from 'react';
 import type { PressableProps, TextProps } from 'react-native';
-import { BackHandler, Platform, Pressable } from 'react-native';
+import { Platform, Pressable } from 'react-native';
 import { Text } from '../text';
 
 const bottomSheetBackdropStyle = tva({
@@ -195,26 +196,14 @@ export const BottomSheetPortal = ({
 
   const handleSheetChanges = useCallback(
     (index: number) => {
-      if (index === 0 || index === -1) {
+      if (index === -1) {
         handleClose();
       }
     },
     [handleClose]
   );
 
-  const backAction = useCallback(() => {
-    if (visible && isFocused) {
-      handleClose();
-      return true; // Prevent default back button behavior
-    }
-    return false;
-  }, [handleClose, isFocused, visible]);
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    // Cleanup the listener on unmount
-    return () => backHandler.remove();
-  }, [backAction]);
+  usePreventBackPress(visible, handleClose);
 
   return (
     <GorhomBottomSheet
@@ -254,23 +243,14 @@ export const BottomSheetModalPortal = ({
   const handleSheetChanges = useCallback(
     (index: number, position: number, type: SNAP_POINT_TYPE) => {
       onChange?.(index, position, type);
+      if (index === -1) {
+        handleClose();
+      }
     },
-    [onChange]
+    [handleClose, onChange]
   );
 
-  const backAction = useCallback(() => {
-    if (visible && isFocused) {
-      handleClose();
-      return true; // Prevent default back button behavior
-    }
-    return false;
-  }, [handleClose, isFocused, visible]);
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    // Cleanup the listener on unmount
-    return () => backHandler.remove();
-  }, [backAction]);
+  usePreventBackPress(visible, handleClose);
 
   return (
     <GorhomBottomSheetModal
@@ -293,7 +273,7 @@ export const BottomSheetModalPortal = ({
 export const BottomSheetTrigger = ({
   className,
   ...props
-}: PressableProps & { className?: string }) => {
+}: PressableProps & { className?: string; disableAnimation?: boolean }) => {
   const { handleOpen } = useContext(BottomSheetContext);
   return (
     <AnimatedPressable

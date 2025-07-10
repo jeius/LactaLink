@@ -31,14 +31,18 @@ interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
 }
 
 export default function DonationCard({ data, isLoading, ...props }: DonationCardProps) {
+  const { location } = useCurrentLocation();
+
+  if (isLoading) {
+    return <DonationSkeleton />;
+  }
+
   const {
     details: { milkSample, storageType },
     remainingVolume,
     donor,
     deliveryDetails,
   } = data;
-
-  const { location } = useCurrentLocation();
 
   const donorName =
     (donor as Individual)?.displayName || (donor as Individual)?.givenName || 'Unknown Donor';
@@ -61,11 +65,9 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
       'km'
     );
 
-  return isLoading ? (
-    <DonationSkeleton />
-  ) : (
+  return (
     <AnimatedPressable {...props}>
-      <Card className="p-0">
+      <Card variant="filled" className="p-0">
         <VStack>
           <Box className="bg-primary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
@@ -151,7 +153,7 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
 
 export function DonationSkeleton() {
   return (
-    <Card className="p-0">
+    <Card variant="filled" className="p-0">
       <VStack>
         <Box className="bg-background-muted relative aspect-square h-48">
           <Box className="h-full w-full overflow-hidden">

@@ -33,15 +33,19 @@ interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
 }
 
 export default function RequestCard({ data, isLoading, ...props }: RequestCardProps) {
+  const { location } = useCurrentLocation();
+  const { theme } = useTheme();
+
+  if (isLoading) {
+    return <RequestSkeleton />;
+  }
+
   const {
     details: { urgency, image, neededAt },
     volumeNeeded,
     requester,
     deliveryDetails,
   } = data;
-
-  const { location } = useCurrentLocation();
-  const { theme } = useTheme();
 
   const name =
     (requester as Individual)?.displayName ||
@@ -66,11 +70,9 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
       'km'
     );
 
-  return isLoading ? (
-    <RequestSkeleton />
-  ) : (
+  return (
     <AnimatedPressable {...props}>
-      <Card className="p-0">
+      <Card variant="filled" className="p-0">
         <VStack>
           <Box className="bg-tertiary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
@@ -168,7 +170,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
 
 export function RequestSkeleton() {
   return (
-    <Card className="p-0">
+    <Card variant="filled" className="p-0">
       <VStack>
         <Box className="bg-background-muted relative aspect-square h-48">
           <Box className="h-full w-full overflow-hidden">
