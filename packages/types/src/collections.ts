@@ -1,4 +1,5 @@
 import type { Where as WherePayload } from 'payload';
+import { DeepPartial } from 'react-hook-form';
 import { Config, User } from './payload-types';
 import { FilterUnion } from './utils';
 
@@ -39,7 +40,7 @@ export type CollectionData<T extends Collection> = Omit<
 
 export type CollectionDataBySlug<Slug extends CollectionSlug> = CollectionData<Collection<Slug>>;
 
-export type CollectionUpdateData<T extends Collection> = Partial<CollectionData<T>>;
+export type CollectionUpdateData<T extends Collection> = DeepPartial<CollectionData<T>>;
 
 export type CollectionUpdateDataBySlug<Slug extends CollectionSlug> = CollectionUpdateData<
   Collection<Slug>

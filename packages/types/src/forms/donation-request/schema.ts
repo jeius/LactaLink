@@ -66,13 +66,25 @@ export const donationSchema = z
   .object({
     id: z.uuid().optional(),
     donor: z.uuid().nonempty('Required'),
-    matchedRequest: matchedRequestSchema,
+    matchedRequest: matchedRequestSchema.optional(),
     details: donationDetailsSchema,
   })
   .and(deliveryPreferencesSchema)
   .refine(
     (data) => {
-      if (data.matchedRequest.volumeNeeded) {
+      if (data.matchedRequest?.storagePreference !== 'EITHER') {
+        return data.details.storageType === data.matchedRequest?.storagePreference;
+      }
+      return true;
+    },
+    {
+      message: 'Does not match the requested type',
+      path: ['details', 'storageType'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.matchedRequest?.volumeNeeded) {
         const totalVolume = data.details.bags.reduce(
           (sum, bag) => sum + bag.volume * bag.quantity,
           0
@@ -82,20 +94,8 @@ export const donationSchema = z
       return true;
     },
     {
-      message: 'Total bag volume must meet the requested volume',
+      message: 'Insufficient total milk volume',
       path: ['details', 'bags'],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.matchedRequest.storagePreference !== 'EITHER') {
-        return data.details.storageType === data.matchedRequest.storagePreference;
-      }
-      return true;
-    },
-    {
-      message: 'Storage type must match the requested storage preference',
-      path: ['details', 'storageType'],
     }
   );
 

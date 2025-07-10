@@ -2,17 +2,24 @@ import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
+} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 
 import { DonationSchema } from '@lactalink/types';
 
-import { MilkIcon, PlusCircleIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
+import { AlertCircleIcon, MilkIcon, PlusIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { useFieldArray } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 
@@ -27,6 +34,10 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   const flatListRef = useRef<FlatList>(null);
 
   const { append, remove, fields } = useFieldArray<DonationSchema>({ name: 'details.bags' });
+  const form = useFormContext<DonationSchema>();
+
+  const { error } = form.getFieldState('details.bags');
+
   const disableRemove = fields.length < 2;
 
   function handleAdd() {
@@ -49,10 +60,16 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   }
 
   return (
-    <VStack>
-      <Text size="md" className="font-JakartaMedium mx-5 mb-1">
-        Milk Bags
-      </Text>
+    <FormControl isInvalid={!!error} className="w-full">
+      <FormControlLabel className="mx-5">
+        <FormControlLabelText>Milk Bags</FormControlLabelText>
+      </FormControlLabel>
+
+      <FormControlError className="mx-5 mb-2 w-full">
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{error?.root?.message}</FormControlErrorText>
+      </FormControlError>
+
       <FlatList
         ref={flatListRef}
         data={fields}
@@ -64,6 +81,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
             isLoading={isLoading}
             onRemove={handleRemove}
             disableRemove={disableRemove}
+            isInvalid={!!error}
           />
         )}
         contentContainerStyle={{ paddingRight: 20 }}
@@ -73,6 +91,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
           index,
         })}
       />
+
       <Button
         animateOnPress={false}
         size="sm"
@@ -81,10 +100,10 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
         className="mx-auto"
         onPress={handleAdd}
       >
-        <ButtonIcon as={PlusCircleIcon} size="xl" />
+        <ButtonIcon as={PlusIcon} size="xl" />
         <ButtonText>Add Milk Bag</ButtonText>
       </Button>
-    </VStack>
+    </FormControl>
   );
 }
 
@@ -93,17 +112,19 @@ type RenderCardProps = {
   onRemove: (index: number) => void;
   disableRemove?: boolean;
   isLoading?: boolean;
+  isInvalid?: boolean;
 };
 function RenderCard({
   index: i,
   onRemove: handleRemove,
   disableRemove,
   isLoading,
+  isInvalid = false,
 }: RenderCardProps) {
   return (
     <Card
       variant="filled"
-      className="relative"
+      className={`relative ${isInvalid ? 'border-error-500' : ''}`}
       style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}
     >
       <VStack space="md">

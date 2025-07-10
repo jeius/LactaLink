@@ -47,6 +47,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
   } = useFetchById(Boolean(matchedRequest), {
     collection: 'requests',
     id: matchedRequest,
+    populate: { users: { profile: true, profileType: true, role: true } },
   });
 
   const isLoading = isLoadingPreferences || isLoadingRequests;
@@ -79,12 +80,25 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
       }
 
       if (matchedRequestDoc) {
+        const storagePreference = matchedRequestDoc.details.storagePreference || 'EITHER';
+        const volumeNeeded = matchedRequestDoc.volumeNeeded;
+
         data.matchedRequest = {
           id: matchedRequestDoc.id,
           requester: extractID(matchedRequestDoc.requester),
-          volumeNeeded: matchedRequestDoc.volumeNeeded,
-          storagePreference: matchedRequestDoc.details.storagePreference || 'EITHER',
+          volumeNeeded,
+          storagePreference,
         };
+
+        data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
+        data.details.bags = [
+          {
+            collectedAt: new Date().toISOString(),
+            volume: volumeNeeded,
+            quantity: 1,
+            donor: data.donor,
+          },
+        ];
       }
 
       form.reset(data);

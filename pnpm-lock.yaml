@@ -605,6 +605,9 @@ importers:
       payload:
         specifier: ^3.34.0
         version: 3.42.0(graphql@16.11.0)(typescript@5.8.3)
+      react-hook-form:
+        specifier: ^7.60.0
+        version: 7.60.0(react@19.0.0)
       zod:
         specifier: ^3.25.74
         version: 3.25.75

@@ -14,7 +14,7 @@ import { upsertDeliveryPreferences } from '@/lib/api/upsert';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 
 import { getApiClient } from '@lactalink/api';
-import { DonationSchema, ErrorSearchParams, MilkBag } from '@lactalink/types';
+import { DonationSchema, ErrorSearchParams, Individual, MilkBag } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -107,9 +107,11 @@ export default function CreateDonationRequest() {
 
 async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences: deliveryDetails } = data;
+  const { details, donor, deliveryPreferences: deliveryDetails, matchedRequest } = data;
 
   const { bags, milkSample, ...restOfDetails } = details;
+
+  console.log('Creating donation with data:', data);
 
   const milkBagDocs = (
     await Promise.all(
@@ -147,8 +149,16 @@ async function createDonation(data: DonationSchema) {
     },
   });
 
-  // Todo: Handle case where recipientId is provided
-  // If provided, get the existing requestDoc of the recipient and update it with the new donation
+  if (matchedRequest) {
+    const { requester } = await apiClient.updateByID({
+      collection: 'requests',
+      id: matchedRequest.id,
+      data: { matchedDonation: donationDoc.id, details: { bags: extractID(milkBagDocs) } },
+    });
+
+    const requesterName = (requester as Individual).displayName;
+    return { message: `Donation created for ${requesterName}!` };
+  }
 
   return {
     message: 'Donation created successfully!',
