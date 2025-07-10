@@ -1,5 +1,5 @@
 import type { Where as WherePayload } from 'payload';
-import { Config } from './payload-types';
+import { Config, User } from './payload-types';
 import { FilterUnion } from './utils';
 
 export type Collections = Config['collections'][keyof Config['collections']];
@@ -10,6 +10,20 @@ type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug]
 
 export type Collection<Slug extends CollectionSlug | unknown = unknown> =
   Slug extends CollectionSlug ? CollectionBySlug<Slug> : Collections;
+
+export type CollectionWithOwner = Extract<
+  Collection,
+  {
+    owner?: string | User | null;
+  }
+>;
+
+export type CollectionWithCreatedBy = Extract<
+  Collection,
+  {
+    createdBy?: string | User | null;
+  }
+>;
 
 export type FileCollection = FilterUnion<Collection, { filename?: string | null }>;
 

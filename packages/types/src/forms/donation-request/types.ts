@@ -5,6 +5,8 @@ import {
   deliveryPreferencesSchema,
   donationDetailsSchema,
   donationSchema,
+  matchedDonationSchema,
+  matchedRequestSchema,
   milkBagSchema,
   requestDetailsSchema,
   requestSchema,
@@ -17,3 +19,5 @@ export type DonationDetailsSchema = z.infer<typeof donationDetailsSchema>;
 export type MilkBagSchema = z.infer<typeof milkBagSchema>;
 export type NotesSchema = z.infer<typeof textAreaSchema>;
 export type RequestDetailsSchema = z.infer<typeof requestDetailsSchema>;
+export type MatchedDonationSchema = z.infer<typeof matchedDonationSchema>;
+export type MatchedRequestSchema = z.infer<typeof matchedRequestSchema>;

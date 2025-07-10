@@ -52,7 +52,7 @@ export const deliveryPreferencesSchema = z.object({
     .min(1, 'Atleast one delivery preference is required.'),
 });
 
-const matchedRequestSchema = z.object({
+export const matchedRequestSchema = z.object({
   id: z.uuid().nonempty('Required'),
   requester: z.uuid().nonempty('Required'),
   volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
