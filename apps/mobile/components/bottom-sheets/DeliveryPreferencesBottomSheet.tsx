@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
+import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Address, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalink/types';
@@ -7,13 +8,14 @@ import { extractID } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { EditIcon, ListXIcon, PlusIcon, SaveIcon } from 'lucide-react-native';
+import { EditIcon, PlusIcon, SaveIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, GestureResponderEvent } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
+import { Image } from '../Image';
 import FetchingSpinner from '../loaders/FetchingSpinner';
 import {
   BottomSheet,
@@ -54,7 +56,7 @@ export function DeliveryPreferencesBottomSheet({
   const [open, setOpen] = useState(false);
 
   const {
-    data: preferences,
+    data: preferences = [],
     isLoading,
     isFetching,
     refetch,
@@ -134,9 +136,14 @@ export function DeliveryPreferencesBottomSheet({
   const EmptyComponent = useCallback(() => {
     return (
       !isLoading && (
-        <VStack space="lg" className="mx-auto items-center p-4">
-          <Icon as={ListXIcon} className="text-primary-500 h-16 w-16" />
-          <Text>Oops! Nothing to show here.</Text>
+        <VStack className="mx-auto items-center p-4">
+          <Image
+            alt="Nothing found"
+            source={getImageAsset('noData_0.75x')}
+            contentFit="contain"
+            style={{ width: '60%', aspectRatio: 1.25 }}
+          />
+          <Text className="mb-5">Oops! Nothing to show here.</Text>
           <Button onPress={handleCreateNew}>
             <ButtonIcon as={PlusIcon} />
             <ButtonText>Add New Delivery Preference</ButtonText>
@@ -146,9 +153,22 @@ export function DeliveryPreferencesBottomSheet({
     );
   }, [isLoading, handleCreateNew]);
 
+  const HeaderComponent = useCallback(() => {
+    const isEmpty = preferences?.length === 0;
+    if (isEmpty && !isLoading) return null;
+
+    return (
+      <Box className="mx-auto mb-4">
+        <Text size="lg" className="font-JakartaSemiBold">
+          Select from your Delivery Preferences
+        </Text>
+      </Box>
+    );
+  }, [isLoading, preferences?.length]);
+
   const FooterComponent = useCallback(() => {
     const isEmpty = preferences?.length === 0;
-    if (isEmpty) return null;
+    if (isEmpty && !isLoading) return null;
 
     return (
       <Button size="sm" variant="link" action="default" onPress={handleCreateNew}>
@@ -156,7 +176,7 @@ export function DeliveryPreferencesBottomSheet({
         <ButtonText>Add New Delivery Preference</ButtonText>
       </Button>
     );
-  }, [handleCreateNew, preferences?.length]);
+  }, [handleCreateNew, isLoading, preferences?.length]);
 
   return (
     <BottomSheet open={open} setOpen={setOpen}>
@@ -203,13 +223,7 @@ export function DeliveryPreferencesBottomSheet({
             }}
             estimatedListSize={{ height: 360, width: DEVICE_WIDTH }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-            ListHeaderComponent={
-              <Box className="mx-auto mb-4">
-                <Text size="lg" className="font-JakartaSemiBold">
-                  Select from your Delivery Preferences
-                </Text>
-              </Box>
-            }
+            ListHeaderComponent={HeaderComponent}
             ItemSeparatorComponent={() => <Box className="h-3" />}
             ListFooterComponent={FooterComponent}
             ListFooterComponentStyle={{

@@ -8,14 +8,7 @@ import {
   useInfiniteFetchBySlug,
 } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { useApiClient } from '@lactalink/api';
-import {
-  ChevronDownIcon,
-  LucideIcon,
-  LucideProps,
-  LucideSearchX,
-  SearchIcon,
-  XIcon,
-} from 'lucide-react-native';
+import { ChevronDownIcon, LucideIcon, LucideProps, SearchIcon, XIcon } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from './ui/box';
@@ -27,11 +20,13 @@ import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
+import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
 import { ListRenderItem } from '@shopify/flash-list';
 import { Dimensions } from 'react-native';
+import { Image } from './Image';
 import { RefreshControl } from './RefreshControl';
 import {
   BottomSheet,
@@ -240,9 +235,14 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   const EmptyComponent = useCallback(() => {
     return (
       !isLoading && (
-        <VStack space="lg" className="mx-auto items-center p-4">
-          <Icon as={LucideSearchX} className="text-primary-500 h-16 w-16" />
-          <Text size="lg">No results found.</Text>
+        <VStack className="mx-auto items-center p-4">
+          <Image
+            alt="Nothing found"
+            source={getImageAsset('noData_0.75x')}
+            contentFit="contain"
+            style={{ width: '60%', aspectRatio: 1.25 }}
+          />
+          <Text className="mb-5">Oops! Nothing to show here.</Text>
         </VStack>
       )
     );
