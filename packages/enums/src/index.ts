@@ -49,13 +49,18 @@ export const PRIORITY_LEVELS = {
 } as const;
 
 export const STORAGE_TYPES = {
-  FRESH: { label: 'Fresh (Refrigerated)', value: 'FRESH' },
+  FRESH: { label: 'Refrigerated', value: 'FRESH' },
   FROZEN: { label: 'Frozen', value: 'FROZEN' },
 } as const;
 
 export const PREFERRED_STORAGE_TYPES = {
   ...STORAGE_TYPES,
-  EITHER: { label: 'Any', value: 'EITHER' },
+  EITHER: {
+    label: Object.values(STORAGE_TYPES)
+      .map(({ label }) => label)
+      .join(', '),
+    value: 'EITHER',
+  },
 } as const;
 
 export const COLLECTION_MODES = {
