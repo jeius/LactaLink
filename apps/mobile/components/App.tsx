@@ -1,13 +1,12 @@
 import { useAuth } from '@/hooks/auth/useAuth';
-import { getHexColor } from '@/lib/colors';
+import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Stack } from 'expo-router';
-import { useTheme } from './AppProvider/ThemeProvider';
+import { HeaderBackButton } from './HeaderBackButton';
 
 export function App() {
-  const { theme } = useTheme();
-  const bgColor = getHexColor(theme, 'background', 50);
+  const screenOptions = useScreenOptions();
 
   const { user, session } = useAuth();
 
@@ -16,7 +15,7 @@ export function App() {
   const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING);
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: bgColor } }}>
+    <Stack screenOptions={{ ...screenOptions, headerLeft: () => <HeaderBackButton /> }}>
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Protected guard={!viewedOnboarding}>
           <Stack.Screen name="index" />

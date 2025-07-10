@@ -1,12 +1,10 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { getHexColor } from '@/lib/colors';
-import { Stack } from 'expo-router';
+import { StackScreenOptions } from '@/lib/types';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
 
 const IS_IOS = Platform.OS === 'ios';
-
-type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
 
 interface UseScreenOptions {
   animationType?: 'slide' | 'fade' | 'default';

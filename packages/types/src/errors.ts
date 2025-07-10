@@ -16,4 +16,6 @@ export type ErrorSearchParams = {
   code?: ErrorCodes;
   status?: string;
   redirect?: string;
+  title?: string;
+  action?: 'reload' | 'go-back' | 'go-home';
 };

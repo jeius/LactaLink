@@ -61,6 +61,15 @@ export default function Home() {
           >
             <ButtonText>Go to onboarding</ButtonText>
           </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              router.push('/+not-found');
+            }}
+          >
+            <ButtonText>Go to Not Found Page</ButtonText>
+          </Button>
         </VStack>
       </ScrollView>
     </SafeArea>

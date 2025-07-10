@@ -14,6 +14,10 @@ interface HeaderBackButtonProps {
   toastAction?: React.ReactNode;
   toastID?: string;
   onPress?: (event: GestureResponderEvent) => void;
+  canGoBack?: boolean;
+  href?: string;
+  label?: string;
+  tintColor?: string;
 }
 
 export function HeaderBackButton({
@@ -21,10 +25,11 @@ export function HeaderBackButton({
   message = 'Are you sure you want to leave?',
   toastAction,
   toastID = BACK_TOAST_ID,
+  canGoBack: canGoBackProp,
   onPress,
 }: HeaderBackButtonProps) {
   const router = useRouter();
-  const canGoBack = router.canGoBack();
+  const canGoBack = canGoBackProp || router.canGoBack();
 
   useEffect(() => {
     if (!disable) {

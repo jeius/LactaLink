@@ -1,4 +1,5 @@
 import { SignInSchema, signInSchema } from '@lactalink/types';
+import { Stack } from 'expo-router';
 
 export * from './assets';
 export * from './profile';
@@ -11,3 +12,5 @@ export type NativeFile = {
   name: string;
   type: string;
 };
+
+export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];

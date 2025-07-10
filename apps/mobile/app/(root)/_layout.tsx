@@ -1,10 +1,9 @@
 import { AnimatedProgress } from '@/components/animated/progress';
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
-import { getHexColor } from '@/lib/colors';
+import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { extractName } from '@lactalink/utilities';
@@ -16,12 +15,9 @@ const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
   const { user, profile } = useAuth();
-  const { theme } = useTheme();
+  const screenOptions = useScreenOptions();
 
   const userName = user && extractName(user);
-  const headerBgColor = getHexColor(theme, 'background', 0);
-  const headerTintColor = getHexColor(theme, 'typography', 900);
-  const bgColor = getHexColor(theme, 'background', 50);
 
   const { currentPageIndex, progress } = usePagination(STEPS);
 
@@ -37,23 +33,19 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
+        ...screenOptions,
         headerShown: false,
         headerRight: () => <Avatar />,
-        headerTitleStyle: {
-          fontFamily: 'Jakarta-SemiBold',
-          fontSize: 16,
-        },
-        headerStyle: { backgroundColor: headerBgColor?.toString() },
-        headerBackButtonDisplayMode: 'minimal',
-        headerBackVisible: false,
-        headerTintColor: headerTintColor?.toString(),
-        contentStyle: { backgroundColor: bgColor },
       }}
     >
       <Stack.Protected guard={!profile}>
         <Stack.Screen
           name="setup-profile"
-          options={{ header: () => progressBar, headerTransparent: true, headerShown: true }}
+          options={{
+            header: () => progressBar,
+            headerTransparent: true,
+            headerShown: true,
+          }}
         />
       </Stack.Protected>
 
