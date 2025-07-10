@@ -37,7 +37,6 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   const form = useFormContext<DonationSchema>();
 
   const { error } = form.getFieldState('details.bags');
-
   const disableRemove = fields.length < 2;
 
   function handleAdd() {
@@ -67,7 +66,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
 
       <FormControlError className="mx-5 mb-2 w-full">
         <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{error?.root?.message}</FormControlErrorText>
+        <FormControlErrorText>{error?.root?.message || error?.message}</FormControlErrorText>
       </FormControlError>
 
       <FlatList

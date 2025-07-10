@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms';
 
 import { uploadImage } from '@/lib/api/file';
-import { upsertDeliveryPreferences } from '@/lib/api/upsert';
 
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 
@@ -133,8 +132,6 @@ async function createDonation(data: DonationSchema) {
   const milkSampleDocs =
     milkSample && (await Promise.all(milkSample.map((sample) => uploadImage('images', sample))));
 
-  const deliveryDetailDocs = await upsertDeliveryPreferences(deliveryDetails);
-
   const donationDoc = await apiClient.create({
     collection: 'donations',
     data: {
@@ -145,7 +142,7 @@ async function createDonation(data: DonationSchema) {
         bags: extractID(milkBagDocs),
         milkSample: milkSampleDocs && extractID(milkSampleDocs),
       },
-      deliveryDetails: extractID(deliveryDetailDocs),
+      deliveryDetails: deliveryDetails.map((pref) => pref?.id).filter(Boolean) as string[],
     },
   });
 

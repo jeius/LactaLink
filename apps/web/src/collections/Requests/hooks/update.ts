@@ -22,6 +22,7 @@ export const updateMilkBag: CollectionAfterChangeHook<Request> = async ({ doc, r
         id: extractID(bag),
         data: { status: 'ALLOCATED' },
         req,
+        overrideAccess: true,
       });
     })
   );
@@ -32,6 +33,7 @@ export const updateMilkBag: CollectionAfterChangeHook<Request> = async ({ doc, r
       id: extractID(doc.matchedDonation),
       depth: 0,
       select: { matchedRequests: true },
+      overrideAccess: true,
     });
 
     const newMatchedRequests =
@@ -46,6 +48,7 @@ export const updateMilkBag: CollectionAfterChangeHook<Request> = async ({ doc, r
       data: {
         matchedRequests: newMatchedRequests,
       },
+      overrideAccess: true,
     });
   }
 

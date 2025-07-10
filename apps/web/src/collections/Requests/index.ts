@@ -16,7 +16,7 @@ export const Requests: CollectionConfig<'requests'> = {
     admin: admin,
     create: authenticated,
     read: authenticated,
-    update: collectionCreatorOrAdmin,
+    update: authenticated,
     delete: collectionCreatorOrAdmin,
   },
   admin: {
