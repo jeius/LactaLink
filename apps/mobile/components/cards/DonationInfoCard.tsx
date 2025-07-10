@@ -1,4 +1,4 @@
-import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
 
 import {
@@ -97,7 +97,7 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
         <Text size="sm">
           Storage type:{' '}
           <Text size="sm" className="text-primary-500 font-JakartaSemiBold">
-            {STORAGE_TYPES[storageType].label}
+            {PREFERRED_STORAGE_TYPES[storageType].label}
           </Text>
         </Text>
 

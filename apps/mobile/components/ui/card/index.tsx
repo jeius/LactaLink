@@ -14,7 +14,7 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ICardProps>(funct
     <View
       className={cardStyle({ size, variant, className: className })}
       {...props}
-      style={variant === 'elevated' ? [props.style, shadow.xl] : props.style}
+      style={variant === 'elevated' ? [shadow.xl, props.style] : props.style}
       ref={ref}
     />
   );

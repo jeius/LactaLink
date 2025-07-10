@@ -53,7 +53,7 @@ export function DeliveryPreferenceCard({
   return (
     <Card {...props} className={cardStyle({ className: props.className })}>
       {isLoadingProp ? (
-        <CardPlaceholder />
+        <DeliveryPreferenceCardSkeleton />
       ) : (
         <HStack space="sm">
           <VStack space="sm" className="flex-1">
@@ -93,7 +93,7 @@ export function DeliveryPreferenceCard({
                 <Icon as={MapPinIcon} className="text-primary-500" />
                 <VStack className="flex-1">
                   {isLoading || isFetching ? (
-                    <AddressPlaceholder />
+                    <AddressSkeleton />
                   ) : (
                     <>
                       <Text size="sm" className="font-JakartaMedium">
@@ -115,31 +115,31 @@ export function DeliveryPreferenceCard({
   );
 }
 
-function AddressPlaceholder() {
+function AddressSkeleton() {
   return (
     <>
-      <Skeleton variant="rounded" className="mb-1 h-5 w-36" />
-      <Skeleton variant="rounded" className="h-4" />
+      <Skeleton variant="sharp" className="mb-1 h-5 w-36" />
+      <Skeleton variant="sharp" className="h-4" />
     </>
   );
 }
 
-function CardPlaceholder() {
+export function DeliveryPreferenceCardSkeleton() {
   return (
     <VStack space="lg">
-      <Skeleton variant="rounded" className="h-8 w-40" />
+      <Skeleton variant="sharp" className="h-8 w-40" />
 
       <VStack space="md">
         <HStack space="md" className="flex-wrap">
-          <Skeleton variant="rounded" className="h-8 w-16" />
-          <Skeleton variant="rounded" className="h-8 w-16" />
-          <Skeleton variant="rounded" className="h-8 w-20" />
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-20" />
         </HStack>
 
-        <Skeleton variant="rounded" className="h-5" />
+        <Skeleton variant="sharp" className="h-5" />
 
         <VStack>
-          <AddressPlaceholder />
+          <AddressSkeleton />
         </VStack>
       </VStack>
     </VStack>

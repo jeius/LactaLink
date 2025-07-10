@@ -3,8 +3,8 @@ import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { Address, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Address, DeliveryPreference, DeliveryPreferenceSchema, Where } from '@lactalink/types';
+import { checkIsOwner, extractID } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
@@ -33,40 +33,61 @@ import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-interface DeliveryPreferencesBottomSheetProps {
-  selected?: DeliveryPreferenceSchema[];
-  onChange?: (selectedIDs: DeliveryPreferenceSchema[]) => void;
+type TValue<T extends boolean = false> = T extends true
+  ? DeliveryPreferenceSchema[]
+  : DeliveryPreferenceSchema;
+
+interface DeliveryPreferencesBottomSheetProps<T extends boolean = false> {
+  selected?: TValue<T>;
+  onChange?: (selectedIDs: TValue<T>) => void;
   triggerComponent?: React.ReactNode;
+  allowMultipleSelection?: T;
+  preferences?: (string | DeliveryPreference)[];
 }
 
-export function DeliveryPreferencesBottomSheet({
+export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   selected: selectedProps,
   onChange,
   triggerComponent,
-}: DeliveryPreferencesBottomSheetProps) {
+  allowMultipleSelection,
+  preferences: preferencesProp,
+}: DeliveryPreferencesBottomSheetProps<T>) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
-  const defaultSelectedIDs = useRef(selectedProps || []);
-  const [selected, setSelected] = useState(selectedProps || []);
+  const defaultSelectedIDs = useRef<TValue<T> | undefined>(selectedProps);
+  const [selected, setSelected] = useState<TValue<T> | undefined>(selectedProps);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const enableFetch = preferencesProp === undefined || typeof preferencesProp[0] === 'string';
+
+  const where: Where =
+    enableFetch && preferencesProp
+      ? { id: { in: extractID(preferencesProp) } }
+      : user && !preferencesProp
+        ? { owner: { equals: user.id } }
+        : {};
+
   const {
-    data: preferences = [],
+    data: preferenceDocs,
     isLoading,
     isFetching,
     refetch,
     isRefetching,
-  } = useFetchBySlug(true, {
+  } = useFetchBySlug(enableFetch, {
     collection: 'delivery-preferences',
-    where: { owner: { equals: user?.id } },
+    where,
     populate: { addresses: { displayName: true, coordinates: true, name: true } },
     sort: 'createdAt',
   });
+
+  const preferences = preferenceDocs || (preferencesProp as DeliveryPreference[] | null) || [];
+
+  const isOwner = user && preferences ? checkIsOwner(user, preferences) : false;
 
   useEffect(() => {
     if (selectedProps) {
@@ -77,7 +98,7 @@ export function DeliveryPreferencesBottomSheet({
   }, [selectedProps]);
 
   function handleSave() {
-    if (selected.length === 0) {
+    if (!selected || (Array.isArray(selected) && selected.length === 0)) {
       return;
     }
     onChange?.(selected);
@@ -95,19 +116,38 @@ export function DeliveryPreferencesBottomSheet({
   }
 
   const renderItem = useCallback<ListRenderItem<DeliveryPreference>>(
-    ({ item, extraData: { selected, isLoading } }) => {
-      const selectedItems = selected as DeliveryPreferenceSchema[];
-      const isSelected = selectedItems.some((selected) => selected.id === item.id);
+    ({ item, extraData: { selected, isLoading, allowMultipleSelection, isOwner } }) => {
+      const selection = selected as DeliveryPreferenceSchema | DeliveryPreferenceSchema[];
+
+      let isSelected = false;
+
+      if (Array.isArray(selection)) {
+        isSelected = selection.some((s) => s.id === item.id);
+      } else {
+        isSelected = selection?.id === item.id;
+      }
 
       function handlePress() {
         if (isSelected) {
-          setSelected((prev) => prev.filter(({ id }) => id !== item.id));
+          setSelected((prev) => {
+            if (allowMultipleSelection && Array.isArray(prev)) {
+              return prev.filter((s) => s.id !== item.id) as TValue<T>;
+            } else {
+              return undefined;
+            }
+          });
         } else {
           const newItem: DeliveryPreferenceSchema = {
             ...item,
             address: extractID(item.address as Address),
           };
-          setSelected((prev) => [...prev, newItem]);
+          setSelected((prev) => {
+            if (allowMultipleSelection && Array.isArray(prev)) {
+              return [...prev, newItem] as TValue<T>;
+            } else {
+              return newItem as TValue<T>;
+            }
+          });
         }
         setIsDirty(true);
       }
@@ -118,6 +158,7 @@ export function DeliveryPreferencesBottomSheet({
             preference={item}
             isSelected={isSelected}
             isLoading={isLoading}
+            showEditButton={isOwner}
             onEditPress={() => {
               handleClose();
             }}
@@ -144,31 +185,40 @@ export function DeliveryPreferencesBottomSheet({
             style={{ width: '60%', aspectRatio: 1.25 }}
           />
           <Text className="mb-5">Oops! Nothing to show here.</Text>
-          <Button onPress={handleCreateNew}>
-            <ButtonIcon as={PlusIcon} />
-            <ButtonText>Add New Delivery Preference</ButtonText>
-          </Button>
+          {isOwner && (
+            <Button onPress={handleCreateNew}>
+              <ButtonIcon as={PlusIcon} />
+              <ButtonText>Add New Delivery Preference</ButtonText>
+            </Button>
+          )}
         </VStack>
       )
     );
-  }, [isLoading, handleCreateNew]);
+  }, [isLoading, isOwner, handleCreateNew]);
 
   const HeaderComponent = useCallback(() => {
     const isEmpty = preferences?.length === 0;
-    if (isEmpty && !isLoading) return null;
+    if (isEmpty) return null;
+
+    let text = 'Select a Delivery Preference';
+    if (isLoading) {
+      text = 'Loading Delivery Preferences...';
+    } else if (allowMultipleSelection) {
+      text = 'Select one or more preferences';
+    }
 
     return (
       <Box className="mx-auto mb-4">
         <Text size="lg" className="font-JakartaSemiBold">
-          Select from your Delivery Preferences
+          {text}
         </Text>
       </Box>
     );
-  }, [isLoading, preferences?.length]);
+  }, [allowMultipleSelection, isLoading, preferences?.length]);
 
   const FooterComponent = useCallback(() => {
     const isEmpty = preferences?.length === 0;
-    if (isEmpty && !isLoading) return null;
+    if ((isEmpty && !isLoading) || !isOwner) return null;
 
     return (
       <Button size="sm" variant="link" action="default" onPress={handleCreateNew}>
@@ -176,7 +226,7 @@ export function DeliveryPreferencesBottomSheet({
         <ButtonText>Add New Delivery Preference</ButtonText>
       </Button>
     );
-  }, [handleCreateNew, isLoading, preferences?.length]);
+  }, [handleCreateNew, isLoading, isOwner, preferences?.length]);
 
   return (
     <BottomSheet open={open} setOpen={setOpen}>
@@ -214,7 +264,7 @@ export function DeliveryPreferencesBottomSheet({
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
-            extraData={{ selected, isLoading }}
+            extraData={{ selected, isLoading, allowMultipleSelection, isOwner }}
             ListEmptyComponent={EmptyComponent}
             contentContainerStyle={{
               paddingBottom: insets.bottom + 24,
@@ -276,8 +326,15 @@ interface PreferenceCardProps {
   isSelected?: boolean;
   onEditPress?: () => void;
   isLoading?: boolean;
+  showEditButton?: boolean;
 }
-function PreferenceCard({ isLoading, isSelected, preference, onEditPress }: PreferenceCardProps) {
+function PreferenceCard({
+  isLoading,
+  isSelected,
+  preference,
+  onEditPress,
+  showEditButton,
+}: PreferenceCardProps) {
   const router = useRouter();
 
   const cardStyle = tva({
@@ -305,11 +362,13 @@ function PreferenceCard({ isLoading, isSelected, preference, onEditPress }: Pref
           className="flex-1"
         />
 
-        <VStack space="md" className="bg-primary-100 justify-center p-4">
-          <Button className="h-fit w-fit p-4" onPress={handleEditPress}>
-            <ButtonIcon as={EditIcon} />
-          </Button>
-        </VStack>
+        {showEditButton && (
+          <VStack space="md" className="bg-primary-100 justify-center p-4">
+            <Button className="h-fit w-fit p-4" onPress={handleEditPress}>
+              <ButtonIcon as={EditIcon} />
+            </Button>
+          </VStack>
+        )}
       </HStack>
 
       {isSelected && (

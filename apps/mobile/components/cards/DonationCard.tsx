@@ -21,15 +21,16 @@ import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { convertDistance, getDistance } from '@lactalink/utilities';
-import { MapPinIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
+import BasicLocationPin from '../icons/BasicLocationPin';
 import { Icon } from '../ui/icon';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Donation;
+  isLoading?: boolean;
 }
 
-export default function DonationCard({ data, ...props }: DonationCardProps) {
+export default function DonationCard({ data, isLoading, ...props }: DonationCardProps) {
   const {
     details: { milkSample, storageType },
     remainingVolume,
@@ -60,7 +61,9 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
       'km'
     );
 
-  return (
+  return isLoading ? (
+    <DonationSkeleton />
+  ) : (
     <AnimatedPressable {...props}>
       <Card className="p-0">
         <VStack>
@@ -101,26 +104,35 @@ export default function DonationCard({ data, ...props }: DonationCardProps) {
                 </VStack>
               </HStack>
 
-              <Text size="xs" className="bg-primary-300 font-JakartaMedium px-2 py-1 opacity-90">
-                {STORAGE_TYPES[storageType].label}
-              </Text>
+              <Box className="relative px-2 py-1">
+                <Box className="bg-primary-400 absolute inset-0" style={{ opacity: 0.8 }} />
+                <Text size="xs" className="font-JakartaMedium text-white">
+                  {STORAGE_TYPES[storageType].label}
+                </Text>
+              </Box>
             </VStack>
           </Box>
 
-          <HStack space="sm" className="items-center justify-between p-2 pb-1">
-            <HStack space="xs">
-              {preferredMode?.map((mode, i) => (
-                <Image
-                  key={i}
-                  source={getDeliveryPreferenceIcon(mode)}
-                  alt={`${mode} icon`}
-                  style={{ width: 12, height: 12 }}
-                />
-              ))}
-            </HStack>
+          <HStack space="sm" className="items-center p-2 pb-0">
+            {preferredMode && (
+              <>
+                <HStack space="xs">
+                  {preferredMode.map((mode, i) => (
+                    <Image
+                      key={i}
+                      source={getDeliveryPreferenceIcon(mode)}
+                      alt={`${mode} icon`}
+                      style={{ width: 14, height: 14 }}
+                    />
+                  ))}
+                </HStack>
 
-            <HStack space="xs">
-              <Icon as={MapPinIcon} size="xs" className="text-primary-500" />
+                <Box className="border-outline-700 h-4 flex-1 border-b border-dashed" />
+              </>
+            )}
+
+            <HStack>
+              <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
               <Text size="xs">{distance?.toFixed(2)} km</Text>
             </HStack>
           </HStack>
@@ -155,11 +167,12 @@ export function DonationSkeleton() {
                 speed={2}
                 startColor="bg-primary-0"
                 className="h-12 w-20"
+                variant="sharp"
                 style={{ borderBottomRightRadius: 12 }}
               />
             </HStack>
 
-            <Skeleton speed={2} startColor="bg-primary-0" className="h-6" />
+            <Skeleton speed={2} variant="sharp" startColor="bg-primary-0" className="h-6" />
           </VStack>
         </Box>
 

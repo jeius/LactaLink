@@ -36,8 +36,8 @@ export const PHILIPPINES_COORDINATES = {
 };
 
 export const PRIORITY_LEVEL_COLORS: Record<keyof typeof PRIORITY_LEVELS, string> = {
-  LOW: 'bg-success-400',
-  MEDIUM: 'bg-secondary-400',
-  HIGH: 'bg-warning-400',
-  CRITICAL: 'bg-error-400',
+  LOW: 'success-400',
+  MEDIUM: 'secondary-400',
+  HIGH: 'warning-400',
+  CRITICAL: 'error-400',
 };

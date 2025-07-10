@@ -1,4 +1,4 @@
-import { BLUR_HASH, PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
+import { BLUR_HASH, PREFERRED_STORAGE_TYPES, PRIORITY_LEVELS } from '@/lib/constants';
 
 import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
 import React from 'react';
@@ -96,7 +96,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
           <Text size="sm">
             Preferred storage:{' '}
             <Text size="sm" className="text-primary-500 font-JakartaSemiBold">
-              {storagePreference === 'EITHER' ? 'Any' : STORAGE_TYPES[storagePreference].label}
+              {PREFERRED_STORAGE_TYPES[storagePreference].label}
             </Text>
           </Text>
         )}

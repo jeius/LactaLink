@@ -1,4 +1,4 @@
-import { PRIORITY_LEVEL_COLORS, PRIORITY_LEVELS } from '@/lib/constants';
+import { PRIORITY_LEVELS } from '@/lib/constants';
 import {
   Address,
   Avatar as AvatarType,
@@ -21,15 +21,18 @@ import { Image } from '@/components/Image';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { MapPinIcon } from 'lucide-react-native';
+import { getPriorityColor } from '@/lib/utils/getPriorityColor';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
+import BasicLocationPin from '../icons/BasicLocationPin';
 import { Icon } from '../ui/icon';
 
 interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Request;
+  isLoading?: boolean;
 }
 
-export default function RequestCard({ data, ...props }: RequestCardProps) {
+export default function RequestCard({ data, isLoading, ...props }: RequestCardProps) {
   const {
     details: { urgency, image, neededAt },
     volumeNeeded,
@@ -38,6 +41,7 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
   } = data;
 
   const { location } = useCurrentLocation();
+  const { theme } = useTheme();
 
   const name =
     (requester as Individual)?.displayName ||
@@ -62,7 +66,9 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
       'km'
     );
 
-  return (
+  return isLoading ? (
+    <RequestSkeleton />
+  ) : (
     <AnimatedPressable {...props}>
       <Card className="p-0">
         <VStack>
@@ -103,7 +109,11 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
                 </VStack>
               </HStack>
 
-              <VStack className={`${PRIORITY_LEVEL_COLORS[urgency]} px-2 py-1 opacity-90`}>
+              <VStack className="relative px-2 py-1">
+                <Box
+                  className="absolute inset-0"
+                  style={{ backgroundColor: getPriorityColor(theme, urgency), opacity: 0.8 }}
+                />
                 <Text size="xs" className="font-JakartaLight text-white">
                   Urgency:{' '}
                   <Text size="xs" className="font-JakartaMedium text-white">
@@ -120,20 +130,26 @@ export default function RequestCard({ data, ...props }: RequestCardProps) {
             </VStack>
           </Box>
 
-          <HStack space="sm" className="items-center justify-between p-2 pb-1">
-            <HStack space="xs">
-              {preferredMode?.map((mode, i) => (
-                <Image
-                  key={i}
-                  source={getDeliveryPreferenceIcon(mode)}
-                  alt={`${mode} icon`}
-                  style={{ width: 12, height: 12 }}
-                />
-              ))}
-            </HStack>
+          <HStack space="sm" className="items-center p-2 pb-0">
+            {preferredMode && (
+              <>
+                <HStack space="xs">
+                  {preferredMode.map((mode, i) => (
+                    <Image
+                      key={i}
+                      source={getDeliveryPreferenceIcon(mode)}
+                      alt={`${mode} icon`}
+                      style={{ width: 14, height: 14 }}
+                    />
+                  ))}
+                </HStack>
 
-            <HStack space="xs">
-              <Icon as={MapPinIcon} size="xs" className="text-primary-500" />
+                <Box className="border-outline-700 h-4 flex-1 border-b border-dashed" />
+              </>
+            )}
+
+            <HStack>
+              <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
               <Text size="xs">{distance?.toFixed(2)} km</Text>
             </HStack>
           </HStack>
@@ -168,11 +184,12 @@ export function RequestSkeleton() {
                 speed={2}
                 startColor="bg-tertiary-50"
                 className="h-12 w-20"
+                variant="sharp"
                 style={{ borderBottomRightRadius: 12 }}
               />
             </HStack>
 
-            <Skeleton speed={2} startColor="bg-tertiary-50" className="h-12" />
+            <Skeleton speed={2} variant="sharp" startColor="bg-tertiary-50" className="h-12" />
           </VStack>
         </Box>
 

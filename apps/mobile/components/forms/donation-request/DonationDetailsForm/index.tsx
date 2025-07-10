@@ -1,17 +1,18 @@
+import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
-import { DonationSchema } from '@lactalink/types';
+import { DeliveryPreferenceSchema, DonationSchema, MatchedRequestSchema } from '@lactalink/types';
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
   isLoading?: boolean;
-  matchedRequest?: DonationSchema['matchedRequest'];
+  matchedRequest?: MatchedRequestSchema;
 }
 
 export function DonationDetailsForm({
@@ -21,18 +22,32 @@ export function DonationDetailsForm({
   const hasMatchedRequest = Boolean(matchedRequest);
   const isLoading = hasMatchedRequest && isLoadingProp;
 
-  const {} = useFetchById(hasMatchedRequest, {
-    collection: 'requests',
-    id: matchedRequest?.id,
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
+  const form = useFormContext<DonationSchema>();
+
+  function handleMatchedRequestChange(
+    request: MatchedRequestSchema,
+    preference?: DeliveryPreferenceSchema | null
+  ) {
+    form.setValue('matchedRequest', request);
+    form.setValue('deliveryPreferences', preference ? [preference] : []);
+  }
 
   return (
     <VStack space="xl">
-      <Text size="lg" className="font-JakartaSemiBold mx-5 mt-5">
+      {matchedRequest && (
+        <Box className="m-5">
+          <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
+          <MatchedRequestCard
+            id={matchedRequest.id}
+            isLoading={true}
+            onChange={handleMatchedRequestChange}
+          />
+        </Box>
+      )}
+
+      <Text size="lg" className="font-JakartaSemiBold mx-5">
         Milk Details
       </Text>
-
       <VStack space="lg" className="mx-5">
         <FormField
           key={'details.storageType'}

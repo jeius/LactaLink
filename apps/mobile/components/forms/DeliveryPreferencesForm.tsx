@@ -115,7 +115,11 @@ export function DeliveryPreferencesForm({
         {preferences.map(renderItem)}
 
         <Box className="mx-auto mt-2">
-          <DeliveryPreferencesBottomSheet selected={preferences} onChange={handleChange} />
+          <DeliveryPreferencesBottomSheet
+            allowMultipleSelection
+            selected={preferences}
+            onChange={handleChange}
+          />
         </Box>
       </VStack>
 

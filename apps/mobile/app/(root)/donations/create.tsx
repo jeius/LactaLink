@@ -1,8 +1,8 @@
 import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
+import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
-import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms';
@@ -86,14 +86,15 @@ export default function CreateDonationRequest() {
           <VStack space="lg">
             <DonationDetailsForm isLoading={isLoading} matchedRequest={matchedRequest} />
 
-            <Button
-              isDisabled={isSubmitting}
-              size="lg"
-              className="m-5"
-              onPress={form.handleSubmit(onSubmit)}
-            >
-              <ButtonText>Submit</ButtonText>
-            </Button>
+            {!isLoading && (
+              <ActionModal
+                triggerLabel="Submit"
+                action="primary"
+                onConfirm={form.handleSubmit(onSubmit)}
+                isDisabled={isSubmitting}
+                title="Review Donation"
+              />
+            )}
           </VStack>
         </ScrollView>
       </SafeArea>

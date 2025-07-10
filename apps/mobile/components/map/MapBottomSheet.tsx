@@ -1,9 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import GorhomBottomSheet, {
-  BottomSheetScrollViewMethods as GorhomBottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
 import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
@@ -11,8 +9,8 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import { Dimensions } from 'react-native';
 import MapView from 'react-native-maps';
-import DonationCard, { DonationSkeleton } from '../cards/DonationCard';
-import RequestCard, { RequestSkeleton } from '../cards/RequestCard';
+import DonationCard from '../cards/DonationCard';
+import RequestCard from '../cards/RequestCard';
 import {
   BottomSheet,
   BottomSheetFlashList,
@@ -61,7 +59,6 @@ export function MapBottomSheet({
   mapRef,
 }: MapBottomSheetProps) {
   const sheetRef = useRef<GorhomBottomSheet>(null);
-  const scrollRef = useRef<GorhomBottomSheetScrollView>(null);
   const [open, setOpen] = useState(true);
 
   const DEVICE_WIDTH = Dimensions.get('window').width;
@@ -75,9 +72,9 @@ export function MapBottomSheet({
     [onChange]
   );
 
-  const snapPoints = hasSelectedItem
-    ? [DEFAULT_SNAP_POINT, '45%', '80%']
-    : [DEFAULT_SNAP_POINT, 320];
+  const snapPoints = useMemo(() => {
+    return hasSelectedItem ? [DEFAULT_SNAP_POINT, '45%', '80%'] : [DEFAULT_SNAP_POINT, 320];
+  }, [hasSelectedItem]);
 
   const sections = useMemo((): Section[] => {
     return [
@@ -113,10 +110,9 @@ export function MapBottomSheet({
       const loading = isLoading || item.id.includes('placeholder');
 
       if (slug === 'donations') {
-        return loading ? (
-          <DonationSkeleton />
-        ) : (
+        return (
           <DonationCard
+            isLoading={loading}
             data={item as Donation}
             onPress={() => handleChanged({ data: item, slug })}
           />
@@ -124,10 +120,12 @@ export function MapBottomSheet({
       }
 
       if (slug === 'requests') {
-        return loading ? (
-          <RequestSkeleton />
-        ) : (
-          <RequestCard data={item as Request} onPress={() => handleChanged({ data: item, slug })} />
+        return (
+          <RequestCard
+            isLoading={loading}
+            data={item as Request}
+            onPress={() => handleChanged({ data: item, slug })}
+          />
         );
       }
 
@@ -135,6 +133,12 @@ export function MapBottomSheet({
     },
     [handleChanged]
   );
+
+  useEffect(() => {
+    setTimeout(() => {
+      sheetRef.current?.snapToIndex(snapPoints.length - 1);
+    }, 20); // Delay to ensure the sheet is mounted before snapping
+  }, [snapPoints.length]);
 
   return (
     <BottomSheet
@@ -152,16 +156,8 @@ export function MapBottomSheet({
         enableContentPanningGesture={Boolean(selected)}
         enableDynamicSizing={false}
         animateOnMount={true}
-        onChange={(index) => {
-          setOpen(index > 0);
-        }}
       >
-        <BottomSheetScrollView
-          ref={scrollRef}
-          focusHook={useFocusEffect}
-          contentContainerClassName="gap-2 py-3"
-          onContentSizeChange={() => sheetRef.current?.snapToIndex(1)}
-        >
+        <BottomSheetScrollView focusHook={useFocusEffect} contentContainerClassName="gap-2 py-3">
           {selected ? (
             <VStack className="items-start px-5">
               <Button variant="link" onPress={() => handleChanged(undefined)}>

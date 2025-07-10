@@ -3,7 +3,7 @@ import Svg, { Path, SvgProps } from 'react-native-svg';
 
 export default function HomeIcon({ strokeWidth = 0, fill = '#fff', ...props }: SvgProps) {
   return (
-    <Svg id="list-icon" viewBox="0 0 62 62" {...props}>
+    <Svg id="home-icon" viewBox="0 0 62 62" {...props}>
       <Path
         id="home"
         fill={fill}
