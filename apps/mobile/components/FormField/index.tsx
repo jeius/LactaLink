@@ -34,6 +34,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CollectionSlug } from '@lactalink/types';
 
+import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { Skeleton } from '../ui/skeleton';
@@ -223,6 +224,7 @@ function FormField<
                   value={field.value}
                   onBlur={field.onBlur}
                   isDisabled={field.disabled}
+                  placeholder={placeholder}
                   onChange={(val) => {
                     field.onChange(val);
                     if (invalid) trigger(name);
@@ -334,16 +336,18 @@ function FormField<
         <FormControlErrorText>{fieldError?.message}</FormControlErrorText>
       </FormControlError>
 
-      {buttonGroupProps?.allowMultipleSelection && (
-        <Button
-          size="sm"
-          action={isAllSelected ? 'negative' : 'positive'}
-          variant={'outline'}
-          onPress={handleSelectAll}
-        >
-          <ButtonIcon as={isAllSelected ? CopyMinusIcon : CheckCheckIcon} />
-          <ButtonText>{isAllSelected ? 'Unselect All' : 'Select All'}</ButtonText>
-        </Button>
+      {buttonGroupProps?.allowMultipleSelection && buttonGroupProps.options.length > 1 && (
+        <Box className="mt-2">
+          <Button
+            size="sm"
+            action={isAllSelected ? 'negative' : 'positive'}
+            variant={'outline'}
+            onPress={handleSelectAll}
+          >
+            <ButtonIcon as={isAllSelected ? CopyMinusIcon : CheckCheckIcon} />
+            <ButtonText>{isAllSelected ? 'Unselect All' : 'Select All'}</ButtonText>
+          </Button>
+        </Box>
       )}
     </FormControl>
   );

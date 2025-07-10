@@ -9,12 +9,14 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms';
 
 import { uploadImage } from '@/lib/api/file';
+import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 
 import { getApiClient } from '@lactalink/api';
 import { DonationSchema, ErrorSearchParams, Individual, MilkBag } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { FormProvider } from 'react-hook-form';
@@ -24,6 +26,7 @@ import { toast } from 'sonner-native';
 export default function CreateDonationRequest() {
   //#region Hooks
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { matchedRequest: matchedRequestID } = useLocalSearchParams<DonationCreateSearchParams>();
 
   const {
@@ -67,6 +70,10 @@ export default function CreateDonationRequest() {
     });
 
     await createPromise;
+
+    queryClient.invalidateQueries({
+      queryKey: COLLECTION_QUERY_KEY,
+    });
 
     router.replace('/map');
   }

@@ -11,6 +11,8 @@ import {
 import { MilkIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
+import { RequestSearchParams } from '@/lib/types/donationRequest';
+import { useRouter } from 'expo-router';
 import { Dimensions } from 'react-native';
 import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';
@@ -29,6 +31,8 @@ interface DonationInfoCardProps {
 }
 
 export function DonationInfoCard({ data }: DonationInfoCardProps) {
+  const router = useRouter();
+
   const {
     details: { bags, collectionMode, storageType, milkSample, notes },
     donor,
@@ -50,6 +54,11 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   const donorAvatar = (donor as Individual).avatar as AvatarType | null | undefined;
 
   const milkImages = milkSample as ImageType[] | undefined | null;
+
+  function handleRequestPress() {
+    const params: RequestSearchParams = { matchedDonation: data.id };
+    router.push({ pathname: '/requests/create', params });
+  }
 
   return (
     <Card className="w-full">
@@ -133,7 +142,7 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
           </VStack>
         }
 
-        <Button>
+        <Button onPress={handleRequestPress}>
           <ButtonText>Request This Donation</ButtonText>
         </Button>
       </VStack>

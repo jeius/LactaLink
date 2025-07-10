@@ -65,13 +65,18 @@ export function ButtonGroupInput<TValue = unknown>({
       flexDirection={flexDirection}
       className={containerStyle({ class: className })}
     >
-      {(options || []).map((option) =>
+      {(options || []).map((option, i) =>
         isLoading ? (
-          <Skeleton speed={4} variant="rounded" className="h-9 w-24" />
+          <Skeleton
+            key={`${String(option.value)}-${i}`}
+            speed={4}
+            variant="rounded"
+            className="h-9 w-24"
+          />
         ) : (
           <Button
             isDisabled={props.isDisabled}
-            key={String(option.value)}
+            key={`${String(option.value)}-${i}`}
             variant={isSelected(option) ? 'solid' : 'outline'}
             action={isInvalid ? 'negative' : 'primary'}
             size="sm"

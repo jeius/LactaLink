@@ -1,102 +1,104 @@
+import { MatchedDonationCard } from '@/components/cards/MatchedDonationCard';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
-import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
+import { DeliveryPreferenceSchema, MatchedDonationSchema, RequestSchema } from '@lactalink/types';
 
 import { ClockIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
+import { VolumeField } from './VolumeField';
 
-export function RequestDetailsForm() {
-  const [isCustomVolume, setIsCustomVolume] = useState(false);
+interface RequestDetailsFormProps {
+  isLoading?: boolean;
+  matchedDonation?: string;
+}
 
-  function handleToggleCustomVolume() {
-    setIsCustomVolume((prev) => !prev);
+export function RequestDetailsForm({
+  isLoading: isLoadingProp,
+  matchedDonation,
+}: RequestDetailsFormProps) {
+  const hasMatchedRequest = Boolean(matchedDonation);
+  const isLoading = hasMatchedRequest && isLoadingProp;
+
+  const form = useFormContext<RequestSchema>();
+
+  function handleMatchedDonationChange(
+    donation: MatchedDonationSchema,
+    preference?: DeliveryPreferenceSchema | null
+  ) {
+    form.setValue('matchedDonation', donation);
+    form.setValue('deliveryPreferences', preference ? [preference] : []);
   }
 
   return (
-    <VStack space="xl">
+    <VStack space="xl" className="py-5">
+      {matchedDonation && (
+        <Box className="mx-5 mb-4">
+          <Text className="font-JakartaSemiBold mb-1">Selected Donation</Text>
+          <MatchedDonationCard
+            id={matchedDonation}
+            isLoading={isLoading}
+            onChange={handleMatchedDonationChange}
+          />
+        </Box>
+      )}
+
       <Text size="lg" className="font-JakartaSemiBold mx-5 mt-5">
         Milk Details
       </Text>
 
       <VStack space="lg" className="mx-5">
-        <FormField
-          name="details.storagePreference"
-          label="Select the type of milk you are requesting."
-          fieldType="button-group"
-          options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'Any' }]}
-        />
+        {!matchedDonation && (
+          <FormField
+            name="details.storagePreference"
+            label="Select the type of milk you are requesting."
+            fieldType="button-group"
+            options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'Any' }]}
+            isLoading={isLoading}
+          />
+        )}
 
         <FormField
           name="details.urgency"
           label="How urgently do you need the milk?"
           fieldType="button-group"
           options={Object.values(PRIORITY_LEVELS)}
+          isLoading={isLoading}
         />
       </VStack>
 
       <VStack space="sm" className="mx-5">
         <Text className="font-JakartaMedium">When do you need the milk?</Text>
-        <Card className="flex-col gap-4">
+        <VStack className="flex-col gap-4">
           <FormField
             name="details.neededAt"
-            label="Date"
             fieldType="date"
             mode="date"
+            helperText="Select a date when you need the milk."
             datePickerOptions={{ minimumDate: new Date() }}
+            showSetNowButton
+            placeholder="Select date..."
+            isLoading={isLoading}
           />
 
           <FormField
             name="details.neededAt"
-            label="Time"
             fieldType="date"
             mode="time"
+            helperText="Specify the time when you need the milk."
             placeholder="Select time..."
             inputIcon={ClockIcon}
             showSetNowButton
             datePickerOptions={{ minimumDate: new Date() }}
+            isLoading={isLoading}
           />
-        </Card>
+        </VStack>
       </VStack>
 
-      <VStack space="sm" className="mx-5">
-        <Text className="font-JakartaMedium">How much do you need?</Text>
-        <Card className="flex-col gap-5">
-          <FormField
-            name="volumeNeeded"
-            label="Select one"
-            fieldType="button-group"
-            options={Object.values(VOLUME_PRESET)}
-            isDisabled={isCustomVolume}
-          />
-
-          <HStack space="sm" className="items-start">
-            <Button
-              size="sm"
-              variant={isCustomVolume ? 'solid' : 'outline'}
-              onPress={handleToggleCustomVolume}
-            >
-              <ButtonText>Custom</ButtonText>
-            </Button>
-
-            {isCustomVolume && (
-              <FormField
-                name="volumeNeeded"
-                fieldType="number"
-                placeholder="Enter volume in mL"
-                variant="underlined"
-                className="w-full max-w-48"
-                containerClassName="flex-1"
-              />
-            )}
-          </HStack>
-        </Card>
-      </VStack>
+      <VolumeField donationID={matchedDonation} />
 
       <Box className="mx-5">
         <FormField
@@ -105,6 +107,7 @@ export function RequestDetailsForm() {
           fieldType="image"
           allowsMultipleSelection={false}
           helperText="Optional, but may encourage donors to fulfill your request."
+          isLoading={isLoading}
         />
       </Box>
 
@@ -115,6 +118,7 @@ export function RequestDetailsForm() {
           fieldType="textarea"
           placeholder="Please provide a brief reason for your request."
           helperText="Optional, but helps the donor understand your needs."
+          isLoading={isLoading}
         />
       </Box>
 
@@ -125,6 +129,7 @@ export function RequestDetailsForm() {
           fieldType="textarea"
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
+          isLoading={isLoading}
         />
       </Box>
     </VStack>

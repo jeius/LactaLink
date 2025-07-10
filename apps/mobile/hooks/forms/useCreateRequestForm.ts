@@ -14,12 +14,14 @@ import { extractID } from '@lactalink/utilities';
 import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
+import { useFetchById } from '../collections/useFetchById';
 import { useFetchBySlug } from '../collections/useFetchBySlug';
 
 const storageKeyPrefix = 'create-request-form';
 
 type Params = {
   requestedDonorId?: string;
+  matchedDonation?: string;
   user: User | null;
   profile: Individual | Hospital | MilkBank | null;
 };
@@ -48,19 +50,38 @@ function getStoredData({ user, requestedDonorId, profile }: Params): RequestSche
   } as RequestSchema;
 }
 
-export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params) => {
+export const useCreateRequestForm = ({
+  requestedDonorId,
+  user,
+  profile,
+  matchedDonation,
+}: Params) => {
   const {
     data: preferences,
-    refetch,
-    isLoading,
-    isFetching,
-    error,
+    isLoading: isPrefLoading,
+    isFetching: isFetchingPref,
+    error: prefError,
   } = useFetchBySlug(true, {
     collection: 'delivery-preferences',
     where: { owner: { equals: user?.id } },
     depth: 0,
     sort: 'createdAt',
   });
+
+  const {
+    data: matchedDonationDoc,
+    isLoading: isLoadingDonation,
+    isFetching: isFetchingDonation,
+    error: donationError,
+  } = useFetchById(Boolean(matchedDonation), {
+    collection: 'donations',
+    id: matchedDonation,
+    populate: { users: { profile: true, profileType: true, role: true } },
+  });
+
+  const isLoading = isPrefLoading || isLoadingDonation;
+  const isFetching = isFetchingPref || isFetchingDonation;
+  const error = prefError || donationError;
 
   const form = useForm({
     resolver: zodResolver(requestSchema),
@@ -87,9 +108,22 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
         }));
       }
 
+      if (matchedDonationDoc) {
+        const storagePreference = matchedDonationDoc.details.storageType;
+
+        data.matchedDonation = {
+          id: matchedDonationDoc.id,
+          donor: extractID(matchedDonationDoc.donor),
+          storageType: storagePreference,
+          bags: extractID(matchedDonationDoc.details.bags),
+        };
+
+        data.details.storagePreference = storagePreference;
+      }
+
       form.reset(data);
     }
-  }, [isLoading, preferences, form, form.getValues]);
+  }, [isLoading, preferences, form, form.getValues, matchedDonationDoc]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -129,7 +163,7 @@ export const useCreateRequestForm = ({ requestedDonorId, user, profile }: Params
     }
 
     saveUserPreference();
-  }, [isSubmitSuccessful, getValues, storageKey, refetch]);
+  }, [isSubmitSuccessful, getValues, storageKey]);
 
   return { form, isLoading, isFetching, error };
 };

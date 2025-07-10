@@ -106,7 +106,7 @@ export const matchedDonationSchema = z.object({
     Object.values(STORAGE_TYPES).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
+  bags: z.array(z.uuid().nonempty('Required')).min(1, 'Required at least one milk bag.'),
 });
 
 export const requestSchema = z
