@@ -46,7 +46,7 @@ export function RequestDetailsForm({
         </Box>
       )}
 
-      <Text size="lg" className="font-JakartaSemiBold mx-5 mt-5">
+      <Text size="lg" className="font-JakartaSemiBold mx-5">
         Milk Details
       </Text>
 
