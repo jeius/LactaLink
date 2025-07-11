@@ -1,51 +1,50 @@
-import React, { RefObject } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollViewProps,
-  StyleProp,
-  TouchableWithoutFeedback,
-  ViewStyle,
-} from 'react-native';
+import React, { ComponentProps } from 'react';
+import { Platform, StyleProp, ViewStyle } from 'react-native';
 
-import { ScrollView } from 'react-native-gesture-handler';
+import { useKeyboardHandler } from 'react-native-keyboard-controller';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { Box } from './ui/box';
 
-type Props = {
-  children: React.ReactNode;
+const OFFSET = Platform.select({ android: 42, ios: 64, default: 0 });
+
+interface KeyboardAvoiderProps extends ComponentProps<typeof Box> {
   keyboardVerticalOffset?: number;
-  scrollViewProps?: ScrollViewProps;
-  containerStyle?: StyleProp<ViewStyle>;
-  scrollViewRef?: RefObject<ScrollView>;
   contentContainerStyle?: StyleProp<ViewStyle>;
-};
+}
 
-const KeyboardAvoidingWrapper: React.FC<Props> = ({
+const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
   children,
-  keyboardVerticalOffset = 0,
-  scrollViewProps,
-  containerStyle,
-  scrollViewRef,
-  contentContainerStyle,
+  keyboardVerticalOffset: offset = OFFSET,
+  ...props
 }) => {
+  const { height } = useKeyboardSharedHeight(offset);
+
+  const fakeViewStyle = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
   return (
-    <KeyboardAvoidingView
-      style={[{ flex: 1 }, containerStyle]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : keyboardVerticalOffset}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={[{ flexGrow: 1 }, contentContainerStyle]}
-          keyboardShouldPersistTaps="handled"
-          {...scrollViewProps}
-        >
-          {children}
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    <Box {...props}>
+      {children}
+      <Animated.View style={fakeViewStyle} />
+    </Box>
   );
 };
 
 export default KeyboardAvoidingWrapper;
+
+export function useKeyboardSharedHeight(offset: number = OFFSET) {
+  const height = useSharedValue(0);
+
+  useKeyboardHandler(
+    {
+      onMove: (e) => {
+        'worklet';
+        height.value = Math.max(e.height - offset, 0);
+      },
+    },
+    [offset]
+  );
+
+  return { height };
+}

@@ -132,7 +132,6 @@ export function OptionsCards<T>({
                   size="md"
                   className={cardStyle({ isSelected: selected === value })}
                   style={{
-                    // maxWidth: 105,
                     minHeight: 115,
                     minWidth: 100,
                   }}

@@ -36,6 +36,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
@@ -146,43 +147,45 @@ export default function Step() {
   return (
     <SafeArea>
       <KeyboardAvoidingWrapper>
-        <VStack space="xl" className="relative grow pb-5 pt-10">
-          <Box className="grow">
-            {step === 'type' ? (
-              <RenderBlock />
-            ) : (
-              <VStack space="lg">
-                <VStack space="sm" className="px-5">
-                  <HStack space="md" className="items-center">
-                    <Image
-                      source={getIconAsset('information')}
-                      alt="Information"
-                      style={{ width: 40, height: 40 }}
-                    />
-                    <Text size="xl" bold>
-                      {title[profileType]} Information
-                    </Text>
-                  </HStack>
-                  <Text>
-                    Please take a moment to fill out the fields below. Rest assured, your
-                    information is safe with us.
-                  </Text>
-                </VStack>
-
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+          <VStack space="xl" className="relative h-full pt-10">
+            <Box className="grow">
+              {step === 'type' ? (
                 <RenderBlock />
-              </VStack>
-            )}
-          </Box>
+              ) : (
+                <VStack space="lg">
+                  <VStack space="sm" className="px-5">
+                    <HStack space="md" className="items-center">
+                      <Image
+                        source={getIconAsset('information')}
+                        alt="Information"
+                        style={{ width: 40, height: 40 }}
+                      />
+                      <Text size="xl" bold>
+                        {title[profileType]} Information
+                      </Text>
+                    </HStack>
+                    <Text>
+                      Please take a moment to fill out the fields below. Rest assured, your
+                      information is safe with us.
+                    </Text>
+                  </VStack>
 
-          <VStack className="mx-5 mt-5">
-            <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
-              <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
-            </Button>
-            <Button size="md" variant="link" action="default" onPress={handleBack}>
-              <ButtonText>Back</ButtonText>
-            </Button>
+                  <RenderBlock />
+                </VStack>
+              )}
+            </Box>
+
+            <VStack className="mx-5 mt-5">
+              <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
+                <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
+              </Button>
+              <Button size="md" variant="link" action="default" onPress={handleBack}>
+                <ButtonText>Back</ButtonText>
+              </Button>
+            </VStack>
           </VStack>
-        </VStack>
+        </ScrollView>
       </KeyboardAvoidingWrapper>
     </SafeArea>
   );
