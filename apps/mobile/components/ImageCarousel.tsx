@@ -58,7 +58,7 @@ export function ImageCarousel({
         {images && images.length > 0 && (
           <Carousel
             ref={carouselRef}
-            loop
+            loop={images.length > 1}
             height={carouselHeight}
             width={carouselWidth}
             autoPlay
