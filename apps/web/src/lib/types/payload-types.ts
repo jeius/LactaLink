@@ -151,6 +151,10 @@ export interface Config {
     requests: {
       delivery: 'deliveries';
     };
+    users: {
+      addresses: 'addresses';
+      deliveryPreferences: 'delivery-preferences';
+    };
   };
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
@@ -274,6 +278,16 @@ export interface User {
         relationTo: 'hospitals';
         value: string | Hospital;
       } | null);
+  addresses?: {
+    docs?: (string | Address)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  deliveryPreferences?: {
+    docs?: (string | DeliveryPreference)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   lastSignInAt?: string | null;
   emailConfirmedAt?: string | null;
   phoneConfirmedAt?: string | null;
@@ -386,89 +400,6 @@ export interface Hospital {
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
   addresses: (string | Address)[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "provinces".
- */
-export interface Province {
-  id: string;
-  name: string;
-  code: string;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "regions".
- */
-export interface Region {
-  id: string;
-  name: string;
-  code: string;
-  regionName?: string | null;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "islandGroups".
- */
-export interface IslandGroup {
-  id: string;
-  name: string;
-  code: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citiesMunicipalities".
- */
-export interface CityMunicipality {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  isCapital: boolean;
-  code: string;
-  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
-  districtCode?: string | null;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "barangays".
- */
-export interface Barangay {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  code: string;
-  subMunicipalityCode?: string | null;
-  districtCode?: string | null;
-  cityMunicipality?: (string | null) | CityMunicipality;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
   updatedAt: string;
   createdAt: string;
 }
@@ -860,6 +791,89 @@ export interface TimeSlot {
     startTime: string;
     endTime: string;
   };
+}
+/**
+ * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces".
+ */
+export interface Province {
+  id: string;
+  name: string;
+  code: string;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regions".
+ */
+export interface Region {
+  id: string;
+  name: string;
+  code: string;
+  regionName?: string | null;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "islandGroups".
+ */
+export interface IslandGroup {
+  id: string;
+  name: string;
+  code: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citiesMunicipalities".
+ */
+export interface CityMunicipality {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  isCapital: boolean;
+  code: string;
+  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
+  districtCode?: string | null;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "barangays".
+ */
+export interface Barangay {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  code: string;
+  subMunicipalityCode?: string | null;
+  districtCode?: string | null;
+  cityMunicipality?: (string | null) | CityMunicipality;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Organize notification types into logical categories with consistent styling and behavior.
@@ -1939,6 +1953,8 @@ export interface UsersSelect<T extends boolean = true> {
   phone?: T;
   profileType?: T;
   profile?: T;
+  addresses?: T;
+  deliveryPreferences?: T;
   lastSignInAt?: T;
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;

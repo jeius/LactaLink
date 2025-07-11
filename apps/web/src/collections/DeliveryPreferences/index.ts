@@ -9,7 +9,7 @@ import { COLLECTION_GROUP, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 
 import { authenticated, collectionOwnerOrAdmin } from '../_access-control';
-import { filterOptions } from './filterOptions';
+import { addressFilterOptions } from './filterOptions';
 import { generateName } from './hooks/generateName';
 
 export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
@@ -62,7 +62,7 @@ export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
           relationTo: 'addresses',
           hasMany: false,
           required: true,
-          filterOptions: filterOptions,
+          filterOptions: addressFilterOptions,
           admin: {
             width: '50%',
             description: 'Address available for pickup, delivery, or meet-up.',

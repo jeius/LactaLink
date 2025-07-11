@@ -77,6 +77,24 @@ export const Users: CollectionConfig<'users'> = {
       ],
     },
     {
+      name: 'addresses',
+      type: 'join',
+      collection: 'addresses',
+      on: 'owner',
+      admin: {
+        defaultColumns: ['name', 'displayName', 'default', 'coordinates'],
+      },
+    },
+    {
+      name: 'deliveryPreferences',
+      type: 'join',
+      collection: 'delivery-preferences',
+      on: 'owner',
+      admin: {
+        defaultColumns: ['name', 'address', 'preferredMode', 'availableDays'],
+      },
+    },
+    {
       name: 'lastSignInAt',
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },

@@ -5,6 +5,7 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateDisplayName } from './hooks/generateDisplayName';
 import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegion';
+import { generateName } from './hooks/generateName';
 
 export const Addresses: CollectionConfig<'addresses'> = {
   slug: 'addresses',
@@ -13,7 +14,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
     description:
       'Addresses of users, which are used to identify locations for various purposes such as shipping and identification.',
     useAsTitle: 'displayName',
-    defaultColumns: ['displayName', 'name', 'default', 'owner'],
+    defaultColumns: ['name', 'displayName', 'default', 'owner'],
   },
   access: {
     admin: admin,
@@ -21,6 +22,9 @@ export const Addresses: CollectionConfig<'addresses'> = {
     read: authenticated,
     update: collectionOwnerOrAdmin,
     delete: collectionOwnerOrAdmin,
+  },
+  hooks: {
+    beforeChange: [generateDisplayName, generateOwner, generateName, generateIslandGroupAndRegion],
   },
   fields: [
     ownerField,
@@ -130,7 +134,4 @@ export const Addresses: CollectionConfig<'addresses'> = {
       collection: 'delivery-preferences',
     },
   ],
-  hooks: {
-    beforeChange: [generateDisplayName, generateOwner, generateIslandGroupAndRegion],
-  },
 };
