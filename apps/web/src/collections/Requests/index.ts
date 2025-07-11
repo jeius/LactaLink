@@ -1,7 +1,11 @@
 import { createdByField } from '@/fields/createdByField';
-import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import {
+  COLLECTION_GROUP,
+  PREFERRED_STORAGE_TYPES,
+  PRIORITY_LEVELS,
+  REQUEST_STATUS,
+} from '@/lib/constants';
 import { Request } from '@lactalink/types';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
@@ -79,18 +83,12 @@ export const Requests: CollectionConfig<'requests'> = {
           label: 'Request Status',
           type: 'select',
           required: true,
-          defaultValue: 'PENDING',
+          defaultValue: REQUEST_STATUS.PENDING.value,
           admin: {
             description: 'Current status of the request',
             width: '50%',
           },
-          options: [
-            { label: 'Pending', value: 'PENDING' },
-            { label: 'Matched', value: 'MATCHED' },
-            { label: 'Fulfilled', value: 'FULFILLED' },
-            { label: 'Cancelled', value: 'CANCELLED' },
-            { label: 'Expired', value: 'EXPIRED' },
-          ],
+          options: Object.values(REQUEST_STATUS),
         },
         {
           name: 'volumeNeeded',
@@ -146,22 +144,21 @@ export const Requests: CollectionConfig<'requests'> = {
                       name: 'storagePreference',
                       label: 'Storage Preference',
                       type: 'select',
-                      defaultValue: 'EITHER',
-                      options: [
-                        { label: 'Fresh (Refrigerated)', value: 'FRESH' },
-                        { label: 'Frozen', value: 'FROZEN' },
-                        { label: 'Either', value: 'EITHER' },
-                      ],
+                      defaultValue: PREFERRED_STORAGE_TYPES.EITHER.value,
+                      options: Object.values(PREFERRED_STORAGE_TYPES),
                       admin: {
                         description: 'Preferred storage type',
                         width: '40%',
                       },
                     },
-                    priorityLevel({
+                    {
                       name: 'urgency',
-                      defaultValue: 'LOW',
+                      type: 'select',
                       label: 'Urgency Level',
-                    }),
+                      enumName: 'enum_priority_level',
+                      defaultValue: PRIORITY_LEVELS.LOW.value,
+                      options: Object.values(PRIORITY_LEVELS),
+                    },
                   ],
                 },
                 {

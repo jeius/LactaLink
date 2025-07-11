@@ -81,7 +81,7 @@ export const Donations: CollectionConfig<'donations'> = {
           label: 'Donation Status',
           type: 'select',
           required: true,
-          defaultValue: DONATION_STATUS.available.value,
+          defaultValue: DONATION_STATUS.AVAILABLE.value,
           options: Object.values(DONATION_STATUS),
         },
       ],

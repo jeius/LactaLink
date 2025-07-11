@@ -41,6 +41,13 @@ export const DAYS = {
   SUNDAY: { label: 'Sunday', value: 'SUNDAY' },
 } as const;
 
+export const URGENCY_LEVELS = {
+  LOW: { label: 'Standard', value: 'LOW' },
+  MEDIUM: { label: 'Urgent', value: 'MEDIUM' },
+  HIGH: { label: 'Very Urgent', value: 'HIGH' },
+  CRITICAL: { label: 'Emergency', value: 'CRITICAL' },
+} as const;
+
 export const PRIORITY_LEVELS = {
   LOW: { label: 'Low', value: 'LOW' },
   MEDIUM: { label: 'Medium', value: 'MEDIUM' },
@@ -84,10 +91,18 @@ export const TIME_SLOTS = {
 };
 
 export const DONATION_STATUS = {
-  available: { label: 'Available', value: 'AVAILABLE' },
-  partially: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
-  fully: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
-  completed: { label: 'Completed', value: 'COMPLETED' },
-  expired: { label: 'Expired', value: 'EXPIRED' },
-  cancelled: { label: 'Cancelled', value: 'CANCELLED' },
+  AVAILABLE: { label: 'Available', value: 'AVAILABLE' },
+  PARTIALLY_ALLOCATED: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
+  FULLY_ALLOCATED: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
+  COMPLETED: { label: 'Completed', value: 'COMPLETED' },
+  EXPIRED: { label: 'Expired', value: 'EXPIRED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
+};
+
+export const REQUEST_STATUS = {
+  PENDING: { label: 'Pending', value: 'PENDING' },
+  MATCHED: { label: 'Matched', value: 'MATCHED' },
+  FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
+  EXPIRED: { label: 'Expired', value: 'EXPIRED' },
 };

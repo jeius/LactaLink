@@ -3,8 +3,8 @@ import * as z from 'zod/v4';
 import {
   COLLECTION_MODES,
   PREFERRED_STORAGE_TYPES,
-  PRIORITY_LEVELS,
   STORAGE_TYPES,
+  URGENCY_LEVELS,
 } from '@lactalink/enums';
 
 import { deliveryPreferenceSchema } from '../delivery-preference';
@@ -39,7 +39,7 @@ export const requestDetailsSchema = z.object({
     Object.values(PREFERRED_STORAGE_TYPES).map((item) => item.value),
     'Select one option'
   ),
-  urgency: z.enum(Object.values(PRIORITY_LEVELS).map((item) => item.value)),
+  urgency: z.enum(Object.values(URGENCY_LEVELS).map((item) => item.value)),
   bags: z.array(z.uuid().nonempty('Required')).optional().nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
@@ -72,8 +72,11 @@ export const donationSchema = z
   .and(deliveryPreferencesSchema)
   .refine(
     (data) => {
-      if (data.matchedRequest?.storagePreference !== 'EITHER') {
-        return data.details.storageType === data.matchedRequest?.storagePreference;
+      if (!data.matchedRequest) {
+        return true;
+      }
+      if (data.matchedRequest.storagePreference !== 'EITHER') {
+        return data.details.storageType === data.matchedRequest.storagePreference;
       }
       return true;
     },

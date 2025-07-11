@@ -543,7 +543,7 @@ export interface Request {
      * Preferred storage type
      */
     storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
-    urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    urgency?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
     /**
      * Milk bags that fulfilled this request. If empty, it means the request is still pending.
      */
@@ -650,23 +650,7 @@ export interface Image {
       filesize?: number | null;
       filename?: string | null;
     };
-    square?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
     small?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    medium?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -1617,27 +1601,7 @@ export interface ImagesSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        square?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
         small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        medium?:
           | T
           | {
               url?: T;
