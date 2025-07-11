@@ -20,7 +20,7 @@ const UIAvatar = createAvatar({
 });
 
 const avatarStyle = tva({
-  base: 'bg-primary-500 border-primary-500 relative items-center justify-center rounded-full border-2 group-[.avatar-group]/avatar-group:-ml-2.5',
+  base: 'bg-primary-500 border-primary-500 relative items-center justify-center rounded-full border group-[.avatar-group]/avatar-group:-ml-2.5',
   variants: {
     size: {
       xs: 'h-6 w-6',

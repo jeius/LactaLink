@@ -1,4 +1,4 @@
-import { PRIORITY_LEVELS } from '@/lib/constants';
+import { URGENCY_LEVELS } from '@/lib/constants';
 import {
   Address,
   Avatar as AvatarType,
@@ -7,7 +7,7 @@ import {
   Individual,
   Request,
 } from '@lactalink/types';
-import { convertDistance, formatDate, getDistance } from '@lactalink/utilities';
+import { convertDistance, getDistance } from '@lactalink/utilities';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
@@ -25,6 +25,7 @@ import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
+import FastTimerIcon from '../icons/FastTimerIcon';
 import { Icon } from '../ui/icon';
 
 interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
@@ -41,7 +42,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
   }
 
   const {
-    details: { urgency, image, neededAt },
+    details: { urgency, image },
     volumeNeeded,
     requester,
     deliveryDetails,
@@ -96,15 +97,25 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
             >
               <HStack>
                 <VStack
-                  className={`bg-tertiary-300 px-3 py-1`}
-                  style={{ borderBottomRightRadius: 12 }}
+                  className={`px-3 py-1`}
+                  style={{
+                    borderBottomRightRadius: 12,
+                    backgroundColor: getPriorityColor(theme, urgency, 200),
+                  }}
                 >
-                  <Text size="2xs" className="text-tertiary-900">
+                  <Text size="2xs" style={{ color: getPriorityColor(theme, urgency, 900) }}>
                     Requesting
                   </Text>
-                  <Text size="xl" className="font-JakartaSemiBold text-tertiary-900">
+                  <Text
+                    size="xl"
+                    className="font-JakartaSemiBold"
+                    style={{ color: getPriorityColor(theme, urgency, 900) }}
+                  >
                     {volumeNeeded}{' '}
-                    <Text size="xs" className="font-JakartaMedium text-tertiary-900">
+                    <Text
+                      className="font-JakartaMedium"
+                      style={{ color: getPriorityColor(theme, urgency, 900) }}
+                    >
                       mL
                     </Text>
                   </Text>
@@ -116,18 +127,19 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
                   className="absolute inset-0"
                   style={{ backgroundColor: getPriorityColor(theme, urgency), opacity: 0.8 }}
                 />
-                <Text size="xs" className="font-JakartaLight text-white">
-                  Urgency:{' '}
-                  <Text size="xs" className="font-JakartaMedium text-white">
-                    {PRIORITY_LEVELS[urgency].label}
+                <HStack space="xs" className="items-center justify-end">
+                  <Icon
+                    as={FastTimerIcon}
+                    fill={getPriorityColor('light', urgency, 0).toString()}
+                  />
+                  <Text
+                    size="xs"
+                    className="font-JakartaSemiBold"
+                    style={{ color: getPriorityColor('light', urgency, 0) }}
+                  >
+                    {URGENCY_LEVELS[urgency].label}
                   </Text>
-                </Text>
-                <Text size="xs" className="font-JakartaLight text-white">
-                  Needed At:{' '}
-                  <Text size="xs" className="font-JakartaMedium text-white">
-                    {formatDate(neededAt)}
-                  </Text>
-                </Text>
+                </HStack>
               </VStack>
             </VStack>
           </Box>

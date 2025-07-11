@@ -3,12 +3,13 @@ import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
+import { STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 import { DeliveryPreferenceSchema, MatchedDonationSchema, RequestSchema } from '@lactalink/types';
 
 import { ClockIcon } from 'lucide-react-native';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
+import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
@@ -20,8 +21,8 @@ export function RequestDetailsForm({
   isLoading: isLoadingProp,
   matchedDonation,
 }: RequestDetailsFormProps) {
-  const hasMatchedRequest = Boolean(matchedDonation);
-  const isLoading = hasMatchedRequest && isLoadingProp;
+  const hasMatchedDonation = Boolean(matchedDonation);
+  const isLoading = hasMatchedDonation && isLoadingProp;
 
   const form = useFormContext<RequestSchema>();
 
@@ -56,7 +57,7 @@ export function RequestDetailsForm({
             name="details.storagePreference"
             label="Select the type of milk you are requesting."
             fieldType="button-group"
-            options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'Any' }]}
+            options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
             isLoading={isLoading}
           />
         )}
@@ -65,7 +66,7 @@ export function RequestDetailsForm({
           name="details.urgency"
           label="How urgently do you need the milk?"
           fieldType="button-group"
-          options={Object.values(PRIORITY_LEVELS)}
+          options={Object.values(URGENCY_LEVELS)}
           isLoading={isLoading}
         />
       </VStack>
@@ -132,6 +133,10 @@ export function RequestDetailsForm({
           isLoading={isLoading}
         />
       </Box>
+
+      {!hasMatchedDonation && (
+        <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
+      )}
     </VStack>
   );
 }

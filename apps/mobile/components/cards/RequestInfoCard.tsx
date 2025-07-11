@@ -1,16 +1,18 @@
-import { BLUR_HASH, PREFERRED_STORAGE_TYPES, PRIORITY_LEVELS } from '@/lib/constants';
+import { BLUR_HASH, PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 
 import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
 import React from 'react';
 
+import { useAuth } from '@/hooks/auth/useAuth';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { formatDate } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
+import { EditIcon, HandHelpingIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
-import { Button, ButtonText } from '../ui/button';
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Text } from '../ui/text';
@@ -34,23 +36,30 @@ interface RequestInfoCardProps {
 }
 
 export function RequestInfoCard({ data }: RequestInfoCardProps) {
+  const { profile } = useAuth();
+  const router = useRouter();
+
   const {
     details: { neededAt, urgency, storagePreference, image, reason, notes },
-    requester,
     volumeNeeded,
   } = data;
 
-  const requestername = (requester as Individual).displayName;
-  const requesterAvatar = (requester as Individual).avatar as AvatarType | null | undefined;
+  const requester = data.requester as Individual;
+  const requestername = requester.displayName;
+  const requesterAvatar = requester.avatar as AvatarType | null | undefined;
 
   const milkImage = image as ImageType | undefined | null;
   const imageUrl = milkImage?.sizes?.large?.url || milkImage?.sizes?.medium?.url || milkImage?.url;
 
-  const router = useRouter();
+  const isOwner = profile && profile.id === requester.id;
 
   function handleDonatePress() {
     const params: DonationCreateSearchParams = { matchedRequest: data.id };
-    router.push({ pathname: '/donations/create', params });
+    if (isOwner) {
+      router.push(`/requests/edit/${data.id}`);
+    } else {
+      router.push({ pathname: '/donations/create', params });
+    }
   }
 
   return (
@@ -61,7 +70,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
             <Image
               alt={'Recipient Image'}
               source={{ uri: imageUrl }}
-              contentFit="cover"
+              contentFit="contain"
               style={{ width: '100%', height: '100%' }}
               placeholder={{ blurhash: BLUR_HASH }}
             />
@@ -88,7 +97,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
         <HStack space="xs" className="items-center">
           <Text size="sm">Urgency:</Text>
           <Text size="sm" className={urgencyStyle({ urgency })} style={{ borderRadius: 6 }}>
-            {PRIORITY_LEVELS[urgency].label}
+            {URGENCY_LEVELS[urgency].label}
           </Text>
         </HStack>
 
@@ -138,7 +147,8 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
         </VStack>
 
         <Button onPress={handleDonatePress}>
-          <ButtonText>Donate</ButtonText>
+          <ButtonIcon as={isOwner ? EditIcon : HandHelpingIcon} />
+          <ButtonText>{isOwner ? 'Edit Request' : 'Donate'}</ButtonText>
         </Button>
       </VStack>
     </Card>

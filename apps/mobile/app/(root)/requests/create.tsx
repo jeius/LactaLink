@@ -1,3 +1,4 @@
+import { RequestReviewCard } from '@/components/cards/RequestReviewCard';
 import { RequestDetailsForm } from '@/components/forms/donation-request/RequestDetailsForm';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
@@ -54,6 +55,7 @@ export default function CreateDonationRequest() {
   const isLoading = isAuthLoading || isFormLoading;
   const isFetching = isAuthFetching || isFormFetching;
   const error = authError || formError;
+  const formData = form.getValues();
 
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
@@ -79,6 +81,13 @@ export default function CreateDonationRequest() {
 
     router.replace('/map');
   }
+
+  async function handleValidation() {
+    const isValid = await form.trigger();
+    if (!isValid) {
+      throw new Error('Form validation failed');
+    }
+  }
   //#endregion
 
   if (!isLoading && error) {
@@ -100,9 +109,19 @@ export default function CreateDonationRequest() {
                 <ActionModal
                   triggerLabel="Submit"
                   action="primary"
+                  onTriggerPress={handleValidation}
                   onConfirm={form.handleSubmit(onSubmit)}
                   isDisabled={isSubmitting}
                   title="Review Request"
+                  description={
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      className="border-outline-200"
+                      style={{ maxHeight: 380, borderTopWidth: 1, borderBottomWidth: 1 }}
+                    >
+                      <RequestReviewCard data={formData} variant="ghost" className="p-2" />
+                    </ScrollView>
+                  }
                 />
               </Box>
             )}
@@ -117,6 +136,8 @@ export default function CreateDonationRequest() {
 
 async function createRequest(data: RequestSchema) {
   const apiClient = getApiClient();
+
+  console.log('Creating request with data:', data);
 
   const {
     deliveryPreferences: deliveryDetails,

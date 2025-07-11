@@ -30,7 +30,9 @@ export default function MapPage() {
 
   const donationRes = useFetchBySlug(true, {
     collection: 'donations',
-    where: { status: { in: [DONATION_STATUS.available.value, DONATION_STATUS.partially.value] } },
+    where: {
+      status: { in: [DONATION_STATUS.AVAILABLE.value, DONATION_STATUS.PARTIALLY_ALLOCATED.value] },
+    },
     populate,
   });
 

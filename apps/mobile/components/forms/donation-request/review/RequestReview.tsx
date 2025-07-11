@@ -9,7 +9,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 
-import { DAYS, DELIVERY_OPTIONS, PRIORITY_LEVELS, STORAGE_TYPES } from '@/lib/constants';
+import { DAYS, DELIVERY_OPTIONS, STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
 import { RequestSchema } from '@lactalink/types';
@@ -87,7 +87,7 @@ export function RequestReview() {
 
           <Text>
             Urgency:{' '}
-            <Text className={urgencyStyle({ urgency })}>{PRIORITY_LEVELS[urgency].label}</Text>
+            <Text className={urgencyStyle({ urgency })}>{URGENCY_LEVELS[urgency].label}</Text>
           </Text>
 
           <Text>

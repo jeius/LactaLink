@@ -176,6 +176,7 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   }, [router]);
 
   const EmptyComponent = useCallback(() => {
+    const isEmpty = preferences?.length === 0;
     return (
       !isLoading && (
         <VStack className="mx-auto items-center p-4">
@@ -186,7 +187,7 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
             style={{ width: '60%', aspectRatio: 1.25 }}
           />
           <Text className="mb-5">Oops! Nothing to show here.</Text>
-          {isOwner && (
+          {(isOwner || isEmpty) && (
             <Button onPress={handleCreateNew}>
               <ButtonIcon as={PlusIcon} />
               <ButtonText>Add New Delivery Preference</ButtonText>
@@ -195,7 +196,7 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
         </VStack>
       )
     );
-  }, [isLoading, isOwner, handleCreateNew]);
+  }, [preferences?.length, isLoading, isOwner, handleCreateNew]);
 
   const HeaderComponent = useCallback(() => {
     const isEmpty = preferences?.length === 0;

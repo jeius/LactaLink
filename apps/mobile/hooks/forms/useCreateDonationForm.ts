@@ -79,7 +79,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
         }));
       }
 
-      if (matchedRequestDoc) {
+      if (matchedRequestDoc && matchedRequest) {
         const storagePreference = matchedRequestDoc.details.storagePreference || 'EITHER';
         const volumeNeeded = matchedRequestDoc.volumeNeeded;
 
@@ -103,7 +103,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
 
       form.reset(data);
     }
-  }, [isLoading, preferences, form, matchedRequestDoc]);
+  }, [isLoading, preferences, form, matchedRequestDoc, matchedRequest]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {

@@ -8,9 +8,10 @@ import {
   Individual,
   MilkBag,
 } from '@lactalink/types';
-import { MilkIcon } from 'lucide-react-native';
+import { EditIcon, MilkIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
+import { useAuth } from '@/hooks/auth/useAuth';
 import { RequestSearchParams } from '@/lib/types/donationRequest';
 import { useRouter } from 'expo-router';
 import { Dimensions } from 'react-native';
@@ -18,7 +19,7 @@ import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';
 import { ImageCarousel } from '../ImageCarousel';
 import { Box } from '../ui/box';
-import { Button, ButtonText } from '../ui/button';
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -32,10 +33,10 @@ interface DonationInfoCardProps {
 
 export function DonationInfoCard({ data }: DonationInfoCardProps) {
   const router = useRouter();
+  const { profile } = useAuth();
 
   const {
     details: { bags, collectionMode, storageType, milkSample, notes },
-    donor,
     remainingVolume,
     volume,
   } = data;
@@ -50,14 +51,21 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   );
   const segregatedBags = useMemo(() => segregateMilkBags(availableBags), [availableBags]);
 
-  const donorName = (donor as Individual).displayName;
-  const donorAvatar = (donor as Individual).avatar as AvatarType | null | undefined;
+  const donor = data.donor as Individual;
+  const donorName = donor.displayName;
+  const donorAvatar = donor.avatar as AvatarType | null | undefined;
 
   const milkImages = milkSample as ImageType[] | undefined | null;
 
+  const isOwner = profile && profile.id === donor.id;
+
   function handleRequestPress() {
     const params: RequestSearchParams = { matchedDonation: data.id };
-    router.push({ pathname: '/requests/create', params });
+    if (isOwner) {
+      router.push(`/donations/edit/${data.id}`);
+    } else {
+      router.push({ pathname: '/requests/create', params });
+    }
   }
 
   return (
@@ -143,7 +151,8 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
         }
 
         <Button onPress={handleRequestPress}>
-          <ButtonText>Request This Donation</ButtonText>
+          <ButtonIcon as={isOwner ? EditIcon : PackagePlusIcon} />
+          <ButtonText>{isOwner ? 'Edit Donation' : 'Request This Donation'}</ButtonText>
         </Button>
       </VStack>
     </Card>

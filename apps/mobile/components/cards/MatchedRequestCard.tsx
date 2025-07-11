@@ -1,7 +1,6 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { getIconAsset } from '@/lib/stores';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
-import { PREFERRED_STORAGE_TYPES, PRIORITY_LEVELS } from '@lactalink/enums';
+import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import {
   Avatar as AvatarType,
   DeliveryPreference,
@@ -16,7 +15,6 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
 import FastTimerIcon from '../icons/FastTimerIcon';
-import { Image } from '../Image';
 import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
@@ -117,26 +115,39 @@ export default function MatchedRequestCard({
     >
       <Box
         className="absolute inset-0"
-        style={{ backgroundColor: getPriorityColor(theme, urgency), opacity: 0.05 }}
+        style={{ backgroundColor: getPriorityColor(theme, urgency, 200), opacity: 0.05 }}
       />
       <VStack>
-        <HStack space="md" className="items-start p-4">
+        <HStack
+          space="md"
+          className="items-start p-4"
+          style={{ backgroundColor: getPriorityColor(theme, urgency, 100) }}
+        >
           <Avatar
             size="lg"
             details={{ avatar: requesterAvatar, name: requester?.displayName || 'Unknown User' }}
           />
           <VStack className="flex-1">
-            <Text numberOfLines={1} ellipsizeMode="tail" className="font-JakartaMedium">
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="font-JakartaMedium"
+              style={{ color: getPriorityColor(theme, urgency, 950) }}
+            >
               {requester?.displayName || 'Unknown User'}
             </Text>
 
             <HStack space="xs" className="items-center">
-              <Icon size="sm" as={PackageIcon} className="text-primary-500" />
+              <Icon
+                size="sm"
+                as={PackageIcon}
+                style={{ color: getPriorityColor(theme, urgency, 800) }}
+              />
               <Text
                 size="sm"
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="text-typography-700 font-JakartaMedium"
+                style={{ color: getPriorityColor(theme, urgency, 800) }}
               >
                 {PREFERRED_STORAGE_TYPES[storagePreference || 'EITHER'].label}
               </Text>
@@ -153,24 +164,17 @@ export default function MatchedRequestCard({
                 className="font-JakartaMedium"
                 style={{ color: getPriorityColor(theme, urgency) }}
               >
-                {PRIORITY_LEVELS[urgency || 'LOW'].label}
+                {URGENCY_LEVELS[urgency || 'LOW'].label}
               </Text>
             </HStack>
           </VStack>
 
-          <HStack className="items-center">
-            <Box style={{ transform: [{ rotate: '30deg' }] }}>
-              <Image
-                alt="Milk Bottle"
-                source={getIconAsset('milkBottle')}
-                contentFit="contain"
-                style={{ width: 16, height: 16 }}
-              />
-            </Box>
-            <Text className="font-JakartaBold" style={{ color: getPriorityColor(theme, urgency) }}>
-              {data?.volumeNeeded} mL
-            </Text>
-          </HStack>
+          <Text
+            className="font-JakartaBold"
+            style={{ color: getPriorityColor(theme, urgency, 950) }}
+          >
+            {data?.volumeNeeded}
+          </Text>
         </HStack>
 
         <Divider />

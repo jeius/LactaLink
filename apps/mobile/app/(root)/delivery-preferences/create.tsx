@@ -140,7 +140,6 @@ export default function EditPage() {
             )}
 
             <ActionModal
-              action="positive"
               title="Review Submit"
               description={
                 <DeliveryPreferenceCard preference={formData} variant="ghost" className="p-0" />

@@ -250,7 +250,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
 
   return (
     <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
-      <BottomSheetTrigger className="w-full" disabled={disabled}>
+      <BottomSheetTrigger disableAnimation className="w-full" disabled={disabled}>
         <Input pointerEvents="box-none" size="md" isDisabled={disabled}>
           <InputField
             value={isFetchingLabel ? 'Loading...' : selectedLabel || ''}

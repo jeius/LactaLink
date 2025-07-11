@@ -12,15 +12,11 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
-import { getIconAsset } from '@/lib/stores';
 import { DropletIcon, PackageIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
-import { Image } from '../Image';
-import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
-import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Skeleton } from '../ui/skeleton';
@@ -116,50 +112,46 @@ export function MatchedDonationCard({
       style={{ shadowColor: getHexColor(theme, 'primary', 400) }}
     >
       <VStack>
-        <HStack space="md" className="bg-primary-0 items-start p-4">
+        <HStack
+          space="md"
+          className="items-start p-4"
+          style={{ backgroundColor: getHexColor('light', 'primary', 500) }}
+        >
           <Avatar
             size="lg"
             details={{ avatar: donorAvatar, name: donor?.displayName || 'Unknown User' }}
           />
           <VStack className="flex-1">
-            <Text numberOfLines={1} ellipsizeMode="tail" className="font-JakartaMedium">
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="font-JakartaSemiBold text-primary-0"
+            >
               {donor?.displayName || 'Unknown User'}
             </Text>
 
             <HStack space="xs" className="items-center">
-              <Icon size="sm" as={PackageIcon} className="text-primary-500" />
+              <Icon size="sm" as={PackageIcon} className="text-primary-0" />
               <Text
                 size="sm"
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="text-typography-700 font-JakartaMedium"
+                className="text-primary-0 font-JakartaMedium"
               >
                 {PREFERRED_STORAGE_TYPES[storageType || 'EITHER'].label}
               </Text>
             </HStack>
 
             <HStack space="xs" className="items-center">
-              <Icon size="sm" as={DropletIcon} className="text-primary-500" />
-              <Text size="sm" className="text-typography-700 font-JakartaMedium">
+              <Icon size="sm" as={DropletIcon} className="text-primary-0" />
+              <Text size="sm" className="text-primary-0 font-JakartaMedium">
                 {COLLECTION_MODES[collectionMode || 'MANUAL'].label}
               </Text>
             </HStack>
           </VStack>
 
-          <HStack space="xs" className="items-center">
-            <Box>
-              <Image
-                alt="Milk Bottle"
-                source={getIconAsset('sendMilk')}
-                contentFit="contain"
-                style={{ width: 16, height: 16 }}
-              />
-            </Box>
-            <Text className="font-JakartaBold text-primary-500">{data?.remainingVolume} mL</Text>
-          </HStack>
+          <Text className="font-JakartaBold text-primary-0">{data?.remainingVolume} mL</Text>
         </HStack>
-
-        <Divider />
 
         <VStack space="lg" className="p-4">
           {selectedPreference && (

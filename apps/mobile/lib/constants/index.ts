@@ -8,7 +8,7 @@ import {
   VERCEL_AUTOMATION_BYPASS_SECRET,
 } from '@env';
 
-import { PRIORITY_LEVELS } from '@lactalink/enums';
+import { URGENCY_LEVELS } from '@lactalink/enums';
 export * from '@lactalink/enums';
 
 export * from './assets';
@@ -35,7 +35,7 @@ export const PHILIPPINES_COORDINATES = {
   longitude: 121.774,
 };
 
-export const PRIORITY_LEVEL_COLORS: Record<keyof typeof PRIORITY_LEVELS, string> = {
+export const PRIORITY_LEVEL_COLORS: Record<keyof typeof URGENCY_LEVELS, string> = {
   LOW: 'success-400',
   MEDIUM: 'secondary-400',
   HIGH: 'warning-400',
