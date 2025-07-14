@@ -543,7 +543,7 @@ export interface Request {
      * Preferred storage type
      */
     storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
-    urgency?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
+    urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
     /**
      * Milk bags that fulfilled this request. If empty, it means the request is still pending.
      */

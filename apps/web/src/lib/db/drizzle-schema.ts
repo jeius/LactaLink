@@ -769,24 +769,12 @@ export const images = pgTable(
     sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
     sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize'),
     sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
-    sizes_square_url: varchar('sizes_square_url'),
-    sizes_square_width: numeric('sizes_square_width'),
-    sizes_square_height: numeric('sizes_square_height'),
-    sizes_square_mimeType: varchar('sizes_square_mime_type'),
-    sizes_square_filesize: numeric('sizes_square_filesize'),
-    sizes_square_filename: varchar('sizes_square_filename'),
     sizes_small_url: varchar('sizes_small_url'),
     sizes_small_width: numeric('sizes_small_width'),
     sizes_small_height: numeric('sizes_small_height'),
     sizes_small_mimeType: varchar('sizes_small_mime_type'),
     sizes_small_filesize: numeric('sizes_small_filesize'),
     sizes_small_filename: varchar('sizes_small_filename'),
-    sizes_medium_url: varchar('sizes_medium_url'),
-    sizes_medium_width: numeric('sizes_medium_width'),
-    sizes_medium_height: numeric('sizes_medium_height'),
-    sizes_medium_mimeType: varchar('sizes_medium_mime_type'),
-    sizes_medium_filesize: numeric('sizes_medium_filesize'),
-    sizes_medium_filename: varchar('sizes_medium_filename'),
     sizes_large_url: varchar('sizes_large_url'),
     sizes_large_width: numeric('sizes_large_width'),
     sizes_large_height: numeric('sizes_large_height'),
@@ -803,15 +791,9 @@ export const images = pgTable(
     images_sizes_thumbnail_sizes_thumbnail_filename_idx: index(
       'images_sizes_thumbnail_sizes_thumbnail_filename_idx'
     ).on(columns.sizes_thumbnail_filename),
-    images_sizes_square_sizes_square_filename_idx: index(
-      'images_sizes_square_sizes_square_filename_idx'
-    ).on(columns.sizes_square_filename),
     images_sizes_small_sizes_small_filename_idx: index(
       'images_sizes_small_sizes_small_filename_idx'
     ).on(columns.sizes_small_filename),
-    images_sizes_medium_sizes_medium_filename_idx: index(
-      'images_sizes_medium_sizes_medium_filename_idx'
-    ).on(columns.sizes_medium_filename),
     images_sizes_large_sizes_large_filename_idx: index(
       'images_sizes_large_sizes_large_filename_idx'
     ).on(columns.sizes_large_filename),
@@ -1406,7 +1388,7 @@ export const requests = pgTable(
     details_storagePreference: enum_requests_details_storage_preference(
       'details_storage_preference'
     ).default('EITHER'),
-    details_urgency: enum_priority_level('details_urgency').notNull().default('LOW'),
+    details_urgency: enum_priority_level('details_urgency').default('LOW'),
     details_image: uuid('details_image_id').references(() => images.id, {
       onDelete: 'set null',
     }),

@@ -156,6 +156,7 @@ export const Requests: CollectionConfig<'requests'> = {
                       type: 'select',
                       label: 'Urgency Level',
                       enumName: 'enum_priority_level',
+                      required: true,
                       defaultValue: PRIORITY_LEVELS.LOW.value,
                       options: Object.values(PRIORITY_LEVELS),
                     },
