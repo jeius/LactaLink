@@ -27,7 +27,7 @@ export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: Ta
   const scale = useSharedValue(!isFocused ? 0.7 : 1);
   const { theme } = useTheme();
 
-  const iconColor = getHexColor(theme, 'primary', isFocused ? 0 : 950)?.toString();
+  const iconColor = getHexColor(theme, 'primary', 950)?.toString();
 
   useEffect(() => {
     opacity.value = withSpring(!isFocused ? 1 : 0, { damping: 20, stiffness: 120 });

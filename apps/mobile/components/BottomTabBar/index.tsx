@@ -133,7 +133,11 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
                 as={LogoIcon}
                 width={40}
                 height={40}
-                className="fill-primary-0"
+                fill={
+                  theme === 'light'
+                    ? getHexColor('light', 'primary', 0)
+                    : getHexColor('light', 'primary', 500)
+                }
                 style={{ transform: [{ translateX: -1.25 }] }}
               />
             </Button>
