@@ -1,4 +1,5 @@
 import Avatar from '@/components/Avatar';
+import { Box } from '@/components/ui/box';
 
 import { useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { getHexColor } from '@/lib/colors';
@@ -6,8 +7,8 @@ import { LocationObjectCoords } from 'expo-location';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { LatLng, MapMarker, MarkerAnimated } from 'react-native-maps';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import MapView, { Camera, LatLng, MapMarker, MarkerAnimated } from 'react-native-maps';
+import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 const headingStyle = StyleSheet.create({
   arrow: {
@@ -32,6 +33,10 @@ interface UserMarkerProps {
   followUser?: boolean;
   coordinates?: LocationObjectCoords;
   hideHeading?: boolean;
+  showAvatar?: boolean;
+  camera?: Camera;
+  heading: number;
+  animatedHeading: SharedValue<number>;
 }
 
 export function UserMarker({
@@ -39,8 +44,13 @@ export function UserMarker({
   followUser,
   coordinates: coords,
   hideHeading = false,
+  showAvatar = true,
+  camera,
+  heading,
+  animatedHeading,
 }: UserMarkerProps) {
-  const { heading, animatedHeading } = useMagnetometer({ updateInterval: 'fast' });
+  // Apply a low-pass filter to stabilize the heading
+  const filteredHeading = useRef(heading);
 
   const markerRef = useRef<MapMarker>(null);
 
@@ -59,20 +69,17 @@ export function UserMarker({
     };
   });
 
-  const setCameraHeading = debounce(
-    () => {
-      mapRef?.current?.animateCamera({ heading: heading - 90 }, { duration: 500 });
-    },
-    500,
-    { trailing: true, maxWait: 500 }
+  const debouncedAnimateCamera = useMemo(
+    () =>
+      debounce(
+        (center: LatLng, heading: number, altitude: number) => {
+          mapRef?.current?.animateCamera({ center, heading, altitude }, { duration: 500 });
+        },
+        600,
+        { maxWait: 1000, trailing: true }
+      ),
+    [mapRef]
   );
-
-  useEffect(() => {
-    if (followUser) {
-      setCameraHeading();
-    }
-    markerRef.current?.redraw();
-  }, [heading, followUser, mapRef]);
 
   useEffect(() => {
     if (coords) {
@@ -81,13 +88,15 @@ export function UserMarker({
         longitude: coords.longitude || 0,
       };
 
-      markerRef.current?.animateMarkerToCoordinate(center, 400);
-
       if (followUser) {
-        mapRef?.current?.animateCamera({ center }, { duration: 500 });
+        filteredHeading.current = filteredHeading.current * 0.8 + heading * 0.2;
+        debouncedAnimateCamera(center, heading - 90, coords.altitude || 0);
       }
+
+      markerRef.current?.animateMarkerToCoordinate(center, 400);
+      markerRef.current?.redraw();
     }
-  }, [coords, followUser, mapRef]);
+  }, [coords, debouncedAnimateCamera, followUser, heading, mapRef]);
 
   return (
     <MarkerAnimated
@@ -111,7 +120,13 @@ export function UserMarker({
               </Animated.View>
             </View>
           )}
-          <Avatar size="xs" className="border-primary-50" />
+          {showAvatar ? (
+            <Box style={{ transform: [{ rotate: `${camera?.heading || 0}deg` }] }}>
+              <Avatar size="xs" className="border-primary-50" />
+            </Box>
+          ) : (
+            <Box className="bg-primary-400 border-primary-0 h-6 w-6 rounded-full border-2" />
+          )}
         </View>
       </View>
     </MarkerAnimated>

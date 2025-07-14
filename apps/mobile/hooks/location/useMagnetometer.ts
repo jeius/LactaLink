@@ -50,6 +50,7 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
       // Clean up the subscription when the component unmounts
       subscriptionRef.current?.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

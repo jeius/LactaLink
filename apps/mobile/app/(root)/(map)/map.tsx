@@ -89,7 +89,11 @@ export default function MapPage() {
             {selectedItem.slug === 'donations' ? (
               <DonationMarkers data={selectedItem.data} onPress={handleDonationMarkerPress} />
             ) : selectedItem.slug === 'requests' ? (
-              <RequestMarkers data={selectedItem.data} onPress={handleRequestMarkerPress} />
+              <RequestMarkers
+                showAvatar
+                data={selectedItem.data}
+                onPress={handleRequestMarkerPress}
+              />
             ) : null}
           </>
         ) : (
@@ -100,6 +104,7 @@ export default function MapPage() {
                 data={donation}
                 region={region}
                 onPress={handleDonationMarkerPress}
+                showAvatar={false}
               />
             ))}
 
@@ -109,6 +114,7 @@ export default function MapPage() {
                 data={request}
                 region={region}
                 onPress={handleRequestMarkerPress}
+                showAvatar={false}
               />
             ))}
           </>
