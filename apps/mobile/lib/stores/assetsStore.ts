@@ -1,5 +1,6 @@
 import type { Asset } from 'expo-asset';
 import { create } from 'zustand';
+import { ICON_ASSETS, IMAGE_ASSETS } from '../constants';
 import { AssetObject } from '../types';
 
 interface AssetsState {
@@ -8,7 +9,7 @@ interface AssetsState {
 }
 
 export const useAssetsStore = create<AssetsState>((set) => ({
-  assets: null,
+  assets: { icons: ICON_ASSETS, images: IMAGE_ASSETS },
   setAssets: (assets) => set({ assets }),
 }));
 

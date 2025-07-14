@@ -10,7 +10,6 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAssetsLoader } from '@/hooks/loaders/useAssetsLoader';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { RefreshCwIcon } from 'lucide-react-native';
 
@@ -28,10 +27,9 @@ export function AppInitializer({ children }: Props) {
   const { isLoading: isThemeLoading } = useTheme();
   const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
   const { isSuccess: isLocationReady, error: locationError } = useCurrentLocation();
-  const { isSuccess: areAssetsReady, error: assetsError, data } = useAssetsLoader();
 
-  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady && areAssetsReady;
-  const error = authError || locationError || assetsError;
+  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady;
+  const error = authError || locationError;
 
   useEffect(() => {
     if (isLocationReady) {
@@ -50,12 +48,6 @@ export function AppInitializer({ children }: Props) {
       console.log('✔️  Auth is ready');
     }
   }, [isAuthLoading]);
-
-  useEffect(() => {
-    if (areAssetsReady) {
-      console.log('✔️  All Assets are loaded');
-    }
-  }, [areAssetsReady, data]);
 
   // Hide the splash screen once the app is ready
   useEffect(() => {

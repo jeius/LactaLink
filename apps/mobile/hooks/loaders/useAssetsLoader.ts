@@ -18,8 +18,8 @@ export function useAssetsLoader() {
       return assets;
     },
     retry: false, // Disable automatic retries
-    // staleTime: Infinity,
-    // gcTime: Infinity,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   return { isSuccess, error, isLoading, data };
