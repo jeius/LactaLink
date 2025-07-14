@@ -1,0 +1,50 @@
+name: PR Preview Update
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXPO_USE_FAST_RESOLVER: true
+  CI: true
+
+jobs:
+  update:
+    name: Build Updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 🏗 Setup repository
+        uses: actions/checkout@v4
+
+      - name: 📐 Setup monorepo
+        uses: ./.github/actions/setup-monorepo
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🛠️ Create .env file for Expo
+        run: |
+          echo "EXPO_PUBLIC_API_URL=${{ vars.EXPO_PUBLIC_API_URL_PREVIEW }}" >> apps/mobile/.env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}" >> apps/mobile/.env
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}" >> apps/mobile/.env
+          echo "GOOGLE_IOS_CLIENT_ID=${{ secrets.GOOGLE_IOS_CLIENT_ID }}" >> apps/mobile/.env
+          echo "GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}" >> apps/mobile/.env
+          echo "ANDROID_MAPS_API_KEY=${{ secrets.ANDROID_MAPS_API_KEY }}" >> apps/mobile/.env
+          echo "IOS_MAPS_API_KEY=${{ secrets.IOS_MAPS_API_KEY }}" >> apps/mobile/.env
+          echo "VERCEL_AUTOMATION_BYPASS_SECRET=${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}" >> apps/mobile/.env
+
+      - name: 👷 Build packages
+        run: pnpm -w build:mobile
+
+      - name: 🚀 Create preview
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: expo/expo-github-action/preview@v8
+        with:
+          working-directory: apps/mobile
+          command: eas update --auto --branch=pr-${{ github.event.number }}
