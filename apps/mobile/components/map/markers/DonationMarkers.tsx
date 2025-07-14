@@ -15,14 +15,15 @@ import {
   Individual,
 } from '@lactalink/types';
 import { isPointInPolygon } from '@lactalink/utilities';
-import { useMemo, useState } from 'react';
-import { MapMarkerProps, MarkerAnimated, MarkerPressEvent, Region } from 'react-native-maps';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MapMarker,
+  MapMarkerProps,
+  MarkerAnimated,
+  MarkerPressEvent,
+  Region,
+} from 'react-native-maps';
+import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { DefaultMarker } from './DefaultMarker';
 
 type DeliveryDetails = {
@@ -51,6 +52,8 @@ export function DonationMarkers({
   const pinColor = getHexColor(theme, 'primary', 600);
   const iconBgColor = getHexColor(theme, 'primary', 100);
 
+  const markerRefs = useRef<Record<string, MapMarker>>({});
+
   const animateValue = useSharedValue({ scale: 1, y: 0 });
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
@@ -63,6 +66,16 @@ export function DonationMarkers({
     transform: [{ scale: animateValue.value.scale }, { translateY: animateValue.value.y }],
   }));
 
+  useEffect(() => {
+    if (showAvatarProp !== undefined) {
+      setShowAvatar(showAvatarProp);
+
+      for (const marker of Object.values(markerRefs.current)) {
+        marker.redraw();
+      }
+    }
+  }, [showAvatarProp]);
+
   function handleMarkerPress(event: MarkerPressEvent, details: DonationMarkerPressEvent) {
     onPress?.(details);
     animateValue.value = { scale: withSpring(1.2), y: withTiming(-10) };
@@ -72,36 +85,42 @@ export function DonationMarkers({
   return markers.map((marker) => (
     <MarkerAnimated
       {...marker}
+      ref={(ref) => {
+        if (ref) {
+          markerRefs.current[marker.identifier!] = ref;
+        } else {
+          delete markerRefs.current[marker.identifier!];
+        }
+      }}
       key={marker.identifier}
       onPress={(e) => {
         handleMarkerPress(e, marker);
       }}
       style={markerAnimStyle}
+      tracksViewChanges={false}
     >
-      <Animated.View style={[{ position: 'relative' }]}>
-        <DefaultMarker
-          size="xl"
-          color={pinColor}
-          circleColor={iconBgColor}
-          circleIcon={
-            !showAvatar ? (
-              <Box className="flex-1 p-1.5">
-                <Image
-                  source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
-                  style={{ flex: 1 }}
-                />
-              </Box>
-            ) : (
-              profileAvatar && (
-                <Avatar
-                  className="h-full w-full"
-                  details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
-                />
-              )
+      <DefaultMarker
+        size="sm"
+        color={pinColor}
+        circleColor={iconBgColor}
+        circleIcon={
+          !showAvatar ? (
+            <Box className="flex-1 p-1.5">
+              <Image
+                source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
+                style={{ flex: 1 }}
+              />
+            </Box>
+          ) : (
+            profileAvatar && (
+              <Avatar
+                className="h-full w-full"
+                details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
+              />
             )
-          }
-        />
-      </Animated.View>
+          )
+        }
+      />
     </MarkerAnimated>
   ));
 }

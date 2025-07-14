@@ -9,9 +9,9 @@ import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'rea
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
 
+import { useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
-import { AnimatedMapView } from 'react-native-maps/src/MapView';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
@@ -37,8 +37,10 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   const initMapRef = useRef(false);
 
   const [followUser, setFollowUser] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(true);
   const [isMapReady, setIsMapReady] = useState(false);
 
+  const { heading, animatedHeading } = useMagnetometer({ updateInterval: 'fast' });
   const { location, error, isLoading } = useLocationUpdates();
   const coords = useMemo(
     () => ({
@@ -76,17 +78,17 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   const setCameraOnRegionChange = debounce(
     async (_region: Region, details: Details) => {
       const newCamera = await mapRef.current?.getCamera();
-
       if (details?.isGesture) {
         setFollowUser(false);
+        if (newCamera) {
+          setCamera(newCamera);
+        }
       }
 
-      if (newCamera) {
-        setCamera(newCamera);
-      }
+      setShowAvatar(newCamera?.pitch === 0);
     },
-    50,
-    { leading: true, trailing: true }
+    200,
+    { leading: true }
   );
 
   useEffect(() => {
@@ -119,22 +121,27 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
   function handleLocatePress() {
     if (isCameraCentered && !followUser) {
-      setFollowUser(true);
-      return;
+      mapRef.current?.animateCamera(
+        { pitch: 65, zoom: Math.max(camera.zoom || 18, 18), heading: heading - 90 },
+        { duration: 500 }
+      );
+      setTimeout(() => {
+        setFollowUser(true);
+      }, 550);
     } else if (followUser) {
       setFollowUser(false);
-      mapRef.current?.animateCamera({ pitch: 0 }, { duration: 500 });
-      return;
-    }
-
-    if (mapRef.current && coords) {
+      mapRef.current?.animateCamera(
+        { pitch: 0, zoom: Math.min(camera.zoom || 18, 18) },
+        { duration: 500 }
+      );
+    } else if (mapRef.current && coords) {
       const { latitude, longitude } = coords;
       mapRef.current.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
   }
 
   function handleMapReady() {
-    console.log('Map is ready, enabling location updates');
+    console.log('🗺️ Map is ready, enabling location updates');
     initMapRef.current = true;
   }
 
@@ -143,9 +150,17 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     setCameraOnRegionChange(region, details);
   }
 
+  async function handleRegionChangeEnd() {
+    const newCamera = await mapRef.current?.getCamera();
+    if (newCamera) {
+      setCamera(newCamera);
+      setShowAvatar(newCamera.pitch === 0);
+    }
+  }
+
   return (
     <Box style={{ flex: 1 }}>
-      <AnimatedMapView
+      <RNMapView
         {...props}
         ref={mapRef}
         initialCamera={camera}
@@ -157,14 +172,23 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         showsCompass={false}
         toolbarEnabled={false}
         onRegionChange={handleRegionChange}
+        onRegionChangeComplete={handleRegionChangeEnd}
         onMapReady={handleMapReady}
       >
         {children}
 
-        {location && (
-          <UserMarker mapRef={mapRef} followUser={followUser} coordinates={location.coords} />
+        {location && isMapReady && (
+          <UserMarker
+            heading={heading}
+            animatedHeading={animatedHeading}
+            showAvatar={showAvatar}
+            mapRef={mapRef}
+            camera={camera}
+            followUser={followUser}
+            coordinates={location.coords}
+          />
         )}
-      </AnimatedMapView>
+      </RNMapView>
 
       {!isMapReady && (
         <SafeArea className="absolute inset-0 items-center justify-center">
