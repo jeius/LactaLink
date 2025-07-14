@@ -11,7 +11,6 @@ import { ErrorSearchParams } from '@lactalink/types';
 
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
-import { AnimatedMapView } from 'react-native-maps/src/MapView';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
@@ -75,18 +74,16 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
   const setCameraOnRegionChange = debounce(
     async (_region: Region, details: Details) => {
-      const newCamera = await mapRef.current?.getCamera();
-
       if (details?.isGesture) {
+        const newCamera = await mapRef.current?.getCamera();
         setFollowUser(false);
-      }
-
-      if (newCamera) {
-        setCamera(newCamera);
+        if (newCamera) {
+          setCamera(newCamera);
+        }
       }
     },
-    50,
-    { leading: true, trailing: true }
+    200,
+    { leading: true }
   );
 
   useEffect(() => {
@@ -119,15 +116,20 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
   function handleLocatePress() {
     if (isCameraCentered && !followUser) {
-      setFollowUser(true);
-      return;
+      mapRef.current?.animateCamera(
+        { pitch: 65, zoom: Math.max(camera.zoom || 18, 18) },
+        { duration: 500 }
+      );
+      setTimeout(() => {
+        setFollowUser(true);
+      }, 550);
     } else if (followUser) {
       setFollowUser(false);
-      mapRef.current?.animateCamera({ pitch: 0 }, { duration: 500 });
-      return;
-    }
-
-    if (mapRef.current && coords) {
+      mapRef.current?.animateCamera(
+        { pitch: 0, zoom: Math.min(camera.zoom || 18, 18) },
+        { duration: 500 }
+      );
+    } else if (mapRef.current && coords) {
       const { latitude, longitude } = coords;
       mapRef.current.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
@@ -143,9 +145,16 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     setCameraOnRegionChange(region, details);
   }
 
+  async function handleRegionChangeEnd() {
+    const newCamera = await mapRef.current?.getCamera();
+    if (newCamera) {
+      setCamera(newCamera);
+    }
+  }
+
   return (
     <Box style={{ flex: 1 }}>
-      <AnimatedMapView
+      <RNMapView
         {...props}
         ref={mapRef}
         initialCamera={camera}
@@ -157,14 +166,15 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         showsCompass={false}
         toolbarEnabled={false}
         onRegionChange={handleRegionChange}
+        onRegionChangeComplete={handleRegionChangeEnd}
         onMapReady={handleMapReady}
       >
         {children}
 
-        {location && (
+        {location && isMapReady && (
           <UserMarker mapRef={mapRef} followUser={followUser} coordinates={location.coords} />
         )}
-      </AnimatedMapView>
+      </RNMapView>
 
       {!isMapReady && (
         <SafeArea className="absolute inset-0 items-center justify-center">

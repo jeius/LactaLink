@@ -7,11 +7,8 @@ import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomS
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { Address, DeliveryPreference, Populate } from '@lactalink/types';
 
-import {
-  DonationMarkerPressEvent,
-  DonationMarkers,
-} from '@/components/map/markers/DonationMarkers';
-import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
+import { DonationMarkerPressEvent } from '@/components/map/markers/DonationMarkers';
+import { RequestMarkerPressEvent } from '@/components/map/markers/RequestMarkers';
 import React, { useRef, useState } from 'react';
 import RNMapView, { Details, LatLng, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -87,7 +84,7 @@ export default function MapPage() {
   return (
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
       <MapView mapRef={mapRef} dataReady={dataReady} onRegionChangeComplete={handleRegionChange}>
-        {selectedItem ? (
+        {/* {selectedItem ? (
           <>
             {selectedItem.slug === 'donations' ? (
               <DonationMarkers data={selectedItem.data} onPress={handleDonationMarkerPress} />
@@ -115,7 +112,7 @@ export default function MapPage() {
               />
             ))}
           </>
-        )}
+        )} */}
       </MapView>
 
       <MapBottomSheet

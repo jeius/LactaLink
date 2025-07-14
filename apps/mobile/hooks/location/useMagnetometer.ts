@@ -1,5 +1,6 @@
 import { Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
 import { useEffect, useRef, useState } from 'react';
+import { useSharedValue } from 'react-native-reanimated';
 
 export type MagnetometerOptions = {
   /**
@@ -10,6 +11,8 @@ export type MagnetometerOptions = {
 };
 
 export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions = {}) {
+  const animatedHeading = useSharedValue(0);
+
   const [{ x, y, z }, setData] = useState<MagnetometerMeasurement>({
     x: 0,
     y: 0,
@@ -34,7 +37,10 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
 
   useEffect(() => {
     const setupSubscription = async () => {
-      const subscription = await createSubscription(setData);
+      const subscription = await createSubscription((res) => {
+        setData(res);
+        animatedHeading.value = getHeadingFromMagnetometer(res.x, res.y);
+      });
       subscriptionRef.current = subscription;
     };
 
@@ -46,7 +52,15 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     };
   }, []);
 
-  return { x, y, z, setSlow: _slow, setFast: _fast, heading: getHeadingFromMagnetometer(x, y) };
+  return {
+    x,
+    y,
+    z,
+    setSlow: _slow,
+    setFast: _fast,
+    heading: getHeadingFromMagnetometer(x, y),
+    animatedHeading,
+  };
 }
 
 async function createSubscription(callback: (result: MagnetometerMeasurement) => void) {
@@ -64,6 +78,9 @@ async function createSubscription(callback: (result: MagnetometerMeasurement) =>
 }
 
 function getHeadingFromMagnetometer(x: number, y: number): number {
-  const heading = parseFloat((Math.atan2(y, x) * (180 / Math.PI)).toFixed(4));
-  return heading < 0 ? heading + 360 : heading;
+  if (x === 0 && y === 0) {
+    return 0; // Return 0 if both x and y are zero to avoid undefined behavior
+  }
+  const heading = Math.atan2(y, x) * (180 / Math.PI);
+  return heading >= 0 ? Math.round(heading) : Math.round(heading + 360);
 }
