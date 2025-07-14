@@ -14,10 +14,8 @@ import { getImageAsset } from '@/lib/stores';
 import { Image } from 'expo-image';
 
 import React from 'react';
-import { Dimensions } from 'react-native';
 
 export default function ResetPassword() {
-  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -26,11 +24,11 @@ export default function ResetPassword() {
   ] as const;
 
   return (
-    <SafeArea className="items-stretch">
-      <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
-        <Card className="m-5 p-0">
+    <SafeArea>
+      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+        <Card className="p-0">
           <VStack>
-            <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+            <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
               <Image
                 contentFit="cover"
                 contentPosition={{ top: 5 }}

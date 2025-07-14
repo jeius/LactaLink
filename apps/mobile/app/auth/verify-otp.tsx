@@ -17,10 +17,8 @@ import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Dimensions } from 'react-native';
 
 export default function VerifyOTP() {
-  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
@@ -32,10 +30,10 @@ export default function VerifyOTP() {
   const params: VerifyOtp = { ...searchParams };
 
   return (
-    <SafeArea className="items-stretch">
-      <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
-        <Card className="m-5 p-0">
-          <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+    <SafeArea>
+      <KeyboardAvoidingWrapper contentContainerClassName="grow justify-center p-5">
+        <Card className="p-0">
+          <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
             <Image
               contentFit="cover"
               contentPosition={{ top: '50%' }}

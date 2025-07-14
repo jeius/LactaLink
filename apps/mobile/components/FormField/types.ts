@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef, FC } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
 
-import { OptionsCardItem } from '@/components/cards/OptionsCards';
+import { OptionsCardType } from '@/components/cards/OptionsCards';
 import { InputField } from '@/components/ui/input';
 import { TextareaInput } from '@/components/ui/textarea';
 import { CollectionSlug } from '@lactalink/types';
@@ -31,8 +31,6 @@ type TTextareaInput = ComponentPropsWithoutRef<typeof TextareaInput> & { isLoadi
 
 type ComboboxProps<T extends CollectionSlug> = ComboboxType<T>;
 
-type Options = { options: OptionsCardItem<string | number>[] };
-
 type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> = {
   inputIcon?: FC<LucideProps> | LucideIcon;
   errorIcon?: FC<LucideProps> | LucideIcon;
@@ -45,6 +43,7 @@ type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> 
   placeholder?: string;
   containerClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
+  labelClassName?: string;
 };
 
 type FormFieldProps<
@@ -63,7 +62,7 @@ type FormFieldProps<
           : TFieldType extends 'date'
             ? DateInputType
             : TFieldType extends 'options-cards'
-              ? Options
+              ? OptionsCardType
               : TFieldType extends 'button-group'
                 ? ButtonGroupInputType<unknown>
                 : TFieldType extends 'image'
@@ -75,7 +74,7 @@ export type {
   ComboboxProps,
   FieldType,
   FormFieldProps,
-  Options,
+  OptionsCardType,
   TInputField,
   TTextareaInput,
 };

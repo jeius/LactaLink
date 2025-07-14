@@ -46,7 +46,7 @@ import {
   ComboboxProps,
   FieldType,
   FormFieldProps,
-  Options,
+  OptionsCardType,
   TInputField,
   TTextareaInput,
 } from './types';
@@ -57,6 +57,10 @@ const containerStyle = tva({
 
 const labelIconStyle = tva({
   base: 'text-primary-500',
+});
+
+const labelStyle = tva({
+  base: 'justify-between gap-2',
 });
 
 function FormField<
@@ -75,6 +79,7 @@ function FormField<
   containerStyle: style,
   labelIcon,
   labelIconProps,
+  labelClassName,
   ...props
 }: FormFieldProps<T, TFieldType, TSlug>) {
   const { trigger, getFieldState, setValue } = useFormContext<T>();
@@ -102,7 +107,7 @@ function FormField<
     fieldType === 'combobox' ? (props as unknown as ComboboxProps<TSlug>) : undefined;
   const dateInputProps = fieldType === 'date' ? (props as DateInputType) : undefined;
   const optionsCardsProps =
-    fieldType === 'options-cards' ? (props as unknown as Options) : undefined;
+    fieldType === 'options-cards' ? (props as unknown as OptionsCardType) : undefined;
   const imageProps = fieldType === 'image' ? (props as ImageUploadFieldType) : undefined;
   const buttonGroupProps =
     fieldType === 'button-group' ? (props as unknown as ButtonGroupInputType<unknown>) : undefined;
@@ -136,7 +141,7 @@ function FormField<
       style={style}
     >
       {label && (
-        <FormControlLabel className="justify-between gap-2">
+        <FormControlLabel className={labelStyle({ className: labelClassName })}>
           <FormControlLabelText>{label}</FormControlLabelText>
           {imageProps?.showCount && Array.isArray(currentValue) && (
             <FormControlLabelText size="sm" className="text-typography-700 font-sans">
@@ -235,10 +240,10 @@ function FormField<
             case 'options-cards':
               return (
                 <OptionsCards
+                  {...optionsCardsProps}
                   value={field.value}
                   onBlur={field.onBlur}
                   isDisabled={field.disabled}
-                  items={optionsCardsProps?.options || []}
                   containerClassName={containerClassName}
                   onChange={(val) => {
                     field.onChange(val);
@@ -355,4 +360,4 @@ function FormField<
 
 export { FormField };
 
-export type { ComboboxProps, FieldType, FormFieldProps, Options };
+export type { ComboboxProps, FieldType, FormFieldProps };

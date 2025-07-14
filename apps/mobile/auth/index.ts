@@ -91,6 +91,7 @@ export async function updatePassword(password: string) {
   if (router.canDismiss()) {
     router.dismiss();
   } else {
+    await signOut();
     router.replace('/auth/sign-in');
   }
 

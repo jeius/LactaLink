@@ -173,7 +173,7 @@ export function DateInput({
         <Input
           isDisabled={isDisabled}
           className={inputStyle({ className })}
-          style={[{ maxWidth: 200 }, style]}
+          style={[{ maxWidth: 340 }, style]}
         >
           {!hideIcon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
           <InputSlot onPress={togglePicker} className="grow">

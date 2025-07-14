@@ -17,11 +17,8 @@ import { getImageAsset } from '@/lib/stores';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React from 'react';
-import { Dimensions } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 
 export default function SignUp() {
-  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
   const gradientColors = [
     'transparent',
@@ -30,65 +27,63 @@ export default function SignUp() {
 
   return (
     <SafeArea>
-      <KeyboardAvoidingWrapper>
-        <ScrollView className="flex-1" contentContainerClassName="grow">
-          <Card className="m-auto p-0">
-            <Box className="relative w-full overflow-hidden" style={{ height: height * 0.2 }}>
-              <Image
-                contentFit="cover"
-                contentPosition={{ top: 5 }}
-                style={{ width: '100%', height: '100%' }}
-                alt="Mother Breastfeeding in chair"
-                source={getImageAsset('signUp')}
-              />
-              <GradientBackground colors={gradientColors} className="opacity-40" />
-            </Box>
+      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+        <Card className="p-0">
+          <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
+            <Image
+              contentFit="cover"
+              contentPosition={{ top: 5 }}
+              style={{ width: '100%', height: '100%' }}
+              alt="Mother Breastfeeding in chair"
+              source={getImageAsset('signUp')}
+            />
+            <GradientBackground colors={gradientColors} className="opacity-40" />
+          </Box>
 
-            <VStack>
-              <VStack className="p-5">
-                <Text bold size="2xl">
-                  Create your account
+          <VStack>
+            <VStack className="p-5">
+              <Text bold size="2xl">
+                Create your account
+              </Text>
+              <HStack space="sm" className="items-center">
+                <Text size="md" className="text-typography-600">
+                  Already have an account?
                 </Text>
-                <HStack space="sm" className="items-center">
-                  <Text size="md" className="text-typography-600">
-                    Already have an account?
-                  </Text>
-                  <Button size="md" variant="link" onPress={() => router.push('/auth/sign-in')}>
-                    <ButtonText className="text-primary-500">Sign in</ButtonText>
-                  </Button>
-                </HStack>
-              </VStack>
-
-              <GoogleButtonWrapper className="overflow-hidden px-5">
-                <Box className="mx-auto">
-                  <SignUpForm />
-                </Box>
-              </GoogleButtonWrapper>
+                <Button size="md" variant="link" onPress={() => router.push('/auth/sign-in')}>
+                  <ButtonText className="text-primary-500">Sign in</ButtonText>
+                </Button>
+              </HStack>
             </VStack>
 
-            <HStack space="sm" className="w-full flex-wrap items-center gap-y-0 p-5">
-              <Text size="sm" className="text-typography-600">
-                By signing up, you agree to our
-              </Text>
+            <GoogleButtonWrapper className="overflow-hidden px-5">
+              <Box className="mx-auto">
+                <SignUpForm />
+              </Box>
+            </GoogleButtonWrapper>
+          </VStack>
 
-              <Button size="sm" variant="link">
-                <ButtonText className="text-primary-500">Terms & Conditions</ButtonText>
-              </Button>
+          <HStack space="sm" className="w-full flex-wrap items-center gap-y-0 p-5">
+            <Text size="sm" className="text-typography-600">
+              By signing up, you agree to our
+            </Text>
 
-              <Text size="sm" className="text-typography-600">
-                and
-              </Text>
+            <Button size="sm" variant="link">
+              <ButtonText className="text-primary-500">Terms & Conditions</ButtonText>
+            </Button>
 
-              <Button size="sm" variant="link">
-                <ButtonText className="text-primary-500">Privacy Policiy</ButtonText>
-              </Button>
+            <Text size="sm" className="text-typography-600">
+              and
+            </Text>
 
-              <Text size="sm" className="text-typography-600 -ml-2">
-                .
-              </Text>
-            </HStack>
-          </Card>
-        </ScrollView>
+            <Button size="sm" variant="link">
+              <ButtonText className="text-primary-500">Privacy Policy</ButtonText>
+            </Button>
+
+            <Text size="sm" className="text-typography-600 -ml-2">
+              .
+            </Text>
+          </HStack>
+        </Card>
       </KeyboardAvoidingWrapper>
     </SafeArea>
   );

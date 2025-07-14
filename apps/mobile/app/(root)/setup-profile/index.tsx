@@ -38,7 +38,7 @@ export default function Setup() {
           <ButtonText>Sign out</ButtonText>
         </Button>
       </HStack>
-      <Card className="m-5">
+      <Card className="mx-5">
         <VStack space="2xl">
           <VStack className="items-center">
             <Image

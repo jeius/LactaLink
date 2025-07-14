@@ -16,7 +16,7 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 const cardStyle = tva({
-  base: 'bg-background-50 min-h-32 max-w-32 rounded-2xl',
+  base: 'min-h-32 max-w-32 rounded-2xl',
   variants: {
     isSelected: {
       true: 'border-primary-500 bg-primary-0 border-2',
@@ -37,23 +37,28 @@ export type OptionsCardItem<T = unknown> = {
   };
 };
 
-export type OptionsCardsProps<T> = {
-  items?: OptionsCardItem<T>[];
+export type OptionsCardType<T = unknown> = {
+  options?: OptionsCardItem<T>[];
+  contentContainerClassName?: string;
+};
+
+export interface OptionsCardsProps<T> extends OptionsCardType<T> {
   onChange?: (val: T) => void;
   value?: T;
   isDisabled?: boolean;
   onBlur?: Noop;
   containerClassName?: string;
-};
+}
 
 const SCROLL_AMOUNT = 150;
 
 export function OptionsCards<T>({
-  items = [],
+  options: items = [],
   onChange: setValue,
   value: selected,
   isDisabled: disabled,
   containerClassName,
+  contentContainerClassName,
 }: OptionsCardsProps<T>) {
   const scrollRef = useRef<ScrollView>(null);
   const [isScrollable, setIsScrollable] = useState(false);
@@ -113,6 +118,7 @@ export function OptionsCards<T>({
         alwaysBounceHorizontal
         enabled={!disabled}
         scrollEventThrottle={16}
+        contentContainerClassName={contentContainerClassName}
         onScroll={handleScroll}
         onLayout={(e) => {
           const lw = e.nativeEvent.layout.width;

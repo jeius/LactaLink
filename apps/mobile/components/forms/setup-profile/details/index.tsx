@@ -1,5 +1,4 @@
 import { FormField, FormFieldProps } from '@/components/FormField';
-import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileType } from '@/lib/types';
 import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
@@ -24,12 +23,14 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoCapitalize: 'words',
         textContentType: 'organizationName',
         autoCorrect: true,
+        containerClassName: 'px-5',
       },
       {
         name: 'description',
         label: 'Description',
         fieldType: 'textarea',
         placeholder: 'Enter brief description of the hospital.',
+        containerClassName: 'px-5',
       },
       {
         name: 'head',
@@ -41,6 +42,7 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoCapitalize: 'words',
         autoComplete: 'name',
         textContentType: 'name',
+        containerClassName: 'px-5',
       },
       {
         name: 'hospitalID',
@@ -50,12 +52,15 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         placeholder: 'e.g. I-1, V-3',
         helperText: 'Enter hospital ID if applicable.',
         className: 'max-w-48',
+        containerClassName: 'px-5',
       },
       {
         name: 'type',
         label: 'Is your hospital?',
         fieldType: 'options-cards',
         options: buildingTypeOptions,
+        contentContainerClassName: 'px-5',
+        labelClassName: 'px-5',
       },
     ],
     MILK_BANK: [
@@ -68,12 +73,14 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoCapitalize: 'words',
         textContentType: 'organizationName',
         autoCorrect: true,
+        containerClassName: 'px-5',
       },
       {
         name: 'description',
         label: 'Description',
         fieldType: 'textarea',
         placeholder: 'Enter brief description of the Milk Bank.',
+        containerClassName: 'px-5',
       },
       {
         name: 'head',
@@ -85,12 +92,15 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoCapitalize: 'words',
         autoComplete: 'name',
         textContentType: 'name',
+        containerClassName: 'px-5',
       },
       {
         name: 'type',
         label: 'Is your Milk Bank?',
         fieldType: 'options-cards',
         options: buildingTypeOptions,
+        contentContainerClassName: 'px-5',
+        labelClassName: 'px-5',
       },
     ],
     INDIVIDUAL: [
@@ -103,6 +113,7 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoComplete: 'name-given',
         textContentType: 'givenName',
         autoCorrect: true,
+        containerClassName: 'px-5',
       },
       {
         name: 'middleName',
@@ -113,6 +124,7 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoComplete: 'name-middle',
         textContentType: 'middleName',
         helperText: 'If applicable.',
+        containerClassName: 'px-5',
       },
       {
         name: 'familyName',
@@ -122,6 +134,7 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         autoCapitalize: 'words',
         autoComplete: 'name-family',
         textContentType: 'familyName',
+        containerClassName: 'px-5',
       },
       {
         name: 'dependents',
@@ -134,37 +147,41 @@ export default function ProfileDetails({ profileType }: { profileType?: ProfileT
         step: 1,
         min: 0,
         inputIcon: BabyIcon,
+        containerClassName: 'px-5',
       },
       {
         name: 'birth',
         label: 'Date of Birth',
         fieldType: 'date',
         datePickerOptions: { maximumDate: new Date(), minimumDate: new Date('1900-01-01') },
+        containerClassName: 'px-5',
       },
       {
         name: 'gender',
         label: 'Gender',
         fieldType: 'options-cards',
         options: genderOptions,
+        contentContainerClassName: 'px-5',
+        labelClassName: 'px-5',
       },
       {
         name: 'maritalStatus',
         label: 'Marital Status',
         fieldType: 'options-cards',
         options: maritalStatusOptions,
+        contentContainerClassName: 'px-5',
+        labelClassName: 'px-5',
       },
     ],
   };
 
   return (
     profileType && (
-      <Card className="mx-5">
-        <VStack space="lg">
-          {formMap[profileType].map((props, i) => (
-            <FormField key={i} {...props} />
-          ))}
-        </VStack>
-      </Card>
+      <VStack space="lg">
+        {formMap[profileType].map((props, i) => (
+          <FormField key={i} {...props} />
+        ))}
+      </VStack>
     )
   );
 }

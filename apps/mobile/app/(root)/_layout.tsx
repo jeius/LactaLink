@@ -14,10 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
-  const { user, profile } = useAuth();
+  const { user, profile, isLoading, isFetching } = useAuth();
   const screenOptions = useScreenOptions();
 
   const userName = user && extractName(user);
+
+  const noProfile = !isLoading && !isFetching && !profile;
 
   const { currentPageIndex, progress } = usePagination(STEPS);
 
@@ -38,7 +40,7 @@ export default function Layout() {
         headerRight: () => <Avatar />,
       }}
     >
-      <Stack.Protected guard={!profile}>
+      <Stack.Protected guard={noProfile}>
         <Stack.Screen
           name="setup-profile"
           options={{

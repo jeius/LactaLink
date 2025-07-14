@@ -24,7 +24,6 @@ import { router } from 'expo-router';
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { Dimensions } from 'react-native';
 import { toast } from 'sonner-native';
 import * as z from 'zod/v4';
 
@@ -32,7 +31,6 @@ const schema = z.object({ email: emailSchema });
 type Schema = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
-  const { height } = Dimensions.get('window');
   const { theme } = useTheme();
 
   const gradientColors = [
@@ -60,11 +58,11 @@ export default function ForgotPassword() {
   }
 
   return (
-    <SafeArea className="items-stretch">
-      <KeyboardAvoidingWrapper contentContainerStyle={{ justifyContent: 'center' }}>
-        <VStack className="m-5">
+    <SafeArea>
+      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+        <VStack>
           <Card className="p-0">
-            <Box className="relative w-full overflow-hidden" style={{ height: height * 0.25 }}>
+            <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 1.75 }}>
               <Image
                 contentFit="cover"
                 contentPosition={{ top: -20 }}
