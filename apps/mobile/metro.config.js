@@ -70,7 +70,6 @@ const svgConfig = {
   },
   transformer: {
     // <3 -> https://github.com/kristerkari/react-native-svg-transformer/issues/141
-    assetPlugins: ['expo-asset/tools/hashAssetFiles'],
     babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
     getTransformOptions: async () => ({
       transform: {
