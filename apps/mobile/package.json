@@ -14,7 +14,7 @@
     "build:android-dev": "eas build:dev --platform android --profile development",
     "build:ios-dev": "eas build:dev --platform ios --profile development",
     "preview:android": "eas build --platform android --profile preview",
-    "preview:update": "eas update --channel preview --platform android --message \"Updated preview build\" --non-interactive",
+    "preview:update": "eas update --channel preview --branch preview-update --platform android --message \"Updated preview build\" --non-interactive",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm install && pnpm run build:deps"

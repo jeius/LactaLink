@@ -52,3 +52,7 @@ runs:
           node_modules/.cache/turbo
           apps/*/.turbo
           packages/*/.turbo
+
+    - name: 🏗 Build packages
+      run: pnpm -w build:packages
+      shell: bash

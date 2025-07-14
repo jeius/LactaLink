@@ -46,4 +46,4 @@ jobs:
         uses: expo/expo-github-action/preview@v8
         with:
           working-directory: apps/mobile
-          command: eas update --auto --branch=preview
+          command: eas update --branch=preview-update --channel=preview --message="Updated preview build" --non-interactive
