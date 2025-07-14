@@ -1388,7 +1388,7 @@ export const requests = pgTable(
     details_storagePreference: enum_requests_details_storage_preference(
       'details_storage_preference'
     ).default('EITHER'),
-    details_urgency: enum_priority_level('details_urgency').default('LOW'),
+    details_urgency: enum_priority_level('details_urgency').notNull().default('LOW'),
     details_image: uuid('details_image_id').references(() => images.id, {
       onDelete: 'set null',
     }),

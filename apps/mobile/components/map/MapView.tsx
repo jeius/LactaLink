@@ -39,16 +39,14 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   const [followUser, setFollowUser] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  const { location, error } = useLocationUpdates();
-  const coords = useMemo(() => {
-    if (location?.coords) {
-      return {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-    }
-    return undefined;
-  }, [location]);
+  const { location, error, isLoading } = useLocationUpdates();
+  const coords = useMemo(
+    () => ({
+      latitude: location?.coords.latitude || 0,
+      longitude: location?.coords.longitude || 0,
+    }),
+    [location]
+  );
 
   if (error) {
     const errorParams: ErrorSearchParams = {
@@ -65,8 +63,8 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     heading: 0,
     pitch: 0,
     center: {
-      latitude: coords?.latitude || 0,
-      longitude: coords?.longitude || 0,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
     },
   });
 
@@ -93,20 +91,19 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
   useEffect(() => {
     if (initMapRef.current) {
-      if (coords && mapRef.current && dataReady) {
+      if (dataReady && !isLoading) {
         const { latitude, longitude } = coords;
-        mapRef.current.setCamera({
-          ...camera,
+        mapRef.current?.setCamera({
           center: { latitude, longitude },
         });
 
         initMapRef.current = false;
         setTimeout(() => {
           setIsMapReady(true);
-        }, 500); // Ensure the camera is set before marking the map as ready
+        }, 250); // Ensure the camera is set before marking the map as ready
       }
     }
-  }, [camera, coords, dataReady, mapRef]);
+  }, [coords, dataReady, isLoading, mapRef]);
 
   function handleCompassPress() {
     if (mapRef.current) {
@@ -165,12 +162,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         {children}
 
         {location && (
-          <UserMarker
-            hideHeading
-            mapRef={mapRef}
-            followUser={followUser}
-            coordinates={location.coords}
-          />
+          <UserMarker mapRef={mapRef} followUser={followUser} coordinates={location.coords} />
         )}
       </AnimatedMapView>
 
@@ -225,9 +217,8 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
 function isCameraInCurrentPosition(
   camera: Camera,
-  coords: { latitude: number; longitude: number } | undefined
+  coords: { latitude: number; longitude: number }
 ): boolean {
-  if (!coords) return false;
   const { latitude, longitude } = coords;
   const cameraCenter = camera.center;
 

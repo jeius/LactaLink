@@ -34,7 +34,16 @@ export function useCurrentLocation(enable: boolean = true) {
 export function useLocationUpdates(enable: boolean = true) {
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const {
+    location: currentLocation,
+    error: currentLocError,
+    isLoading,
+    isFetching,
+  } = useCurrentLocation(enable);
+
+  const [location, setLocation] = useState<Location.LocationObject | null | undefined>(
+    currentLocation
+  );
   const [error, setError] = useState<Error | null>(null);
 
   // Handle screen focus/blur
@@ -70,7 +79,8 @@ export function useLocationUpdates(enable: boolean = true) {
 
   return {
     location,
-    error,
+    error: error || currentLocError,
+    isLoading: isLoading || isFetching,
   };
 }
 
