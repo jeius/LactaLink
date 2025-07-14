@@ -14,11 +14,13 @@
     "build:android-dev": "eas build:dev --platform android --profile development",
     "build:ios-dev": "eas build:dev --platform ios --profile development",
     "preview:android": "eas build --platform android --profile preview",
+    "preview:update": "eas update --channel preview --platform android --message \"Updated preview build\" --non-interactive",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
     "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm install && pnpm run build:deps"
   },
   "dependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
     "@expo/html-elements": "^0.4.2",
     "@gluestack-ui/accordion": "^1.0.14",
     "@gluestack-ui/actionsheet": "^0.2.53",
@@ -63,6 +65,7 @@
     "@tanstack/react-query": "^5.80.7",
     "babel-plugin-dotenv-import": "^3.0.1",
     "babel-plugin-module-resolver": "^5.0.2",
+    "babel-preset-expo": "~13.0.0",
     "expo": "~53.0.19",
     "expo-asset": "~11.1.7",
     "expo-constants": "~17.1.7",
@@ -132,9 +135,7 @@
   },
   "expo": {
     "install": {
-      "exclude": [
-        "react-native-maps"
-      ]
+      "exclude": []
     },
     "doctor": {
       "reactNativeDirectoryCheck": {
