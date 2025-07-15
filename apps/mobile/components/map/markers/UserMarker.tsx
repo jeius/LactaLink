@@ -1,7 +1,6 @@
 import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
 
-import { useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { getHexColor } from '@/lib/colors';
 import { LocationObjectCoords } from 'expo-location';
 import { debounce } from 'lodash';
@@ -49,9 +48,7 @@ export function UserMarker({
   heading,
   animatedHeading,
 }: UserMarkerProps) {
-  // Apply a low-pass filter to stabilize the heading
   const filteredHeading = useRef(heading);
-
   const markerRef = useRef<MapMarker>(null);
 
   const initialPosition = useMemo<LatLng>(
@@ -76,7 +73,7 @@ export function UserMarker({
           mapRef?.current?.animateCamera({ center, heading, altitude }, { duration: 500 });
         },
         600,
-        { maxWait: 1000, trailing: true }
+        { maxWait: 1000, leading: true }
       ),
     [mapRef]
   );
@@ -91,12 +88,22 @@ export function UserMarker({
       if (followUser) {
         filteredHeading.current = filteredHeading.current * 0.8 + heading * 0.2;
         debouncedAnimateCamera(center, heading - 90, coords.altitude || 0);
+      } else {
+        debouncedAnimateCamera.cancel();
       }
 
       markerRef.current?.animateMarkerToCoordinate(center, 400);
-      markerRef.current?.redraw();
+      redraw();
     }
   }, [coords, debouncedAnimateCamera, followUser, heading, mapRef]);
+
+  useEffect(() => {
+    redraw();
+  }, [camera]);
+
+  function redraw() {
+    markerRef.current?.redraw();
+  }
 
   return (
     <MarkerAnimated
@@ -107,12 +114,14 @@ export function UserMarker({
       coordinate={initialPosition}
       tracksViewChanges={false}
       anchor={{ x: 0.5, y: 0.5 }}
-      // style={{ backgroundColor: getHexColor('light', 'primary', 50) }}
     >
       <View style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ position: 'relative', padding: 4 }}>
           {!hideHeading && (
-            <View style={[StyleSheet.absoluteFill, { transform: [{ rotate: '-45deg' }] }]}>
+            <View
+              style={[StyleSheet.absoluteFill, { transform: [{ rotate: '-45deg' }] }]}
+              onLayout={redraw}
+            >
               <Animated.View
                 style={[headingContainerStyle, { flex: 1, borderRadius: 17, overflow: 'hidden' }]}
               >
@@ -121,34 +130,20 @@ export function UserMarker({
             </View>
           )}
           {showAvatar ? (
-            <Box style={{ transform: [{ rotate: `${camera?.heading || 0}deg` }] }}>
-              <Avatar size="xs" className="border-primary-50" />
-            </Box>
+            <Animated.View
+              style={{ transform: [{ rotate: `${camera?.heading || 0}deg` }] }}
+              onLayout={redraw}
+            >
+              <Avatar size="xs" className="border-primary-50" fadeDuration={0} onLoad={redraw} />
+            </Animated.View>
           ) : (
-            <Box className="bg-primary-400 border-primary-0 h-6 w-6 rounded-full border-2" />
+            <Box
+              className="bg-primary-400 border-primary-0 h-6 w-6 rounded-full border-2"
+              onLayout={redraw}
+            />
           )}
         </View>
       </View>
     </MarkerAnimated>
-  );
-}
-
-export function UserAvatarMarker() {
-  const { heading } = useMagnetometer({ updateInterval: 'fast' });
-
-  return (
-    <View style={{ position: 'relative', padding: 4 }}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            transform: [{ rotate: `${heading - 45}deg` }],
-          },
-        ]}
-      >
-        <View style={[headingStyle.arrow]} />
-      </View>
-      <Avatar size="sm" className="border-primary-50" />
-    </View>
   );
 }

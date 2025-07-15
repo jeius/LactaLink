@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { debounce, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
@@ -75,30 +75,11 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     [camera, coords]
   );
 
-  const setCameraOnRegionChange = debounce(
-    async (_region: Region, details: Details) => {
-      const newCamera = await mapRef.current?.getCamera();
-      if (details?.isGesture) {
-        const newCamera = await mapRef.current?.getCamera();
-        setFollowUser(false);
-        if (newCamera) {
-          setCamera(newCamera);
-        }
-      }
-
-      setShowAvatar(newCamera?.pitch === 0);
-    },
-    200,
-    { leading: true }
-  );
-
   useEffect(() => {
     if (initMapRef.current) {
       if (dataReady && !isLoading) {
         const { latitude, longitude } = coords;
-        mapRef.current?.setCamera({
-          center: { latitude, longitude },
-        });
+        mapRef.current?.setCamera({ center: { latitude, longitude } });
 
         initMapRef.current = false;
         setTimeout(() => {
@@ -109,14 +90,12 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   }, [coords, dataReady, isLoading, mapRef]);
 
   function handleCompassPress() {
-    if (mapRef.current) {
-      mapRef.current.animateCamera(
-        {
-          heading: 0,
-        },
-        { duration: 400 }
-      );
-    }
+    mapRef.current?.animateCamera(
+      {
+        heading: 0,
+      },
+      { duration: 400 }
+    );
     setFollowUser(false);
   }
 
@@ -142,21 +121,23 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   }
 
   function handleMapReady() {
-    console.log('🗺️ Map is ready, enabling location updates');
+    console.log('🗺️  Map is ready, enabling location updates');
     initMapRef.current = true;
   }
 
-  function handleRegionChange(region: Region, details: Details) {
-    props.onRegionChange?.(region, details);
-    setCameraOnRegionChange(region, details);
-  }
-
-  async function handleRegionChangeEnd() {
+  async function handleRegionChangeEnd(region: Region, details: Details) {
+    props.onRegionChangeComplete?.(region, details);
     const newCamera = await mapRef.current?.getCamera();
+
+    if (details?.isGesture) {
+      setFollowUser(false);
+    }
+
     if (newCamera) {
       setCamera(newCamera);
-      setShowAvatar(newCamera.pitch === 0);
     }
+
+    setShowAvatar(newCamera?.pitch === 0);
   }
 
   return (
@@ -172,7 +153,6 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         showsUserLocation={false}
         showsCompass={false}
         toolbarEnabled={false}
-        onRegionChange={handleRegionChange}
         onRegionChangeComplete={handleRegionChangeEnd}
         onMapReady={handleMapReady}
       >

@@ -8,12 +8,16 @@ type AvatarProps = ComponentProps<typeof UIAvatar.Avatar> & {
   showBadge?: boolean;
   status?: ComponentProps<typeof UIAvatar.AvatarBadge>['status'];
   details?: { avatar: AvatarType | null; name: string };
+  onLoad?: () => void;
+  fadeDuration?: number;
 };
 
 export default function Avatar({
   showBadge = false,
   status: badgeStatus,
   details,
+  onLoad,
+  fadeDuration,
   ...props
 }: AvatarProps) {
   const { profile, isLoading } = useAuth();
@@ -51,6 +55,8 @@ export default function Avatar({
             <UIAvatar.AvatarImage
               source={{ uri: avatarUrl }}
               alt={`Profile picture of ${avatarName}`}
+              onLoad={onLoad}
+              fadeDuration={fadeDuration}
             />
           )}
           {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}

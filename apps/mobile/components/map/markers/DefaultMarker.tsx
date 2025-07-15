@@ -1,7 +1,7 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import LocationPin from '@/components/icons/LocationPin';
 import { getHexColor } from '@/lib/colors';
-import { ReactNode } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import { ColorValue, StyleSheet, View } from 'react-native';
 
 const sizes = {
@@ -29,26 +29,34 @@ export function DefaultMarker({
   circleIcon,
 }: DefaultMarkerProps) {
   const { theme } = useTheme();
+  const getColor = useCallback(getHexColor, [theme]);
 
-  const pinColor = color || getHexColor(theme, 'primary', 500);
-  const circleBgColor = circleColor || getHexColor(theme, 'primary', 50);
+  const pinColor = color || getColor(theme, 'primary', 500);
+  const circleBgColor = circleColor || getColor(theme, 'primary', 50);
 
-  const size = typeof sizeProp === 'string' ? sizes[sizeProp] : sizeProp;
-  const circleRadius = size * 0.25; // 25% of the marker size;
+  const [size, circleRadius] = useMemo(() => {
+    const resolvedSize = typeof sizeProp === 'string' ? sizes[sizeProp] : sizeProp;
+    const resolvedCircleRadius = resolvedSize * 0.25; // 25% of the marker size
+    return [resolvedSize, resolvedCircleRadius];
+  }, [sizeProp]);
 
-  const style = StyleSheet.create({
-    container: { position: 'relative', width: size, height: size },
-    circle: {
-      position: 'absolute',
-      top: size * 0.08333,
-      left: '50%',
-      transform: [{ translateX: -circleRadius }],
-      width: circleRadius * 2,
-      height: circleRadius * 2,
-      borderRadius: circleRadius,
-      overflow: 'hidden',
-    },
-  });
+  const style = useMemo(
+    () =>
+      StyleSheet.create({
+        container: { position: 'relative', width: size, height: size },
+        circle: {
+          position: 'absolute',
+          top: size * 0.08333,
+          left: '50%',
+          transform: [{ translateX: -circleRadius }],
+          width: circleRadius * 2,
+          height: circleRadius * 2,
+          borderRadius: circleRadius,
+          overflow: 'hidden',
+        },
+      }),
+    [size, circleRadius]
+  );
 
   return (
     <View style={style.container}>

@@ -7,10 +7,13 @@ import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomS
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { Address, DeliveryPreference, Populate } from '@lactalink/types';
 
-import { DonationMarkerPressEvent } from '@/components/map/markers/DonationMarkers';
-import { RequestMarkerPressEvent } from '@/components/map/markers/RequestMarkers';
+import {
+  DonationMarkerPressEvent,
+  DonationMarkers,
+} from '@/components/map/markers/DonationMarkers';
+import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
 import React, { useRef, useState } from 'react';
-import RNMapView, { Details, LatLng, Region } from 'react-native-maps';
+import RNMapView, { LatLng, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MapPage() {
@@ -44,7 +47,7 @@ export default function MapPage() {
   const { data: donations } = donationRes;
   const { data: requests } = requestRes;
 
-  async function handleSelectionChange(value?: NonNullable<MapBottomSheetProps['value']>) {
+  function handleSelectionChange(value?: NonNullable<MapBottomSheetProps['value']>) {
     const { data } = value || {};
     let coord: LatLng | undefined;
 
@@ -57,12 +60,8 @@ export default function MapPage() {
     }
 
     if (coord && mapRef.current) {
-      const camera = await mapRef.current.getCamera();
-
-      mapRef.current.animateCamera({
-        ...camera,
-        center: { latitude: coord.latitude || 0, longitude: coord.longitude || 0 },
-      });
+      const center: LatLng = { latitude: coord.latitude, longitude: coord.longitude };
+      mapRef.current.animateCamera({ center }, { duration: 500 });
     }
     setSelectedItem(value);
   }
@@ -77,17 +76,25 @@ export default function MapPage() {
     setSelectedItem?.({ data, slug: 'requests' });
   }
 
-  function handleRegionChange(region: Region, _details: Details) {
+  function handleRegionChangeComplete(region: Region) {
     setRegion(region);
   }
 
   return (
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-      <MapView mapRef={mapRef} dataReady={dataReady} onRegionChangeComplete={handleRegionChange}>
-        {/* {selectedItem ? (
+      <MapView
+        mapRef={mapRef}
+        dataReady={dataReady}
+        onRegionChangeComplete={handleRegionChangeComplete}
+      >
+        {selectedItem ? (
           <>
             {selectedItem.slug === 'donations' ? (
-              <DonationMarkers data={selectedItem.data} onPress={handleDonationMarkerPress} />
+              <DonationMarkers
+                showAvatar
+                data={selectedItem.data}
+                onPress={handleDonationMarkerPress}
+              />
             ) : selectedItem.slug === 'requests' ? (
               <RequestMarkers
                 showAvatar
@@ -98,27 +105,29 @@ export default function MapPage() {
           </>
         ) : (
           <>
-            {donations?.map((donation, i) => (
-              <DonationMarkers
-                key={`${donation.id}-${i}`}
-                data={donation}
-                region={region}
-                onPress={handleDonationMarkerPress}
-                showAvatar={false}
-              />
-            ))}
+            {dataReady &&
+              donations?.map((donation, i) => (
+                <DonationMarkers
+                  key={`${donation.id}-${i}`}
+                  data={donation}
+                  region={region}
+                  onPress={handleDonationMarkerPress}
+                  showAvatar={false}
+                />
+              ))}
 
-            {requests?.map((request, i) => (
-              <RequestMarkers
-                key={`${request.id}-${i}`}
-                data={request}
-                region={region}
-                onPress={handleRequestMarkerPress}
-                showAvatar={false}
-              />
-            ))}
+            {dataReady &&
+              requests?.map((request, i) => (
+                <RequestMarkers
+                  key={`${request.id}-${i}`}
+                  data={request}
+                  region={region}
+                  onPress={handleRequestMarkerPress}
+                  showAvatar={false}
+                />
+              ))}
           </>
-        )} */}
+        )}
       </MapView>
 
       <MapBottomSheet

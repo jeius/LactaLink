@@ -16,6 +16,7 @@ import {
 } from '@lactalink/types';
 import { isPointInPolygon } from '@lactalink/utilities';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated } from 'react-native';
 import {
   MapMarker,
   MapMarkerProps,
@@ -23,7 +24,6 @@ import {
   MarkerPressEvent,
   Region,
 } from 'react-native-maps';
-import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { DefaultMarker } from './DefaultMarker';
 
 type DeliveryDetails = {
@@ -54,7 +54,6 @@ export function DonationMarkers({
 
   const markerRefs = useRef<Record<string, MapMarker>>({});
 
-  const animateValue = useSharedValue({ scale: 1, y: 0 });
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
   const profile = data.donor as Individual;
@@ -62,67 +61,97 @@ export function DonationMarkers({
 
   const markers = useMemo(() => createMarkers(data, region), [data, region]);
 
-  const markerAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: animateValue.value.scale }, { translateY: animateValue.value.y }],
-  }));
-
   useEffect(() => {
     if (showAvatarProp !== undefined) {
       setShowAvatar(showAvatarProp);
-
-      for (const marker of Object.values(markerRefs.current)) {
-        marker.redraw();
-      }
     }
   }, [showAvatarProp]);
 
-  function handleMarkerPress(event: MarkerPressEvent, details: DonationMarkerPressEvent) {
-    onPress?.(details);
-    animateValue.value = { scale: withSpring(1.2), y: withTiming(-10) };
-    setShowAvatar(true);
-  }
-
-  return markers.map((marker) => (
-    <MarkerAnimated
-      {...marker}
-      ref={(ref) => {
-        if (ref) {
+  function createRef(marker: MarkerDetails) {
+    return (ref: MapMarker | Animated.LegacyRef<MapMarker> | null) => {
+      if (ref) {
+        if (ref instanceof MapMarker) {
           markerRefs.current[marker.identifier!] = ref;
         } else {
           delete markerRefs.current[marker.identifier!];
         }
-      }}
-      key={marker.identifier}
-      onPress={(e) => {
-        handleMarkerPress(e, marker);
-      }}
-      style={markerAnimStyle}
-      tracksViewChanges={false}
-    >
-      <DefaultMarker
-        size="sm"
-        color={pinColor}
-        circleColor={iconBgColor}
-        circleIcon={
-          !showAvatar ? (
-            <Box className="flex-1 p-1.5">
-              <Image
-                source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
-                style={{ flex: 1 }}
-              />
-            </Box>
-          ) : (
-            profileAvatar && (
-              <Avatar
-                className="h-full w-full"
-                details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
-              />
+      } else {
+        delete markerRefs.current[marker.identifier!];
+      }
+    };
+  }
+
+  function redrawMarkers() {
+    for (const marker of Object.values(markerRefs.current)) {
+      marker.redraw();
+    }
+  }
+
+  function handleMarkerPress(details: DonationMarkerPressEvent) {
+    return (_event: MarkerPressEvent) => {
+      onPress?.(details);
+      setShowAvatar(true);
+      redrawMarkers();
+    };
+  }
+
+  return markers.map((marker) => {
+    // Validate marker before rendering
+    if (
+      !marker.coordinate ||
+      typeof marker.coordinate.latitude !== 'number' ||
+      typeof marker.coordinate.longitude !== 'number' ||
+      !marker.identifier
+    ) {
+      console.warn('Skipping invalid marker:', marker.identifier);
+      return null;
+    }
+
+    return (
+      <MarkerAnimated
+        {...marker}
+        ref={createRef(marker)}
+        key={marker.identifier}
+        onPress={handleMarkerPress(marker)}
+        tracksViewChanges={false}
+      >
+        <DefaultMarker
+          size="sm"
+          color={pinColor}
+          circleColor={iconBgColor}
+          circleIcon={
+            !showAvatar ? (
+              <Box className="flex-1 p-0.5">
+                <Image
+                  source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
+                  style={{ flex: 1 }}
+                  transition={{ duration: 0 }}
+                  onLoad={() => {
+                    markerRefs.current[marker.identifier!]?.redraw();
+                  }}
+                />
+              </Box>
+            ) : (
+              profileAvatar && (
+                <Avatar
+                  size="xs"
+                  className="h-full w-full"
+                  details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
+                  onLayout={() => {
+                    markerRefs.current[marker.identifier!]?.redraw();
+                  }}
+                  onLoad={() => {
+                    markerRefs.current[marker.identifier!]?.redraw();
+                  }}
+                  fadeDuration={0}
+                />
+              )
             )
-          )
-        }
-      />
-    </MarkerAnimated>
-  ));
+          }
+        />
+      </MarkerAnimated>
+    );
+  });
 }
 
 function createMarkers(data: Donation, region?: Region) {
@@ -134,28 +163,47 @@ function createMarkers(data: Donation, region?: Region) {
 
   for (const preference of preferences) {
     const address = preference.address as Address;
-    const [latitude, longitude] = (address && address.coordinates) || [];
+    const coordinates = address?.coordinates;
 
-    if (latitude && longitude) {
-      const marker: MarkerDetails = {
-        id: `donations-${data.id}-delivery-${preference.id}`,
-        identifier: `donations-${data.id}-delivery-${preference.id}`,
-        coordinate: { latitude, longitude },
-        title: data.title || `Donation | ${volume} mL`,
-        description: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
-        data,
-        deliveryPreference: preference,
-      };
+    // Add comprehensive validation
+    if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+      continue;
+    }
 
-      if (region) {
-        const polygon = createPolygonFromRegion(region);
+    const [latitude, longitude] = coordinates;
 
-        if (isPointInPolygon({ latitude, longitude }, polygon)) {
-          markerList.push(marker);
-        }
-      } else {
+    // Validate coordinate values
+    if (
+      typeof latitude !== 'number' ||
+      typeof longitude !== 'number' ||
+      isNaN(latitude) ||
+      isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      continue;
+    }
+
+    const marker: MarkerDetails = {
+      id: `donations-${data.id}-delivery-${preference.id}`,
+      identifier: `donations-${data.id}-delivery-${preference.id}`,
+      coordinate: { latitude, longitude },
+      title: data.title || `Donation | ${volume} mL`,
+      description: `${volume} mL of ${STORAGE_TYPES[storageType].label} milk available.`,
+      data,
+      deliveryPreference: preference,
+    };
+
+    if (region) {
+      const polygon = createPolygonFromRegion(region);
+
+      if (isPointInPolygon({ latitude, longitude }, polygon)) {
         markerList.push(marker);
       }
+    } else {
+      markerList.push(marker);
     }
   }
 

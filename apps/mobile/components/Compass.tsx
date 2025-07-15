@@ -1,35 +1,31 @@
-import { MagnetometerOptions, useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { ArrowUpIcon } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
-import { Box } from './ui/box';
+import React, { useEffect } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from './ui/icon';
 
 interface CompassProps {
   heading?: number;
-  sensorOptions?: MagnetometerOptions;
 }
 
-export function Compass({
-  sensorOptions: { updateInterval = 'fast' } = {},
-  heading: headingProp,
-}: CompassProps) {
-  const { heading: defaultHeading } = useMagnetometer({ updateInterval });
-
-  const heading = headingProp !== undefined ? headingProp : defaultHeading;
-
-  const [currentHeading, setCurrentHeading] = useState(heading);
+export function Compass({ heading = 0 }: CompassProps) {
+  const animatedHeading = useSharedValue(heading);
 
   useEffect(() => {
-    setCurrentHeading(heading); // Update heading directly
-  }, [heading]);
+    animatedHeading.value = withTiming(heading, {
+      duration: 300,
+    });
+  }, [animatedHeading, heading]);
 
-  const rotationStyle = {
-    transform: [{ rotate: `${-currentHeading}deg` }],
-  };
+  const rotationStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ rotate: `${-animatedHeading.value}deg` }],
+    }),
+    [animatedHeading]
+  );
 
   return (
-    <Box style={[rotationStyle]}>
+    <Animated.View style={[rotationStyle]}>
       <Icon as={ArrowUpIcon} size="xl" />
-    </Box>
+    </Animated.View>
   );
 }
