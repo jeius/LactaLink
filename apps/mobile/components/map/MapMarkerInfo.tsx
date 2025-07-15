@@ -11,9 +11,10 @@ import { VStack } from '../ui/vstack';
 interface MapMarkerInfoProps {
   selected: MapBottomSheetProps['value'];
   mapRef?: React.RefObject<MapView | null>;
+  onViewOnMap?: (data: DeliveryPreference) => void;
 }
 
-export function MapMarkerInfo({ selected, mapRef }: MapMarkerInfoProps) {
+export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoProps) {
   if (!selected) return null;
 
   const { slug, data } = selected;
@@ -23,6 +24,8 @@ export function MapMarkerInfo({ selected, mapRef }: MapMarkerInfoProps) {
       const [latitude, longitude] = (preference.address as Address).coordinates || [];
 
       function handleViewOnMap() {
+        onViewOnMap?.(preference);
+
         if (latitude && longitude) {
           if (mapRef?.current) {
             mapRef.current.animateCamera({

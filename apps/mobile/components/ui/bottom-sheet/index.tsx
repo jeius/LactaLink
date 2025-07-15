@@ -18,7 +18,6 @@ import GorhomBottomSheet, {
   SNAP_POINT_TYPE,
 } from '@gorhom/bottom-sheet';
 import { FocusScope } from '@react-native-aria/focus';
-import { useIsFocused } from '@react-navigation/native';
 import { cssInterop } from 'nativewind';
 import React, {
   createContext,
@@ -85,13 +84,14 @@ const BottomSheetContext = createContext<{
   bottomSheetModalRef: React.RefObject<GorhomBottomSheetModal | null>;
   handleClose: () => void;
   handleOpen: () => void;
-  isFocused?: boolean;
+  disableClose: boolean;
 }>({
   visible: false,
   bottomSheetRef: { current: null },
   bottomSheetModalRef: { current: null },
   handleClose: () => {},
   handleOpen: () => {},
+  disableClose: false,
 });
 
 type IBottomSheetProps = React.ComponentProps<typeof GorhomBottomSheet>;
@@ -126,8 +126,6 @@ export const BottomSheet = ({
   const bottomSheetModalRef = useRef<GorhomBottomSheetModal>(null);
   const ref = sheetRef || bottomSheetRef;
   const modalRef = sheetModalRef || bottomSheetModalRef;
-
-  const isFocused = useIsFocused();
 
   const [visible, setVisible] = useState(defaultOpen);
 
@@ -166,11 +164,11 @@ export const BottomSheet = ({
     <BottomSheetContext.Provider
       value={{
         visible: open !== undefined ? open : visible,
+        disableClose,
         bottomSheetRef: ref,
         bottomSheetModalRef: modalRef,
         handleClose,
         handleOpen,
-        isFocused,
       }}
     >
       {children}
@@ -183,30 +181,34 @@ export const BottomSheetPortal = ({
   handleComponent: DragIndicator,
   backdropComponent: BackDrop,
   snapToIndex = -1,
-  enablePanDownToClose = true,
   ...props
 }: Partial<IBottomSheetProps> & {
   defaultIsOpen?: boolean;
   snapToIndex?: number;
 }) => {
-  const { bottomSheetRef, handleClose, visible, isFocused } = useContext(BottomSheetContext);
+  const { bottomSheetRef, handleClose, visible, disableClose } = useContext(BottomSheetContext);
   const { theme } = useTheme();
+  const [open, setOpen] = useState(visible);
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);
 
   const handleSheetChanges = useCallback(
     (index: number) => {
-      if (index === -1) {
+      if (index === -1 || (index === 0 && disableClose)) {
         handleClose();
+        setOpen(false);
+      } else if (index >= 0 || (index === 0 && !disableClose)) {
+        setOpen(true);
       }
     },
-    [handleClose]
+    [disableClose, handleClose]
   );
 
-  usePreventBackPress(visible, handleClose);
+  usePreventBackPress(open, handleClose);
 
   return (
     <GorhomBottomSheet
+      {...props}
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       index={snapToIndex}
@@ -215,8 +217,7 @@ export const BottomSheetPortal = ({
       handleComponent={DragIndicator}
       handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
       backgroundStyle={{ backgroundColor }}
-      enablePanDownToClose={enablePanDownToClose}
-      {...props}
+      enablePanDownToClose={!disableClose}
     >
       {props.children}
     </GorhomBottomSheet>
@@ -235,7 +236,7 @@ export const BottomSheetModalPortal = ({
 }: Partial<IBottomSheetModalProps> & {
   snapToIndex?: number;
 }) => {
-  const { bottomSheetModalRef, handleClose, visible, isFocused } = useContext(BottomSheetContext);
+  const { bottomSheetModalRef, handleClose, visible } = useContext(BottomSheetContext);
   const { theme } = useTheme();
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);

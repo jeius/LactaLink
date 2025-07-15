@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
@@ -60,8 +60,6 @@ export function MapBottomSheet({
   mapRef,
 }: MapBottomSheetProps) {
   const sheetRef = useRef<GorhomBottomSheet>(null);
-  const [open, setOpen] = useState(true);
-
   const DEVICE_WIDTH = Dimensions.get('window').width;
 
   const hasSelectedItem = Boolean(selected);
@@ -145,23 +143,19 @@ export function MapBottomSheet({
     }, 20); // Delay to ensure the sheet is mounted before snapping
   }, [snapPoints.length]);
 
+  function handleMinimize() {
+    sheetRef.current?.snapToIndex(1);
+  }
+
   return (
-    <BottomSheet
-      open={open}
-      setOpen={setOpen}
-      sheetRef={sheetRef}
-      disableClose={true}
-      snapToIndex={1}
-    >
+    <BottomSheet sheetRef={sheetRef} disableClose={true} snapToIndex={1}>
       <BottomSheetPortal
         snapPoints={snapPoints}
         snapToIndex={1}
         handleComponent={BottomSheetHandle}
-        enablePanDownToClose={false}
         enableContentPanningGesture={Boolean(selected)}
         enableDynamicSizing={false}
         animateOnMount={true}
-        onChange={(index) => setOpen(index > 0)}
       >
         <BottomSheetScrollView focusHook={useFocusEffect} contentContainerClassName="gap-2 py-3">
           {selected ? (
@@ -170,7 +164,7 @@ export function MapBottomSheet({
                 <ButtonIcon as={ChevronLeftIcon} />
                 <ButtonText>Back</ButtonText>
               </Button>
-              <MapMarkerInfo mapRef={mapRef} selected={selected} />
+              <MapMarkerInfo mapRef={mapRef} selected={selected} onViewOnMap={handleMinimize} />
             </VStack>
           ) : (
             sections.map((section, index) => {
