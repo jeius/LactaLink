@@ -1,4 +1,3 @@
-import ThemeToggler from '@/components/ThemeToggler';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { LogOutIcon } from 'lucide-react-native';
@@ -33,8 +32,6 @@ export default function Home() {
 
   return (
     <SafeArea safeTop={false} mode="margin" className="items-stretch">
-      <ThemeToggler />
-
       <ScrollView>
         <VStack space="lg" className="mb-20 items-center justify-center p-5">
           <DonateRequestModal />

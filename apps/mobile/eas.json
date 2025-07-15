@@ -9,7 +9,8 @@
       "pnpm": "9.15.7",
       "node": "22.14.0",
       "env": {
-        "EXPO_USE_FAST_RESOLVER": "true"
+        "EXPO_USE_FAST_RESOLVER": "true",
+        "EXPO_THEME": "light"
       }
     },
     "development": {

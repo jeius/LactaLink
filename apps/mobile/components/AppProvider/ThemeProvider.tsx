@@ -1,7 +1,7 @@
 'use client';
 
 import { getTheme, updateTheme } from '@/lib/api/theme';
-import { MMKV_KEYS, QUERY_KEYS } from '@/lib/constants';
+import { MMKV_KEYS, QUERY_KEYS, THEME_OVERRIDE } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -28,7 +28,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const deviceColorScheme = useColorScheme().colorScheme;
 
   const {
-    colorScheme: theme,
+    colorScheme,
     setColorScheme: setTheme,
     toggleColorScheme: toggleTheme,
   } = useColorScheme();
@@ -49,6 +49,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       await updateTheme(newTheme);
     },
   });
+
+  const theme = THEME_OVERRIDE || colorScheme;
 
   // Apply stored theme once during startup
   useEffect(() => {

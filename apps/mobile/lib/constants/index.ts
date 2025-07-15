@@ -5,6 +5,7 @@ import {
   EXPO_PUBLIC_SUPABASE_ANON_KEY,
   EXPO_PUBLIC_SUPABASE_URL,
   IOS_MAPS_API_KEY as IosKey,
+  EXPO_THEME as ThemeOverride,
   VERCEL_AUTOMATION_BYPASS_SECRET,
 } from '@env';
 
@@ -22,6 +23,7 @@ export const SUPABASE_ANON_KEY = EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const VERCEL_BYPASS_TOKEN = VERCEL_AUTOMATION_BYPASS_SECRET;
 export const ANDROID_MAPS_API_KEY = AndroidKey;
 export const IOS_MAPS_API_KEY = IosKey;
+export const THEME_OVERRIDE = ThemeOverride;
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
