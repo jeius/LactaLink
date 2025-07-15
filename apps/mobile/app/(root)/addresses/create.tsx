@@ -13,11 +13,11 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useDeliveryPreferenceForm } from '@/hooks/forms';
-import { upsertDeliveryPreference } from '@/lib/api/upsert';
+import { useAddressForm } from '@/hooks/forms/useAddressForm';
+import { upsertAddress } from '@/lib/api/upsert';
 import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { ErrorSearchParams } from '@lactalink/types';
-import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
+import { AddressSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useRouter } from 'expo-router';
@@ -28,18 +28,18 @@ export default function CreatePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { form, isLoading, isFetching, error } = useDeliveryPreferenceForm();
+  const { form, isLoading, isFetching, error } = useAddressForm();
 
   const isSubmitting = form.formState.isSubmitting;
   const formData = form.watch();
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(formData: DeliveryPreferenceSchema) {
-    const promise = upsertDeliveryPreference(formData);
+  async function onSubmit(formData: AddressSchema) {
+    const promise = upsertAddress(formData);
 
     toast.promise(promise, {
-      loading: 'Saving delivery preference...',
+      loading: 'Saving address...',
       success: (res: { message: string }) => {
         return res.message;
       },

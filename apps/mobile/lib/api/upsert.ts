@@ -1,6 +1,6 @@
 import { getApiClient } from '@lactalink/api';
-import { DeliveryPreference } from '@lactalink/types';
-import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
+import { Address, DeliveryPreference } from '@lactalink/types';
+import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/types/forms';
 
 export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPreferenceSchema[]) {
   const apiClient = getApiClient();
@@ -56,4 +56,40 @@ export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
   }
 
   return { message, data: preference };
+}
+
+export async function upsertAddress(data: AddressSchema) {
+  const apiClient = getApiClient();
+
+  let message: string;
+  let address: Address;
+
+  const { coordinates: { latitude, longitude } = {}, ...rest } = data;
+  const coordinates: [number, number] | undefined =
+    latitude && longitude ? [latitude, longitude] : undefined;
+
+  if (data.id) {
+    address = await apiClient.updateByID({
+      collection: 'addresses',
+      id: data.id,
+      data: {
+        ...rest,
+        coordinates,
+      },
+    });
+
+    message = `"${address.name || 'Address'}" updated successfully.`;
+  } else {
+    address = await apiClient.create({
+      collection: 'addresses',
+      data: {
+        ...rest,
+        coordinates,
+      },
+    });
+
+    message = `"${address.name || 'Address'}" created successfully.`;
+  }
+
+  return { message, data: address };
 }

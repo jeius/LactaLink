@@ -7,6 +7,7 @@ export const coordinatesSchema = z.object({
 });
 
 export const addressSchema = z.object({
+  id: z.uuid().optional(),
   name: z.string().transform(emptyTransform).optional(),
   street: z.string().transform(nullTransform).optional().nullable(),
   province: z.string().nonempty('Required.'),
