@@ -2,14 +2,14 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { AddressSchema, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalink/types';
-import { AnimatePresence, Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
-import { EditIcon, SaveIcon } from 'lucide-react-native';
+import { EditIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Dimensions, GestureResponderEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
+import { FloatingActionButton } from '../FloatingActionButton';
 import {
   BottomSheet,
   BottomSheetBackdrop,
@@ -19,7 +19,7 @@ import {
   BottomSheetTrigger,
 } from '../ui/bottom-sheet';
 import { Box } from '../ui/box';
-import { Button, ButtonIcon, ButtonText } from '../ui/button';
+import { Button, ButtonIcon } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Text } from '../ui/text';
@@ -84,37 +84,7 @@ export function AddressMapBottomSheet({ onChange, address }: AddressMapBottomShe
             <VStack></VStack>
           </BottomSheetScrollView>
 
-          <AnimatePresence>
-            {isDirty && (
-              <Motion.View
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                style={{
-                  marginBottom: insets.bottom,
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  padding: 8,
-                }}
-              >
-                <Card className="mx-auto p-4">
-                  <HStack space="md" className="justify-end">
-                    <Button onPress={handleSave}>
-                      <ButtonIcon as={SaveIcon} />
-                      <ButtonText>Apply</ButtonText>
-                    </Button>
-
-                    <Button variant="outline" action="default" onPress={handleCancel}>
-                      <ButtonText>Cancel</ButtonText>
-                    </Button>
-                  </HStack>
-                </Card>
-              </Motion.View>
-            )}
-          </AnimatePresence>
+          <FloatingActionButton show={isDirty} onCancel={handleCancel} onConfirm={handleSave} />
         </VStack>
       </BottomSheetModalPortal>
     </BottomSheet>
