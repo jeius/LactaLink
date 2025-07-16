@@ -1,156 +1,175 @@
-import { useAuth } from '@/hooks/auth/useAuth';
-import { createShadow } from '@/lib/utils/shadows';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { AddressSchema, DeliveryPreference, DeliveryPreferenceSchema } from '@lactalink/types';
-import { useRouter } from 'expo-router';
-import { EditIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { Dimensions, GestureResponderEvent } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../AppProvider/ThemeProvider';
-import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
-import { FloatingActionButton } from '../FloatingActionButton';
+import { AddressSchema } from '@lactalink/types';
 import {
-  BottomSheet,
-  BottomSheetBackdrop,
-  BottomSheetDragIndicator,
-  BottomSheetModalPortal,
-  BottomSheetScrollView,
-  BottomSheetTrigger,
-} from '../ui/bottom-sheet';
-import { Box } from '../ui/box';
-import { Button, ButtonIcon } from '../ui/button';
-import { Card } from '../ui/card';
+  CheckIcon,
+  LandmarkIcon,
+  MapPinHouseIcon,
+  MountainIcon,
+  SaveIcon,
+} from 'lucide-react-native';
+import React, { useMemo } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FormField } from '../FormField';
+import { ActionModal } from '../modals';
+import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
+import { BottomSheetHandle } from '../ui/BottomSheetHandle';
+import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '../ui/checkbox';
 import { HStack } from '../ui/hstack';
-import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-type TValue<T extends boolean = false> = T extends true
-  ? DeliveryPreferenceSchema[]
-  : DeliveryPreferenceSchema;
-
 interface AddressMapBottomSheetProps {
-  address?: AddressSchema;
-  onChange?: () => void;
+  onSavePress?: () => void;
   isLoading?: boolean;
 }
 
-export function AddressMapBottomSheet({ onChange, address }: AddressMapBottomSheetProps) {
-  const { user } = useAuth();
+export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBottomSheetProps) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { theme } = useTheme();
+  const form = useFormContext<AddressSchema>();
 
-  const DEVICE_WIDTH = Dimensions.get('window').width;
+  const { default: isDefault, cityMunicipality, province } = form.watch();
 
-  const [isDirty, setIsDirty] = useState(false);
-  const [open, setOpen] = useState(false);
+  const isSubmitting = form.formState.isSubmitting;
 
-  function handleSave() {
-    onChange?.();
-    setIsDirty(false);
+  const snapPoints = useMemo(() => ['20%', '30%', '70%'], []);
+
+  function handleSetDefault(isSelected: boolean) {
+    form.setValue('default', isSelected);
   }
 
-  function handleCancel() {
-    setIsDirty(false);
-  }
-
-  function handleClose() {
-    setOpen(false);
+  async function handleValidation() {
+    const isValid = await form.trigger();
+    if (!isValid) {
+      throw new Error('Form validation failed');
+    }
   }
 
   return (
-    <BottomSheet open={open} setOpen={setOpen}>
-      <BottomSheetTrigger disableAnimation>
-        <Trigger />
-      </BottomSheetTrigger>
-      <BottomSheetModalPortal
-        snapPoints={['60%']}
+    <BottomSheet disableClose snapToIndex={1}>
+      <BottomSheetPortal
+        snapPoints={snapPoints}
+        snapToIndex={1}
         enableDynamicSizing={false}
-        handleComponent={(props) => (
-          <BottomSheetDragIndicator {...props} className="py-4" style={createShadow(theme).xs} />
-        )}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} className="bg-background-500" />
-        )}
+        handleComponent={BottomSheetHandle}
         enableBlurKeyboardOnGesture={false}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustPan"
-        enableContentPanningGesture={false}
+        enableContentPanningGesture={true}
       >
-        <VStack className="relative h-full w-full" style={{ paddingBottom: insets.bottom }}>
-          <BottomSheetScrollView>
-            <VStack></VStack>
-          </BottomSheetScrollView>
+        <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
+          <VStack space="lg" className="p-4">
+            <FormField
+              name={`province`}
+              label="Province"
+              fieldType="combobox"
+              placeholder="Select province..."
+              collection="provinces"
+              searchPath="name"
+              searchPlaceholder="Search province here..."
+              icon={MountainIcon}
+              iconPosition="left"
+              isLoading={isLoading}
+            />
 
-          <FloatingActionButton show={isDirty} onCancel={handleCancel} onConfirm={handleSave} />
-        </VStack>
-      </BottomSheetModalPortal>
-    </BottomSheet>
-  );
-}
+            <FormField
+              name={`cityMunicipality`}
+              label="City or Municipality"
+              fieldType="combobox"
+              placeholder="Select city or municipality..."
+              collection="citiesMunicipalities"
+              searchPath="name"
+              searchPlaceholder="Search city or municipality here..."
+              icon={LandmarkIcon}
+              iconPosition="left"
+              where={province ? { province: { equals: province } } : undefined}
+              isLoading={isLoading}
+            />
 
-interface PreferenceCardProps {
-  preference: DeliveryPreference;
-  isSelected?: boolean;
-  onEditPress?: () => void;
-  isLoading?: boolean;
-  showEditButton?: boolean;
-}
-function PreferenceCard({
-  isLoading,
-  isSelected,
-  preference,
-  onEditPress,
-  showEditButton,
-}: PreferenceCardProps) {
-  const router = useRouter();
+            <FormField
+              name={`barangay`}
+              label="Barangay"
+              helperText="If applicable, select the barangay of this address."
+              fieldType="combobox"
+              placeholder="Select barangay..."
+              collection="barangays"
+              searchPath="name"
+              searchPlaceholder="Search barangay here..."
+              icon={MapPinHouseIcon}
+              iconPosition="left"
+              isLoading={isLoading}
+              where={
+                cityMunicipality
+                  ? { cityMunicipality: { equals: cityMunicipality } }
+                  : province
+                    ? { province: { equals: province } }
+                    : undefined
+              }
+            />
 
-  const cardStyle = tva({
-    base: 'relative w-full p-0',
-    variants: {
-      isSelected: {
-        true: 'border-success-500',
-      },
-    },
-  });
+            <FormField
+              name={`street`}
+              label="Street Address"
+              helperText="Enter the street address of this location."
+              fieldType="text"
+              placeholder="e.g. Block 9, Sudlonon St."
+              autoCapitalize="words"
+              autoComplete="street-address"
+              textContentType="fullStreetAddress"
+              useBottomSheetInputs
+              isLoading={isLoading}
+            />
 
-  function handleEditPress(event: GestureResponderEvent) {
-    onEditPress?.();
-    event.stopPropagation();
-    router.push(`/delivery-preferences/edit/${preference.id}`);
-  }
+            <FormField
+              name={`zipCode`}
+              label="Zip Code"
+              helperText="Enter the zip/postal code of this address."
+              fieldType="text"
+              placeholder="e.g. 9200"
+              keyboardType="number-pad"
+              textContentType="postalCode"
+              className="max-w-32"
+              useBottomSheetInputs
+              isLoading={isLoading}
+            />
 
-  return (
-    <Card variant="filled" className={cardStyle({ isSelected })}>
-      <HStack>
-        <DeliveryPreferenceCard
-          preference={preference}
-          variant="ghost"
-          isLoading={isLoading}
-          className="flex-1"
-        />
+            <FormField
+              name={`name`}
+              fieldType="text"
+              label="Address Label"
+              placeholder="e.g. Home, Workplace"
+              autoCapitalize="words"
+              helperText="Set a label for this address to easily identify it."
+              useBottomSheetInputs
+              isLoading={isLoading}
+            />
 
-        {showEditButton && (
-          <VStack space="md" className="bg-primary-100 justify-center p-4">
-            <Button className="h-fit w-fit p-4" onPress={handleEditPress}>
-              <ButtonIcon as={EditIcon} />
-            </Button>
+            <HStack space="xl" className="justify-between">
+              <Checkbox
+                value={`address-checkbox`}
+                isChecked={isDefault}
+                onChange={handleSetDefault}
+              >
+                <CheckboxIndicator>
+                  <CheckboxIcon as={CheckIcon} />
+                </CheckboxIndicator>
+                <CheckboxLabel>Set as default address</CheckboxLabel>
+              </Checkbox>
+            </HStack>
+
+            <ActionModal
+              className="mt-5"
+              isDisabled={isSubmitting}
+              triggerLabel="Save Address"
+              triggerIcon={SaveIcon}
+              title="Review Address"
+              description="Are you sure you want to save this address?"
+              onTriggerPress={handleValidation}
+              confirmLabel="Save"
+              onConfirm={onSavePress}
+            />
           </VStack>
-        )}
-      </HStack>
-
-      {isSelected && (
-        <Box
-          className="bg-success-500 absolute right-0 top-0 px-4 py-2"
-          style={{ borderBottomLeftRadius: 6 }}
-        >
-          <Text size="xs" className="text-success-0 font-JakartaMedium">
-            Selected
-          </Text>
-        </Box>
-      )}
-    </Card>
+        </BottomSheetScrollView>
+      </BottomSheetPortal>
+    </BottomSheet>
   );
 }

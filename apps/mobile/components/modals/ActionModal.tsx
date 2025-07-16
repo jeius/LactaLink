@@ -18,6 +18,7 @@ interface ActionModalProps extends ButtonProps {
   onCancel?: () => void;
   triggerLabel?: string;
   triggerIcon?: LucideIcon | FC<LucideProps>;
+  iconOnly?: boolean;
   onTriggerPress?: () => void | Promise<void>;
   confirmLabel?: string;
   confirmAction?: ButtonProps['action'];
@@ -30,6 +31,7 @@ export function ActionModal({
   onCancel,
   onConfirm,
   triggerIcon,
+  iconOnly = false,
   triggerLabel = 'Action',
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
@@ -70,7 +72,7 @@ export function ActionModal({
     <>
       <Button {...props} onPress={handleTriggerPress}>
         {triggerIcon && <ButtonIcon as={triggerIcon} />}
-        <ButtonText>{triggerLabel}</ButtonText>
+        {!iconOnly && <ButtonText>{triggerLabel}</ButtonText>}
       </Button>
       <Modal isOpen={open} onClose={toggleModal}>
         <ModalBackdrop />

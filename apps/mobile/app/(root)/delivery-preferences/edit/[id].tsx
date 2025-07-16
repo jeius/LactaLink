@@ -17,9 +17,9 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
+import { deleteCollection } from '@/lib/api/delete';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-import { getApiClient } from '@lactalink/api';
 import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
@@ -75,27 +75,8 @@ export default function EditPage() {
   }
 
   async function handleDelete() {
-    const apiClient = getApiClient();
-
-    async function deleteDP() {
-      const doc = await apiClient.deleteByID({
-        collection: 'delivery-preferences',
-        id,
-      });
-
-      const message = `${doc.name} has been deleted successfully.`;
-      return { message };
-    }
-
-    const promise = deleteDP();
-
-    toast.promise(promise, {
-      loading: 'Deleting delivery preference...',
-      success: (res: { message: string }) => res.message,
-      error: (error) => extractErrorMessage(error),
-    });
-
-    await promise;
+    const deleted = await deleteCollection('delivery-preferences', id);
+    if (!deleted) return;
     revalidateCache();
   }
 

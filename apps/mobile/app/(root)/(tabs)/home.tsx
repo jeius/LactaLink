@@ -62,10 +62,10 @@ export default function Home() {
           <Button
             action="default"
             onPress={() => {
-              router.push('/+not-found');
+              router.push('/addresses');
             }}
           >
-            <ButtonText>Go to Not Found Page</ButtonText>
+            <ButtonText>Addresses</ButtonText>
           </Button>
         </VStack>
       </ScrollView>

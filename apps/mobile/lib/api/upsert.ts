@@ -1,10 +1,12 @@
 import { getApiClient } from '@lactalink/api';
 import { Address, DeliveryPreference } from '@lactalink/types';
 import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/types/forms';
+import { extractErrorMessage } from '@lactalink/utilities';
+import { toast } from 'sonner-native';
+
+const apiClient = getApiClient();
 
 export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPreferenceSchema[]) {
-  const apiClient = getApiClient();
-
   return await Promise.all(
     deliveryDetails.map((detail) => {
       const { id, ...rest } = detail;
@@ -23,8 +25,6 @@ export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPrefere
 }
 
 export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
-  const apiClient = getApiClient();
-
   let message: string;
   let preference: DeliveryPreference;
 
@@ -40,7 +40,7 @@ export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
       },
     });
 
-    message = `"${preference.name || 'Delivery Preference'}" updated successfully.`;
+    message = `"${data.name || 'Delivery Preference'}" updated successfully.`;
   } else {
     preference = await apiClient.create({
       collection: 'delivery-preferences',
@@ -52,44 +52,60 @@ export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
       },
     });
 
-    message = `"${preference.name || 'Delivery Preference'}" created successfully.`;
+    message = `"${data.name || 'Delivery Preference'}" created successfully.`;
   }
 
   return { message, data: preference };
 }
 
 export async function upsertAddress(data: AddressSchema) {
-  const apiClient = getApiClient();
+  async function executeAddressSave() {
+    let message: string;
+    let address: Address;
 
-  let message: string;
-  let address: Address;
+    const { coordinates: { latitude, longitude } = {}, ...rest } = data;
+    const coordinates: [number, number] | undefined =
+      latitude && longitude ? [latitude, longitude] : undefined;
 
-  const { coordinates: { latitude, longitude } = {}, ...rest } = data;
-  const coordinates: [number, number] | undefined =
-    latitude && longitude ? [latitude, longitude] : undefined;
+    if (data.id) {
+      address = await apiClient.updateByID({
+        collection: 'addresses',
+        id: data.id,
+        data: {
+          ...rest,
+          coordinates,
+        },
+      });
 
-  if (data.id) {
-    address = await apiClient.updateByID({
-      collection: 'addresses',
-      id: data.id,
-      data: {
-        ...rest,
-        coordinates,
-      },
-    });
+      message = `"${data.name || 'Address'}" updated successfully.`;
+    } else {
+      address = await apiClient.create({
+        collection: 'addresses',
+        data: {
+          ...rest,
+          coordinates,
+        },
+      });
 
-    message = `"${address.name || 'Address'}" updated successfully.`;
-  } else {
-    address = await apiClient.create({
-      collection: 'addresses',
-      data: {
-        ...rest,
-        coordinates,
-      },
-    });
+      message = `"${data.name || 'Address'}" created successfully.`;
+    }
 
-    message = `"${address.name || 'Address'}" created successfully.`;
+    return { message, data: address };
   }
 
-  return { message, data: address };
+  const promise = executeAddressSave();
+
+  toast.promise(promise, {
+    loading: 'Saving address...',
+    success: (res: { message: string }) => {
+      return res.message;
+    },
+    error: (error) => {
+      return extractErrorMessage(error);
+    },
+  });
+
+  const res = await promise.catch(() => null);
+
+  return Boolean(res);
 }

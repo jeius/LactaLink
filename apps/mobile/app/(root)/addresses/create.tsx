@@ -1,67 +1,40 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { ScrollView } from 'react-native-gesture-handler';
-import { toast } from 'sonner-native';
 
-import { DeliveryPreferenceCard } from '@/components/cards/DeliveryPreferenceCard';
-import { FormField } from '@/components/FormField';
+import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import FormPreventBack from '@/components/forms/FormPreventBack';
+import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
-import { ActionModal } from '@/components/modals';
+import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { Box } from '@/components/ui/box';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
-import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
+import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { ErrorSearchParams } from '@lactalink/types';
 import { AddressSchema } from '@lactalink/types/forms';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useRouter } from 'expo-router';
-import { CalendarDaysIcon, MapPinIcon, TruckIcon } from 'lucide-react-native';
+import { TouchableWithoutFeedback } from 'react-native';
+import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
+import MapView, { Region } from 'react-native-maps';
 
 export default function CreatePage() {
-  const { user } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const mapRef = useRef<MapView | null>(null);
+  const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
   const { form, isLoading, isFetching, error } = useAddressForm();
 
-  const isSubmitting = form.formState.isSubmitting;
-  const formData = form.watch();
-
-  const submit = form.handleSubmit(onSubmit);
-
   async function onSubmit(formData: AddressSchema) {
-    const promise = upsertAddress(formData);
+    const success = await upsertAddress(formData);
 
-    toast.promise(promise, {
-      loading: 'Saving address...',
-      success: (res: { message: string }) => {
-        return res.message;
-      },
-      error: (error) => {
-        return extractErrorMessage(error);
-      },
-    });
+    if (!success) return;
 
-    await promise;
-
-    queryClient.invalidateQueries({
-      queryKey: COLLECTION_QUERY_KEY,
-    });
-
+    queryClient.invalidateQueries({ queryKey: COLLECTION_QUERY_KEY });
     form.reset(formData);
     router.back();
-  }
-  async function handleValidation() {
-    const isValid = await form.trigger();
-    if (!isValid) {
-      throw new Error('Form validation failed');
-    }
   }
 
   if (!isLoading && error) {
@@ -69,102 +42,40 @@ export default function CreatePage() {
     return <Redirect href={{ pathname: '/error', params }} />;
   }
 
+  function handleSearchSelected({ location }: LocationDetails) {
+    mapRef.current?.animateCamera({ center: location }, { duration: 500 });
+  }
+
+  function blurInput() {
+    googlePlacesInputRef.current?.blur();
+  }
+
+  function handleRegionChange(region: Region) {
+    const { latitude, longitude } = region;
+    form.setValue('coordinates.latitude', latitude);
+    form.setValue('coordinates.longitude', longitude);
+  }
+
   return (
     <FormProvider {...form}>
       <FormPreventBack />
 
-      <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <ScrollView style={{ flex: 1 }}>
-          <VStack space="2xl" className="mb-20 p-5">
-            <Card>
-              <FormField
-                name="name"
-                label="Name"
-                fieldType="text"
-                variant="underlined"
-                placeholder="e.g. Home Delivery, Office Delivery"
-                helperText="Give a name to your delivery preference."
-                keyboardType="default"
-                autoCapitalize="words"
-              />
-            </Card>
+      <SafeArea safeTop={false} mode="margin">
+        <TouchableWithoutFeedback onPress={blurInput} touchSoundDisabled>
+          <AddressMapView mapRef={mapRef} onRegionChangeComplete={handleRegionChange} />
+        </TouchableWithoutFeedback>
 
-            <Card>
-              <FormField
-                name="preferredMode"
-                fieldType="button-group"
-                options={Object.values(DELIVERY_OPTIONS)}
-                labelIcon={TruckIcon}
-                label="Preferred Delivery Modes"
-                containerClassName="gap-2"
-                helperText="You can select multiple mode of delivery."
-                allowMultipleSelection
-              />
-            </Card>
+        <Box className="absolute inset-x-0 p-4">
+          <GooglePlacesInput
+            inputRef={googlePlacesInputRef}
+            rounded="full"
+            onSelected={handleSearchSelected}
+          />
+        </Box>
 
-            <Card>
-              <FormField
-                name="availableDays"
-                fieldType="button-group"
-                label="Available Days"
-                helperText="You can select multiple days for delivery."
-                labelIcon={CalendarDaysIcon}
-                options={Object.values(DAYS)}
-                containerClassName="gap-2"
-                allowMultipleSelection
-              />
-            </Card>
-
-            {isLoading ? (
-              <AddressSkeleton />
-            ) : (
-              <Card>
-                <FormField
-                  name="address"
-                  fieldType="combobox"
-                  label="Preferred Address"
-                  helperText="Select your preferred address for delivery."
-                  labelIcon={MapPinIcon}
-                  placeholder="Select Address"
-                  searchPlaceholder="Search Address"
-                  containerClassName="gap-2"
-                  collection="addresses"
-                  where={{ owner: { equals: user?.id } }}
-                  searchPath="displayName"
-                  labelPath="name"
-                  descriptionPath="displayName"
-                  icon={MapPinIcon}
-                  iconPosition="left"
-                />
-              </Card>
-            )}
-
-            <ActionModal
-              title="Review Submit"
-              description={
-                <DeliveryPreferenceCard preference={formData} variant="ghost" className="p-0" />
-              }
-              triggerLabel="Submit"
-              onTriggerPress={handleValidation}
-              onConfirm={submit}
-              isDisabled={isSubmitting}
-            />
-          </VStack>
-        </ScrollView>
+        <AddressMapBottomSheet onSavePress={form.handleSubmit(onSubmit)} isLoading={isLoading} />
       </SafeArea>
       {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
-  );
-}
-
-function AddressSkeleton() {
-  return (
-    <Card>
-      <VStack space="md">
-        <Skeleton variant="rounded" className="h-8 w-44" />
-        <Skeleton variant="rounded" className="h-10" />
-        <Skeleton variant="rounded" className="h-6" />
-      </VStack>
-    </Card>
   );
 }
