@@ -9,7 +9,6 @@ import {
 } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { useApiClient } from '@lactalink/api';
 import { ChevronDownIcon, LucideIcon, LucideProps, SearchIcon, XIcon } from 'lucide-react-native';
-import { TextInput } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from './ui/box';
 import { Button, ButtonIcon } from './ui/button';
@@ -24,8 +23,9 @@ import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
+import { BottomSheetTextInputProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetTextInput';
 import { ListRenderItem } from '@shopify/flash-list';
-import { Dimensions } from 'react-native';
+import { Dimensions, TextInput } from 'react-native';
 import { Image } from './Image';
 import { RefreshControl } from './RefreshControl';
 import {
@@ -34,10 +34,16 @@ import {
   BottomSheetDragIndicator,
   BottomSheetFlashList,
   BottomSheetModalPortal,
-  BottomSheetTextInput,
   BottomSheetTrigger,
 } from './ui/bottom-sheet';
+import {
+  BottomSheetInput,
+  BottomSheetInputField,
+  BottomSheetInputIcon,
+  BottomSheetInputSlot,
+} from './ui/bottom-sheet/input';
 import { HStack } from './ui/hstack';
+import { Skeleton } from './ui/skeleton';
 
 export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
   /**
@@ -93,6 +99,8 @@ export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
    * Default is 'right'.
    */
   iconPosition?: 'left' | 'right';
+
+  isLoading?: boolean;
 };
 
 export type InfiniteScrollComboBoxProps<T extends CollectionSlug = CollectionSlug> =
@@ -119,9 +127,10 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   isDisabled: disabled,
   icon,
   iconPosition,
+  isLoading: isLoadingProp,
 }: InfiniteScrollComboBoxProps<T>) {
   const apiClient = useApiClient();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<BottomSheetTextInputProps & TextInput>(null);
   const bottomSheetModalRef = useRef<BottomSheetModalType>(null);
 
   const insets = useSafeAreaInsets();
@@ -248,7 +257,9 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
     );
   }, [isLoading]);
 
-  return (
+  return isLoadingProp ? (
+    <Skeleton className="h-10" />
+  ) : (
     <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
       <BottomSheetTrigger disableAnimation className="w-full" disabled={disabled}>
         <Input pointerEvents="box-none" size="md" isDisabled={disabled}>
@@ -281,7 +292,9 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
         snapPoints={['45%']}
         enableDynamicSizing={false}
         handleComponent={BottomSheetDragIndicator}
-        backdropComponent={BottomSheetBackdrop}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop {...props} style={{ marginBottom: insets.bottom }} />
+        )}
         enableBlurKeyboardOnGesture={false}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
@@ -293,20 +306,20 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
           className="bg-background-0 border-outline-100 w-full border-b p-5 pt-0"
           style={shadow.xs}
         >
-          <Input>
-            <InputIcon as={SearchIcon} className="text-primary-400 ml-3" />
-            <BottomSheetTextInput
+          <BottomSheetInput>
+            <BottomSheetInputIcon as={SearchIcon} className="text-primary-400 ml-3" />
+            <BottomSheetInputField
               ref={inputRef}
               defaultValue={searchDefault}
               onChangeText={setSearch}
               placeholder={searchPlaceholder}
             />
             {search && (
-              <InputSlot onPress={clearSearch} className="pr-3">
+              <BottomSheetInputSlot onPress={clearSearch} className="pr-3">
                 <Icon as={XIcon} size="sm" className="text-secondary-400" />
-              </InputSlot>
+              </BottomSheetInputSlot>
             )}
-          </Input>
+          </BottomSheetInput>
         </Box>
 
         <Box className="h-full w-full">
