@@ -44,6 +44,7 @@ type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> 
   containerClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
   labelClassName?: string;
+  useBottomSheetInputs?: boolean;
 };
 
 type FormFieldProps<

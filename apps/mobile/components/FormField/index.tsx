@@ -34,6 +34,11 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CollectionSlug } from '@lactalink/types';
 
+import {
+  BottomSheetInput,
+  BottomSheetInputField,
+  BottomSheetInputIcon,
+} from '../ui/bottom-sheet/input';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Icon } from '../ui/icon';
@@ -80,6 +85,7 @@ function FormField<
   labelIcon,
   labelIconProps,
   labelClassName,
+  useBottomSheetInputs = false,
   ...props
 }: FormFieldProps<T, TFieldType, TSlug>) {
   const { trigger, getFieldState, setValue } = useFormContext<T>();
@@ -310,6 +316,27 @@ function FormField<
               const iconMargin = variant === 'underlined' ? 'm-3' : 'ml-3';
               return isLoading ? (
                 <Skeleton className="h-9" />
+              ) : useBottomSheetInputs ? (
+                <BottomSheetInput
+                  variant={variant}
+                  isDisabled={field.disabled}
+                  className={className}
+                >
+                  {inputIcon && (
+                    <BottomSheetInputIcon
+                      as={inputIcon}
+                      className={`text-primary-500 ${iconMargin}`}
+                    />
+                  )}
+                  <BottomSheetInputField
+                    {...restInputProps}
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    onChangeText={field.onChange}
+                    aria-disabled={field.disabled}
+                    placeholder={placeholder}
+                  />
+                </BottomSheetInput>
               ) : (
                 <Input variant={variant} isDisabled={field.disabled} className={className}>
                   {inputIcon && (
