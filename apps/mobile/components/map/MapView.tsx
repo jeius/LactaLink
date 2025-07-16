@@ -1,4 +1,4 @@
-import { useLocationUpdates } from '@/hooks/location/useLocation';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { StyleSheet } from 'react-native';
 import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'rea
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
 
-import { useMagnetometer } from '@/hooks/location/useMagnetometer';
+import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
 import { AnimatedPressable } from '../animated/pressable';
@@ -22,7 +22,7 @@ import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-import { UserMarker } from './markers/UserMarker';
+import { UserMarker, UserMarkerRef } from './markers/UserMarker';
 
 interface MapViewProps extends ComponentProps<typeof RNMapView> {
   mapRef: React.RefObject<RNMapView | null>;
@@ -34,15 +34,17 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   const { theme } = useTheme();
   const router = useRouter();
 
-  const initMapRef = useRef(false);
+  const userMarkerRef = useRef<UserMarkerRef>(null);
+
+  const { location, error, isLoading } = useCurrentLocation();
 
   const [followUser, setFollowUser] = useState(false);
+  const [userPosition, setUserPosition] = useState<LocationObjectCoords>();
   const [showAvatar, setShowAvatar] = useState(true);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  const { heading, animatedHeading } = useMagnetometer({ updateInterval: 'fast' });
-  const { location, error, isLoading } = useLocationUpdates();
-  const coords = useMemo(
+  const latlng = useMemo<LatLng>(
     () => ({
       latitude: location?.coords.latitude || 0,
       longitude: location?.coords.longitude || 0,
@@ -65,29 +67,26 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     heading: 0,
     pitch: 0,
     center: {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
+      latitude: latlng.latitude,
+      longitude: latlng.longitude,
     },
   });
 
-  const isCameraCentered = useMemo(
-    () => isCameraInCurrentPosition(camera, coords),
-    [camera, coords]
-  );
+  const isUserLocated = useMemo(() => {
+    if (!userPosition) return false;
+    return isCameraInCurrentPosition(camera, userPosition);
+  }, [camera, userPosition]);
 
   useEffect(() => {
-    if (initMapRef.current) {
-      if (dataReady && !isLoading) {
-        const { latitude, longitude } = coords;
-        mapRef.current?.setCamera({ center: { latitude, longitude } });
+    if (isMapReady && dataReady && !isLoading) {
+      const { latitude, longitude } = latlng;
+      mapRef.current?.setCamera({ center: { latitude, longitude } });
 
-        initMapRef.current = false;
-        setTimeout(() => {
-          setIsMapReady(true);
-        }, 250); // Ensure the camera is set before marking the map as ready
-      }
+      setTimeout(() => {
+        setIsMapLoaded(true);
+      }, 250); // Ensure the camera is set before marking the map as ready
     }
-  }, [coords, dataReady, isLoading, mapRef]);
+  }, [latlng, dataReady, isLoading, mapRef, isMapReady]);
 
   function handleCompassPress() {
     mapRef.current?.animateCamera(
@@ -100,11 +99,14 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   }
 
   function handleLocatePress() {
-    if (isCameraCentered && !followUser) {
+    if (isUserLocated && !followUser) {
+      const currentHeading = userMarkerRef.current?.getHeading() || 0;
+
       mapRef.current?.animateCamera(
-        { pitch: 65, zoom: Math.max(camera.zoom || 18, 18), heading: heading - 90 },
+        { pitch: 65, zoom: Math.max(camera.zoom || 18, 18), heading: currentHeading - 90 },
         { duration: 500 }
       );
+
       setTimeout(() => {
         setFollowUser(true);
       }, 550);
@@ -114,25 +116,25 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         { pitch: 0, zoom: Math.min(camera.zoom || 18, 18) },
         { duration: 500 }
       );
-    } else if (mapRef.current && coords) {
-      const { latitude, longitude } = coords;
-      mapRef.current.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
+    } else if (userPosition) {
+      const { latitude, longitude } = userPosition;
+      mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
   }
 
   function handleMapReady() {
     console.log('🗺️  Map is ready, enabling location updates');
-    initMapRef.current = true;
+    setIsMapReady(true);
   }
 
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
-    const newCamera = await mapRef.current?.getCamera();
 
     if (details?.isGesture) {
       setFollowUser(false);
     }
 
+    const newCamera = await mapRef.current?.getCamera();
     if (newCamera) {
       setCamera(newCamera);
     }
@@ -158,20 +160,19 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
       >
         {children}
 
-        {location && isMapReady && (
+        {location && isMapLoaded && (
           <UserMarker
-            heading={heading}
-            animatedHeading={animatedHeading}
+            ref={userMarkerRef}
             showAvatar={showAvatar}
             mapRef={mapRef}
             camera={camera}
             followUser={followUser}
-            coordinates={location.coords}
+            onChangePosition={setUserPosition}
           />
         )}
       </RNMapView>
 
-      {!isMapReady && (
+      {!isMapLoaded && (
         <SafeArea className="absolute inset-0 items-center justify-center">
           <Spinner size={'large'} />
           <Text size="md">Loading google maps...</Text>
@@ -201,7 +202,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
               accessibilityState={{ selected: followUser }}
             >
               <ButtonIcon
-                as={followUser ? CompassIcon : isCameraCentered ? LocateFixedIcon : LocateIcon}
+                as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
                 height={22}
                 width={22}
               />

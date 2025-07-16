@@ -6,7 +6,10 @@ import { useFocusEffect } from 'expo-router';
 import * as TaskManager from 'expo-task-manager';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export function useCurrentLocation(enable: boolean = true) {
+export function useCurrentLocation(
+  enable: boolean = true,
+  options: Location.LocationOptions = { accuracy: Location.Accuracy.High, timeInterval: 1000 }
+) {
   const { data, ...rest } = useQuery({
     enabled: enable,
     staleTime: 1000 * 60 * 1, // 1 minutes
@@ -14,24 +17,38 @@ export function useCurrentLocation(enable: boolean = true) {
     queryFn: async () => {
       if (!enable) return null;
 
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== Location.PermissionStatus.GRANTED) {
-        throw new Error('Permission to access location was denied');
+      const { canAskAgain, granted } = await Location.getForegroundPermissionsAsync();
+
+      if (!granted && !canAskAgain) {
+        throw new Error('Location permission was permanently denied');
+      }
+
+      if (!granted && canAskAgain) {
+        const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
+        switch (newStatus) {
+          case Location.PermissionStatus.DENIED:
+            throw new Error('Location permission was denied');
+          case Location.PermissionStatus.UNDETERMINED:
+            throw new Error('Location permission is undetermined');
+          default:
+            break;
+        }
       }
 
       console.log('🧭 Getting current location...');
-      const loc = await Location.getCurrentPositionAsync({});
+      const loc = await Location.getCurrentPositionAsync(options);
       return loc;
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
+    refetchInterval: 1000 * 60 * 5, // 5 minutes
   });
 
   return { location: data, ...rest };
 }
 
-export function useLocationUpdates(enable: boolean = true) {
+export function useLocationUpdates(enable: boolean = true, options?: Location.LocationOptions) {
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
   const {
@@ -39,7 +56,7 @@ export function useLocationUpdates(enable: boolean = true) {
     error: currentLocError,
     isLoading,
     isFetching,
-  } = useCurrentLocation(enable);
+  } = useCurrentLocation(enable, options);
 
   const [location, setLocation] = useState<Location.LocationObject | null | undefined>(
     currentLocation
