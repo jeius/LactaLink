@@ -9,6 +9,7 @@ import {
 import React, { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { FormField } from '../FormField';
 import { ActionModal } from '../modals';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
@@ -23,6 +24,7 @@ interface AddressMapBottomSheetProps {
 }
 
 export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBottomSheetProps) {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const form = useFormContext<AddressSchema>();
 
@@ -30,7 +32,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
 
   const isSubmitting = form.formState.isSubmitting;
 
-  const snapPoints = useMemo(() => ['20%', '30%', '70%'], []);
+  const snapPoints = useMemo(() => ['30%', '50%', '80%'], []);
 
   function handleSetDefault(isSelected: boolean) {
     form.setValue('default', isSelected);
@@ -44,10 +46,10 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
   }
 
   return (
-    <BottomSheet disableClose snapToIndex={1}>
+    <BottomSheet disableClose snapToIndex={0}>
       <BottomSheetPortal
         snapPoints={snapPoints}
-        snapToIndex={1}
+        snapToIndex={0}
         enableDynamicSizing={false}
         handleComponent={BottomSheetHandle}
         enableBlurKeyboardOnGesture={false}
@@ -56,7 +58,9 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
         android_keyboardInputMode="adjustPan"
         enableContentPanningGesture={true}
       >
-        <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
+        <BottomSheetScrollView
+          style={{ paddingBottom: insets.bottom, backgroundColor: 'transparent' }}
+        >
           <VStack space="lg" className="p-4">
             <FormField
               name={`province`}

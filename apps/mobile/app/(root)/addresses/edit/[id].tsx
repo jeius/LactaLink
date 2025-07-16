@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -23,24 +22,23 @@ export default function EditPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+
+  const [selectedRegion, setSelectedRegion] = useState<Region>();
 
   const mapRef = useRef<MapView | null>(null);
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
-  const { form, isLoading, isFetching, error } = useAddressForm(id);
+  const { form, isLoading, error } = useAddressForm(id);
 
-  const address = form.getValues();
-
-  useEffect(() => {
-    const coordinates = address.coordinates;
-    if (coordinates) {
-      mapRef.current?.setCamera({ center: coordinates });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { coordinates } = form.watch();
 
   async function onSubmit(formData: AddressSchema) {
+    if (selectedRegion) {
+      const { latitude, longitude } = selectedRegion;
+      formData.coordinates = { latitude, longitude };
+    }
+
     const success = await upsertAddress(formData);
 
     if (!success) return;
@@ -64,9 +62,7 @@ export default function EditPage() {
   }
 
   function handleRegionChange(region: Region) {
-    const { latitude, longitude } = region;
-    form.setValue('coordinates.latitude', latitude);
-    form.setValue('coordinates.longitude', longitude);
+    setSelectedRegion(region);
   }
 
   if (!id) {
@@ -83,6 +79,7 @@ export default function EditPage() {
             mapRef={mapRef}
             isLoading={isLoading}
             onRegionChangeComplete={handleRegionChange}
+            coordinates={coordinates}
           />
         </TouchableWithoutFeedback>
 
@@ -96,7 +93,6 @@ export default function EditPage() {
 
         <AddressMapBottomSheet onSavePress={form.handleSubmit(onSubmit)} isLoading={isLoading} />
       </SafeArea>
-      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
   );
 }

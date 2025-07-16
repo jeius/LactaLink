@@ -4,7 +4,6 @@ import { FormProvider } from 'react-hook-form';
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -75,7 +74,6 @@ export default function CreatePage() {
 
         <AddressMapBottomSheet onSavePress={form.handleSubmit(onSubmit)} isLoading={isLoading} />
       </SafeArea>
-      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
   );
 }

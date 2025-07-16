@@ -1,13 +1,13 @@
-import { useLocationUpdates } from '@/hooks/location/useLocation';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { StyleSheet } from 'react-native';
-import RNMapView, { Camera, Details, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
 import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
 
-import { useMagnetometer } from '@/hooks/location/useMagnetometer';
+import { LocationAccuracy } from 'expo-location';
 import { useRouter } from 'expo-router';
 import { LocateIcon } from 'lucide-react-native';
 import { AnimatedPressable } from '../animated/pressable';
@@ -19,37 +19,46 @@ import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { DefaultMarker } from './markers/DefaultMarker';
-import { UserMarker } from './markers/UserMarker';
+import { UserMarker, UserMarkerRef } from './markers/UserMarker';
 
 interface AddressMapViewProps extends ComponentProps<typeof RNMapView> {
   mapRef: React.RefObject<RNMapView | null>;
   isLoading?: boolean;
+  coordinates?: LatLng;
 }
 
 export function AddressMapView({
   mapRef,
   children,
   isLoading: isLoadingProp,
+  coordinates,
   ...props
 }: AddressMapViewProps) {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const initMapRef = useRef(false);
-
   const [followUser, setFollowUser] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  const { heading, animatedHeading } = useMagnetometer({ updateInterval: 'fast' });
-  const { location, error, isLoading: isLocationLoading } = useLocationUpdates();
-  const isLoading = isLocationLoading || isLoadingProp;
+  const userMarkerRef = useRef<UserMarkerRef>(null);
 
-  const coords = useMemo(
-    () => ({
-      latitude: location?.coords.latitude || 0,
-      longitude: location?.coords.longitude || 0,
-    }),
-    [location]
+  const {
+    location,
+    error,
+    isLoading: isLocationLoading,
+  } = useCurrentLocation(true, {
+    accuracy: LocationAccuracy.Low,
+  });
+  const isLoading = isLoadingProp || isLocationLoading;
+
+  const latlng = useMemo<LatLng>(
+    () =>
+      coordinates || {
+        latitude: location?.coords.latitude || 0,
+        longitude: location?.coords.longitude || 0,
+      },
+    [coordinates, location?.coords.latitude, location?.coords.longitude]
   );
 
   if (error) {
@@ -67,24 +76,21 @@ export function AddressMapView({
     heading: 0,
     pitch: 0,
     center: {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
+      latitude: latlng.latitude,
+      longitude: latlng.longitude,
     },
   });
 
   useEffect(() => {
-    if (initMapRef.current) {
-      if (!isLoading) {
-        const { latitude, longitude } = coords;
-        mapRef.current?.setCamera({ center: { latitude, longitude } });
+    if (isMapReady && !isLoading) {
+      const { latitude, longitude } = latlng;
+      mapRef.current?.setCamera({ center: { latitude, longitude } });
 
-        initMapRef.current = false;
-        setTimeout(() => {
-          setIsMapReady(true);
-        }, 250); // Ensure the camera is set before marking the map as ready
-      }
+      setTimeout(() => {
+        setIsMapLoaded(true);
+      }, 250); // Ensure the camera is set before marking the map as ready
     }
-  }, [coords, isLoading, mapRef]);
+  }, [coordinates, latlng, isLoading, isMapReady, mapRef]);
 
   function handleCompassPress() {
     mapRef.current?.animateCamera(
@@ -97,14 +103,15 @@ export function AddressMapView({
   }
 
   function handleLocatePress() {
-    if (mapRef.current && coords) {
-      const { latitude, longitude } = coords;
+    const userPosition = userMarkerRef.current?.getPosition();
+    if (mapRef.current && userPosition) {
+      const { latitude, longitude } = userPosition;
       mapRef.current.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
   }
 
   function handleMapReady() {
-    initMapRef.current = true;
+    setIsMapReady(true);
   }
 
   async function handleRegionChangeEnd(region: Region, details: Details) {
@@ -133,19 +140,18 @@ export function AddressMapView({
       >
         {children}
 
-        {location && isMapReady && (
+        {location && isMapLoaded && (
           <UserMarker
-            heading={heading}
-            animatedHeading={animatedHeading}
+            ref={userMarkerRef}
+            hideHeading
             showAvatar={false}
             mapRef={mapRef}
             camera={camera}
-            coordinates={location.coords}
           />
         )}
       </RNMapView>
 
-      {!isMapReady ? (
+      {!isMapLoaded ? (
         <SafeArea className="absolute inset-0 items-center justify-center">
           <Spinner size={'large'} />
           <Text size="md">Loading google maps...</Text>
@@ -176,7 +182,7 @@ export function AddressMapView({
             </VStack>
           </Box>
 
-          <Box style={{ transform: [{ translateY: -16 }] }}>
+          <Box style={{ transform: [{ translateY: -20 }] }}>
             <DefaultMarker size={'md'} />
           </Box>
         </VStack>

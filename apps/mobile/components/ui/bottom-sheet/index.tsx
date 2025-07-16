@@ -216,7 +216,7 @@ export const BottomSheetPortal = ({
       onChange={handleSheetChanges}
       handleComponent={DragIndicator}
       handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
-      backgroundStyle={{ backgroundColor }}
+      backgroundStyle={[{ backgroundColor }, props.backgroundStyle]}
       enablePanDownToClose={!disableClose}
     >
       {props.children}
