@@ -1,19 +1,17 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
 import { ChevronLeftIcon } from 'lucide-react-native';
-import { useEffect } from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { ComponentPropsWithoutRef, useEffect } from 'react';
+import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
 import { LeaveToastAction } from './toasts/ToastAction';
-import { Box } from './ui/box';
 import { Button, ButtonIcon } from './ui/button';
 
-interface HeaderBackButtonProps {
+interface HeaderBackButtonProps extends ComponentPropsWithoutRef<typeof Button> {
   preventBack?: boolean;
   message?: string;
   toastAction?: React.ReactNode;
   toastID?: string;
-  onPress?: (event: GestureResponderEvent) => void;
   canGoBack?: boolean;
   href?: string;
   label?: string;
@@ -27,6 +25,7 @@ export function HeaderBackButton({
   toastID = BACK_TOAST_ID,
   canGoBack: canGoBackProp,
   onPress,
+  ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
   const canGoBack = canGoBackProp || router.canGoBack();
@@ -55,16 +54,16 @@ export function HeaderBackButton({
   }
 
   return (
-    <Box className="m-auto">
-      <Button
-        variant="link"
-        action="default"
-        className="h-fit w-fit"
-        hitSlop={16}
-        onPress={handleOnPress}
-      >
-        <ButtonIcon className="h-6 w-6" as={ChevronLeftIcon} />
-      </Button>
-    </Box>
+    <Button
+      variant="link"
+      action="default"
+      className="h-fit w-fit py-1"
+      hitSlop={32}
+      {...props}
+      onPress={handleOnPress}
+      style={StyleSheet.flatten([{ paddingLeft: 0, paddingRight: 8 }, props.style])}
+    >
+      <ButtonIcon className="h-6 w-6" as={ChevronLeftIcon} />
+    </Button>
   );
 }
