@@ -34,7 +34,7 @@ import { Platform, Pressable } from 'react-native';
 import { Text } from '../text';
 
 const bottomSheetBackdropStyle = tva({
-  base: 'bg-background-100 absolute inset-0 flex-1 touch-none select-none opacity-0',
+  base: 'bg-background-600 absolute inset-0 flex-1 touch-none select-none opacity-0',
 });
 
 const bottomSheetContentStyle = tva({
