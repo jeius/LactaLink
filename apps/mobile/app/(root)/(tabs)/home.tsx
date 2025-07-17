@@ -67,6 +67,15 @@ export default function Home() {
           >
             <ButtonText>Addresses</ButtonText>
           </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              router.push('/delivery-preferences');
+            }}
+          >
+            <ButtonText>Delivery Preferences</ButtonText>
+          </Button>
         </VStack>
       </ScrollView>
     </SafeArea>

@@ -174,7 +174,7 @@ export const addresses = pgTable(
       onDelete: 'set null',
     }),
     name: varchar('name'),
-    default: boolean('default').default(false),
+    isDefault: boolean('is_default').default(false),
     zipCode: varchar('zip_code'),
     province: uuid('province_id')
       .notNull()
