@@ -1,5 +1,6 @@
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { ComponentProps, FC, ReactNode, useState } from 'react';
+import { GestureResponderEvent } from 'react-native';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import {
   Modal,
@@ -19,7 +20,7 @@ interface ActionModalProps extends ButtonProps {
   triggerLabel?: string;
   triggerIcon?: LucideIcon | FC<LucideProps>;
   iconOnly?: boolean;
-  onTriggerPress?: () => void | Promise<void>;
+  onTriggerPress?: (event: GestureResponderEvent) => void | Promise<void>;
   confirmLabel?: string;
   confirmAction?: ButtonProps['action'];
   cancelLabel?: string;
@@ -47,9 +48,9 @@ export function ActionModal({
     setOpen((prev) => !prev);
   }
 
-  async function handleTriggerPress() {
+  async function handleTriggerPress(e: GestureResponderEvent) {
     try {
-      await onTriggerPress?.();
+      await onTriggerPress?.(e);
     } catch (_) {
       // If onTriggerPress throws an error, we stop the modal from opening.
       // This is useful if the trigger is a form submit button that might fail validation.

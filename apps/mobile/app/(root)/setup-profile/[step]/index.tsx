@@ -5,7 +5,6 @@ import ProfileTypeForm from '@/components/forms/setup-profile/type';
 import { Image } from '@/components/Image';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
@@ -15,7 +14,6 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 
 import { uploadImage } from '@/lib/api/file';
-import { createAddresses } from '@/lib/api/profile/createAddresses';
 import { createProfile } from '@/lib/api/profile/createProfile';
 import {
   AVATAR_FIELDS,
@@ -36,6 +34,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
@@ -44,6 +43,7 @@ type Block = Record<SetupProfileSteps, FC>;
 
 export default function Step() {
   const { user, refetchSession } = useAuth();
+  const insets = useSafeAreaInsets();
   const apiClient = useApiClient();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
@@ -75,12 +75,11 @@ export default function Step() {
       const { addresses, avatar, ...rest } = formData;
 
       const avatarDoc = avatar && (await uploadImage('avatars', avatar));
-      const addressDocs = await createAddresses(addresses);
 
       const createdProfile = await createProfile({
         ...rest,
         avatar: avatarDoc,
-        addresses: addressDocs,
+        addresses: addresses,
       });
 
       const profileMap: Record<ProfileType, User['profile']> = {
@@ -144,10 +143,33 @@ export default function Step() {
   }
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow">
-        <VStack space="xl" className="relative h-full justify-between pt-10">
-          <Box>
+    <SafeArea safeBottom={false}>
+      {step === 'contact' ? (
+        <VStack space="xl" className="relative mb-5 flex-1 pt-10">
+          <VStack space="lg" className="flex-1">
+            <VStack space="sm" className="px-5">
+              <HStack space="md" className="items-center">
+                <Image
+                  source={getIconAsset('information')}
+                  alt="Information"
+                  style={{ width: 40, height: 40 }}
+                />
+                <Text size="xl" bold>
+                  {title[profileType]} Information
+                </Text>
+              </HStack>
+              <Text>
+                Please take a moment to fill out the fields below. Rest assured, your information is
+                safe with us.
+              </Text>
+            </VStack>
+
+            <RenderBlock />
+          </VStack>
+        </VStack>
+      ) : (
+        <KeyboardAvoidingWrapper className="flex-1" contentContainerClassName="grow">
+          <VStack space="xl" className="relative mb-5 flex-1 justify-between pt-10">
             {step === 'type' ? (
               <RenderBlock />
             ) : (
@@ -172,18 +194,21 @@ export default function Step() {
                 <RenderBlock />
               </VStack>
             )}
-          </Box>
-
-          <VStack className="mx-5 mt-5">
-            <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
-              <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
-            </Button>
-            <Button size="md" variant="link" action="default" onPress={handleBack}>
-              <ButtonText>Back</ButtonText>
-            </Button>
           </VStack>
-        </VStack>
-      </KeyboardAvoidingWrapper>
+        </KeyboardAvoidingWrapper>
+      )}
+
+      <VStack
+        className="bg-background-0 border-outline-300 w-full rounded-2xl border p-4"
+        style={{ paddingBottom: insets.bottom }}
+      >
+        <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
+          <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
+        </Button>
+        <Button size="md" variant="link" action="default" onPress={handleBack}>
+          <ButtonText>Back</ButtonText>
+        </Button>
+      </VStack>
     </SafeArea>
   );
 }

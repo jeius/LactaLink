@@ -1,12 +1,13 @@
 import * as z from 'zod/v4';
 
 import { GENDER_TYPES, MARITAL_STATUS, ORGANIZATION_TYPES, PROFILE_TYPES } from '@lactalink/enums';
-import { addressSchema } from '../address';
 import { imageSchema } from '../file';
 import { nullTransform } from '../transformers';
 
 const baseSchema = z.object({
-  addresses: z.array(addressSchema).nonempty('Required atleast one address.'),
+  addresses: z
+    .array(z.uuid('Invalid Address').nonempty('Required'))
+    .nonempty('Required atleast one address.'),
   phone: z
     .string()
     .max(16, 'Invalid phone number. (Max length 16)')
