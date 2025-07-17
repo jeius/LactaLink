@@ -34,7 +34,7 @@ export function useDeliveryPreferenceForm(id?: string) {
     collection: 'addresses',
     limit: 1,
     depth: 0,
-    select: { displayName: true, name: true, default: true, coordinates: true },
+    select: { displayName: true, name: true, isDefault: true, coordinates: true },
     where: {
       and: [
         { owner: { equals: preference?.owner ? extractID(preference.owner) : undefined } },

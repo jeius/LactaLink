@@ -3,6 +3,7 @@ import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { ensureUniqueDefaultAddress } from './hooks/ensureUniqueDefaultAddress';
 import { generateDisplayName } from './hooks/generateDisplayName';
 import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegion';
 import { generateName } from './hooks/generateName';
@@ -25,6 +26,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
   },
   hooks: {
     beforeChange: [generateDisplayName, generateOwner, generateName, generateIslandGroupAndRegion],
+    afterChange: [ensureUniqueDefaultAddress],
   },
   fields: [
     ownerField,
@@ -46,7 +48,7 @@ export const Addresses: CollectionConfig<'addresses'> = {
       type: 'row',
       fields: [
         {
-          name: 'default',
+          name: 'isDefault',
           type: 'checkbox',
           defaultValue: false,
           admin: {

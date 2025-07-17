@@ -24,7 +24,7 @@ export function useAddressForm(id?: string) {
     resolver: zodResolver(addressSchema),
     defaultValues: {
       name: '',
-      default: true,
+      isDefault: false,
       street: '',
       zipCode: '',
     },
@@ -43,7 +43,7 @@ export function useAddressForm(id?: string) {
         province: extractID(data.province),
         barangay: data.barangay && extractID(data.barangay),
         cityMunicipality: extractID(data.cityMunicipality),
-        default: data.default || false,
+        isDefault: data.isDefault || false,
         coordinates: (latitude && longitude && { latitude, longitude }) || undefined,
       });
     }

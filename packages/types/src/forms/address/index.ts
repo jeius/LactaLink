@@ -15,7 +15,7 @@ export const addressSchema = z.object({
   barangay: z.string().transform(nullTransform).optional().nullable(),
   zipCode: z.string().nonempty('Required.'),
   coordinates: coordinatesSchema.optional(),
-  default: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
 });
 
 export type AddressSchema = z.infer<typeof addressSchema>;

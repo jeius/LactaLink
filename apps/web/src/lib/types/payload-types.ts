@@ -230,7 +230,7 @@ export interface Address {
   /**
    * Set as default address.
    */
-  default?: boolean | null;
+  isDefault?: boolean | null;
   /**
    * Postal/Zip code of the address.
    */
@@ -1351,7 +1351,7 @@ export interface PayloadMigration {
 export interface AddressesSelect<T extends boolean = true> {
   owner?: T;
   name?: T;
-  default?: T;
+  isDefault?: T;
   zipCode?: T;
   province?: T;
   cityMunicipality?: T;

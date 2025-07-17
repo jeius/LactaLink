@@ -9,7 +9,6 @@ import {
 import React, { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import { FormField } from '../FormField';
 import { ActionModal } from '../modals';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
@@ -24,18 +23,17 @@ interface AddressMapBottomSheetProps {
 }
 
 export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBottomSheetProps) {
-  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const form = useFormContext<AddressSchema>();
 
-  const { default: isDefault, cityMunicipality, province } = form.watch();
+  const { isDefault = false, cityMunicipality, province } = form.watch();
 
   const isSubmitting = form.formState.isSubmitting;
 
   const snapPoints = useMemo(() => ['30%', '50%', '80%'], []);
 
   function handleSetDefault(isSelected: boolean) {
-    form.setValue('default', isSelected);
+    form.setValue('isDefault', isSelected);
   }
 
   async function handleValidation() {
