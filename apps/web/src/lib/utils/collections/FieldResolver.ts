@@ -242,7 +242,7 @@ export class FieldResolver {
     individuals: { displayName: true, owner: true, addresses: true },
     hospitals: { name: true, addresses: true, owner: true },
     milkBanks: { name: true, addresses: true, owner: true },
-    addresses: { displayName: true, owner: true, default: true, name: true },
+    addresses: { displayName: true, owner: true, isDefault: true, name: true },
     regions: { name: true, code: true },
     provinces: { name: true, code: true },
     citiesMunicipalities: { name: true, code: true },
