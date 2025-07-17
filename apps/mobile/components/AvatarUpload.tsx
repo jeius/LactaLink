@@ -19,6 +19,7 @@ import { VStack } from './ui/vstack';
 
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { showErrorToast } from '@/lib/utils/showErrorToast';
+import { sanitizeStringForFilename } from '@lactalink/utilities';
 
 const containerStyle = tva({
   base: 'h-64 w-full',
@@ -65,7 +66,8 @@ export function AvatarUpload({
     queryFn: async () => {
       if (!user || !user.picture) return null;
 
-      const namePrefix = filenameProp?.trim().split('.')[0] || user.email.split('@')[0];
+      const namePrefix =
+        (filenameProp && sanitizeStringForFilename(filenameProp)) || user.email.split('@')[0];
       const filename = `${namePrefix}_avatar.jpeg`;
       const fileUri = localDir + filename;
       const downloaded = await FileSystem.downloadAsync(user.picture, fileUri);
@@ -106,7 +108,10 @@ export function AvatarUpload({
     lastImageUri.current = pickedImage.uri;
 
     const type = pickedImage.fileName?.split('.').pop() || 'jpg';
-    const namePrefix = filenameProp?.trim().split('.')[0] || user?.email.split('@')[0] || 'temp';
+    const namePrefix =
+      (filenameProp && sanitizeStringForFilename(filenameProp)) ||
+      (user && sanitizeStringForFilename(user.email.split('@')[0] || '')) ||
+      'temp';
     const filename = namePrefix + `_avatar.${type}`;
 
     return {

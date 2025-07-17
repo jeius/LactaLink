@@ -3,6 +3,17 @@ import { DAYS } from '@lactalink/enums';
 export * from './formatCamelCase';
 export * from './formatKebabCase';
 
+export function sanitizeStringForFilename(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+
+  return str
+    .trim() // Remove leading/trailing spaces
+    .replace(/\s+/g, '_') // Replace whitespace with underscore
+    .replace(/[^\w.-]/g, '_') // Replace any non-word chars except dots and hyphens
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+}
+
 /**
  * Removes trailing commas or whitespace from a street address.
  *
