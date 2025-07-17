@@ -38,7 +38,7 @@ export function useDeliveryPreferenceForm(id?: string) {
     where: {
       and: [
         { owner: { equals: preference?.owner ? extractID(preference.owner) : undefined } },
-        { default: { equals: true } },
+        { isDefault: { equals: true } },
       ],
     },
   });

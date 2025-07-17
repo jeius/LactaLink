@@ -5,7 +5,7 @@ import React from 'react';
 import { Platform, View } from 'react-native';
 
 const dividerStyle = tva({
-  base: 'bg-outline-100',
+  base: 'bg-outline-300',
   variants: {
     orientation: {
       vertical: 'h-full w-px',

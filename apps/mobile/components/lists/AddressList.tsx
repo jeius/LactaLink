@@ -49,8 +49,6 @@ export function AddressList({
 
   const placeholderData = Array.from({ length: 3 }, (_, index) => ({
     id: `placeholder-${index}`,
-    name: 'Loading...',
-    displayName: 'Loading...',
   })) as Address[];
 
   useEffect(() => {
@@ -144,7 +142,10 @@ export function AddressList({
         data={isLoading ? placeholderData : data || []}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20, paddingHorizontal: 20 }}
+        contentContainerStyle={[
+          { flexGrow: 1, paddingBottom: 20 },
+          itemVariant === 'card' ? { paddingHorizontal: 20 } : {},
+        ]}
         style={{ flex: 1 }}
         ListEmptyComponent={EmptyComponent}
         ItemSeparatorComponent={SeparatorComponent}
