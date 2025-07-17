@@ -11,6 +11,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 
 import { signIn } from '@/auth';
 import { FormField } from '@/components/FormField';
+import { Box } from '@/components/ui/box';
 import { extractErrorMessage } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
@@ -41,7 +42,7 @@ export default function SignInForm() {
 
   return (
     <FormProvider {...form}>
-      <VStack space="lg">
+      <VStack space="lg" className="flex-1">
         <FormField
           name="email"
           label="Email"
@@ -81,6 +82,8 @@ export default function SignInForm() {
             </Button>
           </HStack>
         </VStack>
+
+        <Box className="flex-1" />
 
         <GoogleButtonWrapper disabled={isSubmitting} className="mt-5">
           <Button
