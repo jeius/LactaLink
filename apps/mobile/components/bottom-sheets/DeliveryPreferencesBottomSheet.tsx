@@ -82,7 +82,10 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   } = useFetchBySlug(enableFetch, {
     collection: 'delivery-preferences',
     where,
-    populate: { addresses: { displayName: true, coordinates: true, name: true } },
+    populate: {
+      addresses: { displayName: true, coordinates: true, name: true },
+      users: { email: true },
+    },
     sort: 'createdAt',
   });
 

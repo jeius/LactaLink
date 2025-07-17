@@ -51,7 +51,11 @@ export function DeliveryPreferenceList({
   const { data, isLoading, isFetching, error, refetch } = useFetchBySlug(shouldFetch, {
     collection: 'delivery-preferences',
     where,
-    depth: 0,
+    populate: {
+      addresses: { displayName: true, coordinates: true, name: true },
+      users: { email: true },
+    },
+    sort: 'createdAt',
   });
 
   const placeholderData = Array.from({ length: 3 }, (_, index) => ({

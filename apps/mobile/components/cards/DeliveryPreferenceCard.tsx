@@ -45,9 +45,6 @@ export function DeliveryPreferenceCard({
     depth: 0,
   });
 
-  const preferenceName = name || `Delivery Preference`;
-  const availableDaysText = formatDaysToText(availableDays);
-
   if (isLoadingProp) {
     return (
       <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
@@ -55,6 +52,9 @@ export function DeliveryPreferenceCard({
       </Card>
     );
   }
+
+  const preferenceName = name || `Delivery Preference`;
+  const availableDaysText = formatDaysToText(availableDays);
 
   const address = typeof addressProp === 'string' ? addressDoc : addressProp;
   const addressName = address?.name || 'Address';
@@ -124,8 +124,8 @@ export function DeliveryPreferenceCard({
 function AddressSkeleton() {
   return (
     <>
-      <Skeleton variant="sharp" className="mb-1 h-5 w-36" />
-      <Skeleton variant="sharp" className="h-4" />
+      <Skeleton className="mb-1 h-5 w-36" />
+      <Skeleton className="h-4" />
     </>
   );
 }
@@ -133,7 +133,7 @@ function AddressSkeleton() {
 export function DeliveryPreferenceCardSkeleton() {
   return (
     <VStack space="lg">
-      <Skeleton variant="sharp" className="h-8 w-40" />
+      <Skeleton className="h-8 w-40" />
 
       <VStack space="md">
         <HStack space="md" className="flex-wrap">
@@ -142,7 +142,7 @@ export function DeliveryPreferenceCardSkeleton() {
           <Skeleton className="h-8 w-20" />
         </HStack>
 
-        <Skeleton variant="sharp" className="h-5" />
+        <Skeleton className="h-5" />
 
         <VStack>
           <AddressSkeleton />
