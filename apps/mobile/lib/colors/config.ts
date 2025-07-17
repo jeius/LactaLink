@@ -61,7 +61,7 @@ export const colorsConfig: ColorsConfig = {
       warning: '#fff3ea',
       success: '#edfcf2',
       muted: '#f7f8f7',
-      info: '#A5CADB',
+      info: '#D2E4ED',
     },
     typography: {
       '0': '#ffffff',

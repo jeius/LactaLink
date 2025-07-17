@@ -1,3 +1,4 @@
+import { BasicBadge } from '@/components/badges';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Image } from '@/components/Image';
 import { ActionModal } from '@/components/modals';
@@ -43,7 +44,9 @@ export default function ListPage() {
   })) as Address[];
 
   const renderItem: ListRenderItem<Address> = ({ item }) => {
-    const { name, displayName } = item;
+    const { name, displayName, isDefault } = item;
+
+    const isLoading = item.id.includes('placeholder');
 
     function handleEditAddress() {
       router.push(`/addresses/edit/${item.id}`);
@@ -65,34 +68,39 @@ export default function ListPage() {
           <Text className="font-JakartaSemiBold">{name}</Text>
           <Text size="sm">{displayName}</Text>
         </Box>
-        <HStack>
-          <Button
-            variant="link"
-            action="default"
-            className="h-fit w-fit"
-            hitSlop={4}
-            onPress={handleEditAddress}
-          >
-            <ButtonIcon as={EditIcon} />
-          </Button>
-          <ActionModal
-            action="negative"
-            variant="link"
-            className="h-fit w-fit"
-            hitSlop={4}
-            triggerIcon={Trash2Icon}
-            iconOnly
-            onConfirm={handleDeleteAddress}
-            confirmLabel="Delete"
-            title="Delete Address"
-            description={
-              <Text>
-                Are you sure you want to delete <Text className="font-JakartaSemiBold">{name}</Text>
-                ? This action cannot be undone.
-              </Text>
-            }
-          />
-        </HStack>
+        <VStack space="sm" className="items-end">
+          <HStack space="xl">
+            <Button
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-0"
+              hitSlop={8}
+              onPress={handleEditAddress}
+            >
+              <ButtonIcon as={EditIcon} />
+            </Button>
+            <ActionModal
+              action="negative"
+              variant="link"
+              className="h-fit w-fit"
+              hitSlop={8}
+              triggerIcon={Trash2Icon}
+              iconOnly
+              onConfirm={handleDeleteAddress}
+              confirmLabel="Delete"
+              title="Delete Address"
+              description={
+                <Text>
+                  Are you sure you want to delete{' '}
+                  <Text className="font-JakartaSemiBold">{name}</Text>? This action cannot be
+                  undone.
+                </Text>
+              }
+            />
+          </HStack>
+
+          {isDefault && <BasicBadge size="sm" variant="outline" action="info" text="Default" />}
+        </VStack>
       </HStack>
     );
   };
