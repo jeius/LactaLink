@@ -1,4 +1,3 @@
-import Avatar from '@/components/Avatar';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { Stack } from 'expo-router';
@@ -14,10 +13,12 @@ export default function Layout() {
         ...screenOptions,
         headerShown: true,
         headerLeft: () => <HeaderBackButton />,
-        headerRight: () => <Avatar />,
       }}
     >
-      <Stack.Screen name="index" options={{ headerTitle: 'Donations' }} />
+      <Stack.Screen
+        name="index"
+        options={{ headerTitle: 'Donations', headerShadowVisible: false }}
+      />
 
       <Stack.Screen name="create" options={{ headerTitle: 'Create Donation' }} />
     </Stack>

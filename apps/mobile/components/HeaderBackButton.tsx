@@ -1,6 +1,6 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
-import { ChevronLeftIcon } from 'lucide-react-native';
+import { ArrowLeftIcon } from 'lucide-react-native';
 import { ComponentPropsWithoutRef, useEffect } from 'react';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
@@ -63,7 +63,7 @@ export function HeaderBackButton({
       onPress={handleOnPress}
       style={StyleSheet.flatten([{ paddingLeft: 0, paddingRight: 8 }, props.style])}
     >
-      <ButtonIcon className="h-6 w-6" as={ChevronLeftIcon} />
+      <ButtonIcon className="h-6 w-6" as={ArrowLeftIcon} />
     </Button>
   );
 }

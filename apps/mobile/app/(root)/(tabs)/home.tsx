@@ -76,6 +76,24 @@ export default function Home() {
           >
             <ButtonText>Delivery Preferences</ButtonText>
           </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              router.push('/donations');
+            }}
+          >
+            <ButtonText>Donations</ButtonText>
+          </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              router.push('/requests');
+            }}
+          >
+            <ButtonText>Requests</ButtonText>
+          </Button>
         </VStack>
       </ScrollView>
     </SafeArea>

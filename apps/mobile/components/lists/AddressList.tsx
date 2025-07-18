@@ -1,21 +1,22 @@
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
 import { Address, Where } from '@lactalink/types';
 import React, { useEffect } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { Image } from '@/components/Image';
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { getImageAsset } from '@/lib/stores';
 import { Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
 import { ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { AddressCard } from '../cards/AddressCard';
 import { Divider } from '../ui/divider';
+import { ListEmpty } from './ListEmpty';
+
+const placeholderData = Array.from({ length: 3 }, (_, index) => ({
+  id: `placeholder-${index}`,
+})) as Address[];
 
 interface AddressListProps {
   addressIDs?: string[];
@@ -47,9 +48,7 @@ export function AddressList({
     depth: 0,
   });
 
-  const placeholderData = Array.from({ length: 3 }, (_, index) => ({
-    id: `placeholder-${index}`,
-  })) as Address[];
+  const isEmpty = Array.isArray(data) && data.length === 0;
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -99,21 +98,7 @@ export function AddressList({
   };
 
   function EmptyComponent() {
-    return (
-      !isLoading && (
-        <VStack space="xs" className="flex-1 items-center justify-center">
-          <Image
-            alt="No Data"
-            source={getImageAsset('noData')}
-            style={{ width: '75%', aspectRatio: 1.75, marginBottom: 10 }}
-            contentFit="contain"
-          />
-          <Text size="lg" className="font-JakartaSemiBold">
-            No addresses found
-          </Text>
-        </VStack>
-      )
-    );
+    return !isLoading && <ListEmpty title="No addresses found" />;
   }
 
   function SeparatorComponent() {
@@ -127,6 +112,8 @@ export function AddressList({
   }
 
   function FooterComponent() {
+    if (isEmpty) return null;
+
     switch (itemVariant) {
       case 'card':
         return null;

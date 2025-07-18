@@ -4,14 +4,12 @@ import { DeliveryPreference, Where } from '@lactalink/types';
 import React, { useEffect } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { Image } from '@/components/Image';
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { deleteCollection } from '@/lib/api/delete';
 import { COLLECTION_QUERY_KEY } from '@/lib/constants';
-import { getImageAsset } from '@/lib/stores';
 import { Motion } from '@legendapp/motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -22,6 +20,11 @@ import { DeliveryPreferenceCard } from '../cards';
 import { ActionModal } from '../modals';
 import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
+import { ListEmpty } from './ListEmpty';
+
+const placeholderData = Array.from({ length: 3 }, (_, index) => ({
+  id: `placeholder-${index}`,
+})) as DeliveryPreference[];
 
 interface DeliveryPreferencesListProps {
   deliveryPreferenceIDs?: string[];
@@ -58,9 +61,7 @@ export function DeliveryPreferenceList({
     sort: 'createdAt',
   });
 
-  const placeholderData = Array.from({ length: 3 }, (_, index) => ({
-    id: `placeholder-${index}`,
-  })) as DeliveryPreference[];
+  const isEmpty = Array.isArray(data) && data.length === 0;
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -170,21 +171,7 @@ export function DeliveryPreferenceList({
   };
 
   function EmptyComponent() {
-    return (
-      !isLoading && (
-        <VStack space="xs" className="flex-1 items-center justify-center">
-          <Image
-            alt="No Data"
-            source={getImageAsset('noData')}
-            style={{ width: '75%', aspectRatio: 1.75, marginBottom: 10 }}
-            contentFit="contain"
-          />
-          <Text size="lg" className="font-JakartaSemiBold">
-            No delivery preferences found
-          </Text>
-        </VStack>
-      )
-    );
+    return !isLoading && <ListEmpty title="No delivery preferences found" />;
   }
 
   function SeparatorComponent() {
@@ -198,6 +185,8 @@ export function DeliveryPreferenceList({
   }
 
   function FooterComponent() {
+    if (isEmpty) return null;
+
     switch (itemVariant) {
       case 'card':
         return null;
