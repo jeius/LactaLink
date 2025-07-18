@@ -103,6 +103,6 @@ export const REQUEST_STATUS = {
   PENDING: { label: 'Pending', value: 'PENDING' },
   MATCHED: { label: 'Matched', value: 'MATCHED' },
   FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
-  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
 };
