@@ -525,7 +525,7 @@ export interface Request {
   /**
    * Current status of the request
    */
-  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
   /**
    * Amount of milk needed in milliliters
    */

@@ -28,11 +28,13 @@ export function useAuth() {
     | Hospital
     | MilkBank
     | null;
+  const profileCollection = session?.user?.profile?.relationTo || null;
 
   return {
     // Session data
     user,
     profile,
+    profileCollection,
     session,
 
     // Loading states
