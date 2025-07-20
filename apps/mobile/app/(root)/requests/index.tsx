@@ -17,7 +17,7 @@ import { createContext, useContext, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Route, SceneMap } from 'react-native-tab-view';
 
-type ItemType = Request;
+type DataType = Request;
 
 const SLUG: CollectionSlug = 'requests';
 
@@ -90,7 +90,7 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
   const renderItem: ListRenderItem<Collection> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
-    return <RequestListCard data={item as ItemType} isLoading={isLoading} />;
+    return <RequestListCard data={item as DataType} isLoading={isLoading} />;
   };
 
   return (

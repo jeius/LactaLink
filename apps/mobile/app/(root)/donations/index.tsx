@@ -17,7 +17,7 @@ import { createContext, useContext, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Route, SceneMap } from 'react-native-tab-view';
 
-type ItemType = Donation;
+type DataType = Donation;
 
 const SLUG: CollectionSlug = 'donations';
 
@@ -90,7 +90,7 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
   const renderItem: ListRenderItem<Collection> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
-    return <DonationListCard data={item as ItemType} isLoading={isLoading} />;
+    return <DonationListCard data={item as DataType} isLoading={isLoading} />;
   };
 
   return (
