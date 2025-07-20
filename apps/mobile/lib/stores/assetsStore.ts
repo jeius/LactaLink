@@ -1,4 +1,3 @@
-import type { Asset } from 'expo-asset';
 import { create } from 'zustand';
 import { ICON_ASSETS, IMAGE_ASSETS } from '../constants';
 import { AssetObject } from '../types';
@@ -42,7 +41,7 @@ export function setAssets(assets: Partial<AssetObject>) {
   }
 }
 
-export function getIconAsset(name: keyof AssetObject['icons']): Asset {
+export function getIconAsset(name: keyof AssetObject['icons']) {
   const { assets } = useAssetsStore.getState();
   if (!assets) {
     throw new Error('Assets not initialized. Please initialize assets first.');
@@ -50,7 +49,7 @@ export function getIconAsset(name: keyof AssetObject['icons']): Asset {
   return assets.icons[name];
 }
 
-export function getImageAsset(name: keyof AssetObject['images']): Asset {
+export function getImageAsset(name: keyof AssetObject['images']) {
   const { assets } = useAssetsStore.getState();
   if (!assets) {
     throw new Error('Assets not initialized. Please initialize assets first.');

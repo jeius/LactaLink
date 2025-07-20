@@ -30,7 +30,7 @@ export function ImageCarousel({
   const progress = useSharedValue<number>(0);
 
   const renderItem: CarouselRenderItem<ImageType> = ({ item }) => {
-    const uri = item.sizes?.large?.url || item.sizes?.medium?.url || item.url;
+    const uri = item.sizes?.large?.url || item.url;
     const alt = item.alt || 'Image';
 
     return (

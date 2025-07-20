@@ -1,4 +1,4 @@
-import { BLUR_HASH, PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
+import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 
 import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
 import React from 'react';
@@ -10,7 +10,7 @@ import { formatDate } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { EditIcon, HandHelpingIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
-import { Image } from '../Image';
+import { ImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
@@ -49,7 +49,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
   const requesterAvatar = requester.avatar as AvatarType | null | undefined;
 
   const milkImage = image as ImageType | undefined | null;
-  const imageUrl = milkImage?.sizes?.large?.url || milkImage?.sizes?.medium?.url || milkImage?.url;
+  const imageUrl = milkImage?.sizes?.large?.url || milkImage?.url;
 
   const isOwner = profile && profile.id === requester.id;
 
@@ -67,13 +67,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
       <VStack space="md">
         {imageUrl && (
           <Box className="h-44 w-full overflow-hidden rounded-lg">
-            <Image
-              alt={'Recipient Image'}
-              source={{ uri: imageUrl }}
-              contentFit="contain"
-              style={{ width: '100%', height: '100%' }}
-              placeholder={{ blurhash: BLUR_HASH }}
-            />
+            <ImageViewer imageURIs={[imageUrl]} />
           </Box>
         )}
 

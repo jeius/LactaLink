@@ -17,7 +17,7 @@ import { useRouter } from 'expo-router';
 import { Dimensions } from 'react-native';
 import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';
-import { ImageCarousel } from '../ImageCarousel';
+import { ImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
@@ -56,6 +56,11 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   const donorAvatar = donor.avatar as AvatarType | null | undefined;
 
   const milkImages = milkSample as ImageType[] | undefined | null;
+  const imageURIs = (
+    milkImages
+      ? milkImages.map((image) => image.sizes?.large?.url || image.url).filter(Boolean)
+      : []
+  ) as string[];
 
   const isOwner = profile && profile.id === donor.id;
 
@@ -71,12 +76,10 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   return (
     <Card className="w-full">
       <VStack space="md">
-        {milkImages && milkImages.length > 0 && (
-          <ImageCarousel
-            carouselWidth={width * 0.75}
-            carouselHeight={width * 0.45}
-            images={milkImages}
-          />
+        {imageURIs.length > 0 && (
+          <Box className="h-44 w-full overflow-hidden rounded-lg">
+            <ImageViewer imageURIs={imageURIs} />
+          </Box>
         )}
 
         <Text className="font-JakartaMedium mt-1">Donation Details</Text>
