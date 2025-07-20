@@ -22,9 +22,15 @@ import { VStack } from '../ui/vstack';
 export interface RequestListCardProps extends React.ComponentProps<typeof Card> {
   data: Request;
   isLoading?: boolean;
+  showEditButton?: boolean;
 }
 
-export function RequestListCard({ data, isLoading, ...props }: RequestListCardProps) {
+export function RequestListCard({
+  data,
+  isLoading,
+  showEditButton = false,
+  ...props
+}: RequestListCardProps) {
   const router = useRouter();
   const { theme } = useTheme();
 
@@ -39,17 +45,19 @@ export function RequestListCard({ data, isLoading, ...props }: RequestListCardPr
     );
   }
 
-  const { details, status, matchedAt, volumeNeeded } = data;
-  const { urgency, storagePreference, neededAt } = details;
+  const { details, status, volumeNeeded } = data;
+  const { urgency, storagePreference } = details;
 
   const image = details.image as ImageType | null;
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
 
   let badgeAction: BasicBadgeProps['action'] = 'success';
+  let canEdit: boolean = false;
 
   switch (status) {
     case 'PENDING':
       badgeAction = 'success';
+      canEdit = true;
       break;
     case 'MATCHED':
       badgeAction = 'warning';
@@ -84,7 +92,7 @@ export function RequestListCard({ data, isLoading, ...props }: RequestListCardPr
             <Image
               recyclingKey={imageUrl}
               source={{ uri: imageUrl }}
-              alt="Milk sample"
+              alt="Recipient Image"
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"
             />
@@ -116,11 +124,7 @@ export function RequestListCard({ data, isLoading, ...props }: RequestListCardPr
               as={FastTimerIcon}
               fill={getPriorityColor(theme, urgency)?.toString()}
             />
-            <Text
-              size="sm"
-              className="font-JakartaMedium"
-              style={{ color: getPriorityColor(theme, urgency) }}
-            >
+            <Text size="sm" style={{ color: getPriorityColor(theme, urgency) }}>
               {URGENCY_LEVELS[urgency || 'LOW'].label}
             </Text>
           </HStack>
@@ -129,15 +133,17 @@ export function RequestListCard({ data, isLoading, ...props }: RequestListCardPr
         </VStack>
 
         <VStack>
-          <Button
-            action="default"
-            variant="link"
-            className="h-fit w-fit p-0"
-            onPress={handleEditAction}
-            hitSlop={8}
-          >
-            <ButtonIcon as={EditIcon} />
-          </Button>
+          {showEditButton && canEdit && (
+            <Button
+              action="default"
+              variant="link"
+              className="h-fit w-fit p-0"
+              onPress={handleEditAction}
+              hitSlop={8}
+            >
+              <ButtonIcon as={EditIcon} />
+            </Button>
+          )}
         </VStack>
       </HStack>
     </Card>

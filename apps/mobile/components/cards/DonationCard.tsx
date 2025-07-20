@@ -49,7 +49,7 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
   const donorAvatar = (donor as Individual)?.avatar as AvatarType | null;
 
   const milkSamples = milkSample as ImageType[] | null;
-  const milkSampleUrl = milkSamples?.[0]?.sizes?.medium?.url || milkSamples?.[0]?.url || null;
+  const milkSampleUrl = milkSamples?.[0]?.sizes?.small?.url || milkSamples?.[0]?.url || null;
 
   const preference = deliveryDetails as DeliveryPreference[];
   const preferredMode = preference?.[0]?.preferredMode;

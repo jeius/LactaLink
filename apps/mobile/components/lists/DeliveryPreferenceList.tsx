@@ -31,6 +31,8 @@ interface DeliveryPreferencesListProps {
   onChange?: (value: DeliveryPreference[]) => void;
   disableRemove?: boolean;
   itemVariant?: 'default' | 'card';
+  userID?: string;
+  enableEdit?: boolean;
 }
 
 export function DeliveryPreferenceList({
@@ -38,16 +40,20 @@ export function DeliveryPreferenceList({
   onChange,
   disableRemove,
   itemVariant = 'default',
+  userID: userIDProp,
+  enableEdit = false,
 }: DeliveryPreferencesListProps) {
   const { user } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const userID = userIDProp || user?.id;
+
   const where: Where | undefined =
     preferenceIDs && preferenceIDs.length > 0
       ? { id: { in: preferenceIDs } }
-      : user
-        ? { owner: { equals: user?.id } }
+      : userID
+        ? { owner: { equals: userID } }
         : undefined;
 
   const shouldFetch = (preferenceIDs && preferenceIDs.length > 0) || Boolean(user);
@@ -89,7 +95,10 @@ export function DeliveryPreferenceList({
       case 'card':
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <AnimatedPressable onPress={handleEdit}>
+            <AnimatedPressable
+              disableAnimation={!enableEdit}
+              onPress={enableEdit ? handleEdit : undefined}
+            >
               <DeliveryPreferenceCard
                 isLoading={isLoading}
                 variant="filled"
@@ -153,15 +162,17 @@ export function DeliveryPreferenceList({
                       </Text>
                     }
                   />
-                  <Button
-                    action="default"
-                    variant="link"
-                    className="h-fit w-fit p-0"
-                    onPress={handleEdit}
-                    hitSlop={8}
-                  >
-                    <ButtonIcon as={EditIcon} />
-                  </Button>
+                  {enableEdit && (
+                    <Button
+                      action="default"
+                      variant="link"
+                      className="h-fit w-fit p-0"
+                      onPress={handleEdit}
+                      hitSlop={8}
+                    >
+                      <ButtonIcon as={EditIcon} />
+                    </Button>
+                  )}
                 </VStack>
               }
             />

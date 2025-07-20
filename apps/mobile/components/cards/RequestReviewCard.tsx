@@ -1,8 +1,9 @@
+import { getHexColor } from '@/lib/colors';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { RequestSchema } from '@lactalink/types';
 import { formatDate } from '@lactalink/utilities';
-import { CalendarDaysIcon, MilkIcon, PackageOpenIcon } from 'lucide-react-native';
+import { CalendarDaysIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import FastTimerIcon from '../icons/FastTimerIcon';
@@ -20,6 +21,9 @@ interface RequestReviewCardProps extends ComponentProps<typeof Card> {
 export function RequestReviewCard({ data, variant = 'filled', ...props }: RequestReviewCardProps) {
   const { theme } = useTheme();
 
+  const fillColor = getHexColor(theme, 'primary', 50)?.toString();
+  const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
+
   const {
     volumeNeeded,
     deliveryPreferences,
@@ -31,7 +35,7 @@ export function RequestReviewCard({ data, variant = 'filled', ...props }: Reques
       <VStack space="sm" className="w-full">
         <HStack space="xs" className="w-full items-center">
           <Text size="sm">Storage Type:</Text>
-          <Icon as={PackageOpenIcon} />
+          <Icon as={PackageIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
             {PREFERRED_STORAGE_TYPES[storagePreference].label}
           </Text>
@@ -51,7 +55,7 @@ export function RequestReviewCard({ data, variant = 'filled', ...props }: Reques
 
         <HStack space="xs" className="w-full items-center">
           <Text size="sm">Needed At:</Text>
-          <Icon as={CalendarDaysIcon} />
+          <Icon as={CalendarDaysIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
             {formatDate(neededAt)},{' '}
             {new Date(neededAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -60,7 +64,7 @@ export function RequestReviewCard({ data, variant = 'filled', ...props }: Reques
 
         <HStack space="xs" className="w-full items-center">
           <Text size="sm">Volume Needed:</Text>
-          <Icon as={MilkIcon} />
+          <Icon as={MilkIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
             {volumeNeeded} mL
           </Text>

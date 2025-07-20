@@ -1,8 +1,10 @@
+import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { DonationSchema } from '@lactalink/types';
 import { formatDate } from '@lactalink/utilities';
-import { DotIcon, DropletIcon, PackageOpenIcon } from 'lucide-react-native';
+import { DotIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -19,6 +21,11 @@ export function DonationReviewCard({
   variant = 'filled',
   ...props
 }: DonationReviewCardProps) {
+  const { theme } = useTheme();
+
+  const fillColor = getHexColor(theme, 'primary', 50)?.toString();
+  const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
+
   const {
     deliveryPreferences,
     details: { bags, collectionMode, storageType, notes },
@@ -29,7 +36,7 @@ export function DonationReviewCard({
       <VStack space="sm" className="w-full">
         <HStack space="xs" className="w-full items-center">
           <Text size="sm">Storage Type:</Text>
-          <Icon as={PackageOpenIcon} />
+          <Icon as={PackageIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
             {PREFERRED_STORAGE_TYPES[storageType].label}
           </Text>
@@ -37,7 +44,7 @@ export function DonationReviewCard({
 
         <HStack space="xs" className="w-full items-center">
           <Text size="sm">Collection Method:</Text>
-          <Icon as={DropletIcon} />
+          <Icon as={DropletIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
             {COLLECTION_MODES[collectionMode].label}
           </Text>

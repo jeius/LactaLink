@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '../ui/form-control';
+import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 
 interface DeliveryPreferencesFormProps {
@@ -76,27 +77,27 @@ export function DeliveryPreferencesForm({
             isLoading={isLoading}
             preference={item}
             action={
-              <VStack space="lg">
+              <HStack space="lg">
+                <Button
+                  action="default"
+                  variant="link"
+                  className="h-fit w-fit p-0"
+                  onPress={() => handleEditAction(item.id)}
+                  hitSlop={8}
+                >
+                  <ButtonIcon as={EditIcon} />
+                </Button>
                 <Button
                   action="negative"
                   variant="link"
-                  className="h-fit w-fit"
+                  className="h-fit w-fit p-0"
                   isDisabled={disableRemove}
                   onPress={() => handleDismiss(itemId)}
                   hitSlop={8}
                 >
                   <ButtonIcon as={XIcon} />
                 </Button>
-                <Button
-                  action="secondary"
-                  variant="link"
-                  className="h-fit w-fit"
-                  onPress={() => handleEditAction(item.id)}
-                  hitSlop={8}
-                >
-                  <ButtonIcon as={EditIcon} />
-                </Button>
-              </VStack>
+              </HStack>
             }
           />
         </Motion.View>

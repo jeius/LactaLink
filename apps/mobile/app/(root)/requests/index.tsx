@@ -1,22 +1,19 @@
 import { RequestListCard } from '@/components/cards/RequestListCard';
-import { ListEmpty } from '@/components/lists/ListEmpty';
-import { RefreshControl } from '@/components/RefreshControl';
+import { InfiniteList } from '@/components/lists/InfiniteList';
 import SafeArea from '@/components/SafeArea';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { REQUEST_STATUS } from '@lactalink/enums';
-import { Collection, CollectionSlug, Request } from '@lactalink/types';
-import { formatKebab, formatKebabToTitle } from '@lactalink/utilities';
+import { Collection, CollectionSlug, Request, Where } from '@lactalink/types';
+import { extractID, formatKebabToTitle } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { randomUUID } from 'expo-crypto';
+import { ListRenderItem } from '@shopify/flash-list';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
-import { createContext, useContext, useMemo, useRef, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { createContext, useContext, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Route, SceneMap } from 'react-native-tab-view';
 
@@ -40,14 +37,6 @@ routes.forEach((route) => {
 
 const renderScene = SceneMap(scenes);
 
-const placeholderData: Collection[] = Array.from(
-  { length: 30 },
-  (_, index) =>
-    ({
-      id: `placeholder-${index}-${randomUUID()}`,
-    }) as Collection
-);
-
 type ScrollContextType = {
   scrolledDown: boolean;
   setScrolledDown: (scrolledDown: boolean) => void;
@@ -69,86 +58,83 @@ interface SceneRendererProps {
 }
 
 function SceneRenderer({ route }: SceneRendererProps) {
-  const { profile } = useAuth();
-  const { width, height } = useWindowDimensions();
+  const { userID } = useLocalSearchParams<{ userID?: string }>();
+  const auth = useAuth();
+
   const insets = useSafeAreaInsets();
   const { scrolledDown, setScrolledDown } = useScroll();
   const previousOffset = useRef(0);
 
-  const {
-    data: paginatedData,
-    isLoading,
-    isRefetching,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-    refetch,
-  } = useInfiniteFetchBySlug(SLUG, Boolean(profile), {
-    where: {
-      and: [{ status: { equals: route.key } }, { requester: { equals: profile?.id } }],
-    },
+  const { data, isLoading, error, isFetching } = useFetchById(Boolean(userID), {
+    collection: 'users',
+    id: userID,
+    depth: 0,
+    select: { profile: true },
   });
 
-  const data = useMemo(
-    () => paginatedData?.pages?.flatMap((page) => page.docs) || [],
-    [paginatedData]
-  );
+  const profile = data?.profile || { value: auth.profile, relationTo: auth.profileCollection };
+  const profileID = profile?.value && extractID(profile.value);
+
+  const where: Where[] = [{ status: { equals: route.key } }];
+
+  switch (profile?.relationTo) {
+    case 'individuals': {
+      if (profileID) {
+        where.push({ donor: { equals: profileID } });
+      }
+      break;
+    }
+    default:
+      break;
+  }
 
   const renderItem: ListRenderItem<Collection> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
     return <RequestListCard data={item as ItemType} isLoading={isLoading} />;
   };
 
-  function EmptyComponent() {
-    return !isLoading && <ListEmpty title={`No ${formatKebab(SLUG)} found`} />;
-  }
-
-  function SeparatorComponent() {
-    return <Box className="h-2" />;
-  }
-
   return (
-    <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
-      <FlashList
-        data={isLoading ? placeholderData : data}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListEmptyComponent={EmptyComponent}
-        ItemSeparatorComponent={SeparatorComponent}
-        ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
-        contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
-        estimatedItemSize={120}
-        estimatedListSize={{ width, height }}
-        refreshControl={
-          <RefreshControl refreshing={!isLoading && isRefetching} onRefresh={refetch} />
+    <InfiniteList
+      slug={SLUG}
+      isLoading={isLoading}
+      isFetching={isFetching}
+      fetchOptions={{ where: { and: where } }}
+      renderItem={renderItem}
+      style={{ marginBottom: insets.bottom }}
+      onScrollBeginDrag={({ nativeEvent }) => {
+        previousOffset.current = nativeEvent.contentOffset.y;
+      }}
+      onScrollEndDrag={({ nativeEvent }) => {
+        const currentOffset = nativeEvent.contentOffset.y;
+        const scrollingDown = currentOffset > previousOffset.current;
+        if (scrollingDown !== scrolledDown) {
+          setScrolledDown(scrollingDown);
         }
-        onEndReachedThreshold={0.2}
-        onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
-        onScrollBeginDrag={({ nativeEvent }) => {
-          previousOffset.current = nativeEvent.contentOffset.y;
-        }}
-        onScrollEndDrag={({ nativeEvent }) => {
-          const currentOffset = nativeEvent.contentOffset.y;
-          const scrollingDown = currentOffset > previousOffset.current;
-          if (scrollingDown !== scrolledDown) {
-            setScrolledDown(scrollingDown);
-          }
-        }}
-      />
-    </Box>
+      }}
+    />
   );
 }
 
 export default function ListPage() {
   const [scrolledDown, setScrolledDown] = useState(false);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { userID } = useLocalSearchParams<{ userID?: string }>();
+  const { user } = useAuth();
+
+  const isOwner = userID ? user?.id === userID : true;
+
+  function handleCreateNew() {
+    // @ts-expect-error This is a workaround for the router type issue
+    router.push(`/${SLUG}/create`);
+  }
 
   return (
     <SafeArea safeTop={false} safeBottom={false}>
       <ScrollContext.Provider value={{ scrolledDown, setScrolledDown }}>
         <Tab routes={routes} renderScene={renderScene} lazy />
         <AnimatePresence>
-          {!scrolledDown && (
+          {isOwner && !scrolledDown && (
             <Motion.View
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -159,7 +145,7 @@ export default function ListPage() {
                 className="bg-background-0 border-outline-200 rounded-2xl border p-4"
                 style={{ paddingBottom: insets.bottom }}
               >
-                <Button>
+                <Button onPress={handleCreateNew}>
                   <ButtonIcon as={PlusIcon} />
                   <ButtonText>Create New {formatKebabToTitle(SLUG)}</ButtonText>
                 </Button>

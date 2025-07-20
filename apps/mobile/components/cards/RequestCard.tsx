@@ -55,7 +55,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
   const userAvatar = (requester as Individual)?.avatar as AvatarType | null;
 
   const requestImage = image as ImageType | null;
-  const imageUrl = requestImage?.sizes?.medium?.url || requestImage?.url || null;
+  const imageUrl = requestImage?.sizes?.small?.url || requestImage?.url || null;
 
   const preference = deliveryDetails as DeliveryPreference[];
   const preferredMode = preference?.[0]?.preferredMode;

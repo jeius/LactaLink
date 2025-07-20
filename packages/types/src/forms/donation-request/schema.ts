@@ -34,12 +34,15 @@ export const donationDetailsSchema = z.object({
 });
 
 export const requestDetailsSchema = z.object({
-  neededAt: z.iso.datetime(),
+  neededAt: z.iso.datetime('Required'),
   storagePreference: z.enum(
     Object.values(PREFERRED_STORAGE_TYPES).map((item) => item.value),
     'Select one option'
   ),
-  urgency: z.enum(Object.values(URGENCY_LEVELS).map((item) => item.value)),
+  urgency: z.enum(
+    Object.values(URGENCY_LEVELS).map((item) => item.value),
+    'Select one option'
+  ),
   bags: z.array(z.uuid().nonempty('Required')).optional().nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,

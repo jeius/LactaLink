@@ -3,14 +3,20 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { Motion } from '@legendapp/motion';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ListPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  const { userID } = useLocalSearchParams<{ userID?: string }>();
+  const { user } = useAuth();
+
+  const isOwner = userID ? user?.id === userID : true;
 
   function handleAddAddress() {
     router.push('/delivery-preferences/create');
@@ -19,7 +25,7 @@ export default function ListPage() {
   return (
     <SafeArea safeTop={false} safeBottom={false}>
       <VStack className="w-full flex-1">
-        <DeliveryPreferenceList />
+        <DeliveryPreferenceList userID={userID} enableEdit={isOwner} />
 
         <Motion.View
           initial={{ opacity: 0, y: 100 }}

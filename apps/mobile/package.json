@@ -56,7 +56,7 @@
     "@react-native/metro-config": "^0.80.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.4.3",
-    "@react-navigation/native": "^7.1.14",
+    "@react-navigation/native": "^7.1.6",
     "@rnx-kit/metro-config": "^2.1.0",
     "@rnx-kit/metro-resolver-symlinks": "^0.2.5",
     "@shopify/flash-list": "1.7.6",

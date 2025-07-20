@@ -1,4 +1,4 @@
-import { Address, Where } from '@lactalink/types';
+import { Address, Hospital, Individual, MilkBank, Where } from '@lactalink/types';
 import React, { useEffect } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
@@ -6,6 +6,7 @@ import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
+import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
 import { ListRenderItem } from 'react-native';
@@ -23,30 +24,49 @@ interface AddressListProps {
   onChange?: (value: Address[]) => void;
   disableRemove?: boolean;
   itemVariant?: 'default' | 'card';
+  profile?: Individual | Hospital | MilkBank | null;
+  enableEdit?: boolean;
+  isLoading?: boolean;
+  isFetching?: boolean;
 }
 
 export function AddressList({
-  addressIDs,
+  addressIDs: addressIDsProp,
   onChange,
   disableRemove,
   itemVariant = 'default',
+  profile: profileProp,
+  enableEdit = false,
+  isLoading: isLoadingProp,
+  isFetching: isFetchingProp,
 }: AddressListProps) {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const router = useRouter();
 
-  const where: Where | undefined =
-    addressIDs && addressIDs.length > 0
-      ? { id: { in: addressIDs } }
-      : user
-        ? { owner: { equals: user?.id } }
-        : undefined;
+  const profileAddresses = profileProp?.addresses || profile?.addresses;
+  const shouldFetch = areStrings(profileAddresses);
 
-  const shouldFetch = (addressIDs && addressIDs.length > 0) || Boolean(user);
-  const { data, isLoading, isFetching, error, refetch } = useFetchBySlug(shouldFetch, {
+  const addressIDs = addressIDsProp || (shouldFetch && extractID(profileAddresses!)) || [];
+
+  const where: Where | undefined =
+    addressIDs && addressIDs.length > 0 ? { id: { in: addressIDs } } : undefined;
+
+  const {
+    data: fetchedData,
+    isLoading: isLoadingData,
+    isFetching: isFetchingData,
+    error,
+    refetch,
+  } = useFetchBySlug(Boolean(addressIDs.length > 0), {
     collection: 'addresses',
     where,
     depth: 0,
   });
+
+  const isLoading = isLoadingProp || isLoadingData;
+  const isFetching = isFetchingProp || isFetchingData;
+
+  const data: Address[] = (shouldFetch ? fetchedData : extractCollection(profileAddresses)) || [];
 
   const isEmpty = Array.isArray(data) && data.length === 0;
 
@@ -68,13 +88,16 @@ export function AddressList({
       case 'card':
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <AnimatedPressable onPress={handleEditAddress}>
+            <AnimatedPressable
+              disableAnimation={!enableEdit}
+              onPress={enableEdit ? handleEditAddress : undefined}
+            >
               <AddressCard
                 variant="filled"
                 isLoading={isLoading}
                 disableDelete={disableRemove}
                 data={item}
-                hideEdit
+                hideEdit={!enableEdit}
               />
             </AnimatedPressable>
           </Motion.View>
@@ -90,6 +113,7 @@ export function AddressList({
               isLoading={isLoading}
               disableDelete={disableRemove}
               data={item}
+              hideEdit={!enableEdit}
               onEditPress={handleEditAddress}
             />
           </Motion.View>
@@ -126,7 +150,7 @@ export function AddressList({
   return (
     <Box className="flex-1">
       <FlatList
-        data={isLoading ? placeholderData : data || []}
+        data={isLoading ? placeholderData : data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
