@@ -292,9 +292,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
         snapPoints={['45%']}
         enableDynamicSizing={false}
         handleComponent={BottomSheetDragIndicator}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} style={{ marginBottom: insets.bottom }} />
-        )}
+        backdropComponent={BottomSheetBackdrop}
         enableBlurKeyboardOnGesture={false}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"

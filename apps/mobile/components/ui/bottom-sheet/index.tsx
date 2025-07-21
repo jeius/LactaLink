@@ -31,6 +31,7 @@ import React, {
 } from 'react';
 import type { PressableProps, TextProps } from 'react-native';
 import { Platform, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 
 const bottomSheetBackdropStyle = tva({
@@ -299,6 +300,7 @@ export const BottomSheetBackdrop = ({
   className,
   ...props
 }: Partial<IBottomSheetBackdrop> & { className?: string }) => {
+  const { bottom } = useSafeAreaInsets();
   return (
     <GorhomBottomSheetBackdrop
       // @ts-expect-error gluestack-issue
@@ -308,6 +310,7 @@ export const BottomSheetBackdrop = ({
       disappearsOnIndex={disappearsOnIndex}
       appearsOnIndex={appearsOnIndex}
       {...props}
+      style={[{ marginBottom: bottom }, props.style]}
     />
   );
 };
