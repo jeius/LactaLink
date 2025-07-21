@@ -11,10 +11,20 @@ import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import MapView, { LatLng, Marker } from 'react-native-maps';
 import { Pressable } from '../ui/pressable';
+
+const cardStyle = tva({
+  base: '',
+  variants: {
+    mapVisible: {
+      true: 'p-0',
+    },
+  },
+});
 
 interface AddressCardProps extends ComponentProps<typeof Card> {
   data: string | Address;
@@ -28,6 +38,7 @@ export function AddressCard({
   isLoading: isLoadingProp,
   showMap = false,
   action,
+  className,
   ...props
 }: AddressCardProps) {
   const [isMapLoading, setIsMapLoading] = useState(true);
@@ -38,6 +49,7 @@ export function AddressCard({
     collection: 'addresses',
     id: extractID(dataProp),
     depth: 0,
+    select: { name: true, displayName: true, isDefault: true, coordinates: true },
   });
 
   const isLoading = isLoadingProp || isDataLoading;
@@ -55,7 +67,7 @@ export function AddressCard({
 
   if (isLoading) {
     return (
-      <Card {...props}>
+      <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
         <VStack>
           <Skeleton variant="sharp" className="h-40 w-full" />
           <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
@@ -72,8 +84,8 @@ export function AddressCard({
   }
 
   return (
-    <Card {...props}>
-      <VStack>
+    <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
+      <VStack className="w-full">
         {showMap && (
           <Box className="relative h-40 w-full">
             {isMapLoading && <Skeleton variant="sharp" className="absolute inset-0 z-50" />}
