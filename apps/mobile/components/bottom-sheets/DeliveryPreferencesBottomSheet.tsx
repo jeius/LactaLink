@@ -1,23 +1,22 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { getImageAsset } from '@/lib/stores';
 import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Address, DeliveryPreference, DeliveryPreferenceSchema, Where } from '@lactalink/types';
-import { checkIsOwner, extractID } from '@lactalink/utilities';
-import { AnimatePresence, Motion } from '@legendapp/motion';
+import { areStrings, checkIsOwner, extractCollection, extractID } from '@lactalink/utilities';
 import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { EditIcon, PlusIcon, SaveIcon } from 'lucide-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Dimensions, GestureResponderEvent } from 'react-native';
+import { EditIcon, PlusIcon } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { GestureResponderEvent, useWindowDimensions } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
-import { Image } from '../Image';
+import { FloatingActionButton } from '../FloatingActionButton';
 import FetchingSpinner from '../loaders/FetchingSpinner';
+import { NoData } from '../NoData';
 import {
   BottomSheet,
   BottomSheetBackdrop,
@@ -57,29 +56,26 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   const router = useRouter();
   const { theme } = useTheme();
 
-  const DEVICE_WIDTH = Dimensions.get('window').width;
+  const { width: DEVICE_WIDTH } = useWindowDimensions();
 
   const defaultSelectedIDs = useRef<TValue<T> | undefined | null>(selectedProps);
   const [selected, setSelected] = useState<TValue<T> | undefined | null>(selectedProps);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
+  const [listSize, setListSize] = useState({ height: 360, width: DEVICE_WIDTH });
 
-  const enableFetch = preferencesProp === undefined || typeof preferencesProp[0] === 'string';
+  const userDP = user?.deliveryPreferences?.docs;
+  const preferences = useMemo(() => preferencesProp || userDP || [], [preferencesProp, userDP]);
 
-  const where: Where =
-    enableFetch && preferencesProp
-      ? { id: { in: extractID(preferencesProp) } }
-      : user && !preferencesProp
-        ? { owner: { equals: user.id } }
-        : {};
-
+  const shouldFetch = areStrings(preferences);
+  const where: Where = { id: { in: extractID(preferences) } };
   const {
-    data: preferenceDocs,
+    data: fetchedData,
     isLoading,
     isFetching,
     refetch,
     isRefetching,
-  } = useFetchBySlug(enableFetch, {
+  } = useFetchBySlug(shouldFetch, {
     collection: 'delivery-preferences',
     where,
     populate: {
@@ -89,9 +85,12 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
     sort: 'createdAt',
   });
 
-  const preferences = preferenceDocs || (preferencesProp as DeliveryPreference[] | null) || [];
+  const data = useMemo(
+    () => (shouldFetch ? fetchedData : extractCollection(preferences) || []),
+    [fetchedData, preferences, shouldFetch]
+  );
 
-  const isOwner = user && preferences ? checkIsOwner(user, preferences) : false;
+  const isOwner = user && data ? checkIsOwner(user, data) : false;
 
   useEffect(() => {
     if (selectedProps) {
@@ -163,9 +162,7 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
             isSelected={isSelected}
             isLoading={isLoading}
             showEditButton={isOwner}
-            onEditPress={() => {
-              handleClose();
-            }}
+            onEditPress={handleClose}
           />
         </AnimatedPressable>
       );
@@ -179,31 +176,23 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
   }, [router]);
 
   const EmptyComponent = useCallback(() => {
-    const isEmpty = preferences?.length === 0;
     return (
       !isLoading && (
-        <VStack className="mx-auto items-center p-4">
-          <Image
-            alt="Nothing found"
-            source={getImageAsset('noData_0.75x')}
-            contentFit="contain"
-            style={{ width: '60%', aspectRatio: 1.25 }}
-          />
-          <Text className="mb-5">Oops! Nothing to show here.</Text>
-          {(isOwner || isEmpty) && (
+        <VStack space="xl" className="mx-auto items-center p-4">
+          <NoData title="Oops! Nothing to show here." />
+          {isOwner && (
             <Button onPress={handleCreateNew}>
               <ButtonIcon as={PlusIcon} />
-              <ButtonText>Add New Delivery Preference</ButtonText>
+              <ButtonText>Create Delivery Preference</ButtonText>
             </Button>
           )}
         </VStack>
       )
     );
-  }, [preferences?.length, isLoading, isOwner, handleCreateNew]);
+  }, [isLoading, isOwner, handleCreateNew]);
 
   const HeaderComponent = useCallback(() => {
-    const isEmpty = preferences?.length === 0;
-    if (isEmpty) return null;
+    if (data?.length === 0) return null;
 
     let text = 'Select a Delivery Preference';
     if (isLoading) {
@@ -219,19 +208,19 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
         </Text>
       </Box>
     );
-  }, [allowMultipleSelection, isLoading, preferences?.length]);
+  }, [allowMultipleSelection, isLoading, data?.length]);
 
   const FooterComponent = useCallback(() => {
-    const isEmpty = preferences?.length === 0;
+    const isEmpty = data?.length === 0;
     if ((isEmpty && !isLoading) || !isOwner) return null;
 
     return (
       <Button size="sm" variant="link" action="default" onPress={handleCreateNew}>
         <ButtonIcon as={PlusIcon} />
-        <ButtonText>Add New Delivery Preference</ButtonText>
+        <ButtonText>Create New Delivery Preference</ButtonText>
       </Button>
     );
-  }, [handleCreateNew, isLoading, isOwner, preferences?.length]);
+  }, [handleCreateNew, isLoading, isOwner, data?.length]);
 
   function Trigger() {
     if (triggerComponent) {
@@ -261,18 +250,19 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
         handleComponent={(props) => (
           <BottomSheetDragIndicator {...props} className="py-4" style={createShadow(theme).xs} />
         )}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} className="bg-background-500" />
-        )}
-        enableBlurKeyboardOnGesture={false}
-        keyboardBehavior="interactive"
-        keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustPan"
+        backdropComponent={BottomSheetBackdrop}
         enableContentPanningGesture={false}
+        bottomInset={insets.bottom}
       >
-        <VStack className="relative h-full w-full" style={{ paddingBottom: insets.bottom }}>
+        <Box
+          className="relative flex-1"
+          onLayout={(e) => {
+            const { height, width } = e.nativeEvent.layout;
+            setListSize({ height, width });
+          }}
+        >
           <BottomSheetFlashList
-            data={preferences || []}
+            data={data}
             renderItem={renderItem}
             estimatedItemSize={200}
             automaticallyAdjustKeyboardInsets
@@ -286,7 +276,7 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
               paddingHorizontal: 12,
               paddingTop: 12,
             }}
-            estimatedListSize={{ height: 360, width: DEVICE_WIDTH }}
+            estimatedListSize={listSize}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={HeaderComponent}
             ItemSeparatorComponent={() => <Box className="h-3" />}
@@ -297,38 +287,8 @@ export function DeliveryPreferencesBottomSheet<T extends boolean = false>({
             }}
           />
 
-          <AnimatePresence>
-            {isDirty && (
-              <Motion.View
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                style={{
-                  marginBottom: insets.bottom,
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  padding: 8,
-                }}
-              >
-                <Card className="mx-auto p-4">
-                  <HStack space="md" className="justify-end">
-                    <Button onPress={handleSave}>
-                      <ButtonIcon as={SaveIcon} />
-                      <ButtonText>Apply</ButtonText>
-                    </Button>
-
-                    <Button variant="outline" action="default" onPress={handleCancel}>
-                      <ButtonText>Cancel</ButtonText>
-                    </Button>
-                  </HStack>
-                </Card>
-              </Motion.View>
-            )}
-          </AnimatePresence>
-        </VStack>
+          <FloatingActionButton show={isDirty} onConfirm={handleSave} onCancel={handleCancel} />
+        </Box>
 
         <FetchingSpinner isFetching={isFetching} />
       </BottomSheetModalPortal>
@@ -378,8 +338,13 @@ function PreferenceCard({
         />
 
         {showEditButton && (
-          <VStack space="md" className="bg-primary-100 justify-center p-4">
-            <Button className="h-fit w-fit p-4" onPress={handleEditPress}>
+          <VStack space="md" className="bg-primary-100 justify-center">
+            <Button
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-5"
+              onPress={handleEditPress}
+            >
               <ButtonIcon as={EditIcon} />
             </Button>
           </VStack>
@@ -388,10 +353,10 @@ function PreferenceCard({
 
       {isSelected && (
         <Box
-          className="bg-success-500 absolute right-0 top-0 px-4 py-2"
-          style={{ borderBottomLeftRadius: 6 }}
+          className="bg-success-500 absolute bottom-0 right-0 px-4 py-2"
+          style={{ borderTopLeftRadius: 6 }}
         >
-          <Text size="xs" className="text-success-0 font-JakartaMedium">
+          <Text size="sm" className="text-success-0 font-JakartaSemiBold">
             Selected
           </Text>
         </Box>

@@ -1,7 +1,6 @@
 import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
 import { DeliveryPreference, Where } from '@lactalink/types';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -21,6 +20,7 @@ import { ActionModal } from '../modals';
 import { NoData } from '../NoData';
 import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
+import { HStack } from '../ui/hstack';
 
 const placeholderData = Array.from({ length: 3 }, (_, index) => ({
   id: `placeholder-${index}`,
@@ -57,7 +57,13 @@ export function DeliveryPreferenceList({
         : undefined;
 
   const shouldFetch = (preferenceIDs && preferenceIDs.length > 0) || Boolean(user);
-  const { data, isLoading, isFetching, error, refetch } = useFetchBySlug(shouldFetch, {
+  const {
+    data: fetchedData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useFetchBySlug(shouldFetch, {
     collection: 'delivery-preferences',
     where,
     populate: {
@@ -67,17 +73,16 @@ export function DeliveryPreferenceList({
     sort: 'createdAt',
   });
 
-  const isEmpty = Array.isArray(data) && data.length === 0;
+  const data = useMemo(() => fetchedData || [], [fetchedData]);
+  const isEmpty = data.length === 0;
 
   useEffect(() => {
-    if (data && data.length > 0) {
-      onChange?.(data);
-    }
+    onChange?.(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const renderItem: ListRenderItem<DeliveryPreference> = ({ item }) => {
-    const isLoading = item.id.includes('placeholder') || isFetching;
+    const isLoading = item.id.includes('placeholder');
 
     function handleEdit() {
       router.push(`/delivery-preferences/edit/${item.id}`);
@@ -104,7 +109,7 @@ export function DeliveryPreferenceList({
                 variant="filled"
                 preference={item}
                 action={
-                  <VStack space="lg">
+                  <HStack className="grow justify-end">
                     <ActionModal
                       action="negative"
                       variant="link"
@@ -125,7 +130,7 @@ export function DeliveryPreferenceList({
                         </Text>
                       }
                     />
-                  </VStack>
+                  </HStack>
                 }
               />
             </AnimatedPressable>
@@ -141,7 +146,18 @@ export function DeliveryPreferenceList({
               variant="ghost"
               preference={item}
               action={
-                <VStack space="lg">
+                <HStack space="lg" className="grow justify-between">
+                  {enableEdit && (
+                    <Button
+                      action="default"
+                      variant="link"
+                      className="h-fit w-fit p-0"
+                      onPress={handleEdit}
+                      hitSlop={8}
+                    >
+                      <ButtonIcon as={EditIcon} />
+                    </Button>
+                  )}
                   <ActionModal
                     action="negative"
                     variant="link"
@@ -162,18 +178,7 @@ export function DeliveryPreferenceList({
                       </Text>
                     }
                   />
-                  {enableEdit && (
-                    <Button
-                      action="default"
-                      variant="link"
-                      className="h-fit w-fit p-0"
-                      onPress={handleEdit}
-                      hitSlop={8}
-                    >
-                      <ButtonIcon as={EditIcon} />
-                    </Button>
-                  )}
-                </VStack>
+                </HStack>
               }
             />
           </Motion.View>
@@ -210,7 +215,7 @@ export function DeliveryPreferenceList({
   return (
     <Box className="flex-1">
       <FlatList
-        data={isLoading ? placeholderData : data || []}
+        data={isLoading ? placeholderData : data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[

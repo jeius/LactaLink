@@ -77,7 +77,7 @@ export function DeliveryPreferencesForm({
             isLoading={isLoading}
             preference={item}
             action={
-              <HStack space="lg">
+              <HStack space="lg" className="grow justify-between">
                 <Button
                   action="default"
                   variant="link"

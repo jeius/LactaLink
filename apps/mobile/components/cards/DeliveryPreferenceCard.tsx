@@ -64,7 +64,12 @@ export function DeliveryPreferenceCard({
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
       <HStack space="sm">
         <VStack space="sm" className="flex-1">
-          <Text className="font-JakartaSemiBold flex-1">{preferenceName}</Text>
+          <HStack space="sm" className="w-full">
+            <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold">
+              {preferenceName}
+            </Text>
+            {action}
+          </HStack>
 
           <VStack space="md">
             <HStack space="sm" className="flex-wrap items-center">
@@ -115,7 +120,6 @@ export function DeliveryPreferenceCard({
             </HStack>
           </VStack>
         </VStack>
-        {action}
       </HStack>
     </Card>
   );
