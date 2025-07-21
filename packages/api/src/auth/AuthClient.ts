@@ -136,7 +136,15 @@ export class AuthClient implements IAuthClient {
   // Auth flow helpers
   private _handleAuthSuccess = async (): Promise<User> => {
     try {
-      return await this.getMeUser();
+      const user = await this.getMeUser();
+      if (!user) {
+        throw new AuthError(
+          'User not authenticated',
+          status.UNAUTHORIZED,
+          'user_not_authenticated'
+        );
+      }
+      return user;
     } catch (error) {
       // Clear token on error
       this._setToken(null);
@@ -317,11 +325,8 @@ export class AuthClient implements IAuthClient {
     if (error) throw error;
   };
 
-  getMeUser = async (): Promise<User> => {
+  getMeUser = async (): Promise<User | null> => {
     const { user } = await this._getBackendSession();
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
     return user;
   };
 

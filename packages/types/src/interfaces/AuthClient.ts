@@ -133,10 +133,10 @@ export interface IAuthClient {
 
   /**
    * Retrieves the current authenticated user from the backend.
-   * @returns Promise resolving to the current user
-   * @throws Error if user is not authenticated
+   * @returns Promise resolving to the current user or null if not authenticated
+   *
    */
-  getMeUser(): Promise<User>;
+  getMeUser(): Promise<User | null>;
 
   /**
    * Retrieves the current session combining Supabase and backend session data.
