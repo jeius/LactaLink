@@ -80,7 +80,7 @@ function SceneRenderer({ route }: SceneRendererProps) {
   switch (profile?.relationTo) {
     case 'individuals': {
       if (profileID) {
-        where.push({ donor: { equals: profileID } });
+        where.push({ requester: { equals: profileID } });
       }
       break;
     }
