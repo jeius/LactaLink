@@ -7,8 +7,9 @@ import {
   DeliveryPreferenceSchema,
   Individual,
   MatchedRequestSchema,
+  Request,
 } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -27,7 +28,7 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedRequestCardProps {
-  id?: string;
+  request: string | Request;
   onChange?: (
     request: MatchedRequestSchema,
     deliveryPreference?: DeliveryPreferenceSchema | null
@@ -36,7 +37,7 @@ interface MatchedRequestCardProps {
 }
 
 export default function MatchedRequestCard({
-  id,
+  request: requestProp,
   onChange,
   isLoading: isLoadingProp,
 }: MatchedRequestCardProps) {
@@ -45,15 +46,19 @@ export default function MatchedRequestCard({
     null
   );
 
+  const shouldFetch = isString(requestProp);
+
   const {
-    data,
+    data: fetchedData,
     isLoading: isDataLoading,
     error,
-  } = useFetchById(Boolean(id), {
+  } = useFetchById(shouldFetch, {
     collection: 'requests',
-    id,
+    id: extractID(requestProp),
     populate: { users: { profile: true, profileType: true, role: true } },
   });
+
+  const data = shouldFetch ? fetchedData : extractCollection(requestProp);
 
   const requester = data?.requester as Individual | null;
   const requesterAvatar = requester?.avatar as AvatarType | null;
@@ -121,7 +126,7 @@ export default function MatchedRequestCard({
         <HStack
           space="md"
           className="items-start p-4"
-          style={{ backgroundColor: getPriorityColor(theme, urgency, 100) }}
+          style={{ backgroundColor: getPriorityColor(theme, urgency, 50) }}
         >
           <Avatar
             size="lg"
@@ -173,7 +178,7 @@ export default function MatchedRequestCard({
             className="font-JakartaBold"
             style={{ color: getPriorityColor(theme, urgency, 950) }}
           >
-            {data?.volumeNeeded}
+            {data?.volumeNeeded} mL
           </Text>
         </HStack>
 

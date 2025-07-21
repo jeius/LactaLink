@@ -6,7 +6,7 @@ import {
   Individual,
   MatchedDonationSchema,
 } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 
@@ -25,7 +25,7 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedDonationCardProps {
-  id?: string;
+  donation: string;
   onChange?: (
     donation: MatchedDonationSchema,
     deliveryPreference?: DeliveryPreferenceSchema | null
@@ -34,7 +34,7 @@ interface MatchedDonationCardProps {
 }
 
 export function MatchedDonationCard({
-  id,
+  donation,
   onChange,
   isLoading: isLoadingProp,
 }: MatchedDonationCardProps) {
@@ -43,15 +43,19 @@ export function MatchedDonationCard({
     null
   );
 
+  const shouldFetch = isString(donation);
+
   const {
-    data,
+    data: fetchedData,
     isLoading: isDataLoading,
     error,
-  } = useFetchById(Boolean(id), {
+  } = useFetchById(shouldFetch, {
     collection: 'donations',
-    id,
+    id: extractID(donation),
     populate: { users: { profile: true, profileType: true, role: true } },
   });
+
+  const data = shouldFetch ? fetchedData : extractCollection(donation);
 
   const donor = data?.donor as Individual | null;
   const donorAvatar = donor?.avatar as AvatarType | null;

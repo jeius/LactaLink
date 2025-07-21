@@ -16,17 +16,17 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
 
   const isOwner = userID ? user?.id === userID : true;
 
-  const { data, isLoading, isFetching, error } = useFetchById(Boolean(userID), {
+  const { data, isLoading, isFetching, error } = useFetchById(!isOwner, {
     collection: 'users',
     id: userID,
     select: { profile: true },
   });
 
-  const profile = extractCollection(data?.profile?.value);
+  const profile = isOwner ? authProfile : extractCollection(data?.profile?.value);
 
   function handleAddAddress() {
     router.push('/addresses/create');

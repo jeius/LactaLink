@@ -40,7 +40,7 @@ export function RequestDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Donation</Text>
           <MatchedDonationCard
-            id={matchedDonation}
+            donation={matchedDonation}
             isLoading={isLoading}
             onChange={handleMatchedDonationChange}
           />

@@ -38,7 +38,7 @@ export function DonationDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
           <MatchedRequestCard
-            id={matchedRequest}
+            request={matchedRequest}
             isLoading={isLoading}
             onChange={handleMatchedRequestChange}
           />
