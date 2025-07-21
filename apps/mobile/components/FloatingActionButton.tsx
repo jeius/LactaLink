@@ -1,7 +1,7 @@
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { LucideIcon, LucideProps, SaveIcon } from 'lucide-react-native';
 import React, { FC } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Card } from './ui/card';
 import { HStack } from './ui/hstack';
@@ -22,8 +22,6 @@ export function FloatingActionButton({
   cancelLabel = 'Cancel',
   confirmIcon = SaveIcon,
 }: FloatingActionButtonProps) {
-  const insets = useSafeAreaInsets();
-
   return (
     <AnimatePresence>
       {show && (
@@ -33,7 +31,6 @@ export function FloatingActionButton({
           exit={{ opacity: 0, y: 100 }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           style={{
-            marginBottom: insets.bottom,
             position: 'absolute',
             bottom: 0,
             left: 0,
@@ -41,12 +38,14 @@ export function FloatingActionButton({
             padding: 8,
           }}
         >
-          <Card className="mx-auto p-4">
-            <HStack space="md" className="justify-end">
-              <Button onPress={onConfirm}>
-                <ButtonIcon as={confirmIcon} />
-                <ButtonText>{confirmLabel}</ButtonText>
-              </Button>
+          <Card className="max-w-sm p-4">
+            <HStack space="md" className="w-full">
+              <Box className="flex-1">
+                <Button onPress={onConfirm}>
+                  <ButtonIcon as={confirmIcon} />
+                  <ButtonText>{confirmLabel}</ButtonText>
+                </Button>
+              </Box>
 
               <Button variant="outline" action="default" onPress={onCancel}>
                 <ButtonText>{cancelLabel}</ButtonText>
