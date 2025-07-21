@@ -18,9 +18,9 @@ import { ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { DeliveryPreferenceCard } from '../cards';
 import { ActionModal } from '../modals';
+import { NoData } from '../NoData';
 import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
-import { ListEmpty } from './ListEmpty';
 
 const placeholderData = Array.from({ length: 3 }, (_, index) => ({
   id: `placeholder-${index}`,
@@ -182,7 +182,7 @@ export function DeliveryPreferenceList({
   };
 
   function EmptyComponent() {
-    return !isLoading && <ListEmpty title="No delivery preferences found" />;
+    return !isLoading && <NoData title="No delivery preferences found" />;
   }
 
   function SeparatorComponent() {

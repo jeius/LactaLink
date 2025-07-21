@@ -12,8 +12,8 @@ import { FlashList } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { NoData } from '../NoData';
 import { Spinner } from '../ui/spinner';
-import { ListEmpty } from './ListEmpty';
 
 const placeholderData: Collection[] = Array.from(
   { length: 30 },
@@ -71,7 +71,7 @@ export function InfiniteList({
   }, [data]);
 
   function EmptyComponent() {
-    return !isLoading && <ListEmpty title={`No ${formatKebab(slug)} found`} />;
+    return !isLoading && <NoData title={`No ${formatKebab(slug)} found`} />;
   }
 
   function SeparatorComponent() {

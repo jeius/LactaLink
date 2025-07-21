@@ -12,8 +12,8 @@ import { useRouter } from 'expo-router';
 import { ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { AddressCard } from '../cards/AddressCard';
+import { NoData } from '../NoData';
 import { Divider } from '../ui/divider';
-import { ListEmpty } from './ListEmpty';
 
 const placeholderData = Array.from({ length: 3 }, (_, index) => ({
   id: `placeholder-${index}`,
@@ -122,7 +122,7 @@ export function AddressList({
   };
 
   function EmptyComponent() {
-    return !isLoading && <ListEmpty title="No addresses found" />;
+    return !isLoading && <NoData title="No addresses found" />;
   }
 
   function SeparatorComponent() {

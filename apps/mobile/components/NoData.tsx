@@ -1,17 +1,17 @@
 import { getImageAsset } from '@/lib/stores';
 import { AssetObject } from '@/lib/types';
-import { Image } from '../Image';
-import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
+import { Image } from './Image';
+import { Text } from './ui/text';
+import { VStack } from './ui/vstack';
 
-interface ListEmptyProps {
+interface NoDataProps {
   title?: string;
   description?: string;
   imageName?: keyof AssetObject['images'];
   hideImage?: boolean;
 }
 
-export function ListEmpty({ title, description, imageName = 'noData', hideImage }: ListEmptyProps) {
+export function NoData({ title, description, imageName = 'noData', hideImage }: NoDataProps) {
   return (
     <VStack space="xs" className="flex-1 items-center justify-center">
       {!hideImage && (
