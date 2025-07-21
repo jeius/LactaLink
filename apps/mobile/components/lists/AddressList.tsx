@@ -6,14 +6,22 @@ import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
+import { deleteCollection } from '@/lib/api/delete';
+import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { ListRenderItem } from 'react-native';
+import { EditIcon, Trash2Icon } from 'lucide-react-native';
+import { GestureResponderEvent, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { AddressCard } from '../cards/AddressCard';
+import { ActionModal } from '../modals';
 import { NoData } from '../NoData';
+import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
+import { HStack } from '../ui/hstack';
+import { Text } from '../ui/text';
 
 const placeholderData = Array.from({ length: 3 }, (_, index) => ({
   id: `placeholder-${index}`,
@@ -28,6 +36,7 @@ interface AddressListProps {
   enableEdit?: boolean;
   isLoading?: boolean;
   isFetching?: boolean;
+  showMap?: boolean;
 }
 
 export function AddressList({
@@ -39,9 +48,11 @@ export function AddressList({
   enableEdit = false,
   isLoading: isLoadingProp,
   isFetching: isFetchingProp,
+  showMap,
 }: AddressListProps) {
   const { profile } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const profileAddresses = profileProp?.addresses || profile?.addresses;
   const shouldFetch = areStrings(profileAddresses);
@@ -80,8 +91,16 @@ export function AddressList({
   const renderItem: ListRenderItem<Address> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
 
-    function handleEditAddress() {
+    function handleEdit(e: GestureResponderEvent) {
+      e.stopPropagation();
       router.push(`/addresses/edit/${item.id}`);
+    }
+
+    async function handleDelete() {
+      const deleted = await deleteCollection('addresses', item.id);
+      if (deleted) {
+        queryClient.invalidateQueries({ queryKey: COLLECTION_QUERY_KEY });
+      }
     }
 
     switch (itemVariant) {
@@ -89,15 +108,53 @@ export function AddressList({
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <AnimatedPressable
-              disableAnimation={!enableEdit}
-              onPress={enableEdit ? handleEditAddress : undefined}
+              disableAnimation={!enableEdit || showMap}
+              onPress={enableEdit && !showMap ? handleEdit : undefined}
             >
               <AddressCard
                 variant="filled"
                 isLoading={isLoading}
-                disableDelete={disableRemove}
                 data={item}
-                hideEdit={!enableEdit}
+                showMap={showMap}
+                className={showMap ? 'p-0' : undefined}
+                action={
+                  enableEdit && (
+                    <HStack space="lg" className="grow justify-between">
+                      <Button
+                        isDisabled={disableRemove}
+                        variant="link"
+                        action="default"
+                        className="h-fit w-fit p-0"
+                        hitSlop={8}
+                        onPress={handleEdit}
+                      >
+                        <ButtonIcon as={EditIcon} />
+                      </Button>
+                      <ActionModal
+                        action="negative"
+                        variant="link"
+                        className="h-fit w-fit"
+                        hitSlop={8}
+                        isDisabled={disableRemove}
+                        triggerIcon={Trash2Icon}
+                        onTriggerPress={(e) => e.stopPropagation()}
+                        iconOnly
+                        onConfirm={handleDelete}
+                        confirmLabel="Delete"
+                        title="Delete Address"
+                        description={
+                          <Text>
+                            Are you sure you want to delete
+                            <Text className="font-JakartaSemiBold">
+                              {item.name ? ` ${item.name}` : ''}
+                            </Text>
+                            ? This action cannot be undone.
+                          </Text>
+                        }
+                      />
+                    </HStack>
+                  )
+                }
               />
             </AnimatedPressable>
           </Motion.View>
@@ -109,12 +166,48 @@ export function AddressList({
           <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <AddressCard
               variant="ghost"
-              className="p-4"
+              className="p-0"
               isLoading={isLoading}
-              disableDelete={disableRemove}
               data={item}
-              hideEdit={!enableEdit}
-              onEditPress={handleEditAddress}
+              showMap={showMap}
+              action={
+                enableEdit && (
+                  <HStack space="lg" className="grow justify-between">
+                    <Button
+                      isDisabled={disableRemove}
+                      variant="link"
+                      action="default"
+                      className="h-fit w-fit p-0"
+                      hitSlop={8}
+                      onPress={handleEdit}
+                    >
+                      <ButtonIcon as={EditIcon} />
+                    </Button>
+                    <ActionModal
+                      action="negative"
+                      variant="link"
+                      className="h-fit w-fit"
+                      hitSlop={8}
+                      isDisabled={disableRemove}
+                      triggerIcon={Trash2Icon}
+                      onTriggerPress={(e) => e.stopPropagation()}
+                      iconOnly
+                      onConfirm={handleDelete}
+                      confirmLabel="Delete"
+                      title="Delete Address"
+                      description={
+                        <Text>
+                          Are you sure you want to delete
+                          <Text className="font-JakartaSemiBold">
+                            {item.name ? ` ${item.name}` : ''}
+                          </Text>
+                          ? This action cannot be undone.
+                        </Text>
+                      }
+                    />
+                  </HStack>
+                )
+              }
             />
           </Motion.View>
         );
@@ -128,7 +221,7 @@ export function AddressList({
   function SeparatorComponent() {
     switch (itemVariant) {
       case 'card':
-        return <Box className="h-2" />;
+        return <Box className="h-3" />;
       case 'default':
       default:
         return <Divider />;
@@ -155,7 +248,7 @@ export function AddressList({
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           { flexGrow: 1, paddingBottom: 20 },
-          itemVariant === 'card' ? { paddingHorizontal: 20 } : {},
+          itemVariant === 'card' ? { paddingHorizontal: 16 } : {},
         ]}
         style={{ flex: 1 }}
         ListEmptyComponent={EmptyComponent}

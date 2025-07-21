@@ -65,7 +65,7 @@ export function DeliveryPreferenceCard({
       <HStack space="sm">
         <VStack space="sm" className="flex-1">
           <HStack space="sm" className="w-full">
-            <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold">
+            <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold shrink">
               {preferenceName}
             </Text>
             {action}

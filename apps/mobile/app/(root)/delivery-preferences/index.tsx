@@ -24,7 +24,7 @@ export default function ListPage() {
 
   return (
     <SafeArea safeTop={false} safeBottom={false}>
-      <VStack className="w-full flex-1">
+      <VStack className="h-full w-full">
         <DeliveryPreferenceList userID={userID} enableEdit={isOwner} />
 
         <Motion.View

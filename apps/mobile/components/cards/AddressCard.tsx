@@ -1,143 +1,118 @@
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Address } from '@lactalink/types';
-import { EditIcon, Trash2Icon } from 'lucide-react-native';
-import React, { ComponentProps } from 'react';
+import React, { ComponentProps, useState } from 'react';
 
 import { BasicBadge } from '@/components/badges';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
-import { ActionModal } from '@/components/modals';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { deleteCollection } from '@/lib/api/delete';
-import { COLLECTION_QUERY_KEY } from '@/lib/constants';
-import { extractID } from '@lactalink/utilities';
-import { useQueryClient } from '@tanstack/react-query';
-import { GestureResponderEvent } from 'react-native';
+import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { GestureResponderEvent, StyleSheet } from 'react-native';
+import MapView, { LatLng, Marker } from 'react-native-maps';
+import { Pressable } from '../ui/pressable';
 
 interface AddressCardProps extends ComponentProps<typeof Card> {
   data: string | Address;
   isLoading?: boolean;
-  onEditPress?: (data: Address) => void;
-  onDeleted?: (data: Address) => void;
-  hideDelete?: boolean;
-  hideEdit?: boolean;
-  disableDelete?: boolean;
-  disableEdit?: boolean;
+  showMap?: boolean;
+  action?: React.ReactNode;
 }
 
 export function AddressCard({
   data: dataProp,
   isLoading: isLoadingProp,
-  onEditPress,
-  onDeleted,
-  hideDelete = false,
-  hideEdit = false,
-  disableDelete = false,
-  disableEdit = false,
+  showMap = false,
+  action,
   ...props
 }: AddressCardProps) {
-  const queryClient = useQueryClient();
+  const [isMapLoading, setIsMapLoading] = useState(true);
 
-  const { data, isLoading: isDataLoading } = useFetchById(typeof dataProp === 'string', {
+  const shouldFetch = isString(dataProp);
+
+  const { data: fetchedData, isLoading: isDataLoading } = useFetchById(shouldFetch, {
     collection: 'addresses',
     id: extractID(dataProp),
     depth: 0,
   });
 
   const isLoading = isLoadingProp || isDataLoading;
-  const { name, displayName, isDefault } = typeof dataProp === 'object' ? dataProp : data || {};
 
-  function handleEdit(e: GestureResponderEvent) {
+  const data = shouldFetch ? fetchedData : extractCollection(dataProp);
+  const { name, displayName, isDefault } = data || {};
+
+  const [latitude, longitude] = data?.coordinates || [0, 0];
+  const center: LatLng = { latitude, longitude };
+
+  function handleMapPress(e: GestureResponderEvent) {
     e.stopPropagation();
-    if (data) {
-      onEditPress?.(data);
-    }
-  }
-
-  async function handleDelete() {
-    if (!data || !data.id) return;
-    const deleted = await deleteCollection('addresses', data.id);
-    if (deleted) {
-      queryClient.invalidateQueries({ queryKey: COLLECTION_QUERY_KEY });
-    }
-
-    onDeleted?.(data);
+    // Navigate to map view or show map details
   }
 
   if (isLoading) {
     return (
       <Card {...props}>
-        <HStack space="sm" className="w-full items-start">
-          <Icon as={BasicLocationPin} />
-          <VStack space="xs" className="flex-1">
-            <Skeleton className="h-5 w-24" />
-            <Skeleton className="h-3" />
-            <Skeleton className="h-3 w-32" />
-          </VStack>
-          <HStack space="lg">
-            <Skeleton className="h-6 w-6" />
-            <Skeleton className="h-6 w-6" />
+        <VStack>
+          <Skeleton variant="sharp" className="h-40 w-full" />
+          <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
+            <Icon as={BasicLocationPin} />
+            <VStack space="xs" className="flex-1">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-3" />
+              <Skeleton className="h-3 w-32" />
+            </VStack>
           </HStack>
-        </HStack>
+        </VStack>
       </Card>
     );
   }
 
   return (
     <Card {...props}>
-      <HStack space="sm" className="w-full items-start">
-        <Icon as={BasicLocationPin} />
-        <Box className="flex-1">
-          <Text className="font-JakartaSemiBold">{name}</Text>
-          <Text size="sm">{displayName}</Text>
-        </Box>
-        <VStack space="sm" className="items-end">
-          <HStack space="xl">
-            {!hideEdit && (
-              <Button
-                isDisabled={disableEdit}
-                variant="link"
-                action="default"
-                className="h-fit w-fit p-0"
-                hitSlop={8}
-                onPress={handleEdit}
-              >
-                <ButtonIcon as={EditIcon} />
-              </Button>
-            )}
-            {!hideDelete && (
-              <ActionModal
-                action="negative"
-                variant="link"
-                className="h-fit w-fit"
-                hitSlop={8}
-                isDisabled={disableDelete}
-                triggerIcon={Trash2Icon}
-                onTriggerPress={(e) => e.stopPropagation()}
-                iconOnly
-                onConfirm={handleDelete}
-                confirmLabel="Delete"
-                title="Delete Address"
-                description={
-                  <Text>
-                    Are you sure you want to delete{' '}
-                    <Text className="font-JakartaSemiBold">{name}</Text>? This action cannot be
-                    undone.
-                  </Text>
-                }
-              />
-            )}
-          </HStack>
-
-          {isDefault && <BasicBadge size="sm" variant="outline" action="info" text="Default" />}
-        </VStack>
-      </HStack>
+      <VStack>
+        {showMap && (
+          <Box className="relative h-40 w-full">
+            {isMapLoading && <Skeleton variant="sharp" className="absolute inset-0 z-50" />}
+            <MapView
+              liteMode
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+              toolbarEnabled={false}
+              camera={{
+                zoom: 16,
+                center,
+                heading: 0,
+                pitch: 0,
+              }}
+              onMapLoaded={() => setIsMapLoading(false)}
+            >
+              <Marker coordinate={center} pointerEvents="none" />
+            </MapView>
+            <Pressable className="flex-1" onPress={handleMapPress} />
+          </Box>
+        )}
+        <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
+          <Icon as={BasicLocationPin} />
+          <Box className="flex-1">
+            <HStack space="sm" className="w-full items-center">
+              <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold shrink">
+                {name}
+              </Text>
+              {action}
+            </HStack>
+            <HStack space="sm" className="mt-1 w-full items-center">
+              <Text ellipsizeMode="tail" numberOfLines={2} size="sm" className="flex-1">
+                {displayName}
+              </Text>
+              {isDefault && <BasicBadge size="sm" action="info" text="Default" />}
+            </HStack>
+          </Box>
+        </HStack>
+      </VStack>
     </Card>
   );
 }

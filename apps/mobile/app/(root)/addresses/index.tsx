@@ -35,12 +35,16 @@ export default function ListPage() {
   return (
     <SafeArea safeTop={false} safeBottom={false}>
       <VStack className="w-full flex-1">
-        <AddressList
-          profile={profile}
-          enableEdit={isOwner}
-          isLoading={isLoading}
-          isFetching={isFetching}
-        />
+        <Box className="mt-4 grow">
+          <AddressList
+            profile={profile}
+            enableEdit={isOwner}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            showMap
+            itemVariant="card"
+          />
+        </Box>
 
         {isOwner && (
           <Motion.View
