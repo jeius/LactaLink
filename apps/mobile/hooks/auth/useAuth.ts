@@ -1,34 +1,37 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import { Hospital, Individual, MilkBank } from '@lactalink/types';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function useAuth() {
   const apiClient = useApiClient();
+  const queryClient = useQueryClient();
+  const [enableFetchUser, setEnableFetchUser] = useState(false);
 
-  const {
-    data: session,
-    isLoading,
-    isFetching,
-    isError,
-    refetch,
-    error,
-  } = useQuery({
-    queryKey: QUERY_KEYS.AUTH.ALL,
+  const { data: session, ...sessionQuery } = useQuery({
+    queryKey: QUERY_KEYS.AUTH.SESSION,
     queryFn: () => apiClient.auth.getSession(),
-    staleTime: 1000 * 60 * 10, // 5 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
   });
 
-  const user = session?.user || null;
-  const profile = (session?.user?.profile?.value || null) as
-    | Individual
-    | Hospital
-    | MilkBank
-    | null;
-  const profileCollection = session?.user?.profile?.relationTo || null;
+  const { data: user, ...userQuery } = useQuery({
+    enabled: enableFetchUser,
+    initialData: session?.user || null,
+    queryKey: QUERY_KEYS.AUTH.USER,
+    queryFn: () => apiClient.auth.getMeUser(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
+  });
+
+  const profile = user?.profile?.value || null;
+  const profileCollection = user?.profile?.relationTo || null;
+
+  useEffect(() => {
+    queryClient.setQueryData(QUERY_KEYS.AUTH.USER, session?.user || null);
+    setEnableFetchUser(Boolean(session));
+  }, [session, queryClient]);
 
   return {
     // Session data
@@ -38,13 +41,15 @@ export function useAuth() {
     session,
 
     // Loading states
-    isLoading,
-    isFetching,
-    isError,
-    error,
+    isLoading: sessionQuery.isLoading || userQuery.isLoading,
+    isFetching: sessionQuery.isFetching || userQuery.isFetching,
+    isError: sessionQuery.isError || userQuery.isError,
+    isRefetching: sessionQuery.isRefetching || userQuery.isRefetching,
+    error: sessionQuery.error || userQuery.error,
 
     // Manual refetch
-    refetchSession: refetch,
+    refetchSession: sessionQuery.refetch,
+    refetchUser: userQuery.refetch,
   };
 }
 
@@ -55,22 +60,21 @@ export function useAuthListener() {
   // Set up auth state change listener
   useEffect(() => {
     const subscription = apiClient.auth.onAuthStateChange((event) => {
-      // Invalidate session query on any auth state change
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
-
-      // Handle specific events if needed
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in');
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
           if (GoogleSignin.hasPreviousSignIn()) {
             GoogleSignin.signOut();
           }
           break;
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed');
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
           break;
         default:
           break;

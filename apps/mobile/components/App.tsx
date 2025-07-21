@@ -4,16 +4,21 @@ import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Stack, usePathname } from 'expo-router';
 import { HeaderBackButton } from './HeaderBackButton';
+import LoadingSpinner from './loaders/LoadingSpinner';
 
 export function App() {
   const screenOptions = useScreenOptions();
   const pathname = usePathname();
-  const { user, session } = useAuth();
+  const { user, session, isLoading, isFetching } = useAuth();
 
   const isAuthenticated = !!(user && session);
   const isResettingPassword = pathname.includes('/auth/reset-password');
 
   const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING) || false;
+
+  if (isLoading || isFetching) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <Stack screenOptions={{ ...screenOptions, headerLeft: () => <HeaderBackButton /> }}>

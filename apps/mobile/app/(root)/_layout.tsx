@@ -51,13 +51,15 @@ export default function Layout() {
         />
       </Stack.Protected>
 
-      <Stack.Screen
-        name="(tabs)"
-        options={{
-          headerShown: true,
-          headerTitle: (userName && `Welcome, ${userName}!`) || 'Welcome!',
-        }}
-      />
+      <Stack.Protected guard={!noProfile}>
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: true,
+            headerTitle: (userName && `Welcome, ${userName}!`) || 'Welcome!',
+          }}
+        />
+      </Stack.Protected>
     </Stack>
   );
 }
