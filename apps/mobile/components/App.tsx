@@ -4,6 +4,7 @@ import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Stack, usePathname } from 'expo-router';
 import { HeaderBackButton } from './HeaderBackButton';
+import FetchingSpinner from './loaders/FetchingSpinner';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
 export function App() {
@@ -16,23 +17,26 @@ export function App() {
 
   const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING) || false;
 
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
   return (
-    <Stack screenOptions={{ ...screenOptions, headerLeft: () => <HeaderBackButton /> }}>
-      <Stack.Protected guard={isAuthenticated && !isResettingPassword}>
-        <Stack.Protected guard={!viewedOnboarding}>
-          <Stack.Screen name="index" />
+    <>
+      <Stack screenOptions={{ ...screenOptions, headerLeft: () => <HeaderBackButton /> }}>
+        <Stack.Protected guard={isAuthenticated && !isResettingPassword}>
+          <Stack.Protected guard={!viewedOnboarding}>
+            <Stack.Screen name="index" />
+          </Stack.Protected>
+
+          <Stack.Screen name="(root)" />
         </Stack.Protected>
 
-        <Stack.Screen name="(root)" />
-      </Stack.Protected>
-
-      <Stack.Protected guard={isResettingPassword || !isAuthenticated}>
-        <Stack.Screen name="auth" />
-      </Stack.Protected>
-    </Stack>
+        <Stack.Protected guard={isResettingPassword || !isAuthenticated}>
+          <Stack.Screen name="auth" />
+        </Stack.Protected>
+      </Stack>
+      <FetchingSpinner isFetching={isFetching} />
+    </>
   );
 }
