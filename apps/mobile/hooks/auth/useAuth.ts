@@ -1,7 +1,8 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
+import { extractCollection } from '@lactalink/utilities';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 export function useAuth() {
@@ -12,7 +13,7 @@ export function useAuth() {
   const { data: session, ...sessionQuery } = useQuery({
     queryKey: QUERY_KEYS.AUTH.SESSION,
     queryFn: () => apiClient.auth.getSession(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: Infinity,
     retry: false,
   });
 
@@ -21,11 +22,11 @@ export function useAuth() {
     initialData: session?.user || null,
     queryKey: QUERY_KEYS.AUTH.USER,
     queryFn: () => apiClient.auth.getMeUser(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: Infinity,
     retry: false,
   });
 
-  const profile = user?.profile?.value || null;
+  const profile = (user?.profile?.value && extractCollection(user.profile.value)) || null;
   const profileCollection = user?.profile?.relationTo || null;
 
   useEffect(() => {
@@ -57,9 +58,16 @@ export function useAuthListener() {
   const apiClient = useApiClient();
   const queryClient = useQueryClient();
 
+  const mutateSession = useMutation({
+    mutationFn: () => apiClient.auth.getSession(),
+    onSuccess: (session) => {
+      queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, session);
+    },
+  });
+
   // Set up auth state change listener
   useEffect(() => {
-    const subscription = apiClient.auth.onAuthStateChange((event) => {
+    const subscription = apiClient.auth.onAuthStateChange((event, session) => {
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in');
@@ -67,14 +75,15 @@ export function useAuthListener() {
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.ALL });
+          queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, null);
+          queryClient.setQueryData(QUERY_KEYS.AUTH.USER, null);
           if (GoogleSignin.hasPreviousSignIn()) {
             GoogleSignin.signOut();
           }
           break;
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed');
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
+          mutateSession.mutate();
           break;
         default:
           break;
@@ -85,5 +94,5 @@ export function useAuthListener() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [apiClient, queryClient]);
+  }, [apiClient, mutateSession, queryClient]);
 }
