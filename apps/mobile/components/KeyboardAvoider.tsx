@@ -1,5 +1,19 @@
-import React, { ComponentProps, useEffect, useRef, useState } from 'react';
-import { NativeScrollEvent, Platform, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import React, {
+  ComponentProps,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import {
+  NativeScrollEvent,
+  Platform,
+  ScrollViewProps,
+  StyleProp,
+  TextInput,
+  ViewStyle,
+} from 'react-native';
 
 import { ScrollView } from 'react-native-gesture-handler';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
@@ -7,6 +21,17 @@ import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-nativ
 import { VStack } from './ui/vstack';
 
 const OFFSET = Platform.select({ android: 42, ios: 64, default: 0 });
+
+interface KeyboardAvoiderContextProps {
+  onFocus?: (id: string) => void;
+  registerInput?: (id: string, ref: TextInput | null) => () => void;
+}
+
+const KeyboardAvoiderContext = createContext<KeyboardAvoiderContextProps>({});
+
+export const useKeyboardAvoider = () => {
+  return useContext(KeyboardAvoiderContext);
+};
 
 interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
   keyboardVerticalOffset?: number;
@@ -16,51 +41,81 @@ interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
 
 const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
   children,
-  keyboardVerticalOffset: offset = OFFSET,
+  keyboardVerticalOffset = 0,
   contentContainerClassName,
   contentContainerStyle,
   ...props
 }) => {
-  const { height, isKeyboardShown } = useKeyboardSharedHeight(offset);
+  const { height, isKeyboardShown } = useKeyboardSharedHeight(keyboardVerticalOffset + OFFSET);
   const scrollRef = useRef<ScrollView>(null);
   const scrollEvent = useRef<NativeScrollEvent>(null);
+  const inputRefs = useRef<Record<string, TextInput | null>>({});
+
+  const [focusedInputID, setFocusedInputID] = useState<string | null>(null);
 
   const fakeViewStyle = useAnimatedStyle(() => ({
     height: height.value,
   }));
 
+  function handleFocus(id: string) {
+    setFocusedInputID(id);
+  }
+
   useEffect(() => {
-    if (isKeyboardShown && scrollRef.current && scrollEvent.current) {
+    if (isKeyboardShown && scrollEvent.current) {
       const currentOffset = scrollEvent.current.contentOffset.y;
       const viewportHeight = scrollEvent.current.layoutMeasurement.height;
-      const contentHeight = scrollEvent.current.contentSize.height;
 
-      // Calculate the bottom of the visible viewport
-      const visibleBottom = currentOffset + viewportHeight;
+      const focusedInput = (focusedInputID && inputRefs.current[focusedInputID]) || null;
 
-      // Check if the current scroll offset is covered by the viewport
-      if (visibleBottom < contentHeight) {
-        const scrollToOffset = currentOffset + offset;
-        scrollRef.current.scrollTo({ y: scrollToOffset, animated: true });
+      if (focusedInput && focusedInput.isFocused()) {
+        focusedInput.measureInWindow((_x, y, _width, height) => {
+          const inputBottom = y + height;
+
+          // Check if the input is covered by the viewport
+          if (inputBottom > viewportHeight) {
+            const scrollToOffset = currentOffset + OFFSET + (inputBottom - viewportHeight);
+            scrollRef.current?.scrollTo({ y: scrollToOffset, animated: true });
+          }
+        });
       }
     }
-  }, [isKeyboardShown, offset]);
+  }, [focusedInputID, isKeyboardShown]);
+
+  function unRegisterInput(id: string) {
+    if (inputRefs.current[id]) {
+      delete inputRefs.current[id];
+    }
+  }
+
+  function handleRegisterInput(id: string, ref: TextInput | null) {
+    if (ref) {
+      inputRefs.current[id] = ref;
+    } else {
+      delete inputRefs.current[id];
+    }
+    return unRegisterInput.bind(null, id);
+  }
 
   return (
-    <VStack {...props}>
-      <ScrollView
-        ref={scrollRef}
-        onScroll={({ nativeEvent }) => {
-          scrollEvent.current = nativeEvent;
-        }}
-        keyboardShouldPersistTaps="handled"
-        contentContainerClassName={contentContainerClassName}
-        contentContainerStyle={contentContainerStyle}
-      >
-        {children}
-      </ScrollView>
-      <Animated.View style={fakeViewStyle} />
-    </VStack>
+    <KeyboardAvoiderContext.Provider
+      value={{ onFocus: handleFocus, registerInput: handleRegisterInput }}
+    >
+      <VStack {...props}>
+        <ScrollView
+          ref={scrollRef}
+          onScroll={({ nativeEvent }) => {
+            scrollEvent.current = nativeEvent;
+          }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerClassName={contentContainerClassName}
+          contentContainerStyle={contentContainerStyle}
+        >
+          {children}
+        </ScrollView>
+        <Animated.View style={fakeViewStyle} />
+      </VStack>
+    </KeyboardAvoiderContext.Provider>
   );
 };
 

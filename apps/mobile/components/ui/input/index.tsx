@@ -1,12 +1,20 @@
 'use client';
+import { useKeyboardAvoider } from '@/components/KeyboardAvoider';
 import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import { createInput } from '@gluestack-ui/input';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  NativeSyntheticEvent,
+  Pressable,
+  TextInput,
+  TextInputFocusEventData,
+  View,
+} from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -173,8 +181,32 @@ type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
   VariantProps<typeof inputFieldStyle> & { className?: string };
 
 const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, IInputFieldProps>(
-  function InputField({ className, ...props }, ref) {
+  function InputField({ className, ...props }, refProp) {
     const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
+    const { onFocus, registerInput } = useKeyboardAvoider();
+    const inputRef = useRef<TextInput>(null);
+    const [inputID, setInputID] = useState('');
+
+    const ref = refProp || inputRef;
+
+    useEffect(() => {
+      if (typeof ref !== 'function' && ref.current) {
+        const inputID = 'input-' + randomUUID();
+        setInputID(inputID);
+
+        const unregister = registerInput?.(inputID, ref.current as TextInput);
+        return () => {
+          unregister?.();
+        };
+      }
+      return undefined;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    function handleFocus(event: NativeSyntheticEvent<TextInputFocusEventData>) {
+      props.onFocus?.(event);
+      onFocus?.(inputID);
+    }
 
     return (
       <UIInput.Input
@@ -187,6 +219,7 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
           },
           class: className,
         })}
+        onFocus={handleFocus}
       />
     );
   }
