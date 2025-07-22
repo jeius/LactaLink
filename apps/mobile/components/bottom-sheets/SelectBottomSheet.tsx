@@ -1,15 +1,9 @@
-import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Collection, CollectionSlug, Where } from '@lactalink/types';
-import {
-  areStrings,
-  checkIsOwner,
-  extractCollection,
-  extractID,
-  formatKebabToTitle,
-} from '@lactalink/utilities';
+import { areStrings, extractCollection, extractID, formatKebabToTitle } from '@lactalink/utilities';
+import { useIsFocused } from '@react-navigation/native';
 import { ListRenderItem } from '@shopify/flash-list';
 import { Href, useRouter } from 'expo-router';
 import { Edit2Icon, PlusIcon } from 'lucide-react-native';
@@ -38,7 +32,13 @@ import { VStack } from '../ui/vstack';
 
 type TValue<T extends boolean = false> = T extends true ? string[] : string;
 
-interface SelectBottomSheetProps<
+export interface SelectItemProps<TSlug extends CollectionSlug = CollectionSlug> {
+  item: Collection<TSlug>;
+  isLoading?: boolean;
+  canEdit?: boolean;
+}
+
+export interface SelectBottomSheetProps<
   T extends boolean = false,
   TSlug extends CollectionSlug = CollectionSlug,
 > {
@@ -48,9 +48,11 @@ interface SelectBottomSheetProps<
   allowMultipleSelection?: T;
   slug: TSlug;
   collections?: (string | Collection<TSlug>)[];
-  ItemComponent: FC<{ item: Collection<TSlug>; isLoading?: boolean; canEdit?: boolean }>;
+  ItemComponent: FC<SelectItemProps<TSlug>>;
   title?: string;
   createLabel?: string;
+  allowEdit?: boolean;
+  allowCreate?: boolean;
 }
 
 export function SelectBottomSheet<
@@ -66,11 +68,13 @@ export function SelectBottomSheet<
   ItemComponent,
   title,
   createLabel,
+  allowEdit = false,
+  allowCreate = false,
 }: SelectBottomSheetProps<T, TSlug>) {
-  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { theme } = useTheme();
+  const isFocused = useIsFocused();
 
   const { width: DEVICE_WIDTH } = useWindowDimensions();
 
@@ -109,13 +113,17 @@ export function SelectBottomSheet<
     }
   }, [shouldFetch, isLoading, fetchedData, collections]);
 
-  const isOwner = user && data ? checkIsOwner(user, data) : false;
-
   useEffect(() => {
     setSelected(selectedProps);
     defaultSelectedIDs.current = selectedProps;
     setIsDirty(false);
   }, [selectedProps]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setOpen(false);
+    }
+  }, [isFocused]);
 
   function handleSave() {
     if (!selected || (Array.isArray(selected) && selected.length === 0)) {
@@ -142,7 +150,7 @@ export function SelectBottomSheet<
   }
 
   const renderItem = useCallback<ListRenderItem<Collection<TSlug>>>(
-    ({ item, extraData: { selected, allowMultipleSelection, isOwner } }) => {
+    ({ item, extraData: { selected, allowMultipleSelection, allowEdit, _allowCreate } }) => {
       const selection: TValue<T> = selected;
 
       const isLoading = item.id.includes('placeholder');
@@ -179,7 +187,7 @@ export function SelectBottomSheet<
       return (
         <AnimatedPressable onPress={handlePress}>
           <CardWrapper isSelected={isSelected}>
-            <ItemComponent item={item} isLoading={isLoading} canEdit={isOwner} />
+            <ItemComponent item={item} isLoading={isLoading} canEdit={allowEdit} />
           </CardWrapper>
         </AnimatedPressable>
       );
@@ -197,7 +205,7 @@ export function SelectBottomSheet<
       !isLoading && (
         <VStack space="xl" className="mx-auto items-center p-4">
           <NoData title="Oops! Nothing to show here." />
-          {isOwner && (
+          {allowCreate && (
             <Button onPress={handleCreateNew}>
               <ButtonIcon as={PlusIcon} />
               <ButtonText>{createLabel || `Create ${formatKebabToTitle(slug)}`}</ButtonText>
@@ -206,22 +214,22 @@ export function SelectBottomSheet<
         </VStack>
       )
     );
-  }, [isLoading, isOwner, handleCreateNew, createLabel, slug]);
+  }, [isLoading, allowCreate, handleCreateNew, createLabel, slug]);
 
   const HeaderComponent = useCallback(() => {
     if (data?.length === 0) return null;
 
-    let text = `Select one from ${formatKebabToTitle(slug)}`;
+    let text = title || `Select one from ${formatKebabToTitle(slug)}`;
     if (isLoading) {
       text = `Loading ${formatKebabToTitle(slug)}...`;
-    } else if (allowMultipleSelection) {
+    } else if (!title && allowMultipleSelection) {
       text = `Select one or more ${formatKebabToTitle(slug)}`;
     }
 
     return (
       <Box className="mx-auto mb-4">
         <Text size="lg" className="font-JakartaSemiBold">
-          {title || text}
+          {text}
         </Text>
       </Box>
     );
@@ -229,7 +237,7 @@ export function SelectBottomSheet<
 
   const FooterComponent = useCallback(() => {
     const isEmpty = data?.length === 0;
-    if ((isEmpty && !isLoading) || !isOwner) return null;
+    if ((isEmpty && !isLoading) || !allowCreate) return null;
 
     return (
       <Button size="sm" variant="link" action="default" onPress={handleCreateNew}>
@@ -237,7 +245,7 @@ export function SelectBottomSheet<
         <ButtonText>{createLabel || `Create ${formatKebabToTitle(slug)}`}</ButtonText>
       </Button>
     );
-  }, [data?.length, isLoading, isOwner, handleCreateNew, createLabel, slug]);
+  }, [data?.length, isLoading, allowCreate, handleCreateNew, createLabel, slug]);
 
   function Trigger() {
     if (triggerComponent) {
@@ -285,13 +293,8 @@ export function SelectBottomSheet<
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
-            extraData={{ selected, allowMultipleSelection, isOwner }}
+            extraData={{ selected, allowMultipleSelection, allowEdit, allowCreate }}
             ListEmptyComponent={EmptyComponent}
-            contentContainerStyle={{
-              paddingBottom: insets.bottom + 24,
-              paddingHorizontal: 12,
-              paddingTop: 12,
-            }}
             estimatedListSize={listSize}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={HeaderComponent}
@@ -300,6 +303,11 @@ export function SelectBottomSheet<
             ListFooterComponentStyle={{
               marginVertical: 16,
               alignItems: 'flex-start',
+            }}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 24,
+              paddingHorizontal: 12,
+              paddingTop: 12,
             }}
           />
 
@@ -331,8 +339,8 @@ function CardWrapper({ isSelected, children }: CardWrapperProps) {
       {children}
       {isSelected && (
         <Box
-          className="bg-success-500 absolute bottom-0 right-0 px-4 py-2"
-          style={{ borderTopLeftRadius: 6 }}
+          className="bg-success-500 absolute right-0 top-0 px-4 py-2"
+          style={{ borderBottomLeftRadius: 6 }}
         >
           <Text size="sm" className="text-success-0 font-JakartaSemiBold">
             Selected
