@@ -1,45 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
+import { AddressesBottomSheet } from '@/components/bottom-sheets/AddressesBottomSheet';
+import { AddressCard } from '@/components/cards';
+import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
+} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { deleteCollection } from '@/lib/api/delete';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
-import { COLLECTION_QUERY_KEY, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
+import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
-import { AnimatePresence, Motion } from '@legendapp/motion';
-import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
+  AlertCircleIcon,
   CalendarDaysIcon,
-  MapPinIcon,
-  RotateCcwIcon,
-  SaveIcon,
+  Edit2Icon,
+  PlusIcon,
   TrashIcon,
   TruckIcon,
 } from 'lucide-react-native';
 
 export default function EditPage() {
   //#region Hooks
-  const { user } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const revalidateQueries = useRevalidateQueries();
+  const [floatingButtonHeight, setFloatingButtonHeight] = useState(0);
+
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { form, isFetching, error, isLoading } = useDeliveryPreferenceForm(id);
@@ -48,13 +57,21 @@ export default function EditPage() {
   //#region Form State
   const isSubmitting = form.formState.isSubmitting;
   const isDirty = form.formState.isDirty;
+  const showFloatingButton = isDirty;
+
+  const { error: addressFieldError } = form.getFieldState('address');
 
   const name = form.getValues('name');
+  const address = form.watch('address');
 
   const submit = form.handleSubmit(onSubmit);
   //#endregion
 
   //#region Form Handlers
+  function handleAddressChange(id: string) {
+    form.setValue('address', id);
+  }
+
   async function onSubmit(formData: DeliveryPreferenceSchema) {
     const promise = upsertDeliveryPreference(formData);
 
@@ -70,20 +87,15 @@ export default function EditPage() {
 
     await promise;
 
-    revalidateCache();
+    revalidateQueries();
+    router.back();
     form.reset(formData);
   }
 
   async function handleDelete() {
     const deleted = await deleteCollection('delivery-preferences', id);
     if (!deleted) return;
-    revalidateCache();
-  }
-
-  function revalidateCache() {
-    queryClient.invalidateQueries({
-      queryKey: COLLECTION_QUERY_KEY,
-    });
+    revalidateQueries();
     router.back();
   }
 
@@ -103,69 +115,81 @@ export default function EditPage() {
       <FormPreventBack />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <ScrollView style={{ flex: 1 }}>
+        <KeyboardAvoidingWrapper>
           {isLoading ? (
             <PageSkeleton />
           ) : (
-            <VStack space="2xl" className="mb-20 p-5">
-              <Card>
-                <FormField
-                  name="name"
-                  label="Name"
-                  fieldType="text"
-                  variant="underlined"
-                  placeholder="e.g. Home Delivery, Office Delivery"
-                  helperText="Give a name to your delivery preference."
-                  keyboardType="default"
-                  autoCapitalize="words"
-                />
-              </Card>
+            <VStack
+              space="2xl"
+              className="p-5"
+              style={{ marginBottom: showFloatingButton ? floatingButtonHeight : 0 }}
+            >
+              <FormField
+                name="preferredMode"
+                fieldType="button-group"
+                options={Object.values(DELIVERY_OPTIONS)}
+                labelIcon={TruckIcon}
+                label="Preferred Delivery Modes"
+                containerClassName="gap-2"
+                helperText="You can select multiple mode of delivery."
+                allowMultipleSelection
+              />
+              <FormField
+                name="availableDays"
+                fieldType="button-group"
+                label="Available Days"
+                helperText="You can select multiple days for delivery."
+                labelIcon={CalendarDaysIcon}
+                options={Object.values(DAYS)}
+                containerClassName="gap-2"
+                allowMultipleSelection
+              />
 
-              <Card>
-                <FormField
-                  name="preferredMode"
-                  fieldType="button-group"
-                  options={Object.values(DELIVERY_OPTIONS)}
-                  labelIcon={TruckIcon}
-                  label="Preferred Delivery Modes"
-                  containerClassName="gap-2"
-                  helperText="You can select multiple mode of delivery."
-                  allowMultipleSelection
-                />
-              </Card>
+              <FormControl isInvalid={!!addressFieldError} isDisabled={isSubmitting}>
+                <FormControlLabel>
+                  <FormControlLabelText>Preffered Address</FormControlLabelText>
+                </FormControlLabel>
 
-              <Card>
-                <FormField
-                  name="availableDays"
-                  fieldType="button-group"
-                  label="Available Days"
-                  helperText="You can select multiple days for delivery."
-                  labelIcon={CalendarDaysIcon}
-                  options={Object.values(DAYS)}
-                  containerClassName="gap-2"
-                  allowMultipleSelection
-                />
-              </Card>
+                <FormControlError>
+                  <FormControlErrorIcon as={AlertCircleIcon} />
+                  <FormControlErrorText>{addressFieldError?.message}</FormControlErrorText>
+                </FormControlError>
 
-              <Card>
-                <FormField
-                  name="address"
-                  fieldType="combobox"
-                  label="Preferred Address"
-                  helperText="Select your preferred address for delivery."
-                  labelIcon={MapPinIcon}
-                  placeholder="Select Address"
-                  searchPlaceholder="Search Address"
-                  containerClassName="gap-2"
-                  collection="addresses"
-                  where={{ owner: { equals: user?.id } }}
-                  searchPath="displayName"
-                  labelPath="name"
-                  descriptionPath="displayName"
-                  icon={MapPinIcon}
-                  iconPosition="left"
+                {address && <AddressCard data={address} showMap isLoading={isLoading} />}
+
+                <AddressesBottomSheet
+                  allowMultipleSelection={false}
+                  selected={address}
+                  onChange={handleAddressChange}
+                  triggerComponent={(props) => (
+                    <Button
+                      {...props}
+                      size="sm"
+                      variant="outline"
+                      action="positive"
+                      className="mt-4"
+                    >
+                      <ButtonIcon as={address ? Edit2Icon : PlusIcon} />
+                      <ButtonText>{address ? 'Change' : 'Add'} Address</ButtonText>
+                    </Button>
+                  )}
                 />
-              </Card>
+              </FormControl>
+
+              <VStack>
+                <Text className="font-JakartaMedium mb-1">Name</Text>
+                <Card>
+                  <FormField
+                    name="name"
+                    fieldType="text"
+                    variant="underlined"
+                    placeholder="e.g. Home Delivery, Office Delivery"
+                    helperText="Give a name to your delivery preference."
+                    keyboardType="default"
+                    autoCapitalize="words"
+                  />
+                </Card>
+              </VStack>
 
               <ActionModal
                 action="negative"
@@ -184,46 +208,19 @@ export default function EditPage() {
               />
             </VStack>
           )}
-        </ScrollView>
+        </KeyboardAvoidingWrapper>
 
-        <AnimatePresence>
-          {isDirty && (
-            <Motion.View
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 80 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 400 }}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                padding: 8,
-              }}
-            >
-              <Card className="mx-auto p-4">
-                <HStack space="md" className="w-full justify-end">
-                  <Box className="flex-1">
-                    <Button onPress={submit} isDisabled={isSubmitting}>
-                      <ButtonIcon as={SaveIcon} />
-                      <ButtonText>Save</ButtonText>
-                    </Button>
-                  </Box>
-
-                  <Button
-                    isDisabled={isSubmitting}
-                    variant="outline"
-                    action="default"
-                    onPress={handleReset}
-                  >
-                    <ButtonIcon as={RotateCcwIcon} />
-                    <ButtonText>Reset</ButtonText>
-                  </Button>
-                </HStack>
-              </Card>
-            </Motion.View>
-          )}
-        </AnimatePresence>
+        <FloatingActionButton
+          onConfirm={submit}
+          onCancel={handleReset}
+          show={showFloatingButton}
+          confirmLabel="Save Changes"
+          cancelLabel="Reset"
+          onLayout={(e) => {
+            const { height } = e.nativeEvent.layout;
+            setFloatingButtonHeight(height);
+          }}
+        />
       </SafeArea>
       {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
@@ -234,48 +231,40 @@ export default function EditPage() {
 //#region PageSkeleton
 function PageSkeleton() {
   return (
-    <VStack space="2xl" className="mb-20 p-5">
-      <Card>
-        <VStack space="md">
-          <Skeleton variant="rounded" className="h-8 w-32" />
-          <Skeleton variant="rounded" className="h-10" />
-          <Skeleton variant="rounded" className="h-6" />
-        </VStack>
-      </Card>
+    <VStack space="2xl" className="p-5">
+      <VStack space="md">
+        <Skeleton variant="rounded" className="h-8 w-52" />
+        <HStack space="md" className="flex-wrap">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" className="h-10 w-24" />
+          ))}
+        </HStack>
+        <Skeleton variant="rounded" className="h-6" />
+        <Skeleton variant="rounded" className="h-10" />
+      </VStack>
 
-      <Card>
-        <VStack space="md">
-          <Skeleton variant="rounded" className="h-8 w-52" />
-          <HStack space="md" className="flex-wrap">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} variant="rounded" className="h-10 w-24" />
-            ))}
-          </HStack>
-          <Skeleton variant="rounded" className="h-6" />
-          <Skeleton variant="rounded" className="h-10" />
-        </VStack>
-      </Card>
+      <VStack space="md">
+        <Skeleton variant="rounded" className="h-8 w-44" />
+        <HStack space="md" className="flex-wrap">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" className="h-10 w-24" />
+          ))}
+        </HStack>
+        <Skeleton variant="rounded" className="h-6" />
+        <Skeleton variant="rounded" className="h-10" />
+      </VStack>
 
-      <Card>
-        <VStack space="md">
-          <Skeleton variant="rounded" className="h-8 w-44" />
-          <HStack space="md" className="flex-wrap">
-            {Array.from({ length: 7 }).map((_, index) => (
-              <Skeleton key={index} variant="rounded" className="h-10 w-24" />
-            ))}
-          </HStack>
-          <Skeleton variant="rounded" className="h-6" />
-          <Skeleton variant="rounded" className="h-10" />
-        </VStack>
-      </Card>
+      <VStack space="md">
+        <Skeleton variant="rounded" className="h-8 w-44" />
+        <Skeleton variant="rounded" className="h-10" />
+        <Skeleton variant="rounded" className="h-6" />
+      </VStack>
 
-      <Card>
-        <VStack space="md">
-          <Skeleton variant="rounded" className="h-8 w-44" />
-          <Skeleton variant="rounded" className="h-10" />
-          <Skeleton variant="rounded" className="h-6" />
-        </VStack>
-      </Card>
+      <VStack space="md">
+        <Skeleton variant="rounded" className="h-8 w-32" />
+        <Skeleton variant="rounded" className="h-10" />
+        <Skeleton variant="rounded" className="h-6" />
+      </VStack>
     </VStack>
   );
 }

@@ -49,7 +49,7 @@ export function AddressesBottomSheet<T extends boolean = false>({
   allowMultipleSelection,
   addresses: addressesProp,
 }: AddressesBottomSheetProps<T>) {
-  const { user, ...auth } = useAuth();
+  const { user, profile, ...auth } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { theme } = useTheme();
@@ -62,7 +62,7 @@ export function AddressesBottomSheet<T extends boolean = false>({
   const [open, setOpen] = useState(false);
   const [listSize, setListSize] = useState({ height: 360, width: DEVICE_WIDTH });
 
-  const userAddresses = user?.addresses?.docs;
+  const userAddresses = profile?.addresses;
   const addresses = useMemo(
     () => addressesProp || userAddresses || [],
     [addressesProp, userAddresses]
@@ -195,7 +195,7 @@ export function AddressesBottomSheet<T extends boolean = false>({
   const HeaderComponent = useCallback(() => {
     if (data?.length === 0) return null;
 
-    let text = 'Select a Address';
+    let text = 'Select Address';
     if (isLoading) {
       text = 'Loading Addresses...';
     } else if (allowMultipleSelection) {

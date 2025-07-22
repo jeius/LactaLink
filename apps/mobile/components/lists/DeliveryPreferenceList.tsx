@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { deleteCollection } from '@/lib/api/delete';
 import { COLLECTION_QUERY_KEY } from '@/lib/constants';
+import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -40,23 +41,35 @@ export function DeliveryPreferenceList({
   onChange,
   disableRemove,
   itemVariant = 'default',
-  userID: userIDProp,
+  userID,
   enableEdit = false,
 }: DeliveryPreferencesListProps) {
   const { user } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const userID = userIDProp || user?.id;
+  const userDeliveryPreferences = useMemo(
+    () => (!userID ? user?.deliveryPreferences?.docs || [] : null),
+    [userID, user?.deliveryPreferences?.docs]
+  );
+
+  const prefIDS = useMemo(
+    () => preferenceIDs || (userDeliveryPreferences && extractID(userDeliveryPreferences)),
+    [preferenceIDs, userDeliveryPreferences]
+  );
+
+  const shouldFetch =
+    (preferenceIDs && preferenceIDs.length > 0) ||
+    Boolean(userID) ||
+    areStrings(userDeliveryPreferences);
 
   const where: Where | undefined =
-    preferenceIDs && preferenceIDs.length > 0
+    prefIDS && prefIDS.length > 0
       ? { id: { in: preferenceIDs } }
       : userID
         ? { owner: { equals: userID } }
         : undefined;
 
-  const shouldFetch = (preferenceIDs && preferenceIDs.length > 0) || Boolean(user);
   const {
     data: fetchedData,
     isLoading,
@@ -73,7 +86,10 @@ export function DeliveryPreferenceList({
     sort: 'createdAt',
   });
 
-  const data = useMemo(() => fetchedData || [], [fetchedData]);
+  const data = useMemo(
+    () => (shouldFetch ? fetchedData : extractCollection(userDeliveryPreferences)) || [],
+    [fetchedData, shouldFetch, userDeliveryPreferences]
+  );
   const isEmpty = data.length === 0;
 
   useEffect(() => {

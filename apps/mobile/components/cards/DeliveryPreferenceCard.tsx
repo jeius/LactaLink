@@ -7,7 +7,7 @@ import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DeliveryPreference } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { ComponentProps, ReactNode } from 'react';
 import { Image } from '../Image';
@@ -34,11 +34,12 @@ export function DeliveryPreferenceCard({
 }: DeliveryPreferenceCardProps) {
   const { address: addressProp, preferredMode, availableDays, name } = preference;
 
+  const shouldFetchAddress = isString(addressProp);
   const {
-    data: addressDoc,
+    data: fetchedAddress,
     isLoading,
     isFetching,
-  } = useFetchById(typeof addressProp === 'string', {
+  } = useFetchById(shouldFetchAddress, {
     collection: 'addresses',
     id: extractID(addressProp),
     select: { name: true, displayName: true },
@@ -56,7 +57,7 @@ export function DeliveryPreferenceCard({
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays);
 
-  const address = typeof addressProp === 'string' ? addressDoc : addressProp;
+  const address = shouldFetchAddress ? fetchedAddress : extractCollection(addressProp);
   const addressName = address?.name || 'Address';
   const fullAddress = address?.displayName || 'Unknown Address';
 

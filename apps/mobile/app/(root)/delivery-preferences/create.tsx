@@ -21,7 +21,6 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
@@ -48,7 +47,9 @@ export default function CreatePage() {
 
   const isSubmitting = form.formState.isSubmitting;
   const { error: addressFieldError } = form.getFieldState('address');
-  const formData = form.watch();
+
+  const address = form.watch('address');
+  const formData = form.getValues();
 
   const submit = form.handleSubmit(onSubmit);
 
@@ -127,18 +128,16 @@ export default function CreatePage() {
                 <FormControlErrorText>{addressFieldError?.message}</FormControlErrorText>
               </FormControlError>
 
-              {formData.address && (
-                <AddressCard data={formData.address} showMap isLoading={isLoading} />
-              )}
+              {address && <AddressCard data={address} showMap isLoading={isLoading} />}
 
               <AddressesBottomSheet
                 allowMultipleSelection={false}
-                selected={formData.address}
+                selected={address}
                 onChange={handleAddressChange}
                 triggerComponent={(props) => (
                   <Button {...props} size="sm" variant="outline" action="positive" className="mt-4">
-                    <ButtonIcon as={formData.address ? Edit2Icon : PlusIcon} />
-                    <ButtonText>{formData.address ? 'Change' : 'Add'} Address</ButtonText>
+                    <ButtonIcon as={address ? Edit2Icon : PlusIcon} />
+                    <ButtonText>{address ? 'Change' : 'Add'} Address</ButtonText>
                   </Button>
                 )}
               />
@@ -174,17 +173,5 @@ export default function CreatePage() {
       </SafeArea>
       {!isLoading && <FetchingSpinner isFetching={isFetching} />}
     </FormProvider>
-  );
-}
-
-function AddressSkeleton() {
-  return (
-    <Card>
-      <VStack space="md">
-        <Skeleton variant="rounded" className="h-8 w-44" />
-        <Skeleton variant="rounded" className="h-10" />
-        <Skeleton variant="rounded" className="h-6" />
-      </VStack>
-    </Card>
   );
 }
