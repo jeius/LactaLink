@@ -1,4 +1,5 @@
 import { AddressList } from '@/components/lists';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -16,17 +17,23 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { user, profile: authProfile } = useAuth();
+  const { user, refetchUser } = useAuth();
 
-  const isOwner = userID ? user?.id === userID : true;
+  const isAuthenticatedUser = user?.id === userID;
 
-  const { data, isLoading, isFetching, error } = useFetchById(!isOwner, {
+  const shouldFetch = Boolean(userID) && !isAuthenticatedUser;
+
+  const { data, isLoading, isFetching, error, refetch } = useFetchById(shouldFetch, {
     collection: 'users',
     id: userID,
     select: { profile: true },
   });
 
-  const profile = isOwner ? authProfile : extractCollection(data?.profile?.value);
+  const addresses = userID
+    ? isAuthenticatedUser
+      ? user?.addresses?.docs || []
+      : extractCollection(data?.addresses?.docs) || []
+    : user?.addresses?.docs || [];
 
   function handleAddAddress() {
     router.push('/addresses/create');
@@ -35,18 +42,30 @@ export default function ListPage() {
   return (
     <SafeArea safeTop={false} safeBottom={false}>
       <VStack className="w-full flex-1">
-        <Box className="mt-4 grow">
+        <Box className="grow">
           <AddressList
-            profile={profile}
-            enableEdit={isOwner}
+            addresses={addresses}
+            allowDelete={isAuthenticatedUser || !userID}
+            allowEdit={isAuthenticatedUser || !userID}
             isLoading={isLoading}
             isFetching={isFetching}
             showMap
             itemVariant="card"
+            gap={16}
+            refreshControl={(props) => (
+              <RefreshControl
+                refreshing={props.refreshing || (!isLoading && isFetching)}
+                onRefresh={() => {
+                  props.onRefresh?.();
+                  refetchUser();
+                  refetch();
+                }}
+              />
+            )}
           />
         </Box>
 
-        {isOwner && (
+        {(isAuthenticatedUser || !userID) && (
           <Motion.View
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}

@@ -68,6 +68,9 @@ export default function ProfileContact() {
 
         <Box className="flex-1">
           <AddressList
+            addresses={addresses}
+            allowEdit
+            allowDelete
             itemVariant="card"
             disableRemove={addresses.length === 1}
             onChange={handleAddressChange}

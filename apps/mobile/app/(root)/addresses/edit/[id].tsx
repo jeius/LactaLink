@@ -7,12 +7,11 @@ import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInp
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
-import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { ErrorSearchParams } from '@lactalink/types';
 import { AddressSchema } from '@lactalink/types/forms';
-import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableWithoutFeedback } from 'react-native';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
@@ -20,7 +19,8 @@ import MapView, { Region } from 'react-native-maps';
 
 export default function EditPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
+
+  const revalidateQueries = useRevalidateQueries();
 
   const { id } = useLocalSearchParams<{ id?: string }>();
 
@@ -43,7 +43,7 @@ export default function EditPage() {
 
     if (!success) return;
 
-    queryClient.invalidateQueries({ queryKey: COLLECTION_QUERY_KEY });
+    revalidateQueries();
     form.reset(formData);
     router.back();
   }

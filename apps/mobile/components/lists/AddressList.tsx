@@ -1,20 +1,18 @@
-import { Address, Hospital, Individual, MilkBank, Where } from '@lactalink/types';
-import React, { useEffect } from 'react';
+import { Address, Where } from '@lactalink/types';
+import React, { useEffect, useMemo } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
-import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
+import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
 import { deleteCollection } from '@/lib/api/delete';
-import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
-import { useQueryClient } from '@tanstack/react-query';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { EditIcon, Trash2Icon } from 'lucide-react-native';
-import { GestureResponderEvent, ListRenderItem } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { GestureResponderEvent } from 'react-native';
 import { AddressCard } from '../cards/AddressCard';
 import { ActionModal } from '../modals';
 import { NoData } from '../NoData';
@@ -28,46 +26,47 @@ const placeholderData = Array.from({ length: 3 }, (_, index) => ({
 })) as Address[];
 
 interface AddressListProps {
-  addressIDs?: string[];
+  addresses: (string | Address)[];
   onChange?: (value: Address[]) => void;
   disableRemove?: boolean;
   itemVariant?: 'default' | 'card';
-  profile?: Individual | Hospital | MilkBank | null;
-  enableEdit?: boolean;
+  allowEdit?: boolean;
+  allowDelete?: boolean;
   isLoading?: boolean;
   isFetching?: boolean;
   showMap?: boolean;
+  gap?: number;
 }
 
 export function AddressList({
-  addressIDs: addressIDsProp,
+  addresses,
   onChange,
   disableRemove,
   itemVariant = 'default',
-  profile: profileProp,
-  enableEdit = false,
   isLoading: isLoadingProp,
   isFetching: isFetchingProp,
   showMap,
+  allowEdit = false,
+  allowDelete = false,
+  gap = 12,
 }: AddressListProps) {
-  const { profile } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const revalidateQueries = useRevalidateQueries();
 
-  const profileAddresses = profileProp?.addresses || profile?.addresses;
-  const shouldFetch = areStrings(profileAddresses);
+  const shouldFetch = areStrings(addresses);
 
-  const addressIDs = addressIDsProp || (shouldFetch && extractID(profileAddresses!)) || [];
+  const addressIDs = useMemo(
+    () => (shouldFetch && extractID(addresses)) || [],
+    [shouldFetch, addresses]
+  );
 
-  const where: Where | undefined =
-    addressIDs && addressIDs.length > 0 ? { id: { in: addressIDs } } : undefined;
+  const where: Where | undefined = addressIDs.length > 0 ? { id: { in: addressIDs } } : undefined;
 
   const {
     data: fetchedData,
     isLoading: isLoadingData,
     isFetching: isFetchingData,
     error,
-    refetch,
   } = useFetchBySlug(Boolean(addressIDs.length > 0), {
     collection: 'addresses',
     where,
@@ -77,7 +76,7 @@ export function AddressList({
   const isLoading = isLoadingProp || isLoadingData;
   const isFetching = isFetchingProp || isFetchingData;
 
-  const data: Address[] = (shouldFetch ? fetchedData : extractCollection(profileAddresses)) || [];
+  const data = (shouldFetch ? fetchedData : extractCollection(addresses)) || [];
 
   const isEmpty = Array.isArray(data) && data.length === 0;
 
@@ -97,9 +96,10 @@ export function AddressList({
     }
 
     async function handleDelete() {
+      if (!allowDelete) return;
       const deleted = await deleteCollection('addresses', item.id);
       if (deleted) {
-        queryClient.invalidateQueries({ queryKey: COLLECTION_QUERY_KEY });
+        revalidateQueries();
       }
     }
 
@@ -108,8 +108,8 @@ export function AddressList({
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <AnimatedPressable
-              disableAnimation={!enableEdit || showMap}
-              onPress={enableEdit && !showMap ? handleEdit : undefined}
+              disableAnimation={!allowEdit || showMap}
+              onPress={allowEdit && !showMap ? handleEdit : undefined}
             >
               <AddressCard
                 variant="filled"
@@ -118,8 +118,66 @@ export function AddressList({
                 showMap={showMap}
                 className={showMap ? 'p-0' : undefined}
                 action={
-                  enableEdit && (
+                  (allowEdit || allowDelete) && (
                     <HStack space="lg" className="grow justify-between">
+                      {allowEdit && (
+                        <Button
+                          isDisabled={disableRemove}
+                          variant="link"
+                          action="default"
+                          className="h-fit w-fit p-0"
+                          hitSlop={8}
+                          onPress={handleEdit}
+                        >
+                          <ButtonIcon as={EditIcon} />
+                        </Button>
+                      )}
+                      {allowDelete && (
+                        <ActionModal
+                          action="negative"
+                          variant="link"
+                          className="h-fit w-fit"
+                          hitSlop={8}
+                          isDisabled={disableRemove}
+                          triggerIcon={Trash2Icon}
+                          onTriggerPress={(e) => e.stopPropagation()}
+                          iconOnly
+                          onConfirm={handleDelete}
+                          confirmLabel="Delete"
+                          title="Delete Address"
+                          description={
+                            <Text>
+                              Are you sure you want to delete
+                              <Text className="font-JakartaSemiBold">
+                                {item.name ? ` ${item.name}` : ''}
+                              </Text>
+                              ? This action cannot be undone.
+                            </Text>
+                          }
+                        />
+                      )}
+                    </HStack>
+                  )
+                }
+              />
+            </AnimatedPressable>
+          </Motion.View>
+        );
+
+      case 'default':
+      default:
+        return (
+          <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <AddressCard
+              variant="ghost"
+              className="p-0"
+              isLoading={isLoading}
+              data={item}
+              showMap={showMap}
+              action={
+                (allowEdit || allowDelete) && (
+                  <HStack space="lg" className="grow justify-between">
+                    {allowEdit && (
                       <Button
                         isDisabled={disableRemove}
                         variant="link"
@@ -130,6 +188,8 @@ export function AddressList({
                       >
                         <ButtonIcon as={EditIcon} />
                       </Button>
+                    )}
+                    {allowDelete && (
                       <ActionModal
                         action="negative"
                         variant="link"
@@ -152,59 +212,7 @@ export function AddressList({
                           </Text>
                         }
                       />
-                    </HStack>
-                  )
-                }
-              />
-            </AnimatedPressable>
-          </Motion.View>
-        );
-
-      case 'default':
-      default:
-        return (
-          <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <AddressCard
-              variant="ghost"
-              className="p-0"
-              isLoading={isLoading}
-              data={item}
-              showMap={showMap}
-              action={
-                enableEdit && (
-                  <HStack space="lg" className="grow justify-between">
-                    <Button
-                      isDisabled={disableRemove}
-                      variant="link"
-                      action="default"
-                      className="h-fit w-fit p-0"
-                      hitSlop={8}
-                      onPress={handleEdit}
-                    >
-                      <ButtonIcon as={EditIcon} />
-                    </Button>
-                    <ActionModal
-                      action="negative"
-                      variant="link"
-                      className="h-fit w-fit"
-                      hitSlop={8}
-                      isDisabled={disableRemove}
-                      triggerIcon={Trash2Icon}
-                      onTriggerPress={(e) => e.stopPropagation()}
-                      iconOnly
-                      onConfirm={handleDelete}
-                      confirmLabel="Delete"
-                      title="Delete Address"
-                      description={
-                        <Text>
-                          Are you sure you want to delete
-                          <Text className="font-JakartaSemiBold">
-                            {item.name ? ` ${item.name}` : ''}
-                          </Text>
-                          ? This action cannot be undone.
-                        </Text>
-                      }
-                    />
+                    )}
                   </HStack>
                 )
               }
@@ -221,7 +229,7 @@ export function AddressList({
   function SeparatorComponent() {
     switch (itemVariant) {
       case 'card':
-        return <Box className="h-3" />;
+        return <Box style={{ height: gap }} />;
       case 'default':
       default:
         return <Divider />;
@@ -242,21 +250,21 @@ export function AddressList({
 
   return (
     <Box className="flex-1">
-      <FlatList
+      <FlashList
         data={isLoading ? placeholderData : data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          { flexGrow: 1, paddingBottom: 20 },
-          itemVariant === 'card' ? { paddingHorizontal: 16 } : {},
-        ]}
+        estimatedItemSize={220}
+        contentContainerStyle={{
+          paddingBottom: 20,
+          paddingTop: itemVariant === 'card' ? 16 : 0,
+          paddingHorizontal: itemVariant === 'card' ? 16 : 0,
+        }}
         style={{ flex: 1 }}
         ListEmptyComponent={EmptyComponent}
         ItemSeparatorComponent={SeparatorComponent}
         ListFooterComponent={FooterComponent}
-        refreshControl={
-          <RefreshControl refreshing={isFetching && !isLoading} onRefresh={refetch} />
-        }
+        refreshControl={<RefreshControl refreshing={!isLoading && isFetching} />}
       />
     </Box>
   );
