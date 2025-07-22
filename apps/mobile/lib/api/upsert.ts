@@ -28,28 +28,20 @@ export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
   let message: string;
   let preference: DeliveryPreference;
 
-  if (data.id) {
+  const { id, ...rest } = data;
+
+  if (id) {
     preference = await apiClient.updateByID({
       collection: 'delivery-preferences',
-      id: data.id,
-      data: {
-        name: data.name,
-        address: data.address,
-        availableDays: data.availableDays,
-        preferredMode: data.preferredMode,
-      },
+      id,
+      data: rest,
     });
 
     message = `"${data.name || 'Delivery Preference'}" updated successfully.`;
   } else {
     preference = await apiClient.create({
       collection: 'delivery-preferences',
-      data: {
-        name: data.name,
-        address: data.address,
-        availableDays: data.availableDays,
-        preferredMode: data.preferredMode,
-      },
+      data: rest,
     });
 
     message = `"${data.name || 'Delivery Preference'}" created successfully.`;

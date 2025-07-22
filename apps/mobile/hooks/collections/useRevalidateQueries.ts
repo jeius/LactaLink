@@ -7,7 +7,11 @@ export function useRevalidateQueries() {
 
   const revalidateQueries = useCallback(() => {
     queryClient.invalidateQueries({
-      queryKey: [...COLLECTION_QUERY_KEY, ...INFINITE_QUERY_KEY, QUERY_KEYS.AUTH.USER],
+      predicate(query) {
+        return [...COLLECTION_QUERY_KEY, ...INFINITE_QUERY_KEY, ...QUERY_KEYS.AUTH.USER].some(
+          (key) => query.queryKey.includes(key)
+        );
+      },
     });
   }, [queryClient]);
 
