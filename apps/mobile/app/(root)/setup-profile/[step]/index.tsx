@@ -32,7 +32,7 @@ import { SetupProfileSchema, User } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
@@ -47,6 +47,8 @@ export default function Step() {
   const apiClient = useApiClient();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
+
+  const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
 
   const form = useFormContext<SetupProfileSchema>();
   const profileType = form.getValues('profileType');
@@ -168,7 +170,11 @@ export default function Step() {
           </VStack>
         </VStack>
       ) : (
-        <KeyboardAvoidingWrapper className="flex-1" contentContainerClassName="grow">
+        <KeyboardAvoidingWrapper
+          keyboardVerticalOffset={buttonSize.height - insets.bottom}
+          className="flex-1"
+          contentContainerClassName="grow"
+        >
           <VStack space="xl" className="relative mb-5 flex-1 justify-between pt-10">
             {step === 'type' ? (
               <RenderBlock />
@@ -201,6 +207,10 @@ export default function Step() {
       <VStack
         className="bg-background-0 border-outline-300 w-full rounded-2xl border p-4"
         style={{ paddingBottom: insets.bottom }}
+        onLayout={(e) => {
+          const { width, height } = e.nativeEvent.layout;
+          setButtonSize({ width, height });
+        }}
       >
         <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
           <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
