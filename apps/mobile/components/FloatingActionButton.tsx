@@ -6,7 +6,7 @@ import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Card } from './ui/card';
 import { HStack } from './ui/hstack';
 
-interface FloatingActionButtonProps {
+interface FloatingActionButtonProps extends React.ComponentProps<typeof Card> {
   show: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -21,6 +21,7 @@ export function FloatingActionButton({
   confirmLabel = 'Apply',
   cancelLabel = 'Cancel',
   confirmIcon = SaveIcon,
+  ...props
 }: FloatingActionButtonProps) {
   return (
     <AnimatePresence>
@@ -33,12 +34,11 @@ export function FloatingActionButton({
           style={{
             position: 'absolute',
             bottom: 0,
-            left: 0,
-            right: 0,
-            padding: 8,
+            left: 8,
+            right: 8,
           }}
         >
-          <Card className="max-w-sm p-4">
+          <Card {...props} className="mx-auto max-w-sm p-4">
             <HStack space="md" className="w-full">
               <Box className="flex-1">
                 <Button onPress={onConfirm}>
