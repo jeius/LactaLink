@@ -3,7 +3,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Address } from '@lactalink/types';
-import React, { ComponentProps, useState } from 'react';
+import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BasicBadge } from '@/components/badges';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
@@ -14,7 +14,7 @@ import { useFetchById } from '@/hooks/collections/useFetchById';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
-import MapView, { LatLng, Marker } from 'react-native-maps';
+import MapView, { LatLng, MapMarker, Marker } from 'react-native-maps';
 import { Pressable } from '../ui/pressable';
 
 const cardStyle = tva({
@@ -31,6 +31,7 @@ interface AddressCardProps extends ComponentProps<typeof Card> {
   isLoading?: boolean;
   showMap?: boolean;
   action?: React.ReactNode;
+  disableTapOnMap?: boolean;
 }
 
 export function AddressCard({
@@ -39,9 +40,14 @@ export function AddressCard({
   showMap = false,
   action,
   className,
+  disableTapOnMap = false,
   ...props
 }: AddressCardProps) {
+  const mapRef = useRef<MapView>(null);
+  const markerRef = useRef<MapMarker>(null);
+
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   const shouldFetch = isString(dataProp);
 
@@ -58,7 +64,14 @@ export function AddressCard({
   const { name, displayName, isDefault } = data || {};
 
   const [latitude, longitude] = data?.coordinates || [0, 0];
-  const center: LatLng = { latitude, longitude };
+  const center: LatLng = useMemo(() => ({ latitude, longitude }), [latitude, longitude]);
+
+  useEffect(() => {
+    if (mapRef.current && isMapReady && !isMapLoading) {
+      mapRef.current.animateCamera({ center });
+      markerRef.current?.setCoordinates(center);
+    }
+  }, [center, isMapLoading, isMapReady]);
 
   function handleMapPress(e: GestureResponderEvent) {
     e.stopPropagation();
@@ -88,23 +101,26 @@ export function AddressCard({
       <VStack className="w-full">
         {showMap && (
           <Box className="relative h-40 w-full">
-            {isMapLoading && <Skeleton variant="sharp" className="absolute inset-0 z-50" />}
+            {isMapLoading && !isMapReady && (
+              <Skeleton variant="sharp" className="absolute inset-0 z-50" />
+            )}
             <MapView
               liteMode
               style={StyleSheet.absoluteFill}
               pointerEvents="none"
               toolbarEnabled={false}
-              camera={{
+              onMapLoaded={() => setIsMapLoading(false)}
+              onMapReady={() => setIsMapReady(true)}
+              initialCamera={{
                 zoom: 16,
                 center,
                 heading: 0,
                 pitch: 0,
               }}
-              onMapLoaded={() => setIsMapLoading(false)}
             >
-              <Marker coordinate={center} pointerEvents="none" />
+              <Marker ref={markerRef} coordinate={center} pointerEvents="none" />
             </MapView>
-            <Pressable className="flex-1" onPress={handleMapPress} />
+            {!disableTapOnMap && <Pressable className="flex-1" onPress={handleMapPress} />}
           </Box>
         )}
         <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
