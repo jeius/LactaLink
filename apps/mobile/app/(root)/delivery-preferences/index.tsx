@@ -4,8 +4,10 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
+import { useFetchById } from '@/hooks/collections/useFetchById';
+import { extractName } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -14,36 +16,81 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { user } = useAuth();
+  const { user: authUser, ...auth } = useAuth();
 
-  const isOwner = userID ? user?.id === userID : true;
+  const isAuthenticatedUser = authUser?.id === userID;
+
+  const shouldFetch = Boolean(userID) && !isAuthenticatedUser;
+
+  const {
+    data: fetchedData,
+    error,
+    ...fetched
+  } = useFetchById(shouldFetch, {
+    collection: 'users',
+    id: userID,
+    select: { deliveryPreferences: true },
+  });
+
+  const user = userID ? fetchedData : authUser;
+
+  const isLoading = fetched.isLoading || auth.isLoading;
+  const isFetching = fetched.isFetching || auth.isFetching;
+  const isRefreshing = shouldFetch ? fetched.isRefetching : auth.isRefetching;
+
+  const data = (user && user?.deliveryPreferences?.docs) || [];
+  const headerTitle =
+    isAuthenticatedUser || !userID
+      ? 'My Delivery Preferences'
+      : (user && extractName(user) + '`s Delivery Preferences') || undefined;
 
   function handleAddAddress() {
     router.push('/delivery-preferences/create');
   }
 
-  return (
-    <SafeArea safeTop={false} safeBottom={false}>
-      <VStack className="h-full w-full">
-        <DeliveryPreferenceList userID={userID} enableEdit={isOwner} />
+  function handleRefresh() {
+    if (shouldFetch) {
+      fetched.refetch();
+    } else {
+      auth.refetchUser();
+    }
+  }
 
-        <Motion.View
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'tween', duration: 100 }}
-          style={{ width: '100%' }}
-        >
-          <Box
-            className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
-            style={{ paddingBottom: insets.bottom }}
+  return (
+    <>
+      <Stack.Screen options={{ headerTitle }} />
+      <SafeArea safeTop={false} safeBottom={false}>
+        <VStack className="h-full w-full">
+          <DeliveryPreferenceList
+            data={data}
+            allowDelete={isAuthenticatedUser || !userID}
+            allowEdit={isAuthenticatedUser || !userID}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            itemVariant="card"
+            gap={16}
+            refreshing={!isLoading && isRefreshing}
+            onRefresh={handleRefresh}
+          />
+
+          <Motion.View
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'tween', duration: 100 }}
+            style={{ width: '100%' }}
           >
-            <Button onPress={handleAddAddress}>
-              <ButtonIcon as={PlusIcon} />
-              <ButtonText>Add New Delivery Preference</ButtonText>
-            </Button>
-          </Box>
-        </Motion.View>
-      </VStack>
-    </SafeArea>
+            <Box
+              className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
+              style={{ paddingBottom: insets.bottom }}
+            >
+              <Button onPress={handleAddAddress}>
+                <ButtonIcon as={PlusIcon} />
+                <ButtonText>Add New Delivery Preference</ButtonText>
+              </Button>
+            </Box>
+          </Motion.View>
+        </VStack>
+      </SafeArea>
+    </>
   );
 }
