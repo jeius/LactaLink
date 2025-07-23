@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import {
   Controller,
   FieldPath,
+  FieldPathValue,
   FieldValues,
   useFormContext,
   useFormState,
@@ -89,7 +90,7 @@ function FormField<
   useBottomSheetInputs = false,
   ...props
 }: FormFieldProps<TFieldValues, TName, TFieldType, TSlug>) {
-  const { trigger, getFieldState, setValue } = useFormContext<T>();
+  const { trigger, getFieldState, setValue } = useFormContext<TFieldValues>();
   const { isSubmitting, isValidating: _ } = useFormState({ name });
 
   const currentValue = useWatch({ name });
@@ -133,9 +134,11 @@ function FormField<
         : allOptions;
 
       if (isAllSelected) {
-        setValue(name, [] as never, { shouldValidate: invalid });
+        setValue(name, [] as FieldPathValue<TFieldValues, TName>, { shouldValidate: invalid });
       } else {
-        setValue(name, newValue as never, { shouldValidate: invalid });
+        setValue(name, newValue as FieldPathValue<TFieldValues, TName>, {
+          shouldValidate: invalid,
+        });
       }
     }
   }

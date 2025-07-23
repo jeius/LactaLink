@@ -13,7 +13,13 @@ import {
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRouter } from 'expo-router';
 import { AlertCircleIcon, Edit2Icon, EditIcon, PlusIcon } from 'lucide-react-native';
-import { ControllerProps, FieldPath, FieldValues, useFormContext } from 'react-hook-form';
+import {
+  ControllerProps,
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
+  useFormContext,
+} from 'react-hook-form';
 import { SelectBottomSheet, SelectItemProps } from '../bottom-sheets/SelectBottomSheet';
 import { AddressCard } from '../cards';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
@@ -36,14 +42,14 @@ export function AddressField<
   const selections = user?.addresses?.docs || [];
   const router = useRouter();
 
-  const { getFieldState, formState, watch, setValue } = useFormContext();
+  const { getFieldState, formState, watch, setValue } = useFormContext<TFieldValues>();
 
   const { error: addressFieldError } = getFieldState(name);
   const isSubmitting = formState.isSubmitting;
   const address: string = watch(name);
 
   function handleAddressChange(id: string) {
-    setValue(name, id as never);
+    setValue(name, id as FieldPathValue<TFieldValues, TName>);
   }
 
   function Action({ id }: { id: string }) {
