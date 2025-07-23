@@ -70,12 +70,5 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
         },
       ],
     },
-    {
-      name: 'addresses',
-      type: 'relationship',
-      relationTo: 'addresses',
-      hasMany: true,
-      required: true,
-    },
   ],
 };

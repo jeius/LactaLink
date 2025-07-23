@@ -31,5 +31,5 @@ export const DETAILS_FIELDS = {
   HOSPITAL: HOSPITAL_FIELDS,
   MILK_BANK: MILKBANK_FIELDS,
 };
-export const CONTACT_FIELDS: (keyof SetupProfileSchema)[] = ['addresses', 'phone'];
+export const CONTACT_FIELDS: (keyof SetupProfileSchema)[] = ['phone'];
 export const AVATAR_FIELDS: (keyof SetupProfileSchema)[] = ['avatar'];

@@ -314,7 +314,6 @@ export interface Individual {
   dependents?: number | null;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
   maritalStatus: 'SINGLE' | 'MARRIED' | 'SEPARATED' | 'WIDOWED' | 'DIVORCED' | 'N/A';
-  addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -376,7 +375,6 @@ export interface MilkBank {
   head?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
-  addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -399,7 +397,6 @@ export interface Hospital {
   hospitalID?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
-  addresses: (string | Address)[];
   updatedAt: string;
   createdAt: string;
 }
@@ -1565,7 +1562,6 @@ export interface HospitalsSelect<T extends boolean = true> {
   hospitalID?: T;
   type?: T;
   phone?: T;
-  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1639,7 +1635,6 @@ export interface IndividualsSelect<T extends boolean = true> {
   dependents?: T;
   gender?: T;
   maritalStatus?: T;
-  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1683,7 +1678,6 @@ export interface MilkBanksSelect<T extends boolean = true> {
   head?: T;
   type?: T;
   phone?: T;
-  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
 }

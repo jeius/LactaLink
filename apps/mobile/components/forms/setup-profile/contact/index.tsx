@@ -6,31 +6,16 @@ import { HintAlert } from '@/components/HintAlert';
 import { AddressList } from '@/components/lists';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
-import { Address, SetupProfileSchema } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useRouter } from 'expo-router';
-import { AlertCircleIcon, PhoneIcon, PlusIcon } from 'lucide-react-native';
+import { PhoneIcon, PlusIcon } from 'lucide-react-native';
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
 
 export default function ProfileContact() {
-  const form = useFormContext<SetupProfileSchema>();
   const router = useRouter();
-
-  const addresses = form.watch('addresses') || [];
-  const { error } = form.getFieldState('addresses');
-
-  function handleAddressChange(value: Address[]) {
-    form.setValue('addresses', extractID(value), { shouldValidate: false, shouldDirty: true });
-  }
+  const { user } = useAuth();
+  const addresses = user?.addresses?.docs || [];
 
   function handleAdd() {
     router.push('/addresses/create');
@@ -52,7 +37,7 @@ export default function ProfileContact() {
         />
       </Card>
 
-      <FormControl isInvalid={Boolean(error)} className="flex-1">
+      <FormControl className="flex-1">
         <FormControlLabel className="mx-5">
           <FormControlLabelText>Addresses</FormControlLabelText>
         </FormControlLabel>
@@ -60,11 +45,6 @@ export default function ProfileContact() {
         <Box className="mx-5 pb-2">
           <HintAlert message="You can add more addresses." />
         </Box>
-
-        <FormControlError className="mx-5">
-          <FormControlErrorIcon as={AlertCircleIcon} />
-          <FormControlErrorText>{error?.message}</FormControlErrorText>
-        </FormControlError>
 
         <Box className="flex-1">
           <AddressList
@@ -75,12 +55,11 @@ export default function ProfileContact() {
             showMap
             itemVariant="card"
             disableRemove={addresses.length === 1}
-            onChange={handleAddressChange}
           />
         </Box>
 
         <Box className="mx-5 mt-2">
-          <Button variant="outline" action="positive" onPress={handleAdd}>
+          <Button size="sm" variant="outline" action="positive" onPress={handleAdd}>
             <ButtonIcon size="md" as={PlusIcon} />
             <ButtonText>Add New Address</ButtonText>
           </Button>

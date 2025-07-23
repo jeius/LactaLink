@@ -5,9 +5,6 @@ import { imageSchema } from '../file';
 import { nullTransform } from '../transformers';
 
 const baseSchema = z.object({
-  addresses: z
-    .array(z.uuid('Invalid Address').nonempty('Required'))
-    .nonempty('Required atleast one address.'),
   phone: z
     .string()
     .max(16, 'Invalid phone number. (Max length 16)')

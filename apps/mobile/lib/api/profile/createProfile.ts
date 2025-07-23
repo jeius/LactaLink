@@ -14,7 +14,7 @@ import { extractID } from '@lactalink/utilities';
 
 type Input = IndividualSchema | HospitalSchema | MilkBankSchema;
 type Output = Individual | Hospital | MilkBank;
-type BaseFields = Pick<Output, 'addresses' | 'avatar'>;
+type BaseFields = Pick<Output, 'avatar'>;
 type Data = Input & BaseFields;
 type Slug = ExtractKeys<Config['collections'], Output>;
 type Options = Omit<CreateArgs<Slug>, 'collection' | 'data'>;
@@ -32,8 +32,7 @@ export async function createProfile(
 
   switch (dataParams.profileType) {
     case 'HOSPITAL': {
-      const { addresses, avatar, profileType: _, ...data } = dataParams;
-      const addressIDs = extractID(addresses);
+      const { avatar, profileType: _, ...data } = dataParams;
       const avatarID = avatar && extractID(avatar);
 
       return await client.create({
@@ -41,15 +40,13 @@ export async function createProfile(
         collection: 'hospitals',
         data: {
           avatar: avatarID,
-          addresses: addressIDs,
           ...data,
         },
       });
     }
 
     case 'MILK_BANK': {
-      const { addresses, avatar, profileType: _, ...data } = dataParams;
-      const addressIDs = extractID(addresses);
+      const { avatar, profileType: _, ...data } = dataParams;
       const avatarID = avatar && extractID(avatar);
 
       return await client.create({
@@ -57,15 +54,13 @@ export async function createProfile(
         collection: 'milkBanks',
         data: {
           avatar: avatarID,
-          addresses: addressIDs,
           ...data,
         },
       });
     }
 
     default: {
-      const { addresses, avatar, profileType: _, ...data } = dataParams;
-      const addressIDs = extractID(addresses);
+      const { avatar, profileType: _, ...data } = dataParams;
       const avatarID = avatar && extractID(avatar);
 
       return await client.create({
@@ -73,7 +68,6 @@ export async function createProfile(
         collection: 'individuals',
         data: {
           avatar: avatarID,
-          addresses: addressIDs,
           ...data,
         },
       });
