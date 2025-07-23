@@ -13,7 +13,7 @@ export function extractName(user: User): string | null {
       if ('name' in profile) {
         return profile.name;
       } else {
-        return profile.givenName;
+        return profile.givenName.split(' ')[0] || null;
       }
     }
   }
