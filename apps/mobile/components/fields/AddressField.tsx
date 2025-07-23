@@ -5,34 +5,45 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
+  FormControlHelper,
+  FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRouter } from 'expo-router';
 import { AlertCircleIcon, Edit2Icon, EditIcon, PlusIcon } from 'lucide-react-native';
-import { useFormContext } from 'react-hook-form';
+import { ControllerProps, FieldPath, FieldValues, useFormContext } from 'react-hook-form';
 import { SelectBottomSheet, SelectItemProps } from '../bottom-sheets/SelectBottomSheet';
 import { AddressCard } from '../cards';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { HStack } from '../ui/hstack';
 
-interface AddressFieldProps {
+interface AddressFieldProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> extends Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> {
   isLoading?: boolean;
+  label?: string;
+  helperText?: string;
 }
-export function AddressField({ isLoading }: AddressFieldProps) {
-  const { profile } = useAuth();
-  const selections = profile?.addresses || [];
+
+export function AddressField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>({ isLoading, helperText, label, name }: AddressFieldProps<TFieldValues, TName>) {
+  const { user } = useAuth();
+  const selections = user?.addresses?.docs || [];
   const router = useRouter();
 
   const { getFieldState, formState, watch, setValue } = useFormContext();
 
-  const { error: addressFieldError } = getFieldState('address');
+  const { error: addressFieldError } = getFieldState(name);
   const isSubmitting = formState.isSubmitting;
-  const address: string = watch('address');
+  const address: string = watch(name);
 
   function handleAddressChange(id: string) {
-    setValue('address', id);
+    setValue(name, id as never);
   }
 
   function Action({ id }: { id: string }) {
@@ -74,14 +85,17 @@ export function AddressField({ isLoading }: AddressFieldProps) {
 
   return (
     <FormControl isInvalid={!!addressFieldError} isDisabled={isSubmitting}>
-      <FormControlLabel>
-        <FormControlLabelText>Preffered Address</FormControlLabelText>
-      </FormControlLabel>
+      {label && (
+        <FormControlLabel>
+          <FormControlLabelText>{label}</FormControlLabelText>
+        </FormControlLabel>
+      )}
 
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{addressFieldError?.message}</FormControlErrorText>
-      </FormControlError>
+      {helperText && (
+        <FormControlHelper>
+          <FormControlHelperText>{helperText}</FormControlHelperText>
+        </FormControlHelper>
+      )}
 
       {address && (
         <AddressCard
@@ -91,6 +105,11 @@ export function AddressField({ isLoading }: AddressFieldProps) {
           action={<Action id={address} />}
         />
       )}
+
+      <FormControlError>
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{addressFieldError?.message}</FormControlErrorText>
+      </FormControlError>
 
       <SelectBottomSheet
         slug="addresses"

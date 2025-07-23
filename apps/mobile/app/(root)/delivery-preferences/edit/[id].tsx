@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
+import { AddressField } from '@/components/fields';
 import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { FormField } from '@/components/FormField';
-import { AddressField } from '@/components/forms/AddressField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
@@ -101,6 +101,7 @@ export default function EditPage() {
               style={{ marginBottom: showFloatingButton ? floatingButtonHeight : 0 }}
             >
               <FormField
+                control={form.control}
                 name="preferredMode"
                 fieldType="button-group"
                 options={Object.values(DELIVERY_OPTIONS)}
@@ -112,6 +113,7 @@ export default function EditPage() {
               />
 
               <FormField
+                control={form.control}
                 name="availableDays"
                 fieldType="button-group"
                 label="Available Days"
@@ -122,12 +124,18 @@ export default function EditPage() {
                 allowMultipleSelection
               />
 
-              <AddressField />
+              <AddressField
+                control={form.control}
+                name="address"
+                isLoading={isLoading}
+                label="Preferred Address"
+              />
 
               <VStack>
                 <Text className="font-JakartaMedium mb-1">Name</Text>
                 <Card>
                   <FormField
+                    control={form.control}
                     name="name"
                     fieldType="text"
                     variant="underlined"

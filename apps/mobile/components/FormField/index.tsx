@@ -8,8 +8,8 @@ import {
 import React, { useState } from 'react';
 import {
   Controller,
+  FieldPath,
   FieldValues,
-  PathValue,
   useFormContext,
   useFormState,
   useWatch,
@@ -69,7 +69,8 @@ const labelStyle = tva({
 });
 
 function FormField<
-  T extends FieldValues,
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
   TFieldType extends FieldType = FieldType,
   TSlug extends CollectionSlug = CollectionSlug,
 >({
@@ -87,7 +88,7 @@ function FormField<
   labelClassName,
   useBottomSheetInputs = false,
   ...props
-}: FormFieldProps<T, TFieldType, TSlug>) {
+}: FormFieldProps<TFieldValues, TName, TFieldType, TSlug>) {
   const { trigger, getFieldState, setValue } = useFormContext<T>();
   const { isSubmitting, isValidating: _ } = useFormState({ name });
 
@@ -132,9 +133,9 @@ function FormField<
         : allOptions;
 
       if (isAllSelected) {
-        setValue(name, [] as PathValue<T, typeof name>, { shouldValidate: invalid });
+        setValue(name, [] as never, { shouldValidate: invalid });
       } else {
-        setValue(name, newValue as PathValue<T, typeof name>, { shouldValidate: invalid });
+        setValue(name, newValue as never, { shouldValidate: invalid });
       }
     }
   }

@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef, FC } from 'react';
-import { FieldPath, FieldValues } from 'react-hook-form';
+import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 
 import { OptionsCardType } from '@/components/cards/OptionsCards';
 import { InputField } from '@/components/ui/input';
@@ -31,12 +31,15 @@ type TTextareaInput = ComponentPropsWithoutRef<typeof TextareaInput> & { isLoadi
 
 type ComboboxProps<T extends CollectionSlug> = ComboboxType<T>;
 
-type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> = {
+interface BaseProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TFieldType extends FieldType = FieldType,
+> extends Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> {
   inputIcon?: FC<LucideProps> | LucideIcon;
   errorIcon?: FC<LucideProps> | LucideIcon;
   labelIcon?: FC<LucideProps> | LucideIcon;
   labelIconProps?: ComponentPropsWithoutRef<typeof Icon>;
-  name: FieldPath<T>;
   label?: string;
   helperText?: string;
   fieldType: TFieldType;
@@ -45,13 +48,14 @@ type BaseProps<T extends FieldValues, TFieldType extends FieldType = FieldType> 
   containerStyle?: StyleProp<ViewStyle>;
   labelClassName?: string;
   useBottomSheetInputs?: boolean;
-};
+}
 
 type FormFieldProps<
-  T extends FieldValues,
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
   TFieldType extends FieldType = FieldType,
   TSlug extends CollectionSlug = CollectionSlug,
-> = BaseProps<T, TFieldType> &
+> = BaseProps<TFieldValues, TName, TFieldType> &
   (TFieldType extends 'text' | 'password'
     ? TInputField
     : TFieldType extends 'textarea'
