@@ -131,7 +131,6 @@ export function SelectBottomSheet<
     }
     onChange?.(selected);
     setIsDirty(false);
-    handleClose();
   }
 
   function handleCancel() {
