@@ -53,6 +53,7 @@ export interface SelectBottomSheetProps<
   createLabel?: string;
   allowEdit?: boolean;
   allowCreate?: boolean;
+  estimatedItemSize?: number;
 }
 
 export function SelectBottomSheet<
@@ -70,6 +71,7 @@ export function SelectBottomSheet<
   createLabel,
   allowEdit = false,
   allowCreate = false,
+  estimatedItemSize,
 }: SelectBottomSheetProps<T, TSlug>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -287,7 +289,7 @@ export function SelectBottomSheet<
           <BottomSheetFlashList
             data={data || []}
             renderItem={renderItem}
-            estimatedItemSize={200}
+            estimatedItemSize={estimatedItemSize}
             automaticallyAdjustKeyboardInsets
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}

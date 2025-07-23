@@ -121,6 +121,7 @@ export function AddressField<
         slug="addresses"
         title="Select from your Addresses"
         createLabel="Add New Address"
+        estimatedItemSize={220}
         allowCreate={true}
         allowEdit={true}
         collections={selections}

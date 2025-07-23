@@ -21,7 +21,7 @@ const cardStyle = tva({
 });
 
 export interface DeliveryPreferenceCardProps extends ComponentProps<typeof Card> {
-  preference: Pick<DeliveryPreference, 'address' | 'preferredMode' | 'availableDays' | 'name'>;
+  preference: string | DeliveryPreference;
   isLoading?: boolean;
   action?: ReactNode;
 }
@@ -32,21 +32,31 @@ export function DeliveryPreferenceCard({
   variant = 'filled',
   ...props
 }: DeliveryPreferenceCardProps) {
-  const { address: addressProp, preferredMode, availableDays, name } = preference;
+  const shouldFetchDP = isString(preference);
+
+  const { data: fetchedDP, ...dpQuery } = useFetchById(shouldFetchDP, {
+    collection: 'delivery-preferences',
+    id: extractID(preference),
+    select: { name: true, address: true, availableDays: true, preferredMode: true },
+    depth: 0,
+  });
+
+  const {
+    address: addressProp,
+    preferredMode,
+    availableDays,
+    name,
+  } = (shouldFetchDP ? fetchedDP : extractCollection(preference)) || {};
 
   const shouldFetchAddress = isString(addressProp);
-  const {
-    data: fetchedAddress,
-    isLoading,
-    isFetching,
-  } = useFetchById(shouldFetchAddress, {
+  const { data: fetchedAddress, isLoading: isLoadingAddress } = useFetchById(shouldFetchAddress, {
     collection: 'addresses',
-    id: extractID(addressProp),
+    id: addressProp && extractID(addressProp),
     select: { name: true, displayName: true },
     depth: 0,
   });
 
-  if (isLoadingProp) {
+  if (isLoadingProp || dpQuery.isLoading) {
     return (
       <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
         <DeliveryPreferenceCardSkeleton />
@@ -55,7 +65,7 @@ export function DeliveryPreferenceCard({
   }
 
   const preferenceName = name || `Delivery Preference`;
-  const availableDaysText = formatDaysToText(availableDays);
+  const availableDaysText = formatDaysToText(availableDays || []);
 
   const address = shouldFetchAddress ? fetchedAddress : extractCollection(addressProp);
   const addressName = address?.name || 'Address';
@@ -74,7 +84,7 @@ export function DeliveryPreferenceCard({
 
           <VStack space="md">
             <HStack space="sm" className="flex-wrap items-center">
-              {preferredMode.map((mode, index) => {
+              {preferredMode?.map((mode, index) => {
                 const iconAsset = getDeliveryPreferenceIcon(mode);
                 return (
                   <HStack
@@ -105,7 +115,7 @@ export function DeliveryPreferenceCard({
             <HStack space="xs" className="items-start">
               <Icon as={MapPinIcon} className="text-primary-500" />
               <VStack className="flex-1">
-                {isLoading || isFetching ? (
+                {isLoadingAddress ? (
                   <AddressSkeleton />
                 ) : (
                   <>

@@ -110,21 +110,19 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
   }
 
   return (
-    <Box className="flex-1">
-      <FlashList
-        {...props}
-        data={isLoading ? placeholderData : data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
-        ListEmptyComponent={EmptyComponent}
-        ItemSeparatorComponent={SeparatorComponent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing || (!isLoading && isFetching)}
-            onRefresh={handleRefresh}
-          />
-        }
-      />
-    </Box>
+    <FlashList
+      {...props}
+      data={isLoading ? placeholderData : data}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
+      ListEmptyComponent={EmptyComponent}
+      ItemSeparatorComponent={SeparatorComponent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing || (!isLoading && isFetching)}
+          onRefresh={handleRefresh}
+        />
+      }
+    />
   );
 }

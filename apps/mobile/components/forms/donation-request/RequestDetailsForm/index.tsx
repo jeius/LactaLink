@@ -4,12 +4,12 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
-import { DeliveryPreferenceSchema, MatchedDonationSchema, RequestSchema } from '@lactalink/types';
+import { MatchedDonationSchema, RequestSchema } from '@lactalink/types';
 
+import { DeliveryPreferencesField } from '@/components/fields';
 import { ClockIcon } from 'lucide-react-native';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
@@ -28,10 +28,10 @@ export function RequestDetailsForm({
 
   function handleMatchedDonationChange(
     donation: MatchedDonationSchema,
-    preference?: DeliveryPreferenceSchema | null
+    preferenceID?: string | null
   ) {
     form.setValue('matchedDonation', donation);
-    form.setValue('deliveryPreferences', preference ? [preference] : []);
+    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
   }
 
   return (
@@ -54,6 +54,7 @@ export function RequestDetailsForm({
       <VStack space="lg" className="mx-5">
         {!matchedDonation && (
           <FormField
+            control={form.control}
             name="details.storagePreference"
             label="Select the type of milk you are requesting."
             fieldType="button-group"
@@ -63,6 +64,7 @@ export function RequestDetailsForm({
         )}
 
         <FormField
+          control={form.control}
           name="details.urgency"
           label="How urgently do you need the milk?"
           fieldType="button-group"
@@ -75,6 +77,7 @@ export function RequestDetailsForm({
         <Text className="font-JakartaMedium">When do you need the milk?</Text>
         <VStack className="flex-col gap-4">
           <FormField
+            control={form.control}
             name="details.neededAt"
             fieldType="date"
             mode="date"
@@ -86,6 +89,7 @@ export function RequestDetailsForm({
           />
 
           <FormField
+            control={form.control}
             name="details.neededAt"
             fieldType="date"
             mode="time"
@@ -103,6 +107,7 @@ export function RequestDetailsForm({
 
       <Box className="mx-5">
         <FormField
+          control={form.control}
           name="details.image"
           label="Image of Recipient"
           fieldType="image"
@@ -114,6 +119,7 @@ export function RequestDetailsForm({
 
       <Box className="mx-5">
         <FormField
+          control={form.control}
           name="details.reason"
           label="Reason for Request"
           fieldType="textarea"
@@ -125,6 +131,7 @@ export function RequestDetailsForm({
 
       <Box className="mx-5">
         <FormField
+          control={form.control}
           name="details.notes"
           label="Additional Notes (If any)"
           fieldType="textarea"
@@ -135,7 +142,12 @@ export function RequestDetailsForm({
       </Box>
 
       {!hasMatchedDonation && (
-        <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
+        <DeliveryPreferencesField
+          control={form.control}
+          name="deliveryPreferences"
+          isLoading={isLoading}
+          label="Delivery Preferences"
+        />
       )}
     </VStack>
   );

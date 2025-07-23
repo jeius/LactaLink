@@ -1,13 +1,13 @@
 import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
+import { DeliveryPreferencesField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
-import { DeliveryPreferenceSchema, DonationSchema, MatchedRequestSchema } from '@lactalink/types';
+import { DonationSchema, MatchedRequestSchema } from '@lactalink/types';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { DeliveryPreferencesForm } from '../../DeliveryPreferencesForm';
 import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
@@ -24,12 +24,9 @@ export function DonationDetailsForm({
 
   const form = useFormContext<DonationSchema>();
 
-  function handleMatchedRequestChange(
-    request: MatchedRequestSchema,
-    preference?: DeliveryPreferenceSchema | null
-  ) {
+  function handleMatchedRequestChange(request: MatchedRequestSchema, preferenceID?: string | null) {
     form.setValue('matchedRequest', request);
-    form.setValue('deliveryPreferences', preference ? [preference] : []);
+    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
   }
 
   return (
@@ -50,6 +47,7 @@ export function DonationDetailsForm({
       </Text>
       <VStack space="lg" className="mx-5">
         <FormField
+          control={form.control}
           key={'details.storageType'}
           name="details.storageType"
           label="Select the type of milk you are donating."
@@ -59,6 +57,7 @@ export function DonationDetailsForm({
         />
 
         <FormField
+          control={form.control}
           key={'details.collectionMode'}
           name="details.collectionMode"
           label="How did you collect the milk?"
@@ -72,6 +71,7 @@ export function DonationDetailsForm({
 
       <Box className="mx-5">
         <FormField
+          control={form.control}
           name="details.milkSample"
           label="Milk Samples"
           fieldType="image"
@@ -85,6 +85,7 @@ export function DonationDetailsForm({
 
       <Box className="mx-5">
         <FormField
+          control={form.control}
           name="details.notes"
           label="Additional Notes (If any)"
           fieldType="textarea"
@@ -95,7 +96,12 @@ export function DonationDetailsForm({
       </Box>
 
       {!hasMatchedRequest && (
-        <DeliveryPreferencesForm name="deliveryPreferences" isLoading={isLoading} />
+        <DeliveryPreferencesField
+          control={form.control}
+          name="deliveryPreferences"
+          isLoading={isLoading}
+          label="Delivery Preferences"
+        />
       )}
     </VStack>
   );
