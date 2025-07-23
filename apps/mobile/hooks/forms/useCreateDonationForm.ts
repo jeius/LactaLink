@@ -1,7 +1,6 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Address,
   DonationSchema,
   donationSchema,
   Hospital,
@@ -12,10 +11,9 @@ import {
 
 import { extractID } from '@lactalink/utilities';
 import { debounce } from 'lodash';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 import { useFetchById } from '../collections/useFetchById';
-import { useFetchBySlug } from '../collections/useFetchBySlug';
 
 const storageKeyPrefix = 'donation-form';
 
@@ -26,33 +24,18 @@ type Params = {
 };
 
 export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params) => {
-  const {
-    data: preferences,
-    refetch: refetchPreferences,
-    isLoading: isLoadingPreferences,
-    isFetching: isFetchingPreferences,
-    error: preferencesError,
-  } = useFetchBySlug(true, {
-    collection: 'delivery-preferences',
-    where: { owner: { equals: user?.id } },
-    depth: 0,
-    sort: 'createdAt',
-  });
+  const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
   const {
     data: matchedRequestDoc,
-    isLoading: isLoadingRequests,
-    isFetching: isFetchingRequests,
-    error: requestsError,
+    isLoading,
+    isFetching,
+    error,
   } = useFetchById(Boolean(matchedRequest), {
     collection: 'requests',
     id: matchedRequest,
     populate: { users: { profile: true, profileType: true, role: true } },
   });
-
-  const isLoading = isLoadingPreferences || isLoadingRequests;
-  const isFetching = isFetchingPreferences || isFetchingRequests;
-  const error = preferencesError || requestsError;
 
   const form = useForm({
     resolver: zodResolver(donationSchema),
@@ -73,10 +56,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
       const data = form.getValues();
 
       if (preferences?.length) {
-        data.deliveryPreferences = preferences.map((pref) => ({
-          ...pref,
-          address: extractID(pref.address as Address),
-        }));
+        data.deliveryPreferences = extractID(preferences);
       }
 
       if (matchedRequestDoc && matchedRequest) {
@@ -135,6 +115,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
             collectionMode: data.details.collectionMode,
             storageType: data.details.storageType,
           },
+          deliveryPreferences: data.deliveryPreferences,
         };
 
         // Save the preffered values to local storage
@@ -143,7 +124,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile }: Params)
     }
 
     saveUserPreference();
-  }, [isSubmitSuccessful, getValues, storageKey, refetchPreferences]);
+  }, [isSubmitSuccessful, getValues, storageKey]);
 
   return { form, isLoading, isFetching, error };
 };
