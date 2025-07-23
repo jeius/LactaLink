@@ -31,6 +31,7 @@ interface InfiniteListProps<T extends CollectionSlug = CollectionSlug> extends F
   onChange?: (value: Collection[]) => void;
   isLoading?: boolean;
   isFetching?: boolean;
+  gap?: number;
 }
 
 export function InfiniteList({
@@ -40,6 +41,7 @@ export function InfiniteList({
   onChange,
   isLoading: isLoadingProp,
   isFetching: isFetchingProp,
+  gap = 12,
   ...props
 }: InfiniteListProps) {
   const { width, height } = useWindowDimensions();
@@ -75,7 +77,7 @@ export function InfiniteList({
   }
 
   function SeparatorComponent() {
-    return <Box className="h-2" />;
+    return <Box style={{ height: gap }} />;
   }
 
   return (

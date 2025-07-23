@@ -1,5 +1,4 @@
 import { AddressList } from '@/components/lists';
-import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -17,53 +16,59 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { user, refetchUser } = useAuth();
+  const { user: authUser, ...auth } = useAuth();
 
-  const isAuthenticatedUser = user?.id === userID;
+  const isAuthenticatedUser = authUser?.id === userID;
 
   const shouldFetch = Boolean(userID) && !isAuthenticatedUser;
 
-  const { data, isLoading, isFetching, error, refetch } = useFetchById(shouldFetch, {
+  const {
+    data: fetchedData,
+    error,
+    ...fetched
+  } = useFetchById(shouldFetch, {
     collection: 'users',
     id: userID,
-    select: { profile: true },
+    select: { addresses: true },
   });
 
-  const addresses = userID
+  const isLoading = fetched.isLoading || auth.isLoading;
+  const isFetching = fetched.isFetching || auth.isFetching;
+  const isRefreshing = shouldFetch ? fetched.isRefetching : auth.isRefetching;
+
+  const data = userID
     ? isAuthenticatedUser
-      ? user?.addresses?.docs || []
-      : extractCollection(data?.addresses?.docs) || []
-    : user?.addresses?.docs || [];
+      ? authUser?.addresses?.docs || []
+      : extractCollection(fetchedData?.addresses?.docs) || []
+    : authUser?.addresses?.docs || [];
 
   function handleAddAddress() {
     router.push('/addresses/create');
   }
 
+  function handleRefresh() {
+    if (shouldFetch) {
+      fetched.refetch();
+    } else {
+      auth.refetchUser();
+    }
+  }
+
   return (
     <SafeArea safeTop={false} safeBottom={false}>
       <VStack className="w-full flex-1">
-        <Box className="grow">
-          <AddressList
-            addresses={addresses}
-            allowDelete={isAuthenticatedUser || !userID}
-            allowEdit={isAuthenticatedUser || !userID}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            showMap
-            itemVariant="card"
-            gap={16}
-            refreshControl={(props) => (
-              <RefreshControl
-                refreshing={props.refreshing || (!isLoading && isFetching)}
-                onRefresh={() => {
-                  props.onRefresh?.();
-                  refetchUser();
-                  refetch();
-                }}
-              />
-            )}
-          />
-        </Box>
+        <AddressList
+          data={data}
+          allowDelete={isAuthenticatedUser || !userID}
+          allowEdit={isAuthenticatedUser || !userID}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          showMap
+          itemVariant="card"
+          gap={16}
+          refreshing={!isLoading && isRefreshing}
+          onRefresh={handleRefresh}
+        />
 
         {(isAuthenticatedUser || !userID) && (
           <Motion.View

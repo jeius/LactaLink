@@ -68,9 +68,11 @@ export default function ProfileContact() {
 
         <Box className="flex-1">
           <AddressList
-            addresses={addresses}
+            data={addresses}
+            gap={12}
             allowEdit
             allowDelete
+            showMap
             itemVariant="card"
             disableRemove={addresses.length === 1}
             onChange={handleAddressChange}
