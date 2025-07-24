@@ -4,13 +4,7 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import {
-  admin,
-  anyone,
-  authenticated,
-  collectionCreator,
-  collectionCreatorOrAdmin,
-} from '../_access-control';
+import { admin, anyone, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateAlt } from './hooks/beforeChange';
 
 export const Images: CollectionConfig<'images'> = {
@@ -19,8 +13,8 @@ export const Images: CollectionConfig<'images'> = {
     admin: admin,
     create: authenticated,
     read: anyone,
-    update: collectionCreator,
-    delete: collectionCreatorOrAdmin,
+    update: collectionOwnerOrAdmin,
+    delete: collectionOwnerOrAdmin,
   },
   admin: {
     group: COLLECTION_GROUP.CONTENT,
@@ -34,6 +28,14 @@ export const Images: CollectionConfig<'images'> = {
     {
       name: 'alt',
       type: 'text',
+    },
+    {
+      name: 'blurHash',
+      type: 'textarea',
+      admin: {
+        description: 'A string that represents a blurred version of the image.',
+        position: 'sidebar',
+      },
     },
     createdByField,
     ownerField,

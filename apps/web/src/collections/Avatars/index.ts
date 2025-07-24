@@ -27,6 +27,9 @@ export const Avatars: CollectionConfig<'avatars'> = {
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'owner'],
   },
+  hooks: {
+    beforeChange: [generateAlt, generateOwner],
+  },
   fields: [
     {
       name: 'alt',
@@ -49,8 +52,5 @@ export const Avatars: CollectionConfig<'avatars'> = {
         height: 50,
       },
     ],
-  },
-  hooks: {
-    beforeChange: [generateAlt, generateOwner],
   },
 };

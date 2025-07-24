@@ -625,6 +625,10 @@ export interface MilkBag {
 export interface Image {
   id: string;
   alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
   createdBy?: (string | null) | User;
   owner?: (string | null) | User;
   updatedAt: string;
@@ -1571,6 +1575,7 @@ export interface HospitalsSelect<T extends boolean = true> {
  */
 export interface ImagesSelect<T extends boolean = true> {
   alt?: T;
+  blurHash?: T;
   createdBy?: T;
   owner?: T;
   updatedAt?: T;

@@ -599,6 +599,7 @@ export const donations = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    isLocked: boolean('is_locked').default(false),
     donor: uuid('donor_id')
       .notNull()
       .references(() => individuals.id, {
@@ -713,6 +714,7 @@ export const images = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -835,6 +837,7 @@ export const milk_bags = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    isLocked: boolean('is_locked').default(false),
     donor: uuid('donor_id')
       .notNull()
       .references(() => individuals.id, {
