@@ -239,9 +239,9 @@ export class FieldResolver {
 
   private populateOptions: Partial<Config['collectionsSelect']> = {
     users: { email: true, profile: true, profileType: true, phone: true },
-    individuals: { displayName: true, owner: true, addresses: true },
-    hospitals: { name: true, addresses: true, owner: true },
-    milkBanks: { name: true, addresses: true, owner: true },
+    individuals: { displayName: true, owner: true },
+    hospitals: { name: true, owner: true },
+    milkBanks: { name: true, owner: true },
     addresses: { displayName: true, owner: true, isDefault: true, name: true },
     regions: { name: true, code: true },
     provinces: { name: true, code: true },

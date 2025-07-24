@@ -9,12 +9,16 @@ export const deletePreviousAvatar: CollectionAfterChangeHook<CollectionWithAvata
 }) => {
   // This hook is intended to delete the previous avatar image
   // when a new avatar is uploaded.
-  const { avatar } = previousDoc;
+  const prevAvatar = previousDoc.avatar;
+  const newAvatar = doc.avatar;
 
-  if (avatar) {
+  const prevAvatarID = prevAvatar ? extractID(prevAvatar) : null;
+  const newAvatarID = newAvatar ? extractID(newAvatar) : null;
+
+  if (prevAvatarID && newAvatarID && prevAvatarID !== newAvatarID) {
     await req.payload.delete({
       collection: 'avatars',
-      id: extractID(avatar),
+      id: prevAvatarID,
       req,
     });
   }
