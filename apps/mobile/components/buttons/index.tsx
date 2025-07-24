@@ -77,3 +77,5 @@ export function DeleteActionButton({ itemName, slug, id, ...props }: DeleteActio
     />
   );
 }
+
+export * from './FloatingActionButton';

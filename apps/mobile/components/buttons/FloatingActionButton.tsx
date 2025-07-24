@@ -1,10 +1,10 @@
 import { AnimatePresence, Motion } from '@legendapp/motion';
 import { LucideIcon, LucideProps, SaveIcon } from 'lucide-react-native';
 import React, { FC } from 'react';
-import { Box } from './ui/box';
-import { Button, ButtonIcon, ButtonText } from './ui/button';
-import { Card } from './ui/card';
-import { HStack } from './ui/hstack';
+import { Box } from '../ui/box';
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
+import { Card } from '../ui/card';
+import { HStack } from '../ui/hstack';
 
 interface FloatingActionButtonProps extends React.ComponentProps<typeof Card> {
   show: boolean;

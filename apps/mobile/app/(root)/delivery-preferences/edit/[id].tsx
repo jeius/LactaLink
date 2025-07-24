@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
+import { FloatingActionButton } from '@/components/buttons';
 import { AddressField } from '@/components/fields';
-import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
@@ -23,6 +23,7 @@ import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
+
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';
 

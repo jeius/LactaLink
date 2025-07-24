@@ -13,7 +13,7 @@ import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { FloatingActionButton } from '../FloatingActionButton';
+import { FloatingActionButton } from '../buttons/FloatingActionButton';
 import FetchingSpinner from '../loaders/FetchingSpinner';
 import { NoData } from '../NoData';
 import {
