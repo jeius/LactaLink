@@ -12,7 +12,7 @@ import { filterMilkBagsOptions } from './filterOptions';
 import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initialize } from './hooks/initialize';
-import { updateStatus } from './hooks/updateStatus';
+import { checkStatus } from './hooks/updateStatus';
 
 export const Donations: CollectionConfig<'donations'> = {
   slug: 'donations',
@@ -29,7 +29,8 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [initialize, generateCreatedBy, updateStatus, generateTitle],
+    beforeRead: [checkStatus],
+    beforeChange: [initialize, generateCreatedBy, generateTitle],
     afterChange: [createDonationNotification],
   },
   fields: [
