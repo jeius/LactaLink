@@ -34,7 +34,7 @@ export class NotificationService {
 
   async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
     const collectionSlug = this.collection.slug;
-    const resolver = new FieldResolver(this.payload, this.collection, doc);
+    const resolver = new FieldResolver(this.payload, this.collection, doc, this.payloadReq);
 
     const fullDoc = await this.prepareFullDoc(doc, resolver, operation);
 
@@ -164,6 +164,7 @@ export class NotificationService {
     const notification = await this.payload.findByID({
       collection: 'notifications',
       id: notificationId,
+      req: this.payloadReq,
     });
 
     if (!notification) {

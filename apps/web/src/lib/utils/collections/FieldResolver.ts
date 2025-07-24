@@ -1,13 +1,14 @@
 import { Collection, Config, Notification, NotificationType } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import _ from 'lodash';
-import { Field, Payload, SanitizedCollectionConfig } from 'payload';
+import { Field, Payload, PayloadRequest, SanitizedCollectionConfig } from 'payload';
 
 export class FieldResolver {
   constructor(
     private payload: Payload,
     private collection: SanitizedCollectionConfig,
-    private originalDoc: Collection
+    private originalDoc: Collection,
+    private req: PayloadRequest
   ) {}
 
   public async resolveField(
@@ -40,6 +41,7 @@ export class FieldResolver {
                     },
                     depth: field.maxDepth || 2,
                     populate: this.populateOptions,
+                    req: this.req,
                   });
 
                   return { value: docs.docs, relationTo: relation };
@@ -56,6 +58,7 @@ export class FieldResolver {
                     id: extractID(_.get(parentDoc, fieldPath)),
                     depth: field.maxDepth || 2,
                     populate: this.populateOptions,
+                    req: this.req,
                   });
 
                   return { value: doc, relationTo: relation };
@@ -75,6 +78,7 @@ export class FieldResolver {
                 },
                 depth: field.maxDepth || 2,
                 populate: this.populateOptions,
+                req: this.req,
               });
 
               // Set the resolved documents in the fullDoc
@@ -86,6 +90,7 @@ export class FieldResolver {
                 id: extractID(_.get(parentDoc, fieldPath)),
                 depth: field.maxDepth || 2,
                 populate: this.populateOptions,
+                req: this.req,
               });
 
               // Set the resolved document in the fullDoc
@@ -107,6 +112,7 @@ export class FieldResolver {
                   depth: 2,
                   populate: this.populateOptions,
                   where: { [field.on]: { equals: this.originalDoc.id } },
+                  req: this.req,
                 });
 
                 count += totalDocs;
@@ -127,6 +133,7 @@ export class FieldResolver {
               depth: 2,
               populate: this.populateOptions,
               where: { [field.on]: { equals: this.originalDoc.id } },
+              req: this.req,
             });
 
             const newJoinDoc = {
