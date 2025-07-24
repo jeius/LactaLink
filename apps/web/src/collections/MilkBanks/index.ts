@@ -1,4 +1,5 @@
 import { ownerField } from '@/fields/ownerField';
+import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP, ORGANIZATION_TYPES } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
@@ -22,6 +23,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
   },
   hooks: {
     beforeChange: [generateOwner],
+    afterChange: [deletePreviousAvatar],
   },
   fields: [
     ownerField,

@@ -1,4 +1,5 @@
 import { ownerField } from '@/fields/ownerField';
+import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP, GENDER_TYPES, MARITAL_STATUS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
@@ -23,6 +24,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
   },
   hooks: {
     beforeChange: [generateDisplayName, generateOwner],
+    afterChange: [deletePreviousAvatar],
   },
   fields: [
     {

@@ -1,6 +1,6 @@
 import type { Where as WherePayload } from 'payload';
 import { DeepPartial } from 'react-hook-form';
-import { Config, User } from './payload-types';
+import { Avatar, Config, User } from './payload-types';
 import { FilterUnion } from './utils';
 
 export type Collections = Config['collections'][keyof Config['collections']];
@@ -16,6 +16,13 @@ export type CollectionWithOwner = Extract<
   Collection,
   {
     owner?: string | User | null;
+  }
+>;
+
+export type CollectionWithAvatar = Extract<
+  Collection,
+  {
+    avatar?: string | Avatar | null;
   }
 >;
 
