@@ -1,11 +1,5 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import {
-  Avatar as AvatarType,
-  DeliveryPreference,
-  DeliveryPreferenceSchema,
-  Individual,
-  MatchedDonationSchema,
-} from '@lactalink/types';
+import { Avatar as AvatarType, Individual, MatchedDonationSchema } from '@lactalink/types';
 import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -26,10 +20,7 @@ import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './Delive
 
 interface MatchedDonationCardProps {
   donation: string;
-  onChange?: (
-    donation: MatchedDonationSchema,
-    deliveryPreference?: DeliveryPreferenceSchema | null
-  ) => void;
+  onChange?: (donation: MatchedDonationSchema, deliveryPreference?: string | null) => void;
   isLoading?: boolean;
 }
 
@@ -39,9 +30,7 @@ export function MatchedDonationCard({
   isLoading: isLoadingProp,
 }: MatchedDonationCardProps) {
   const { theme } = useTheme();
-  const [selectedPreference, setSelectedPreference] = useState<DeliveryPreferenceSchema | null>(
-    null
-  );
+  const [selectedPreference, setSelectedPreference] = useState<string | null>(null);
 
   const shouldFetch = isString(donation);
 
@@ -75,33 +64,20 @@ export function MatchedDonationCard({
   }, [data]);
 
   useEffect(() => {
-    if (matchedDonationData) {
-      onChange?.(matchedDonationData, selectedPreference);
-    }
-  }, [matchedDonationData, onChange, selectedPreference]);
-
-  useEffect(() => {
     if (data?.deliveryDetails && data.deliveryDetails.length > 0) {
-      const pref = data.deliveryDetails[0] as DeliveryPreference | null;
-      const initialPreference: DeliveryPreferenceSchema | null =
-        (pref && {
-          id: pref.id,
-          preferredMode: pref.preferredMode,
-          address: extractID(pref.address),
-          availableDays: pref.availableDays,
-          name: pref.name,
-        }) ||
-        null;
+      const pref = data.deliveryDetails[0];
+      const prefID = (pref && extractID(pref)) || null;
 
-      setSelectedPreference(initialPreference);
+      setSelectedPreference(prefID);
 
-      if (onChange && matchedDonationData) {
-        onChange(matchedDonationData, initialPreference);
+      if (matchedDonationData) {
+        onChange?.(matchedDonationData, prefID);
       }
     }
-  }, [data?.deliveryDetails, onChange, matchedDonationData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.deliveryDetails, matchedDonationData]);
 
-  function handlePreferenceChange(preference: DeliveryPreferenceSchema) {
+  function handlePreferenceChange(preference: string) {
     setSelectedPreference(preference);
     if (onChange && matchedDonationData) {
       onChange(matchedDonationData, preference);
@@ -167,7 +143,7 @@ export function MatchedDonationCard({
           )}
           <DeliveryPreferencesBottomSheet
             selected={selectedPreference}
-            preferences={data?.deliveryDetails || []}
+            collections={data?.deliveryDetails || []}
             onChange={handlePreferenceChange}
             triggerComponent={(props) => (
               <Button

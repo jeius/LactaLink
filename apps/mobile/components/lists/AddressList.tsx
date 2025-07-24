@@ -2,18 +2,13 @@ import React, { FC } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
-import { deleteCollection } from '@/lib/api/delete';
 import { Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
-import { EditIcon, Trash2Icon } from 'lucide-react-native';
 import { GestureResponderEvent } from 'react-native';
+import { DeleteActionButton, EditActionButton } from '../buttons';
 import { AddressCard } from '../cards/AddressCard';
-import { ActionModal } from '../modals';
-import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
-import { Text } from '../ui/text';
 import { BasicList, BasicListItemProps, BasicListProps } from './BasicList';
 
 interface AddressListProps extends Omit<BasicListProps<'addresses'>, 'slug' | 'ItemComponent'> {
@@ -34,7 +29,6 @@ export function AddressList({
   ...props
 }: AddressListProps) {
   const router = useRouter();
-  const revalidateQueries = useRevalidateQueries();
 
   const data = props.data;
   const isEmpty = Array.isArray(data) && data.length === 0;
@@ -47,51 +41,21 @@ export function AddressList({
       router.push(`/addresses/edit/${item.id}`);
     }
 
-    async function handleDelete() {
-      if (!allowDelete) return;
-      const deleted = await deleteCollection('addresses', item.id);
-      if (deleted) {
-        revalidateQueries();
-      }
-    }
-
     function Action() {
       return (
         (allowEdit || allowDelete) && (
           <HStack space="lg" className={`grow justify-end`}>
             {allowEdit && (
-              <Button
-                isDisabled={disableRemove}
-                variant="link"
-                action="default"
-                className="h-fit w-fit p-0"
-                hitSlop={8}
-                onPress={handleEdit}
-              >
-                <ButtonIcon as={EditIcon} />
-              </Button>
+              <EditActionButton isDisabled={disableRemove} href={`/addresses/edit/${item.id}`} />
             )}
 
             {allowDelete && (
-              <ActionModal
-                action="negative"
-                variant="link"
-                className="h-fit w-fit"
-                hitSlop={8}
+              <DeleteActionButton
+                id={item.id}
+                slug="addresses"
+                itemName={item.name}
                 isDisabled={disableRemove}
-                triggerIcon={Trash2Icon}
-                onTriggerPress={(e) => e.stopPropagation()}
-                iconOnly
-                onConfirm={handleDelete}
-                confirmLabel="Delete"
                 title="Delete Address"
-                description={
-                  <Text>
-                    Are you sure you want to delete
-                    <Text className="font-JakartaSemiBold">{item.name ? ` ${item.name}` : ''}</Text>
-                    ? This action cannot be undone.
-                  </Text>
-                }
               />
             )}
           </HStack>

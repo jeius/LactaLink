@@ -152,8 +152,8 @@ export const enum_requests_status = pgEnum('enum_requests_status', [
   'PENDING',
   'MATCHED',
   'FULFILLED',
-  'CANCELLED',
   'EXPIRED',
+  'CANCELLED',
 ]);
 export const enum_requests_details_storage_preference = pgEnum(
   'enum_requests_details_storage_preference',
@@ -708,35 +708,6 @@ export const hospitals = pgTable(
   })
 );
 
-export const hospitals_rels = pgTable(
-  'hospitals_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    addressesID: uuid('addresses_id'),
-  },
-  (columns) => ({
-    order: index('hospitals_rels_order_idx').on(columns.order),
-    parentIdx: index('hospitals_rels_parent_idx').on(columns.parent),
-    pathIdx: index('hospitals_rels_path_idx').on(columns.path),
-    hospitals_rels_addresses_id_idx: index('hospitals_rels_addresses_id_idx').on(
-      columns.addressesID
-    ),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [hospitals.id],
-      name: 'hospitals_rels_parent_fk',
-    }).onDelete('cascade'),
-    addressesIdFk: foreignKey({
-      columns: [columns['addressesID']],
-      foreignColumns: [addresses.id],
-      name: 'hospitals_rels_addresses_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const images = pgTable(
   'images',
   {
@@ -835,35 +806,6 @@ export const individuals = pgTable(
   })
 );
 
-export const individuals_rels = pgTable(
-  'individuals_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    addressesID: uuid('addresses_id'),
-  },
-  (columns) => ({
-    order: index('individuals_rels_order_idx').on(columns.order),
-    parentIdx: index('individuals_rels_parent_idx').on(columns.parent),
-    pathIdx: index('individuals_rels_path_idx').on(columns.path),
-    individuals_rels_addresses_id_idx: index('individuals_rels_addresses_id_idx').on(
-      columns.addressesID
-    ),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [individuals.id],
-      name: 'individuals_rels_parent_fk',
-    }).onDelete('cascade'),
-    addressesIdFk: foreignKey({
-      columns: [columns['addressesID']],
-      foreignColumns: [addresses.id],
-      name: 'individuals_rels_addresses_fk',
-    }).onDelete('cascade'),
-  })
-);
-
 export const island_groups = pgTable(
   'island_groups',
   {
@@ -950,35 +892,6 @@ export const milk_banks = pgTable(
     milk_banks_phone_idx: uniqueIndex('milk_banks_phone_idx').on(columns.phone),
     milk_banks_updated_at_idx: index('milk_banks_updated_at_idx').on(columns.updatedAt),
     milk_banks_created_at_idx: index('milk_banks_created_at_idx').on(columns.createdAt),
-  })
-);
-
-export const milk_banks_rels = pgTable(
-  'milk_banks_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    addressesID: uuid('addresses_id'),
-  },
-  (columns) => ({
-    order: index('milk_banks_rels_order_idx').on(columns.order),
-    parentIdx: index('milk_banks_rels_parent_idx').on(columns.parent),
-    pathIdx: index('milk_banks_rels_path_idx').on(columns.path),
-    milk_banks_rels_addresses_id_idx: index('milk_banks_rels_addresses_id_idx').on(
-      columns.addressesID
-    ),
-    parentFk: foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [milk_banks.id],
-      name: 'milk_banks_rels_parent_fk',
-    }).onDelete('cascade'),
-    addressesIdFk: foreignKey({
-      columns: [columns['addressesID']],
-      foreignColumns: [addresses.id],
-      name: 'milk_banks_rels_addresses_fk',
-    }).onDelete('cascade'),
   })
 );
 
@@ -2072,19 +1985,7 @@ export const relations_donations = relations(donations, ({ one, many }) => ({
     relationName: '_rels',
   }),
 }));
-export const relations_hospitals_rels = relations(hospitals_rels, ({ one }) => ({
-  parent: one(hospitals, {
-    fields: [hospitals_rels.parent],
-    references: [hospitals.id],
-    relationName: '_rels',
-  }),
-  addressesID: one(addresses, {
-    fields: [hospitals_rels.addressesID],
-    references: [addresses.id],
-    relationName: 'addresses',
-  }),
-}));
-export const relations_hospitals = relations(hospitals, ({ one, many }) => ({
+export const relations_hospitals = relations(hospitals, ({ one }) => ({
   owner: one(users, {
     fields: [hospitals.owner],
     references: [users.id],
@@ -2094,9 +1995,6 @@ export const relations_hospitals = relations(hospitals, ({ one, many }) => ({
     fields: [hospitals.avatar],
     references: [avatars.id],
     relationName: 'avatar',
-  }),
-  _rels: many(hospitals_rels, {
-    relationName: '_rels',
   }),
 }));
 export const relations_images = relations(images, ({ one }) => ({
@@ -2111,19 +2009,7 @@ export const relations_images = relations(images, ({ one }) => ({
     relationName: 'owner',
   }),
 }));
-export const relations_individuals_rels = relations(individuals_rels, ({ one }) => ({
-  parent: one(individuals, {
-    fields: [individuals_rels.parent],
-    references: [individuals.id],
-    relationName: '_rels',
-  }),
-  addressesID: one(addresses, {
-    fields: [individuals_rels.addressesID],
-    references: [addresses.id],
-    relationName: 'addresses',
-  }),
-}));
-export const relations_individuals = relations(individuals, ({ one, many }) => ({
+export const relations_individuals = relations(individuals, ({ one }) => ({
   owner: one(users, {
     fields: [individuals.owner],
     references: [users.id],
@@ -2133,9 +2019,6 @@ export const relations_individuals = relations(individuals, ({ one, many }) => (
     fields: [individuals.avatar],
     references: [avatars.id],
     relationName: 'avatar',
-  }),
-  _rels: many(individuals_rels, {
-    relationName: '_rels',
   }),
 }));
 export const relations_island_groups = relations(island_groups, () => ({}));
@@ -2151,19 +2034,7 @@ export const relations_milk_bags = relations(milk_bags, ({ one }) => ({
     relationName: 'donor',
   }),
 }));
-export const relations_milk_banks_rels = relations(milk_banks_rels, ({ one }) => ({
-  parent: one(milk_banks, {
-    fields: [milk_banks_rels.parent],
-    references: [milk_banks.id],
-    relationName: '_rels',
-  }),
-  addressesID: one(addresses, {
-    fields: [milk_banks_rels.addressesID],
-    references: [addresses.id],
-    relationName: 'addresses',
-  }),
-}));
-export const relations_milk_banks = relations(milk_banks, ({ one, many }) => ({
+export const relations_milk_banks = relations(milk_banks, ({ one }) => ({
   owner: one(users, {
     fields: [milk_banks.owner],
     references: [users.id],
@@ -2173,9 +2044,6 @@ export const relations_milk_banks = relations(milk_banks, ({ one, many }) => ({
     fields: [milk_banks.avatar],
     references: [avatars.id],
     relationName: 'avatar',
-  }),
-  _rels: many(milk_banks_rels, {
-    relationName: '_rels',
   }),
 }));
 export const relations_notification_categories = relations(notification_categories, ({ one }) => ({
@@ -2571,14 +2439,11 @@ type DatabaseSchema = {
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
-  hospitals_rels: typeof hospitals_rels;
   images: typeof images;
   individuals: typeof individuals;
-  individuals_rels: typeof individuals_rels;
   island_groups: typeof island_groups;
   milk_bags: typeof milk_bags;
   milk_banks: typeof milk_banks;
-  milk_banks_rels: typeof milk_banks_rels;
   notification_categories: typeof notification_categories;
   notification_channels: typeof notification_channels;
   notifications_delivery_channels_stats: typeof notifications_delivery_channels_stats;
@@ -2611,14 +2476,11 @@ type DatabaseSchema = {
   relations_delivery_preferences: typeof relations_delivery_preferences;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
-  relations_hospitals_rels: typeof relations_hospitals_rels;
   relations_hospitals: typeof relations_hospitals;
   relations_images: typeof relations_images;
-  relations_individuals_rels: typeof relations_individuals_rels;
   relations_individuals: typeof relations_individuals;
   relations_island_groups: typeof relations_island_groups;
   relations_milk_bags: typeof relations_milk_bags;
-  relations_milk_banks_rels: typeof relations_milk_banks_rels;
   relations_milk_banks: typeof relations_milk_banks;
   relations_notification_categories: typeof relations_notification_categories;
   relations_notification_channels: typeof relations_notification_channels;

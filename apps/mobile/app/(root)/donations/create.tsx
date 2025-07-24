@@ -24,7 +24,7 @@ import { FormProvider } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
-export default function CreateDonationRequest() {
+export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
   const queryClient = useQueryClient();

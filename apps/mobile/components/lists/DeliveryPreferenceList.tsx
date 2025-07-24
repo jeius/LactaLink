@@ -1,16 +1,11 @@
-import { Text } from '@/components/ui/text';
 import React, { FC } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
-import { deleteCollection } from '@/lib/api/delete';
 import { Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
-import { EditIcon, Trash2Icon } from 'lucide-react-native';
+import { DeleteActionButton, EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards';
-import { ActionModal } from '../modals';
-import { Button, ButtonIcon } from '../ui/button';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { BasicList, BasicListItemProps, BasicListProps } from './BasicList';
@@ -32,7 +27,6 @@ export function DeliveryPreferenceList({
   ...props
 }: DeliveryPreferencesListProps) {
   const router = useRouter();
-  const revalidateQueries = useRevalidateQueries();
 
   const data = props.data;
   const isEmpty = data.length === 0;
@@ -42,49 +36,24 @@ export function DeliveryPreferenceList({
       router.push(`/delivery-preferences/edit/${item.id}`);
     }
 
-    async function handleDelete() {
-      if (!item || !item.id) return;
-      const deleted = await deleteCollection('delivery-preferences', item.id);
-      if (deleted) {
-        revalidateQueries();
-      }
-    }
-
     function Action() {
       return (
-        (allowDelete || allowEdit) && (
-          <HStack space="lg" className="grow justify-end">
+        (allowEdit || allowDelete) && (
+          <HStack space="lg" className={`grow justify-end`}>
             {allowEdit && (
-              <Button
-                action="default"
-                variant="link"
-                className="h-fit w-fit p-0"
-                onPress={handleEdit}
-                hitSlop={8}
-              >
-                <ButtonIcon as={EditIcon} />
-              </Button>
-            )}
-            {allowDelete && (
-              <ActionModal
-                action="negative"
-                variant="link"
-                className="h-fit w-fit"
-                hitSlop={8}
+              <EditActionButton
                 isDisabled={disableRemove}
-                triggerIcon={Trash2Icon}
-                onTriggerPress={(e) => e.stopPropagation()}
-                iconOnly
-                onConfirm={handleDelete}
-                confirmLabel="Delete"
+                href={`/delivery-preferences/edit/${item.id}`}
+              />
+            )}
+
+            {allowDelete && (
+              <DeleteActionButton
+                id={item.id}
+                slug="delivery-preferences"
+                itemName={item.name}
+                isDisabled={disableRemove}
                 title="Delete Delivery Preference"
-                description={
-                  <Text>
-                    Are you sure you want to delete{' '}
-                    <Text className="font-JakartaSemiBold">{item.name}</Text>? This action cannot be
-                    undone.
-                  </Text>
-                }
               />
             )}
           </HStack>

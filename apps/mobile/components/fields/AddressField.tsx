@@ -11,8 +11,7 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useRouter } from 'expo-router';
-import { AlertCircleIcon, Edit2Icon, EditIcon, PlusIcon } from 'lucide-react-native';
+import { AlertCircleIcon, Edit2Icon, PlusIcon } from 'lucide-react-native';
 import {
   ControllerProps,
   FieldPath,
@@ -21,6 +20,7 @@ import {
   useFormContext,
 } from 'react-hook-form';
 import { SelectBottomSheet, SelectItemProps } from '../bottom-sheets/SelectBottomSheet';
+import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { HStack } from '../ui/hstack';
@@ -40,7 +40,6 @@ export function AddressField<
 >({ isLoading, helperText, label, name }: AddressFieldProps<TFieldValues, TName>) {
   const { user } = useAuth();
   const selections = user?.addresses?.docs || [];
-  const router = useRouter();
 
   const { getFieldState, formState, watch, setValue } = useFormContext<TFieldValues>();
 
@@ -53,22 +52,9 @@ export function AddressField<
   }
 
   function Action({ id }: { id: string }) {
-    function handleEditPress() {
-      router.push(`/addresses/edit/${id}`);
-    }
-
     return (
       <HStack space="lg" className="grow justify-end">
-        <Button
-          isDisabled={isSubmitting}
-          variant="link"
-          action="default"
-          className="h-fit w-fit p-0"
-          hitSlop={8}
-          onPress={handleEditPress}
-        >
-          <ButtonIcon as={EditIcon} />
-        </Button>
+        <EditActionButton isDisabled={isSubmitting} href={`/addresses/edit/${id}`} />
       </HStack>
     );
   }

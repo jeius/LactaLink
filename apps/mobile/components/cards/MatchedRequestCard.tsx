@@ -1,14 +1,7 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import {
-  Avatar as AvatarType,
-  DeliveryPreference,
-  DeliveryPreferenceSchema,
-  Individual,
-  MatchedRequestSchema,
-  Request,
-} from '@lactalink/types';
+import { Avatar as AvatarType, Individual, MatchedRequestSchema, Request } from '@lactalink/types';
 import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
@@ -29,10 +22,7 @@ import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './Delive
 
 interface MatchedRequestCardProps {
   request: string | Request;
-  onChange?: (
-    request: MatchedRequestSchema,
-    deliveryPreference?: DeliveryPreferenceSchema | null
-  ) => void;
+  onChange?: (request: MatchedRequestSchema, deliveryPreference?: string | null) => void;
   isLoading?: boolean;
 }
 
@@ -42,9 +32,7 @@ export default function MatchedRequestCard({
   isLoading: isLoadingProp,
 }: MatchedRequestCardProps) {
   const { theme } = useTheme();
-  const [selectedPreference, setSelectedPreference] = useState<DeliveryPreferenceSchema | null>(
-    null
-  );
+  const [selectedPreference, setSelectedPreference] = useState<string | null>(null);
 
   const shouldFetch = isString(requestProp);
 
@@ -78,33 +66,20 @@ export default function MatchedRequestCard({
   }, [data]);
 
   useEffect(() => {
-    if (matchedRequestData) {
-      onChange?.(matchedRequestData, selectedPreference);
-    }
-  }, [matchedRequestData, onChange, selectedPreference]);
-
-  useEffect(() => {
     if (data?.deliveryDetails && data.deliveryDetails.length > 0) {
-      const pref = data.deliveryDetails[0] as DeliveryPreference | null;
-      const initialPreference: DeliveryPreferenceSchema | null =
-        (pref && {
-          id: pref.id,
-          preferredMode: pref.preferredMode,
-          address: extractID(pref.address),
-          availableDays: pref.availableDays,
-          name: pref.name,
-        }) ||
-        null;
+      const pref = data.deliveryDetails[0];
+      const prefID = (pref && extractID(pref)) || null;
 
-      setSelectedPreference(initialPreference);
+      setSelectedPreference(prefID);
 
-      if (onChange && matchedRequestData) {
-        onChange(matchedRequestData, initialPreference);
+      if (matchedRequestData) {
+        onChange?.(matchedRequestData, prefID);
       }
     }
-  }, [data?.deliveryDetails, onChange, matchedRequestData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.deliveryDetails, matchedRequestData]);
 
-  function handlePreferenceChange(preference: DeliveryPreferenceSchema) {
+  function handlePreferenceChange(preference: string) {
     setSelectedPreference(preference);
     if (onChange && matchedRequestData) {
       onChange(matchedRequestData, preference);
@@ -194,7 +169,7 @@ export default function MatchedRequestCard({
           )}
           <DeliveryPreferencesBottomSheet
             selected={selectedPreference}
-            preferences={data?.deliveryDetails || []}
+            collections={data?.deliveryDetails || []}
             onChange={handlePreferenceChange}
             triggerComponent={(props) => (
               <Button
