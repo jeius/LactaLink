@@ -77,7 +77,7 @@ export const checkStatus: CollectionBeforeReadHook<Donation> = async ({ req, doc
   req.context.skipDonationUpdateHook = true; // Prevent infinite loop
 
   // Persist to database
-  req.payload.update({
+  await req.payload.update({
     collection: 'donations',
     id: data.id,
     req,

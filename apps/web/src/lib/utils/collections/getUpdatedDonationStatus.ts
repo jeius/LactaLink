@@ -4,13 +4,31 @@ export function getUpdatedDonationStatus(
   bagDocs: Partial<MilkBag>[],
   status: Donation['status'] = 'AVAILABLE'
 ) {
-  const allBagsExpired = bagDocs.every((bag) => bag.status === 'EXPIRED');
-  const totalVolume = bagDocs
-    .filter((bag) => bag.status !== 'DISCARDED')
-    .reduce((sum, bag) => sum + (bag.volume || 0), 0);
-  const remainingVolume = bagDocs
-    .filter((bag) => bag.status === 'AVAILABLE')
-    .reduce((sum, bag) => sum + (bag.volume || 0), 0);
+  let someBagsExpired = false;
+  let allBagsExpired = true;
+  let someBagsAllocated = false;
+  let totalVolume = 0;
+  let remainingVolume = 0;
+
+  for (const bag of bagDocs) {
+    if (bag.status === 'EXPIRED') {
+      someBagsExpired = true;
+    } else {
+      allBagsExpired = false;
+    }
+
+    if (bag.status !== 'DISCARDED') {
+      totalVolume += bag.volume || 0;
+    }
+
+    if (bag.status === 'AVAILABLE') {
+      remainingVolume += bag.volume || 0;
+    }
+
+    if (bag.status === 'ALLOCATED') {
+      someBagsAllocated = true;
+    }
+  }
 
   let updatedStatus = status;
 
@@ -19,9 +37,9 @@ export function getUpdatedDonationStatus(
     updatedStatus = 'EXPIRED';
   } else if (remainingVolume === 0) {
     updatedStatus = 'FULLY_ALLOCATED';
-  } else if (remainingVolume < totalVolume) {
+  } else if (remainingVolume < totalVolume && someBagsAllocated) {
     updatedStatus = 'PARTIALLY_ALLOCATED';
-  } else if (remainingVolume === totalVolume) {
+  } else if (remainingVolume !== 0 && someBagsExpired && !someBagsAllocated) {
     updatedStatus = 'AVAILABLE';
   }
 

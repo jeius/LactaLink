@@ -8,7 +8,7 @@ import {
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { filterMilkBagsOptions } from './filterOptions';
+import { filterDeliveryPreferences, filterMilkBagsOptions } from './filterOptions';
 import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initialize } from './hooks/initialize';
@@ -188,6 +188,13 @@ export const Donations: CollectionConfig<'donations'> = {
               relationTo: 'delivery-preferences',
               hasMany: true,
               required: true,
+              filterOptions: filterDeliveryPreferences,
+              validate: (value) => {
+                if (!value || value.length === 0) {
+                  return 'At least one delivery preference must be selected';
+                }
+                return true;
+              },
               admin: {
                 description: 'Delivery preferences for the milk donation',
               },
