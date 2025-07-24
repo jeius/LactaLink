@@ -11,8 +11,15 @@ export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
     return doc;
   }
 
+  // Only check if expiresAt exists and status allows expiration
+  if (!doc.expiresAt || !['AVAILABLE', 'ALLOCATED'].includes(doc.status)) {
+    return doc;
+  }
+
   const now = new Date();
-  if (doc.expiresAt && new Date(doc.expiresAt) < now) {
+  const expiryDate = new Date(doc.expiresAt);
+
+  if (expiryDate < now) {
     doc.status = 'EXPIRED';
 
     req.payload.logger.info(
@@ -20,15 +27,26 @@ export const updateExpireStatus: CollectionBeforeReadHook<MilkBag> = async ({
       'Updating milk bag status to EXPIRED due to expiry date'
     );
 
-    // Persist to database
-    req.context.skipUpdateExpireStatus = true;
+    // Persist to database - use try/catch to handle potential errors
+    try {
+      req.context.skipUpdateExpireStatus = true;
 
-    await req.payload.update({
-      collection: 'milkBags',
-      id: doc.id,
-      data: { status: 'EXPIRED' },
-      req,
-    });
+      await req.payload.update({
+        collection: 'milkBags',
+        id: doc.id,
+        data: { status: 'EXPIRED' },
+        req,
+      });
+    } catch (error) {
+      req.payload.logger.error(
+        {
+          milkBagId: doc.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        'Failed to update milk bag status to EXPIRED'
+      );
+      // Don't throw error to avoid breaking the read operation
+    }
   }
 
   return doc;

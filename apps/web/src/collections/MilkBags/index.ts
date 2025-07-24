@@ -4,7 +4,6 @@ import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
-import { updateExpireStatus } from './hooks/updateStatus';
 
 export const MilkBags: CollectionConfig<'milkBags'> = {
   slug: 'milkBags',
@@ -21,7 +20,6 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     defaultColumns: ['code', 'volume', 'status', 'collectedAt', 'expiresAt'],
   },
   hooks: {
-    beforeRead: [updateExpireStatus],
     beforeChange: [generateCreatedBy, generateExpiry, generateCode, generateTitle],
   },
   fields: [
