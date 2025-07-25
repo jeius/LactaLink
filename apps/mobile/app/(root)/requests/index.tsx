@@ -1,5 +1,5 @@
 import { RequestListCard } from '@/components/cards/RequestListCard';
-import { InfiniteList } from '@/components/lists/InfiniteList';
+import { InfiniteList, InfiniteListItemProps } from '@/components/lists/InfiniteList';
 import SafeArea from '@/components/SafeArea';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
@@ -7,13 +7,12 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { REQUEST_STATUS } from '@lactalink/enums';
-import { Collection, CollectionSlug, Request, Where } from '@lactalink/types';
+import { CollectionSlug, Request, Where } from '@lactalink/types';
 import { extractID, formatKebabToTitle } from '@lactalink/utilities';
 import { AnimatePresence, Motion } from '@legendapp/motion';
-import { ListRenderItem } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, FC, useContext, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Route, SceneMap } from 'react-native-tab-view';
 
@@ -88,30 +87,32 @@ function SceneRenderer({ route }: SceneRendererProps) {
       break;
   }
 
-  const renderItem: ListRenderItem<Collection> = ({ item }) => {
-    const isLoading = item.id.includes('placeholder');
+  const Item: FC<InfiniteListItemProps> = ({ item, isLoading }) => {
     return <RequestListCard data={item as DataType} isLoading={isLoading} />;
   };
 
   return (
-    <InfiniteList
-      slug={SLUG}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      fetchOptions={{ where: { and: where } }}
-      renderItem={renderItem}
-      style={{ marginBottom: insets.bottom }}
-      onScrollBeginDrag={({ nativeEvent }) => {
-        previousOffset.current = nativeEvent.contentOffset.y;
-      }}
-      onScrollEndDrag={({ nativeEvent }) => {
-        const currentOffset = nativeEvent.contentOffset.y;
-        const scrollingDown = currentOffset > previousOffset.current;
-        if (scrollingDown !== scrolledDown) {
-          setScrolledDown(scrollingDown);
-        }
-      }}
-    />
+    <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
+      <InfiniteList
+        slug={SLUG}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        fetchOptions={{ where: { and: where } }}
+        ItemComponent={Item}
+        estimatedItemSize={120}
+        contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
+        onScrollBeginDrag={({ nativeEvent }) => {
+          previousOffset.current = nativeEvent.contentOffset.y;
+        }}
+        onScrollEndDrag={({ nativeEvent }) => {
+          const currentOffset = nativeEvent.contentOffset.y;
+          const scrollingDown = currentOffset > previousOffset.current;
+          if (scrollingDown !== scrolledDown) {
+            setScrolledDown(scrollingDown);
+          }
+        }}
+      />
+    </Box>
   );
 }
 

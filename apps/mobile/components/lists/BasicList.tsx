@@ -48,10 +48,6 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
   placeholderLength = 3,
   ...props
 }: BasicListProps<TSlug>) {
-  const placeholderData = Array.from({ length: placeholderLength }, (_, index) => ({
-    id: `placeholder-${index}`,
-  })) as Collection<TSlug>[];
-
   const shouldFetch = areStrings(dataProp);
 
   const dataIDs = useMemo(
@@ -75,10 +71,19 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
   const isLoading = isLoadingProp || isLoadingData;
   const isFetching = isFetchingProp || isFetchingData;
 
-  const data = useMemo(
-    () => (shouldFetch ? fetchedData : extractCollection(dataProp)) || [],
-    [shouldFetch, fetchedData, dataProp]
-  );
+  const data = useMemo(() => {
+    if (!isLoading) {
+      return (shouldFetch ? fetchedData : extractCollection(dataProp)) || [];
+    } else {
+      return Array.from(
+        { length: placeholderLength },
+        (_, index) =>
+          ({
+            id: `placeholder-${index}`,
+          }) as Collection<TSlug>
+      );
+    }
+  }, [isLoading, shouldFetch, fetchedData, dataProp, placeholderLength]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -112,7 +117,7 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
   return (
     <FlashList
       {...props}
-      data={isLoading ? placeholderData : data}
+      data={data}
       renderItem={renderItem}
       keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
       ListEmptyComponent={EmptyComponent}
