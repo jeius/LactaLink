@@ -51,3 +51,14 @@ export function formatKebabToTitle(str: string) {
 export function formatKebab(str: string) {
   return str.split('-').join(' ');
 }
+
+/**
+ * Converts a kebab-case string to a underscore separated string.
+ *
+ * @param str - The kebab-case string to format.
+ * @returns The formatted string with underscores.
+ *
+ */
+export function formatKebabToUnderscore(str: string) {
+  return str.split('-').join('_');
+}
