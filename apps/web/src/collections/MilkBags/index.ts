@@ -22,6 +22,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
   hooks: {
     beforeChange: [generateCreatedBy, generateExpiry, generateCode, generateTitle],
   },
+  indexes: [{ fields: ['status', 'expiresAt'] }],
   fields: [
     {
       name: 'code',

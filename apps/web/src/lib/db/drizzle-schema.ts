@@ -862,6 +862,7 @@ export const milk_bags = pgTable(
     milk_bags_donor_idx: index('milk_bags_donor_idx').on(columns.donor),
     milk_bags_updated_at_idx: index('milk_bags_updated_at_idx').on(columns.updatedAt),
     milk_bags_created_at_idx: index('milk_bags_created_at_idx').on(columns.createdAt),
+    status_expiresAt_idx: index('status_expiresAt_idx').on(columns.status, columns.expiresAt),
   })
 );
 
