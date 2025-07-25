@@ -1,6 +1,8 @@
+import { useAuth } from '@/hooks/auth/useAuth';
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, DONATION_STATUS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { Donation, Image as ImageType } from '@lactalink/types';
+import { extractID } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { DropletIcon, EditIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React from 'react';
@@ -25,6 +27,7 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
 export function DonationListCard({ data, isLoading, ...props }: DonationListCardProps) {
   const router = useRouter();
   const { theme } = useTheme();
+  const { profile } = useAuth();
 
   const fillColor = getHexColor(theme, 'primary', 50)?.toString();
   const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
@@ -37,12 +40,14 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
     );
   }
 
-  const { details, status, volume, remainingVolume } = data;
+  const { details, status, volume, remainingVolume, donor } = data;
   const { collectionMode, storageType } = details;
 
   const milkSamples = details.milkSample as ImageType[] | null;
   const image = milkSamples && milkSamples.length ? milkSamples[0] : null;
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
+
+  const isOwner = profile?.id === extractID(donor);
 
   let finalVolume: number;
   let badgeAction: BasicBadgeProps['action'] = 'success';
@@ -128,17 +133,19 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
           <BasicBadge size="sm" action={badgeAction} text={DONATION_STATUS[status].label} />
         </VStack>
 
-        <VStack>
-          <Button
-            action="default"
-            variant="link"
-            className="h-fit w-fit p-0"
-            onPress={handleEditAction}
-            hitSlop={8}
-          >
-            <ButtonIcon as={EditIcon} />
-          </Button>
-        </VStack>
+        {isOwner && (
+          <VStack>
+            <Button
+              action="default"
+              variant="link"
+              className="h-fit w-fit p-0"
+              onPress={handleEditAction}
+              hitSlop={8}
+            >
+              <ButtonIcon as={EditIcon} />
+            </Button>
+          </VStack>
+        )}
       </HStack>
     </Card>
   );

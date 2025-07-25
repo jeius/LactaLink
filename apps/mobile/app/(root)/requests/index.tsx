@@ -1,15 +1,14 @@
+import { BottomSheetActionButton } from '@/components/buttons';
 import { RequestListCard } from '@/components/cards/RequestListCard';
 import { InfiniteList, InfiniteListItemProps } from '@/components/lists/InfiniteList';
 import SafeArea from '@/components/SafeArea';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { REQUEST_STATUS } from '@lactalink/enums';
 import { CollectionSlug, Request, Where } from '@lactalink/types';
 import { extractID, formatKebabToTitle } from '@lactalink/utilities';
-import { AnimatePresence, Motion } from '@legendapp/motion';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { createContext, FC, useContext, useRef, useState } from 'react';
@@ -118,7 +117,6 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
 export default function ListPage() {
   const [scrolledDown, setScrolledDown] = useState(false);
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { userID } = useLocalSearchParams<{ userID?: string }>();
   const { user } = useAuth();
@@ -134,26 +132,12 @@ export default function ListPage() {
     <SafeArea safeTop={false} safeBottom={false}>
       <ScrollContext.Provider value={{ scrolledDown, setScrolledDown }}>
         <Tab routes={routes} renderScene={renderScene} lazy />
-        <AnimatePresence>
-          {isOwner && !scrolledDown && (
-            <Motion.View
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-            >
-              <Box
-                className="bg-background-0 border-outline-200 rounded-2xl border p-4"
-                style={{ paddingBottom: insets.bottom }}
-              >
-                <Button onPress={handleCreateNew}>
-                  <ButtonIcon as={PlusIcon} />
-                  <ButtonText>Create New {formatKebabToTitle(SLUG)}</ButtonText>
-                </Button>
-              </Box>
-            </Motion.View>
-          )}
-        </AnimatePresence>
+        <BottomSheetActionButton
+          show={isOwner && !scrolledDown}
+          icon={PlusIcon}
+          label={`Create New ${formatKebabToTitle(SLUG)}`}
+          onPress={handleCreateNew}
+        />
       </ScrollContext.Provider>
     </SafeArea>
   );

@@ -1,17 +1,16 @@
+import { BottomSheetActionButton } from '@/components/buttons';
 import { DonationListCard } from '@/components/cards/DonationListCard';
 import { InfiniteList, InfiniteListItemProps } from '@/components/lists/InfiniteList';
 import SafeArea from '@/components/SafeArea';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
 import { DONATION_STATUS } from '@lactalink/enums';
 import { CollectionSlug, Donation, Where } from '@lactalink/types';
-import { extractID, formatKebabToTitle } from '@lactalink/utilities';
-import { AnimatePresence, Motion } from '@legendapp/motion';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { extractID, extractName, formatKebabToTitle } from '@lactalink/utilities';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { createContext, FC, useContext, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,8 +52,8 @@ function useScroll() {
 }
 
 interface SceneRendererProps {
-  route: Route;
-  jumpTo: (key: string) => void;
+  route?: Route;
+  jumpTo?: (key: string) => void;
 }
 
 function SceneRenderer({ route }: SceneRendererProps) {
@@ -65,27 +64,54 @@ function SceneRenderer({ route }: SceneRendererProps) {
   const { scrolledDown, setScrolledDown } = useScroll();
   const previousOffset = useRef(0);
 
-  const { data, isLoading, error, isFetching } = useFetchById(Boolean(userID), {
+  const hasUser = Boolean(userID);
+  const isAuthenticatedUser = userID === auth.user?.id;
+
+  const {
+    data: fetchedUser,
+    isLoading,
+    error,
+    isFetching,
+  } = useFetchById(hasUser && !isAuthenticatedUser, {
     collection: 'users',
     id: userID,
-    depth: 0,
-    select: { profile: true },
+    depth: 2,
+    select: { profile: true, profileType: true },
   });
 
-  const profile = data?.profile || { value: auth.profile, relationTo: auth.profileCollection };
+  const user = fetchedUser || auth.user;
+  const profile = fetchedUser?.profile || {
+    value: auth.profile,
+    relationTo: auth.profileCollection,
+  };
   const profileID = profile?.value && extractID(profile.value);
 
-  const where: Where[] = [{ status: { equals: route.key } }];
+  const headerTitle = hasUser
+    ? isAuthenticatedUser
+      ? `My ${formatKebabToTitle(SLUG)}`
+      : (fetchedUser && extractName(fetchedUser) + `'s ${formatKebabToTitle(SLUG)}`) ||
+        formatKebabToTitle(SLUG)
+    : `Available ${formatKebabToTitle(SLUG)}`;
 
-  switch (profile?.relationTo) {
-    case 'individuals': {
-      if (profileID) {
-        where.push({ donor: { equals: profileID } });
+  const where: Where[] = [
+    {
+      status: userID
+        ? { equals: route?.key }
+        : { in: [DONATION_STATUS.AVAILABLE.value, DONATION_STATUS.PARTIALLY_ALLOCATED.value] },
+    },
+  ];
+
+  if (userID) {
+    switch (profile?.relationTo) {
+      case 'individuals': {
+        if (profileID) {
+          where.push({ donor: { equals: profileID } });
+        }
+        break;
       }
-      break;
+      default:
+        break;
     }
-    default:
-      break;
   }
 
   const Item: FC<InfiniteListItemProps> = ({ item, isLoading }) => {
@@ -94,6 +120,7 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
   return (
     <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
+      <Stack.Screen options={{ headerShadowVisible: !hasUser, headerTitle }} />
       <InfiniteList
         slug={SLUG}
         isLoading={isLoading}
@@ -119,14 +146,14 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
 export default function ListPage() {
   const [scrolledDown, setScrolledDown] = useState(false);
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { userID } = useLocalSearchParams<{ userID?: string }>();
   const { user } = useAuth();
 
   useLiveCollectionRevalidator(SLUG, ['UPDATE']);
 
-  const isOwner = userID ? user?.id === userID : true;
+  const hasUser = Boolean(userID);
+  const isOwner = user?.id === userID;
 
   function handleCreateNew() {
     // @ts-expect-error This is a workaround for the router type issue
@@ -134,30 +161,18 @@ export default function ListPage() {
   }
 
   return (
-    <SafeArea safeTop={false} safeBottom={false}>
-      <ScrollContext.Provider value={{ scrolledDown, setScrolledDown }}>
-        <Tab routes={routes} renderScene={renderScene} lazy />
-        <AnimatePresence>
-          {isOwner && !scrolledDown && (
-            <Motion.View
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-            >
-              <Box
-                className="bg-background-0 border-outline-200 rounded-2xl border p-4"
-                style={{ paddingBottom: insets.bottom }}
-              >
-                <Button onPress={handleCreateNew}>
-                  <ButtonIcon as={PlusIcon} />
-                  <ButtonText>Create New {formatKebabToTitle(SLUG)}</ButtonText>
-                </Button>
-              </Box>
-            </Motion.View>
-          )}
-        </AnimatePresence>
-      </ScrollContext.Provider>
-    </SafeArea>
+    <>
+      <SafeArea safeTop={false} safeBottom={false}>
+        <ScrollContext.Provider value={{ scrolledDown, setScrolledDown }}>
+          {hasUser ? <Tab routes={routes} renderScene={renderScene} lazy /> : <SceneRenderer />}
+          <BottomSheetActionButton
+            show={(isOwner && !scrolledDown) || !hasUser}
+            icon={PlusIcon}
+            label={`Create New ${formatKebabToTitle(SLUG)}`}
+            onPress={handleCreateNew}
+          />
+        </ScrollContext.Provider>
+      </SafeArea>
+    </>
   );
 }

@@ -9,18 +9,14 @@ import { toast } from 'sonner-native';
 
 import { DonateRequestModal } from '@/components/modals/DonateRequestModal';
 import SafeArea from '@/components/SafeArea';
-import { useCurrentLocation } from '@/hooks/location/useLocation';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
-import { LatLng } from 'react-native-maps';
 
 export default function Home() {
   const router = useRouter();
-  const { location } = useCurrentLocation();
-  const coordinates: LatLng = {
-    latitude: location?.coords.latitude || 0,
-    longitude: location?.coords.longitude || 0,
-  };
+
+  const { user } = useAuth();
 
   function handleSignOut() {
     toast.promise(signOut(), {
@@ -83,7 +79,21 @@ export default function Home() {
               router.push('/donations');
             }}
           >
-            <ButtonText>Donations</ButtonText>
+            <ButtonText>Available Donations</ButtonText>
+          </Button>
+
+          <Button
+            action="default"
+            onPress={() => {
+              if (user) {
+                router.push({
+                  pathname: '/donations',
+                  params: { userID: '2a5e7f8d-7149-41b6-9051-5107604ab52a' },
+                });
+              }
+            }}
+          >
+            <ButtonText>My Donations</ButtonText>
           </Button>
 
           <Button
