@@ -12,9 +12,12 @@ import {
   DonationMarkers,
 } from '@/components/map/markers/DonationMarkers';
 import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
-import React, { useRef, useState } from 'react';
+import _ from 'lodash';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import RNMapView, { LatLng, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const MemoizedMapView = memo(MapView, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
 
 export default function MapPage() {
   const insets = useSafeAreaInsets();
@@ -76,59 +79,69 @@ export default function MapPage() {
     setSelectedItem?.({ data, slug: 'requests' });
   }
 
-  function handleRegionChangeComplete(region: Region) {
+  const handleRegionChangeComplete = useCallback((region: Region) => {
     setRegion(region);
-  }
+  }, []);
+
+  const mapChildren = useMemo(() => {
+    if (!dataReady) {
+      return null;
+    }
+
+    if (selectedItem) {
+      return (
+        <>
+          {selectedItem.slug === 'donations' ? (
+            <DonationMarkers
+              showAvatar
+              data={selectedItem.data}
+              onPress={handleDonationMarkerPress}
+            />
+          ) : selectedItem.slug === 'requests' ? (
+            <RequestMarkers
+              showAvatar
+              data={selectedItem.data}
+              onPress={handleRequestMarkerPress}
+            />
+          ) : null}
+        </>
+      );
+    }
+
+    return (
+      <>
+        {donations?.map((donation, i) => (
+          <DonationMarkers
+            key={`${donation.id}-${i}`}
+            data={donation}
+            region={region}
+            onPress={handleDonationMarkerPress}
+            showAvatar={false}
+          />
+        ))}
+
+        {requests?.map((request, i) => (
+          <RequestMarkers
+            key={`${request.id}-${i}`}
+            data={request}
+            region={region}
+            onPress={handleRequestMarkerPress}
+            showAvatar={false}
+          />
+        ))}
+      </>
+    );
+  }, [selectedItem, dataReady, donations, requests, region]);
 
   return (
     <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-      <MapView
+      <MemoizedMapView
         mapRef={mapRef}
         dataReady={dataReady}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {selectedItem ? (
-          <>
-            {selectedItem.slug === 'donations' ? (
-              <DonationMarkers
-                showAvatar
-                data={selectedItem.data}
-                onPress={handleDonationMarkerPress}
-              />
-            ) : selectedItem.slug === 'requests' ? (
-              <RequestMarkers
-                showAvatar
-                data={selectedItem.data}
-                onPress={handleRequestMarkerPress}
-              />
-            ) : null}
-          </>
-        ) : (
-          <>
-            {dataReady &&
-              donations?.map((donation, i) => (
-                <DonationMarkers
-                  key={`${donation.id}-${i}`}
-                  data={donation}
-                  region={region}
-                  onPress={handleDonationMarkerPress}
-                  showAvatar={false}
-                />
-              ))}
-
-            {dataReady &&
-              requests?.map((request, i) => (
-                <RequestMarkers
-                  key={`${request.id}-${i}`}
-                  data={request}
-                  region={region}
-                  onPress={handleRequestMarkerPress}
-                  showAvatar={false}
-                />
-              ))}
-          </>
-        )}
-      </MapView>
+        {mapChildren}
+      </MemoizedMapView>
 
       <MapBottomSheet
         value={selectedItem}

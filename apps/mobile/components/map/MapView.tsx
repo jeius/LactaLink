@@ -9,6 +9,7 @@ import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'rea
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
 
+import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
 import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
@@ -43,14 +44,22 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   const [showAvatar, setShowAvatar] = useState(true);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [renderMarkers, setMarkersRendered] = useState(false);
 
-  const latlng = useMemo<LatLng>(
-    () => ({
-      latitude: location?.coords.latitude || 0,
-      longitude: location?.coords.longitude || 0,
-    }),
-    [location]
+  const mapReady = useMemo(
+    () => isMapReady && isMapLoaded && dataReady && !isLoading,
+    [isMapReady, isMapLoaded, dataReady, isLoading]
   );
+
+  const latlng = useMemo<LatLng>(() => {
+    if (location) {
+      return {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+    }
+    return PHILIPPINES_COORDINATES;
+  }, [location]);
 
   if (error) {
     const errorParams: ErrorSearchParams = {
@@ -63,7 +72,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   }
 
   const [camera, setCamera] = useState<Camera>({
-    zoom: 16,
+    zoom: location?.coords ? 12 : 16,
     heading: 0,
     pitch: 0,
     center: {
@@ -78,15 +87,14 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
   }, [camera, userPosition]);
 
   useEffect(() => {
-    if (isMapReady && dataReady && !isLoading) {
+    if (mapReady) {
       const { latitude, longitude } = latlng;
-      mapRef.current?.setCamera({ center: { latitude, longitude } });
-
+      mapRef.current?.animateCamera({ zoom: 16, center: { latitude, longitude } });
       setTimeout(() => {
-        setIsMapLoaded(true);
-      }, 250); // Ensure the camera is set before marking the map as ready
+        setMarkersRendered(true);
+      }, 500);
     }
-  }, [latlng, dataReady, isLoading, mapRef, isMapReady]);
+  }, [latlng, mapReady, mapRef]);
 
   function handleCompassPress() {
     mapRef.current?.animateCamera(
@@ -122,11 +130,6 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     }
   }
 
-  function handleMapReady() {
-    console.log('🗺️  Map is ready, enabling location updates');
-    setIsMapReady(true);
-  }
-
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
 
@@ -144,7 +147,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
 
   return (
     <Box style={{ flex: 1 }}>
-      <RNMapView
+      <RNMapView.Animated
         {...props}
         ref={mapRef}
         initialCamera={camera}
@@ -156,11 +159,12 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         showsCompass={false}
         toolbarEnabled={false}
         onRegionChangeComplete={handleRegionChangeEnd}
-        onMapReady={handleMapReady}
+        onMapReady={() => setIsMapReady(true)}
+        onMapLoaded={() => setIsMapLoaded(true)}
       >
-        {children}
+        {renderMarkers && children}
 
-        {location && isMapLoaded && (
+        {location && renderMarkers && (
           <UserMarker
             ref={userMarkerRef}
             showAvatar={showAvatar}
@@ -170,9 +174,9 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
             onChangePosition={setUserPosition}
           />
         )}
-      </RNMapView>
+      </RNMapView.Animated>
 
-      {!isMapLoaded && (
+      {!mapReady && (
         <SafeArea className="absolute inset-0 items-center justify-center">
           <Spinner size={'large'} />
           <Text size="md">Loading google maps...</Text>

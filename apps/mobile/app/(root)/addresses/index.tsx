@@ -42,7 +42,7 @@ export default function ListPage() {
   const headerTitle =
     isAuthenticatedUser || !userID
       ? 'My Addresses'
-      : (user && extractName(user) + '`s Addresses') || undefined;
+      : (user && extractName(user) + "'s Addresses") || undefined;
 
   function handleAddAddress() {
     router.push('/addresses/create');

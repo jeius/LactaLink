@@ -42,7 +42,7 @@ export default function ListPage() {
   const headerTitle =
     isAuthenticatedUser || !userID
       ? 'My Delivery Preferences'
-      : (user && extractName(user) + '`s Delivery Preferences') || undefined;
+      : (user && extractName(user) + "'s Delivery Preferences") || undefined;
 
   function handleAddAddress() {
     router.push('/delivery-preferences/create');
