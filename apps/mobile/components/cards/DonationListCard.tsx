@@ -2,16 +2,17 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, DONATION_STATUS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { Donation, Image as ImageType } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { DropletIcon, EditIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React from 'react';
 import { GestureResponderEvent } from 'react-native';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import Avatar from '../Avatar';
 import { BasicBadge, BasicBadgeProps } from '../badges';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
-import { Button, ButtonIcon } from '../ui/button';
+import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -48,6 +49,9 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
 
   const isOwner = profile?.id === extractID(donor);
+
+  const avatar = extractCollection(donor)?.avatar;
+  const dpName = extractCollection(donor)?.displayName;
 
   let finalVolume: number;
   let badgeAction: BasicBadgeProps['action'] = 'success';
@@ -90,63 +94,72 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
 
   return (
     <Card {...props}>
-      <HStack space="sm" className="w-full items-start">
-        <Box
-          className="bg-primary-50 overflow-hidden rounded-md"
-          style={{ width: 92, aspectRatio: 1 }}
-        >
-          {imageUrl ? (
-            <Image
-              recyclingKey={imageUrl}
-              source={{ uri: imageUrl }}
-              alt="Milk sample"
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-            />
-          ) : (
-            <Text size="xs" className="my-auto text-center">
-              No Image
-            </Text>
-          )}
-        </Box>
+      <VStack space="sm" className="items-start justify-start">
+        <HStack space="sm" className="w-full items-stretch">
+          <Box className="bg-primary-50 aspect-square flex-shrink-0 overflow-hidden rounded-md">
+            {imageUrl ? (
+              <Image
+                recyclingKey={imageUrl}
+                source={{ uri: imageUrl }}
+                alt="Milk sample"
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            ) : (
+              <Text size="xs" className="my-auto text-center">
+                No Image
+              </Text>
+            )}
+          </Box>
 
-        <VStack space="xs" className="flex-1 items-start">
-          <HStack space="xs" className="items-center">
-            <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text className="font-JakartaSemiBold" numberOfLines={1} ellipsizeMode="tail">
-              {finalVolume} mL
-            </Text>
-          </HStack>
+          <VStack space="xs" className="min-w-0 flex-1 items-start">
+            <HStack space="xs" className="w-full items-center">
+              <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
+              <Text className="font-JakartaSemiBold flex-1" numberOfLines={1} ellipsizeMode="tail">
+                {finalVolume} mL
+              </Text>
+            </HStack>
 
-          <HStack space="xs" className="items-center">
-            <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" numberOfLines={1} ellipsizeMode="tail">
-              {PREFERRED_STORAGE_TYPES[storageType].label}
-            </Text>
-          </HStack>
+            <HStack space="xs" className="w-full items-center">
+              <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
+              <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+                {PREFERRED_STORAGE_TYPES[storageType].label}
+              </Text>
+            </HStack>
 
-          <HStack space="xs" className="items-center">
-            <Icon size="sm" as={DropletIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm">{COLLECTION_MODES[collectionMode || 'MANUAL'].label}</Text>
-          </HStack>
+            <HStack space="xs" className="w-full items-center">
+              <Icon size="sm" as={DropletIcon} fill={fillColor} stroke={strokeColor} />
+              <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+                {COLLECTION_MODES[collectionMode || 'MANUAL'].label}
+              </Text>
+            </HStack>
 
-          <BasicBadge size="sm" action={badgeAction} text={DONATION_STATUS[status].label} />
-        </VStack>
-
-        {isOwner && (
-          <VStack>
-            <Button
-              action="default"
-              variant="link"
-              className="h-fit w-fit p-0"
-              onPress={handleEditAction}
-              hitSlop={8}
-            >
-              <ButtonIcon as={EditIcon} />
-            </Button>
+            <BasicBadge size="sm" action={badgeAction} text={DONATION_STATUS[status].label} />
           </VStack>
-        )}
-      </HStack>
+
+          <VStack space="sm" className="flex-shrink-0 items-center justify-between">
+            {isOwner && (
+              <Button
+                action="default"
+                variant="link"
+                className="h-fit w-fit p-0"
+                onPress={handleEditAction}
+                hitSlop={8}
+              >
+                <ButtonIcon as={EditIcon} />
+              </Button>
+            )}
+          </VStack>
+        </HStack>
+
+        <Button size="xs" variant="link" action="default" className="p-0">
+          <Avatar
+            size="sm"
+            details={{ name: dpName || 'User', avatar: extractCollection(avatar) }}
+          />
+          <ButtonText className="font-JakartaMedium">{dpName}</ButtonText>
+        </Button>
+      </VStack>
     </Card>
   );
 }
@@ -161,10 +174,6 @@ function CardSkeleton() {
         <Skeleton className="h-5 w-24" />
         <Skeleton className="h-5 w-24" />
         <Skeleton className="h-6 w-16" />
-      </VStack>
-
-      <VStack>
-        <Skeleton className="h-10 w-10" />
       </VStack>
     </HStack>
   );

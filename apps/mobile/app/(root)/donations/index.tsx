@@ -80,10 +80,7 @@ function SceneRenderer({ route }: SceneRendererProps) {
   });
 
   const user = fetchedUser || auth.user;
-  const profile = fetchedUser?.profile || {
-    value: auth.profile,
-    relationTo: auth.profileCollection,
-  };
+  const profile = user?.profile;
   const profileID = profile?.value && extractID(profile.value);
 
   const headerTitle = hasUser
@@ -95,13 +92,13 @@ function SceneRenderer({ route }: SceneRendererProps) {
 
   const where: Where[] = [
     {
-      status: userID
+      status: hasUser
         ? { equals: route?.key }
         : { in: [DONATION_STATUS.AVAILABLE.value, DONATION_STATUS.PARTIALLY_ALLOCATED.value] },
     },
   ];
 
-  if (userID) {
+  if (hasUser) {
     switch (profile?.relationTo) {
       case 'individuals': {
         if (profileID) {
