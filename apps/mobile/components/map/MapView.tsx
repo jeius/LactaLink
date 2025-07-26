@@ -94,7 +94,8 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         setMarkersRendered(true);
       }, 500);
     }
-  }, [latlng, mapReady, mapRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, mapRef]);
 
   function handleCompassPress() {
     mapRef.current?.animateCamera(
