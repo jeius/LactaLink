@@ -1,10 +1,12 @@
 import { createdByField } from '@/fields/createdByField';
+import { deliveryTab } from '@/fields/deliveryTab';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import {
   COLLECTION_GROUP,
+  DONATION_REQUEST_STATUS,
   PREFERRED_STORAGE_TYPES,
   PRIORITY_LEVELS,
-  REQUEST_STATUS,
+  REQUEST_VOLUME_STATUS,
 } from '@/lib/constants';
 import { Request } from '@lactalink/types';
 import { CollectionConfig } from 'payload';
@@ -43,16 +45,6 @@ export const Requests: CollectionConfig<'requests'> = {
       },
     },
 
-    {
-      name: 'requestedDonor',
-      type: 'relationship',
-      relationTo: 'individuals',
-      admin: {
-        description: 'The donor who is requested to fulfill this request',
-        position: 'sidebar',
-      },
-    },
-
     createdByField,
 
     {
@@ -78,18 +70,34 @@ export const Requests: CollectionConfig<'requests'> = {
             width: '50%',
           },
         },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
         {
           name: 'status',
-          label: 'Request Status',
+          label: 'Donation Status',
           type: 'select',
           required: true,
-          defaultValue: REQUEST_STATUS.PENDING.value,
-          admin: {
-            description: 'Current status of the request',
-            width: '50%',
-          },
-          options: Object.values(REQUEST_STATUS),
+          defaultValue: DONATION_REQUEST_STATUS.PENDING.value,
+          options: Object.values(DONATION_REQUEST_STATUS),
         },
+        {
+          name: 'volumeStatus',
+          label: 'Volume Status',
+          type: 'select',
+          required: true,
+          defaultValue: REQUEST_VOLUME_STATUS.UNFULFILLED.value,
+          options: Object.values(REQUEST_VOLUME_STATUS),
+        },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
         {
           name: 'volumeNeeded',
           label: 'Volume Needed (mL)',
@@ -107,7 +115,6 @@ export const Requests: CollectionConfig<'requests'> = {
           name: 'volumeFulfilled',
           label: 'Volume Fulfilled (mL)',
           type: 'number',
-          required: true,
           min: 0,
           defaultValue: 0,
           admin: {
@@ -125,6 +132,43 @@ export const Requests: CollectionConfig<'requests'> = {
           admin: {
             description: 'The donation that fulfilled this request',
             width: '50%',
+          },
+        },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'requestedDonor',
+          label: 'Requested Donor',
+          type: 'relationship',
+          relationTo: 'individuals',
+          admin: {
+            description: 'The donor who is requested to fulfill this request',
+          },
+        },
+        {
+          name: 'hospital',
+          label: 'Requested Hospital',
+          type: 'relationship',
+          relationTo: 'hospitals',
+          hasMany: false,
+          maxDepth: 2,
+          admin: {
+            description: 'The hospital that will receive the request',
+          },
+        },
+        {
+          name: 'milkBank',
+          label: 'Requested Milk Bank',
+          type: 'relationship',
+          relationTo: 'milkBanks',
+          hasMany: false,
+          maxDepth: 2,
+          admin: {
+            description: 'The milk bank that will receive the request',
           },
         },
       ],
@@ -221,28 +265,7 @@ export const Requests: CollectionConfig<'requests'> = {
             },
           ],
         },
-        {
-          label: 'Delivery',
-          fields: [
-            {
-              name: 'deliveryDetails',
-              label: 'Delivery Details',
-              type: 'relationship',
-              relationTo: 'delivery-preferences',
-              hasMany: true,
-              required: true,
-              admin: {
-                description: 'Delivery preferences for the milk donation',
-              },
-            },
-            {
-              name: 'delivery',
-              type: 'join',
-              on: 'request',
-              collection: 'deliveries',
-            },
-          ],
-        },
+        deliveryTab,
       ],
     },
   ],

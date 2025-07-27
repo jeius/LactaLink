@@ -1,14 +1,16 @@
 import { createdByField } from '@/fields/createdByField';
+import { deliveryTab } from '@/fields/deliveryTab';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import {
   COLLECTION_GROUP,
   COLLECTION_MODES,
-  DONATION_STATUS,
+  DONATION_REQUEST_STATUS,
+  DONATION_VOLUME_STATUS,
   STORAGE_TYPES,
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { filterDeliveryPreferences, filterMilkBagsOptions } from './filterOptions';
+import { filterMilkBagsOptions } from './filterOptions';
 import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initialize } from './hooks/initialize';
@@ -73,15 +75,30 @@ export const Donations: CollectionConfig<'donations'> = {
           required: true,
           admin: {
             description: 'The person donating the milk',
+            width: '50%',
           },
         },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
         {
           name: 'status',
           label: 'Donation Status',
           type: 'select',
           required: true,
-          defaultValue: DONATION_STATUS.AVAILABLE.value,
-          options: Object.values(DONATION_STATUS),
+          defaultValue: DONATION_REQUEST_STATUS.PENDING.value,
+          options: Object.values(DONATION_REQUEST_STATUS),
+        },
+        {
+          name: 'volumeStatus',
+          label: 'Volume Status',
+          type: 'select',
+          required: true,
+          defaultValue: DONATION_VOLUME_STATUS.UNALLOCATED.value,
+          options: Object.values(DONATION_VOLUME_STATUS),
         },
       ],
     },
@@ -95,7 +112,38 @@ export const Donations: CollectionConfig<'donations'> = {
       maxDepth: 2,
       admin: {
         description: 'The requests that this donation fulfills',
+        width: '50%',
       },
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'hospital',
+          label: 'Receiving Hospital',
+          type: 'relationship',
+          relationTo: 'hospitals',
+          hasMany: false,
+          maxDepth: 2,
+          admin: {
+            description: 'The hospital that will receive the donation',
+            width: '50%',
+          },
+        },
+        {
+          name: 'milkBank',
+          label: 'Receiving Milk Bank',
+          type: 'relationship',
+          relationTo: 'milkBanks',
+          hasMany: false,
+          maxDepth: 2,
+          admin: {
+            description: 'The milk bank that will receive the donation',
+            width: '50%',
+          },
+        },
+      ],
     },
 
     {
@@ -176,35 +224,7 @@ export const Donations: CollectionConfig<'donations'> = {
             },
           ],
         },
-        {
-          label: 'Delivery',
-          fields: [
-            {
-              name: 'deliveryDetails',
-              label: 'Delivery Details',
-              type: 'relationship',
-              relationTo: 'delivery-preferences',
-              hasMany: true,
-              required: true,
-              filterOptions: filterDeliveryPreferences,
-              validate: (value) => {
-                if (!value || value.length === 0) {
-                  return 'At least one delivery preference must be selected';
-                }
-                return true;
-              },
-              admin: {
-                description: 'Delivery preferences for the milk donation',
-              },
-            },
-            {
-              name: 'deliveries',
-              type: 'join',
-              on: 'donation',
-              collection: 'deliveries',
-            },
-          ],
-        },
+        deliveryTab,
       ],
     },
   ],

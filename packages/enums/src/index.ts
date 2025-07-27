@@ -94,14 +94,35 @@ export const DONATION_STATUS = {
   AVAILABLE: { label: 'Available', value: 'AVAILABLE' },
   PARTIALLY_ALLOCATED: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
   FULLY_ALLOCATED: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
+  EXPIRED: { label: 'Expired', value: 'EXPIRED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
+};
+
+export const DONATION_REQUEST_STATUS = {
+  PENDING: { label: 'Pending', value: 'PENDING' },
+  APPROVED: { label: 'Approved', value: 'APPROVED' },
+  REJECTED: { label: 'Rejected', value: 'REJECTED' },
+  AVAILABLE: { label: 'Available', value: 'AVAILABLE' },
   COMPLETED: { label: 'Completed', value: 'COMPLETED' },
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
   CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
 };
 
+export const DONATION_VOLUME_STATUS = {
+  UNALLOCATED: { label: 'Unallocated', value: 'UNALLOCATED' },
+  PARTIALLY_ALLOCATED: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
+  FULLY_ALLOCATED: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
+};
+
+export const REQUEST_VOLUME_STATUS = {
+  UNFULFILLED: { label: 'Unfulfilled', value: 'UNFULFILLED' },
+  PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', value: 'PARTIALLY_FULFILLED' },
+  FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
+};
+
 export const REQUEST_STATUS = {
   PENDING: { label: 'Pending', value: 'PENDING' },
-  MATCHED: { label: 'Matched', value: 'MATCHED' },
+  PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', value: 'PARTIALLY_FULFILLED' },
   FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
   CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },

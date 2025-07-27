@@ -2,16 +2,6 @@ import { Donation, Request } from '@lactalink/types';
 import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { FilterOptions, Where } from 'payload';
 
-export const filterMilkBagsOptions: FilterOptions<Donation> = async ({ data }) => {
-  if (!data?.donor) {
-    return false;
-  }
-
-  return {
-    and: [{ donor: { equals: extractID(data.donor) } }, { status: { equals: 'AVAILABLE' } }],
-  } as Where;
-};
-
 export const filterDeliveryPreferences: FilterOptions<Donation | Request> = async ({
   data,
   req,

@@ -457,11 +457,19 @@ export interface Donation {
    * The person donating the milk
    */
   donor: string | Individual;
-  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'EXPIRED' | 'CANCELLED';
   /**
    * The requests that this donation fulfills
    */
   matchedRequests?: (string | Request)[] | null;
+  /**
+   * The hospital that will receive the donation
+   */
+  hospital?: (string | null) | Hospital;
+  /**
+   * The milk bank that will receive the donation
+   */
+  milkBank?: (string | null) | MilkBank;
   details: {
     /**
      * Type of storage for the milk
@@ -506,10 +514,6 @@ export interface Request {
    * Title of the milk request.
    */
   title?: string | null;
-  /**
-   * The donor who is requested to fulfill this request
-   */
-  requestedDonor?: (string | null) | Individual;
   createdBy?: (string | null) | User;
   /**
    * Date when the request was matched with a donation
@@ -522,7 +526,7 @@ export interface Request {
   /**
    * Current status of the request
    */
-  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'PARTIALLY_FULFILLED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
   /**
    * Amount of milk needed in milliliters
    */
@@ -530,11 +534,23 @@ export interface Request {
   /**
    * Amount of milk already fulfilled in milliliters
    */
-  volumeFulfilled: number;
+  volumeFulfilled?: number | null;
   /**
    * The donation that fulfilled this request
    */
   matchedDonation?: (string | null) | Donation;
+  /**
+   * The donor who is requested to fulfill this request
+   */
+  requestedDonor?: (string | null) | Individual;
+  /**
+   * The hospital that will receive the request
+   */
+  hospital?: (string | null) | Hospital;
+  /**
+   * The milk bank that will receive the request
+   */
+  milkBank?: (string | null) | MilkBank;
   details: {
     /**
      * Date when the milk is needed
@@ -1543,6 +1559,8 @@ export interface DonationsSelect<T extends boolean = true> {
   donor?: T;
   status?: T;
   matchedRequests?: T;
+  hospital?: T;
+  milkBank?: T;
   details?:
     | T
     | {
@@ -1887,7 +1905,6 @@ export interface RegionsSelect<T extends boolean = true> {
  */
 export interface RequestsSelect<T extends boolean = true> {
   title?: T;
-  requestedDonor?: T;
   createdBy?: T;
   matchedAt?: T;
   requester?: T;
@@ -1895,6 +1912,9 @@ export interface RequestsSelect<T extends boolean = true> {
   volumeNeeded?: T;
   volumeFulfilled?: T;
   matchedDonation?: T;
+  requestedDonor?: T;
+  hospital?: T;
+  milkBank?: T;
   details?:
     | T
     | {
