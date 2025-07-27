@@ -1292,6 +1292,7 @@ export const requests = pgTable(
       }),
     status: enum_requests_status('status').notNull().default('PENDING'),
     volumeNeeded: numeric('volume_needed').notNull(),
+    volumeFulfilled: numeric('volume_fulfilled').notNull().default('0'),
     matchedDonation: uuid('matched_donation_id').references(() => donations.id, {
       onDelete: 'set null',
     }),

@@ -6,6 +6,7 @@ import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { generateAlt } from './hooks/beforeChange';
+import { generateBlurHash } from './hooks/generateBlurHash';
 
 export const Images: CollectionConfig<'images'> = {
   slug: 'images',
@@ -22,7 +23,7 @@ export const Images: CollectionConfig<'images'> = {
     defaultColumns: ['filename', 'alt', 'createdBy'],
   },
   hooks: {
-    beforeChange: [generateAlt, generateCreatedBy, generateOwner],
+    beforeChange: [generateAlt, generateBlurHash, generateCreatedBy, generateOwner],
   },
   fields: [
     {
@@ -31,10 +32,11 @@ export const Images: CollectionConfig<'images'> = {
     },
     {
       name: 'blurHash',
-      type: 'textarea',
+      type: 'text',
       admin: {
         description: 'A string that represents a blurred version of the image.',
         position: 'sidebar',
+        readOnly: true,
       },
     },
     createdByField,

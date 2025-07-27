@@ -528,6 +528,10 @@ export interface Request {
    */
   volumeNeeded: number;
   /**
+   * Amount of milk already fulfilled in milliliters
+   */
+  volumeFulfilled: number;
+  /**
    * The donation that fulfilled this request
    */
   matchedDonation?: (string | null) | Donation;
@@ -1889,6 +1893,7 @@ export interface RequestsSelect<T extends boolean = true> {
   requester?: T;
   status?: T;
   volumeNeeded?: T;
+  volumeFulfilled?: T;
   matchedDonation?: T;
   details?:
     | T

@@ -104,6 +104,20 @@ export const Requests: CollectionConfig<'requests'> = {
         },
 
         {
+          name: 'volumeFulfilled',
+          label: 'Volume Fulfilled (mL)',
+          type: 'number',
+          required: true,
+          min: 0,
+          defaultValue: 0,
+          admin: {
+            description: 'Amount of milk already fulfilled in milliliters',
+            width: '50%',
+            step: 10,
+          },
+        },
+
+        {
           name: 'matchedDonation',
           type: 'relationship',
           relationTo: 'donations',
