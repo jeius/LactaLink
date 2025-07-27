@@ -50,6 +50,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
 
   const milkImage = image as ImageType | undefined | null;
   const imageUrl = milkImage?.sizes?.large?.url || milkImage?.url;
+  const blurHash = milkImage?.blurHash || undefined;
 
   const isOwner = profile && profile.id === requester.id;
 
@@ -67,7 +68,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
       <VStack space="md">
         {imageUrl && (
           <Box className="h-44 w-full overflow-hidden rounded-lg">
-            <ImageViewer imageURIs={[imageUrl]} />
+            <ImageViewer images={[{ uri: imageUrl, blurHash }]} />
           </Box>
         )}
 

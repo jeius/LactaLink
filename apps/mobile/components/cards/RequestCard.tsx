@@ -55,7 +55,8 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
   const userAvatar = (requester as Individual)?.avatar as AvatarType | null;
 
   const requestImage = image as ImageType | null;
-  const imageUrl = requestImage?.sizes?.small?.url || requestImage?.url || null;
+  const uri = requestImage?.sizes?.small?.url || requestImage?.url || null;
+  const blurhash = requestImage?.blurHash || BLUR_HASH;
 
   const preference = deliveryDetails as DeliveryPreference[];
   const preferredMode = preference?.[0]?.preferredMode;
@@ -77,13 +78,13 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
         <VStack>
           <Box className="bg-tertiary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
-              {imageUrl ? (
+              {uri ? (
                 <Image
-                  source={{ uri: imageUrl }}
+                  source={{ uri }}
                   contentFit="cover"
                   contentPosition={'center'}
                   style={{ width: '100%', height: '100%' }}
-                  placeholder={{ blurhash: BLUR_HASH }}
+                  placeholder={{ blurhash }}
                   alt={'Request Image'}
                 />
               ) : (

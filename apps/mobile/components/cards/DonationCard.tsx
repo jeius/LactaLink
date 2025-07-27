@@ -49,7 +49,8 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
   const donorAvatar = (donor as Individual)?.avatar as AvatarType | null;
 
   const milkSamples = milkSample as ImageType[] | null;
-  const milkSampleUrl = milkSamples?.[0]?.sizes?.small?.url || milkSamples?.[0]?.url || null;
+  const uri = milkSamples?.[0]?.sizes?.small?.url || milkSamples?.[0]?.url || null;
+  const blurhash = milkSamples?.[0]?.blurHash || BLUR_HASH;
 
   const preference = deliveryDetails as DeliveryPreference[];
   const preferredMode = preference?.[0]?.preferredMode;
@@ -71,14 +72,14 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
         <VStack>
           <Box className="bg-primary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
-              {milkSampleUrl ? (
+              {uri ? (
                 <Image
-                  source={{ uri: milkSampleUrl }}
+                  source={{ uri }}
                   contentFit="cover"
                   contentPosition="center"
                   style={{ width: '100%', height: '100%' }}
                   alt={`Donation Milk Sample`}
-                  placeholder={{ blurhash: BLUR_HASH }}
+                  placeholder={{ blurhash }}
                   cachePolicy={'memory-disk'}
                   recyclingKey={`donation-image-${data.id}`}
                 />

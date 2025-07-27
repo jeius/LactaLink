@@ -14,7 +14,6 @@ import React, { useMemo } from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { RequestSearchParams } from '@/lib/types/donationRequest';
 import { useRouter } from 'expo-router';
-import { Dimensions } from 'react-native';
 import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';
 import { ImageViewer } from '../ImageViewer';
@@ -41,8 +40,6 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
     volume,
   } = data;
 
-  const { width } = Dimensions.get('window');
-
   const progressValue = remainingVolume && volume ? (remainingVolume / volume) * 100 : 0;
 
   const availableBags = useMemo(
@@ -56,11 +53,17 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   const donorAvatar = donor.avatar as AvatarType | null | undefined;
 
   const milkImages = milkSample as ImageType[] | undefined | null;
-  const imageURIs = (
+  const images =
     milkImages
-      ? milkImages.map((image) => image.sizes?.large?.url || image.url).filter(Boolean)
-      : []
-  ) as string[];
+      ?.map((image) => {
+        const imageUrl = image.sizes?.large?.url || image.url;
+        if (!imageUrl) return null;
+        return {
+          uri: imageUrl,
+          blurHash: image.blurHash || undefined,
+        };
+      })
+      .filter((v) => v !== null) || [];
 
   const isOwner = profile && profile.id === donor.id;
 
@@ -76,9 +79,9 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   return (
     <Card className="w-full">
       <VStack space="md">
-        {imageURIs.length > 0 && (
+        {images.length > 0 && (
           <Box className="h-44 w-full overflow-hidden rounded-lg">
-            <ImageViewer imageURIs={imageURIs} />
+            <ImageViewer images={images} />
           </Box>
         )}
 
