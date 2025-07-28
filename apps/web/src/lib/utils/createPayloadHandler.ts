@@ -8,8 +8,9 @@
  * - Returning a standardized JSON response.
  */
 
+import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities';
 import { status as HttpStatus } from 'http-status';
-import { APIError, PayloadHandler } from 'payload';
+import { APIError, PayloadHandler, PayloadRequest } from 'payload';
 
 /**
  * Options for configuring the Payload handler.
@@ -26,7 +27,7 @@ type HandlerOptions = {
    * The custom handler function to execute.
    * Receives the request object as its parameter.
    */
-  handler: (req: Parameters<PayloadHandler>[0]) => Promise<unknown>;
+  handler: (req: PayloadRequest) => Promise<unknown>;
 
   /**
    * A custom success message to include in the response.
@@ -34,7 +35,7 @@ type HandlerOptions = {
    *
    * @default 'Operation completed successfully.'
    */
-  successMessage?: string | ((req: Parameters<PayloadHandler>[0]) => string | Promise<string>);
+  successMessage?: string | ((req: PayloadRequest) => string | Promise<string>);
 };
 
 /**
@@ -60,8 +61,17 @@ export function createPayloadHandler({
     const startTime = Date.now();
 
     try {
+      if (!user) {
+        throw new APIError(
+          'Unauthorized: User not authenticated.',
+          HttpStatus.UNAUTHORIZED,
+          null,
+          true
+        );
+      }
+
       // Check if the operation requires admin privileges and validate the user.
-      if (requireAdmin && (!user || user.role !== 'ADMIN')) {
+      if (requireAdmin && user.role !== 'ADMIN') {
         throw new APIError('Unauthorized: Only admin users allowed.', HttpStatus.UNAUTHORIZED);
       }
 
@@ -98,8 +108,8 @@ export function createPayloadHandler({
       const duration = ((endTime - startTime) / 1000).toFixed(2);
 
       // Prepare the error response.
-      let message = 'Unknown error occurred.';
-      let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
+      let message = extractErrorMessage(error);
+      let status: number = extractErrorStatus(error);
 
       // If the error is an instance of APIError, use its message and status.
       if (error instanceof APIError) {
