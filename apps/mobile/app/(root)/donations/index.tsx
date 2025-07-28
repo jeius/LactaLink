@@ -8,7 +8,7 @@ import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
-import { DONATION_STATUS } from '@lactalink/enums';
+import { DONATION_REQUEST_STATUS, DONATION_STATUS } from '@lactalink/enums';
 import { CollectionSlug, Donation, Where } from '@lactalink/types';
 import { extractID, extractName, formatKebabToTitle } from '@lactalink/utilities';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -55,7 +55,7 @@ export default function ListPage() {
 
 // #region TabHelpers
 function createTabRoutes(userID?: string): Route[] {
-  let routes: { label: string; value: string }[] = Object.values(DONATION_STATUS);
+  let routes: { label: string; value: string }[] = Object.values(DONATION_REQUEST_STATUS);
 
   if (!userID) {
     const routeValues: { label: string; value: CollectionSlug }[] = [

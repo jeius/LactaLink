@@ -1,5 +1,5 @@
 import { getHexColor } from '@/lib/colors';
-import { PREFERRED_STORAGE_TYPES, REQUEST_STATUS, URGENCY_LEVELS } from '@/lib/constants';
+import { PREFERRED_STORAGE_TYPES, REQUEST_VOLUME_STATUS, URGENCY_LEVELS } from '@/lib/constants';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { Image as ImageType, Request } from '@lactalink/types';
 import { useRouter } from 'expo-router';
@@ -45,7 +45,7 @@ export function RequestListCard({
     );
   }
 
-  const { details, status, volumeNeeded } = data;
+  const { details, volumeNeeded, volumeStatus, volumeFulfilled } = data;
   const { urgency, storagePreference } = details;
 
   const image = details.image as ImageType | null;
@@ -53,23 +53,18 @@ export function RequestListCard({
 
   let badgeAction: BasicBadgeProps['action'] = 'success';
   let canEdit: boolean = false;
+  const finalVolume = volumeNeeded - (volumeFulfilled || 0);
 
-  switch (status) {
-    case 'PENDING':
+  switch (volumeStatus) {
+    case 'UNFULFILLED':
       badgeAction = 'success';
       canEdit = true;
       break;
-    case 'MATCHED':
+    case 'PARTIALLY_FULFILLED':
       badgeAction = 'warning';
       break;
     case 'FULFILLED':
       badgeAction = 'info';
-      break;
-    case 'EXPIRED':
-      badgeAction = 'error';
-      break;
-    case 'CANCELLED':
-      badgeAction = 'muted';
       break;
     default:
       badgeAction = 'muted';
@@ -107,7 +102,7 @@ export function RequestListCard({
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
             <Text className="font-JakartaSemiBold" numberOfLines={1} ellipsizeMode="tail">
-              {volumeNeeded} mL
+              {finalVolume} mL
             </Text>
           </HStack>
 
@@ -129,7 +124,11 @@ export function RequestListCard({
             </Text>
           </HStack>
 
-          <BasicBadge size="sm" action={badgeAction} text={REQUEST_STATUS[status].label} />
+          <BasicBadge
+            size="sm"
+            action={badgeAction}
+            text={REQUEST_VOLUME_STATUS[volumeStatus].label}
+          />
         </VStack>
 
         <VStack>

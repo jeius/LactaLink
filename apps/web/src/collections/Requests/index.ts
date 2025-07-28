@@ -14,6 +14,7 @@ import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-contr
 import { filterMatchedDonationOptions, filterMilkBagsOptions } from './filterOptions';
 import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
+import { initializeRequest } from './hooks/initialize';
 import { updateMilkBag, updateStatus } from './hooks/update';
 
 export const Requests: CollectionConfig<'requests'> = {
@@ -31,7 +32,7 @@ export const Requests: CollectionConfig<'requests'> = {
     defaultColumns: ['requester', 'volumeNeeded', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateTitle, updateStatus],
+    beforeChange: [initializeRequest, generateCreatedBy, generateTitle, updateStatus],
     afterChange: [updateMilkBag, createRequestNotification],
   },
   fields: [

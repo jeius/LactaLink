@@ -6,7 +6,7 @@ import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { REQUEST_STATUS } from '@lactalink/enums';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { CollectionSlug, Request, Where } from '@lactalink/types';
 import { extractID, formatKebabToTitle } from '@lactalink/utilities';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ type DataType = Request;
 
 const SLUG: CollectionSlug = 'requests';
 
-const routes: Route[] = Object.values(REQUEST_STATUS).map(({ label, value }) => ({
+const routes: Route[] = Object.values(DONATION_REQUEST_STATUS).map(({ label, value }) => ({
   key: value,
   title: label,
   accessibilityLabel: label,

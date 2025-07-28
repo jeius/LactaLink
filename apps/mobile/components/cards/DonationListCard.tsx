@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { getHexColor } from '@/lib/colors';
-import { COLLECTION_MODES, DONATION_STATUS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, DONATION_VOLUME_STATUS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { Donation, Image as ImageType } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
@@ -41,7 +41,7 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
     );
   }
 
-  const { details, status, volume, remainingVolume, donor } = data;
+  const { details, volume, remainingVolume, donor, volumeStatus } = data;
   const { collectionMode, storageType } = details;
 
   const milkSamples = details.milkSample as ImageType[] | null;
@@ -56,8 +56,8 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
   let finalVolume: number;
   let badgeAction: BasicBadgeProps['action'] = 'success';
 
-  switch (status) {
-    case 'AVAILABLE':
+  switch (volumeStatus) {
+    case 'UNALLOCATED':
       badgeAction = 'success';
       finalVolume = remainingVolume || 0;
       break;
@@ -67,18 +67,6 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
       break;
     case 'FULLY_ALLOCATED':
       badgeAction = 'info';
-      finalVolume = volume || 0;
-      break;
-    case 'COMPLETED':
-      badgeAction = 'info';
-      finalVolume = volume || 0;
-      break;
-    case 'EXPIRED':
-      badgeAction = 'error';
-      finalVolume = volume || 0;
-      break;
-    case 'CANCELLED':
-      badgeAction = 'muted';
       finalVolume = volume || 0;
       break;
     default:
@@ -134,7 +122,11 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
               </Text>
             </HStack>
 
-            <BasicBadge size="sm" action={badgeAction} text={DONATION_STATUS[status].label} />
+            <BasicBadge
+              size="sm"
+              action={badgeAction}
+              text={DONATION_VOLUME_STATUS[volumeStatus].label}
+            />
           </VStack>
 
           <VStack space="sm" className="flex-shrink-0 items-center justify-between">
