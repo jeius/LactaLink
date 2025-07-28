@@ -71,7 +71,6 @@
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.5.4",
     "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@types/sharp": "^0.32.0"
+    "@types/react-dom": "^19.1.2"
   }
 }
