@@ -1,17 +1,23 @@
 import { MapView } from '@/components/map/MapView';
 import { Box } from '@/components/ui/box';
 
-import { DONATION_STATUS } from '@/lib/constants';
+import {
+  DONATION_REQUEST_STATUS,
+  DONATION_VOLUME_STATUS,
+  REQUEST_VOLUME_STATUS,
+} from '@/lib/constants';
 
 import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomSheet';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { Address, DeliveryPreference, Populate } from '@lactalink/types';
+import { Populate, Where } from '@lactalink/types';
 
 import {
   DonationMarkerPressEvent,
   DonationMarkers,
 } from '@/components/map/markers/DonationMarkers';
 import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
+import { useCurrentLocation } from '@/hooks/location/useLocation';
+import { extractCollection } from '@lactalink/utilities';
 import _ from 'lodash';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import RNMapView, { LatLng, Region } from 'react-native-maps';
@@ -19,11 +25,41 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const MemoizedMapView = memo(MapView, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
 
+const NEAREST_RADIUS = 1000; // 1km radius
+
 export default function MapPage() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<RNMapView>(null);
   const [selectedItem, setSelectedItem] = useState<MapBottomSheetProps['value']>();
   const [region, setRegion] = useState<Region>();
+
+  const { location } = useCurrentLocation();
+  const point = useMemo(() => {
+    if (location) {
+      return [location.coords.longitude, location.coords.latitude, NEAREST_RADIUS];
+    }
+    return undefined;
+  }, [location]);
+
+  // #region TODO: Not sure if this is correct since the deliveryPreferences field is an array.
+  // Need further evaluation.
+  const sortByNearest: Where = { 'deliveryPreferences.address.coordinates': { near: point } };
+  // #endregion
+
+  const donationsWhere: Where = {
+    and: [
+      { status: { equals: DONATION_REQUEST_STATUS.AVAILABLE } },
+      { volumeStatus: { not_equals: DONATION_VOLUME_STATUS.FULLY_ALLOCATED } },
+      sortByNearest,
+    ],
+  };
+  const requestsWhere: Where = {
+    and: [
+      { status: { equals: DONATION_REQUEST_STATUS.AVAILABLE } },
+      { volumeStatus: { not_equals: REQUEST_VOLUME_STATUS.FULFILLED } },
+      sortByNearest,
+    ],
+  };
 
   const populate: Populate = {
     users: { profile: true },
@@ -33,15 +69,13 @@ export default function MapPage() {
 
   const donationRes = useFetchBySlug(true, {
     collection: 'donations',
-    where: {
-      status: { in: [DONATION_STATUS.AVAILABLE.value, DONATION_STATUS.PARTIALLY_ALLOCATED.value] },
-    },
+    where: donationsWhere,
     populate,
   });
 
   const requestRes = useFetchBySlug(true, {
     collection: 'requests',
-    where: { status: { equals: 'PENDING' } },
+    where: requestsWhere,
     populate,
   });
 
@@ -55,10 +89,11 @@ export default function MapPage() {
     let coord: LatLng | undefined;
 
     if (data && ('donor' in data || 'requester' in data)) {
-      const preference = data.deliveryDetails[0] as DeliveryPreference | undefined;
-      const point = (preference?.address as Address)?.coordinates;
+      const preference = extractCollection(data.deliveryPreferences)[0];
+      const point = extractCollection(preference?.address)?.coordinates;
       if (point && point.length === 2) {
-        coord = { latitude: point[0], longitude: point[1] };
+        const [longitude, latitude] = point;
+        coord = { longitude, latitude };
       }
     }
 
