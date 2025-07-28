@@ -21,14 +21,14 @@ import { isAuthApiError, isAuthError } from '@supabase/supabase-js';
  * const message = extractErrorMessage(errors); // 'Error 1, Error 2'
  *
  * const unknownError = 123;
- * const message = extractErrorMessage(unknownError); // 'An unexpected error occurred.'
+ * const message = extractErrorMessage(unknownError); // 'An unexpected error occurred'
  * ```
  */
 export function extractErrorMessage<
   T extends { message: string } | { message: string }[] | unknown = unknown,
 >(error: T): string {
   if (error === null || error === undefined) {
-    return 'No error found.';
+    return 'No error found';
   }
 
   if (Array.isArray(error)) {
@@ -38,7 +38,7 @@ export function extractErrorMessage<
       } else if (typeof err === 'string') {
         return err;
       }
-      return 'Unknown error.';
+      return 'An unexpected error occurred';
     });
     return errorMessages.join(', ');
   } else if (typeof error === 'object' && 'message' in error) {
@@ -47,7 +47,7 @@ export function extractErrorMessage<
     return error;
   }
 
-  return 'Unknown error.';
+  return 'An unexpected error occurred';
 }
 
 /**
