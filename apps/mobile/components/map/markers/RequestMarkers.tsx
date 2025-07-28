@@ -168,7 +168,7 @@ function createMarkers(data: Request, region?: Region) {
       continue;
     }
 
-    const [latitude, longitude] = coordinates;
+    const [longitude, latitude] = coordinates;
 
     // Validate coordinate values
     if (

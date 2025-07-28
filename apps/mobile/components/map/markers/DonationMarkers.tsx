@@ -170,7 +170,7 @@ function createMarkers(data: Donation, region?: Region) {
       continue;
     }
 
-    const [latitude, longitude] = coordinates;
+    const [longitude, latitude] = coordinates;
 
     // Validate coordinate values
     if (

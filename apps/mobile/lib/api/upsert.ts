@@ -57,7 +57,7 @@ export async function upsertAddress(data: AddressSchema) {
 
     const { coordinates: { latitude, longitude } = {}, ...rest } = data;
     const coordinates: [number, number] | undefined =
-      latitude && longitude ? [latitude, longitude] : undefined;
+      latitude && longitude ? [longitude, latitude] : undefined;
 
     if (data.id) {
       address = await apiClient.updateByID({

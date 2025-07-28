@@ -33,7 +33,7 @@ export function useAddressForm(id?: string) {
   useEffect(() => {
     if (isSuccess && address) {
       const data = address;
-      const [latitude, longitude] = data.coordinates || [undefined, undefined];
+      const [longitude, latitude] = data.coordinates || [undefined, undefined];
 
       form.reset({
         id: data.id,

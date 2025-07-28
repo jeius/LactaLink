@@ -63,7 +63,7 @@ export function AddressCard({
   const data = shouldFetch ? fetchedData : extractCollection(dataProp);
   const { name, displayName, isDefault } = data || {};
 
-  const [latitude, longitude] = data?.coordinates || [0, 0];
+  const [longitude, latitude] = data?.coordinates || [0, 0];
   const center: LatLng = useMemo(() => ({ latitude, longitude }), [latitude, longitude]);
 
   useEffect(() => {
