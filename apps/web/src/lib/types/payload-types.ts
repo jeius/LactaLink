@@ -494,9 +494,9 @@ export interface Donation {
     notes?: string | null;
   };
   /**
-   * Delivery preferences for the milk donation
+   * Delivery preferences for the milk
    */
-  deliveryDetails: (string | DeliveryPreference)[];
+  deliveryPreferences: (string | DeliveryPreference)[];
   deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
@@ -578,9 +578,9 @@ export interface Request {
     notes?: string | null;
   };
   /**
-   * Delivery preferences for the milk donation
+   * Delivery preferences for the milk
    */
-  deliveryDetails: (string | DeliveryPreference)[];
+  deliveryPreferences: (string | DeliveryPreference)[];
   deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
@@ -1570,7 +1570,7 @@ export interface DonationsSelect<T extends boolean = true> {
         milkSample?: T;
         notes?: T;
       };
-  deliveryDetails?: T;
+  deliveryPreferences?: T;
   deliveries?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1927,7 +1927,7 @@ export interface RequestsSelect<T extends boolean = true> {
         reason?: T;
         notes?: T;
       };
-  deliveryDetails?: T;
+  deliveryPreferences?: T;
   deliveries?: T;
   updatedAt?: T;
   createdAt?: T;

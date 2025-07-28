@@ -266,7 +266,7 @@ export const Requests: CollectionConfig<'requests'> = {
             },
           ],
         },
-        deliveryTab,
+        deliveryTab('request'),
       ],
     },
   ],

@@ -87,7 +87,7 @@ export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
       name: 'donations',
       label: 'Related Donations',
       type: 'join',
-      on: 'deliveryDetails',
+      on: 'deliveryPreferences',
       collection: 'donations',
       admin: {
         defaultColumns: ['donor', 'remainingVolume', 'status'],
@@ -97,7 +97,7 @@ export const DeliveryPreferences: CollectionConfig<'delivery-preferences'> = {
       name: 'requests',
       label: 'Related Requests',
       type: 'join',
-      on: 'deliveryDetails',
+      on: 'deliveryPreferences',
       collection: 'requests',
       admin: {
         defaultColumns: ['requester', 'volumeNeeded', 'status'],

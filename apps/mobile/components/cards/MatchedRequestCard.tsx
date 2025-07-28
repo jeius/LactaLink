@@ -65,9 +65,11 @@ export default function MatchedRequestCard({
     );
   }, [data]);
 
+  const deliveryPreferences = data?.deliveryPreferences || [];
+
   useEffect(() => {
-    if (data?.deliveryDetails && data.deliveryDetails.length > 0) {
-      const pref = data.deliveryDetails[0];
+    if (deliveryPreferences.length > 0) {
+      const pref = deliveryPreferences[0];
       const prefID = (pref && extractID(pref)) || null;
 
       setSelectedPreference(prefID);
@@ -77,7 +79,7 @@ export default function MatchedRequestCard({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data?.deliveryDetails, matchedRequestData]);
+  }, [deliveryPreferences, matchedRequestData]);
 
   function handlePreferenceChange(preference: string) {
     setSelectedPreference(preference);
@@ -169,7 +171,7 @@ export default function MatchedRequestCard({
           )}
           <DeliveryPreferencesBottomSheet
             selected={selectedPreference}
-            collections={data?.deliveryDetails || []}
+            collections={deliveryPreferences}
             onChange={handlePreferenceChange}
             triggerComponent={(props) => (
               <Button

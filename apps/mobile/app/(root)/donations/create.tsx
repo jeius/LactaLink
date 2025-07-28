@@ -132,7 +132,7 @@ export default function CreateDonation() {
 
 async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences: deliveryDetails, matchedRequest } = data;
+  const { details, donor, deliveryPreferences, matchedRequest } = data;
 
   const { bags, milkSample, ...restOfDetails } = details;
 
@@ -163,12 +163,13 @@ async function createDonation(data: DonationSchema) {
     data: {
       donor,
       status: 'AVAILABLE',
+      volumeStatus: 'UNALLOCATED',
       details: {
         ...restOfDetails,
         bags: extractID(milkBagDocs),
         milkSample: milkSampleDocs && extractID(milkSampleDocs),
       },
-      deliveryDetails: deliveryDetails.map((pref) => pref?.id).filter(Boolean) as string[],
+      deliveryPreferences,
     },
   });
 

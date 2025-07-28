@@ -139,14 +139,8 @@ async function createRequest(data: RequestSchema) {
 
   console.log('Creating request with data:', data);
 
-  const {
-    deliveryPreferences: deliveryDetails,
-    details,
-    requester,
-    volumeNeeded,
-    requestedDonor,
-    matchedDonation,
-  } = data;
+  const { deliveryPreferences, details, requester, volumeNeeded, requestedDonor, matchedDonation } =
+    data;
 
   const { image, ...restOfDetails } = details;
 
@@ -156,12 +150,13 @@ async function createRequest(data: RequestSchema) {
     collection: 'requests',
     data: {
       requester,
-      status: 'PENDING',
+      status: 'AVAILABLE',
+      volumeStatus: 'UNFULFILLED',
       details: {
         ...restOfDetails,
         image: imageDoc && extractID(imageDoc),
       },
-      deliveryDetails: deliveryDetails.map((pref) => pref?.id).filter(Boolean) as string[],
+      deliveryPreferences,
       volumeNeeded,
       matchedDonation: matchedDonation ? matchedDonation.id : undefined,
       requestedDonor: requestedDonor,

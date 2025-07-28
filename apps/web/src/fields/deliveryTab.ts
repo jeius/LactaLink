@@ -1,11 +1,11 @@
 import { filterDeliveryPreferences } from '@/lib/utils/collections/filterDeliveryPreferences';
 import { Tab } from 'payload';
 
-export const deliveryTab: Tab = {
+export const deliveryTab = (joinedOn: string): Tab => ({
   label: 'Delivery',
   fields: [
     {
-      name: 'deliveryDetails',
+      name: 'deliveryPreferences',
       label: 'Delivery Preferences',
       type: 'relationship',
       relationTo: 'delivery-preferences',
@@ -19,15 +19,15 @@ export const deliveryTab: Tab = {
         return true;
       },
       admin: {
-        description: 'Delivery preferences for the milk donation',
+        description: 'Delivery preferences for the milk',
       },
     },
     {
       name: 'deliveries',
       label: 'Deliveries',
       type: 'join',
-      on: 'donation',
+      on: joinedOn,
       collection: 'deliveries',
     },
   ],
-};
+});

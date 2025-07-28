@@ -225,7 +225,7 @@ export const Donations: CollectionConfig<'donations'> = {
             },
           ],
         },
-        deliveryTab,
+        deliveryTab('donation'),
       ],
     },
   ],

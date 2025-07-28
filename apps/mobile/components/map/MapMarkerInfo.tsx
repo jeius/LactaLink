@@ -1,4 +1,5 @@
 import { Address, DeliveryPreference } from '@lactalink/types';
+import { extractCollection } from '@lactalink/utilities';
 import { MapIcon } from 'lucide-react-native';
 import React from 'react';
 import MapView from 'react-native-maps';
@@ -54,7 +55,7 @@ export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoPr
     return (
       <VStack space="lg" className="w-full items-center">
         <DonationInfoCard data={data} />
-        <DeliveryPreferencesCard data={data.deliveryDetails as DeliveryPreference[]} />
+        <DeliveryPreferencesCard data={extractCollection(data.deliveryPreferences)} />
       </VStack>
     );
   }
@@ -63,7 +64,7 @@ export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoPr
     return (
       <VStack space="lg" className="w-full items-center">
         <RequestInfoCard data={data} />
-        <DeliveryPreferencesCard data={data.deliveryDetails as DeliveryPreference[]} />
+        <DeliveryPreferencesCard data={extractCollection(data.deliveryPreferences)} />
       </VStack>
     );
   }
