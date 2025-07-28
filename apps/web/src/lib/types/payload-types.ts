@@ -149,7 +149,7 @@ export interface Config {
       request: 'requests';
     };
     requests: {
-      delivery: 'deliveries';
+      deliveries: 'deliveries';
     };
     users: {
       addresses: 'addresses';
@@ -457,7 +457,8 @@ export interface Donation {
    * The person donating the milk
    */
   donor: string | Individual;
-  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AVAILABLE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  volumeStatus: 'UNALLOCATED' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED';
   /**
    * The requests that this donation fulfills
    */
@@ -523,10 +524,8 @@ export interface Request {
    * The person requesting the milk
    */
   requester: string | Individual;
-  /**
-   * Current status of the request
-   */
-  status: 'PENDING' | 'PARTIALLY_FULFILLED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AVAILABLE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  volumeStatus: 'UNFULFILLED' | 'PARTIALLY_FULFILLED' | 'FULFILLED';
   /**
    * Amount of milk needed in milliliters
    */
@@ -582,7 +581,7 @@ export interface Request {
    * Delivery preferences for the milk donation
    */
   deliveryDetails: (string | DeliveryPreference)[];
-  delivery?: {
+  deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -1558,6 +1557,7 @@ export interface DonationsSelect<T extends boolean = true> {
   createdBy?: T;
   donor?: T;
   status?: T;
+  volumeStatus?: T;
   matchedRequests?: T;
   hospital?: T;
   milkBank?: T;
@@ -1909,6 +1909,7 @@ export interface RequestsSelect<T extends boolean = true> {
   matchedAt?: T;
   requester?: T;
   status?: T;
+  volumeStatus?: T;
   volumeNeeded?: T;
   volumeFulfilled?: T;
   matchedDonation?: T;
@@ -1927,7 +1928,7 @@ export interface RequestsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryDetails?: T;
-  delivery?: T;
+  deliveries?: T;
   updatedAt?: T;
   createdAt?: T;
 }

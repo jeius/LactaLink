@@ -88,6 +88,7 @@ export const Donations: CollectionConfig<'donations'> = {
           name: 'status',
           label: 'Donation Status',
           type: 'select',
+          enumName: 'enum_donation_request_status',
           required: true,
           defaultValue: DONATION_REQUEST_STATUS.PENDING.value,
           options: Object.values(DONATION_REQUEST_STATUS),

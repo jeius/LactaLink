@@ -149,7 +149,7 @@ export interface Config {
       request: 'requests';
     };
     requests: {
-      delivery: 'deliveries';
+      deliveries: 'deliveries';
     };
     users: {
       addresses: 'addresses';
@@ -457,11 +457,20 @@ export interface Donation {
    * The person donating the milk
    */
   donor: string | Individual;
-  status: 'AVAILABLE' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AVAILABLE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  volumeStatus: 'UNALLOCATED' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED';
   /**
    * The requests that this donation fulfills
    */
   matchedRequests?: (string | Request)[] | null;
+  /**
+   * The hospital that will receive the donation
+   */
+  hospital?: (string | null) | Hospital;
+  /**
+   * The milk bank that will receive the donation
+   */
+  milkBank?: (string | null) | MilkBank;
   details: {
     /**
      * Type of storage for the milk
@@ -506,10 +515,6 @@ export interface Request {
    * Title of the milk request.
    */
   title?: string | null;
-  /**
-   * The donor who is requested to fulfill this request
-   */
-  requestedDonor?: (string | null) | Individual;
   createdBy?: (string | null) | User;
   /**
    * Date when the request was matched with a donation
@@ -519,10 +524,8 @@ export interface Request {
    * The person requesting the milk
    */
   requester: string | Individual;
-  /**
-   * Current status of the request
-   */
-  status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AVAILABLE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  volumeStatus: 'UNFULFILLED' | 'PARTIALLY_FULFILLED' | 'FULFILLED';
   /**
    * Amount of milk needed in milliliters
    */
@@ -530,11 +533,23 @@ export interface Request {
   /**
    * Amount of milk already fulfilled in milliliters
    */
-  volumeFulfilled: number;
+  volumeFulfilled?: number | null;
   /**
    * The donation that fulfilled this request
    */
   matchedDonation?: (string | null) | Donation;
+  /**
+   * The donor who is requested to fulfill this request
+   */
+  requestedDonor?: (string | null) | Individual;
+  /**
+   * The hospital that will receive the request
+   */
+  hospital?: (string | null) | Hospital;
+  /**
+   * The milk bank that will receive the request
+   */
+  milkBank?: (string | null) | MilkBank;
   details: {
     /**
      * Date when the milk is needed
@@ -566,7 +581,7 @@ export interface Request {
    * Delivery preferences for the milk donation
    */
   deliveryDetails: (string | DeliveryPreference)[];
-  delivery?: {
+  deliveries?: {
     docs?: (string | Delivery)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -1542,7 +1557,10 @@ export interface DonationsSelect<T extends boolean = true> {
   createdBy?: T;
   donor?: T;
   status?: T;
+  volumeStatus?: T;
   matchedRequests?: T;
+  hospital?: T;
+  milkBank?: T;
   details?:
     | T
     | {
@@ -1887,14 +1905,17 @@ export interface RegionsSelect<T extends boolean = true> {
  */
 export interface RequestsSelect<T extends boolean = true> {
   title?: T;
-  requestedDonor?: T;
   createdBy?: T;
   matchedAt?: T;
   requester?: T;
   status?: T;
+  volumeStatus?: T;
   volumeNeeded?: T;
   volumeFulfilled?: T;
   matchedDonation?: T;
+  requestedDonor?: T;
+  hospital?: T;
+  milkBank?: T;
   details?:
     | T
     | {
@@ -1907,7 +1928,7 @@ export interface RequestsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryDetails?: T;
-  delivery?: T;
+  deliveries?: T;
   updatedAt?: T;
   createdAt?: T;
 }

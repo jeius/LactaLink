@@ -65,13 +65,19 @@ export const enum_days = pgEnum('enum_days', [
   'SATURDAY',
   'SUNDAY',
 ]);
-export const enum_donations_status = pgEnum('enum_donations_status', [
+export const enum_donation_request_status = pgEnum('enum_donation_request_status', [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
   'AVAILABLE',
-  'PARTIALLY_ALLOCATED',
-  'FULLY_ALLOCATED',
   'COMPLETED',
   'EXPIRED',
   'CANCELLED',
+]);
+export const enum_donations_volume_status = pgEnum('enum_donations_volume_status', [
+  'UNALLOCATED',
+  'PARTIALLY_ALLOCATED',
+  'FULLY_ALLOCATED',
 ]);
 export const enum_donations_details_storage_type = pgEnum('enum_donations_details_storage_type', [
   'FRESH',
@@ -148,12 +154,10 @@ export const enum_notification_trigger_event = pgEnum('enum_notification_trigger
   'UPDATE',
   'DELETE',
 ]);
-export const enum_requests_status = pgEnum('enum_requests_status', [
-  'PENDING',
-  'MATCHED',
+export const enum_requests_volume_status = pgEnum('enum_requests_volume_status', [
+  'UNFULFILLED',
+  'PARTIALLY_FULFILLED',
   'FULFILLED',
-  'EXPIRED',
-  'CANCELLED',
 ]);
 export const enum_requests_details_storage_preference = pgEnum(
   'enum_requests_details_storage_preference',
@@ -604,7 +608,14 @@ export const donations = pgTable(
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    status: enum_donations_status('status').notNull().default('AVAILABLE'),
+    status: enum_donation_request_status('status').notNull().default('PENDING'),
+    volumeStatus: enum_donations_volume_status('volume_status').notNull().default('UNALLOCATED'),
+    hospital: uuid('hospital_id').references(() => hospitals.id, {
+      onDelete: 'set null',
+    }),
+    milkBank: uuid('milk_bank_id').references(() => milk_banks.id, {
+      onDelete: 'set null',
+    }),
     details_storageType: enum_donations_details_storage_type('details_storage_type').notNull(),
     details_collectionMode:
       enum_donations_details_collection_mode('details_collection_mode').notNull(),
@@ -619,6 +630,8 @@ export const donations = pgTable(
   (columns) => ({
     donations_created_by_idx: index('donations_created_by_idx').on(columns.createdBy),
     donations_donor_idx: index('donations_donor_idx').on(columns.donor),
+    donations_hospital_idx: index('donations_hospital_idx').on(columns.hospital),
+    donations_milk_bank_idx: index('donations_milk_bank_idx').on(columns.milkBank),
     donations_updated_at_idx: index('donations_updated_at_idx').on(columns.updatedAt),
     donations_created_at_idx: index('donations_created_at_idx').on(columns.createdAt),
   })
@@ -1278,9 +1291,6 @@ export const requests = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title'),
-    requestedDonor: uuid('requested_donor_id').references(() => individuals.id, {
-      onDelete: 'set null',
-    }),
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -1290,10 +1300,20 @@ export const requests = pgTable(
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    status: enum_requests_status('status').notNull().default('PENDING'),
+    status: enum_donation_request_status('status').notNull().default('PENDING'),
+    volumeStatus: enum_requests_volume_status('volume_status').notNull().default('UNFULFILLED'),
     volumeNeeded: numeric('volume_needed').notNull(),
-    volumeFulfilled: numeric('volume_fulfilled').notNull().default('0'),
+    volumeFulfilled: numeric('volume_fulfilled').default('0'),
     matchedDonation: uuid('matched_donation_id').references(() => donations.id, {
+      onDelete: 'set null',
+    }),
+    requestedDonor: uuid('requested_donor_id').references(() => individuals.id, {
+      onDelete: 'set null',
+    }),
+    hospital: uuid('hospital_id').references(() => hospitals.id, {
+      onDelete: 'set null',
+    }),
+    milkBank: uuid('milk_bank_id').references(() => milk_banks.id, {
       onDelete: 'set null',
     }),
     details_neededAt: timestamp('details_needed_at', {
@@ -1318,12 +1338,14 @@ export const requests = pgTable(
       .notNull(),
   },
   (columns) => ({
-    requests_requested_donor_idx: index('requests_requested_donor_idx').on(columns.requestedDonor),
     requests_created_by_idx: index('requests_created_by_idx').on(columns.createdBy),
     requests_requester_idx: index('requests_requester_idx').on(columns.requester),
     requests_matched_donation_idx: index('requests_matched_donation_idx').on(
       columns.matchedDonation
     ),
+    requests_requested_donor_idx: index('requests_requested_donor_idx').on(columns.requestedDonor),
+    requests_hospital_idx: index('requests_hospital_idx').on(columns.hospital),
+    requests_milk_bank_idx: index('requests_milk_bank_idx').on(columns.milkBank),
     requests_details_details_image_idx: index('requests_details_details_image_idx').on(
       columns.details_image
     ),
@@ -1984,6 +2006,16 @@ export const relations_donations = relations(donations, ({ one, many }) => ({
     references: [individuals.id],
     relationName: 'donor',
   }),
+  hospital: one(hospitals, {
+    fields: [donations.hospital],
+    references: [hospitals.id],
+    relationName: 'hospital',
+  }),
+  milkBank: one(milk_banks, {
+    fields: [donations.milkBank],
+    references: [milk_banks.id],
+    relationName: 'milkBank',
+  }),
   _rels: many(donations_rels, {
     relationName: '_rels',
   }),
@@ -2200,11 +2232,6 @@ export const relations_requests_rels = relations(requests_rels, ({ one }) => ({
   }),
 }));
 export const relations_requests = relations(requests, ({ one, many }) => ({
-  requestedDonor: one(individuals, {
-    fields: [requests.requestedDonor],
-    references: [individuals.id],
-    relationName: 'requestedDonor',
-  }),
   createdBy: one(users, {
     fields: [requests.createdBy],
     references: [users.id],
@@ -2219,6 +2246,21 @@ export const relations_requests = relations(requests, ({ one, many }) => ({
     fields: [requests.matchedDonation],
     references: [donations.id],
     relationName: 'matchedDonation',
+  }),
+  requestedDonor: one(individuals, {
+    fields: [requests.requestedDonor],
+    references: [individuals.id],
+    relationName: 'requestedDonor',
+  }),
+  hospital: one(hospitals, {
+    fields: [requests.hospital],
+    references: [hospitals.id],
+    relationName: 'hospital',
+  }),
+  milkBank: one(milk_banks, {
+    fields: [requests.milkBank],
+    references: [milk_banks.id],
+    relationName: 'milkBank',
   }),
   details_image: one(images, {
     fields: [requests.details_image],
@@ -2410,7 +2452,8 @@ type DatabaseSchema = {
   enum_deliveries_status: typeof enum_deliveries_status;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
-  enum_donations_status: typeof enum_donations_status;
+  enum_donation_request_status: typeof enum_donation_request_status;
+  enum_donations_volume_status: typeof enum_donations_volume_status;
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
   enum_hospitals_type: typeof enum_hospitals_type;
@@ -2424,7 +2467,7 @@ type DatabaseSchema = {
   enum_js_types: typeof enum_js_types;
   enum_notification_trigger_collection: typeof enum_notification_trigger_collection;
   enum_notification_trigger_event: typeof enum_notification_trigger_event;
-  enum_requests_status: typeof enum_requests_status;
+  enum_requests_volume_status: typeof enum_requests_volume_status;
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
