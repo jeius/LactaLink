@@ -1,3 +1,5 @@
+export * from './matches';
+
 export const PROFILE_TYPES = {
   INDIVIDUAL: { label: 'Individual', value: 'INDIVIDUAL' },
   HOSPITAL: { label: 'Hospital', value: 'HOSPITAL' },
@@ -88,42 +90,20 @@ export const TIME_SLOTS = {
   '14:00-16:00': { label: '2:00 PM - 4:00 PM', value: '14:00-16:00' },
   '16:00-18:00': { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
   '18:00-20:00': { label: '6:00 PM - 8:00 PM', value: '18:00-20:00' },
-};
-
-export const DONATION_STATUS = {
-  AVAILABLE: { label: 'Available', value: 'AVAILABLE' },
-  PARTIALLY_ALLOCATED: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
-  FULLY_ALLOCATED: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
-  EXPIRED: { label: 'Expired', value: 'EXPIRED' },
-  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
-};
+} as const;
 
 export const DONATION_REQUEST_STATUS = {
-  PENDING: { label: 'Pending', value: 'PENDING' },
-  APPROVED: { label: 'Approved', value: 'APPROVED' },
-  REJECTED: { label: 'Rejected', value: 'REJECTED' },
+  PENDING: { label: 'Waiting Approval', value: 'PENDING' },
   AVAILABLE: { label: 'Available', value: 'AVAILABLE' },
+  MATCHED: { label: 'In Progress', value: 'MATCHED' },
   COMPLETED: { label: 'Completed', value: 'COMPLETED' },
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
   CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
-};
+  REJECTED: { label: 'Rejected', value: 'REJECTED' },
+} as const;
 
-export const DONATION_VOLUME_STATUS = {
-  UNALLOCATED: { label: 'Unallocated', value: 'UNALLOCATED' },
-  PARTIALLY_ALLOCATED: { label: 'Partially Allocated', value: 'PARTIALLY_ALLOCATED' },
-  FULLY_ALLOCATED: { label: 'Fully Allocated', value: 'FULLY_ALLOCATED' },
-};
-
-export const REQUEST_VOLUME_STATUS = {
-  UNFULFILLED: { label: 'Unfulfilled', value: 'UNFULFILLED' },
-  PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', value: 'PARTIALLY_FULFILLED' },
-  FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
-};
-
-export const REQUEST_STATUS = {
-  PENDING: { label: 'Pending', value: 'PENDING' },
-  PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', value: 'PARTIALLY_FULFILLED' },
-  FULFILLED: { label: 'Fulfilled', value: 'FULFILLED' },
-  EXPIRED: { label: 'Expired', value: 'EXPIRED' },
-  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
-};
+export const MILK_BAG_OWNERSHIP_TRANSFER_REASONS = {
+  DONATION_COMPLETED: { label: 'Donation Completed', value: 'DONATION_COMPLETED' },
+  REDISTRIBUTION: { label: 'Redistribution', value: 'REDISTRIBUTION' },
+  RETURN: { label: 'Return', value: 'RETURN' },
+} as const;

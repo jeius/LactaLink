@@ -1,21 +1,18 @@
 import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
+import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import {
   COLLECTION_GROUP,
   DONATION_REQUEST_STATUS,
   PREFERRED_STORAGE_TYPES,
   PRIORITY_LEVELS,
-  REQUEST_VOLUME_STATUS,
 } from '@/lib/constants';
-import { Request } from '@lactalink/types';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { filterMatchedDonationOptions, filterMilkBagsOptions } from './filterOptions';
 import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeRequest } from './hooks/initialize';
-import { updateMilkBag, updateStatus } from './hooks/update';
 
 export const Requests: CollectionConfig<'requests'> = {
   slug: 'requests',
@@ -32,8 +29,8 @@ export const Requests: CollectionConfig<'requests'> = {
     defaultColumns: ['requester', 'volumeNeeded', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [initializeRequest, generateCreatedBy, generateTitle, updateStatus],
-    afterChange: [updateMilkBag, createRequestNotification],
+    beforeChange: [initializeRequest, generateCreatedBy, generateTitle],
+    afterChange: [createRequestNotification],
   },
   fields: [
     {
@@ -46,17 +43,18 @@ export const Requests: CollectionConfig<'requests'> = {
       },
     },
 
-    createdByField,
+    ...statusTimeStamps,
 
     {
-      name: 'matchedAt',
+      name: 'expiredAt',
       type: 'date',
       admin: {
-        description: 'Date when the request was matched with a donation',
-        position: 'sidebar',
         readOnly: true,
+        position: 'sidebar',
       },
     },
+
+    createdByField,
 
     {
       type: 'row',
@@ -71,28 +69,16 @@ export const Requests: CollectionConfig<'requests'> = {
             width: '50%',
           },
         },
-      ],
-    },
-
-    {
-      type: 'row',
-      fields: [
         {
-          name: 'status',
-          label: 'Request Status',
-          type: 'select',
-          enumName: 'enum_donation_request_status',
-          required: true,
-          defaultValue: DONATION_REQUEST_STATUS.PENDING.value,
-          options: Object.values(DONATION_REQUEST_STATUS),
-        },
-        {
-          name: 'volumeStatus',
-          label: 'Volume Status',
-          type: 'select',
-          required: true,
-          defaultValue: REQUEST_VOLUME_STATUS.UNFULFILLED.value,
-          options: Object.values(REQUEST_VOLUME_STATUS),
+          name: 'recipient',
+          type: 'relationship',
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          hasMany: false,
+          admin: {
+            description:
+              'Who this request is directed to (optional - leave empty for general request)',
+            width: '50%',
+          },
         },
       ],
     },
@@ -125,17 +111,6 @@ export const Requests: CollectionConfig<'requests'> = {
             step: 10,
           },
         },
-
-        {
-          name: 'matchedDonation',
-          type: 'relationship',
-          relationTo: 'donations',
-          filterOptions: filterMatchedDonationOptions,
-          admin: {
-            description: 'The donation that fulfilled this request',
-            width: '50%',
-          },
-        },
       ],
     },
 
@@ -143,37 +118,28 @@ export const Requests: CollectionConfig<'requests'> = {
       type: 'row',
       fields: [
         {
-          name: 'requestedDonor',
-          label: 'Requested Donor',
-          type: 'relationship',
-          relationTo: 'individuals',
-          admin: {
-            description: 'The donor who is requested to fulfill this request',
-          },
-        },
-        {
-          name: 'hospital',
-          label: 'Requested Hospital',
-          type: 'relationship',
-          relationTo: 'hospitals',
-          hasMany: false,
-          maxDepth: 2,
-          admin: {
-            description: 'The hospital that will receive the request',
-          },
-        },
-        {
-          name: 'milkBank',
-          label: 'Requested Milk Bank',
-          type: 'relationship',
-          relationTo: 'milkBanks',
-          hasMany: false,
-          maxDepth: 2,
-          admin: {
-            description: 'The milk bank that will receive the request',
-          },
+          name: 'status',
+          label: 'Request Status',
+          type: 'select',
+          enumName: 'enum_donation_request_status',
+          required: true,
+          defaultValue: DONATION_REQUEST_STATUS.AVAILABLE.value,
+          options: Object.values(DONATION_REQUEST_STATUS),
+          admin: { width: '50%' },
         },
       ],
+    },
+
+    {
+      name: 'matches',
+      label: 'Matches Found',
+      type: 'join',
+      collection: 'matches',
+      on: 'request',
+      admin: {
+        description: 'Matches found for this request',
+        defaultColumns: ['matchNumber', 'donation', 'status', 'matchedVolume', 'createdAt'],
+      },
     },
 
     {
@@ -228,13 +194,6 @@ export const Requests: CollectionConfig<'requests'> = {
                   type: 'relationship',
                   relationTo: 'milkBags',
                   hasMany: true,
-                  filterOptions: filterMilkBagsOptions,
-                  validate: async (value, { data }: { data: Partial<Request> }) => {
-                    if (data.matchedDonation && (!value || value.length === 0)) {
-                      return 'At least one milk bag is required when a matched donation exists.';
-                    }
-                    return true;
-                  },
                   admin: {
                     description:
                       'Milk bags that fulfilled this request. If empty, it means the request is still pending.',

@@ -1,9 +1,13 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { generateOwner } from '@/hooks/collections/generateOwner';
+import { COLLECTION_GROUP, MILK_BAG_OWNERSHIP_TRANSFER_REASONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
+import { updateOwnershipHistory } from './hooks/updateOwnershipHistory';
+
+const REASON_OPTIONS = MILK_BAG_OWNERSHIP_TRANSFER_REASONS;
 
 export const MilkBags: CollectionConfig<'milkBags'> = {
   slug: 'milkBags',
@@ -20,7 +24,14 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     defaultColumns: ['code', 'volume', 'status', 'collectedAt', 'expiresAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateExpiry, generateCode, generateTitle],
+    beforeChange: [
+      generateCreatedBy,
+      generateOwner,
+      generateExpiry,
+      generateCode,
+      generateTitle,
+      updateOwnershipHistory,
+    ],
   },
   indexes: [{ fields: ['status', 'expiresAt'] }],
   fields: [
@@ -47,67 +58,143 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     createdByField,
 
     {
-      name: 'donor',
-      type: 'relationship',
-      relationTo: 'individuals',
+      name: 'transferReason',
+      type: 'select',
+      enumName: 'enum_milk_bag_transfer_reason',
       required: true,
-      admin: {
-        description: 'The individual donating the milk bag',
-      },
+      options: Object.values(REASON_OPTIONS),
     },
+
     {
       type: 'row',
       fields: [
         {
-          name: 'volume',
-          label: 'Volume (mL)',
-          type: 'number',
-          required: true,
-          min: 20,
-          defaultValue: 20,
-          admin: {
-            description: 'Volume of milk in milliliters',
-            step: 10,
-            width: '50%',
-          },
-        },
-        {
-          name: 'status',
-          label: 'Milk Bag Status',
-          type: 'select',
-          required: true,
-          enumName: 'enum_milk_bag_status',
-          defaultValue: 'AVAILABLE',
-          admin: {
-            description: 'Current status of the milk bag',
-            width: '50%',
-          },
-          options: [
-            { label: 'Available', value: 'AVAILABLE' },
-            { label: 'Allocated', value: 'ALLOCATED' },
-            { label: 'Expired', value: 'EXPIRED' },
-            { label: 'Discarded', value: 'DISCARDED' },
-          ],
-        },
-        {
-          name: 'collectedAt',
-          type: 'date',
+          name: 'donor',
+          type: 'relationship',
+          relationTo: 'individuals',
           required: true,
           admin: {
-            description: 'Date when the milk was collected',
-            width: '50%',
+            description: 'The individual donating the milk bag',
           },
         },
+
         {
-          name: 'expiresAt',
-          type: 'date',
+          name: 'owner',
+          label: 'Current Owner',
+          type: 'relationship',
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          required: true,
           admin: {
-            description: 'Date when the milk expires',
-            width: '50%',
+            description: 'Current owner of the milk bag',
           },
         },
       ],
     },
+
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Details',
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'volume',
+                  label: 'Volume (mL)',
+                  type: 'number',
+                  required: true,
+                  min: 20,
+                  defaultValue: 20,
+                  admin: {
+                    description: 'Volume of milk in milliliters',
+                    step: 10,
+                    width: '50%',
+                  },
+                },
+                {
+                  name: 'status',
+                  label: 'Milk Bag Status',
+                  type: 'select',
+                  required: true,
+                  enumName: 'enum_milk_bag_status',
+                  defaultValue: 'AVAILABLE',
+                  admin: {
+                    description: 'Current status of the milk bag',
+                    width: '50%',
+                  },
+                  options: [
+                    { label: 'Available', value: 'AVAILABLE' },
+                    { label: 'Allocated', value: 'ALLOCATED' },
+                    { label: 'Expired', value: 'EXPIRED' },
+                    { label: 'Discarded', value: 'DISCARDED' },
+                  ],
+                },
+                {
+                  name: 'collectedAt',
+                  type: 'date',
+                  required: true,
+                  admin: {
+                    description: 'Date when the milk was collected',
+                    width: '50%',
+                  },
+                },
+                {
+                  name: 'expiresAt',
+                  type: 'date',
+                  admin: {
+                    description: 'Date when the milk expires',
+                    width: '50%',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Ownership History',
+          fields: [
+            {
+              name: 'ownershipHistory',
+              label: 'Ownership History',
+              interfaceName: 'MilkBagOwnershipHistory',
+              type: 'array',
+              admin: {
+                description: 'History of ownership transfers',
+              },
+              fields: [
+                {
+                  name: 'previousOwner',
+                  type: 'relationship',
+                  required: true,
+                  relationTo: ['individuals', 'hospitals', 'milkBanks'],
+                },
+                {
+                  name: 'newOwner',
+                  type: 'relationship',
+                  relationTo: ['individuals', 'hospitals', 'milkBanks'],
+                  required: true,
+                },
+                {
+                  name: 'transferReason',
+                  type: 'select',
+                  enumName: 'enum_milk_bag_transfer_reason',
+                  required: true,
+                  options: Object.values(REASON_OPTIONS),
+                },
+                {
+                  name: 'transferredAt',
+                  type: 'date',
+                  defaultValue: () => new Date(),
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+
     {
       name: 'donation',
       type: 'join',
@@ -118,6 +205,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
         defaultColumns: ['title', 'status'],
       },
     },
+
     {
       name: 'request',
       type: 'join',

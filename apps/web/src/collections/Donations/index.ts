@@ -1,11 +1,11 @@
 import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
+import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import {
   COLLECTION_GROUP,
   COLLECTION_MODES,
   DONATION_REQUEST_STATUS,
-  DONATION_VOLUME_STATUS,
   STORAGE_TYPES,
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
@@ -64,17 +64,41 @@ export const Donations: CollectionConfig<'donations'> = {
         position: 'sidebar',
       },
     },
+
+    ...statusTimeStamps,
+
+    {
+      name: 'expiredAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+
     createdByField,
+
     {
       type: 'row',
       fields: [
         {
           name: 'donor',
           type: 'relationship',
-          relationTo: 'individuals',
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
           required: true,
           admin: {
-            description: 'The person donating the milk',
+            description: 'The person or organization donating the milk',
+            width: '50%',
+          },
+        },
+        {
+          name: 'recipient',
+          type: 'relationship',
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          hasMany: false,
+          admin: {
+            description:
+              'Intended recipient for this donation (optional - leave empty for general donation)',
             width: '50%',
           },
         },
@@ -90,61 +114,41 @@ export const Donations: CollectionConfig<'donations'> = {
           type: 'select',
           enumName: 'enum_donation_request_status',
           required: true,
-          defaultValue: DONATION_REQUEST_STATUS.PENDING.value,
+          defaultValue: DONATION_REQUEST_STATUS.AVAILABLE.value,
           options: Object.values(DONATION_REQUEST_STATUS),
-        },
-        {
-          name: 'volumeStatus',
-          label: 'Volume Status',
-          type: 'select',
-          required: true,
-          defaultValue: DONATION_VOLUME_STATUS.UNALLOCATED.value,
-          options: Object.values(DONATION_VOLUME_STATUS),
+          admin: { width: '50%' },
         },
       ],
-    },
-
-    {
-      name: 'matchedRequests',
-      label: 'Matched Requests',
-      type: 'relationship',
-      relationTo: 'requests',
-      hasMany: true,
-      maxDepth: 2,
-      admin: {
-        description: 'The requests that this donation fulfills',
-        width: '50%',
-      },
     },
 
     {
       type: 'row',
       fields: [
         {
-          name: 'hospital',
-          label: 'Receiving Hospital',
+          name: 'sourceInventory',
+          label: 'Source Inventory',
           type: 'relationship',
-          relationTo: 'hospitals',
+          relationTo: 'inventory',
           hasMany: false,
-          maxDepth: 2,
           admin: {
-            description: 'The hospital that will receive the donation',
-            width: '50%',
-          },
-        },
-        {
-          name: 'milkBank',
-          label: 'Receiving Milk Bank',
-          type: 'relationship',
-          relationTo: 'milkBanks',
-          hasMany: false,
-          maxDepth: 2,
-          admin: {
-            description: 'The milk bank that will receive the donation',
+            description:
+              'Inventory source for this donation. Only applicable if an organization is creating the donation.',
             width: '50%',
           },
         },
       ],
+    },
+
+    {
+      name: 'matches',
+      label: 'Matches Found',
+      type: 'join',
+      collection: 'matches',
+      on: 'donation',
+      admin: {
+        description: 'Matches found for this donation',
+        defaultColumns: ['matchNumber', 'donation', 'status', 'matchedVolume', 'createdAt'],
+      },
     },
 
     {

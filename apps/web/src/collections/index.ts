@@ -7,6 +7,8 @@ import { Donations } from './Donations';
 import { Hospitals } from './Hospitals';
 import { Images } from './Images';
 import { Individuals } from './Individuals';
+import { Inventory } from './Inventory';
+import { Matches } from './Matches';
 import { MilkBags } from './MilkBags';
 import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
@@ -29,6 +31,7 @@ const Collections: CollectionConfig[] = [
   Hospitals,
   Images,
   Individuals,
+  Inventory,
   IslandGroups,
   MilkBags,
   MilkBanks,
@@ -39,6 +42,7 @@ const Collections: CollectionConfig[] = [
   Provinces,
   Regions,
   Requests,
+  Matches,
   Users,
 ];
 
@@ -53,7 +57,9 @@ export {
   Hospitals,
   Images,
   Individuals,
+  Inventory,
   IslandGroups,
+  Matches,
   MilkBags,
   MilkBanks,
   NotificationCategories,
