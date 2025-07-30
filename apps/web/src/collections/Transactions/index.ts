@@ -1,83 +1,148 @@
 import { createdByField } from '@/fields/createdByField';
+import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { timeSlotField } from '@/fields/timeSlot';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP, DELIVERY_OPTIONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
+import { generateTransactionNumber } from './hooks/generateTransactionNumber';
 
-export const Deliveries: CollectionConfig<'deliveries'> = {
-  slug: 'deliveries',
+export const Transactions: CollectionConfig<'transactions'> = {
+  slug: 'transactions',
   access: {
     admin: admin,
     create: authenticated,
     read: authenticated,
     update: authenticated,
-    delete: authenticated,
+    delete: admin,
   },
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
-    useAsTitle: 'request',
-    defaultColumns: ['request', 'mode', 'status', 'createdAt'],
+    useAsTitle: 'transactionNumber',
+    defaultColumns: ['transactionNumber', 'donation', 'request', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy],
+    beforeChange: [generateCreatedBy, generateTransactionNumber],
   },
   fields: [
+    {
+      name: 'transactionNumber',
+      type: 'text',
+      unique: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Unique transaction identifier',
+      },
+    },
+
     createdByField,
+    ...statusTimeStamps,
+
     {
-      name: 'request',
-      type: 'relationship',
-      relationTo: 'requests',
-      required: true,
-      admin: {
-        description: 'The request this delivery is for',
-      },
-    },
-    {
-      name: 'donation',
-      type: 'relationship',
-      relationTo: 'donations',
-      required: true,
-      admin: {
-        description: 'The donation being delivered',
-      },
-    },
-    {
-      name: 'mode',
-      label: 'Delivery Mode',
-      type: 'select',
-      required: true,
-      options: Object.values(DELIVERY_OPTIONS),
-    },
-    {
-      name: 'status',
-      label: 'Delivery Status',
-      type: 'select',
-      required: true,
-      defaultValue: 'PENDING',
-      options: [
-        { label: 'Pending', value: 'PENDING' },
-        { label: 'Pending Confirmation', value: 'PENDING_CONFIRMATION' },
-        { label: 'Confirmed', value: 'CONFIRMED' },
-        { label: 'Scheduled', value: 'SCHEDULED' },
-        { label: 'In Transit', value: 'IN_TRANSIT' },
-        { label: 'Ready for Pickup', value: 'READY_FOR_PICKUP' },
-        { label: 'Delivered', value: 'DELIVERED' },
-        { label: 'Failed', value: 'FAILED' },
-        { label: 'Cancelled', value: 'CANCELLED' },
+      type: 'row',
+      fields: [
+        {
+          name: 'donation',
+          type: 'relationship',
+          relationTo: 'donations',
+          required: true,
+          admin: { width: '50%' },
+        },
+
+        {
+          name: 'request',
+          type: 'relationship',
+          relationTo: 'requests',
+          required: true,
+          admin: { width: '50%' },
+        },
       ],
     },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'status',
+          label: 'Transaction Status',
+          type: 'select',
+          required: true,
+          defaultValue: 'MATCHED',
+          options: [
+            { label: 'Matched', value: 'MATCHED' },
+            { label: 'Pending Delivery Confirmation', value: 'PENDING_DELIVERY_CONFIRMATION' },
+            { label: 'Delivery Scheduled', value: 'DELIVERY_SCHEDULED' },
+            { label: 'In Transit', value: 'IN_TRANSIT' },
+            { label: 'Ready for Pickup', value: 'READY_FOR_PICKUP' },
+            { label: 'Delivered', value: 'DELIVERED' },
+            { label: 'Completed', value: 'COMPLETED' },
+            { label: 'Failed', value: 'FAILED' },
+            { label: 'Cancelled', value: 'CANCELLED' },
+          ],
+          admin: { width: '50%' },
+        },
+
+        {
+          name: 'matchedVolume',
+          type: 'number',
+          required: true,
+          min: 1,
+          admin: {
+            description: 'Volume of milk being matched (in mL)',
+            width: '50%',
+          },
+        },
+      ],
+    },
+
+    {
+      name: 'matchedBags',
+      type: 'relationship',
+      relationTo: 'milkBags',
+      hasMany: true,
+      required: true,
+      admin: {
+        description: 'Milk bags included in this transaction',
+      },
+    },
+
+    {
+      name: 'transactionType',
+      type: 'select',
+      required: true,
+      defaultValue: 'INDIVIDUAL_TO_INDIVIDUAL',
+      options: [
+        { label: 'Individual to Individual', value: 'INDIVIDUAL_TO_INDIVIDUAL' },
+        { label: 'Individual to Organization', value: 'INDIVIDUAL_TO_ORGANIZATION' },
+        { label: 'Organization to Individual', value: 'ORGANIZATION_TO_INDIVIDUAL' },
+      ],
+      admin: {
+        description: 'Type of transaction (determines delivery workflow)',
+        position: 'sidebar',
+      },
+    },
+
     {
       type: 'tabs',
       tabs: [
         {
-          label: 'Details',
+          label: 'Delivery Details',
           fields: [
             {
-              name: 'details',
-              label: 'Delivery Details',
+              name: 'delivery',
               type: 'group',
               fields: [
+                {
+                  name: 'mode',
+                  label: 'Delivery Mode',
+                  type: 'select',
+                  required: true,
+                  options: Object.values(DELIVERY_OPTIONS),
+                  admin: {
+                    condition: (data) => data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL',
+                  },
+                },
                 {
                   name: 'proposedTimeSlots',
                   label: 'Proposed Time Slots',
@@ -88,33 +153,27 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                       label: 'Proposed Date',
                       type: 'date',
                       required: true,
-                      admin: {
-                        description: 'Proposed date for the delivery, pickup, or meetup',
-                      },
                     },
                     timeSlotField({
                       label: 'Proposed Time Slot',
                       required: true,
-                      description: 'Proposed time slot for the delivery, pickup, or meetup',
                     }),
                     {
                       name: 'proposedBy',
                       label: 'Proposed By',
                       type: 'select',
-                      enumName: 'enum_proposedBy',
                       required: true,
                       options: [
                         { label: 'Donor', value: 'DONOR' },
                         { label: 'Requester', value: 'REQUESTER' },
                       ],
-                      admin: {
-                        readOnly: true,
-                        description: 'Indicates who proposed this time slot',
-                      },
+                      admin: { readOnly: true },
                     },
                   ],
                   admin: {
-                    condition: (data) => data.status === 'PENDING_CONFIRMATION',
+                    condition: (data) =>
+                      data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL' &&
+                      data.status === 'PENDING_DELIVERY_CONFIRMATION',
                     description: 'List of proposed date and time slots for negotiation',
                   },
                 },
@@ -128,20 +187,17 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                       label: 'Confirmed Date',
                       type: 'date',
                       required: true,
-                      admin: {
-                        description: 'The confirmed date for the delivery, pickup, or meetup',
-                      },
                     },
                     timeSlotField({
                       label: 'Confirmed Time Slot',
                       required: true,
-                      description: 'The confirmed time slot for the delivery, pickup, or meetup',
                     }),
                   ],
                   admin: {
-                    condition: (data) => ['CONFIRMED', 'SCHEDULED'].includes(data.status),
-                    description:
-                      'The confirmed date and time slot for the delivery, pickup, or meetup',
+                    condition: (data) =>
+                      ['DELIVERY_SCHEDULED', 'IN_TRANSIT', 'READY_FOR_PICKUP'].includes(
+                        data.status
+                      ),
                   },
                 },
                 {
@@ -161,20 +217,17 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                       label: 'Proposed By',
                       type: 'select',
                       required: true,
-                      enumName: 'enum_proposedBy',
                       options: [
                         { label: 'Donor', value: 'DONOR' },
                         { label: 'Requester', value: 'REQUESTER' },
                       ],
-                      admin: {
-                        readOnly: true,
-                        description: 'Indicates who proposed this address',
-                      },
+                      admin: { readOnly: true },
                     },
                   ],
                   admin: {
-                    description: 'List of proposed addresses for negotiation',
-                    condition: (data) => data.status === 'PENDING_CONFIRMATION',
+                    condition: (data) =>
+                      data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL' &&
+                      data.status === 'PENDING_DELIVERY_CONFIRMATION',
                   },
                 },
                 {
@@ -182,19 +235,20 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                   label: 'Confirmed Address',
                   type: 'relationship',
                   relationTo: 'addresses',
-                  required: true,
                   admin: {
-                    description: 'The confirmed address for the delivery, pickup, or meetup',
+                    condition: (data) =>
+                      [
+                        'DELIVERY_SCHEDULED',
+                        'IN_TRANSIT',
+                        'READY_FOR_PICKUP',
+                        'DELIVERED',
+                      ].includes(data.status),
                   },
                 },
                 {
                   name: 'instructions',
-                  label: 'Instructions',
+                  label: 'Delivery Instructions',
                   type: 'textarea',
-                  admin: {
-                    description:
-                      'Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)',
-                  },
                 },
               ],
             },
@@ -213,7 +267,15 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                   label: 'Delivered At',
                   type: 'date',
                   admin: {
-                    condition: (data) => data.status === 'DELIVERED',
+                    condition: (data) => ['DELIVERED', 'COMPLETED'].includes(data.status),
+                  },
+                },
+                {
+                  name: 'completedAt',
+                  label: 'Completed At',
+                  type: 'date',
+                  admin: {
+                    condition: (data) => data.status === 'COMPLETED',
                   },
                 },
                 {
@@ -222,16 +284,13 @@ export const Deliveries: CollectionConfig<'deliveries'> = {
                   type: 'textarea',
                   admin: {
                     condition: (data) => data.status === 'FAILED',
-                    description: 'Reason why the delivery failed',
                   },
                 },
                 {
-                  name: 'trackingHistory',
+                  name: 'statusHistory',
                   label: 'Status History',
                   type: 'array',
-                  admin: {
-                    readOnly: true,
-                  },
+                  admin: { readOnly: true },
                   fields: [
                     {
                       name: 'status',

@@ -10,9 +10,11 @@ import {
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { calculateFulfillmentPercentage } from './hooks/calculateFulfillmentPercentage';
 import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeRequest } from './hooks/initialize';
+import { processOrganizationRequest } from './hooks/processOrganizationRequest';
 
 export const Requests: CollectionConfig<'requests'> = {
   slug: 'requests',
@@ -26,11 +28,13 @@ export const Requests: CollectionConfig<'requests'> = {
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
     useAsTitle: 'title',
-    defaultColumns: ['requester', 'volumeNeeded', 'status', 'createdAt'],
+    defaultColumns: ['requester', 'volumeNeeded', 'volumeFulfilled', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [initializeRequest, generateCreatedBy, generateTitle],
-    afterChange: [createRequestNotification],
+    beforeValidate: [initializeRequest],
+    beforeChange: [generateCreatedBy, generateTitle],
+    afterChange: [createRequestNotification, processOrganizationRequest],
+    beforeRead: [calculateFulfillmentPercentage],
   },
   fields: [
     {
@@ -131,18 +135,6 @@ export const Requests: CollectionConfig<'requests'> = {
     },
 
     {
-      name: 'matches',
-      label: 'Matches Found',
-      type: 'join',
-      collection: 'matches',
-      on: 'request',
-      admin: {
-        description: 'Matches found for this request',
-        defaultColumns: ['matchNumber', 'donation', 'status', 'matchedVolume', 'createdAt'],
-      },
-    },
-
-    {
       type: 'tabs',
       tabs: [
         {
@@ -226,7 +218,29 @@ export const Requests: CollectionConfig<'requests'> = {
             },
           ],
         },
-        deliveryTab('request'),
+        deliveryTab(),
+        {
+          label: 'Transactions',
+          fields: [
+            {
+              name: 'transactions',
+              label: 'Transactions',
+              type: 'join',
+              collection: 'transactions',
+              on: 'donation',
+              admin: {
+                description: 'Transactions associated with this donation',
+                defaultColumns: [
+                  'transactionNumber',
+                  'request',
+                  'status',
+                  'matchedVolume',
+                  'createdAt',
+                ],
+              },
+            },
+          ],
+        },
       ],
     },
   ],

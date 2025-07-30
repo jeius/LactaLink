@@ -1,14 +1,12 @@
 import { CollectionConfig } from 'payload';
 import { Addresses } from './Addresses';
 import { Avatars } from './Avatars';
-import { Deliveries } from './Deliveries';
 import { DeliveryPreferences } from './DeliveryPreferences';
 import { Donations } from './Donations';
 import { Hospitals } from './Hospitals';
 import { Images } from './Images';
 import { Individuals } from './Individuals';
 import { Inventory } from './Inventory';
-import { Matches } from './Matches';
 import { MilkBags } from './MilkBags';
 import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
@@ -18,6 +16,7 @@ import { NotificationTypes } from './Notifications/types';
 import { Barangays, CitiesMunicipalities, IslandGroups, Regions } from './PSGC';
 import { Provinces } from './PSGC/Provinces';
 import { Requests } from './Requests';
+import { Transactions } from './Transactions';
 import { Users } from './Users';
 
 const Collections: CollectionConfig[] = [
@@ -25,7 +24,6 @@ const Collections: CollectionConfig[] = [
   Avatars,
   Barangays,
   CitiesMunicipalities,
-  Deliveries,
   DeliveryPreferences,
   Donations,
   Hospitals,
@@ -42,8 +40,8 @@ const Collections: CollectionConfig[] = [
   Provinces,
   Regions,
   Requests,
-  Matches,
   Users,
+  Transactions,
 ];
 
 export {
@@ -51,7 +49,6 @@ export {
   Avatars,
   Barangays,
   CitiesMunicipalities,
-  Deliveries,
   DeliveryPreferences,
   Donations,
   Hospitals,
@@ -59,7 +56,6 @@ export {
   Individuals,
   Inventory,
   IslandGroups,
-  Matches,
   MilkBags,
   MilkBanks,
   NotificationCategories,
@@ -69,6 +65,8 @@ export {
   Provinces,
   Regions,
   Requests,
+  Transactions,
   Users,
 };
+
 export default Collections;

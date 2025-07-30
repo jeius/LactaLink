@@ -1,3 +1,4 @@
+import { processDonationToOrganization } from '@/collections/Donations/hooks/processDonationToOrganization';
 import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
@@ -31,7 +32,7 @@ export const Donations: CollectionConfig<'donations'> = {
   },
   hooks: {
     beforeChange: [initializeDonation, generateCreatedBy, generateTitle],
-    afterChange: [createDonationNotification],
+    afterChange: [createDonationNotification, processDonationToOrganization],
   },
   fields: [
     {
@@ -84,10 +85,10 @@ export const Donations: CollectionConfig<'donations'> = {
         {
           name: 'donor',
           type: 'relationship',
-          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          relationTo: 'individuals',
           required: true,
           admin: {
-            description: 'The person or organization donating the milk',
+            description: 'The person donating the milk',
             width: '50%',
           },
         },
@@ -119,36 +120,6 @@ export const Donations: CollectionConfig<'donations'> = {
           admin: { width: '50%' },
         },
       ],
-    },
-
-    {
-      type: 'row',
-      fields: [
-        {
-          name: 'sourceInventory',
-          label: 'Source Inventory',
-          type: 'relationship',
-          relationTo: 'inventory',
-          hasMany: false,
-          admin: {
-            description:
-              'Inventory source for this donation. Only applicable if an organization is creating the donation.',
-            width: '50%',
-          },
-        },
-      ],
-    },
-
-    {
-      name: 'matches',
-      label: 'Matches Found',
-      type: 'join',
-      collection: 'matches',
-      on: 'donation',
-      admin: {
-        description: 'Matches found for this donation',
-        defaultColumns: ['matchNumber', 'donation', 'status', 'matchedVolume', 'createdAt'],
-      },
     },
 
     {
@@ -229,7 +200,29 @@ export const Donations: CollectionConfig<'donations'> = {
             },
           ],
         },
-        deliveryTab('donation'),
+        deliveryTab(),
+        {
+          label: 'Transactions',
+          fields: [
+            {
+              name: 'transactions',
+              label: 'Transactions',
+              type: 'join',
+              collection: 'transactions',
+              on: 'donation',
+              admin: {
+                description: 'Transactions associated with this donation',
+                defaultColumns: [
+                  'transactionNumber',
+                  'request',
+                  'status',
+                  'matchedVolume',
+                  'createdAt',
+                ],
+              },
+            },
+          ],
+        },
       ],
     },
   ],

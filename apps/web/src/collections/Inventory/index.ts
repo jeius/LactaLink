@@ -1,7 +1,19 @@
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
+import { initializeInventory } from './hooks/initializeInventory';
+import { updateInventoryStatus } from './hooks/updateInventoryStatus';
 
 export const Inventory: CollectionConfig<'inventory'> = {
   slug: 'inventory',
+  admin: {
+    group: COLLECTION_GROUP.DONATIONS,
+    useAsTitle: 'sourceDonation',
+    defaultColumns: ['organization', 'initialVolume', 'remainingVolume', 'status', 'receivedAt'],
+  },
+  hooks: {
+    beforeChange: [updateInventoryStatus],
+    beforeValidate: [initializeInventory],
+  },
   fields: [
     {
       name: 'organization',
@@ -9,6 +21,7 @@ export const Inventory: CollectionConfig<'inventory'> = {
       relationTo: ['hospitals', 'milkBanks'],
       required: true,
     },
+
     {
       name: 'sourceDonation',
       type: 'relationship',
@@ -17,16 +30,31 @@ export const Inventory: CollectionConfig<'inventory'> = {
         description: 'Original donation that created this inventory',
       },
     },
+
     {
-      name: 'volume',
-      type: 'number',
-      required: true,
+      type: 'row',
+      fields: [
+        {
+          name: 'initialVolume',
+          type: 'number',
+          required: true,
+          admin: {
+            description: 'Initial volume received into inventory (may differ from donation volume)',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'remainingVolume',
+          type: 'number',
+          required: true,
+          admin: {
+            description: 'Volume still available for use in milliliters',
+            readOnly: true,
+          },
+        },
+      ],
     },
-    {
-      name: 'remainingVolume',
-      type: 'number',
-      required: true,
-    },
+
     {
       name: 'status',
       type: 'select',
@@ -36,14 +64,91 @@ export const Inventory: CollectionConfig<'inventory'> = {
         { label: 'Expired', value: 'EXPIRED' },
         { label: 'Consumed', value: 'CONSUMED' },
       ],
+      defaultValue: 'AVAILABLE',
+      required: true,
+    },
+
+    {
+      name: 'milkBags',
+      label: 'Milk Bags',
+      type: 'relationship',
+      relationTo: 'milkBags',
+      hasMany: true,
+      required: true,
+      admin: {
+        description: 'Milk bags in this inventory',
+      },
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'receivedAt',
+          type: 'date',
+          defaultValue: () => new Date(),
+          admin: {
+            description: 'When the organization received this donation',
+          },
+        },
+        {
+          name: 'expiresAt',
+          type: 'date',
+          admin: {
+            description: 'When this inventory item expires',
+          },
+        },
+      ],
+    },
+
+    {
+      name: 'notes',
+      type: 'textarea',
+      admin: {
+        description: 'Additional notes about this inventory item',
+      },
     },
     {
-      name: 'receivedAt',
-      type: 'date',
-      defaultValue: () => new Date(),
+      name: 'allocationDetails',
+      type: 'array',
       admin: {
-        description: 'When the organization received this donation',
+        description: 'Details about how this inventory was allocated to requests',
       },
+      fields: [
+        {
+          name: 'request',
+          type: 'relationship',
+          relationTo: 'requests',
+          required: true,
+        },
+        {
+          name: 'allocatedBags',
+          type: 'relationship',
+          relationTo: 'milkBags',
+          hasMany: true,
+          required: true,
+          admin: {
+            description: 'Milk bags allocated to this request',
+          },
+        },
+        {
+          name: 'allocationId',
+          type: 'text',
+          admin: {
+            description: 'Unique identifier for grouping allocations that fulfill the same request',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'allocatedAt',
+          type: 'date',
+          defaultValue: () => new Date(),
+        },
+        {
+          name: 'notes',
+          type: 'textarea',
+        },
+      ],
     },
   ],
 };

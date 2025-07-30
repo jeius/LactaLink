@@ -158,7 +158,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
               name: 'data',
               label: 'Related Entity',
               type: 'relationship',
-              relationTo: ['requests', 'donations', 'deliveries'],
+              relationTo: ['requests', 'donations'],
               maxDepth: 2,
               admin: {
                 description:
@@ -170,7 +170,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
               label: 'Action URL',
               type: 'text',
               admin: {
-                placeholder: '/app/deliveries/123',
+                placeholder: '/app/transactions/123',
                 description:
                   'URL for the primary action button in the notification. Typically links to relevant page in the app.',
               },

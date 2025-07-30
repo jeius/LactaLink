@@ -1,31 +1,23 @@
 import { Donation, MilkBag } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { CollectionBeforeChangeHook, Payload } from 'payload';
+import { CollectionBeforeValidateHook } from 'payload';
 
-export const initializeDonation: CollectionBeforeChangeHook<Donation> = async ({
+export const initializeDonation: CollectionBeforeValidateHook<Donation> = async ({
   data,
   req,
   operation,
 }) => {
-  if (operation !== 'create') return data;
+  if (operation !== 'create' || !data) return data;
 
-  const isForIndividual = !data.hospital && !data.milkBank;
-  data.status = isForIndividual ? 'AVAILABLE' : 'PENDING';
+  data.status = data.recipient ? 'PENDING' : 'AVAILABLE';
 
-  const updatedData = await calculateStatusAndVolumeStatus(data, req.payload);
-
-  return updatedData;
-};
-
-async function calculateStatusAndVolumeStatus(data: Partial<Donation>, payload: Payload) {
   if (!data.details?.bags) {
-    data.volumeStatus = 'UNALLOCATED';
     data.volume = 0;
     data.remainingVolume = 0;
     return data;
   }
 
-  const { docs: bags } = await payload.find({
+  const { docs: bags } = await req.payload.find({
     collection: 'milkBags',
     where: { id: { in: extractID(data.details.bags) } },
     pagination: false,
@@ -69,13 +61,7 @@ async function calculateStatusAndVolumeStatus(data: Partial<Donation>, payload: 
   if (statusCounts.EXPIRED === totalBags) {
     // All bags expired
     data.status = 'EXPIRED';
-  } else if (remainingVolume === 0) {
-    // No remaining volume
-    data.volumeStatus = 'FULLY_ALLOCATED';
-  } else if (remainingVolume < totalVolume && statusCounts.ALLOCATED > 0) {
-    // Some bags allocated and remaining volume less than total
-    data.volumeStatus = 'PARTIALLY_ALLOCATED';
   }
 
   return data;
-}
+};

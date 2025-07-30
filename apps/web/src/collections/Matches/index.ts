@@ -1,6 +1,6 @@
 import { admin, authenticated } from '@/collections/_access-control';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
-import { COLLECTION_GROUP, MATCHES_STATUS, MATCHES_TYPE } from '@/lib/constants';
+import { COLLECTION_GROUP, MATCHES_STATUS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 
 export const Matches: CollectionConfig<'matches'> = {
@@ -54,29 +54,23 @@ export const Matches: CollectionConfig<'matches'> = {
       type: 'row',
       fields: [
         {
-          name: 'type',
-          type: 'select',
-          options: Object.values(MATCHES_TYPE),
-          required: true,
-        },
-        {
           name: 'status',
           type: 'select',
           required: true,
           defaultValue: MATCHES_STATUS.ACCEPTED.value,
           options: Object.values(MATCHES_STATUS),
         },
-      ],
-    },
 
-    {
-      name: 'matchedVolume',
-      type: 'number',
-      required: true,
-      min: 1,
-      admin: {
-        description: 'Volume of milk being matched (in mL)',
-      },
+        {
+          name: 'matchedVolume',
+          type: 'number',
+          required: true,
+          min: 1,
+          admin: {
+            description: 'Volume of milk being matched (in mL)',
+          },
+        },
+      ],
     },
 
     {

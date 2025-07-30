@@ -151,7 +151,6 @@ export interface Config {
     avatars: Avatar;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
-    deliveries: Delivery;
     'delivery-preferences': DeliveryPreference;
     donations: Donation;
     hospitals: Hospital;
@@ -168,8 +167,8 @@ export interface Config {
     provinces: Province;
     regions: Region;
     requests: Request;
-    matches: Match;
     users: User;
+    transactions: Transaction;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -183,16 +182,14 @@ export interface Config {
       requests: 'requests';
     };
     donations: {
-      matches: 'matches';
-      deliveries: 'deliveries';
+      transactions: 'transactions';
     };
     milkBags: {
       donation: 'donations';
       request: 'requests';
     };
     requests: {
-      matches: 'matches';
-      deliveries: 'deliveries';
+      transactions: 'transactions';
     };
     users: {
       addresses: 'addresses';
@@ -204,7 +201,6 @@ export interface Config {
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
-    deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
@@ -221,8 +217,8 @@ export interface Config {
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     requests: RequestsSelect<false> | RequestsSelect<true>;
-    matches: MatchesSelect<false> | MatchesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -503,21 +499,9 @@ export interface Donation {
   expiredAt?: string | null;
   createdBy?: (string | null) | User;
   /**
-   * The person or organization donating the milk
+   * The person donating the milk
    */
-  donor:
-    | {
-        relationTo: 'individuals';
-        value: string | Individual;
-      }
-    | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      }
-    | {
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      };
+  donor: string | Individual;
   /**
    * Intended recipient for this donation (optional - leave empty for general donation)
    */
@@ -535,18 +519,6 @@ export interface Donation {
         value: string | MilkBank;
       } | null);
   status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
-  /**
-   * Inventory source for this donation. Only applicable if an organization is creating the donation.
-   */
-  sourceInventory?: (string | null) | Inventory;
-  /**
-   * Matches found for this donation
-   */
-  matches?: {
-    docs?: (string | Match)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   details: {
     /**
      * Type of storage for the milk
@@ -572,154 +544,12 @@ export interface Donation {
   /**
    * Delivery preferences for the milk
    */
-  deliveryPreferences: (string | DeliveryPreference)[];
-  deliveries?: {
-    docs?: (string | Delivery)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory".
- */
-export interface Inventory {
-  id: string;
-  organization:
-    | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      }
-    | {
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      };
+  deliveryPreferences?: (string | DeliveryPreference)[] | null;
   /**
-   * Original donation that created this inventory
+   * Transactions associated with this donation
    */
-  sourceDonation?: (string | null) | Donation;
-  volume: number;
-  remainingVolume: number;
-  status?: ('AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "matches".
- */
-export interface Match {
-  id: string;
-  /**
-   * Unique match identifier
-   */
-  matchNumber?: string | null;
-  donation: string | Donation;
-  request: string | Request;
-  type: 'P2P' | 'P2O' | 'O2P';
-  status: 'ACCEPTED' | 'REJECTED' | 'SCHEDULED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED';
-  /**
-   * Volume of milk being matched (in mL)
-   */
-  matchedVolume: number;
-  matchedBags: (string | MilkBag)[];
-  /**
-   * Delivery arrangement for this match
-   */
-  delivery?: (string | null) | Delivery;
-  completedAt?: string | null;
-  cancelledAt?: string | null;
-  rejectedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "requests".
- */
-export interface Request {
-  id: string;
-  /**
-   * Title of the milk request.
-   */
-  title?: string | null;
-  completedAt?: string | null;
-  cancelledAt?: string | null;
-  rejectedAt?: string | null;
-  expiredAt?: string | null;
-  createdBy?: (string | null) | User;
-  /**
-   * The person requesting the milk
-   */
-  requester: string | Individual;
-  /**
-   * Who this request is directed to (optional - leave empty for general request)
-   */
-  recipient?:
-    | ({
-        relationTo: 'individuals';
-        value: string | Individual;
-      } | null)
-    | ({
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      } | null)
-    | ({
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      } | null);
-  /**
-   * Amount of milk needed in milliliters
-   */
-  volumeNeeded: number;
-  /**
-   * Amount of milk already fulfilled in milliliters
-   */
-  volumeFulfilled?: number | null;
-  status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
-  /**
-   * Matches found for this request
-   */
-  matches?: {
-    docs?: (string | Match)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  details: {
-    /**
-     * Date when the milk is needed
-     */
-    neededAt: string;
-    /**
-     * Preferred storage type
-     */
-    storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
-    urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    /**
-     * Milk bags that fulfilled this request. If empty, it means the request is still pending.
-     */
-    bags?: (string | MilkBag)[] | null;
-    /**
-     * Image of the person or baby receiving the milk
-     */
-    image?: (string | null) | Image;
-    /**
-     * Reason for requesting milk donation
-     */
-    reason?: string | null;
-    /**
-     * Additional notes or special instructions from requester
-     */
-    notes?: string | null;
-  };
-  /**
-   * Delivery preferences for the milk
-   */
-  deliveryPreferences: (string | DeliveryPreference)[];
-  deliveries?: {
-    docs?: (string | Delivery)[];
+  transactions?: {
+    docs?: (string | Transaction)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -794,6 +624,92 @@ export interface MilkBag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "requests".
+ */
+export interface Request {
+  id: string;
+  /**
+   * Title of the milk request.
+   */
+  title?: string | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  rejectedAt?: string | null;
+  expiredAt?: string | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The person requesting the milk
+   */
+  requester: string | Individual;
+  /**
+   * Who this request is directed to (optional - leave empty for general request)
+   */
+  recipient?:
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
+  /**
+   * Amount of milk needed in milliliters
+   */
+  volumeNeeded: number;
+  /**
+   * Amount of milk already fulfilled in milliliters
+   */
+  volumeFulfilled?: number | null;
+  status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
+  details: {
+    /**
+     * Date when the milk is needed
+     */
+    neededAt: string;
+    /**
+     * Preferred storage type
+     */
+    storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
+    urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    /**
+     * Milk bags that fulfilled this request. If empty, it means the request is still pending.
+     */
+    bags?: (string | MilkBag)[] | null;
+    /**
+     * Image of the person or baby receiving the milk
+     */
+    image?: (string | null) | Image;
+    /**
+     * Reason for requesting milk donation
+     */
+    reason?: string | null;
+    /**
+     * Additional notes or special instructions from requester
+     */
+    notes?: string | null;
+  };
+  /**
+   * Delivery preferences for the milk
+   */
+  deliveryPreferences?: (string | DeliveryPreference)[] | null;
+  /**
+   * Transactions associated with this donation
+   */
+  transactions?: {
+    docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "images".
  */
 export interface Image {
@@ -845,87 +761,74 @@ export interface Image {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deliveries".
+ * via the `definition` "transactions".
  */
-export interface Delivery {
+export interface Transaction {
   id: string;
+  /**
+   * Unique transaction identifier
+   */
+  transactionNumber?: string | null;
   createdBy?: (string | null) | User;
-  /**
-   * The request this delivery is for
-   */
-  request: string | Request;
-  /**
-   * The donation being delivered
-   */
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  rejectedAt?: string | null;
   donation: string | Donation;
-  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  request: string | Request;
   status:
-    | 'PENDING'
-    | 'PENDING_CONFIRMATION'
-    | 'CONFIRMED'
-    | 'SCHEDULED'
+    | 'MATCHED'
+    | 'PENDING_DELIVERY_CONFIRMATION'
+    | 'DELIVERY_SCHEDULED'
     | 'IN_TRANSIT'
     | 'READY_FOR_PICKUP'
     | 'DELIVERED'
+    | 'COMPLETED'
     | 'FAILED'
     | 'CANCELLED';
-  details: {
+  /**
+   * Volume of milk being matched (in mL)
+   */
+  matchedVolume: number;
+  /**
+   * Milk bags included in this transaction
+   */
+  matchedBags: (string | MilkBag)[];
+  /**
+   * Type of transaction (determines delivery workflow)
+   */
+  transactionType: 'INDIVIDUAL_TO_INDIVIDUAL' | 'INDIVIDUAL_TO_ORGANIZATION' | 'ORGANIZATION_TO_INDIVIDUAL';
+  delivery?: {
+    mode?: ('PICKUP' | 'DELIVERY' | 'MEETUP') | null;
     /**
      * List of proposed date and time slots for negotiation
      */
     proposedTimeSlots?:
       | {
-          /**
-           * Proposed date for the delivery, pickup, or meetup
-           */
           date: string;
           timeSlot: TimeSlot;
-          /**
-           * Indicates who proposed this time slot
-           */
           proposedBy: 'DONOR' | 'REQUESTER';
           id?: string | null;
         }[]
       | null;
-    /**
-     * The confirmed date and time slot for the delivery, pickup, or meetup
-     */
     confirmedTimeSlot?: {
-      /**
-       * The confirmed date for the delivery, pickup, or meetup
-       */
       date: string;
       timeSlot: TimeSlot;
     };
-    /**
-     * List of proposed addresses for negotiation
-     */
     proposedAddresses?:
       | {
           address: string | Address;
-          /**
-           * Indicates who proposed this address
-           */
           proposedBy: 'DONOR' | 'REQUESTER';
           id?: string | null;
         }[]
       | null;
-    /**
-     * The confirmed address for the delivery, pickup, or meetup
-     */
-    confirmedAddress: string | Address;
-    /**
-     * Special instructions for pickup, delivery, or meetup (e.g., gate code, contact person)
-     */
+    confirmedAddress?: (string | null) | Address;
     instructions?: string | null;
   };
   tracking?: {
     deliveredAt?: string | null;
-    /**
-     * Reason why the delivery failed
-     */
+    completedAt?: string | null;
     failureReason?: string | null;
-    trackingHistory?:
+    statusHistory?:
       | {
           status?: string | null;
           timestamp?: string | null;
@@ -938,8 +841,6 @@ export interface Delivery {
   createdAt: string;
 }
 /**
- * The confirmed time slot for the delivery, pickup, or meetup
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TimeSlot".
  */
@@ -1031,6 +932,72 @@ export interface Barangay {
   province?: (string | null) | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory".
+ */
+export interface Inventory {
+  id: string;
+  organization:
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * Original donation that created this inventory
+   */
+  sourceDonation?: (string | null) | Donation;
+  /**
+   * Initial volume received into inventory (may differ from donation volume)
+   */
+  initialVolume: number;
+  /**
+   * Volume still available for use in milliliters
+   */
+  remainingVolume: number;
+  status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
+  /**
+   * Milk bags in this inventory
+   */
+  milkBags: (string | MilkBag)[];
+  /**
+   * When the organization received this donation
+   */
+  receivedAt?: string | null;
+  /**
+   * When this inventory item expires
+   */
+  expiresAt?: string | null;
+  /**
+   * Additional notes about this inventory item
+   */
+  notes?: string | null;
+  /**
+   * Details about how this inventory was allocated to requests
+   */
+  allocationDetails?:
+    | {
+        request: string | Request;
+        /**
+         * Milk bags allocated to this request
+         */
+        allocatedBags: (string | MilkBag)[];
+        /**
+         * Unique identifier for grouping allocations that fulfill the same request
+         */
+        allocationId?: string | null;
+        allocatedAt?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1258,10 +1225,6 @@ export interface Notification {
       | ({
           relationTo: 'donations';
           value: string | Donation;
-        } | null)
-      | ({
-          relationTo: 'deliveries';
-          value: string | Delivery;
         } | null);
     /**
      * URL for the primary action button in the notification. Typically links to relevant page in the app.
@@ -1410,10 +1373,6 @@ export interface PayloadLockedDocument {
         value: string | CityMunicipality;
       } | null)
     | ({
-        relationTo: 'deliveries';
-        value: string | Delivery;
-      } | null)
-    | ({
         relationTo: 'delivery-preferences';
         value: string | DeliveryPreference;
       } | null)
@@ -1478,12 +1437,12 @@ export interface PayloadLockedDocument {
         value: string | Request;
       } | null)
     | ({
-        relationTo: 'matches';
-        value: string | Match;
-      } | null)
-    | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: string | Transaction;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1627,74 +1586,6 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deliveries_select".
- */
-export interface DeliveriesSelect<T extends boolean = true> {
-  createdBy?: T;
-  request?: T;
-  donation?: T;
-  mode?: T;
-  status?: T;
-  details?:
-    | T
-    | {
-        proposedTimeSlots?:
-          | T
-          | {
-              date?: T;
-              timeSlot?: T | TimeSlotSelect<T>;
-              proposedBy?: T;
-              id?: T;
-            };
-        confirmedTimeSlot?:
-          | T
-          | {
-              date?: T;
-              timeSlot?: T | TimeSlotSelect<T>;
-            };
-        proposedAddresses?:
-          | T
-          | {
-              address?: T;
-              proposedBy?: T;
-              id?: T;
-            };
-        confirmedAddress?: T;
-        instructions?: T;
-      };
-  tracking?:
-    | T
-    | {
-        deliveredAt?: T;
-        failureReason?: T;
-        trackingHistory?:
-          | T
-          | {
-              status?: T;
-              timestamp?: T;
-              notes?: T;
-              id?: T;
-            };
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TimeSlot_select".
- */
-export interface TimeSlotSelect<T extends boolean = true> {
-  type?: T;
-  presetSlot?: T;
-  customTime?:
-    | T
-    | {
-        startTime?: T;
-        endTime?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "delivery-preferences_select".
  */
 export interface DeliveryPreferencesSelect<T extends boolean = true> {
@@ -1725,8 +1616,6 @@ export interface DonationsSelect<T extends boolean = true> {
   donor?: T;
   recipient?: T;
   status?: T;
-  sourceInventory?: T;
-  matches?: T;
   details?:
     | T
     | {
@@ -1737,7 +1626,7 @@ export interface DonationsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryPreferences?: T;
-  deliveries?: T;
+  transactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1838,9 +1727,23 @@ export interface IndividualsSelect<T extends boolean = true> {
 export interface InventorySelect<T extends boolean = true> {
   organization?: T;
   sourceDonation?: T;
-  volume?: T;
+  initialVolume?: T;
   remainingVolume?: T;
   status?: T;
+  milkBags?: T;
+  receivedAt?: T;
+  expiresAt?: T;
+  notes?: T;
+  allocationDetails?:
+    | T
+    | {
+        request?: T;
+        allocatedBags?: T;
+        allocationId?: T;
+        allocatedAt?: T;
+        notes?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2108,7 +2011,6 @@ export interface RequestsSelect<T extends boolean = true> {
   volumeNeeded?: T;
   volumeFulfilled?: T;
   status?: T;
-  matches?: T;
   details?:
     | T
     | {
@@ -2121,26 +2023,7 @@ export interface RequestsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryPreferences?: T;
-  deliveries?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "matches_select".
- */
-export interface MatchesSelect<T extends boolean = true> {
-  matchNumber?: T;
-  donation?: T;
-  request?: T;
-  type?: T;
-  status?: T;
-  matchedVolume?: T;
-  matchedBags?: T;
-  delivery?: T;
-  completedAt?: T;
-  cancelledAt?: T;
-  rejectedAt?: T;
+  transactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2162,6 +2045,82 @@ export interface UsersSelect<T extends boolean = true> {
   picture?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  transactionNumber?: T;
+  createdBy?: T;
+  completedAt?: T;
+  cancelledAt?: T;
+  rejectedAt?: T;
+  donation?: T;
+  request?: T;
+  status?: T;
+  matchedVolume?: T;
+  matchedBags?: T;
+  transactionType?: T;
+  delivery?:
+    | T
+    | {
+        mode?: T;
+        proposedTimeSlots?:
+          | T
+          | {
+              date?: T;
+              timeSlot?: T | TimeSlotSelect<T>;
+              proposedBy?: T;
+              id?: T;
+            };
+        confirmedTimeSlot?:
+          | T
+          | {
+              date?: T;
+              timeSlot?: T | TimeSlotSelect<T>;
+            };
+        proposedAddresses?:
+          | T
+          | {
+              address?: T;
+              proposedBy?: T;
+              id?: T;
+            };
+        confirmedAddress?: T;
+        instructions?: T;
+      };
+  tracking?:
+    | T
+    | {
+        deliveredAt?: T;
+        completedAt?: T;
+        failureReason?: T;
+        statusHistory?:
+          | T
+          | {
+              status?: T;
+              timestamp?: T;
+              notes?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimeSlot_select".
+ */
+export interface TimeSlotSelect<T extends boolean = true> {
+  type?: T;
+  presetSlot?: T;
+  customTime?:
+    | T
+    | {
+        startTime?: T;
+        endTime?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

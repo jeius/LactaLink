@@ -1,7 +1,7 @@
 import { filterDeliveryPreferences } from '@/lib/utils/collections/filterDeliveryPreferences';
 import { Tab } from 'payload';
 
-export const deliveryTab = (joinedOn: string): Tab => ({
+export const deliveryTab = (): Tab => ({
   label: 'Delivery',
   fields: [
     {
@@ -10,24 +10,16 @@ export const deliveryTab = (joinedOn: string): Tab => ({
       type: 'relationship',
       relationTo: 'delivery-preferences',
       hasMany: true,
-      required: true,
       filterOptions: filterDeliveryPreferences,
       validate: (value) => {
-        if (!value || value.length === 0) {
-          return 'At least one delivery preference must be selected';
+        if (value?.length === 0) {
+          return 'At least one delivery preference must be provided';
         }
         return true;
       },
       admin: {
         description: 'Delivery preferences for the milk',
       },
-    },
-    {
-      name: 'deliveries',
-      label: 'Deliveries',
-      type: 'join',
-      on: joinedOn,
-      collection: 'deliveries',
     },
   ],
 });
