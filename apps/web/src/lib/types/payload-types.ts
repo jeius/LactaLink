@@ -770,9 +770,6 @@ export interface Transaction {
    */
   transactionNumber?: string | null;
   createdBy?: (string | null) | User;
-  completedAt?: string | null;
-  cancelledAt?: string | null;
-  rejectedAt?: string | null;
   donation: string | Donation;
   request: string | Request;
   status:
@@ -788,7 +785,7 @@ export interface Transaction {
   /**
    * Volume of milk being matched (in mL)
    */
-  matchedVolume: number;
+  matchedVolume?: number | null;
   /**
    * Milk bags included in this transaction
    */
@@ -796,42 +793,52 @@ export interface Transaction {
   /**
    * Type of transaction (determines delivery workflow)
    */
-  transactionType: 'INDIVIDUAL_TO_INDIVIDUAL' | 'INDIVIDUAL_TO_ORGANIZATION' | 'ORGANIZATION_TO_INDIVIDUAL';
+  transactionType: 'P2P' | 'P2O' | 'O2P';
   delivery?: {
-    mode?: ('PICKUP' | 'DELIVERY' | 'MEETUP') | null;
-    /**
-     * List of proposed date and time slots for negotiation
-     */
-    proposedTimeSlots?:
+    proposedDelivery?:
       | {
-          date: string;
-          timeSlot: TimeSlot;
-          proposedBy: 'DONOR' | 'REQUESTER';
-          id?: string | null;
-        }[]
-      | null;
-    confirmedTimeSlot?: {
-      date: string;
-      timeSlot: TimeSlot;
-    };
-    proposedAddresses?:
-      | {
+          mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+          datetime: string;
           address: string | Address;
           proposedBy: 'DONOR' | 'REQUESTER';
+          /**
+           * Indicates if the sender has agreed to this proposed delivery
+           */
+          senderAgreed?: boolean | null;
+          /**
+           * Indicates if the recipient has agreed to this proposed delivery
+           */
+          recipientAgreed?: boolean | null;
           id?: string | null;
         }[]
       | null;
-    confirmedAddress?: (string | null) | Address;
+    confirmedDelivery?: {
+      mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+      datetime: string;
+      address: string | Address;
+    };
     instructions?: string | null;
   };
   tracking?: {
     deliveredAt?: string | null;
     completedAt?: string | null;
+    failedAt?: string | null;
     failureReason?: string | null;
+    cancelledAt?: string | null;
+    cancelReason?: string | null;
     statusHistory?:
       | {
-          status?: string | null;
-          timestamp?: string | null;
+          status:
+            | 'MATCHED'
+            | 'PENDING_DELIVERY_CONFIRMATION'
+            | 'DELIVERY_SCHEDULED'
+            | 'IN_TRANSIT'
+            | 'READY_FOR_PICKUP'
+            | 'DELIVERED'
+            | 'COMPLETED'
+            | 'FAILED'
+            | 'CANCELLED';
+          timestamp: string;
           notes?: string | null;
           id?: string | null;
         }[]
@@ -839,18 +846,6 @@ export interface Transaction {
   };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TimeSlot".
- */
-export interface TimeSlot {
-  type: 'CUSTOM' | 'PRESET';
-  presetSlot?: ('08:00-10:00' | '10:00-12:00' | '12:00-14:00' | '14:00-16:00' | '16:00-18:00' | '18:00-20:00') | null;
-  customTime?: {
-    startTime: string;
-    endTime: string;
-  };
 }
 /**
  * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
@@ -2053,9 +2048,6 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TransactionsSelect<T extends boolean = true> {
   transactionNumber?: T;
   createdBy?: T;
-  completedAt?: T;
-  cancelledAt?: T;
-  rejectedAt?: T;
   donation?: T;
   request?: T;
   status?: T;
@@ -2065,29 +2057,24 @@ export interface TransactionsSelect<T extends boolean = true> {
   delivery?:
     | T
     | {
-        mode?: T;
-        proposedTimeSlots?:
+        proposedDelivery?:
           | T
           | {
-              date?: T;
-              timeSlot?: T | TimeSlotSelect<T>;
-              proposedBy?: T;
-              id?: T;
-            };
-        confirmedTimeSlot?:
-          | T
-          | {
-              date?: T;
-              timeSlot?: T | TimeSlotSelect<T>;
-            };
-        proposedAddresses?:
-          | T
-          | {
+              mode?: T;
+              datetime?: T;
               address?: T;
               proposedBy?: T;
+              senderAgreed?: T;
+              recipientAgreed?: T;
               id?: T;
             };
-        confirmedAddress?: T;
+        confirmedDelivery?:
+          | T
+          | {
+              mode?: T;
+              datetime?: T;
+              address?: T;
+            };
         instructions?: T;
       };
   tracking?:
@@ -2095,7 +2082,10 @@ export interface TransactionsSelect<T extends boolean = true> {
     | {
         deliveredAt?: T;
         completedAt?: T;
+        failedAt?: T;
         failureReason?: T;
+        cancelledAt?: T;
+        cancelReason?: T;
         statusHistory?:
           | T
           | {
@@ -2107,20 +2097,6 @@ export interface TransactionsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TimeSlot_select".
- */
-export interface TimeSlotSelect<T extends boolean = true> {
-  type?: T;
-  presetSlot?: T;
-  customTime?:
-    | T
-    | {
-        startTime?: T;
-        endTime?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

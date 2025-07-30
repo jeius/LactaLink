@@ -1,257 +1,310 @@
-# LactaLink Delivery System Documentation
+# LactaLink Transaction and Delivery System Documentation
 
 ## Overview
 
-The LactaLink delivery system facilitates the transfer of breast milk donations from donors to requesters through three delivery modes: **Pickup**, **Delivery**, and **Meetup**. This document outlines the complete workflow from initial posting to successful delivery completion.
+The LactaLink system facilitates the transfer of breast milk donations from donors to requesters through a structured transaction process. This document outlines the complete workflow from initial matching to successful transaction completion.
+
+## Transaction Types
+
+The system supports three types of transactions:
+
+- **P2P (Peer to Peer)**: Direct transactions between individual donors and requesters
+- **P2O (Peer to Organization)**: Donations from individuals to milk banks or organizations
+- **O2P (Organization to Peer)**: Distributions from milk banks or organizations to individual recipients
 
 ## Delivery Modes
 
+For P2P transactions, three delivery modes are supported:
+
 ### 🚗 **PICKUP**
+
 - Requester travels to donor's location to collect the milk
-- Donor provides pickup address and availability
+- Donor provides pickup address and availability or requester can negotiate a pickup location
 - Suitable for local transfers and flexible requesters
 
-### 🚚 **DELIVERY** 
+### 🚚 **DELIVERY**
+
 - Donor travels to requester's location to deliver the milk
-- Requester provides delivery address
+- Requester provides delivery address or donor can negotiate a desired delivery address
 - Ideal when donor has transportation and requester has limited mobility
 
 ### 🤝 **MEETUP**
+
 - Both parties meet at a mutually agreed neutral location
 - Requires negotiation and confirmation from both sides
 - Good compromise when neither party can travel far
 
-## Complete Workflow
+## Complete Transaction Workflow
 
-### Phase 1: Initial Creation
+### Phase 1: Matching
 
-#### **Step 1: Donation Posted**
+#### **Step 1: Initial Match**
+
 ```
-Donor creates donation → Status: AVAILABLE
+Donation and Request matched → Transaction created → Status: MATCHED
 ```
+
 **What happens:**
-- Donor sets milk details (amount, storage type, collection mode)
-- Donor sets delivery preferences:
-  - Preferred delivery modes (PICKUP, DELIVERY, MEETUP)
-  - Available addresses for each mode
-  - Available days for coordination
-- Donation becomes searchable for matching
 
-#### **Step 2: Request Posted**  
+- System creates a transaction linking a donation to a request
+- Transaction is assigned a unique transaction number (TXN-XXXXXXXX-XXXX)
+- Milk bags are selected and associated with the transaction
+- Transaction volume is calculated from the selected milk bags
+- Transaction type (P2P, P2O, O2P) is assigned based on the parties involved
+
+### Phase 2: Delivery Arrangement
+
+#### **Step 2: Delivery Selection or Proposal**
+
 ```
-Requester creates request → Status: PENDING
+MATCHED → [PENDING_DELIVERY_CONFIRMATION or directly to DELIVERY_SCHEDULED]
 ```
+
 **What happens:**
-- Requester sets milk needs (amount, urgency, storage preference)
-- Requester sets delivery preferences:
-  - Preferred delivery modes
-  - Available addresses for each mode  
-  - Available days for coordination
-- Request becomes searchable for matching
 
-### Phase 2: Matching Process
+- System checks if the donation or request has pre-specified delivery preferences
+- For PICKUP and DELIVERY modes:
+  - If the matcher/fulfiller agrees with one of the existing delivery preferences:
+    - They can select it directly
+    - Transaction skips to DELIVERY_SCHEDULED status
+    - Selected preference becomes the confirmed delivery details
+  - If the matcher/fulfiller doesn't agree with any existing preferences:
+    - They initiate a negotiation by proposing new delivery details
+    - Status changes to PENDING_DELIVERY_CONFIRMATION
+- For MEETUP mode:
+  - Always requires negotiation and mutual agreement
+  - Status changes to PENDING_DELIVERY_CONFIRMATION
 
-#### **Step 3: Compatibility Check**
-**System checks for:**
-- ✅ **Amount compatibility**: `donation.remainingAmount ≥ request.amount`
-- ✅ **Storage compatibility**: Compatible storage types (FRESH/FROZEN/EITHER)
-- ✅ **Delivery mode compatibility**: Overlapping preferred modes
-- ✅ **Geographic feasibility**: Reasonable distance between parties
+#### **Step 3: Delivery Negotiation** (if needed)
 
-#### **Step 4: Manual Matching (Frontend)**
 ```
-Admin/User identifies compatible donation + request
-↓
-Request updated → matchedDonation: [donation_id]
-Request status → MATCHED
-Donation status → PARTIALLY_ALLOCATED or FULLY_ALLOCATED
+PENDING_DELIVERY_CONFIRMATION → DELIVERY_SCHEDULED
 ```
 
-### Phase 3: Delivery Creation & Confirmation
-
-#### **Step 5: Delivery Record Created (Frontend)**
-```
-User creates delivery record with:
-- Selected delivery mode (from compatible options)
-- Selected address (based on mode and user preferences)  
-- Initial status: PENDING or PENDING_CONFIRMATION
-```
-
-#### **Step 6: Delivery Confirmation Process**
-
-##### **For PICKUP Mode:**
-```
-PENDING → CONFIRMED
-```
-**Process:**
-1. Delivery created with donor's pickup address
-2. Requester reviews pickup location and instructions
-3. Requester confirms they can pick up from that location
-4. Status becomes **CONFIRMED**
-
-##### **For DELIVERY Mode:**
-```
-PENDING → CONFIRMED
-```
-**Process:**
-1. Delivery created with requester's delivery address
-2. Donor reviews delivery location and instructions
-3. Donor confirms they can deliver to that location
-4. Status becomes **CONFIRMED**
-
-##### **For MEETUP Mode:**
-```
-PENDING → PENDING_CONFIRMATION → CONFIRMED
-```
-**Process:**
-1. Initial proposal with suggested meetup location & time slots
-2. Counter-proposals exchanged if needed
-3. Both parties negotiate and agree on final location
-4. Status becomes **CONFIRMED**
-
-### Phase 4: Scheduling
-
-#### **Step 7: Schedule Specific Time**
-```
-CONFIRMED → SCHEDULED
-```
 **What happens:**
-- Specific date and time slot selected
-- Both parties commit to the schedule
-- Calendar notifications sent
-- All logistical details finalized
 
-### Phase 5: Execution
+- For transactions requiring negotiation:
+  - Delivery details are proposed:
+    - Delivery mode (PICKUP, DELIVERY, MEETUP)
+    - Proposed date and time
+    - Proposed address
+    - Proposing party (DONOR or REQUESTER)
+  - Both sender and recipient must agree to the proposed delivery details
+  - Once agreement is reached, confirmed delivery details are established
 
-#### **Step 8A: Pickup Execution**
+#### **Step 4: Delivery Scheduling**
+
 ```
-SCHEDULED → READY_FOR_PICKUP → DELIVERED
+[after selection or agreement] → DELIVERY_SCHEDULED
 ```
+
+**What happens:**
+
+- Confirmed delivery information is recorded:
+  - Final delivery mode
+  - Confirmed date and time
+  - Confirmed address
+- Delivery is now scheduled and ready for execution
+
+### Phase 3: Execution
+
+#### **Step 4A: Pickup Execution**
+
+```
+DELIVERY_SCHEDULED → READY_FOR_PICKUP → DELIVERED
+```
+
 **Process:**
-1. **SCHEDULED**: Pickup time confirmed
-2. **READY_FOR_PICKUP**: Donor prepares milk and confirms ready
+
+1. **DELIVERY_SCHEDULED**: Pickup time confirmed
+2. **READY_FOR_PICKUP**: Donor prepares milk and confirms it's ready
 3. **DELIVERED**: Requester successfully picks up at scheduled time
 
-#### **Step 8B: Delivery Execution**
+#### **Step 4B: Delivery Execution**
+
 ```
-SCHEDULED → IN_TRANSIT → DELIVERED  
+DELIVERY_SCHEDULED → IN_TRANSIT → DELIVERED
 ```
+
 **Process:**
-1. **SCHEDULED**: Delivery time confirmed
+
+1. **DELIVERY_SCHEDULED**: Delivery time confirmed
 2. **IN_TRANSIT**: Donor starts delivery journey
 3. **DELIVERED**: Milk successfully delivered to requester's address
 
-#### **Step 8C: Meetup Execution**
+#### **Step 4C: Meetup Execution**
+
 ```
-SCHEDULED → DELIVERED
+DELIVERY_SCHEDULED → DELIVERED
 ```
+
 **Process:**
-1. **SCHEDULED**: Meetup time and location confirmed
+
+1. **DELIVERY_SCHEDULED**: Meetup time and location confirmed
 2. **DELIVERED**: Both parties meet and exchange milk successfully
 
-### Phase 6: Completion
+### Phase 4: Completion
 
-#### **Step 9: Final Updates**
+#### **Step 5: Transaction Completion**
+
 ```
-Delivery status → DELIVERED
-Request status → FULFILLED
-Donation remainingAmount updated
-If donation fully used → Donation status: COMPLETED
+DELIVERED → COMPLETED
 ```
 
-## Status Reference
+**What happens:**
 
-### Delivery Status Flow by Mode
+- After delivery, status changes to DELIVERED
+- **Receiver verification**: Only the milk recipient can change status to COMPLETED
+- Receiver confirms:
+  - Milk was successfully received
+  - Quality and condition are acceptable
+  - Transaction can be finalized
+- System records completion timestamp in tracking history
+- Donation and request statuses are updated accordingly
 
-| **Pickup** | **Delivery** | **Meetup** |
-|------------|--------------|------------|
-| PENDING | PENDING | PENDING |
-| CONFIRMED | CONFIRMED | PENDING_CONFIRMATION |
-| SCHEDULED | SCHEDULED | CONFIRMED |
-| READY_FOR_PICKUP | IN_TRANSIT | SCHEDULED |
-| DELIVERED | DELIVERED | DELIVERED |
+**Why receiver-only completion matters:**
 
-### Complete Status Definitions
+- Ensures accountability for successful transfers
+- Provides quality verification before closing the transaction
+- Prevents disputes about whether delivery actually occurred
+- Creates clear documentation of successful handoff
 
-| Status | Description | Used In |
-|--------|-------------|---------|
-| **PENDING** | Initial state, awaiting confirmation | All modes |
-| **PENDING_CONFIRMATION** | Awaiting mutual agreement on details | Meetup only |
-| **CONFIRMED** | Both parties agreed on logistics | All modes |
-| **SCHEDULED** | Specific date/time set | All modes |
-| **IN_TRANSIT** | Donor en route to delivery | Delivery only |
-| **READY_FOR_PICKUP** | Milk prepared, awaiting pickup | Pickup only |
-| **DELIVERED** | Successfully completed | All modes |
-| **FAILED** | Delivery attempt unsuccessful | All modes |
-| **CANCELLED** | Delivery cancelled by either party | All modes |
+### Alternative Paths
 
-## Key Features
+#### **Failed Transaction**
 
-### Time Slot Management
+```
+Any status → FAILED
+```
+
+- Transaction cannot be completed due to issues
+- Failure reason and timestamp are recorded
+- System may offer options for remediation
+
+**Examples of Failed Transactions:**
+
+1. **Quality Issues**
+   - Scenario: Recipient discovers milk bags are thawed or spoiled upon delivery
+   - Process:
+     - Recipient reports quality issue
+     - Transaction status changes to FAILED
+     - System records failure reason: "Milk compromised during transit"
+     - Matched bags are marked as unusable
+     - System suggests new matches for the requester
+
+2. **Delivery Logistic Failure**
+   - Scenario: After three attempts, donor unable to deliver due to access issues
+   - Process:
+     - Donor reports delivery issue with details
+     - Transaction status changes to FAILED
+     - System records reason: "Unable to access delivery location after multiple attempts"
+     - Milk bags return to available inventory
+     - System suggests alternative delivery methods for future attempts
+
+3. **Transfer Verification Failure**
+   - Scenario: Donor marks delivery as complete but recipient reports milk never received
+   - Process:
+     - Support team verifies claim
+     - Transaction status changes to FAILED
+     - System records reason: "Delivery verification discrepancy"
+     - Support assists with resolution
+
+#### **Cancelled Transaction**
+
+```
+Any status → CANCELLED
+```
+
+- Transaction is cancelled by either party
+- Cancellation reason and timestamp are recorded
+- Matched milk bags become available for new transactions
+
+**Examples of Cancelled Transactions:**
+
+1. **Donor Cancellation**
+   - Scenario: Donor experiences emergency and can no longer fulfill the commitment
+   - Process:
+     - Donor initiates cancellation in system
+     - Provides reason: "Family emergency, unable to meet scheduled delivery"
+     - System changes status to CANCELLED
+     - Requester automatically notified
+     - Milk bags returned to available inventory
+     - System suggests alternative matches for requester
+
+2. **Requester Cancellation**
+   - Scenario: Requester's needs change before delivery occurs
+   - Process:
+     - Requester initiates cancellation
+     - Provides reason: "No longer need this amount of milk"
+     - System changes status to CANCELLED
+     - Donor automatically notified
+     - Milk bags returned to available inventory
+     - System flags request as cancelled for follow-up
+
+3. **Mutual Cancellation**
+   - Scenario: Both parties agree to cancel due to scheduling conflicts
+   - Process:
+     - Either party initiates cancellation
+     - Both confirm agreement to cancel
+     - System records reason: "Mutual agreement - scheduling conflict"
+     - System changes status to CANCELLED
+     - Milk bags returned to available inventory
+     - Both parties receive confirmation of cancellation
+
+## Status Tracking
+
+Each transaction includes comprehensive tracking information:
+
+- **Status History**: Complete record of all status changes with timestamps
+- **Event Timestamps**: Specific timestamps for key events (delivered, completed, failed, cancelled)
+- **Notes**: Optional notes associated with status changes
+
+## Time Slot Management
+
+Time slots for deliveries can be specified as:
+
 - **Preset slots**: Common 2-hour windows (8AM-10AM, 10AM-12PM, etc.)
 - **Custom time**: User-defined start and end times
-- **Flexible scheduling**: Accommodates various user preferences
 
-### Address Management  
-- Mode-specific addresses (pickup, delivery, meetup locations)
-- Conditional field display based on selected delivery mode
-- Address validation and selection based on compatibility
+## Key Components
 
-### Tracking & History
-- Complete status history with timestamps
-- Failure reason tracking for unsuccessful deliveries
-- Notes and instructions for each delivery step
+### Transaction Record
 
-## Frontend Integration Points
+- Unique transaction number
+- Links to donation and request
+- Transaction status
+- List of matched milk bags and total volume
+- Transaction type (P2P, P2O, O2P)
+- Delivery details (proposed and confirmed)
+- Complete tracking history
 
-### Critical User Actions
-1. **Matching Interface**: Allow users to search and match donations/requests
-2. **Delivery Creation Form**: Mode selection with filtered options
-3. **Confirmation Interface**: Mode-specific confirmation flows
-4. **Scheduling Interface**: Time slot selection with preset/custom options
-5. **Status Updates**: Real-time status progression tracking
+### Delivery Details
 
-### Notification Triggers
-- Delivery created → Notify both parties
-- Confirmation required → Notify relevant party
-- Schedule confirmed → Send calendar invites
-- Status changes → Update both parties
-- Delivery completed → Final confirmation notifications
+- Delivery mode
+- Date and time
+- Address information
+- Instructions for successful delivery
 
-## Error Handling
+## Technical Implementation
 
-### Common Failure Scenarios
-- **Geographic incompatibility**: Parties too far apart
-- **Schedule conflicts**: No overlapping available times
-- **Address issues**: Invalid or inaccessible locations
-- **Communication failures**: Parties unable to coordinate
-- **No-shows**: Party doesn't appear at scheduled time
+### Status Flow
 
-### Recovery Actions
-- Status rollback to previous confirmed state
-- Alternative delivery mode suggestions
-- Rescheduling options
-- Automatic re-matching for failed deliveries
+The transaction passes through these statuses:
 
----
+| Status                            | Description                                          |
+| --------------------------------- | ---------------------------------------------------- |
+| **MATCHED**                       | Initial state after donation and request are matched |
+| **PENDING_DELIVERY_CONFIRMATION** | Awaiting agreement on delivery details               |
+| **DELIVERY_SCHEDULED**            | Delivery details confirmed and scheduled             |
+| **READY_FOR_PICKUP**              | Milk prepared for pickup (Pickup mode)               |
+| **IN_TRANSIT**                    | Milk being delivered (Delivery mode)                 |
+| **DELIVERED**                     | Milk successfully transferred                        |
+| **COMPLETED**                     | Transaction fully completed                          |
+| **FAILED**                        | Transaction unsuccessful                             |
+| **CANCELLED**                     | Transaction cancelled                                |
 
-## Technical Implementation Notes
+### Tracking System
 
-### Database Schema
-- Deliveries collection with mode-specific conditional fields
-- Relationship links to Requests, Donations, and Addresses
-- Status tracking with history array
-- Flexible time slot storage (preset vs custom)
-
-### Access Control
-- Delivery creators can update their deliveries
-- Admin users have full access
-- Read access for authenticated users involved in the delivery
-
-### Validation Rules
-- Delivery mode must be compatible with both parties' preferences
-- Address selection must match the chosen delivery mode
-- Time slots must follow valid format (HH:MM)
-- Status transitions must follow logical progression
-
-This system ensures secure, trackable, and user-friendly milk donation deliveries while maintaining flexibility for different user needs and preferences.
+- Each status change is recorded with timestamp
+- Special events (delivery, completion, failure, cancellation) have dedicated timestamps
+- Status history provides a complete audit trail of the transaction

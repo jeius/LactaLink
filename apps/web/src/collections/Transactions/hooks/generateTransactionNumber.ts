@@ -2,10 +2,9 @@ import { Transaction } from '@lactalink/types';
 import { randomBytes } from 'crypto';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const generateTransactionNumber: CollectionBeforeChangeHook<Transaction> = async ({
+export const generateTransactionNumber: CollectionBeforeChangeHook<Transaction> = ({
   data,
   operation,
-  req,
 }) => {
   if (operation !== 'create' || data.transactionNumber) {
     return data;

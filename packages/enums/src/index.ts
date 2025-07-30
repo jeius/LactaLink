@@ -1,4 +1,4 @@
-export * from './matches';
+export * from './transactions';
 
 export const PROFILE_TYPES = {
   INDIVIDUAL: { label: 'Individual', value: 'INDIVIDUAL' },
@@ -76,20 +76,6 @@ export const COLLECTION_MODES = {
   MANUAL: { label: 'Hand Expression', value: 'MANUAL' },
   MANUAL_PUMP: { label: 'Manual Pump', value: 'MANUAL_PUMP' },
   ELECTRIC_PUMP: { label: 'Electric Pump', value: 'ELECTRIC_PUMP' },
-} as const;
-
-export const TIME_SLOT_TYPES = {
-  CUSTOM: { label: 'Custom', value: 'CUSTOM' },
-  PRESET: { label: 'Preset', value: 'PRESET' },
-} as const;
-
-export const TIME_SLOTS = {
-  '08:00-10:00': { label: '8:00 AM - 10:00 AM', value: '08:00-10:00' },
-  '10:00-12:00': { label: '10:00 AM - 12:00 PM', value: '10:00-12:00' },
-  '12:00-14:00': { label: '12:00 PM - 2:00 PM', value: '12:00-14:00' },
-  '14:00-16:00': { label: '2:00 PM - 4:00 PM', value: '14:00-16:00' },
-  '16:00-18:00': { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
-  '18:00-20:00': { label: '6:00 PM - 8:00 PM', value: '18:00-20:00' },
 } as const;
 
 export const DONATION_REQUEST_STATUS = {

@@ -1,11 +1,13 @@
 import { createdByField } from '@/fields/createdByField';
-import { statusTimeStamps } from '@/fields/statusTimeStamps';
-import { timeSlotField } from '@/fields/timeSlot';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP, DELIVERY_OPTIONS } from '@/lib/constants';
+import { COLLECTION_GROUP, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
+import { confirmedField, proposedField } from './fields/deliveryFields';
+import { trackingField } from './fields/tracking';
+import { calculateVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
+import { updateTracking } from './hooks/updateTracking';
 
 export const Transactions: CollectionConfig<'transactions'> = {
   slug: 'transactions',
@@ -22,7 +24,8 @@ export const Transactions: CollectionConfig<'transactions'> = {
     defaultColumns: ['transactionNumber', 'donation', 'request', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateTransactionNumber],
+    beforeRead: [calculateVolume],
+    beforeChange: [generateCreatedBy, generateTransactionNumber, updateTracking],
   },
   fields: [
     {
@@ -37,7 +40,6 @@ export const Transactions: CollectionConfig<'transactions'> = {
     },
 
     createdByField,
-    ...statusTimeStamps,
 
     {
       type: 'row',
@@ -68,25 +70,18 @@ export const Transactions: CollectionConfig<'transactions'> = {
           label: 'Transaction Status',
           type: 'select',
           required: true,
-          defaultValue: 'MATCHED',
-          options: [
-            { label: 'Matched', value: 'MATCHED' },
-            { label: 'Pending Delivery Confirmation', value: 'PENDING_DELIVERY_CONFIRMATION' },
-            { label: 'Delivery Scheduled', value: 'DELIVERY_SCHEDULED' },
-            { label: 'In Transit', value: 'IN_TRANSIT' },
-            { label: 'Ready for Pickup', value: 'READY_FOR_PICKUP' },
-            { label: 'Delivered', value: 'DELIVERED' },
-            { label: 'Completed', value: 'COMPLETED' },
-            { label: 'Failed', value: 'FAILED' },
-            { label: 'Cancelled', value: 'CANCELLED' },
-          ],
+          defaultValue: TRANSACTION_STATUS.MATCHED.value,
+          options: Object.values(TRANSACTION_STATUS),
           admin: { width: '50%' },
         },
 
         {
           name: 'matchedVolume',
+          label: 'Matched Volume (mL)',
           type: 'number',
+          virtual: true,
           required: true,
+          defaultValue: 0,
           min: 1,
           admin: {
             description: 'Volume of milk being matched (in mL)',
@@ -111,12 +106,8 @@ export const Transactions: CollectionConfig<'transactions'> = {
       name: 'transactionType',
       type: 'select',
       required: true,
-      defaultValue: 'INDIVIDUAL_TO_INDIVIDUAL',
-      options: [
-        { label: 'Individual to Individual', value: 'INDIVIDUAL_TO_INDIVIDUAL' },
-        { label: 'Individual to Organization', value: 'INDIVIDUAL_TO_ORGANIZATION' },
-        { label: 'Organization to Individual', value: 'ORGANIZATION_TO_INDIVIDUAL' },
-      ],
+      defaultValue: TRANSACTION_TYPE.P2P.value,
+      options: Object.values(TRANSACTION_TYPE),
       admin: {
         description: 'Type of transaction (determines delivery workflow)',
         position: 'sidebar',
@@ -133,118 +124,8 @@ export const Transactions: CollectionConfig<'transactions'> = {
               name: 'delivery',
               type: 'group',
               fields: [
-                {
-                  name: 'mode',
-                  label: 'Delivery Mode',
-                  type: 'select',
-                  required: true,
-                  options: Object.values(DELIVERY_OPTIONS),
-                  admin: {
-                    condition: (data) => data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL',
-                  },
-                },
-                {
-                  name: 'proposedTimeSlots',
-                  label: 'Proposed Time Slots',
-                  type: 'array',
-                  fields: [
-                    {
-                      name: 'date',
-                      label: 'Proposed Date',
-                      type: 'date',
-                      required: true,
-                    },
-                    timeSlotField({
-                      label: 'Proposed Time Slot',
-                      required: true,
-                    }),
-                    {
-                      name: 'proposedBy',
-                      label: 'Proposed By',
-                      type: 'select',
-                      required: true,
-                      options: [
-                        { label: 'Donor', value: 'DONOR' },
-                        { label: 'Requester', value: 'REQUESTER' },
-                      ],
-                      admin: { readOnly: true },
-                    },
-                  ],
-                  admin: {
-                    condition: (data) =>
-                      data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL' &&
-                      data.status === 'PENDING_DELIVERY_CONFIRMATION',
-                    description: 'List of proposed date and time slots for negotiation',
-                  },
-                },
-                {
-                  name: 'confirmedTimeSlot',
-                  label: 'Confirmed Time Slot',
-                  type: 'group',
-                  fields: [
-                    {
-                      name: 'date',
-                      label: 'Confirmed Date',
-                      type: 'date',
-                      required: true,
-                    },
-                    timeSlotField({
-                      label: 'Confirmed Time Slot',
-                      required: true,
-                    }),
-                  ],
-                  admin: {
-                    condition: (data) =>
-                      ['DELIVERY_SCHEDULED', 'IN_TRANSIT', 'READY_FOR_PICKUP'].includes(
-                        data.status
-                      ),
-                  },
-                },
-                {
-                  name: 'proposedAddresses',
-                  label: 'Proposed Addresses',
-                  type: 'array',
-                  fields: [
-                    {
-                      name: 'address',
-                      label: 'Proposed Address',
-                      type: 'relationship',
-                      relationTo: 'addresses',
-                      required: true,
-                    },
-                    {
-                      name: 'proposedBy',
-                      label: 'Proposed By',
-                      type: 'select',
-                      required: true,
-                      options: [
-                        { label: 'Donor', value: 'DONOR' },
-                        { label: 'Requester', value: 'REQUESTER' },
-                      ],
-                      admin: { readOnly: true },
-                    },
-                  ],
-                  admin: {
-                    condition: (data) =>
-                      data.transactionType === 'INDIVIDUAL_TO_INDIVIDUAL' &&
-                      data.status === 'PENDING_DELIVERY_CONFIRMATION',
-                  },
-                },
-                {
-                  name: 'confirmedAddress',
-                  label: 'Confirmed Address',
-                  type: 'relationship',
-                  relationTo: 'addresses',
-                  admin: {
-                    condition: (data) =>
-                      [
-                        'DELIVERY_SCHEDULED',
-                        'IN_TRANSIT',
-                        'READY_FOR_PICKUP',
-                        'DELIVERED',
-                      ].includes(data.status),
-                  },
-                },
+                proposedField,
+                confirmedField,
                 {
                   name: 'instructions',
                   label: 'Delivery Instructions',
@@ -256,59 +137,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
         },
         {
           label: 'Tracking',
-          fields: [
-            {
-              name: 'tracking',
-              label: 'Tracking & Status',
-              type: 'group',
-              fields: [
-                {
-                  name: 'deliveredAt',
-                  label: 'Delivered At',
-                  type: 'date',
-                  admin: {
-                    condition: (data) => ['DELIVERED', 'COMPLETED'].includes(data.status),
-                  },
-                },
-                {
-                  name: 'completedAt',
-                  label: 'Completed At',
-                  type: 'date',
-                  admin: {
-                    condition: (data) => data.status === 'COMPLETED',
-                  },
-                },
-                {
-                  name: 'failureReason',
-                  label: 'Failure Reason',
-                  type: 'textarea',
-                  admin: {
-                    condition: (data) => data.status === 'FAILED',
-                  },
-                },
-                {
-                  name: 'statusHistory',
-                  label: 'Status History',
-                  type: 'array',
-                  admin: { readOnly: true },
-                  fields: [
-                    {
-                      name: 'status',
-                      type: 'text',
-                    },
-                    {
-                      name: 'timestamp',
-                      type: 'date',
-                    },
-                    {
-                      name: 'notes',
-                      type: 'textarea',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+          fields: [trackingField],
         },
       ],
     },

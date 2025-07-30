@@ -1,7 +1,6 @@
 import { NotificationService } from '@/lib/services/notification';
-import { Donation, Individual } from '@lactalink/types';
+import { Donation } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import _ from 'lodash';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const createDonationNotification: CollectionAfterChangeHook<Donation> = async ({
@@ -25,43 +24,11 @@ export const createDonationNotification: CollectionAfterChangeHook<Donation> = a
       return doc; // Skip notification if no owner
     }
 
-    // Prepare additional variables for the notification
-    const additionalVariables: Record<string, unknown> = {};
-
-    if (doc.matchedRequests && doc.matchedRequests.length > 0) {
-      additionalVariables.recipientCount = doc.matchedRequests.length;
-
-      const newMatchedRequests = _.difference(
-        doc.matchedRequests,
-        previousDoc?.matchedRequests || []
-      );
-
-      if (newMatchedRequests.length) {
-        additionalVariables.requestId = extractID(newMatchedRequests[0]!);
-
-        try {
-          const { requester } = await req.payload.findByID({
-            collection: 'requests',
-            id: extractID(newMatchedRequests[0]!),
-            depth: 2,
-            select: { requester: true },
-          });
-
-          additionalVariables.requesterName = (requester as Individual).displayName;
-        } catch (error) {
-          req.payload.logger.warn(
-            `Failed to fetch requester for new matched request ${newMatchedRequests[0]} in donation ${doc.id}`
-          );
-        }
-      }
-    }
-
     const sentNotifications = await notificationService.createNotification({
       doc,
       previousDoc,
       operation,
       recipient: extractID(donor.owner),
-      additionalVariables,
     });
 
     req.payload.logger.info(

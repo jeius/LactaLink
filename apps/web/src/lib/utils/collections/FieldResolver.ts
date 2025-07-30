@@ -201,7 +201,7 @@ export class FieldResolver {
     doc: Collection
   ): NonNullable<Notification['relatedData']> {
     const template = notificationType.template;
-    const collectionSlug = this.collection.slug as 'deliveries' | 'donations' | 'requests';
+    const collectionSlug = this.collection.slug as 'donations' | 'requests';
 
     if (template.actionUrl && template.actionLabel) {
       return {
