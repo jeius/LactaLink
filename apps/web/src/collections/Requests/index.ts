@@ -47,6 +47,28 @@ export const Requests: CollectionConfig<'requests'> = {
       },
     },
 
+    {
+      name: 'fulfillmentPercentage',
+      type: 'number',
+      virtual: true,
+      admin: {
+        description: 'Percentage of the request that has been fulfilled.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+
+    {
+      name: 'remainingNeeded',
+      type: 'number',
+      virtual: true,
+      admin: {
+        description: 'Volume still needed to fulfill the request.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+
     ...statusTimeStamps,
 
     {

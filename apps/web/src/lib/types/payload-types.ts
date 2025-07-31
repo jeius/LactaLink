@@ -159,6 +159,7 @@ export interface Config {
     inventory: Inventory;
     islandGroups: IslandGroup;
     milkBags: MilkBag;
+    'milk-bag-images': MilkBagImage;
     milkBanks: MilkBank;
     notificationCategories: NotificationCategory;
     notificationChannels: NotificationChannel;
@@ -209,6 +210,7 @@ export interface Config {
     inventory: InventorySelect<false> | InventorySelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
+    'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     notificationCategories: NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
@@ -367,6 +369,10 @@ export interface Individual {
 export interface Avatar {
   id: string;
   alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
   owner?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
@@ -593,7 +599,7 @@ export interface MilkBag {
   /**
    * Current status of the milk bag
    */
-  status: 'AVAILABLE' | 'ALLOCATED' | 'EXPIRED' | 'DISCARDED';
+  status: 'DRAFT' | 'AVAILABLE' | 'ALLOCATED' | 'CONSUMED' | 'EXPIRED' | 'DISCARDED';
   /**
    * Date when the milk was collected
    */
@@ -602,6 +608,10 @@ export interface MilkBag {
    * Date when the milk expires
    */
   expiresAt?: string | null;
+  /**
+   * Upload a photo showing the milk bag with the code clearly visible. This can be added after initial creation.
+   */
+  bagImage?: (string | null) | MilkBagImage;
   ownershipHistory?: MilkBagOwnershipHistory;
   /**
    * The donation this milk bag is part of
@@ -624,6 +634,57 @@ export interface MilkBag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milk-bag-images".
+ */
+export interface MilkBagImage {
+  id: string;
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    small?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "requests".
  */
 export interface Request {
@@ -632,6 +693,14 @@ export interface Request {
    * Title of the milk request.
    */
   title?: string | null;
+  /**
+   * Percentage of the request that has been fulfilled.
+   */
+  fulfillmentPercentage?: number | null;
+  /**
+   * Volume still needed to fulfill the request.
+   */
+  remainingNeeded?: number | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
   rejectedAt?: string | null;
@@ -785,7 +854,7 @@ export interface Transaction {
   /**
    * Volume of milk being matched (in mL)
    */
-  matchedVolume?: number | null;
+  matchedVolume: number;
   /**
    * Milk bags included in this transaction
    */
@@ -794,31 +863,7 @@ export interface Transaction {
    * Type of transaction (determines delivery workflow)
    */
   transactionType: 'P2P' | 'P2O' | 'O2P';
-  delivery?: {
-    proposedDelivery?:
-      | {
-          mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-          datetime: string;
-          address: string | Address;
-          proposedBy: 'DONOR' | 'REQUESTER';
-          /**
-           * Indicates if the sender has agreed to this proposed delivery
-           */
-          senderAgreed?: boolean | null;
-          /**
-           * Indicates if the recipient has agreed to this proposed delivery
-           */
-          recipientAgreed?: boolean | null;
-          id?: string | null;
-        }[]
-      | null;
-    confirmedDelivery?: {
-      mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-      datetime: string;
-      address: string | Address;
-    };
-    instructions?: string | null;
-  };
+  delivery?: Delivery;
   tracking?: {
     deliveredAt?: string | null;
     completedAt?: string | null;
@@ -828,6 +873,9 @@ export interface Transaction {
     cancelReason?: string | null;
     statusHistory?:
       | {
+          /**
+           * Status of the transaction at this point in time
+           */
           status:
             | 'MATCHED'
             | 'PENDING_DELIVERY_CONFIRMATION'
@@ -838,7 +886,13 @@ export interface Transaction {
             | 'COMPLETED'
             | 'FAILED'
             | 'CANCELLED';
+          /**
+           * Timestamp when this status was recorded
+           */
           timestamp: string;
+          /**
+           * Any additional notes related to this status change
+           */
           notes?: string | null;
           id?: string | null;
         }[]
@@ -846,6 +900,35 @@ export interface Transaction {
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Delivery".
+ */
+export interface Delivery {
+  proposedDelivery?:
+    | {
+        mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+        datetime: string;
+        address: string | Address;
+        proposedBy: 'DONOR' | 'REQUESTER';
+        /**
+         * Indicates if the sender has agreed to this proposed delivery
+         */
+        senderAgreed?: boolean | null;
+        /**
+         * Indicates if the recipient has agreed to this proposed delivery
+         */
+        recipientAgreed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  confirmedDelivery?: {
+    mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+    datetime: string;
+    address: string | Address;
+  };
+  instructions?: string | null;
 }
 /**
  * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
@@ -1400,6 +1483,10 @@ export interface PayloadLockedDocument {
         value: string | MilkBag;
       } | null)
     | ({
+        relationTo: 'milk-bag-images';
+        value: string | MilkBagImage;
+      } | null)
+    | ({
         relationTo: 'milkBanks';
         value: string | MilkBank;
       } | null)
@@ -1508,6 +1595,7 @@ export interface AddressesSelect<T extends boolean = true> {
  */
 export interface AvatarsSelect<T extends boolean = true> {
   alt?: T;
+  blurHash?: T;
   owner?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1767,6 +1855,7 @@ export interface MilkBagsSelect<T extends boolean = true> {
   status?: T;
   collectedAt?: T;
   expiresAt?: T;
+  bagImage?: T;
   ownershipHistory?: T | MilkBagOwnershipHistorySelect<T>;
   donation?: T;
   request?: T;
@@ -1783,6 +1872,61 @@ export interface MilkBagOwnershipHistorySelect<T extends boolean = true> {
   transferReason?: T;
   transferredAt?: T;
   id?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milk-bag-images_select".
+ */
+export interface MilkBagImagesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1996,6 +2140,8 @@ export interface RegionsSelect<T extends boolean = true> {
  */
 export interface RequestsSelect<T extends boolean = true> {
   title?: T;
+  fulfillmentPercentage?: T;
+  remainingNeeded?: T;
   completedAt?: T;
   cancelledAt?: T;
   rejectedAt?: T;
@@ -2054,29 +2200,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   matchedVolume?: T;
   matchedBags?: T;
   transactionType?: T;
-  delivery?:
-    | T
-    | {
-        proposedDelivery?:
-          | T
-          | {
-              mode?: T;
-              datetime?: T;
-              address?: T;
-              proposedBy?: T;
-              senderAgreed?: T;
-              recipientAgreed?: T;
-              id?: T;
-            };
-        confirmedDelivery?:
-          | T
-          | {
-              mode?: T;
-              datetime?: T;
-              address?: T;
-            };
-        instructions?: T;
-      };
+  delivery?: T | DeliverySelect<T>;
   tracking?:
     | T
     | {
@@ -2097,6 +2221,31 @@ export interface TransactionsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Delivery_select".
+ */
+export interface DeliverySelect<T extends boolean = true> {
+  proposedDelivery?:
+    | T
+    | {
+        mode?: T;
+        datetime?: T;
+        address?: T;
+        proposedBy?: T;
+        senderAgreed?: T;
+        recipientAgreed?: T;
+        id?: T;
+      };
+  confirmedDelivery?:
+    | T
+    | {
+        mode?: T;
+        datetime?: T;
+        address?: T;
+      };
+  instructions?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

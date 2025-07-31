@@ -122,6 +122,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
           fields: [
             {
               name: 'delivery',
+              interfaceName: 'Delivery',
               type: 'group',
               fields: [
                 proposedField,

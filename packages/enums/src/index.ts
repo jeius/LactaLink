@@ -1,3 +1,5 @@
+export * from './inventory';
+export * from './milkbag';
 export * from './transactions';
 
 export const PROFILE_TYPES = {
@@ -73,7 +75,7 @@ export const PREFERRED_STORAGE_TYPES = {
 } as const;
 
 export const COLLECTION_MODES = {
-  MANUAL: { label: 'Hand Expression', value: 'MANUAL' },
+  MANUAL: { label: 'Hand Express', value: 'MANUAL' },
   MANUAL_PUMP: { label: 'Manual Pump', value: 'MANUAL_PUMP' },
   ELECTRIC_PUMP: { label: 'Electric Pump', value: 'ELECTRIC_PUMP' },
 } as const;
@@ -86,10 +88,4 @@ export const DONATION_REQUEST_STATUS = {
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
   CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
   REJECTED: { label: 'Rejected', value: 'REJECTED' },
-} as const;
-
-export const MILK_BAG_OWNERSHIP_TRANSFER_REASONS = {
-  DONATION_COMPLETED: { label: 'Donation Completed', value: 'DONATION_COMPLETED' },
-  REDISTRIBUTION: { label: 'Redistribution', value: 'REDISTRIBUTION' },
-  RETURN: { label: 'Return', value: 'RETURN' },
 } as const;

@@ -1,12 +1,12 @@
 import { createdByField } from '@/fields/createdByField';
 import { ownerField } from '@/fields/ownerField';
+import { generateAlt } from '@/hooks/collections/generateAlt';
+import { generateBlurHash } from '@/hooks/collections/generateBlurHash';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, authenticated, collectionOwnerOrAdmin } from '../_access-control';
-import { generateAlt } from './hooks/beforeChange';
-import { generateBlurHash } from './hooks/generateBlurHash';
 
 export const Images: CollectionConfig<'images'> = {
   slug: 'images',

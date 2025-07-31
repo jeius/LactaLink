@@ -144,22 +144,27 @@ export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
   'HOSPITAL',
   'MILK_BANK',
 ]);
-export const enum_time_slot_type = pgEnum('enum_time_slot_type', ['CUSTOM', 'PRESET']);
-export const enum_time_slot_preset = pgEnum('enum_time_slot_preset', [
-  '08:00-10:00',
-  '10:00-12:00',
-  '12:00-14:00',
-  '14:00-16:00',
-  '16:00-18:00',
-  '18:00-20:00',
-]);
-export const enum_transactions_delivery_proposed_time_slots_proposed_by = pgEnum(
-  'enum_transactions_delivery_proposed_time_slots_proposed_by',
-  ['DONOR', 'REQUESTER']
+export const enum_transactions_delivery_proposed_delivery_mode = pgEnum(
+  'enum_transactions_delivery_proposed_delivery_mode',
+  ['PICKUP', 'DELIVERY', 'MEETUP']
 );
-export const enum_transactions_delivery_proposed_addresses_proposed_by = pgEnum(
-  'enum_transactions_delivery_proposed_addresses_proposed_by',
-  ['DONOR', 'REQUESTER']
+export const enum_transaction_proposed_by = pgEnum('enum_transaction_proposed_by', [
+  'DONOR',
+  'REQUESTER',
+]);
+export const enum_transactions_tracking_status_history_status = pgEnum(
+  'enum_transactions_tracking_status_history_status',
+  [
+    'MATCHED',
+    'PENDING_DELIVERY_CONFIRMATION',
+    'DELIVERY_SCHEDULED',
+    'IN_TRANSIT',
+    'READY_FOR_PICKUP',
+    'DELIVERED',
+    'COMPLETED',
+    'FAILED',
+    'CANCELLED',
+  ]
 );
 export const enum_transactions_status = pgEnum('enum_transactions_status', [
   'MATCHED',
@@ -173,15 +178,14 @@ export const enum_transactions_status = pgEnum('enum_transactions_status', [
   'CANCELLED',
 ]);
 export const enum_transactions_transaction_type = pgEnum('enum_transactions_transaction_type', [
-  'INDIVIDUAL_TO_INDIVIDUAL',
-  'INDIVIDUAL_TO_ORGANIZATION',
-  'ORGANIZATION_TO_INDIVIDUAL',
+  'P2P',
+  'P2O',
+  'O2P',
 ]);
-export const enum_transactions_delivery_mode = pgEnum('enum_transactions_delivery_mode', [
-  'PICKUP',
-  'DELIVERY',
-  'MEETUP',
-]);
+export const enum_transactions_delivery_confirmed_delivery_mode = pgEnum(
+  'enum_transactions_delivery_confirmed_delivery_mode',
+  ['PICKUP', 'DELIVERY', 'MEETUP']
+);
 
 export const addresses = pgTable(
   'addresses',
@@ -1525,63 +1529,33 @@ export const users_rels = pgTable(
   })
 );
 
-export const transactions_delivery_proposed_time_slots = pgTable(
-  'transactions_delivery_proposed_time_slots',
+export const transactions_delivery_proposed_delivery = pgTable(
+  'transactions_delivery_proposed_delivery',
   {
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    date: timestamp('date', { mode: 'string', withTimezone: true, precision: 3 }),
-    timeSlot_type: enum_time_slot_type('time_slot_type').default('PRESET'),
-    timeSlot_presetSlot: enum_time_slot_preset('time_slot_preset_slot'),
-    timeSlot_customTime_startTime: timestamp('time_slot_custom_time_start_time', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-    timeSlot_customTime_endTime: timestamp('time_slot_custom_time_end_time', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-    proposedBy: enum_transactions_delivery_proposed_time_slots_proposed_by('proposed_by'),
-  },
-  (columns) => ({
-    _orderIdx: index('transactions_delivery_proposed_time_slots_order_idx').on(columns._order),
-    _parentIDIdx: index('transactions_delivery_proposed_time_slots_parent_id_idx').on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [transactions.id],
-      name: 'transactions_delivery_proposed_time_slots_parent_id_fk',
-    }).onDelete('cascade'),
-  })
-);
-
-export const transactions_delivery_proposed_addresses = pgTable(
-  'transactions_delivery_proposed_addresses',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: uuid('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
+    mode: enum_transactions_delivery_proposed_delivery_mode('mode'),
+    datetime: timestamp('datetime', { mode: 'string', withTimezone: true, precision: 3 }),
     address: uuid('address_id').references(() => addresses.id, {
       onDelete: 'set null',
     }),
-    proposedBy: enum_transactions_delivery_proposed_addresses_proposed_by('proposed_by'),
+    proposedBy: enum_transaction_proposed_by('proposed_by'),
+    senderAgreed: boolean('sender_agreed'),
+    recipientAgreed: boolean('recipient_agreed'),
   },
   (columns) => ({
-    _orderIdx: index('transactions_delivery_proposed_addresses_order_idx').on(columns._order),
-    _parentIDIdx: index('transactions_delivery_proposed_addresses_parent_id_idx').on(
+    _orderIdx: index('transactions_delivery_proposed_delivery_order_idx').on(columns._order),
+    _parentIDIdx: index('transactions_delivery_proposed_delivery_parent_id_idx').on(
       columns._parentID
     ),
-    transactions_delivery_proposed_addresses_address_idx: index(
-      'transactions_delivery_proposed_addresses_address_idx'
+    transactions_delivery_proposed_delivery_address_idx: index(
+      'transactions_delivery_proposed_delivery_address_idx'
     ).on(columns.address),
     _parentIDFk: foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [transactions.id],
-      name: 'transactions_delivery_proposed_addresses_parent_id_fk',
+      name: 'transactions_delivery_proposed_delivery_parent_id_fk',
     }).onDelete('cascade'),
   })
 );
@@ -1592,8 +1566,12 @@ export const transactions_tracking_status_history = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    status: varchar('status'),
-    timestamp: timestamp('timestamp', { mode: 'string', withTimezone: true, precision: 3 }),
+    status: enum_transactions_tracking_status_history_status('status').notNull(),
+    timestamp: timestamp('timestamp', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
     notes: varchar('notes'),
   },
   (columns) => ({
@@ -1615,9 +1593,6 @@ export const transactions = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
-    completedAt: timestamp('completed_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    cancelledAt: timestamp('cancelled_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    rejectedAt: timestamp('rejected_at', { mode: 'string', withTimezone: true, precision: 3 }),
     donation: uuid('donation_id')
       .notNull()
       .references(() => donations.id, {
@@ -1629,31 +1604,18 @@ export const transactions = pgTable(
         onDelete: 'set null',
       }),
     status: enum_transactions_status('status').notNull().default('MATCHED'),
-    matchedVolume: numeric('matched_volume').notNull(),
     transactionType: enum_transactions_transaction_type('transaction_type')
       .notNull()
-      .default('INDIVIDUAL_TO_INDIVIDUAL'),
-    delivery_mode: enum_transactions_delivery_mode('delivery_mode'),
-    delivery_confirmedTimeSlot_date: timestamp('delivery_confirmed_time_slot_date', {
+      .default('P2P'),
+    delivery_confirmedDelivery_mode: enum_transactions_delivery_confirmed_delivery_mode(
+      'delivery_confirmed_delivery_mode'
+    ),
+    delivery_confirmedDelivery_datetime: timestamp('delivery_confirmed_delivery_datetime', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }),
-    delivery_confirmedTimeSlot_timeSlot_type: enum_time_slot_type(
-      'delivery_confirmed_time_slot_time_slot_type'
-    ).default('PRESET'),
-    delivery_confirmedTimeSlot_timeSlot_presetSlot: enum_time_slot_preset(
-      'delivery_confirmed_time_slot_time_slot_preset_slot'
-    ),
-    delivery_confirmedTimeSlot_timeSlot_customTime_startTime: timestamp(
-      'delivery_confirmed_time_slot_time_slot_custom_time_start_time',
-      { mode: 'string', withTimezone: true, precision: 3 }
-    ),
-    delivery_confirmedTimeSlot_timeSlot_customTime_endTime: timestamp(
-      'delivery_confirmed_time_slot_time_slot_custom_time_end_time',
-      { mode: 'string', withTimezone: true, precision: 3 }
-    ),
-    delivery_confirmedAddress: uuid('delivery_confirmed_address_id').references(
+    delivery_confirmedDelivery_address: uuid('delivery_confirmed_delivery_address_id').references(
       () => addresses.id,
       {
         onDelete: 'set null',
@@ -1670,7 +1632,18 @@ export const transactions = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    tracking_failedAt: timestamp('tracking_failed_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
     tracking_failureReason: varchar('tracking_failure_reason'),
+    tracking_cancelledAt: timestamp('tracking_cancelled_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    tracking_cancelReason: varchar('tracking_cancel_reason'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -1685,9 +1658,9 @@ export const transactions = pgTable(
     transactions_created_by_idx: index('transactions_created_by_idx').on(columns.createdBy),
     transactions_donation_idx: index('transactions_donation_idx').on(columns.donation),
     transactions_request_idx: index('transactions_request_idx').on(columns.request),
-    transactions_delivery_delivery_confirmed_address_idx: index(
-      'transactions_delivery_delivery_confirmed_address_idx'
-    ).on(columns.delivery_confirmedAddress),
+    transactions_delivery_confirmed_delivery_delivery_confirmed_delivery_address_idx: index(
+      'transactions_delivery_confirmed_delivery_delivery_confirmed_delivery_address_idx'
+    ).on(columns.delivery_confirmedDelivery_address),
     transactions_updated_at_idx: index('transactions_updated_at_idx').on(columns.updatedAt),
     transactions_created_at_idx: index('transactions_created_at_idx').on(columns.createdAt),
   })
@@ -2570,26 +2543,16 @@ export const relations_users = relations(users, ({ many }) => ({
     relationName: '_rels',
   }),
 }));
-export const relations_transactions_delivery_proposed_time_slots = relations(
-  transactions_delivery_proposed_time_slots,
+export const relations_transactions_delivery_proposed_delivery = relations(
+  transactions_delivery_proposed_delivery,
   ({ one }) => ({
     _parentID: one(transactions, {
-      fields: [transactions_delivery_proposed_time_slots._parentID],
+      fields: [transactions_delivery_proposed_delivery._parentID],
       references: [transactions.id],
-      relationName: 'delivery_proposedTimeSlots',
-    }),
-  })
-);
-export const relations_transactions_delivery_proposed_addresses = relations(
-  transactions_delivery_proposed_addresses,
-  ({ one }) => ({
-    _parentID: one(transactions, {
-      fields: [transactions_delivery_proposed_addresses._parentID],
-      references: [transactions.id],
-      relationName: 'delivery_proposedAddresses',
+      relationName: 'delivery_proposedDelivery',
     }),
     address: one(addresses, {
-      fields: [transactions_delivery_proposed_addresses.address],
+      fields: [transactions_delivery_proposed_delivery.address],
       references: [addresses.id],
       relationName: 'address',
     }),
@@ -2633,16 +2596,13 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     references: [requests.id],
     relationName: 'request',
   }),
-  delivery_proposedTimeSlots: many(transactions_delivery_proposed_time_slots, {
-    relationName: 'delivery_proposedTimeSlots',
+  delivery_proposedDelivery: many(transactions_delivery_proposed_delivery, {
+    relationName: 'delivery_proposedDelivery',
   }),
-  delivery_proposedAddresses: many(transactions_delivery_proposed_addresses, {
-    relationName: 'delivery_proposedAddresses',
-  }),
-  delivery_confirmedAddress: one(addresses, {
-    fields: [transactions.delivery_confirmedAddress],
+  delivery_confirmedDelivery_address: one(addresses, {
+    fields: [transactions.delivery_confirmedDelivery_address],
     references: [addresses.id],
-    relationName: 'delivery_confirmedAddress',
+    relationName: 'delivery_confirmedDelivery_address',
   }),
   tracking_statusHistory: many(transactions_tracking_status_history, {
     relationName: 'tracking_statusHistory',
@@ -2824,13 +2784,12 @@ type DatabaseSchema = {
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
-  enum_time_slot_type: typeof enum_time_slot_type;
-  enum_time_slot_preset: typeof enum_time_slot_preset;
-  enum_transactions_delivery_proposed_time_slots_proposed_by: typeof enum_transactions_delivery_proposed_time_slots_proposed_by;
-  enum_transactions_delivery_proposed_addresses_proposed_by: typeof enum_transactions_delivery_proposed_addresses_proposed_by;
+  enum_transactions_delivery_proposed_delivery_mode: typeof enum_transactions_delivery_proposed_delivery_mode;
+  enum_transaction_proposed_by: typeof enum_transaction_proposed_by;
+  enum_transactions_tracking_status_history_status: typeof enum_transactions_tracking_status_history_status;
   enum_transactions_status: typeof enum_transactions_status;
   enum_transactions_transaction_type: typeof enum_transactions_transaction_type;
-  enum_transactions_delivery_mode: typeof enum_transactions_delivery_mode;
+  enum_transactions_delivery_confirmed_delivery_mode: typeof enum_transactions_delivery_confirmed_delivery_mode;
   addresses: typeof addresses;
   avatars: typeof avatars;
   barangays: typeof barangays;
@@ -2865,8 +2824,7 @@ type DatabaseSchema = {
   requests_rels: typeof requests_rels;
   users: typeof users;
   users_rels: typeof users_rels;
-  transactions_delivery_proposed_time_slots: typeof transactions_delivery_proposed_time_slots;
-  transactions_delivery_proposed_addresses: typeof transactions_delivery_proposed_addresses;
+  transactions_delivery_proposed_delivery: typeof transactions_delivery_proposed_delivery;
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
@@ -2909,8 +2867,7 @@ type DatabaseSchema = {
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
-  relations_transactions_delivery_proposed_time_slots: typeof relations_transactions_delivery_proposed_time_slots;
-  relations_transactions_delivery_proposed_addresses: typeof relations_transactions_delivery_proposed_addresses;
+  relations_transactions_delivery_proposed_delivery: typeof relations_transactions_delivery_proposed_delivery;
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;

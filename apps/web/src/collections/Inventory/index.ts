@@ -1,4 +1,4 @@
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_GROUP, INVENTORY_STATUS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { initializeInventory } from './hooks/initializeInventory';
 import { updateInventoryStatus } from './hooks/updateInventoryStatus';
@@ -58,13 +58,9 @@ export const Inventory: CollectionConfig<'inventory'> = {
     {
       name: 'status',
       type: 'select',
-      options: [
-        { label: 'Available', value: 'AVAILABLE' },
-        { label: 'Reserved', value: 'RESERVED' },
-        { label: 'Expired', value: 'EXPIRED' },
-        { label: 'Consumed', value: 'CONSUMED' },
-      ],
-      defaultValue: 'AVAILABLE',
+      enumName: 'enum_inventory_status',
+      options: Object.values(INVENTORY_STATUS),
+      defaultValue: INVENTORY_STATUS.AVAILABLE.value,
       required: true,
     },
 
