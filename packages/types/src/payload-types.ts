@@ -839,8 +839,34 @@ export interface Transaction {
    */
   transactionNumber?: string | null;
   createdBy?: (string | null) | User;
-  donation: string | Donation;
-  request: string | Request;
+  donation?: (string | null) | Donation;
+  request?: (string | null) | Request;
+  sender?:
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
+  recipient?:
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
   status:
     | 'MATCHED'
     | 'PENDING_DELIVERY_CONFIRMATION'
@@ -2245,6 +2271,8 @@ export interface TransactionsSelect<T extends boolean = true> {
   createdBy?: T;
   donation?: T;
   request?: T;
+  sender?: T;
+  recipient?: T;
   status?: T;
   matchedVolume?: T;
   matchedBags?: T;

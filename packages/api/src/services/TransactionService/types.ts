@@ -48,9 +48,9 @@ export enum DeliveryMode {
  * Parameters for creating a P2P transaction.
  */
 export interface CreateP2PTransactionParams {
-  donationId: string;
-  requestId: string;
-  milkBagIds: string[];
+  donationID: string;
+  requestID: string;
+  milkBagIDs: string[];
   delivery?: NonNullable<Delivery['proposedDelivery']>[number];
   instructions?: string;
 }
@@ -59,22 +59,20 @@ export interface CreateP2PTransactionParams {
  * Parameters for creating a P2O transaction.
  */
 export interface CreateP2OTransactionParams {
-  donationId: string;
-  organizationId: string;
-  organizationType: 'hospitals' | 'milkBanks';
-  milkBagIds: string[];
-  volume: number;
+  donationID: string;
+  organization: { relationTo: 'hospitals' | 'milkBanks'; value: string };
+  addressID: string;
+  milkBagIDs: string[];
 }
 
 /**
  * Parameters for creating an O2P transaction.
  */
 export interface CreateO2PTransactionParams {
-  organizationId: string;
-  organizationType: 'hospitals' | 'milkBanks';
-  requestId: string;
-  milkBagIds: string[];
-  volume: number;
+  requestID: string;
+  organization: { relationTo: 'hospitals' | 'milkBanks'; value: string };
+  addressID: string;
+  milkBagIDs: string[];
 }
 
 /**
@@ -104,7 +102,7 @@ export interface DeliveryAgreementParams {
   /**
    * ID of the user proposing the delivery
    */
-  userId: string;
+  userID: string;
 
   /**
    * Which party is making the proposal

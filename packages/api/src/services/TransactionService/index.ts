@@ -1,5 +1,5 @@
-import { TRANSACTION_STATUS } from '@lactalink/enums';
-import { Donation, IApiClient, MilkBag, Request, Transaction } from '@lactalink/types';
+import { DELIVERY_OPTIONS, TRANSACTION_STATUS } from '@lactalink/enums';
+import { Delivery, Donation, IApiClient, MilkBag, Request, Transaction } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import {
   CreateO2PTransactionParams,
@@ -20,6 +20,7 @@ import {
 export class TransactionService {
   private apiClient: IApiClient;
 
+  // #region Constructor
   /**
    * Creates a new TransactionService instance.
    * @param apiClient - The API client used to communicate with the backend
@@ -27,21 +28,37 @@ export class TransactionService {
   constructor(apiClient: IApiClient) {
     this.apiClient = apiClient;
   }
+  // #endregion
 
+  // #region Transaction Creation Methods
   /**
    * Creates a new P2P (Peer to Peer) transaction between donor and requester.
    * @param params - Transaction parameters
    * @returns The created transaction
    */
   async createP2PTransaction(params: CreateP2PTransactionParams): Promise<Transaction> {
-    const { donationId, requestId, milkBagIds, delivery } = params;
+    const { donationID, requestID, milkBagIDs, delivery } = params;
+
+    const [donation, request] = await Promise.all([
+      this.getDonation(donationID),
+      this.getRequest(requestID),
+    ]);
 
     const status = delivery
       ? TRANSACTION_STATUS.DELIVERY_SCHEDULED.value
       : TRANSACTION_STATUS.MATCHED.value;
 
-    const volume = await this.getVolume(milkBagIds);
-    const deliveryDetails = delivery && { ...delivery, address: extractID(delivery.address) };
+    const volume = await this.getVolume(milkBagIDs);
+
+    let deliveryDetails: Delivery['confirmedDelivery'];
+    if (delivery) {
+      deliveryDetails = {
+        mode: delivery.mode,
+        datetime: delivery.datetime,
+        address: delivery.address,
+        confirmedAt: new Date().toISOString(),
+      };
+    }
 
     // Create the transaction
     const transaction = await this.apiClient.create({
@@ -49,9 +66,11 @@ export class TransactionService {
       data: {
         transactionType: TransactionType.P2P,
         status: status,
-        donation: donationId,
-        request: requestId,
-        matchedBags: milkBagIds,
+        donation: donationID,
+        sender: { relationTo: 'individuals', value: extractID(donation.donor) },
+        request: requestID,
+        recipient: { relationTo: 'individuals', value: extractID(request.requester) },
+        matchedBags: milkBagIDs,
         matchedVolume: volume,
         delivery: {
           instructions: params.instructions,
@@ -61,11 +80,11 @@ export class TransactionService {
     });
 
     // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIds, 'ALLOCATED');
+    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
 
     // Update donation and request statuses to MATCHED
-    await this.updateDonationStatus(donationId, 'MATCHED');
-    await this.updateRequestStatus(requestId, 'MATCHED');
+    await this.updateDonationStatus(donationID, 'MATCHED');
+    await this.updateRequestStatus(requestID, 'MATCHED');
 
     return transaction;
   }
@@ -77,34 +96,39 @@ export class TransactionService {
    * @returns The created transaction
    */
   async createP2OTransaction(params: CreateP2OTransactionParams): Promise<Transaction> {
-    const { donationId, organizationId, organizationType, milkBagIds, volume } = params;
+    const { donationID, organization, milkBagIDs, addressID } = params;
+
+    const [donation, volume] = await Promise.all([
+      this.getDonation(donationID),
+      this.getVolume(milkBagIDs),
+    ]);
 
     // P2O transactions always use DELIVERY mode and are automatically scheduled
-    const transaction = await this.apiClient.create<'transactions'>({
+    const transaction = await this.apiClient.create({
       collection: 'transactions',
       data: {
-        transactionNumber,
         transactionType: TransactionType.P2O,
-        status: TransactionStatus.DELIVERY_SCHEDULED,
-        donation: donationId,
-        organization: {
-          relationTo: organizationType,
-          value: organizationId,
-        },
-        matchedBags: milkBagIds,
+        status: TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
+        donation: donation.id,
+        sender: { relationTo: 'individuals', value: extractID(donation.donor) },
+        recipient: organization,
+        matchedBags: milkBagIDs,
         matchedVolume: volume,
         delivery: {
-          mode: DeliveryMode.DELIVERY, // Fixed as DELIVERY
-          status: 'SCHEDULED', // Skip negotiation phase
+          confirmedDelivery: {
+            confirmedAt: new Date().toISOString(),
+            mode: DELIVERY_OPTIONS.DELIVERY.value,
+            address: addressID,
+          },
         },
       },
     });
 
     // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIds, 'ALLOCATED');
+    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
 
     // Update donation status to MATCHED
-    await this.updateDonationStatus(donationId, 'MATCHED');
+    await this.updateDonationStatus(donationID, 'MATCHED');
 
     return transaction;
   }
@@ -116,38 +140,45 @@ export class TransactionService {
    * @returns The created transaction
    */
   async createO2PTransaction(params: CreateO2PTransactionParams): Promise<Transaction> {
-    const { organizationId, organizationType, requestId, milkBagIds, volume } = params;
+    const { organization, requestID, milkBagIDs, addressID } = params;
+
+    const [request, volume] = await Promise.all([
+      this.getRequest(requestID),
+      this.getVolume(milkBagIDs),
+    ]);
 
     // O2P transactions always use PICKUP mode and are automatically scheduled
     const transaction = await this.apiClient.create<'transactions'>({
       collection: 'transactions',
       data: {
-        transactionNumber,
         transactionType: TransactionType.O2P,
         status: TransactionStatus.DELIVERY_SCHEDULED,
-        organization: {
-          relationTo: organizationType,
-          value: organizationId,
-        },
-        request: requestId,
-        matchedBags: milkBagIds,
+        request: requestID,
+        sender: organization,
+        recipient: { relationTo: 'individuals', value: extractID(request.requester) },
+        matchedBags: milkBagIDs,
         matchedVolume: volume,
         delivery: {
-          mode: DeliveryMode.PICKUP, // Fixed as PICKUP
-          status: 'SCHEDULED', // Skip negotiation phase
+          confirmedDelivery: {
+            mode: DELIVERY_OPTIONS.PICKUP.value,
+            confirmedAt: new Date().toISOString(),
+            address: addressID,
+          },
         },
       },
     });
 
     // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIds, 'ALLOCATED');
+    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
 
     // Update request status to MATCHED
-    await this.updateRequestStatus(requestId, 'MATCHED');
+    await this.updateRequestStatus(requestID, 'MATCHED');
 
     return transaction;
   }
+  // #endregion
 
+  // #region Delivery Proposal Methods
   /**
    * Proposes delivery details for a transaction, initiating the negotiation process.
    * @param transactionId - ID of the transaction
@@ -246,7 +277,9 @@ export class TransactionService {
       },
     });
   }
+  // #endregion
 
+  // #region Delivery Execution Methods
   /**
    * Updates the transaction status to READY_FOR_PICKUP (donor confirms milk is ready).
    * Only applicable for PICKUP mode transactions.
@@ -381,7 +414,9 @@ export class TransactionService {
       },
     });
   }
+  // #endregion
 
+  // #region Transaction Completion Methods
   /**
    * Completes the transaction (recipient verifies receipt and quality).
    * Only the recipient can complete a transaction.
@@ -426,7 +461,9 @@ export class TransactionService {
 
     return completedTransaction;
   }
+  // #endregion
 
+  // #region Transaction Failure/Cancellation Methods
   /**
    * Marks a transaction as failed with a reason.
    * @param transactionId - ID of the transaction
@@ -505,7 +542,9 @@ export class TransactionService {
       },
     });
   }
+  // #endregion
 
+  // #region Transaction Query Methods
   /**
    * Gets a transaction by ID.
    * @param transactionId - ID of the transaction
@@ -543,9 +582,9 @@ export class TransactionService {
 
     return result;
   }
+  // #endregion
 
-  // -------------------- Private helper methods --------------------
-
+  // #region Helper Methods
   /**
    * Calculates the total volume of milk bags by their IDs.
    * @param milkBagIds - IDs of the milk bags
@@ -561,6 +600,32 @@ export class TransactionService {
     });
 
     return milkBags.reduce((total, bag) => total + (bag.volume || 0), 0);
+  }
+
+  /**
+   *
+   * @param donationId  ID of the donation
+   * @returns The donation object
+   */
+  private async getDonation(donationId: string): Promise<Donation> {
+    return this.apiClient.findByID({
+      collection: 'donations',
+      id: donationId,
+      depth: 0,
+    });
+  }
+
+  /**
+   *
+   * @param requestId  ID of the request
+   * @returns  The request object
+   */
+  private async getRequest(requestId: string): Promise<Request> {
+    return this.apiClient.findByID({
+      collection: 'requests',
+      id: requestId,
+      depth: 0,
+    });
   }
 
   /**
@@ -641,7 +706,9 @@ export class TransactionService {
       }
     }
   }
+  // #endregion
 
+  // #region Delivery Agreement Methods
   /**
    * Registers agreement to a delivery proposal from one party.
    * @param transactionId - ID of the transaction
@@ -902,4 +969,5 @@ export class TransactionService {
       }
     }
   }
+  // #endregion
 }

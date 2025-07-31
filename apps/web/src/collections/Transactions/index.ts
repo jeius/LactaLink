@@ -54,7 +54,6 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'donation',
           type: 'relationship',
           relationTo: 'donations',
-          required: true,
           admin: { width: '50%' },
         },
 
@@ -62,7 +61,27 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'request',
           type: 'relationship',
           relationTo: 'requests',
+          admin: { width: '50%' },
+        },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'sender',
+          type: 'relationship',
           required: true,
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          admin: { width: '50%' },
+        },
+
+        {
+          name: 'recipient',
+          type: 'relationship',
+          required: true,
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
           admin: { width: '50%' },
         },
       ],
@@ -94,6 +113,19 @@ export const Transactions: CollectionConfig<'transactions'> = {
             width: '50%',
           },
         },
+
+        {
+          name: 'transactionType',
+          type: 'select',
+          required: true,
+          defaultValue: TRANSACTION_TYPE.P2P.value,
+          options: Object.values(TRANSACTION_TYPE),
+          admin: {
+            description: 'Type of transaction (determines delivery workflow)',
+            position: 'sidebar',
+            width: '50%',
+          },
+        },
       ],
     },
 
@@ -105,18 +137,6 @@ export const Transactions: CollectionConfig<'transactions'> = {
       required: true,
       admin: {
         description: 'Milk bags included in this transaction',
-      },
-    },
-
-    {
-      name: 'transactionType',
-      type: 'select',
-      required: true,
-      defaultValue: TRANSACTION_TYPE.P2P.value,
-      options: Object.values(TRANSACTION_TYPE),
-      admin: {
-        description: 'Type of transaction (determines delivery workflow)',
-        position: 'sidebar',
       },
     },
 
