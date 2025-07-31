@@ -1,9 +1,4 @@
-import {
-  DELIVERY_OPTIONS,
-  TRANSACTION_PROPOSED_BY,
-  TRANSACTION_STATUS,
-  TRANSACTION_TYPE,
-} from '@/lib/constants';
+import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@/lib/constants';
 import { Transaction } from '@lactalink/types';
 import { Field } from 'payload';
 
@@ -27,7 +22,10 @@ export const proposedField: Field = {
       name: 'datetime',
       label: 'Proposed Date and Time',
       type: 'date',
-      required: true,
+      required: false,
+      admin: {
+        condition: (_, siblingData) => siblingData.mode === DELIVERY_OPTIONS.MEETUP.value,
+      },
     },
     {
       name: 'address',
@@ -39,33 +37,103 @@ export const proposedField: Field = {
     {
       name: 'proposedBy',
       label: 'Proposed By',
-      type: 'select',
-      enumName: 'enum_transaction_proposed_by',
+      type: 'relationship',
+      relationTo: ['individuals', 'hospitals', 'milkBanks'],
+      hasMany: false,
       required: true,
-      options: Object.values(TRANSACTION_PROPOSED_BY),
       admin: { readOnly: true },
     },
     {
-      type: 'row',
+      name: 'proposedAt',
+      label: 'Proposed At',
+      type: 'date',
+      required: true,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'agreements',
+      type: 'group',
+      admin: {
+        description: 'Tracks delivery proposal agreement status from both parties',
+      },
       fields: [
         {
-          name: 'senderAgreed',
-          type: 'checkbox',
-          label: 'Sender Agreed',
-          admin: {
-            readOnly: true,
-            description: 'Indicates if the sender has agreed to this proposed delivery',
-            width: '25%',
-          },
+          name: 'sender',
+          type: 'group',
+          fields: [
+            {
+              name: 'agreed',
+              type: 'checkbox',
+              label: 'Sender Agreed',
+              defaultValue: false,
+              admin: { readOnly: true },
+            },
+            {
+              name: 'agreedBy',
+              type: 'relationship',
+              relationTo: ['individuals', 'hospitals', 'milkBanks'],
+              hasMany: false,
+              admin: {
+                condition: (_, siblingData) => siblingData?.agreed === true,
+                readOnly: true,
+              },
+            },
+            {
+              name: 'agreedAt',
+              type: 'date',
+              admin: {
+                condition: (_, siblingData) => siblingData?.agreed === true,
+                readOnly: true,
+              },
+            },
+          ],
         },
         {
-          name: 'recipientAgreed',
+          name: 'recipient',
+          type: 'group',
+          fields: [
+            {
+              name: 'agreed',
+              type: 'checkbox',
+              label: 'Recipient Agreed',
+              defaultValue: false,
+              admin: { readOnly: true },
+            },
+            {
+              name: 'agreedBy',
+              type: 'relationship',
+              relationTo: ['individuals', 'hospitals', 'milkBanks'],
+              hasMany: false,
+              admin: {
+                condition: (_, siblingData) => siblingData?.agreed === true,
+                readOnly: true,
+              },
+            },
+            {
+              name: 'agreedAt',
+              type: 'date',
+              admin: {
+                condition: (_, siblingData) => siblingData?.agreed === true,
+                readOnly: true,
+              },
+            },
+          ],
+        },
+        {
+          name: 'bothAgreed',
           type: 'checkbox',
-          label: 'Recipient Agreed',
           admin: {
             readOnly: true,
-            description: 'Indicates if the recipient has agreed to this proposed delivery',
-            width: '25%',
+            description: 'Automatically checked when both sender and recipient have agreed',
+          },
+          hooks: {
+            beforeChange: [
+              ({ siblingData }) => {
+                return (
+                  siblingData?.sender?.agreed === true && siblingData?.recipient?.agreed === true
+                );
+              },
+            ],
           },
         },
       ],
@@ -88,7 +156,10 @@ export const confirmedField: Field = {
       name: 'datetime',
       label: 'Confirmed Date and Time',
       type: 'date',
-      required: true,
+      required: false,
+      admin: {
+        condition: (_, siblingData) => siblingData.mode === DELIVERY_OPTIONS.MEETUP.value,
+      },
     },
     {
       name: 'address',
@@ -96,6 +167,13 @@ export const confirmedField: Field = {
       type: 'relationship',
       relationTo: 'addresses',
       required: true,
+    },
+    {
+      name: 'confirmedAt',
+      label: 'Confirmed At',
+      type: 'date',
+      required: true,
+      admin: { readOnly: true },
     },
   ],
   admin: {

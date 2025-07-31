@@ -539,6 +539,9 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
     devDependencies:
+      '@lactalink/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

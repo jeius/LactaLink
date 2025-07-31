@@ -909,24 +909,73 @@ export interface Delivery {
   proposedDelivery?:
     | {
         mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-        datetime: string;
+        datetime?: string | null;
         address: string | Address;
-        proposedBy: 'DONOR' | 'REQUESTER';
+        proposedBy:
+          | {
+              relationTo: 'individuals';
+              value: string | Individual;
+            }
+          | {
+              relationTo: 'hospitals';
+              value: string | Hospital;
+            }
+          | {
+              relationTo: 'milkBanks';
+              value: string | MilkBank;
+            };
+        proposedAt: string;
         /**
-         * Indicates if the sender has agreed to this proposed delivery
+         * Tracks delivery proposal agreement status from both parties
          */
-        senderAgreed?: boolean | null;
-        /**
-         * Indicates if the recipient has agreed to this proposed delivery
-         */
-        recipientAgreed?: boolean | null;
+        agreements?: {
+          sender?: {
+            agreed?: boolean | null;
+            agreedBy?:
+              | ({
+                  relationTo: 'individuals';
+                  value: string | Individual;
+                } | null)
+              | ({
+                  relationTo: 'hospitals';
+                  value: string | Hospital;
+                } | null)
+              | ({
+                  relationTo: 'milkBanks';
+                  value: string | MilkBank;
+                } | null);
+            agreedAt?: string | null;
+          };
+          recipient?: {
+            agreed?: boolean | null;
+            agreedBy?:
+              | ({
+                  relationTo: 'individuals';
+                  value: string | Individual;
+                } | null)
+              | ({
+                  relationTo: 'hospitals';
+                  value: string | Hospital;
+                } | null)
+              | ({
+                  relationTo: 'milkBanks';
+                  value: string | MilkBank;
+                } | null);
+            agreedAt?: string | null;
+          };
+          /**
+           * Automatically checked when both sender and recipient have agreed
+           */
+          bothAgreed?: boolean | null;
+        };
         id?: string | null;
       }[]
     | null;
   confirmedDelivery?: {
     mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-    datetime: string;
+    datetime?: string | null;
     address: string | Address;
+    confirmedAt: string;
   };
   instructions?: string | null;
 }
@@ -2234,8 +2283,26 @@ export interface DeliverySelect<T extends boolean = true> {
         datetime?: T;
         address?: T;
         proposedBy?: T;
-        senderAgreed?: T;
-        recipientAgreed?: T;
+        proposedAt?: T;
+        agreements?:
+          | T
+          | {
+              sender?:
+                | T
+                | {
+                    agreed?: T;
+                    agreedBy?: T;
+                    agreedAt?: T;
+                  };
+              recipient?:
+                | T
+                | {
+                    agreed?: T;
+                    agreedBy?: T;
+                    agreedAt?: T;
+                  };
+              bothAgreed?: T;
+            };
         id?: T;
       };
   confirmedDelivery?:
@@ -2244,6 +2311,7 @@ export interface DeliverySelect<T extends boolean = true> {
         mode?: T;
         datetime?: T;
         address?: T;
+        confirmedAt?: T;
       };
   instructions?: T;
 }

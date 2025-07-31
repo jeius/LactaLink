@@ -7,6 +7,7 @@ import { confirmedField, proposedField } from './fields/deliveryFields';
 import { trackingField } from './fields/tracking';
 import { calculateVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
+import { processDeliveryAgreements } from './hooks/processDeliveryAgreements';
 import { updateTracking } from './hooks/updateTracking';
 
 export const Transactions: CollectionConfig<'transactions'> = {
@@ -25,7 +26,12 @@ export const Transactions: CollectionConfig<'transactions'> = {
   },
   hooks: {
     beforeRead: [calculateVolume],
-    beforeChange: [generateCreatedBy, generateTransactionNumber, updateTracking],
+    beforeChange: [
+      generateCreatedBy,
+      generateTransactionNumber,
+      processDeliveryAgreements,
+      updateTracking,
+    ],
   },
   fields: [
     {

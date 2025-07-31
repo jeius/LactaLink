@@ -20,6 +20,10 @@
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"
+    },
+    "./services": {
+      "types": "./dist/services/index.d.ts",
+      "default": "./dist/services/index.js"
     }
   },
   "scripts": {
@@ -38,6 +42,7 @@
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/enums": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
@@ -48,6 +53,8 @@
   },
   "peerDependencies": {
     "@supabase/supabase-js": "^2.49.4",
+    "@lactalink/enums": "workspace:*",
+    "@lactalink/utilities": "workspace:*",
     "zustand": "^5.0.5",
     "@types/react": "^19.0.14",
     "react": "19.0.0"

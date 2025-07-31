@@ -43,7 +43,7 @@ export type SearchParams<S extends CollectionSlug, P extends boolean> = {
   limit?: number;
   where?: Where;
   select?: Select<Collection<S>>;
-  sort?: keyof Collection<S>;
+  sort?: string;
   populate?: Populate;
   depth?: number;
   pagination?: P;
