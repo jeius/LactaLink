@@ -1,9 +1,12 @@
-import { Image } from '@lactalink/types';
+import { CollectionWithBlurHash } from '@lactalink/types';
 import { encode } from 'blurhash';
 import { CollectionBeforeChangeHook } from 'payload';
 import sharp from 'sharp';
 
-export const generateBlurHash: CollectionBeforeChangeHook<Image> = async ({ data, req }) => {
+export const generateBlurHash: CollectionBeforeChangeHook<CollectionWithBlurHash> = async ({
+  data,
+  req,
+}) => {
   // Only generate when there is no blurHash and operation is on create.
   if (data.blurHash) return data;
 

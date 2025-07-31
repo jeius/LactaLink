@@ -1,7 +1,11 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
-import { COLLECTION_GROUP, MILK_BAG_OWNERSHIP_TRANSFER_REASONS } from '@/lib/constants';
+import {
+  COLLECTION_GROUP,
+  MILK_BAG_OWNERSHIP_TRANSFER_REASONS,
+  MILK_BAG_STATUS,
+} from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
@@ -119,17 +123,12 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                   type: 'select',
                   required: true,
                   enumName: 'enum_milk_bag_status',
-                  defaultValue: 'AVAILABLE',
+                  defaultValue: MILK_BAG_STATUS.DRAFT,
                   admin: {
                     description: 'Current status of the milk bag',
                     width: '50%',
                   },
-                  options: [
-                    { label: 'Available', value: 'AVAILABLE' },
-                    { label: 'Allocated', value: 'ALLOCATED' },
-                    { label: 'Expired', value: 'EXPIRED' },
-                    { label: 'Discarded', value: 'DISCARDED' },
-                  ],
+                  options: Object.values(MILK_BAG_STATUS),
                 },
                 {
                   name: 'collectedAt',
@@ -149,6 +148,16 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                   },
                 },
               ],
+            },
+            {
+              name: 'bagImage',
+              label: 'Milk Bag Photo',
+              type: 'upload',
+              relationTo: 'milk-bag-images',
+              admin: {
+                description:
+                  'Upload a photo showing the milk bag with the code clearly visible. This can be added after initial creation.',
+              },
             },
           ],
         },

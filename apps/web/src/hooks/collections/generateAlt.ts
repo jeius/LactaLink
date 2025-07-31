@@ -1,7 +1,11 @@
-import { Image } from '@lactalink/types';
+import { Image, MilkBagImage } from '@lactalink/types';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const generateAlt: CollectionBeforeChangeHook<Image> = ({ data, req, operation }) => {
+export const generateAlt: CollectionBeforeChangeHook<Image | MilkBagImage> = ({
+  data,
+  req,
+  operation,
+}) => {
   // Only generate when there is no alt and operation is on create.
   if (data.alt || operation !== 'create') return data;
 

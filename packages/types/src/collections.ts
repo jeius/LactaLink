@@ -26,6 +26,13 @@ export type CollectionWithAvatar = Extract<
   }
 >;
 
+export type CollectionWithBlurHash = Extract<
+  Collection,
+  {
+    blurHash?: string | null;
+  }
+>;
+
 export type CollectionWithCreatedBy = Extract<
   Collection,
   {

@@ -7,6 +7,7 @@ import { Hospitals } from './Hospitals';
 import { Images } from './Images';
 import { Individuals } from './Individuals';
 import { Inventory } from './Inventory';
+import { MilkBagImages } from './MilkBagImages';
 import { MilkBags } from './MilkBags';
 import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
@@ -32,6 +33,7 @@ const Collections: CollectionConfig[] = [
   Inventory,
   IslandGroups,
   MilkBags,
+  MilkBagImages,
   MilkBanks,
   NotificationCategories,
   NotificationChannels,
@@ -56,6 +58,7 @@ export {
   Individuals,
   Inventory,
   IslandGroups,
+  MilkBagImages,
   MilkBags,
   MilkBanks,
   NotificationCategories,
