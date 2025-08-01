@@ -1,5 +1,13 @@
-import { Collection, IApiClient } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import {
+  Collection,
+  DeliveryPreference,
+  Donation,
+  FetchGetResult,
+  IApiClient,
+  Where,
+} from '@lactalink/types';
+import { extractCollection, extractID, getDistance } from '@lactalink/utilities';
 import { DeliveryMode, TransactionService } from '../TransactionService';
 import {
   DonationMatchCriteria,
@@ -7,10 +15,13 @@ import {
   MatchResult,
   O2PMatchOptions,
   O2PMatchResult,
+  Options,
   P2OMatchOptions,
   P2OMatchResult,
   RequestMatchCriteria,
 } from './types';
+
+const STATUS = DONATION_REQUEST_STATUS;
 
 /**
  * Service for matching donations to requests and managing their lifecycle.
@@ -36,61 +47,74 @@ export class MatchingService {
    */
   async findMatchingDonations(
     requestId: string,
-    criteria: DonationMatchCriteria = {}
-  ): Promise<Collection<'donations'>[]> {
+    criteria: DonationMatchCriteria = { storageType: 'EITHER' },
+    fetchOptions?: Options<'donations'>
+  ): Promise<FetchGetResult<Donation>> {
     // Get the request details
-    const request = await this.apiClient.findByID<'requests'>({
+    const request = await this.apiClient.findByID({
       collection: 'requests',
       id: requestId,
+      populate: {
+        'delivery-preferences': { availableDays: true, address: true, preferredMode: true },
+        addresses: { coordinates: true },
+      },
     });
 
     // Build query conditions
-    const whereConditions: any = {
-      status: { equals: 'AVAILABLE' },
-    };
+    const whereConditions: Where[] = [{ status: { equals: STATUS.AVAILABLE.value } }];
 
     // Filter by minimum volume if needed
-    if (criteria.minVolume || request.remainingNeeded) {
-      whereConditions.remainingVolume = {
-        greater_than: criteria.minVolume || request.remainingNeeded || 0,
-      };
+    const minVolume = criteria.minVolume || request.remainingNeeded;
+    if (minVolume) {
+      whereConditions.push({
+        remainingVolume: {
+          greater_than_equal: minVolume,
+        },
+      });
     }
 
     // Filter by storage type
-    if (criteria.storageType && criteria.storageType !== 'EITHER') {
-      whereConditions['details.storageType'] = { equals: criteria.storageType };
-    } else if (
-      request.details?.storagePreference &&
-      request.details.storagePreference !== 'EITHER'
-    ) {
-      whereConditions['details.storageType'] = { equals: request.details.storagePreference };
+    const storageType = criteria.storageType || request.details?.storagePreference;
+    if (storageType && storageType !== 'EITHER') {
+      whereConditions.push({
+        'details.storageType': { equals: storageType },
+      });
     }
 
     // Exclude specific donations
     if (criteria.excludeDonationIds?.length) {
-      whereConditions.id = { not_in: criteria.excludeDonationIds };
+      whereConditions.push({
+        id: { not_in: criteria.excludeDonationIds },
+      });
     }
 
     // Filter by donor
     if (criteria.donorId) {
-      whereConditions.donor = { equals: criteria.donorId };
+      whereConditions.push({
+        donor: { equals: criteria.donorId },
+      });
     }
 
     // Exclude specific donors
     if (criteria.excludeDonorIds?.length) {
-      if (!whereConditions.donor) whereConditions.donor = {};
-      whereConditions.donor.not_in = criteria.excludeDonorIds;
+      whereConditions.push({
+        donor: { not_in: criteria.excludeDonorIds },
+      });
     }
 
     // Find matching donations
-    const result = await this.apiClient.find<'donations'>({
+    const { docs, totalDocs, ...result } = await this.apiClient.find({
+      ...fetchOptions,
       collection: 'donations',
-      where: whereConditions,
-      sort: 'expiredAt', // Sort by expiry date (oldest first) to use older milk first
-      limit: 50,
+      where: { and: whereConditions },
+      sort: fetchOptions?.sort || 'createdAt', // Sort by created date (oldest first) to use older milk first
+      limit: fetchOptions?.limit || 20,
+      pagination: true,
     });
 
-    return result as Collection<'donations'>[];
+    const requestPreferences = extractCollection(request.deliveryPreferences || []);
+
+    return { ...result };
   }
 
   /**
@@ -592,11 +616,10 @@ export class MatchingService {
    */
   async getRecommendedDonationsForRequest(
     requestId: string,
-    limit: number = 5
-  ): Promise<Collection<'donations'>[]> {
-    return this.findMatchingDonations(requestId, {
-      prioritizeUrgent: true,
-    }).then((donations) => donations.slice(0, limit));
+    maxDistance?: number,
+    fetchOptions: Options<'donations'> = {}
+  ): Promise<FetchGetResult<Collection<'donations'>>> {
+    return this.findMatchingDonations(requestId, { maxDistance }, fetchOptions);
   }
 
   /**
@@ -613,6 +636,31 @@ export class MatchingService {
       prioritizeUrgent: true,
     }).then((requests) => requests.slice(0, limit));
   }
-}
 
-export * from './types';
+  //#region Helper Methods
+  private isMatch(
+    donationDP: DeliveryPreference,
+    requestDP: DeliveryPreference,
+    maxDistance?: number
+  ): boolean {
+    // Check if two delivery preferences match
+    const { preferredMode: donationMode, availableDays } = donationDP;
+    const { preferredMode: requestMode, availableDays: requestDays } = requestDP;
+
+    const donationAdd = extractCollection(donationDP.address);
+    const requestAdd = extractCollection(requestDP.address);
+
+    const matches: boolean[] = [];
+
+    if (donationAdd?.coordinates && requestAdd?.coordinates && maxDistance) {
+      const distance = getDistance(donationAdd.coordinates, requestAdd.coordinates);
+      matches.push(distance <= maxDistance);
+    }
+
+    matches.push(requestMode.some((mode) => donationMode.includes(mode)));
+    matches.push(availableDays.some((day) => requestDays.includes(day)));
+
+    return matches.every(Boolean);
+  }
+  //#endregion
+}

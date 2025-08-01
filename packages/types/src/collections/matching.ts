@@ -1,4 +1,4 @@
-import { PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
+import { PREFERRED_STORAGE_TYPES, STORAGE_TYPES } from '@lactalink/enums';
 import {
   CollectionSlug,
   Donation,
@@ -25,7 +25,7 @@ export interface DonationMatchCriteria {
   /**
    * Storage type preference (FRESH, FROZEN, EITHER)
    */
-  storageType?: keyof typeof PREFERRED_STORAGE_TYPES;
+  storageType?: keyof typeof STORAGE_TYPES;
 
   /**
    * Maximum distance in meters
@@ -60,7 +60,7 @@ export interface RequestMatchCriteria {
   /**
    * Storage type of the donation (FRESH, FROZEN)
    */
-  storageType?: string;
+  storageType?: keyof typeof PREFERRED_STORAGE_TYPES;
 
   /**
    * Maximum distance in meters

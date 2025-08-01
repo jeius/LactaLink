@@ -38,8 +38,8 @@
       "default": "./dist/supabase-types.js"
     },
     "./collections": {
-      "types": "./dist/collections.d.ts",
-      "default": "./dist/collections.js"
+      "types": "./dist/collections/index.d.ts",
+      "default": "./dist/collections/index.js"
     }
   },
   "scripts": {

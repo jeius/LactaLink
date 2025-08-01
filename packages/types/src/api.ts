@@ -38,7 +38,7 @@ export type ApiFetchArgs<T extends CollectionSlug> = {
   body?: CollectionDataBySlug<T> | FormData | { value: unknown };
 } & BaseApiFetchArgs;
 
-export type SearchParams<S extends CollectionSlug, P extends boolean> = {
+export type SearchParams<S extends CollectionSlug = CollectionSlug, P extends boolean = boolean> = {
   page?: number;
   limit?: number;
   where?: Where;

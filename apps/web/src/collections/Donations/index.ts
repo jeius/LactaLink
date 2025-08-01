@@ -12,6 +12,7 @@ import {
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { donationsEndpoints } from './endpoints';
 import { filterMilkBagsOptions } from './filterOptions';
 import { createDonationNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
@@ -36,6 +37,7 @@ export const Donations: CollectionConfig<'donations'> = {
     beforeChange: [initializeStatus, generateCreatedBy, generateTitle],
     afterChange: [createDonationNotification, processDonationToOrganization],
   },
+  endpoints: donationsEndpoints,
   fields: [
     {
       name: 'title',

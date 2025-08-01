@@ -1,7 +1,9 @@
 import type { Where as WherePayload } from 'payload';
 import { DeepPartial } from 'react-hook-form';
-import { Avatar, Config, User } from './payload-types';
-import { FilterUnion } from './utils';
+import { Avatar, Config, User } from '../payload-types';
+import { FilterUnion } from '../utils';
+
+export * from './matching';
 
 export type Collections = Config['collections'][keyof Config['collections']];
 

@@ -40,6 +40,14 @@
     "./type-guards": {
       "types": "./dist/type-guards/index.d.ts",
       "default": "./dist/type-guards/index.js"
+    },
+    "./matching": {
+      "types": "./dist/matching/index.d.ts",
+      "default": "./dist/matching/index.js"
+    },
+    "./geo-utils": {
+      "types": "./dist/geo-utils/index.d.ts",
+      "default": "./dist/geo-utils/index.js"
     }
   },
   "scripts": {
