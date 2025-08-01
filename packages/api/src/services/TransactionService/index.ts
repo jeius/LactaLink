@@ -9,19 +9,20 @@ import {
   Transaction,
   User,
 } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
 import {
   CreateO2PTransactionParams,
   CreateP2OTransactionParams,
   CreateP2PTransactionParams,
   DeliveryDetailsParams,
-} from './types';
+  ITransactionService,
+} from '@lactalink/types/interfaces';
+import { extractID } from '@lactalink/utilities';
 
 /**
  * Service for managing transactions throughout their lifecycle.
  * Handles creation, status updates, delivery scheduling, and completion.
  */
-export class TransactionService {
+export class TransactionService implements ITransactionService {
   private apiClient: IApiClient;
 
   // #region Constructor
@@ -35,11 +36,6 @@ export class TransactionService {
   // #endregion
 
   // #region Transaction Creation Methods
-  /**
-   * Creates a new P2P (Peer to Peer) transaction between donor and requester.
-   * @param params - Transaction parameters
-   * @returns The created transaction
-   */
   async createP2PTransaction(params: CreateP2PTransactionParams): Promise<Transaction> {
     const { donationID, requestID, milkBagIDs, delivery, proposedDelivery } = params;
 
@@ -86,12 +82,6 @@ export class TransactionService {
     return transaction;
   }
 
-  /**
-   * Creates a new P2O (Peer to Organization) transaction.
-   * For donations directly to an organization with fixed DELIVERY mode.
-   * @param params - Transaction parameters
-   * @returns The created transaction
-   */
   async createP2OTransaction(params: CreateP2OTransactionParams): Promise<Transaction> {
     const { donationID, organization, milkBagIDs, addressID } = params;
 
@@ -130,12 +120,6 @@ export class TransactionService {
     return transaction;
   }
 
-  /**
-   * Creates a new O2P (Organization to Peer) transaction.
-   * For organization fulfilling a request with fixed PICKUP mode.
-   * @param params - Transaction parameters
-   * @returns The created transaction
-   */
   async createO2PTransaction(params: CreateO2PTransactionParams): Promise<Transaction> {
     const { organization, requestID, milkBagIDs, addressID } = params;
 
@@ -176,12 +160,6 @@ export class TransactionService {
   // #endregion
 
   // #region Delivery Agreement Methods
-  /**
-   * Proposes delivery option for a transaction, initiating the negotiation process.
-   * @param transactionId - ID of the transaction
-   * @param details - Delivery details
-   * @returns Updated transaction
-   */
   async proposeDeliveryOption(
     transactionId: string,
     details: DeliveryDetailsParams
@@ -243,13 +221,6 @@ export class TransactionService {
     });
   }
 
-  /**
-   * Accepts proposed delivery option and schedules the delivery.
-   * @param transactionID - ID of the transaction
-   * @param proposalID - ID of the accepted proposal
-   * @param acceptedBy - User profile accepting the proposal
-   * @returns Updated transaction
-   */
   async acceptDeliveryOption(
     transactionID: string,
     proposalID: string,
@@ -320,13 +291,6 @@ export class TransactionService {
   // #endregion
 
   // #region Delivery Execution Methods
-  /**
-   * Updates the transaction status to READY_FOR_PICKUP (donor confirms milk is ready).
-   * Only applicable for PICKUP mode transactions.
-   * @param transactionId - ID of the transaction
-   * @param markedBy - User marking the transaction as ready
-   * @returns Updated transaction
-   */
   async readyForPickup(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
@@ -366,13 +330,6 @@ export class TransactionService {
     });
   }
 
-  /**
-   * Updates the transaction status to IN_TRANSIT (donor starts delivery journey).
-   * Only applicable for DELIVERY mode transactions.
-   * @param transactionId - ID of the transaction
-   * @param markedBy - User marking the transaction as in transit
-   * @returns Updated transaction
-   */
   async startTransit(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
@@ -409,12 +366,6 @@ export class TransactionService {
     });
   }
 
-  /**
-   * Marks the transaction as DELIVERED (milk physically transferred).
-   * @param transactionId - ID of the transaction
-   * @param markedBy - User marking the transaction as delivered
-   * @returns Updated transaction
-   */
   async markDelivered(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
@@ -456,12 +407,6 @@ export class TransactionService {
   // #endregion
 
   // #region Transaction Completion Methods
-  /**
-   * Completes the transaction (recipient verifies receipt and quality).
-   * Only the recipient can complete a transaction.
-   * @param transactionId - ID of the transaction
-   * @returns Updated transaction
-   */
   async completeTransaction(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
@@ -504,13 +449,6 @@ export class TransactionService {
   // #endregion
 
   // #region Transaction Failure/Cancellation Methods
-  /**
-   * Marks a transaction as failed with a reason.
-   * @param transactionId - ID of the transaction
-   * @param reason - Reason for failure
-   * @param markedBy - User marking the transaction as failed
-   * @returns Updated transaction
-   */
   async failTransaction(
     transactionId: string,
     reason: string,
@@ -546,13 +484,6 @@ export class TransactionService {
     });
   }
 
-  /**
-   * Cancels a transaction with a reason.
-   * @param transactionId - ID of the transaction
-   * @param reason - Reason for cancellation
-   * @param markedBy - User marking the transaction as cancelled
-   * @returns Updated transaction
-   */
   async cancelTransaction(
     transactionId: string,
     reason: string,
@@ -590,11 +521,6 @@ export class TransactionService {
   // #endregion
 
   // #region Transaction Query Methods
-  /**
-   * Gets a transaction by ID.
-   * @param transactionId - ID of the transaction
-   * @returns The transaction
-   */
   async getTransaction(transactionId: string, depth: number = 3): Promise<Transaction> {
     return this.apiClient.findByID({
       collection: 'transactions',
@@ -603,11 +529,6 @@ export class TransactionService {
     });
   }
 
-  /**
-   * Gets all paginated transactions for a user (as donor or requester).
-   * @param profileID - ID of the user profile (Individual, Hospital, or Milk Bank)
-   * @returns List of transactions
-   */
   async getUserTransactions(profileID: string, options?: FindArgs<'transactions', true>) {
     const result = await this.apiClient.find({
       ...options,
