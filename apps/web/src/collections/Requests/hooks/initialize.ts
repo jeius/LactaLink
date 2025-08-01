@@ -9,8 +9,6 @@ export const initializeRequest: CollectionBeforeValidateHook<Request> = async ({
 }) => {
   if (operation !== 'create' || !data) return data;
 
-  data.status = data.recipient ? 'PENDING' : 'AVAILABLE';
-
   if (!data.details?.bags || !data.volumeNeeded) {
     data.volumeFulfilled = 0;
     return data;

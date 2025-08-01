@@ -123,7 +123,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                   type: 'select',
                   required: true,
                   enumName: 'enum_milk_bag_status',
-                  defaultValue: MILK_BAG_STATUS.DRAFT,
+                  defaultValue: MILK_BAG_STATUS.DRAFT.value,
                   admin: {
                     description: 'Current status of the milk bag',
                     width: '50%',

@@ -9,8 +9,6 @@ export const initializeDonation: CollectionBeforeValidateHook<Donation> = async 
 }) => {
   if (operation !== 'create' || !data) return data;
 
-  data.status = data.recipient ? 'PENDING' : 'AVAILABLE';
-
   if (!data.details?.bags) {
     data.volume = 0;
     data.remainingVolume = 0;

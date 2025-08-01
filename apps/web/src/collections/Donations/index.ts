@@ -3,6 +3,7 @@ import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { initializeStatus } from '@/hooks/collections/initializeStatus';
 import {
   COLLECTION_GROUP,
   COLLECTION_MODES,
@@ -31,7 +32,8 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeChange: [initializeDonation, generateCreatedBy, generateTitle],
+    beforeValidate: [initializeDonation],
+    beforeChange: [initializeStatus, generateCreatedBy, generateTitle],
     afterChange: [createDonationNotification, processDonationToOrganization],
   },
   fields: [
