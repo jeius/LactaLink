@@ -46,6 +46,33 @@ export type MilkBagOwnershipHistory =
     }[]
   | null;
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProposedDelivery".
+ */
+export type ProposedDelivery =
+  | {
+      mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+      datetime?: string | null;
+      address: string | Address;
+      proposedBy:
+        | {
+            relationTo: 'individuals';
+            value: string | Individual;
+          }
+        | {
+            relationTo: 'hospitals';
+            value: string | Hospital;
+          }
+        | {
+            relationTo: 'milkBanks';
+            value: string | MilkBank;
+          };
+      proposedAt: string;
+      agreements?: DeliveryAgreements;
+      id?: string | null;
+    }[]
+  | null;
+/**
  * Delivery status for each notification channel (email, SMS, in-app, etc.). Tracks attempts, failures, and success.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -841,32 +868,32 @@ export interface Transaction {
   createdBy?: (string | null) | User;
   donation?: (string | null) | Donation;
   request?: (string | null) | Request;
-  sender?:
-    | ({
+  sender:
+    | {
         relationTo: 'individuals';
         value: string | Individual;
-      } | null)
-    | ({
+      }
+    | {
         relationTo: 'hospitals';
         value: string | Hospital;
-      } | null)
-    | ({
+      }
+    | {
         relationTo: 'milkBanks';
         value: string | MilkBank;
-      } | null);
-  recipient?:
-    | ({
+      };
+  recipient:
+    | {
         relationTo: 'individuals';
         value: string | Individual;
-      } | null)
-    | ({
+      }
+    | {
         relationTo: 'hospitals';
         value: string | Hospital;
-      } | null)
-    | ({
+      }
+    | {
         relationTo: 'milkBanks';
         value: string | MilkBank;
-      } | null);
+      };
   status:
     | 'MATCHED'
     | 'PENDING_DELIVERY_CONFIRMATION'
@@ -882,13 +909,13 @@ export interface Transaction {
    */
   matchedVolume: number;
   /**
-   * Milk bags included in this transaction
-   */
-  matchedBags: (string | MilkBag)[];
-  /**
    * Type of transaction (determines delivery workflow)
    */
   transactionType: 'P2P' | 'P2O' | 'O2P';
+  /**
+   * Milk bags included in this transaction
+   */
+  matchedBags: (string | MilkBag)[];
   delivery?: Delivery;
   tracking?: {
     deliveredAt?: string | null;
@@ -932,78 +959,65 @@ export interface Transaction {
  * via the `definition` "Delivery".
  */
 export interface Delivery {
-  proposedDelivery?:
-    | {
-        mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-        datetime?: string | null;
-        address: string | Address;
-        proposedBy:
-          | {
-              relationTo: 'individuals';
-              value: string | Individual;
-            }
-          | {
-              relationTo: 'hospitals';
-              value: string | Hospital;
-            }
-          | {
-              relationTo: 'milkBanks';
-              value: string | MilkBank;
-            };
-        proposedAt: string;
-        /**
-         * Tracks delivery proposal agreement status from both parties
-         */
-        agreements?: {
-          sender?: {
-            agreed?: boolean | null;
-            agreedBy?:
-              | ({
-                  relationTo: 'individuals';
-                  value: string | Individual;
-                } | null)
-              | ({
-                  relationTo: 'hospitals';
-                  value: string | Hospital;
-                } | null)
-              | ({
-                  relationTo: 'milkBanks';
-                  value: string | MilkBank;
-                } | null);
-            agreedAt?: string | null;
-          };
-          recipient?: {
-            agreed?: boolean | null;
-            agreedBy?:
-              | ({
-                  relationTo: 'individuals';
-                  value: string | Individual;
-                } | null)
-              | ({
-                  relationTo: 'hospitals';
-                  value: string | Hospital;
-                } | null)
-              | ({
-                  relationTo: 'milkBanks';
-                  value: string | MilkBank;
-                } | null);
-            agreedAt?: string | null;
-          };
-          /**
-           * Automatically checked when both sender and recipient have agreed
-           */
-          bothAgreed?: boolean | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  confirmedDelivery?: {
-    mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-    datetime?: string | null;
-    address: string | Address;
-    confirmedAt: string;
-  };
+  proposedDelivery?: ProposedDelivery;
+  confirmedDelivery?: ConfirmedDelivery;
   instructions?: string | null;
+}
+/**
+ * Tracks delivery proposal agreement status from both parties
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DeliveryAgreements".
+ */
+export interface DeliveryAgreements {
+  sender?: {
+    agreed?: boolean | null;
+    agreedBy?:
+      | ({
+          relationTo: 'individuals';
+          value: string | Individual;
+        } | null)
+      | ({
+          relationTo: 'hospitals';
+          value: string | Hospital;
+        } | null)
+      | ({
+          relationTo: 'milkBanks';
+          value: string | MilkBank;
+        } | null);
+    agreedAt?: string | null;
+  };
+  recipient?: {
+    agreed?: boolean | null;
+    agreedBy?:
+      | ({
+          relationTo: 'individuals';
+          value: string | Individual;
+        } | null)
+      | ({
+          relationTo: 'hospitals';
+          value: string | Hospital;
+        } | null)
+      | ({
+          relationTo: 'milkBanks';
+          value: string | MilkBank;
+        } | null);
+    agreedAt?: string | null;
+  };
+  /**
+   * Automatically checked when both sender and recipient have agreed
+   */
+  bothAgreed?: boolean | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ConfirmedDelivery".
+ */
+export interface ConfirmedDelivery {
+  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  datetime?: string | null;
+  address: string | Address;
+  confirmedAt: string;
 }
 /**
  * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
@@ -2275,8 +2289,8 @@ export interface TransactionsSelect<T extends boolean = true> {
   recipient?: T;
   status?: T;
   matchedVolume?: T;
-  matchedBags?: T;
   transactionType?: T;
+  matchedBags?: T;
   delivery?: T | DeliverySelect<T>;
   tracking?:
     | T
@@ -2304,44 +2318,53 @@ export interface TransactionsSelect<T extends boolean = true> {
  * via the `definition` "Delivery_select".
  */
 export interface DeliverySelect<T extends boolean = true> {
-  proposedDelivery?:
-    | T
-    | {
-        mode?: T;
-        datetime?: T;
-        address?: T;
-        proposedBy?: T;
-        proposedAt?: T;
-        agreements?:
-          | T
-          | {
-              sender?:
-                | T
-                | {
-                    agreed?: T;
-                    agreedBy?: T;
-                    agreedAt?: T;
-                  };
-              recipient?:
-                | T
-                | {
-                    agreed?: T;
-                    agreedBy?: T;
-                    agreedAt?: T;
-                  };
-              bothAgreed?: T;
-            };
-        id?: T;
-      };
-  confirmedDelivery?:
-    | T
-    | {
-        mode?: T;
-        datetime?: T;
-        address?: T;
-        confirmedAt?: T;
-      };
+  proposedDelivery?: T | ProposedDeliverySelect<T>;
+  confirmedDelivery?: T | ConfirmedDeliverySelect<T>;
   instructions?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProposedDelivery_select".
+ */
+export interface ProposedDeliverySelect<T extends boolean = true> {
+  mode?: T;
+  datetime?: T;
+  address?: T;
+  proposedBy?: T;
+  proposedAt?: T;
+  agreements?: T | DeliveryAgreementsSelect<T>;
+  id?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DeliveryAgreements_select".
+ */
+export interface DeliveryAgreementsSelect<T extends boolean = true> {
+  sender?:
+    | T
+    | {
+        agreed?: T;
+        agreedBy?: T;
+        agreedAt?: T;
+      };
+  recipient?:
+    | T
+    | {
+        agreed?: T;
+        agreedBy?: T;
+        agreedAt?: T;
+      };
+  bothAgreed?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ConfirmedDelivery_select".
+ */
+export interface ConfirmedDeliverySelect<T extends boolean = true> {
+  mode?: T;
+  datetime?: T;
+  address?: T;
+  confirmedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

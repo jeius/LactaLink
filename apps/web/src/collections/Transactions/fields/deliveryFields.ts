@@ -4,6 +4,8 @@ import { Field } from 'payload';
 
 export const proposedField: Field = {
   name: 'proposedDelivery',
+  label: 'Proposed Delivery',
+  interfaceName: 'ProposedDelivery',
   labels: { singular: 'Proposed Delivery', plural: 'Proposed Deliveries' },
   type: 'array',
   admin: {
@@ -52,6 +54,7 @@ export const proposedField: Field = {
     },
     {
       name: 'agreements',
+      interfaceName: 'DeliveryAgreements',
       type: 'group',
       admin: {
         description: 'Tracks delivery proposal agreement status from both parties',
@@ -144,6 +147,7 @@ export const proposedField: Field = {
 export const confirmedField: Field = {
   name: 'confirmedDelivery',
   label: 'Confirmed Delivery',
+  interfaceName: 'ConfirmedDelivery',
   type: 'group',
   fields: [
     {

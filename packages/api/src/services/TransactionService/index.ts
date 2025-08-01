@@ -1,16 +1,20 @@
-import { DELIVERY_OPTIONS, TRANSACTION_STATUS } from '@lactalink/enums';
-import { Delivery, Donation, IApiClient, MilkBag, Request, Transaction } from '@lactalink/types';
+import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
+import {
+  DeliveryAgreements,
+  Donation,
+  FindArgs,
+  IApiClient,
+  MilkBag,
+  Request,
+  Transaction,
+  User,
+} from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import {
   CreateO2PTransactionParams,
   CreateP2OTransactionParams,
   CreateP2PTransactionParams,
-  DeliveryAgreementParams,
   DeliveryDetailsParams,
-  DeliveryMode,
-  PartyType,
-  TransactionStatus,
-  TransactionType,
 } from './types';
 
 /**
@@ -37,7 +41,7 @@ export class TransactionService {
    * @returns The created transaction
    */
   async createP2PTransaction(params: CreateP2PTransactionParams): Promise<Transaction> {
-    const { donationID, requestID, milkBagIDs, delivery } = params;
+    const { donationID, requestID, milkBagIDs, delivery, proposedDelivery } = params;
 
     const [donation, request] = await Promise.all([
       this.getDonation(donationID),
@@ -46,25 +50,17 @@ export class TransactionService {
 
     const status = delivery
       ? TRANSACTION_STATUS.DELIVERY_SCHEDULED.value
-      : TRANSACTION_STATUS.MATCHED.value;
+      : proposedDelivery
+        ? TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value
+        : TRANSACTION_STATUS.MATCHED.value;
 
     const volume = await this.getVolume(milkBagIDs);
-
-    let deliveryDetails: Delivery['confirmedDelivery'];
-    if (delivery) {
-      deliveryDetails = {
-        mode: delivery.mode,
-        datetime: delivery.datetime,
-        address: delivery.address,
-        confirmedAt: new Date().toISOString(),
-      };
-    }
 
     // Create the transaction
     const transaction = await this.apiClient.create({
       collection: 'transactions',
       data: {
-        transactionType: TransactionType.P2P,
+        transactionType: TRANSACTION_TYPE.P2P.value,
         status: status,
         donation: donationID,
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
@@ -74,7 +70,8 @@ export class TransactionService {
         matchedVolume: volume,
         delivery: {
           instructions: params.instructions,
-          confirmedDelivery: deliveryDetails,
+          confirmedDelivery: delivery,
+          proposedDelivery: proposedDelivery ? [proposedDelivery] : undefined,
         },
       },
     });
@@ -107,7 +104,7 @@ export class TransactionService {
     const transaction = await this.apiClient.create({
       collection: 'transactions',
       data: {
-        transactionType: TransactionType.P2O,
+        transactionType: TRANSACTION_TYPE.P2O.value,
         status: TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
         donation: donation.id,
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
@@ -151,8 +148,8 @@ export class TransactionService {
     const transaction = await this.apiClient.create<'transactions'>({
       collection: 'transactions',
       data: {
-        transactionType: TransactionType.O2P,
-        status: TransactionStatus.DELIVERY_SCHEDULED,
+        transactionType: TRANSACTION_TYPE.O2P.value,
+        status: TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
         request: requestID,
         sender: organization,
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
@@ -178,21 +175,22 @@ export class TransactionService {
   }
   // #endregion
 
-  // #region Delivery Proposal Methods
+  // #region Delivery Agreement Methods
   /**
-   * Proposes delivery details for a transaction, initiating the negotiation process.
+   * Proposes delivery option for a transaction, initiating the negotiation process.
    * @param transactionId - ID of the transaction
    * @param details - Delivery details
-   * @param proposedBy - Who proposed the details ('DONOR' or 'REQUESTER')
    * @returns Updated transaction
    */
-  async proposeDeliveryDetails(
+  async proposeDeliveryOption(
     transactionId: string,
     details: DeliveryDetailsParams
   ): Promise<Transaction> {
     const transaction = await this.apiClient.findByID({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, sender: true, recipient: true },
     });
 
     const matchedStatus = TRANSACTION_STATUS.MATCHED.value;
@@ -205,74 +203,116 @@ export class TransactionService {
       );
     }
 
+    const existingProposals = transaction.delivery?.proposedDelivery || [];
+    const proposal = details;
+
+    const proposedByID = extractID(proposal.proposedBy.value);
+    const agreements: DeliveryAgreements = {};
+
+    if (proposedByID === extractID(transaction.sender.value)) {
+      agreements.sender = {
+        agreed: true,
+        agreedBy: proposal.proposedBy,
+        agreedAt: new Date().toISOString(),
+      };
+    } else if (proposedByID === extractID(transaction.recipient.value)) {
+      agreements.recipient = {
+        agreed: true,
+        agreedBy: proposal.proposedBy,
+        agreedAt: new Date().toISOString(),
+      };
+    }
+
     // Update the transaction with proposed details
     return this.apiClient.updateByID<'transactions'>({
       collection: 'transactions',
       id: transactionId,
       data: {
         status: pendingDeliveryStatus,
-        delivery: {},
+        delivery: {
+          proposedDelivery: [
+            ...existingProposals,
+            {
+              ...proposal,
+              proposedAt: new Date().toISOString(),
+              agreements,
+            },
+          ],
+        },
       },
     });
   }
 
   /**
-   * Accepts proposed delivery details and schedules the delivery.
-   * @param transactionId - ID of the transaction
-   * @param timeSlotId - ID of the accepted time slot
-   * @param addressId - ID of the accepted address
+   * Accepts proposed delivery option and schedules the delivery.
+   * @param transactionID - ID of the transaction
+   * @param proposalID - ID of the accepted proposal
+   * @param acceptedBy - User profile accepting the proposal
    * @returns Updated transaction
    */
-  async acceptDeliveryDetails(
-    transactionId: string,
-    timeSlotId: string,
-    addressId: string
+  async acceptDeliveryOption(
+    transactionID: string,
+    proposalID: string,
+    acceptedBy: NonNullable<User['profile']>
   ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
+    const transaction = await this.apiClient.findByID({
       collection: 'transactions',
-      id: transactionId,
+      id: transactionID,
+      depth: 0,
+      select: { status: true, delivery: true, sender: true, recipient: true },
     });
 
     // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
-    if (transaction.status !== TransactionStatus.PENDING_DELIVERY_CONFIRMATION) {
+    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
       throw new Error(
         `Cannot accept delivery details for transaction in ${transaction.status} status`
       );
     }
 
-    // Find the selected time slot
-    const selectedTimeSlot = transaction.delivery.details_proposed_time_slots?.find(
-      (slot) => slot.id === timeSlotId
-    );
-    if (!selectedTimeSlot) {
-      throw new Error(`Time slot with ID ${timeSlotId} not found`);
-    }
+    const acceptedByID = extractID(acceptedBy.value);
+    const senderID = extractID(transaction.sender.value);
+    const recipientID = extractID(transaction.recipient.value);
+    const isSender = acceptedByID === senderID;
+    const isRecipient = acceptedByID === recipientID;
 
-    // Find the selected address
-    const selectedAddress = transaction.delivery.details_proposed_addresses?.find(
-      (addr) => addr.address_id === addressId
-    );
-    if (!selectedAddress) {
-      throw new Error(`Address with ID ${addressId} not found`);
-    }
+    const existingProposals = transaction.delivery?.proposedDelivery || [];
+
+    const newProposals = existingProposals.map((proposal) => {
+      if (proposal.id === proposalID) {
+        const updatedAgreements = proposal.agreements || {};
+        const senderAgreed = updatedAgreements.sender?.agreed;
+        const recipientAgreed = updatedAgreements.recipient?.agreed;
+
+        if (isSender && !senderAgreed) {
+          updatedAgreements.sender = {
+            agreed: true,
+            agreedBy: acceptedBy,
+            agreedAt: new Date().toISOString(),
+          };
+        } else if (isRecipient && !recipientAgreed) {
+          updatedAgreements.recipient = {
+            agreed: true,
+            agreedBy: acceptedBy,
+            agreedAt: new Date().toISOString(),
+          };
+        }
+        return {
+          ...proposal,
+          agreements: updatedAgreements,
+        };
+      }
+
+      return proposal;
+    });
 
     // Update the transaction with confirmed details
     return this.apiClient.updateByID<'transactions'>({
       collection: 'transactions',
-      id: transactionId,
+      id: transactionID,
       data: {
-        status: TransactionStatus.DELIVERY_SCHEDULED,
         delivery: {
           ...transaction.delivery,
-          status: 'SCHEDULED',
-          details_confirmed_time_slot_date: selectedTimeSlot.date,
-          details_confirmed_time_slot_time_slot_type: selectedTimeSlot.time_slot_type,
-          details_confirmed_time_slot_time_slot_preset_slot: selectedTimeSlot.time_slot_preset_slot,
-          details_confirmed_time_slot_time_slot_custom_time_start_time:
-            selectedTimeSlot.time_slot_custom_time_start_time,
-          details_confirmed_time_slot_time_slot_custom_time_end_time:
-            selectedTimeSlot.time_slot_custom_time_end_time,
-          details_confirmed_address_id: selectedAddress.address_id,
+          proposedDelivery: newProposals,
         },
       },
     });
@@ -284,45 +324,44 @@ export class TransactionService {
    * Updates the transaction status to READY_FOR_PICKUP (donor confirms milk is ready).
    * Only applicable for PICKUP mode transactions.
    * @param transactionId - ID of the transaction
+   * @param markedBy - User marking the transaction as ready
    * @returns Updated transaction
    */
-  async readyForPickup(transactionId: string): Promise<Transaction> {
+  async readyForPickup(
+    transactionId: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
     const transaction = await this.apiClient.findByID<'transactions'>({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Can only set as ready for pickup if in DELIVERY_SCHEDULED status and mode is PICKUP
-    if (transaction.status !== TransactionStatus.DELIVERY_SCHEDULED) {
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
       throw new Error(
         `Cannot mark as ready for pickup: transaction is in ${transaction.status} status`
       );
     }
 
-    if (transaction.delivery.mode !== DeliveryMode.PICKUP) {
-      throw new Error(
-        `Cannot mark as ready for pickup: transaction mode is ${transaction.delivery.mode}`
-      );
+    const deliveryMode = transaction.delivery?.confirmedDelivery?.mode;
+
+    if (deliveryMode !== DELIVERY_OPTIONS.PICKUP.value) {
+      throw new Error(`Cannot mark as ready for pickup: transaction mode is ${deliveryMode}`);
     }
 
+    const pickupStatus = TRANSACTION_STATUS.READY_FOR_PICKUP.value;
+
+    const updatedStatusHistory = this.updateStatusHistory(transaction, pickupStatus, markedBy);
+
     // Update transaction status
-    return this.apiClient.updateByID<'transactions'>({
+    return this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.READY_FOR_PICKUP,
-        delivery: {
-          ...transaction.delivery,
-          status: 'READY_FOR_PICKUP',
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'READY_FOR_PICKUP',
-              timestamp: new Date().toISOString(),
-              notes: 'Donor confirmed milk is ready for pickup',
-            },
-          ],
-        },
+        status: pickupStatus,
+        tracking: { statusHistory: updatedStatusHistory },
       },
     });
   }
@@ -331,41 +370,41 @@ export class TransactionService {
    * Updates the transaction status to IN_TRANSIT (donor starts delivery journey).
    * Only applicable for DELIVERY mode transactions.
    * @param transactionId - ID of the transaction
+   * @param markedBy - User marking the transaction as in transit
    * @returns Updated transaction
    */
-  async startTransit(transactionId: string): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
+  async startTransit(
+    transactionId: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
+    const transaction = await this.apiClient.findByID({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Can only start transit if in DELIVERY_SCHEDULED status and mode is DELIVERY
-    if (transaction.status !== TransactionStatus.DELIVERY_SCHEDULED) {
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
       throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
     }
 
-    if (transaction.delivery.mode !== DeliveryMode.DELIVERY) {
-      throw new Error(`Cannot start transit: transaction mode is ${transaction.delivery.mode}`);
+    const deliveryMode = transaction.delivery?.confirmedDelivery?.mode;
+    if (deliveryMode !== DELIVERY_OPTIONS.DELIVERY.value) {
+      throw new Error(`Cannot start transit: transaction mode is ${deliveryMode}`);
     }
 
+    const transitStatus = TRANSACTION_STATUS.IN_TRANSIT.value;
+
+    const updatedStatusHistory = this.updateStatusHistory(transaction, transitStatus, markedBy);
+
     // Update transaction status
-    return this.apiClient.updateByID<'transactions'>({
+    return this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.IN_TRANSIT,
-        delivery: {
-          ...transaction.delivery,
-          status: 'IN_TRANSIT',
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'IN_TRANSIT',
-              timestamp: new Date().toISOString(),
-              notes: 'Donor started delivery journey',
-            },
-          ],
-        },
+        status: transitStatus,
+        tracking: { statusHistory: updatedStatusHistory },
       },
     });
   }
@@ -373,43 +412,43 @@ export class TransactionService {
   /**
    * Marks the transaction as DELIVERED (milk physically transferred).
    * @param transactionId - ID of the transaction
+   * @param markedBy - User marking the transaction as delivered
    * @returns Updated transaction
    */
-  async markDelivered(transactionId: string): Promise<Transaction> {
+  async markDelivered(
+    transactionId: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
     const transaction = await this.apiClient.findByID<'transactions'>({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Can only mark as delivered from certain statuses
-    const validStatuses = [
-      TransactionStatus.DELIVERY_SCHEDULED,
-      TransactionStatus.READY_FOR_PICKUP,
-      TransactionStatus.IN_TRANSIT,
+    const validStatuses: (keyof typeof TRANSACTION_STATUS)[] = [
+      TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
+      TRANSACTION_STATUS.READY_FOR_PICKUP.value,
+      TRANSACTION_STATUS.IN_TRANSIT.value,
     ];
 
-    if (!validStatuses.includes(transaction.status as TransactionStatus)) {
+    if (!validStatuses.includes(transaction.status)) {
       throw new Error(`Cannot mark as delivered: transaction is in ${transaction.status} status`);
     }
 
+    const deliveredStatus = TRANSACTION_STATUS.DELIVERED.value;
+    const updateStatusHistory = this.updateStatusHistory(transaction, deliveredStatus, markedBy);
+
     // Update transaction status
-    return this.apiClient.updateByID<'transactions'>({
+    return this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.DELIVERED,
-        delivery: {
-          ...transaction.delivery,
-          status: 'DELIVERED',
-          tracking_delivered_at: new Date().toISOString(),
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'DELIVERED',
-              timestamp: new Date().toISOString(),
-              notes: 'Milk successfully delivered',
-            },
-          ],
+        status: deliveredStatus,
+        tracking: {
+          statusHistory: updateStatusHistory,
+          deliveredAt: new Date().toISOString(),
         },
       },
     });
@@ -423,35 +462,36 @@ export class TransactionService {
    * @param transactionId - ID of the transaction
    * @returns Updated transaction
    */
-  async completeTransaction(transactionId: string): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
+  async completeTransaction(
+    transactionId: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
+    const transaction = await this.apiClient.findByID({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Can only complete if in DELIVERED status
-    if (transaction.status !== TransactionStatus.DELIVERED) {
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERED.value) {
       throw new Error(
         `Cannot complete transaction: transaction is in ${transaction.status} status`
       );
     }
 
+    const completedStatus = TRANSACTION_STATUS.COMPLETED.value;
+    const updatesStatusHistory = this.updateStatusHistory(transaction, completedStatus, markedBy);
+
     // Mark the transaction as completed
-    const completedTransaction = await this.apiClient.updateByID<'transactions'>({
+    const completedTransaction = await this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.COMPLETED,
-        delivery: {
-          ...transaction.delivery,
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'COMPLETED',
-              timestamp: new Date().toISOString(),
-              notes: 'Transaction completed and verified by recipient',
-            },
-          ],
+        status: completedStatus,
+        tracking: {
+          statusHistory: updatesStatusHistory,
+          completedAt: new Date().toISOString(),
         },
       },
     });
@@ -468,37 +508,39 @@ export class TransactionService {
    * Marks a transaction as failed with a reason.
    * @param transactionId - ID of the transaction
    * @param reason - Reason for failure
+   * @param markedBy - User marking the transaction as failed
    * @returns Updated transaction
    */
-  async failTransaction(transactionId: string, reason: string): Promise<Transaction> {
+  async failTransaction(
+    transactionId: string,
+    reason: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
     const transaction = await this.apiClient.findByID<'transactions'>({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Cannot fail if already completed
-    if (transaction.status === TransactionStatus.COMPLETED) {
+    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
       throw new Error('Cannot fail a completed transaction');
     }
 
+    const failStatus = TRANSACTION_STATUS.FAILED.value;
+    const updatedStatusHistory = this.updateStatusHistory(transaction, failStatus, markedBy);
+
     // Mark the transaction as failed
-    return this.apiClient.updateByID<'transactions'>({
+    return this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.FAILED,
-        delivery: {
-          ...transaction.delivery,
-          status: 'FAILED',
-          tracking_failure_reason: reason,
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'FAILED',
-              timestamp: new Date().toISOString(),
-              notes: `Transaction failed: ${reason}`,
-            },
-          ],
+        status: failStatus,
+        tracking: {
+          statusHistory: updatedStatusHistory,
+          failedAt: new Date().toISOString(),
+          failureReason: reason,
         },
       },
     });
@@ -508,36 +550,39 @@ export class TransactionService {
    * Cancels a transaction with a reason.
    * @param transactionId - ID of the transaction
    * @param reason - Reason for cancellation
+   * @param markedBy - User marking the transaction as cancelled
    * @returns Updated transaction
    */
-  async cancelTransaction(transactionId: string, reason: string): Promise<Transaction> {
+  async cancelTransaction(
+    transactionId: string,
+    reason: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction> {
     const transaction = await this.apiClient.findByID<'transactions'>({
       collection: 'transactions',
       id: transactionId,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
     // Cannot cancel if already completed
-    if (transaction.status === TransactionStatus.COMPLETED) {
+    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
       throw new Error('Cannot cancel a completed transaction');
     }
 
+    const cancelStatus = TRANSACTION_STATUS.CANCELLED.value;
+    const updatedStatusHistory = this.updateStatusHistory(transaction, cancelStatus, markedBy);
+
     // Mark the transaction as cancelled
-    return this.apiClient.updateByID<'transactions'>({
+    return this.apiClient.updateByID({
       collection: 'transactions',
       id: transactionId,
       data: {
-        status: TransactionStatus.CANCELLED,
-        delivery: {
-          ...transaction.delivery,
-          status: 'CANCELLED',
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'CANCELLED',
-              timestamp: new Date().toISOString(),
-              notes: `Transaction cancelled: ${reason}`,
-            },
-          ],
+        status: cancelStatus,
+        tracking: {
+          statusHistory: updatedStatusHistory,
+          cancelledAt: new Date().toISOString(),
+          cancelReason: reason,
         },
       },
     });
@@ -550,16 +595,17 @@ export class TransactionService {
    * @param transactionId - ID of the transaction
    * @returns The transaction
    */
-  async getTransaction(transactionId: string): Promise<Transaction> {
+  async getTransaction(transactionId: string, depth: number = 3): Promise<Transaction> {
     return this.apiClient.findByID({
       collection: 'transactions',
       id: transactionId,
+      depth,
     });
   }
 
   /**
    * Gets all paginated transactions for a user (as donor or requester).
-   * @param profileID - ID of the user profile
+   * @param profileID - ID of the user profile (Individual, Hospital, or Milk Bank)
    * @returns List of transactions
    */
   async getUserTransactions(profileID: string, options?: FindArgs<'transactions', true>) {
@@ -571,8 +617,8 @@ export class TransactionService {
         and: [
           {
             or: [
-              { 'donation.donor': { equals: profileID } },
-              { 'request.requester': { equals: profileID } },
+              { 'sender.value': { equals: profileID } },
+              { 'recipient.value': { equals: profileID } },
             ],
           },
           options?.where || {},
@@ -603,9 +649,10 @@ export class TransactionService {
   }
 
   /**
+   * Retrieves a donation record by its unique identifier.
    *
-   * @param donationId  ID of the donation
-   * @returns The donation object
+   * @param donationId - The unique identifier of the donation to retrieve.
+   * @returns A promise that resolves to the donation object.
    */
   private async getDonation(donationId: string): Promise<Donation> {
     return this.apiClient.findByID({
@@ -616,9 +663,10 @@ export class TransactionService {
   }
 
   /**
+   * Retrieves a request by its unique identifier.
    *
-   * @param requestId  ID of the request
-   * @returns  The request object
+   * @param requestId - The unique identifier of the request to retrieve.
+   * @returns A promise that resolves to the requested `Request` object.
    */
   private async getRequest(requestId: string): Promise<Request> {
     return this.apiClient.findByID({
@@ -641,6 +689,46 @@ export class TransactionService {
         data: { status },
       });
     }
+  }
+
+  /**
+   * Updates the status history of a transaction by appending a new status entry.
+   *
+   * @param transaction - The transaction object whose status history is being updated.
+   * @param status - The new status to be added, represented as a key of the `TRANSACTION_STATUS` enum.
+   * @param markedBy - The user profile marking the status change, which must be non-nullable.
+   * @returns The updated status history array, containing all previous entries and the new status entry.
+   */
+  private updateStatusHistory(
+    transaction: Transaction,
+    status: keyof typeof TRANSACTION_STATUS,
+    markedBy: NonNullable<User['profile']>
+  ): NonNullable<Transaction['tracking']>['statusHistory'] {
+    const existingStatusHistory = transaction.tracking?.statusHistory || [];
+    let senderOrRecipient: string | undefined;
+
+    const markedByID = extractID(markedBy.value);
+    const senderID = extractID(transaction.sender.value);
+    const recipientID = extractID(transaction.recipient.value);
+
+    if (senderID === markedByID) {
+      senderOrRecipient = 'Sender';
+    } else if (recipientID === markedByID) {
+      senderOrRecipient = 'Recipient';
+    }
+
+    const statusLabel = TRANSACTION_STATUS[status].label.toLowerCase();
+
+    return [
+      ...existingStatusHistory,
+      {
+        status: status,
+        timestamp: new Date().toISOString(),
+        notes: senderOrRecipient
+          ? `${senderOrRecipient} marked as ${statusLabel}`
+          : `Marked as ${statusLabel}`,
+      },
+    ];
   }
 
   /**
@@ -677,19 +765,31 @@ export class TransactionService {
    * @param transaction - The completed transaction
    */
   private async finalizeTransaction(transaction: Transaction): Promise<void> {
+    const P2P = TRANSACTION_TYPE.P2P.value;
+    const P2O = TRANSACTION_TYPE.P2O.value;
+    const O2P = TRANSACTION_TYPE.O2P.value;
+
     // For P2P transactions, update donation and request statuses
-    if (transaction.transactionType === TransactionType.P2P) {
+    if (transaction.transactionType === P2P) {
+      if (!transaction.donation || !transaction.request) {
+        throw new Error('P2P transaction must have both donation and request');
+      }
+
       await this.updateDonationStatus(extractID(transaction.donation), 'COMPLETED');
       await this.updateRequestStatus(extractID(transaction.request), 'COMPLETED');
 
       // Update milk bags to CONSUMED
       for (const bagId of transaction.matchedBags || []) {
-        await this.updateMilkBagStatus([extractID(bagId)], 'ALLOCATED');
+        await this.updateMilkBagStatus([extractID(bagId)], 'CONSUMED');
       }
     }
 
     // For P2O transactions, update donation status and create inventory entry
-    else if (transaction.transactionType === TransactionType.P2O) {
+    else if (transaction.transactionType === P2O) {
+      if (!transaction.donation) {
+        throw new Error('P2O transaction must have a donation');
+      }
+
       await this.updateDonationStatus(extractID(transaction.donation), 'COMPLETED');
 
       // The inventory creation will be handled by the processDonationToOrganization hook
@@ -697,275 +797,16 @@ export class TransactionService {
     }
 
     // For O2P transactions, update request status
-    else if (transaction.transactionType === TransactionType.O2P) {
+    else if (transaction.transactionType === O2P) {
+      if (!transaction.request) {
+        throw new Error('O2P transaction must have a request');
+      }
+
       await this.updateRequestStatus(extractID(transaction.request), 'COMPLETED');
 
       // Update milk bags to CONSUMED
       for (const bagId of transaction.matchedBags || []) {
-        await this.updateMilkBagStatus([extractID(bagId)], 'ALLOCATED');
-      }
-    }
-  }
-  // #endregion
-
-  // #region Delivery Agreement Methods
-  /**
-   * Registers agreement to a delivery proposal from one party.
-   * @param transactionId - ID of the transaction
-   * @param proposalIndex - Index of the delivery proposal in the array
-   * @param partyType - Which party is agreeing (SENDER or RECIPIENT)
-   * @param userId - ID of the user who is agreeing
-   * @returns Updated transaction
-   */
-  async agreeToDeliveryProposal(
-    transactionId: string,
-    proposalIndex: number,
-    partyType: PartyType,
-    userId: string
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-    });
-
-    // Can only agree to delivery proposals in PENDING_DELIVERY_CONFIRMATION status
-    if (transaction.status !== TransactionStatus.PENDING_DELIVERY_CONFIRMATION) {
-      throw new Error(
-        `Cannot agree to delivery proposal: transaction is in ${transaction.status} status`
-      );
-    }
-
-    // Ensure the proposal exists
-    if (
-      !transaction.delivery.proposedDelivery ||
-      !transaction.delivery.proposedDelivery[proposalIndex]
-    ) {
-      throw new Error(`Delivery proposal at index ${proposalIndex} not found`);
-    }
-
-    // Verify user is allowed to agree for this party
-    await this.verifyUserCanActAsParty(transaction, partyType, userId);
-
-    // Get the current proposal and determine which party field to update
-    const partyField = partyType === 'SENDER' ? 'sender' : 'recipient';
-
-    // Update the agreement data for this party
-    const updatedProposals = [...(transaction.delivery.proposedDelivery || [])];
-    updatedProposals[proposalIndex] = {
-      ...updatedProposals[proposalIndex],
-      agreements: {
-        ...(updatedProposals[proposalIndex].agreements || {}),
-        [partyField]: {
-          agreed: true,
-          agreedBy: userId,
-          agreedAt: new Date().toISOString(),
-        },
-      },
-    };
-
-    // Check if both parties have agreed
-    const senderAgreed = updatedProposals[proposalIndex]?.agreements?.sender?.agreed === true;
-    const recipientAgreed = updatedProposals[proposalIndex]?.agreements?.recipient?.agreed === true;
-    const bothPartiesAgreed = senderAgreed && recipientAgreed;
-
-    // Update the bothPartiesAgreed flag
-    if (bothPartiesAgreed) {
-      updatedProposals[proposalIndex] = {
-        ...updatedProposals[proposalIndex],
-        agreements: {
-          ...updatedProposals[proposalIndex].agreements,
-          bothPartiesAgreed: true,
-        },
-      };
-
-      // If both parties agreed, automatically proceed with this delivery proposal
-      return this.acceptDeliveryProposal(transactionId, proposalIndex);
-    }
-
-    // Update the transaction with the new proposal data
-    return this.apiClient.updateByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        delivery: {
-          ...transaction.delivery,
-          proposedDelivery: updatedProposals,
-        },
-      },
-    });
-  }
-
-  /**
-   * Accepts a specific delivery proposal and updates transaction status.
-   * This is called automatically when both parties agree, or can be called
-   * by an admin to force selection of a proposal.
-   * @param transactionId - ID of the transaction
-   * @param proposalIndex - Index of the delivery proposal in the array
-   * @returns Updated transaction
-   */
-  async acceptDeliveryProposal(transactionId: string, proposalIndex: number): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-    });
-
-    // Ensure the transaction is in the correct status
-    if (transaction.status !== TransactionStatus.PENDING_DELIVERY_CONFIRMATION) {
-      throw new Error(
-        `Cannot accept delivery proposal: transaction is in ${transaction.status} status`
-      );
-    }
-
-    // Ensure the proposal exists
-    if (
-      !transaction.delivery.proposedDelivery ||
-      !transaction.delivery.proposedDelivery[proposalIndex]
-    ) {
-      throw new Error(`Delivery proposal at index ${proposalIndex} not found`);
-    }
-
-    // Get the selected proposal
-    const selectedProposal = transaction.delivery.proposedDelivery[proposalIndex];
-
-    // Update the transaction with confirmed details
-    return this.apiClient.updateByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: TransactionStatus.DELIVERY_SCHEDULED,
-        delivery: {
-          ...transaction.delivery,
-          status: 'SCHEDULED',
-          confirmedDelivery: {
-            mode: selectedProposal.mode,
-            datetime: selectedProposal.datetime,
-            address: selectedProposal.address,
-            confirmedAt: new Date().toISOString(),
-          },
-          tracking_tracking_history: [
-            ...(transaction.delivery.tracking_tracking_history || []),
-            {
-              status: 'DELIVERY_SCHEDULED',
-              timestamp: new Date().toISOString(),
-              notes: `Delivery scheduled with ${selectedProposal.mode} mode`,
-            },
-          ],
-        },
-      },
-    });
-  }
-
-  /**
-   * Proposes a new delivery option for a transaction.
-   * @param transactionId - ID of the transaction
-   * @param params - Delivery details parameters
-   * @returns Updated transaction
-   */
-  async proposeDeliveryOption(
-    transactionId: string,
-    params: DeliveryAgreementParams
-  ): Promise<Transaction> {
-    const { mode, address, datetime, userId, partyType } = params;
-
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-    });
-
-    // Verify transaction status
-    const validStatuses = [
-      TransactionStatus.MATCHED,
-      TransactionStatus.PENDING_DELIVERY_CONFIRMATION,
-    ];
-
-    if (!validStatuses.includes(transaction.status as TransactionStatus)) {
-      throw new Error(`Cannot propose delivery: transaction is in ${transaction.status} status`);
-    }
-
-    // Verify user is allowed to propose for this party
-    await this.verifyUserCanActAsParty(transaction, partyType, userId);
-
-    // Prepare the proposal data
-    const proposalData = {
-      mode,
-      address,
-      datetime,
-      proposedBy: userId,
-      proposedAt: new Date().toISOString(),
-      agreements: {
-        // Automatically mark the proposing party as agreed
-        [partyType === 'SENDER' ? 'sender' : 'recipient']: {
-          agreed: true,
-          agreedBy: userId,
-          agreedAt: new Date().toISOString(),
-        },
-      },
-    };
-
-    // Add the proposal to existing proposals or create a new array
-    const proposedDelivery = [...(transaction.delivery.proposedDelivery || []), proposalData];
-
-    // Update the transaction
-    return this.apiClient.updateByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: TransactionStatus.PENDING_DELIVERY_CONFIRMATION,
-        delivery: {
-          ...transaction.delivery,
-          status: 'PENDING_CONFIRMATION',
-          proposedDelivery,
-        },
-      },
-    });
-  }
-
-  /**
-   * Verifies that a user is authorized to act on behalf of a party in a transaction.
-   * @param transaction - The transaction
-   * @param partyType - SENDER or RECIPIENT
-   * @param userId - ID of the user
-   */
-  private async verifyUserCanActAsParty(
-    transaction: Transaction,
-    partyType: PartyType,
-    userId: string
-  ): Promise<void> {
-    if (partyType === 'SENDER') {
-      // For P2P and P2O, the sender is the donor
-      if (transaction.donation) {
-        const donation = await this.apiClient.findByID<'donations'>({
-          collection: 'donations',
-          id: extractID(transaction.donation),
-          depth: 1,
-        });
-
-        if (extractID(donation.donor) !== userId) {
-          throw new Error('User is not authorized to act as the sender in this transaction');
-        }
-      }
-      // For O2P, the sender is the organization
-      else if (transaction.organization) {
-        // Would need to check if user belongs to organization, but this is a simplified check
-        throw new Error('Organization authorization not implemented');
-      }
-    } else {
-      // For P2P and O2P, the recipient is the requester
-      if (transaction.request) {
-        const request = await this.apiClient.findByID<'requests'>({
-          collection: 'requests',
-          id: extractID(transaction.request),
-          depth: 1,
-        });
-
-        if (extractID(request.requester) !== userId) {
-          throw new Error('User is not authorized to act as the recipient in this transaction');
-        }
-      }
-      // For P2O, the recipient is the organization
-      else if (transaction.organization) {
-        // Would need to check if user belongs to organization, but this is a simplified check
-        throw new Error('Organization authorization not implemented');
+        await this.updateMilkBagStatus([extractID(bagId)], 'CONSUMED');
       }
     }
   }
