@@ -17,6 +17,7 @@ export const proposedField: Field = {
     {
       name: 'mode',
       type: 'radio',
+      enumName: 'enum_deliveries_mode',
       required: true,
       options: Object.values(DELIVERY_OPTIONS),
     },

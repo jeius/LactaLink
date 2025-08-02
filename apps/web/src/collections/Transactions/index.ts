@@ -88,6 +88,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'status',
           label: 'Transaction Status',
           type: 'select',
+          enumName: 'enum_transaction_status',
           required: true,
           defaultValue: TRANSACTION_STATUS.MATCHED.value,
           options: Object.values(TRANSACTION_STATUS),
@@ -111,6 +112,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
         {
           name: 'transactionType',
           type: 'select',
+          enumName: 'enum_transaction_type',
           required: true,
           defaultValue: TRANSACTION_TYPE.P2P.value,
           options: Object.values(TRANSACTION_TYPE),

@@ -69,6 +69,7 @@ export const trackingField: Field = {
         {
           name: 'status',
           type: 'select',
+          enumName: 'enum_transaction_status',
           options: Object.values(TRANSACTION_STATUS),
           required: true,
           admin: {

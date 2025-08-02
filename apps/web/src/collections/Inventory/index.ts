@@ -129,9 +129,11 @@ export const Inventory: CollectionConfig<'inventory'> = {
         },
         {
           name: 'allocationId',
+          label: 'Allocation ID',
           type: 'text',
           admin: {
-            description: 'Unique identifier for grouping allocations that fulfill the same request',
+            description:
+              'Unique identifier for grouping allocations that fulfill the same request. (Auto generated)',
             readOnly: true,
           },
         },
