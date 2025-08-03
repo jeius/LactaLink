@@ -5,7 +5,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "react": ["./node_modules/@types/react"],
-      "@payload-config": ["./src/payload.config.ts"]
+      "@payload-config": ["./src/payload.config.ts"],
+      "@db/*": ["./src/lib/db/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.mjs"]

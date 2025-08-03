@@ -84,6 +84,7 @@ export const enum_milk_bag_transfer_reason = pgEnum('enum_milk_bag_transfer_reas
   'DONATION_COMPLETED',
   'REDISTRIBUTION',
   'RETURN',
+  'N/A',
 ]);
 export const enum_milk_bag_status = pgEnum('enum_milk_bag_status', [
   'DRAFT',
@@ -146,25 +147,7 @@ export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
   'HOSPITAL',
   'MILK_BANK',
 ]);
-export const enum_transactions_delivery_proposed_delivery_mode = pgEnum(
-  'enum_transactions_delivery_proposed_delivery_mode',
-  ['PICKUP', 'DELIVERY', 'MEETUP']
-);
-export const enum_transactions_tracking_status_history_status = pgEnum(
-  'enum_transactions_tracking_status_history_status',
-  [
-    'MATCHED',
-    'PENDING_DELIVERY_CONFIRMATION',
-    'DELIVERY_SCHEDULED',
-    'IN_TRANSIT',
-    'READY_FOR_PICKUP',
-    'DELIVERED',
-    'COMPLETED',
-    'FAILED',
-    'CANCELLED',
-  ]
-);
-export const enum_transactions_status = pgEnum('enum_transactions_status', [
+export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'MATCHED',
   'PENDING_DELIVERY_CONFIRMATION',
   'DELIVERY_SCHEDULED',
@@ -175,15 +158,7 @@ export const enum_transactions_status = pgEnum('enum_transactions_status', [
   'FAILED',
   'CANCELLED',
 ]);
-export const enum_transactions_transaction_type = pgEnum('enum_transactions_transaction_type', [
-  'P2P',
-  'P2O',
-  'O2P',
-]);
-export const enum_transactions_delivery_confirmed_delivery_mode = pgEnum(
-  'enum_transactions_delivery_confirmed_delivery_mode',
-  ['PICKUP', 'DELIVERY', 'MEETUP']
-);
+export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
 
 export const addresses = pgTable(
   'addresses',
@@ -831,7 +806,7 @@ export const milk_bags_ownership_history = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    transferReason: enum_milk_bag_transfer_reason('transfer_reason').notNull(),
+    transferReason: enum_milk_bag_transfer_reason('transfer_reason').notNull().default('N/A'),
     transferredAt: timestamp('transferred_at', {
       mode: 'string',
       withTimezone: true,
@@ -858,7 +833,6 @@ export const milk_bags = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
-    transferReason: enum_milk_bag_transfer_reason('transfer_reason').notNull(),
     donor: uuid('donor_id')
       .notNull()
       .references(() => individuals.id, {
@@ -1602,7 +1576,7 @@ export const transactions_delivery_proposed_delivery = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    mode: enum_transactions_delivery_proposed_delivery_mode('mode'),
+    mode: enum_delivery_modes('mode'),
     datetime: timestamp('datetime', { mode: 'string', withTimezone: true, precision: 3 }),
     address: uuid('address_id').references(() => addresses.id, {
       onDelete: 'set null',
@@ -1644,7 +1618,7 @@ export const transactions_tracking_status_history = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    status: enum_transactions_tracking_status_history_status('status').notNull(),
+    status: enum_transaction_status('status').notNull(),
     timestamp: timestamp('timestamp', {
       mode: 'string',
       withTimezone: true,
@@ -1677,13 +1651,9 @@ export const transactions = pgTable(
     request: uuid('request_id').references(() => requests.id, {
       onDelete: 'set null',
     }),
-    status: enum_transactions_status('status').notNull().default('MATCHED'),
-    transactionType: enum_transactions_transaction_type('transaction_type')
-      .notNull()
-      .default('P2P'),
-    delivery_confirmedDelivery_mode: enum_transactions_delivery_confirmed_delivery_mode(
-      'delivery_confirmed_delivery_mode'
-    ),
+    status: enum_transaction_status('status').notNull().default('MATCHED'),
+    transactionType: enum_transaction_type('transaction_type').notNull().default('P2P'),
+    delivery_confirmedDelivery_mode: enum_delivery_modes('delivery_confirmed_delivery_mode'),
     delivery_confirmedDelivery_datetime: timestamp('delivery_confirmed_delivery_datetime', {
       mode: 'string',
       withTimezone: true,
@@ -2936,11 +2906,8 @@ type DatabaseSchema = {
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
-  enum_transactions_delivery_proposed_delivery_mode: typeof enum_transactions_delivery_proposed_delivery_mode;
-  enum_transactions_tracking_status_history_status: typeof enum_transactions_tracking_status_history_status;
-  enum_transactions_status: typeof enum_transactions_status;
-  enum_transactions_transaction_type: typeof enum_transactions_transaction_type;
-  enum_transactions_delivery_confirmed_delivery_mode: typeof enum_transactions_delivery_confirmed_delivery_mode;
+  enum_transaction_status: typeof enum_transaction_status;
+  enum_transaction_type: typeof enum_transaction_type;
   addresses: typeof addresses;
   avatars: typeof avatars;
   barangays: typeof barangays;

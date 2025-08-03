@@ -40,7 +40,7 @@ export type MilkBagOwnershipHistory =
             relationTo: 'milkBanks';
             value: string | MilkBank;
           };
-      transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN';
+      transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN' | 'N/A';
       transferredAt?: string | null;
       id?: string | null;
     }[]
@@ -598,7 +598,6 @@ export interface MilkBag {
   code?: string | null;
   title?: string | null;
   createdBy?: (string | null) | User;
-  transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN';
   /**
    * The individual donating the milk bag
    */
@@ -1157,7 +1156,7 @@ export interface Inventory {
          */
         allocatedBags: (string | MilkBag)[];
         /**
-         * Unique identifier for grouping allocations that fulfill the same request
+         * Unique identifier for grouping allocations that fulfill the same request. (Auto generated)
          */
         allocationId?: string | null;
         allocatedAt?: string | null;
@@ -1937,7 +1936,6 @@ export interface MilkBagsSelect<T extends boolean = true> {
   code?: T;
   title?: T;
   createdBy?: T;
-  transferReason?: T;
   donor?: T;
   owner?: T;
   volume?: T;

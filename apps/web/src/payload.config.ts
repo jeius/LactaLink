@@ -1,5 +1,4 @@
 import { postgresAdapter } from '@payloadcms/db-postgres';
-import { uuid } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { resendAdapter } from '@payloadcms/email-resend';
 import {
   AlignFeature,
@@ -15,6 +14,7 @@ import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
+import { views } from './lib/db/drizzle/schema';
 import { plugins } from './lib/plugins';
 import { baseAdminMeta } from './lib/utils/baseMeta';
 import { getServerSideURL } from './lib/utils/getURL';
@@ -70,7 +70,7 @@ export default buildConfig({
   db: postgresAdapter({
     idType: 'uuid',
     allowIDOnCreate: true,
-    generateSchemaOutputFile: path.resolve(dirname, './lib/db/drizzle-schema.ts'),
+    generateSchemaOutputFile: path.resolve(dirname, './lib/db/drizzle/schema/payload-schema.ts'),
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
@@ -86,22 +86,14 @@ export default buildConfig({
           type: 'uuid',
           notNull: false,
         };
-        return schema;
-      },
-    ],
-    afterSchemaInit: [
-      ({ schema, extendTable }) => {
-        if (!schema.tables.users) {
-          console.warn('Users table not found in schema');
-          return schema;
-        }
-        extendTable({
-          table: schema.tables.users,
-          columns: {
-            authId: uuid('auth_id').unique(),
+
+        return {
+          ...schema,
+          tables: {
+            ...schema.tables,
+            ...views,
           },
-        });
-        return schema;
+        };
       },
     ],
   }),
