@@ -60,8 +60,22 @@ export const matchedRequestsHandler = createPayloadHandler({
       },
     });
 
+    const sortedDocs: Request[] = [];
+    const mappedRequests = new Map<string, Request>();
+
+    for (const doc of docs) {
+      mappedRequests.set(doc.id, doc);
+    }
+
+    for (const match of matches) {
+      const request = mappedRequests.get(match.requestID);
+      if (request) {
+        sortedDocs.push(request);
+      }
+    }
+
     return {
-      docs: docs,
+      docs: sortedDocs,
       totalDocs: totalRows,
       totalPages: Math.ceil(totalRows / limit),
       page: searchParams.pagination ? page : 1,

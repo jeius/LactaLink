@@ -1,6 +1,6 @@
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { DeliveryDays, DeliveryMode, MatchCriteria } from '@lactalink/types';
-import { and, eq, isNotNull, lte, or, sql } from '@payloadcms/db-postgres/drizzle';
+import { and, asc, desc, eq, isNotNull, lte, or, sql } from '@payloadcms/db-postgres/drizzle';
 import { QueryBuilder } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { matched_donations_requests_view } from '../schema';
 
@@ -10,7 +10,12 @@ export const matchDonationsAndRequestsByCriteria = (
   qb: QueryBuilder,
   criteria: MatchCriteria = {}
 ) => {
-  const { status = DONATION_REQUEST_STATUS.AVAILABLE.value, maxDistance, matchBy = [] } = criteria;
+  const {
+    status = DONATION_REQUEST_STATUS.AVAILABLE.value,
+    maxDistance,
+    matchBy = [],
+    nearestFirst = true,
+  } = criteria;
 
   const statusCondition = or(eq(view.requestStatus, status), eq(view.donationStatus, status));
   const distanceCondition = maxDistance ? lte(view.distance, maxDistance) : undefined;
@@ -31,6 +36,8 @@ export const matchDonationsAndRequestsByCriteria = (
     }
   });
 
+  const orderBy = nearestFirst ? asc(view.distance) : desc(view.distance);
+
   return qb
     .select({
       id: view.id,
@@ -49,6 +56,7 @@ export const matchDonationsAndRequestsByCriteria = (
     })
     .from(view)
     .where(and(statusCondition, distanceCondition, ...matchConditions.filter(Boolean)))
+    .orderBy(orderBy)
     .groupBy(
       view.id,
       view.requestID,

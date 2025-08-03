@@ -8,4 +8,5 @@ export interface MatchCriteria {
   status?: DonationRequestStatus;
   maxDistance?: number;
   matchBy?: ('deliveryMode' | 'deliveryDays' | 'barangay' | 'cityMunicipality' | 'province')[];
+  nearestFirst?: boolean;
 }

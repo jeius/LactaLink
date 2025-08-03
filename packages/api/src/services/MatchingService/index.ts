@@ -1,16 +1,18 @@
-import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import {
   Collection,
+  DeliveryMode,
   DeliveryPreference,
   Donation,
   FetchGetResult,
   IApiClient,
-  Where,
+  MatchCriteria,
+  Request,
+  SearchParams,
 } from '@lactalink/types';
 import { extractCollection, extractID, getDistance } from '@lactalink/utilities';
-import { DeliveryMode, TransactionService } from '../TransactionService';
+import { stringify } from 'qs-esm';
+import { TransactionService } from '../TransactionService';
 import {
-  DonationMatchCriteria,
   MatchOptions,
   MatchResult,
   O2PMatchOptions,
@@ -18,10 +20,7 @@ import {
   Options,
   P2OMatchOptions,
   P2OMatchResult,
-  RequestMatchCriteria,
 } from './types';
-
-const STATUS = DONATION_REQUEST_STATUS;
 
 /**
  * Service for matching donations to requests and managing their lifecycle.
@@ -47,74 +46,17 @@ export class MatchingService {
    */
   async findMatchingDonations(
     requestId: string,
-    criteria: DonationMatchCriteria = { storageType: 'EITHER' },
-    fetchOptions?: Options<'donations'>
+    options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'donations', boolean> }
   ): Promise<FetchGetResult<Donation>> {
-    // Get the request details
-    const request = await this.apiClient.findByID({
-      collection: 'requests',
-      id: requestId,
-      populate: {
-        'delivery-preferences': { availableDays: true, address: true, preferredMode: true },
-        addresses: { coordinates: true },
-      },
-    });
+    const { criteria = { matchBy: ['deliveryDays', 'deliveryMode'] }, fetchOptions = {} } =
+      options || {};
 
-    // Build query conditions
-    const whereConditions: Where[] = [{ status: { equals: STATUS.AVAILABLE.value } }];
+    fetchOptions.pagination = fetchOptions.pagination !== false;
 
-    // Filter by minimum volume if needed
-    const minVolume = criteria.minVolume || request.remainingNeeded;
-    if (minVolume) {
-      whereConditions.push({
-        remainingVolume: {
-          greater_than_equal: minVolume,
-        },
-      });
-    }
-
-    // Filter by storage type
-    const storageType = criteria.storageType || request.details?.storagePreference;
-    if (storageType && storageType !== 'EITHER') {
-      whereConditions.push({
-        'details.storageType': { equals: storageType },
-      });
-    }
-
-    // Exclude specific donations
-    if (criteria.excludeDonationIds?.length) {
-      whereConditions.push({
-        id: { not_in: criteria.excludeDonationIds },
-      });
-    }
-
-    // Filter by donor
-    if (criteria.donorId) {
-      whereConditions.push({
-        donor: { equals: criteria.donorId },
-      });
-    }
-
-    // Exclude specific donors
-    if (criteria.excludeDonorIds?.length) {
-      whereConditions.push({
-        donor: { not_in: criteria.excludeDonorIds },
-      });
-    }
-
-    // Find matching donations
-    const { docs, totalDocs, ...result } = await this.apiClient.find({
-      ...fetchOptions,
-      collection: 'donations',
-      where: { and: whereConditions },
-      sort: fetchOptions?.sort || 'createdAt', // Sort by created date (oldest first) to use older milk first
-      limit: fetchOptions?.limit || 20,
-      pagination: true,
-    });
-
-    const requestPreferences = extractCollection(request.deliveryPreferences || []);
-
-    return { ...result };
+    const searchParams = stringify({ criteria, ...fetchOptions });
+    return await this.apiClient.fetch(
+      `/api/requests/${requestId}/matched-donations?${searchParams}`
+    );
   }
 
   /**
@@ -125,70 +67,17 @@ export class MatchingService {
    */
   async findMatchingRequests(
     donationId: string,
-    criteria: RequestMatchCriteria = {}
-  ): Promise<Collection<'requests'>[]> {
-    // ... existing code ...
-    const donation = await this.apiClient.findByID<'donations'>({
-      collection: 'donations',
-      id: donationId,
-    });
+    options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'requests', boolean> }
+  ): Promise<FetchGetResult<Request>> {
+    const { criteria = { matchBy: ['deliveryDays', 'deliveryMode'] }, fetchOptions = {} } =
+      options || {};
 
-    // Build query conditions
-    const whereConditions: any = {
-      status: { equals: 'AVAILABLE' },
-    };
+    fetchOptions.pagination = fetchOptions.pagination !== false;
 
-    // Filter by volume
-    if (criteria.maxVolume || donation.remainingVolume) {
-      whereConditions.remainingNeeded = {
-        less_than_equal: criteria.maxVolume || donation.remainingVolume || 0,
-      };
-    }
-
-    // Filter by storage type
-    if (criteria.storageType) {
-      whereConditions['details.storagePreference'] = {
-        in: [criteria.storageType, 'EITHER'],
-      };
-    } else if (donation.details?.storageType) {
-      whereConditions['details.storagePreference'] = {
-        in: [donation.details.storageType, 'EITHER'],
-      };
-    }
-
-    // Exclude specific requests
-    if (criteria.excludeRequestIds?.length) {
-      whereConditions.id = { not_in: criteria.excludeRequestIds };
-    }
-
-    // Filter by requester
-    if (criteria.requesterId) {
-      whereConditions.requester = { equals: criteria.requesterId };
-    }
-
-    // Exclude specific requesters
-    if (criteria.excludeRequesterIds?.length) {
-      if (!whereConditions.requester) whereConditions.requester = {};
-      whereConditions.requester.not_in = criteria.excludeRequesterIds;
-    }
-
-    // Sort by urgency if requested, otherwise by creation date
-    const sort = criteria.prioritizeUrgent
-      ? [
-          { field: 'details.urgency', direction: 'desc' },
-          { field: 'createdAt', direction: 'asc' },
-        ]
-      : 'createdAt';
-
-    // Find matching requests
-    const result = await this.apiClient.find<'requests'>({
-      collection: 'requests',
-      where: whereConditions,
-      sort,
-      limit: 50,
-    });
-
-    return result as Collection<'requests'>[];
+    const searchParams = stringify({ criteria, ...fetchOptions });
+    return await this.apiClient.fetch(
+      `/api/donations/${donationId}/matched-requests?${searchParams}`
+    );
   }
 
   /**

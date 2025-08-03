@@ -29,7 +29,7 @@ export const findMatchedDonationsRequests = (qb: QueryBuilder) => {
       requestStatus: sql<DonationRequestStatus>`${requests.status}`.as('request_status'),
       donationID: sql<string>`${donations.id}`.as('donation_id'),
       donationStatus: sql<DonationRequestStatus>`${donations.status}`.as('donation_status'),
-      distance: sql`ST_Distance(
+      distance: sql<number>`ST_Distance(
           ${addr_req.coordinates}::geography,
           ${addr_don.coordinates}::geography
         )`.as('distance'),
