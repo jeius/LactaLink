@@ -1,6 +1,6 @@
-import { users } from '@/lib/db/drizzle-schema';
 import { extractToken } from '@/lib/utils/extractToken';
 import { createClient } from '@/lib/utils/supabase/server';
+import { users } from '@db/drizzle/schema';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { eq } from '@payloadcms/db-postgres/drizzle';
 import { AuthError } from '@supabase/supabase-js';
