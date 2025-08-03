@@ -50,7 +50,7 @@ export class FieldResolver {
 
               // Set the resolved documents in the fullDoc
               _.set(fullDoc, fieldPath, relatedDocs);
-            } else {
+            } else if (_.get(parentDoc, fieldPath)) {
               const relatedDocs = await Promise.all(
                 field.relationTo.map(async (relation) => {
                   const doc = await this.payload.findByID({
