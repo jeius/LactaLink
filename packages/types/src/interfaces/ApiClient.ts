@@ -1,4 +1,5 @@
 import {
+  ApiMethod,
   Collection,
   CollectionSlug,
   CreateArgs,
@@ -86,6 +87,24 @@ export interface IApiClient {
    * @returns True if running in Next.js environment, false otherwise
    */
   isNextJsApp(): boolean;
+
+  /**
+   * Fetches data from a specified API endpoint.
+   * Supports GET and POST methods, with optional body and headers.
+   * Automatically handles bypass token if set.
+   *
+   * @param endpoint - The API endpoint to fetch data from
+   * @param options - Optional parameters for the fetch request
+   *   - method: HTTP method (GET, POST, etc.)
+   *   - body: Request body for POST/PUT requests
+   *   - headers: Additional headers to include in the request
+   * @returns Promise resolving to the response data of type TResponse
+   *
+   */
+  fetch<TResponse>(
+    endpoint: string,
+    options?: { method: ApiMethod; body?: Record<string, unknown>; headers?: Headers }
+  ): Promise<TResponse>;
 
   /**
    * Finds documents in a collection with optional pagination and filtering.

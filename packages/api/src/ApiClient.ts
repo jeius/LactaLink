@@ -1,5 +1,6 @@
 import {
   ApiFetchArgs,
+  ApiMethod,
   BaseApiFetchArgs,
   Collection,
   CollectionSlug,
@@ -145,6 +146,32 @@ export class ApiClient implements IApiClient {
 
   isNextJsApp = (): boolean => {
     return this.getAppEnvironment() === 'nextjs';
+  };
+
+  fetch = async <TResponse>(
+    endpoint: string,
+    options?: { method: ApiMethod; body?: Record<string, unknown>; headers?: Headers }
+  ): Promise<TResponse> => {
+    const fetchOptions = await this._getFetchOptions();
+    const { url: apiUrl, ...restOfFetchOptions } = fetchOptions;
+    const { method = 'GET', body } = options || {};
+
+    const url = new URL(endpoint, apiUrl);
+    const headers = options?.headers || fetchOptions.headers;
+
+    const res = await apiFetch<TResponse>({
+      ...restOfFetchOptions,
+      url,
+      headers,
+      method: method,
+      ...(body && { body: body }),
+    });
+
+    if ('error' in res) {
+      throw new Error(res.message);
+    }
+
+    return res.data;
   };
 
   find = async <Slug extends CollectionSlug, IsPaginated extends boolean = true>(
