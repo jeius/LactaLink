@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { requestsEndpoints } from './endpoints';
 import { calculateFulfillmentPercentage } from './hooks/calculateFulfillmentPercentage';
 import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
@@ -37,6 +38,7 @@ export const Requests: CollectionConfig<'requests'> = {
     afterChange: [createRequestNotification, processOrganizationRequest],
     beforeRead: [calculateFulfillmentPercentage],
   },
+  endpoints: requestsEndpoints,
   fields: [
     {
       name: 'title',
