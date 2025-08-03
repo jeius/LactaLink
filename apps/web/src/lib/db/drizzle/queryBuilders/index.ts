@@ -1,1 +1,2 @@
-export * from './matched-donations-requests';
+export * from './findMatchedDonationsRequests';
+export * from './matchDonationsAndRequestsByCriteria';

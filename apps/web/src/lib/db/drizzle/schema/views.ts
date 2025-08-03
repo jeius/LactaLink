@@ -1,8 +1,8 @@
 import { PgTableWithColumns, pgView, TableConfig } from '@payloadcms/db-postgres/drizzle/pg-core';
-import { findMatchedDonationRequests } from '../queryBuilders';
+import { findMatchedDonationsRequests } from '../queryBuilders';
 
 export const matched_donations_requests_view = pgView('matched_donations_requests_view').as(
-  findMatchedDonationRequests
+  findMatchedDonationsRequests
 );
 
 export const views: Record<string, PgTableWithColumns<TableConfig>> = {

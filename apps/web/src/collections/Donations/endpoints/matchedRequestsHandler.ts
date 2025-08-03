@@ -1,16 +1,14 @@
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getEndpointSearchParams } from '@/lib/utils/getEndpointSearchParams';
-import { DONATION_REQUEST_STATUS, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
-import { Request } from '@lactalink/types';
-import { RequestMatchCriteria } from '@lactalink/types/collections';
+import { matchDonationsAndRequestsByCriteria } from '@db/drizzle/queryBuilders';
+import { MatchCriteria, Request } from '@lactalink/types';
+import { and, eq, sql } from '@payloadcms/db-postgres/drizzle';
 import status from 'http-status';
-import { APIError, PaginatedDocs, Where } from 'payload';
-
-const STATUS = DONATION_REQUEST_STATUS;
+import { APIError, PaginatedDocs } from 'payload';
 
 export const matchedRequestsHandler = createPayloadHandler({
   requireAdmin: false,
-  handler: async (req) => {
+  handler: async (req): Promise<PaginatedDocs<Request>> => {
     const { payload, query, pathname } = req;
 
     const donationID = pathname
@@ -22,101 +20,57 @@ export const matchedRequestsHandler = createPayloadHandler({
       throw new APIError('Donation ID is required', status.BAD_REQUEST, null, true);
     }
 
-    const donation = await payload.findByID({
-      collection: 'donations',
-      id: donationID,
+    const criteria = query.criteria as MatchCriteria | undefined;
+    const { limit = 10, page = 0, ...searchParams } = getEndpointSearchParams(req);
+
+    const match = payload.db.drizzle
+      .$with('findMatch')
+      .as((qb) => matchDonationsAndRequestsByCriteria(qb, criteria));
+
+    const donationIDCondition = eq(match.donationID, donationID);
+
+    const offset = searchParams.pagination ? page * limit : 0;
+
+    const matches = await payload.db.drizzle
+      .with(match)
+      .selectDistinctOn([match.requestID], {
+        id: match.id,
+        requestID: match.requestID,
+      })
+      .from(match)
+      .where(and(donationIDCondition))
+      .limit(limit)
+      .offset(offset);
+
+    // For accurate totalDocs, use COUNT(DISTINCT requestID)
+    const totalRowsResult = await payload.db.drizzle
+      .with(match)
+      .select({ count: sql<number>`COUNT(DISTINCT ${match.requestID})` })
+      .from(match)
+      .where(and(donationIDCondition));
+    const totalRows = totalRowsResult[0]?.count ?? 0;
+
+    const { docs } = await payload.find({
+      ...searchParams,
+      collection: 'requests',
+      pagination: false,
       req,
-      populate: {
-        'delivery-preferences': { availableDays: true, address: true, preferredMode: true },
-        addresses: { coordinates: true },
+      where: {
+        and: [{ ...searchParams.where }, { id: { in: matches.map((r) => r.requestID) } }],
       },
     });
 
-    const criteria = query.criteria as RequestMatchCriteria | undefined;
-
-    // Build query conditions
-    const whereConditions: Where[] = [{ status: { equals: STATUS.AVAILABLE.value } }];
-
-    // Filter by minimum volume if needed
-    const maxVolume = criteria?.maxVolume || donation.remainingVolume;
-    if (maxVolume) {
-      whereConditions.push({
-        volumeNeeded: {
-          less_than_equal: maxVolume,
-        },
-      });
-    }
-
-    // Filter by storage type
-    const eitherType = PREFERRED_STORAGE_TYPES.EITHER.value;
-    const storageType = criteria?.storageType || donation.details.storageType;
-    if (storageType !== eitherType) {
-      whereConditions.push({
-        'details.preferredStorage': { in: [storageType, eitherType] },
-      });
-    } else {
-      whereConditions.push({
-        'details.preferredStorage': { equals: storageType },
-      });
-    }
-
-    // Exclude specific requests
-    if (criteria?.excludeRequestIds?.length) {
-      whereConditions.push({
-        id: { not_in: criteria.excludeRequestIds },
-      });
-    }
-
-    // Filter by requester
-    if (criteria?.requesterId) {
-      whereConditions.push({
-        donor: { equals: criteria.requesterId },
-      });
-    }
-
-    // Exclude specific requesters
-    if (criteria?.excludeRequesterIds?.length) {
-      whereConditions.push({
-        donor: { not_in: criteria.excludeRequesterIds },
-      });
-    }
-
-    const searchParams = getEndpointSearchParams(req);
-
-    let result: PaginatedDocs<Request>;
-    let numberOfDocs = 0;
-    let page = searchParams.page || 0;
-    const limit = searchParams.limit || 10;
-
-    while (numberOfDocs < limit) {
-      const res = await payload.find({
-        collection: 'requests',
-        ...searchParams,
-        limit,
-        page,
-        where: {
-          and: [...whereConditions, searchParams.where || {}],
-        },
-        req,
-      });
-
-      const docs = res.docs;
-      page += 1;
-
-      if (!docs.length) break;
-
-      numberOfDocs += res.docs.length;
-      result = res;
-
-      // If we have enough documents, break
-      if (numberOfDocs >= (limit || 100) || docs.length >= numberOfDocs) {
-        break;
-      }
-
-      // Update searchParams to skip already fetched documents
-      searchParams.skip = finalDocs.length;
-    }
-
-    return { ...result };
+    return {
+      docs: docs,
+      totalDocs: totalRows,
+      totalPages: Math.ceil(totalRows / limit),
+      page: searchParams.pagination ? page : 1,
+      limit,
+      nextPage: searchParams.pagination && (page + 1) * limit < totalRows ? page + 1 : null,
+      prevPage: searchParams.pagination && page > 0 ? page - 1 : null,
+      hasNextPage: searchParams.pagination ? (page + 1) * limit < totalRows : false,
+      hasPrevPage: Boolean(searchParams.pagination) && page > 0,
+      pagingCounter: searchParams.pagination ? page * limit + 1 : 1,
+    };
   },
 });

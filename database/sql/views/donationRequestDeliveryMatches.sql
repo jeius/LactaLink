@@ -1,6 +1,4 @@
-CREATE SCHEMA IF NOT EXISTS views;
-
-CREATE OR REPLACE VIEW views.donation_request_delivery_matches AS
+CREATE OR REPLACE VIEW public.test_matches_view AS
 SELECT
   -- You can use row_number() for a unique id per match
   row_number() OVER () AS id,
@@ -12,11 +10,26 @@ SELECT
     addr_req.coordinates::geography,
     addr_don.coordinates::geography
   ) AS distance,
-  mode_req.value AS matched_mode,
-  day_req.value AS matched_days,
-  addr_req.barangay_id AS matched_barangay_id,
-  addr_req.city_municipality_id AS matched_city_municipality_id,
-  addr_req.province_id AS matched_province_id
+  CASE
+    WHEN mode_req.value = mode_don.value THEN mode_req.value
+    ELSE NULL
+  END AS matched_delivery_mode,
+  CASE
+    WHEN day_req.value = day_don.value THEN day_req.value
+    ELSE NULL
+  END AS matched_delivery_day,
+  CASE
+    WHEN addr_req.barangay_id = addr_don.barangay_id THEN addr_req.barangay_id
+    ELSE NULL
+  END AS matched_barangay_id,
+  CASE
+    WHEN addr_req.city_municipality_id = addr_don.city_municipality_id THEN addr_req.city_municipality_id
+    ELSE NULL
+  END AS matched_city_municipality_id,
+  CASE
+    WHEN addr_req.province_id = addr_don.province_id THEN addr_req.province_id
+    ELSE NULL
+  END AS matched_province_id
 FROM
   public.donations don
 JOIN public.donations_rels don_rel ON don_rel.parent_id = don.id
@@ -35,6 +48,6 @@ JOIN public.addresses addr_req ON addr_req.id = dp_req.address_id
 
 WHERE
   don.remaining_volume >= req.volume_needed  
-  AND day_req.value = day_don.value
-  AND mode_req.value = mode_don.value
+  AND don.status = 'AVAILABLE'
+  AND req.status = 'AVAILABLE'
 ;
