@@ -42,7 +42,6 @@ export const matchedRequestsHandler = createPayloadHandler({
       .limit(limit)
       .offset(offset);
 
-    // For accurate totalDocs, use COUNT(DISTINCT requestID)
     const totalRowsResult = await payload.db.drizzle
       .with(match)
       .select({ count: sql<number>`COUNT(DISTINCT ${match.requestID})` })
@@ -56,7 +55,7 @@ export const matchedRequestsHandler = createPayloadHandler({
       pagination: false,
       req,
       where: {
-        and: [{ ...searchParams.where }, { id: { in: matches.map((r) => r.requestID) } }],
+        and: [{ ...searchParams.where }, { id: { in: matches.map((m) => m.requestID) } }],
       },
     });
 

@@ -42,7 +42,6 @@ export const matchedDonationsHandler = createPayloadHandler({
       .limit(limit)
       .offset(offset);
 
-    // For accurate totalDocs, use COUNT(DISTINCT requestID)
     const totalRowsResult = await payload.db.drizzle
       .with(match)
       .select({ count: sql<number>`COUNT(DISTINCT ${match.donationID})` })
@@ -56,12 +55,26 @@ export const matchedDonationsHandler = createPayloadHandler({
       pagination: false,
       req,
       where: {
-        and: [{ ...searchParams.where }, { id: { in: matches.map((r) => r.donationID) } }],
+        and: [{ ...searchParams.where }, { id: { in: matches.map((m) => m.donationID) } }],
       },
     });
 
+    const sortedDocs: Donation[] = [];
+    const mappedRequests = new Map<string, Donation>();
+
+    for (const doc of docs) {
+      mappedRequests.set(doc.id, doc);
+    }
+
+    for (const match of matches) {
+      const donation = mappedRequests.get(match.donationID);
+      if (donation) {
+        sortedDocs.push(donation);
+      }
+    }
+
     return {
-      docs: docs,
+      docs: sortedDocs,
       totalDocs: totalRows,
       totalPages: Math.ceil(totalRows / limit),
       page: searchParams.pagination ? page : 1,
