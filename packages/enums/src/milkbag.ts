@@ -11,4 +11,5 @@ export const MILK_BAG_OWNERSHIP_TRANSFER_REASONS = {
   DONATION_COMPLETED: { label: 'Donation Completed', value: 'DONATION_COMPLETED' },
   REDISTRIBUTION: { label: 'Redistribution', value: 'REDISTRIBUTION' },
   RETURN: { label: 'Return', value: 'RETURN' },
+  'N/A': { label: 'Not Applicable', value: 'N/A' },
 } as const;

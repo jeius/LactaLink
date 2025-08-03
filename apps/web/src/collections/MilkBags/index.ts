@@ -62,14 +62,6 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     createdByField,
 
     {
-      name: 'transferReason',
-      type: 'select',
-      enumName: 'enum_milk_bag_transfer_reason',
-      required: true,
-      options: Object.values(REASON_OPTIONS),
-    },
-
-    {
       type: 'row',
       fields: [
         {
@@ -190,6 +182,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                   type: 'select',
                   enumName: 'enum_milk_bag_transfer_reason',
                   required: true,
+                  defaultValue: REASON_OPTIONS['N/A'].value,
                   options: Object.values(REASON_OPTIONS),
                 },
                 {
