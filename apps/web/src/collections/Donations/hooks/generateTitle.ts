@@ -8,6 +8,7 @@ export const generateTitle: CollectionBeforeChangeHook<Donation> = async ({ data
   const id = extractID(data.donor);
 
   const doc = await req.payload.findByID({
+    req,
     collection: 'individuals',
     id,
     depth: 0,

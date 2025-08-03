@@ -34,6 +34,7 @@ export const processDonationToOrganization: CollectionAfterChangeHook<Donation> 
       // Create inventory entry
       await req.payload.create({
         collection: 'inventory',
+        req,
         data: {
           organization: {
             relationTo: recipientType,
