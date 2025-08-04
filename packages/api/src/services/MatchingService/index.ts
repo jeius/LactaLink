@@ -1,7 +1,5 @@
+import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 import {
-  Collection,
-  DeliveryMode,
-  DeliveryPreference,
   Donation,
   FetchGetResult,
   IApiClient,
@@ -9,7 +7,7 @@ import {
   Request,
   SearchParams,
 } from '@lactalink/types';
-import { extractCollection, extractID, getDistance } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities';
 import { stringify } from 'qs-esm';
 import { TransactionService } from '../TransactionService';
 import {
@@ -17,7 +15,6 @@ import {
   MatchResult,
   O2PMatchOptions,
   O2PMatchResult,
-  Options,
   P2OMatchOptions,
   P2OMatchResult,
 } from './types';
@@ -48,10 +45,10 @@ export class MatchingService {
     requestId: string,
     options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'donations', boolean> }
   ): Promise<FetchGetResult<Donation>> {
-    const { criteria = { matchBy: ['deliveryDays', 'deliveryMode'] }, fetchOptions = {} } =
-      options || {};
+    const { criteria, fetchOptions = {} } = options || {};
 
-    fetchOptions.pagination = fetchOptions.pagination !== false;
+    fetchOptions.pagination =
+      fetchOptions.pagination === undefined ? true : fetchOptions.pagination;
 
     const searchParams = stringify({ criteria, ...fetchOptions });
     return await this.apiClient.fetch(
@@ -69,10 +66,10 @@ export class MatchingService {
     donationId: string,
     options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'requests', boolean> }
   ): Promise<FetchGetResult<Request>> {
-    const { criteria = { matchBy: ['deliveryDays', 'deliveryMode'] }, fetchOptions = {} } =
-      options || {};
+    const { criteria, fetchOptions = {} } = options || {};
 
-    fetchOptions.pagination = fetchOptions.pagination !== false;
+    fetchOptions.pagination =
+      fetchOptions.pagination === undefined ? true : fetchOptions.pagination;
 
     const searchParams = stringify({ criteria, ...fetchOptions });
     return await this.apiClient.fetch(
@@ -82,39 +79,39 @@ export class MatchingService {
 
   /**
    * Creates a match between a donation and request, with optional milk bag selection.
-   * @param donationId - ID of the donation
-   * @param requestId - ID of the request
+   * @param donationID - ID of the donation
+   * @param requestID - ID of the request
    * @param options - Optional parameters like specific milk bags to match
    * @returns Match result including transaction and updated donation/request
    */
   async createMatch(
-    donationId: string,
-    requestId: string,
+    donationID: string,
+    requestID: string,
     options: MatchOptions = {}
   ): Promise<MatchResult> {
     // ... existing code ...
     const [donation, request] = await Promise.all([
       this.apiClient.findByID({
         collection: 'donations',
-        id: donationId,
+        id: donationID,
       }),
       this.apiClient.findByID({
         collection: 'requests',
-        id: requestId,
+        id: requestID,
       }),
     ]);
 
     // Verify both are in AVAILABLE status
-    if (donation.status !== 'AVAILABLE') {
-      throw new Error(`Cannot match: donation ${donationId} is not available (${donation.status})`);
+    if (donation.status !== DONATION_REQUEST_STATUS.AVAILABLE.value) {
+      throw new Error(`Cannot match: donation ${donationID} is not available (${donation.status})`);
     }
 
-    if (request.status !== 'AVAILABLE') {
-      throw new Error(`Cannot match: request ${requestId} is not available (${request.status})`);
+    if (request.status !== DONATION_REQUEST_STATUS.AVAILABLE.value) {
+      throw new Error(`Cannot match: request ${requestID} is not available (${request.status})`);
     }
 
     // Determine milk bags to match
-    let milkBagIds = options.milkBagIds;
+    let milkBagIds = options.milkBagIDs;
     let matchedBags = [];
 
     if (!milkBagIds?.length) {
@@ -125,13 +122,13 @@ export class MatchingService {
         sort: 'createdAt', // Sort by creation date to use older milk first
         where: {
           id: { in: extractID(donation.details?.bags || []) },
-          status: { equals: 'AVAILABLE' },
+          status: { equals: MILK_BAG_STATUS.AVAILABLE.value },
         },
       });
 
       // Select bags until we reach the needed volume
       let totalVolume = 0;
-      const neededVolume = request.remainingNeeded || request.volumeNeeded;
+      const neededVolume = request.volumeNeeded;
       const selectedBags = [];
 
       for (const bag of allMilkBags) {
@@ -148,52 +145,41 @@ export class MatchingService {
       const docs = await this.apiClient.find({
         collection: 'milkBags',
         pagination: false,
-        where: {
-          id: { in: milkBagIds },
-          status: { equals: 'AVAILABLE' },
-        },
+        where: { id: { in: milkBagIds } },
       });
       matchedBags = docs;
     }
 
     if (!matchedBags.length) {
-      throw new Error(`No available milk bags found for donation ${donationId}`);
+      throw new Error(`No available milk bags found for donation ${donationID}`);
     }
+
+    const deliveryPreference =
+      options.deliveryPreferenceID &&
+      (await this.apiClient.findByID({
+        collection: 'delivery-preferences',
+        id: options.deliveryPreferenceID,
+        select: { preferredMode: true, address: true },
+        depth: 0,
+      }));
 
     // Calculate total volume of matched bags
     const matchedVolume = matchedBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
     // Create the transaction using the TransactionService
-    const transaction = await this.transactionService.createP2PTransaction({
-      donationId,
-      requestId,
-      milkBagIds: matchedBags.map((bag) => bag.id),
-      volume: matchedVolume,
-      deliveryMode: options.deliveryMode as DeliveryMode,
-      deliveryPreferenceId: options.deliveryPreferenceId,
+    const createResult = await this.transactionService.createP2PTransaction({
+      donation,
+      request,
+      milkBags: matchedBags,
     });
 
     // Calculate if the request is fully fulfilled
     const totalFulfilled = (request.volumeFulfilled || 0) + matchedVolume;
     const fullyFulfilled = totalFulfilled >= request.volumeNeeded;
 
-    // Get the updated donation and request
-    const [updatedDonation, updatedRequest] = await Promise.all([
-      this.apiClient.findByID({
-        collection: 'donations',
-        id: donationId,
-      }),
-      this.apiClient.findByID({
-        collection: 'requests',
-        id: requestId,
-      }),
-    ]);
-
     return {
-      transaction,
-      donation: updatedDonation,
-      request: updatedRequest,
-      matchedBags,
+      ...createResult,
+      matchedBags: createResult.milkBags,
       fullyFulfilled,
     };
   }
@@ -350,154 +336,6 @@ export class MatchingService {
   }
 
   /**
-   * Updates a donation's status based on its current state.
-   * @param donationId - ID of the donation to update
-   * @returns Updated donation
-   */
-  async updateDonationLifecycle(donationId: string) {
-    // ... existing code ...
-    const donation = await this.apiClient.findByID<'donations'>({
-      collection: 'donations',
-      id: donationId,
-    });
-
-    // Skip already completed/expired/cancelled donations
-    const finalStatuses = ['COMPLETED', 'EXPIRED', 'CANCELLED'];
-    if (finalStatuses.includes(donation.status)) {
-      return donation;
-    }
-
-    // Get associated milk bags to determine current state
-    const { docs: milkBags } = await this.apiClient.find<'milkBags'>({
-      collection: 'milkBags',
-      pagination: false,
-      where: {
-        id: { in: extractID(donation.details?.bags || []) },
-      },
-    });
-
-    // Count bags by status
-    const statusCounts = milkBags.reduce(
-      (acc, bag) => {
-        acc[bag.status] = (acc[bag.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    const totalBags = milkBags.length;
-    const availableBags = statusCounts['AVAILABLE'] || 0;
-    const allocatedBags = statusCounts['ALLOCATED'] || 0;
-    const consumedBags = statusCounts['CONSUMED'] || 0;
-
-    // Calculate remaining volume
-    const remainingVolume = milkBags
-      .filter((bag) => bag.status === 'AVAILABLE')
-      .reduce((sum, bag) => sum + (bag.volume || 0), 0);
-
-    // Determine appropriate status
-    let newStatus = donation.status;
-
-    if (consumedBags === totalBags) {
-      newStatus = 'COMPLETED';
-    } else if (availableBags === 0 && allocatedBags > 0) {
-      newStatus = 'FULLY_ALLOCATED';
-    } else if (allocatedBags > 0 && availableBags > 0) {
-      newStatus = 'PARTIALLY_ALLOCATED';
-    } else if (statusCounts['EXPIRED'] === totalBags) {
-      newStatus = 'EXPIRED';
-    }
-
-    // Only update if status or volume changed
-    if (newStatus !== donation.status || remainingVolume !== donation.remainingVolume) {
-      return await this.apiClient.updateByID<'donations'>({
-        collection: 'donations',
-        id: donationId,
-        data: {
-          status: newStatus,
-          remainingVolume,
-        },
-      });
-    }
-
-    return donation;
-  }
-
-  /**
-   * Updates a request's status based on its current state.
-   * @param requestId - ID of the request to update
-   * @returns Updated request
-   */
-  async updateRequestLifecycle(requestId: string) {
-    // ... existing code ...
-    const request = await this.apiClient.findByID<'requests'>({
-      collection: 'requests',
-      id: requestId,
-    });
-
-    // Skip already completed/expired/cancelled requests
-    const finalStatuses = ['COMPLETED', 'EXPIRED', 'CANCELLED'];
-    if (finalStatuses.includes(request.status)) {
-      return request;
-    }
-
-    // Check if request has expired
-    if (request.details?.neededAt) {
-      const neededByDate = new Date(request.details.neededAt);
-      if (neededByDate < new Date() && request.status !== 'COMPLETED') {
-        return await this.apiClient.updateByID<'requests'>({
-          collection: 'requests',
-          id: requestId,
-          data: {
-            status: 'EXPIRED',
-            expiredAt: new Date().toISOString(),
-          },
-        });
-      }
-    }
-
-    // Get transactions to determine fulfillment
-    const { docs: transactions } = await this.apiClient.find<'transactions'>({
-      collection: 'transactions',
-      pagination: false,
-      where: {
-        request: { equals: requestId },
-        status: { not_equals: 'CANCELLED' },
-      },
-    });
-
-    // Calculate volume from matched transactions
-    const volumeFulfilled = transactions.reduce((sum, txn) => sum + (txn.matchedVolume || 0), 0);
-
-    // Determine if request is fully fulfilled
-    const fullyFulfilled = volumeFulfilled >= request.volumeNeeded;
-
-    // Update request status and fulfilled volume
-    let newStatus = request.status;
-
-    if (fullyFulfilled && request.status !== 'COMPLETED') {
-      newStatus = 'COMPLETED';
-    } else if (transactions.length > 0 && !fullyFulfilled && request.status !== 'MATCHED') {
-      newStatus = 'MATCHED';
-    }
-
-    // Only update if status or fulfilled volume changed
-    if (newStatus !== request.status || volumeFulfilled !== request.volumeFulfilled) {
-      return await this.apiClient.updateByID<'requests'>({
-        collection: 'requests',
-        id: requestId,
-        data: {
-          status: newStatus,
-          volumeFulfilled,
-          ...(newStatus === 'COMPLETED' ? { completedAt: new Date().toISOString() } : {}),
-        },
-      });
-    }
-
-    return request;
-  }
-
-  /**
    * Gets the best matching donations for a request.
    * @param requestId - ID of the request
    * @param limit - Maximum number of donations to return
@@ -506,9 +344,17 @@ export class MatchingService {
   async getRecommendedDonationsForRequest(
     requestId: string,
     maxDistance?: number,
-    fetchOptions: Options<'donations'> = {}
-  ): Promise<FetchGetResult<Collection<'donations'>>> {
-    return this.findMatchingDonations(requestId, { maxDistance }, fetchOptions);
+    limit: number = 5
+  ): Promise<FetchGetResult<Donation>> {
+    return this.findMatchingDonations(requestId, {
+      criteria: {
+        nearestFirst: true,
+        status: 'AVAILABLE',
+        matchBy: ['deliveryDays', 'deliveryMode', 'cityMunicipality'],
+        maxDistance,
+      },
+      fetchOptions: { pagination: true, limit },
+    });
   }
 
   /**
@@ -519,37 +365,21 @@ export class MatchingService {
    */
   async getRecommendedRequestsForDonation(
     donationId: string,
+    maxDistance?: number,
     limit: number = 5
-  ): Promise<Collection<'requests'>[]> {
+  ): Promise<FetchGetResult<Request>> {
     return this.findMatchingRequests(donationId, {
-      prioritizeUrgent: true,
-    }).then((requests) => requests.slice(0, limit));
+      criteria: {
+        nearestFirst: true,
+        status: 'AVAILABLE',
+        matchBy: ['deliveryDays', 'deliveryMode', 'cityMunicipality'],
+        maxDistance,
+      },
+      fetchOptions: { pagination: true, limit },
+    });
   }
 
   //#region Helper Methods
-  private isMatch(
-    donationDP: DeliveryPreference,
-    requestDP: DeliveryPreference,
-    maxDistance?: number
-  ): boolean {
-    // Check if two delivery preferences match
-    const { preferredMode: donationMode, availableDays } = donationDP;
-    const { preferredMode: requestMode, availableDays: requestDays } = requestDP;
 
-    const donationAdd = extractCollection(donationDP.address);
-    const requestAdd = extractCollection(requestDP.address);
-
-    const matches: boolean[] = [];
-
-    if (donationAdd?.coordinates && requestAdd?.coordinates && maxDistance) {
-      const distance = getDistance(donationAdd.coordinates, requestAdd.coordinates);
-      matches.push(distance <= maxDistance);
-    }
-
-    matches.push(requestMode.some((mode) => donationMode.includes(mode)));
-    matches.push(availableDays.some((day) => requestDays.includes(day)));
-
-    return matches.every(Boolean);
-  }
   //#endregion
 }

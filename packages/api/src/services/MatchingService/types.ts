@@ -1,16 +1,17 @@
 import { PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import {
   CollectionSlug,
+  DeliveryMode,
   Donation,
-  FindArgs,
   MilkBag,
   Request,
+  SearchParams,
   Transaction,
 } from '@lactalink/types';
 
 export type Options<TSlug extends CollectionSlug> = Omit<
-  FindArgs<TSlug, true>,
-  'collection' | 'where' | 'pagination'
+  SearchParams<TSlug, true>,
+  'where' | 'pagination'
 >;
 
 /**
@@ -175,15 +176,15 @@ export interface MatchOptions {
   /**
    * IDs of specific milk bags to match
    */
-  milkBagIds?: string[];
+  milkBagIDs?: string[];
 
   /**
    * Preferred delivery mode
    */
-  deliveryMode?: string;
+  deliveryMode?: DeliveryMode;
 
   /**
    * ID of a delivery preference to use
    */
-  deliveryPreferenceId?: string;
+  deliveryPreferenceID?: string;
 }

@@ -18,7 +18,7 @@ import {
   DeliveryDetailsParams,
   ITransactionService,
 } from '@lactalink/types/interfaces';
-import { extractID } from '@lactalink/utilities';
+import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
 
 /**
  * Service for managing transactions throughout their lifecycle.
@@ -38,13 +38,21 @@ export class TransactionService implements ITransactionService {
   // #endregion
 
   // #region Transaction Creation Methods
-  async createP2PTransaction(params: CreateP2PTransactionParams): Promise<Transaction> {
-    const { donationID, requestID, milkBagIDs, delivery, proposedDelivery } = params;
+  async createP2PTransaction(params: CreateP2PTransactionParams) {
+    const { milkBags, delivery, proposedDelivery } = params;
 
-    const [donation, request] = await Promise.all([
-      this.getDonation(donationID),
-      this.getRequest(requestID),
-    ]);
+    let donation: Donation;
+    let request: Request;
+
+    if (areStrings([params.donation, params.request])) {
+      [donation, request] = await Promise.all([
+        this.getDonation(extractID(params.donation)),
+        this.getRequest(extractID(params.request)),
+      ]);
+    } else {
+      donation = extractCollection(params.donation)!;
+      request = extractCollection(params.request)!;
+    }
 
     const status = delivery
       ? TRANSACTION_STATUS.DELIVERY_SCHEDULED.value
@@ -52,7 +60,7 @@ export class TransactionService implements ITransactionService {
         ? TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value
         : TRANSACTION_STATUS.MATCHED.value;
 
-    const volume = await this.getVolume(milkBagIDs);
+    const volume = await this.getVolume(milkBags);
 
     // Create the transaction
     const transaction = await this.apiClient.create({
@@ -60,11 +68,11 @@ export class TransactionService implements ITransactionService {
       data: {
         transactionType: TRANSACTION_TYPE.P2P.value,
         status: status,
-        donation: donationID,
+        donation: extractID(donation),
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
-        request: requestID,
+        request: extractID(request),
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
-        matchedBags: milkBagIDs,
+        matchedBags: extractID(milkBags),
         matchedVolume: volume,
         delivery: {
           instructions: params.instructions,
@@ -75,13 +83,18 @@ export class TransactionService implements ITransactionService {
     });
 
     // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
+    const updatedBags = await this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED');
 
     // Update donation and request statuses to MATCHED
-    await this.updateDonationStatus(donationID, 'MATCHED');
-    await this.updateRequestStatus(requestID, 'MATCHED');
+    const updatedDonation = await this.updateDonationStatus(extractID(donation), 'MATCHED');
+    const updatedRequest = await this.updateRequestStatus(extractID(request), 'MATCHED');
 
-    return transaction;
+    return {
+      transaction,
+      donation: updatedDonation,
+      request: updatedRequest,
+      milkBags: updatedBags,
+    };
   }
 
   async createP2OTransaction(params: CreateP2OTransactionParams): Promise<Transaction> {
@@ -563,17 +576,19 @@ export class TransactionService implements ITransactionService {
   // #region Helper Methods
   /**
    * Calculates the total volume of milk bags by their IDs.
-   * @param milkBagIds - IDs of the milk bags
+   * @param bags - milk bags
    * @returns Total volume
    */
-  private async getVolume(milkBagIds: string[]): Promise<number> {
-    const milkBags = await this.apiClient.find({
-      collection: 'milkBags',
-      where: {
-        id: { in: milkBagIds },
-      },
-      pagination: false,
-    });
+  private async getVolume(bags: (string | MilkBag)[]): Promise<number> {
+    const milkBags = areStrings(bags)
+      ? await this.apiClient.find({
+          collection: 'milkBags',
+          where: {
+            id: { in: bags },
+          },
+          pagination: false,
+        })
+      : (bags as MilkBag[]);
 
     return milkBags.reduce((total, bag) => total + (bag.volume || 0), 0);
   }
@@ -611,14 +626,12 @@ export class TransactionService implements ITransactionService {
    * @param bagIds - IDs of milk bags to update
    * @param status - New status
    */
-  private async updateMilkBagStatus(bagIds: string[], status: MilkBag['status']): Promise<void> {
-    for (const bagId of bagIds) {
-      await this.apiClient.updateByID({
-        collection: 'milkBags',
-        id: bagId,
-        data: { status },
-      });
-    }
+  private async updateMilkBagStatus(bagIds: string[], status: MilkBag['status']) {
+    return await this.apiClient.update({
+      collection: 'milkBags',
+      data: { status },
+      where: { id: { in: bagIds } },
+    });
   }
 
   /**
@@ -670,11 +683,8 @@ export class TransactionService implements ITransactionService {
    * @param donationId - ID of the donation
    * @param status - New status
    */
-  private async updateDonationStatus(
-    donationId: string,
-    status: Donation['status']
-  ): Promise<void> {
-    await this.apiClient.updateByID({
+  private async updateDonationStatus(donationId: string, status: Donation['status']) {
+    return await this.apiClient.updateByID({
       collection: 'donations',
       id: donationId,
       data: { status },
@@ -686,8 +696,8 @@ export class TransactionService implements ITransactionService {
    * @param requestId - ID of the request
    * @param status - New status
    */
-  private async updateRequestStatus(requestId: string, status: Request['status']): Promise<void> {
-    await this.apiClient.updateByID({
+  private async updateRequestStatus(requestId: string, status: Request['status']) {
+    return await this.apiClient.updateByID({
       collection: 'requests',
       id: requestId,
       data: { status },

@@ -1,6 +1,9 @@
 import {
   Delivery,
+  Donation,
+  MilkBag,
   ProposedDelivery,
+  Request,
   SelectFromCollectionSlug,
   Transaction,
   User,
@@ -26,9 +29,9 @@ export interface DeliveryDetailsParams
  * Parameters for creating a P2P transaction.
  */
 export interface CreateP2PTransactionParams {
-  donationID: string;
-  requestID: string;
-  milkBagIDs: string[];
+  donation: string | Donation;
+  request: string | Request;
+  milkBags: (string | MilkBag)[];
   delivery?: NonNullable<Delivery['confirmedDelivery']>;
   proposedDelivery?: NonNullable<Delivery['proposedDelivery']>[number];
   instructions?: string;
@@ -64,7 +67,12 @@ export interface ITransactionService {
    * @param params - Transaction parameters
    * @returns The created transaction
    */
-  createP2PTransaction(params: CreateP2PTransactionParams): Promise<Transaction>;
+  createP2PTransaction(params: CreateP2PTransactionParams): Promise<{
+    transaction: Transaction;
+    donation: Donation;
+    request: Request;
+    milkBags: MilkBag[];
+  }>;
 
   /**
    * Creates a new P2O (Peer to Organization) transaction.
