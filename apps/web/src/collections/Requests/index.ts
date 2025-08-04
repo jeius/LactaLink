@@ -17,6 +17,7 @@ import { createRequestNotification } from './hooks/createNotification';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeRequest } from './hooks/initialize';
 import { processOrganizationRequest } from './hooks/processOrganizationRequest';
+import { updateVolume } from './hooks/updateVolume';
 
 export const Requests: CollectionConfig<'requests'> = {
   slug: 'requests',
@@ -34,7 +35,7 @@ export const Requests: CollectionConfig<'requests'> = {
   },
   hooks: {
     beforeValidate: [initializeRequest],
-    beforeChange: [initializeStatus, generateCreatedBy, generateTitle],
+    beforeChange: [initializeStatus, generateCreatedBy, generateTitle, updateVolume],
     afterChange: [createRequestNotification, processOrganizationRequest],
     beforeRead: [calculateFulfillmentPercentage],
   },
@@ -56,17 +57,6 @@ export const Requests: CollectionConfig<'requests'> = {
       virtual: true,
       admin: {
         description: 'Percentage of the request that has been fulfilled.',
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-
-    {
-      name: 'remainingNeeded',
-      type: 'number',
-      virtual: true,
-      admin: {
-        description: 'Volume still needed to fulfill the request.',
         readOnly: true,
         position: 'sidebar',
       },
