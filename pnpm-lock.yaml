@@ -632,9 +632,6 @@ importers:
       '@types/node':
         specifier: ^22.5.4
         version: 22.16.0
-      payload:
-        specifier: ^3.34.0
-        version: 3.42.0(graphql@16.11.0)(typescript@5.8.3)
       react-hook-form:
         specifier: ^7.60.0
         version: 7.60.0(react@19.0.0)
@@ -19984,7 +19981,7 @@ snapshots:
   tsx@4.19.2:
     dependencies:
       esbuild: 0.23.1
-      get-tsconfig: 4.8.1
+      get-tsconfig: 4.10.1
     optionalDependencies:
       fsevents: 2.3.3
 

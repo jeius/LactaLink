@@ -52,7 +52,10 @@
         "src/fields/**/*",
         "src/lib/constants/**/*"
       ],
-      "outputs": ["src/lib/types/payload-types.ts", "../../packages/types/src/payload-types.ts"]
+      "outputs": [
+        "src/lib/types/payload-types.ts",
+        "../../packages/types/src/payload-types/generated.ts"
+      ]
     },
     "@lactalink/web#generate:importmap": {
       "inputs": ["src/**/*"],

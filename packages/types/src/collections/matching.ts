@@ -1,17 +1,5 @@
 import { PREFERRED_STORAGE_TYPES, STORAGE_TYPES } from '@lactalink/enums';
-import {
-  CollectionSlug,
-  Donation,
-  FindArgs,
-  MilkBag,
-  Request,
-  Transaction,
-} from '@lactalink/types';
-
-export type Options<TSlug extends CollectionSlug> = Omit<
-  FindArgs<TSlug, true>,
-  'collection' | 'where' | 'pagination'
->;
+import { Donation, MilkBag, Request, Transaction } from '@lactalink/types';
 
 /**
  * Matching criteria for finding compatible donations.

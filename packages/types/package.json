@@ -55,7 +55,6 @@
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
-    "payload": "^3.34.0",
     "react-hook-form": "^7.60.0",
     "zod": "^3.25.74"
   },

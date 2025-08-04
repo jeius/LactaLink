@@ -9,3 +9,14 @@ export type NativeFile = {
   name: string;
   type: string;
 };
+
+export type NonNever<Type extends {}> = Pick<
+  Type,
+  {
+    [Key in keyof Type]: Type[Key] extends never ? never : Key;
+  }[keyof Type]
+>;
+
+export type MarkOptional<Type, Keys extends keyof Type> = Type extends Type
+  ? Omit<Type, Keys> & Partial<Pick<Type, Keys>>
+  : never;
