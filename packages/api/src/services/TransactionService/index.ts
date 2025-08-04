@@ -18,7 +18,7 @@ import {
   DeliveryDetailsParams,
   ITransactionService,
 } from '@lactalink/types/interfaces';
-import { areStrings, extractCollection, extractID } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities';
 
 /**
  * Service for managing transactions throughout their lifecycle.
@@ -41,26 +41,27 @@ export class TransactionService implements ITransactionService {
   async createP2PTransaction(params: CreateP2PTransactionParams) {
     const { milkBags, delivery, proposedDelivery } = params;
 
-    let donation: Donation;
-    let request: Request;
+    const getDonation = async () => {
+      const donation = extractCollection(params.donation);
+      return donation || this.getDonation(extractID(params.donation));
+    };
 
-    if (areStrings([params.donation, params.request])) {
-      [donation, request] = await Promise.all([
-        this.getDonation(extractID(params.donation)),
-        this.getRequest(extractID(params.request)),
-      ]);
-    } else {
-      donation = extractCollection(params.donation)!;
-      request = extractCollection(params.request)!;
-    }
+    const getRequest = async () => {
+      const request = extractCollection(params.request);
+      return request || this.getRequest(extractID(params.request));
+    };
+
+    const [volume, donation, request] = await Promise.all([
+      this.getVolume(milkBags),
+      getDonation(),
+      getRequest(),
+    ]);
 
     const status = delivery
       ? TRANSACTION_STATUS.DELIVERY_SCHEDULED.value
       : proposedDelivery
         ? TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value
         : TRANSACTION_STATUS.MATCHED.value;
-
-    const volume = await this.getVolume(milkBags);
 
     // Create the transaction
     const transaction = await this.apiClient.create({
@@ -82,12 +83,13 @@ export class TransactionService implements ITransactionService {
       },
     });
 
-    // Update milk bags to ALLOCATED status
-    const updatedBags = await this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED');
-
-    // Update donation and request statuses to MATCHED
-    const updatedDonation = await this.updateDonationStatus(extractID(donation), 'MATCHED');
-    const updatedRequest = await this.updateRequestStatus(extractID(request), 'MATCHED');
+    const [updatedBags, updatedDonation, updatedRequest] = await Promise.all([
+      // Update milk bags to ALLOCATED status
+      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
+      // Update donation and request statuses to MATCHED
+      this.updateDonationStatus(extractID(donation), 'MATCHED'),
+      this.updateRequestStatus(extractID(request), 'MATCHED'),
+    ]);
 
     return {
       transaction,
@@ -97,13 +99,15 @@ export class TransactionService implements ITransactionService {
     };
   }
 
-  async createP2OTransaction(params: CreateP2OTransactionParams): Promise<Transaction> {
-    const { donationID, organization, milkBagIDs, addressID } = params;
+  async createP2OTransaction(params: CreateP2OTransactionParams) {
+    const { organization, milkBags, address } = params;
 
-    const [donation, volume] = await Promise.all([
-      this.getDonation(donationID),
-      this.getVolume(milkBagIDs),
-    ]);
+    const getDonation = async () => {
+      const donation = extractCollection(params.donation);
+      return donation || this.getDonation(extractID(params.donation));
+    };
+
+    const [volume, donation] = await Promise.all([this.getVolume(milkBags), getDonation()]);
 
     // P2O transactions always use DELIVERY mode and are automatically scheduled
     const transaction = await this.apiClient.create({
@@ -114,34 +118,37 @@ export class TransactionService implements ITransactionService {
         donation: donation.id,
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
         recipient: organization,
-        matchedBags: milkBagIDs,
+        matchedBags: extractID(milkBags),
         matchedVolume: volume,
         delivery: {
           confirmedDelivery: {
             confirmedAt: new Date().toISOString(),
             mode: DELIVERY_OPTIONS.DELIVERY.value,
-            address: addressID,
+            address: extractID(address),
           },
         },
       },
     });
 
-    // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
+    const [updatedBags, updatedDonation] = await Promise.all([
+      // Update milk bags to ALLOCATED status
+      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
+      // Update donation status to MATCHED
+      this.updateDonationStatus(extractID(donation), 'MATCHED'),
+    ]);
 
-    // Update donation status to MATCHED
-    await this.updateDonationStatus(donationID, 'MATCHED');
-
-    return transaction;
+    return { transaction, milkBags: updatedBags, donation: updatedDonation };
   }
 
-  async createO2PTransaction(params: CreateO2PTransactionParams): Promise<Transaction> {
-    const { organization, requestID, milkBagIDs, addressID } = params;
+  async createO2PTransaction(params: CreateO2PTransactionParams) {
+    const { organization, milkBags, address } = params;
 
-    const [request, volume] = await Promise.all([
-      this.getRequest(requestID),
-      this.getVolume(milkBagIDs),
-    ]);
+    const getRequest = async () => {
+      const request = extractCollection(params.request);
+      return request || this.getRequest(extractID(params.request));
+    };
+
+    const [volume, request] = await Promise.all([this.getVolume(milkBags), getRequest()]);
 
     // O2P transactions always use PICKUP mode and are automatically scheduled
     const transaction = await this.apiClient.create<'transactions'>({
@@ -149,28 +156,29 @@ export class TransactionService implements ITransactionService {
       data: {
         transactionType: TRANSACTION_TYPE.O2P.value,
         status: TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
-        request: requestID,
+        request: extractID(request),
         sender: organization,
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
-        matchedBags: milkBagIDs,
+        matchedBags: extractID(milkBags),
         matchedVolume: volume,
         delivery: {
           confirmedDelivery: {
             mode: DELIVERY_OPTIONS.PICKUP.value,
             confirmedAt: new Date().toISOString(),
-            address: addressID,
+            address: extractID(address),
           },
         },
       },
     });
 
-    // Update milk bags to ALLOCATED status
-    await this.updateMilkBagStatus(milkBagIDs, 'ALLOCATED');
+    const [updatedBag, updatedRequest] = await Promise.all([
+      // Update milk bags to ALLOCATED status
+      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
+      // Update request status to MATCHED
+      this.updateRequestStatus(extractID(request), 'MATCHED'),
+    ]);
 
-    // Update request status to MATCHED
-    await this.updateRequestStatus(requestID, 'MATCHED');
-
-    return transaction;
+    return { transaction, milkBags: updatedBag, request: updatedRequest };
   }
   // #endregion
 
@@ -580,15 +588,14 @@ export class TransactionService implements ITransactionService {
    * @returns Total volume
    */
   private async getVolume(bags: (string | MilkBag)[]): Promise<number> {
-    const milkBags = areStrings(bags)
-      ? await this.apiClient.find({
-          collection: 'milkBags',
-          where: {
-            id: { in: bags },
-          },
-          pagination: false,
-        })
-      : (bags as MilkBag[]);
+    const milkBags =
+      extractCollection(bags) ||
+      (await this.apiClient.find({
+        collection: 'milkBags',
+        where: { id: { in: extractID(bags) } },
+        pagination: false,
+        select: { volume: true },
+      }));
 
     return milkBags.reduce((total, bag) => total + (bag.volume || 0), 0);
   }

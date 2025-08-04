@@ -6,6 +6,7 @@ import {
   MatchCriteria,
   Request,
   SearchParams,
+  User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import { stringify } from 'qs-esm';
@@ -87,7 +88,7 @@ export class MatchingService {
   async createMatch(
     donationID: string,
     requestID: string,
-    options: MatchOptions = {}
+    options: MatchOptions
   ): Promise<MatchResult> {
     // ... existing code ...
     const [donation, request] = await Promise.all([
@@ -154,15 +155,6 @@ export class MatchingService {
       throw new Error(`No available milk bags found for donation ${donationID}`);
     }
 
-    const deliveryPreference =
-      options.deliveryPreferenceID &&
-      (await this.apiClient.findByID({
-        collection: 'delivery-preferences',
-        id: options.deliveryPreferenceID,
-        select: { preferredMode: true, address: true },
-        depth: 0,
-      }));
-
     // Calculate total volume of matched bags
     const matchedVolume = matchedBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
@@ -171,6 +163,9 @@ export class MatchingService {
       donation,
       request,
       milkBags: matchedBags,
+      delivery: options.delivery,
+      proposedDelivery: options.proposedDelivery,
+      instructions: options.instructions,
     });
 
     // Calculate if the request is fully fulfilled
@@ -187,19 +182,17 @@ export class MatchingService {
   /**
    * Creates a P2O match (donation to organization).
    * @param donationId - ID of the donation
-   * @param organizationId - ID of the organization
-   * @param organizationType - Type of the organization ('hospitals' or 'milkBanks')
+   * @param organization - Organization details (ID and type)
    * @param options - Optional parameters like specific milk bags to match
    * @returns Match result including transaction
    */
   async createP2OMatch(
     donationId: string,
-    organizationId: string,
-    organizationType: 'hospitals' | 'milkBanks',
-    options: P2OMatchOptions = {}
+    organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
+    options: P2OMatchOptions
   ): Promise<P2OMatchResult> {
     // ... existing code ...
-    const donation = await this.apiClient.findByID<'donations'>({
+    const donation = await this.apiClient.findByID({
       collection: 'donations',
       id: donationId,
     });
@@ -210,20 +203,10 @@ export class MatchingService {
     }
 
     // Determine milk bags to match
-    let milkBagIds = options.milkBagIds;
+    let milkBagIds = options.milkBagIDs;
 
     if (!milkBagIds?.length) {
-      // Use all available milk bags from the donation
-      const { docs: allMilkBags } = await this.apiClient.find<'milkBags'>({
-        collection: 'milkBags',
-        pagination: false,
-        where: {
-          id: { in: extractID(donation.details?.bags || []) },
-          status: { equals: 'AVAILABLE' },
-        },
-      });
-
-      milkBagIds = allMilkBags.map((bag) => bag.id);
+      milkBagIds = extractID(donation.details?.bags || []);
     }
 
     if (!milkBagIds.length) {
@@ -231,49 +214,32 @@ export class MatchingService {
     }
 
     // Calculate total volume of matched bags
-    const { docs: matchedBags } = await this.apiClient.find<'milkBags'>({
+    const matchedBags = await this.apiClient.find({
       collection: 'milkBags',
       pagination: false,
-      where: {
-        id: { in: milkBagIds },
-      },
+      where: { id: { in: milkBagIds } },
     });
-
-    const matchedVolume = matchedBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
     // Create the transaction using the TransactionService
-    const transaction = await this.transactionService.createP2OTransaction({
-      donationId,
-      organizationId,
-      organizationType,
-      milkBagIds,
-      volume: matchedVolume,
+    return await this.transactionService.createP2OTransaction({
+      donation,
+      organization,
+      milkBags: extractID(matchedBags),
+      address: options.address,
     });
-
-    // Get the updated donation
-    const updatedDonation = await this.apiClient.findByID<'donations'>({
-      collection: 'donations',
-      id: donationId,
-    });
-
-    return {
-      transaction,
-      donation: updatedDonation,
-    };
   }
 
   /**
    * Creates an O2P match (organization to request).
-   * @param organizationId - ID of the organization
-   * @param organizationType - Type of the organization ('hospitals' or 'milkBanks')
+   *
    * @param requestId - ID of the request
+   * @param organization - Organization details (ID and type)
    * @param options - Optional parameters like specific milk bags to match
    * @returns Match result including transaction and updated request
    */
   async createO2PMatch(
-    organizationId: string,
-    organizationType: 'hospitals' | 'milkBanks',
     requestId: string,
+    organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
     options: O2PMatchOptions
   ): Promise<O2PMatchResult> {
     // ... existing code ...
@@ -283,20 +249,17 @@ export class MatchingService {
     }
 
     // Fetch request and verify milk bags
-    const [request, { docs: milkBags }] = await Promise.all([
-      this.apiClient.findByID<'requests'>({
+    const [request, milkBags] = await Promise.all([
+      this.apiClient.findByID({
         collection: 'requests',
         id: requestId,
       }),
-      this.apiClient.find<'milkBags'>({
+      this.apiClient.find({
         collection: 'milkBags',
         pagination: false,
         where: {
           id: { in: options.milkBagIds },
-          owner: {
-            relationTo: { equals: organizationType },
-            value: { equals: organizationId },
-          },
+          'owner.value': { equals: extractID(organization.value) },
         },
       }),
     ]);
@@ -315,24 +278,12 @@ export class MatchingService {
     const matchedVolume = milkBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
     // Create the transaction using the TransactionService
-    const transaction = await this.transactionService.createO2PTransaction({
-      organizationId,
-      organizationType,
-      requestId,
-      milkBagIds: options.milkBagIds,
-      volume: matchedVolume,
+    return await this.transactionService.createO2PTransaction({
+      organization,
+      request,
+      milkBags,
+      address: options.address,
     });
-
-    // Get the updated request
-    const updatedRequest = await this.apiClient.findByID<'requests'>({
-      collection: 'requests',
-      id: requestId,
-    });
-
-    return {
-      transaction,
-      request: updatedRequest,
-    };
   }
 
   /**

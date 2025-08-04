@@ -1,4 +1,5 @@
 import {
+  Address,
   Delivery,
   Donation,
   MilkBag,
@@ -41,20 +42,20 @@ export interface CreateP2PTransactionParams {
  * Parameters for creating a P2O transaction.
  */
 export interface CreateP2OTransactionParams {
-  donationID: string;
-  organization: { relationTo: 'hospitals' | 'milkBanks'; value: string };
-  addressID: string;
-  milkBagIDs: string[];
+  donation: string | Donation;
+  milkBags: (string | MilkBag)[];
+  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
+  address: string | Address;
 }
 
 /**
  * Parameters for creating an O2P transaction.
  */
 export interface CreateO2PTransactionParams {
-  requestID: string;
-  organization: { relationTo: 'hospitals' | 'milkBanks'; value: string };
-  addressID: string;
-  milkBagIDs: string[];
+  request: string | Request;
+  milkBags: (string | MilkBag)[];
+  address: string | Address;
+  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
 }
 
 /**
@@ -80,7 +81,11 @@ export interface ITransactionService {
    * @param params - Transaction parameters
    * @returns The created transaction
    */
-  createP2OTransaction(params: CreateP2OTransactionParams): Promise<Transaction>;
+  createP2OTransaction(params: CreateP2OTransactionParams): Promise<{
+    transaction: Transaction;
+    donation: Donation;
+    milkBags: MilkBag[];
+  }>;
 
   /**
    * Creates a new O2P (Organization to Peer) transaction.
@@ -88,7 +93,11 @@ export interface ITransactionService {
    * @param params - Transaction parameters
    * @returns The created transaction
    */
-  createO2PTransaction(params: CreateO2PTransactionParams): Promise<Transaction>;
+  createO2PTransaction(params: CreateO2PTransactionParams): Promise<{
+    transaction: Transaction;
+    request: Request;
+    milkBags: MilkBag[];
+  }>;
 
   /**
    * Proposes delivery option for a transaction, initiating the negotiation process.

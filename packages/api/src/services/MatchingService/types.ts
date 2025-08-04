@@ -1,7 +1,8 @@
 import { PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import {
+  Address,
   CollectionSlug,
-  DeliveryMode,
+  Delivery,
   Donation,
   MilkBag,
   Request,
@@ -126,7 +127,8 @@ export interface P2OMatchOptions {
   /**
    * IDs of specific milk bags to match
    */
-  milkBagIds?: string[];
+  milkBagIDs?: string[];
+  address: string | Address;
 }
 
 /**
@@ -152,6 +154,8 @@ export interface O2PMatchOptions {
    * IDs of milk bags to match (required for O2P matches)
    */
   milkBagIds: string[];
+
+  address: string | Address;
 }
 
 /**
@@ -181,10 +185,11 @@ export interface MatchOptions {
   /**
    * Preferred delivery mode
    */
-  deliveryMode?: DeliveryMode;
+  delivery: NonNullable<Delivery['confirmedDelivery']>;
+  proposedDelivery?: NonNullable<Delivery['proposedDelivery']>[number];
 
   /**
-   * ID of a delivery preference to use
+   * Instructions for the match
    */
-  deliveryPreferenceID?: string;
+  instructions?: string;
 }

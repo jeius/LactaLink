@@ -239,7 +239,9 @@ export interface Config {
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
-    notificationCategories: NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
+    notificationCategories:
+      | NotificationCategoriesSelect<false>
+      | NotificationCategoriesSelect<true>;
     notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     notificationTypes: NotificationTypesSelect<false> | NotificationTypesSelect<true>;
@@ -248,7 +250,9 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-locked-documents':
+      | PayloadLockedDocumentsSelect<false>
+      | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -494,7 +498,15 @@ export interface DeliveryPreference {
   /**
    * Days available for pickup, delivery, or meet-up.
    */
-  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+  availableDays: (
+    | 'MONDAY'
+    | 'TUESDAY'
+    | 'WEDNESDAY'
+    | 'THURSDAY'
+    | 'FRIDAY'
+    | 'SATURDAY'
+    | 'SUNDAY'
+  )[];
   donations?: {
     docs?: (string | Donation)[];
     hasNextPage?: boolean;
@@ -2398,7 +2410,6 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface Auth {
   [k: string]: unknown;
 }
-
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}
