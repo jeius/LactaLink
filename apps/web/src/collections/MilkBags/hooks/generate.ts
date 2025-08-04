@@ -3,6 +3,26 @@ import { MilkBag } from '@lactalink/types';
 import { randomBytes } from 'crypto';
 import { CollectionBeforeChangeHook } from 'payload';
 
+export const generateTitle: CollectionBeforeChangeHook<MilkBag> = async ({ data }) => {
+  if (!data.code || !data.volume) return data;
+
+  data.title = `${data.code} - ${data.volume} mL`;
+
+  return data;
+};
+
+export const generateExpiry: CollectionBeforeChangeHook<MilkBag> = async ({ data, operation }) => {
+  if (!data.expiresAt && data.collectedAt && operation === 'create') {
+    // If no expiry date is set, generate one based on the collectedAt date
+    const dateCollected = data.collectedAt;
+    const expiryDate = new Date(dateCollected);
+    expiryDate.setDate(expiryDate.getDate() + MILK_EXPIRY_DAYS);
+    data.expiresAt = expiryDate.toISOString();
+  }
+
+  return data;
+};
+
 export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
   data,
   operation,
@@ -73,26 +93,6 @@ export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
     // Assign the unique code
     data.code = code;
     req.payload.logger.info(`Generated unique milk bag code: ${code}`);
-  }
-
-  return data;
-};
-
-export const generateTitle: CollectionBeforeChangeHook<MilkBag> = async ({ data }) => {
-  if (!data.code || !data.volume) return data;
-
-  data.title = `${data.code} - ${data.volume} mL`;
-
-  return data;
-};
-
-export const generateExpiry: CollectionBeforeChangeHook<MilkBag> = async ({ data, operation }) => {
-  if (!data.expiresAt && data.collectedAt && operation === 'create') {
-    // If no expiry date is set, generate one based on the collectedAt date
-    const dateCollected = data.collectedAt;
-    const expiryDate = new Date(dateCollected);
-    expiryDate.setDate(expiryDate.getDate() + MILK_EXPIRY_DAYS);
-    data.expiresAt = expiryDate.toISOString();
   }
 
   return data;

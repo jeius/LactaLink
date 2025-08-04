@@ -5,7 +5,7 @@ export const MILK_BAG_STATUS = {
   CONSUMED: { label: 'Consumed', value: 'CONSUMED' },
   EXPIRED: { label: 'Expired', value: 'EXPIRED' },
   DISCARDED: { label: 'Discarded', value: 'DISCARDED' },
-};
+} as const;
 
 export const MILK_BAG_OWNERSHIP_TRANSFER_REASONS = {
   DONATION_COMPLETED: { label: 'Donation Completed', value: 'DONATION_COMPLETED' },

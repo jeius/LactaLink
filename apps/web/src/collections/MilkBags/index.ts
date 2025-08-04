@@ -9,6 +9,7 @@ import {
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
+import { initializeMilkBag } from './hooks/initialize';
 import { updateOwnershipHistory } from './hooks/updateOwnershipHistory';
 
 const REASON_OPTIONS = MILK_BAG_OWNERSHIP_TRANSFER_REASONS;
@@ -28,6 +29,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     defaultColumns: ['code', 'volume', 'status', 'collectedAt', 'expiresAt'],
   },
   hooks: {
+    beforeValidate: [initializeMilkBag],
     beforeChange: [
       generateCreatedBy,
       generateOwner,
