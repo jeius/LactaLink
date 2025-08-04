@@ -1,11 +1,12 @@
 import {
   Delivery,
-  FetchGetResult,
-  FindArgs,
   ProposedDelivery,
+  SelectFromCollectionSlug,
   Transaction,
   User,
-} from '@lactalink/types';
+} from '../payload-types';
+
+import { FindMany, FindManyResult } from '../api';
 
 /**
  * Parameters for updating delivery details.
@@ -189,8 +190,12 @@ export interface ITransactionService {
    * @param options - Optional query parameters
    * @returns List of paginated transactions
    */
-  getUserTransactions(
+  getUserTransactions<
+    TSelect extends
+      SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
+    TPaginate extends boolean = boolean,
+  >(
     profileID: string,
-    options?: FindArgs<'transactions', true>
-  ): Promise<FetchGetResult<Transaction>>;
+    options?: FindMany<'transactions', TSelect, TPaginate>
+  ): Promise<FindManyResult<'transactions', TSelect, TPaginate>>;
 }

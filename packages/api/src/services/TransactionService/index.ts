@@ -2,10 +2,12 @@ import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactali
 import {
   DeliveryAgreements,
   Donation,
-  FindArgs,
+  FindMany,
+  FindManyResult,
   IApiClient,
   MilkBag,
   Request,
+  SelectFromCollectionSlug,
   Transaction,
   User,
 } from '@lactalink/types';
@@ -529,7 +531,14 @@ export class TransactionService implements ITransactionService {
     });
   }
 
-  async getUserTransactions(profileID: string, options?: FindArgs<'transactions', true>) {
+  async getUserTransactions<
+    TSelect extends
+      SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
+    TPaginate extends boolean = boolean,
+  >(
+    profileID: string,
+    options?: FindMany<'transactions', TSelect, TPaginate>
+  ): Promise<FindManyResult<'transactions', TSelect, TPaginate>> {
     const result = await this.apiClient.find({
       ...options,
       collection: 'transactions',
@@ -621,16 +630,20 @@ export class TransactionService implements ITransactionService {
    * @returns The updated status history array, containing all previous entries and the new status entry.
    */
   private updateStatusHistory(
-    transaction: Transaction,
+    transaction: Partial<Transaction>,
     status: keyof typeof TRANSACTION_STATUS,
     markedBy: NonNullable<User['profile']>
   ): NonNullable<Transaction['tracking']>['statusHistory'] {
     const existingStatusHistory = transaction.tracking?.statusHistory || [];
     let senderOrRecipient: string | undefined;
 
-    const markedByID = extractID(markedBy.value);
+    if (!transaction.sender || !transaction.recipient) {
+      throw new Error('Transaction must have both sender and recipient to update status history');
+    }
+
     const senderID = extractID(transaction.sender.value);
     const recipientID = extractID(transaction.recipient.value);
+    const markedByID = extractID(markedBy.value);
 
     if (senderID === markedByID) {
       senderOrRecipient = 'Sender';
@@ -685,7 +698,7 @@ export class TransactionService implements ITransactionService {
    * Handles all required updates when a transaction is finalized.
    * @param transaction - The completed transaction
    */
-  private async finalizeTransaction(transaction: Transaction): Promise<void> {
+  private async finalizeTransaction(transaction: Partial<Transaction>): Promise<void> {
     const P2P = TRANSACTION_TYPE.P2P.value;
     const P2O = TRANSACTION_TYPE.P2O.value;
     const O2P = TRANSACTION_TYPE.O2P.value;

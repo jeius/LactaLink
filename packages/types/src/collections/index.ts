@@ -1,13 +1,10 @@
-import type { Where as WherePayload } from 'payload';
 import { DeepPartial } from 'react-hook-form';
-import { Avatar, Config, User } from '../payload-types';
+import { Avatar, CollectionSlug, Config, User } from '../payload-types';
 import { FilterUnion } from '../utils';
 
 export * from './matching';
 
 export type Collections = Config['collections'][keyof Config['collections']];
-
-export type CollectionSlug = keyof Config['collections'];
 
 type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug];
 
@@ -71,8 +68,6 @@ export type CollectionOperationData<
     ? CollectionUpdateData<T>
     : undefined;
 
-export type Where = WherePayload;
-
 // Helper to decrement depth
 type DecrementDepth = [never, 0, 1, 2, 3, 4, 5];
 export type Select<T, Depth extends number = 2> = Depth extends 0
@@ -95,6 +90,3 @@ type NestedPopulate<T> = {
 export type Populate = {
   [K in keyof Config['collections']]?: NestedPopulate<Config['collections'][K]>;
 };
-
-type SortValue<T> = `${'' | '-'}${Extract<keyof T, string>}`;
-export type Sort<T> = SortValue<T> | SortValue<T>[];

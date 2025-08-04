@@ -2,25 +2,33 @@ import {
   ApiFetchArgs,
   ApiMethod,
   BaseApiFetchArgs,
-  Collection,
   CollectionSlug,
-  CreateArgs,
-  CreateFileArgs,
+  CreateOptions,
   CreateResult,
-  FetchGetResult,
+  DeleteByID,
+  DeleteByIDResult,
+  DeleteMany,
+  DeleteManyResult,
   FileCollectionSlug,
-  FindArgs,
-  FindByIDArgs,
-  FindResult,
+  FindMany,
+  FindManyResult,
+  FindOne,
+  FindOneResult,
   GetPreference,
-  UpdateByIDArgs,
+  SelectFromCollectionSlug,
+  TransformCollectionWithSelect,
+  UpdateByID,
   UpdateByIDResult,
+  UpdateMany,
+  UpdateManyResult,
   UpdatePreference,
+  UploadFile,
 } from '@lactalink/types';
 import { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
 import { mergeHeaders } from '@lactalink/utilities';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'qs-esm';
+import { PaginatedDocs } from '../../types/dist/payload-types/database';
 import { AuthClient } from './auth/AuthClient';
 import { apiFetch } from './utils/apiFetch';
 
@@ -65,19 +73,19 @@ export class ApiClient implements IApiClient {
   /**
    * Common method to handle API requests with error handling
    */
-  private _makeApiRequest = async <TResponse>(
+  private _makeApiRequest = async <TData>(
     endpoint: string,
-    method: ApiFetchArgs<CollectionSlug>['method'],
+    method: ApiMethod,
     body?: ApiFetchArgs<CollectionSlug>['body'],
     customHeaders?: Headers
-  ): Promise<TResponse> => {
+  ): Promise<TData> => {
     const options = await this._getFetchOptions();
     const { url: apiUrl, ...restOfFetchOptions } = options;
 
     const url = new URL(endpoint, apiUrl);
     const headers = customHeaders || options.headers;
 
-    const res = await apiFetch<TResponse>({
+    const res = await apiFetch<TData>({
       ...restOfFetchOptions,
       url,
       headers,
@@ -148,10 +156,10 @@ export class ApiClient implements IApiClient {
     return this.getAppEnvironment() === 'nextjs';
   };
 
-  fetch = async <TResponse>(
+  fetch = async <TData>(
     endpoint: string,
     options?: { method: ApiMethod; body?: Record<string, unknown>; headers?: Headers }
-  ): Promise<TResponse> => {
+  ): Promise<TData> => {
     const fetchOptions = await this._getFetchOptions();
     const { url: apiUrl, ...restOfFetchOptions } = fetchOptions;
     const { method = 'GET', body } = options || {};
@@ -159,7 +167,7 @@ export class ApiClient implements IApiClient {
     const url = new URL(endpoint, apiUrl);
     const headers = options?.headers || fetchOptions.headers;
 
-    const res = await apiFetch<TResponse>({
+    const res = await apiFetch<TData>({
       ...restOfFetchOptions,
       url,
       headers,
@@ -174,68 +182,105 @@ export class ApiClient implements IApiClient {
     return res.data;
   };
 
-  find = async <Slug extends CollectionSlug, IsPaginated extends boolean = true>(
-    args: FindArgs<Slug, IsPaginated>
-  ): Promise<FindResult<Slug, IsPaginated>> => {
+  find = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+    TPaginate extends boolean = boolean,
+  >(
+    args: FindMany<TSlug, TSelect>
+  ): Promise<FindManyResult<TSlug, TSelect, TPaginate>> => {
     const { collection, ...searchParams } = args;
 
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
-    const result = await this._makeApiRequest<FetchGetResult<Collection<Slug>>>(endpoint, 'GET');
+    const result = await this._makeApiRequest<
+      PaginatedDocs<TransformCollectionWithSelect<TSlug, TSelect>>
+    >(endpoint, 'GET');
 
-    return (searchParams.pagination ? result : result.docs) as FindResult<Slug, IsPaginated>;
+    return (searchParams.pagination ? result : result.docs) as FindManyResult<
+      TSlug,
+      TSelect,
+      TPaginate
+    >;
   };
 
-  findByID = async <Slug extends CollectionSlug>(
-    args: FindByIDArgs<Slug>
-  ): Promise<Collection<Slug>> => {
+  findByID = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: FindOne<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>> => {
     const { collection, id, ...searchParams } = args;
     const queryParams = { ...searchParams, pagination: false };
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
 
-    return this._makeApiRequest<Collection<Slug>>(endpoint, 'GET');
+    return this._makeApiRequest<FindOneResult<TSlug, TSelect>>(endpoint, 'GET');
   };
 
-  create = async <Slug extends CollectionSlug>(
-    args: CreateArgs<Slug>
-  ): Promise<Collection<Slug>> => {
+  create = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: CreateOptions<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>> => {
     const { collection, data, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
-    const result = await this._makeApiRequest<CreateResult<Collection<Slug>>>(
-      endpoint,
-      'POST',
-      data
-    );
+    const result = await this._makeApiRequest<CreateResult<TSlug, TSelect>>(endpoint, 'POST', data);
     return result.doc;
   };
 
-  createFile = async <Slug extends FileCollectionSlug>(
-    args: CreateFileArgs<Slug>
-  ): Promise<Collection<Slug>> => {
-    const { collection, data } = args;
+  uploadFile = async <
+    TSlug extends FileCollectionSlug = FileCollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UploadFile<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>> => {
+    const { collection, data, file } = args;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('_payload', JSON.stringify(data));
 
     // Create custom headers for file upload
     const options = await this._getFetchOptions();
     const headers = new Headers(options.headers);
     headers.set('Content-Type', 'multipart/form-data');
 
-    const result = await this._makeApiRequest<CreateResult<Collection<Slug>>>(
+    const result = await this._makeApiRequest<CreateResult<TSlug, TSelect>>(
       `/api/${collection}`,
       'POST',
-      data,
+      formData,
       headers
     );
     return result.doc;
   };
 
-  updateByID = async <Slug extends CollectionSlug>(
-    args: UpdateByIDArgs<Slug>
-  ): Promise<Collection<Slug>> => {
+  update = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UpdateMany<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>[]> => {
+    const { collection, data, ...searchParams } = args;
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
+    const result = await this._makeApiRequest<UpdateManyResult<TSlug, TSelect>>(
+      endpoint,
+      'PATCH',
+      data
+    );
+    return result.docs;
+  };
+
+  updateByID = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UpdateByID<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>> => {
     const { collection, data, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
-
-    const result = await this._makeApiRequest<UpdateByIDResult<Collection<Slug>>>(
+    const result = await this._makeApiRequest<UpdateByIDResult<TSlug, TSelect>>(
       endpoint,
       'PATCH',
       data
@@ -243,25 +288,28 @@ export class ApiClient implements IApiClient {
     return result.doc;
   };
 
-  delete = async <Slug extends CollectionSlug, IsPaginated extends boolean = true>(
-    args: FindArgs<Slug, IsPaginated>
-  ): Promise<FindResult<Slug, IsPaginated>> => {
+  delete = async <
+    TSlug extends CollectionSlug = CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: DeleteMany<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>[]> => {
     const { collection, ...searchParams } = args;
-
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
-
-    const result = await this._makeApiRequest<FetchGetResult<Collection<Slug>>>(endpoint, 'DELETE');
-
-    return (searchParams.pagination ? result : result.docs) as FindResult<Slug, IsPaginated>;
+    const result = await this._makeApiRequest<DeleteManyResult<TSlug, TSelect>>(endpoint, 'DELETE');
+    return result.docs;
   };
 
-  deleteByID = async <Slug extends CollectionSlug>(
-    args: FindByIDArgs<Slug>
-  ): Promise<Collection<Slug>> => {
+  deleteByID = async <
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: DeleteByID<TSlug, TSelect>
+  ): Promise<DeleteByIDResult<TSlug, TSelect>> => {
     const { collection, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
 
-    return this._makeApiRequest<Collection<Slug>>(endpoint, 'DELETE');
+    return this._makeApiRequest<DeleteByIDResult<TSlug, TSelect>>(endpoint, 'DELETE');
   };
 
   getPreference = async <TValue = unknown>(key: string): Promise<TValue> => {

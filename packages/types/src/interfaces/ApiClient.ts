@@ -1,16 +1,19 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import {
   ApiMethod,
-  Collection,
-  CollectionSlug,
-  CreateArgs,
-  CreateFileArgs,
-  FileCollectionSlug,
-  FindArgs,
-  FindByIDArgs,
-  FindResult,
-  UpdateByIDArgs,
-} from '@lactalink/types';
-import { SupabaseClient } from '@supabase/supabase-js';
+  CreateOptions,
+  DeleteByID,
+  DeleteMany,
+  FindMany,
+  FindManyResult,
+  FindOne,
+  FindOneResult,
+  UpdateByID,
+  UpdateMany,
+  UploadFile,
+} from '../api';
+import { FileCollectionSlug } from '../collections';
+import { CollectionSlug, SelectFromCollectionSlug } from '../payload-types';
 import { IAuthClient } from './AuthClient';
 
 /**
@@ -108,44 +111,76 @@ export interface IApiClient {
 
   /**
    * Finds documents in a collection with optional pagination and filtering.
-   * @template Slug - The collection slug type
-   * @template IsPaginated - Whether the results should be paginated
+   * @template TSlug - The collection slug type
+   * @template TPaginate - Whether the results should be paginated
    * @param args - Arguments for the find operation including collection, query params, filters, etc.
    * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
    */
-  find<Slug extends CollectionSlug, IsPaginated extends boolean = true>(
-    args: FindArgs<Slug, IsPaginated>
-  ): Promise<FindResult<Slug, IsPaginated>>;
+  find<
+    TSlug extends CollectionSlug,
+    TPaginate extends boolean = boolean,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: FindMany<TSlug, TSelect, TPaginate>
+  ): Promise<FindManyResult<TSlug, TSelect, TPaginate>>;
 
   /**
    * Finds a single document by its ID in the specified collection.
-   * @template Slug - The collection slug type
+   * @template TSlug - The collection slug type
    * @param args - Arguments containing the collection slug and document ID
    * @returns Promise resolving to the found document
    * @throws Error if document is not found or access is denied
    */
-  findByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<Collection<Slug>>;
+  findByID<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: FindOne<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>>;
 
   /**
    * Creates a new document in the specified collection.
-   * @template Slug - The collection slug type
+   * @template TSlug - The collection slug type
    * @param args - Arguments containing the collection slug and document data
    * @returns Promise resolving to the created document
    * @throws Error if creation fails or validation errors occur
    */
-  create<Slug extends CollectionSlug>(args: CreateArgs<Slug>): Promise<Collection<Slug>>;
+  create<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: CreateOptions<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>>;
 
   /**
    * Creates a new file document in the specified file collection.
    * Handles file upload and document creation in one operation.
-   * @template Slug - The file collection slug type
+   * @template TSlug - The file collection slug type
    * @param args - Arguments containing the collection slug and file data
    * @returns Promise resolving to the created file document
    * @throws Error if file upload or creation fails
    */
-  createFile<Slug extends FileCollectionSlug>(
-    args: CreateFileArgs<Slug>
-  ): Promise<Collection<Slug>>;
+  uploadFile<
+    TSlug extends FileCollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UploadFile<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>>;
+
+  /**
+   * Updates multiple documents in a collection with the provided data.
+   * This method allows bulk updates based on a filter query.
+   * @template Slug - The collection slug type
+   * @param args - Arguments containing the collection slug, document ID, and update data
+   * @returns Promise resolving to the updated document
+   * @throws Error if document is not found, access is denied, or validation fails
+   */
+  update<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UpdateMany<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>[]>;
 
   /**
    * Updates an existing document by its ID in the specified collection.
@@ -154,18 +189,27 @@ export interface IApiClient {
    * @returns Promise resolving to the updated document
    * @throws Error if document is not found, access is denied, or validation fails
    */
-  updateByID<Slug extends CollectionSlug>(args: UpdateByIDArgs<Slug>): Promise<Collection<Slug>>;
+  updateByID<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: UpdateByID<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>>;
 
   /**
-   * Deletes documents in a collection with optional pagination and filtering.
+   * Deletes multiple documents in a collection based on a filter query.
+   * This method allows bulk deletion of documents matching the specified criteria.
    * @template Slug - The collection slug type
    * @template IsPaginated - Whether the results should be paginated
    * @param args - Arguments for the delete operation including collection, query params, filters, etc.
    * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
    */
-  delete<Slug extends CollectionSlug, IsPaginated extends boolean = true>(
-    args: FindArgs<Slug, IsPaginated>
-  ): Promise<FindResult<Slug, IsPaginated>>;
+  delete<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: DeleteMany<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>[]>;
 
   /**
    * Deletes a single document by its ID in the specified collection.
@@ -174,7 +218,12 @@ export interface IApiClient {
    * @returns Promise resolving to the deleted document
    * @throws Error if document is not found or access is denied
    */
-  deleteByID<Slug extends CollectionSlug>(args: FindByIDArgs<Slug>): Promise<Collection<Slug>>;
+  deleteByID<
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  >(
+    args: DeleteByID<TSlug, TSelect>
+  ): Promise<FindOneResult<TSlug, TSelect>>;
 
   /**
    * Retrieves a user preference value by its key.

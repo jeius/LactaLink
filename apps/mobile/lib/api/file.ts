@@ -1,8 +1,6 @@
 import { getApiClient } from '@lactalink/api';
-import { CreateFileArgs, FileCollectionSlug, ImageSchema } from '@lactalink/types';
+import { FileCollectionSlug, ImageSchema } from '@lactalink/types';
 import { NativeFile } from '../types';
-
-const FormData = global.FormData;
 
 type FileData = { url: string; filename: string; mimeType: string };
 export function createNativeFile(data: FileData): NativeFile {
@@ -19,13 +17,7 @@ export async function uploadImage<TSlug extends FileCollectionSlug = FileCollect
   const apiClient = getApiClient();
 
   const file = createNativeFile(data);
-  const fd = new FormData();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fd.append('file', file as any); // Cast to any to satisfy FormData type requirements
-
-  const args: CreateFileArgs<TSlug> = { data: fd, collection };
-
-  const res = await apiClient.createFile(args);
-  return res;
+  return await apiClient.uploadFile({ collection, data: { alt: data.alt }, file: file as any });
 }
