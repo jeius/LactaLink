@@ -1,23 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Collection } from '@lactalink/types';
-
-type Value = string | Collection | undefined | null;
-type CollectionType<T extends Value | Value[]> = T extends Value[]
-  ? Extract<NonNullable<T[number]>, Collection>[]
-  : T extends Value
-    ? Extract<NonNullable<T>, Collection> | null
+type ExcludedValue = string | number | undefined | null;
+type CollectionObject<T> = T extends (ExcludedValue | object)[]
+  ? Exclude<NonNullable<T[number]>, ExcludedValue>[]
+  : T extends ExcludedValue | object
+    ? Exclude<NonNullable<T>, ExcludedValue> | null
     : never;
 
 /**
- * Extracts a single Collection or an array of Collections from a value.
- * @param value - The value to extract from, can be a Collection, an array of Collections, or undefined/null.
- * @returns A Collection, an array of Collections, or null if no valid Collection is found
+ * Extracts the collection object or array of collection objects from a value, excluding strings and numbers.
+ * If the value is an array, it filters out any strings or numbers.
+ *
+ * @param value - The value to extract the collection from.
+ * @returns A collection object or null if the value is not a valid collection.
  */
-export function extractCollection<T extends Value | Value[]>(value: T): CollectionType<T> {
-  if (Array.isArray(value)) {
-    return value.filter((item) => typeof item !== 'string') as any;
-  } else if (value && typeof value !== 'string') {
-    return value as any;
+export function extractCollection<T>(value: T): CollectionObject<T> {
+  function isValidObject<T>(val: T): boolean {
+    return val !== null && val !== undefined && typeof val !== 'string' && typeof val !== 'number';
   }
-  return null as any;
+
+  if (Array.isArray(value)) {
+    return value.filter((v) => isValidObject(v)) as CollectionObject<T>;
+  } else if (isValidObject(value)) {
+    return value as CollectionObject<T>;
+  }
+  return null as CollectionObject<T>;
 }
