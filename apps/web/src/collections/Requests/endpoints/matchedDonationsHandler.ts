@@ -25,7 +25,7 @@ export const matchedDonationsHandler = createPayloadHandler({
 
     const match = payload.db.drizzle
       .$with('findMatch')
-      .as((qb) => matchDonationsAndRequestsByCriteria(qb, criteria));
+      .as(matchDonationsAndRequestsByCriteria(criteria));
 
     const requestIDCondition = eq(match.requestID, requestID);
 

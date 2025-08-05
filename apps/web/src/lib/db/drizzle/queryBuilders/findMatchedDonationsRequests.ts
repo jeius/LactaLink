@@ -12,7 +12,7 @@ import {
   requests_rels,
 } from '../schema/payload-schema';
 
-export const findMatchedDonationsRequests = (qb: QueryBuilder) => {
+export function findMatchedDonationsRequests(qb: QueryBuilder) {
   const mode_don = alias(delivery_preferences_preferred_mode, 'mode_don');
   const day_don = alias(delivery_preferences_available_days, 'day_don');
   const addr_don = alias(addresses, 'addr_don');
@@ -83,4 +83,4 @@ export const findMatchedDonationsRequests = (qb: QueryBuilder) => {
         eq(requests.status, 'AVAILABLE')
       )
     );
-};
+}
