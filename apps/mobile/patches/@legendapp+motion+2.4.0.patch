@@ -1,0 +1,24 @@
+diff --git a/node_modules/@legendapp/motion/lib/typescript/AnimatedComponents.d.ts b/node_modules/@legendapp/motion/lib/typescript/AnimatedComponents.d.ts
+index c7aaad3..c5ced7a 100644
+--- a/node_modules/@legendapp/motion/lib/typescript/AnimatedComponents.d.ts
++++ b/node_modules/@legendapp/motion/lib/typescript/AnimatedComponents.d.ts
+@@ -1,7 +1,18 @@
+ import { Animated } from 'react-native';
+ import { MotionPressable } from './MotionPressable';
++import type { ForwardRefExoticComponent, RefAttributes } from 'react';
++import type { ViewProps, ViewStyle, View } from 'react-native';
++import type { Animated } from 'react-native';
++import type { MotionComponentProps } from './Interfaces';
++
++type MotionViewProps<TAnimate = unknown, TAnimateProps = unknown> =
++  Animated.AnimatedProps<
++    ViewProps &
++    MotionComponentProps<typeof import("react-native").View, import("react-native").ViewStyle, TAnimate, TAnimateProps, unknown>
++  >;
++
+ export declare namespace Motion {
+-    const View: <TAnimate, TAnimateProps>(p: Animated.AnimatedProps<import("react-native").ViewProps & import("react").RefAttributes<import("react-native").View>> & import("./Interfaces").MotionComponentProps<typeof import("react-native").View, import("react-native").ViewStyle, TAnimate, TAnimateProps, unknown>, ref: import("react").Ref<import("react-native").View>) => import("react").ReactElement;
++    const View: ForwardRefExoticComponent<MotionViewProps & RefAttributes<import("react-native").View>>;
+     const Text: <TAnimate, TAnimateProps>(p: Animated.AnimatedProps<import("react-native").TextProps & import("react").RefAttributes<import("react-native").Text>> & import("./Interfaces").MotionComponentProps<typeof import("react-native").Text, import("react-native").TextStyle, TAnimate, TAnimateProps, unknown>, ref: import("react").Ref<import("react-native").Text>) => import("react").ReactElement;
+     const FlatList: <TAnimate, TAnimateProps>(p: Animated.AnimatedProps<Animated.AnimatedProps<import("react-native").FlatListProps<unknown>> & import("react").RefAttributes<Animated.FlatList<unknown>>> & import("./Interfaces").MotionComponentProps<typeof Animated.FlatList, Animated.Value | Animated.AnimatedInterpolation | Animated.WithAnimatedObject<import("react-native").ViewStyle>, TAnimate, TAnimateProps, unknown>, ref: import("react").Ref<Animated.FlatList<unknown>>) => import("react").ReactElement;
+     const Image: <TAnimate, TAnimateProps>(p: Animated.AnimatedProps<import("react-native").ImageProps & import("react").RefAttributes<import("react-native").Image>> & import("./Interfaces").MotionComponentProps<typeof import("react-native").Image, import("react-native").ImageStyle, TAnimate, TAnimateProps, unknown>, ref: import("react").Ref<import("react-native").Image>) => import("react").ReactElement;

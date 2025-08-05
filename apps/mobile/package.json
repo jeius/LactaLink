@@ -17,7 +17,8 @@
     "preview:update": "eas update --channel preview --branch preview-update --platform android --message \"Updated preview build\" --non-interactive",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
-    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm install && pnpm run build:deps"
+    "eas-build-pre-install": "echo node-linker=hoisted >> ../../.npmrc && pnpm install && pnpm run build:deps",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",

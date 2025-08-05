@@ -26,6 +26,8 @@
   },
   "devDependencies": {
     "glob": "^11.0.3",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "shx": "^0.4.0",
