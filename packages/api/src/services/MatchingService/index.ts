@@ -274,9 +274,6 @@ export class MatchingService {
       throw new Error('Some milk bags do not belong to the specified organization');
     }
 
-    // Calculate total volume of matched bags
-    const matchedVolume = milkBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
-
     // Create the transaction using the TransactionService
     return await this.transactionService.createO2PTransaction({
       organization,

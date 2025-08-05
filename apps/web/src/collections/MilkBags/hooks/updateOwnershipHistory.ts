@@ -15,8 +15,7 @@ export const updateOwnershipHistory: CollectionBeforeChangeHook<MilkBag> = async
     const newOwnershipRecord: NonNullable<MilkBagOwnershipHistory>[number] = {
       previousOwner: originalDoc.owner,
       newOwner: data.owner,
-      transferReason:
-        data.transferReason || MILK_BAG_OWNERSHIP_TRANSFER_REASONS.DONATION_COMPLETED.value,
+      transferReason: MILK_BAG_OWNERSHIP_TRANSFER_REASONS.DONATION_COMPLETED.value,
       transferredAt: new Date().toISOString(),
     };
 
