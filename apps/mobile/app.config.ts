@@ -49,13 +49,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
-      'expo-maps',
-      {
-        requestLocationPermission: true,
-        locationPermission: 'Allow LactaLink to access your location',
-      },
-    ],
-    [
       'expo-location',
       {
         locationAlwaysAndWhenInUsePermission: 'Allow LactaLink to use your location.',
