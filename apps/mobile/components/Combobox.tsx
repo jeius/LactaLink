@@ -1,4 +1,9 @@
-import { Collection, CollectionSlug, Where } from '@lactalink/types';
+import {
+  CollectionSlug,
+  SelectFromCollectionSlug,
+  TransformCollectionWithSelect,
+  Where,
+} from '@lactalink/types';
 import { useDebounce } from '@lactalink/utilities';
 import { useQuery } from '@tanstack/react-query';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -25,7 +30,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
 import { BottomSheetTextInputProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetTextInput';
 import { ListRenderItem } from '@shopify/flash-list';
-import { Dimensions, TextInput } from 'react-native';
+import { TextInput } from 'react-native';
 import { Image } from './Image';
 import { RefreshControl } from './RefreshControl';
 import {
@@ -45,7 +50,10 @@ import {
 import { HStack } from './ui/hstack';
 import { Skeleton } from './ui/skeleton';
 
-export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
+export type ComboboxType<
+  T extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<T> = SelectFromCollectionSlug<T>,
+> = {
   /**
    * The collection from which the items will be fetched.
    * This should be a valid collection slug like 'users', 'products', etc.
@@ -67,19 +75,19 @@ export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
    * Path to the field in the collection that will be used for searching.
    * This should be a field that contains text data, like a name or title.
    */
-  searchPath: keyof Collection<T>;
+  searchPath: keyof TransformCollectionWithSelect<T, TSelect>;
   /**
    * Path to the label field in the collection.
    * This will be used to display the label in the dropdown.
    * If not provided, it will default to the searchPath.
    */
-  labelPath?: keyof Collection<T>;
+  labelPath?: keyof TransformCollectionWithSelect<T, TSelect>;
   /**
    * Path to the description field in the collection.
    * If provided, it will be used to show additional information in the dropdown.
    * @todo Not implemented yet
    */
-  descriptionPath?: keyof Collection<T>;
+  descriptionPath?: keyof TransformCollectionWithSelect<T, TSelect>;
   /**
    * Placeholder text for the search input.
    * This will be displayed when the input is empty.
@@ -103,17 +111,20 @@ export type ComboboxType<T extends CollectionSlug = CollectionSlug> = {
   isLoading?: boolean;
 };
 
-export type InfiniteScrollComboBoxProps<T extends CollectionSlug = CollectionSlug> =
-  ComboboxType<T> & {
-    value?: string | null;
-    onChange?: (val?: string | null) => void;
-    placeholder?: string;
-    isDisabled?: boolean;
-  };
+export type InfiniteScrollComboBoxProps<
+  T extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<T> = SelectFromCollectionSlug<T>,
+> = ComboboxType<T, TSelect> & {
+  value?: string | null;
+  onChange?: (val?: string | null) => void;
+  placeholder?: string;
+  isDisabled?: boolean;
+};
 
-const DEVICE_WIDTH = Dimensions.get('window').width;
-
-export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
+export default function ComboBox<
+  T extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<T> = SelectFromCollectionSlug<T>,
+>({
   collection,
   limit = 20,
   where: whereParam,
@@ -128,7 +139,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
   icon,
   iconPosition,
   isLoading: isLoadingProp,
-}: InfiniteScrollComboBoxProps<T>) {
+}: InfiniteScrollComboBoxProps<T, TSelect>) {
   const apiClient = useApiClient();
   const inputRef = useRef<BottomSheetTextInputProps & TextInput>(null);
   const bottomSheetModalRef = useRef<BottomSheetModalType>(null);
@@ -151,11 +162,9 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
           id: selected,
           collection,
           depth: 0,
-          //@ts-expect-error typescript cant infer here.
-          select: { [labelPath]: true },
         });
 
-        return (res[labelPath] as string) || null;
+        return String(res[labelPath as unknown as keyof typeof res]) || null;
       }
       return null;
     },
@@ -166,15 +175,11 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
 
   const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
   const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
-  const options: InfiniteFetchOptions<T> = {
+  const options: InfiniteFetchOptions<T, TSelect> = {
     depth: 0,
     where,
-    sort: searchPath,
+    sort: String(searchPath),
     limit,
-    //@ts-expect-error typescript cant infer here.
-    select: descriptionPath
-      ? { [searchPath]: true, [labelPath]: true, [descriptionPath]: true }
-      : { [searchPath]: true, [labelPath]: true },
   };
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage, isRefetching, refetch } =
@@ -224,7 +229,7 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
     [handleClose, setSelected, setSelectedProps]
   );
 
-  const renderItem = useCallback<ListRenderItem<Collection<T>>>(
+  const renderItem = useCallback<ListRenderItem<TransformCollectionWithSelect<T, TSelect>>>(
     ({ item, extraData: { selected } }) => {
       const isSelected = selected === item.id;
       return (
@@ -324,7 +329,6 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
           <BottomSheetFlashList
             data={items}
             renderItem={renderItem}
-            estimatedItemSize={50}
             automaticallyAdjustKeyboardInsets
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
@@ -333,7 +337,6 @@ export default function ComboBox<T extends CollectionSlug = CollectionSlug>({
             ListEmptyComponent={EmptyComponent}
             contentContainerStyle={{ paddingBottom: insets.bottom }}
             ListFooterComponentStyle={{ marginBottom: 36 }}
-            estimatedListSize={{ height: 256, width: DEVICE_WIDTH }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={isLoading ? <Spinner size="large" className="mt-4" /> : null}
             ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}

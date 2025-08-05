@@ -1,5 +1,9 @@
-import { Collection, CollectionSlug } from '@lactalink/types';
-import React, { ComponentProps, FC, useCallback, useEffect, useMemo } from 'react';
+import {
+  CollectionSlug,
+  SelectFromCollectionSlug,
+  TransformCollectionWithSelect,
+} from '@lactalink/types';
+import React, { FC, useCallback, useEffect, useMemo } from 'react';
 
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
@@ -8,45 +12,48 @@ import {
   useInfiniteFetchBySlug,
 } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { formatKebab } from '@lactalink/utilities';
-import { FlashList, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
-import { useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
 import { NoData } from '../NoData';
 import { Spinner } from '../ui/spinner';
 
-export interface InfiniteListItemProps<TSlug extends CollectionSlug = CollectionSlug>
-  extends ListRenderItemInfo<Collection<TSlug>> {
+export interface InfiniteListItemProps<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> extends ListRenderItemInfo<TransformCollectionWithSelect<TSlug, TSelect>> {
   isLoading: boolean;
 }
 
-type FlashListProps<TSlug extends CollectionSlug = CollectionSlug> = Omit<
-  ComponentProps<typeof FlashList<Collection<TSlug>>>,
+type OmittedFlashListProps<T> = Omit<
+  FlashListProps<T>,
   | 'data'
   | 'renderItem'
   | 'refreshControl'
   | 'ItemSeparatorComponent'
   | 'ListEmptyComponent'
-  | 'estimatedListSize'
   | 'onRefresh'
   | 'refreshing'
 >;
 
-export interface InfiniteListProps<TSlug extends CollectionSlug = CollectionSlug>
-  extends FlashListProps<TSlug> {
+export interface InfiniteListProps<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+> extends OmittedFlashListProps<TransformCollectionWithSelect<TSlug, TSelect>> {
   slug: TSlug;
-  fetchOptions?: InfiniteFetchOptions<TSlug>;
-  onChange?: (value: Collection[]) => void;
+  fetchOptions?: InfiniteFetchOptions<TSlug, TSelect>;
+  onChange?: (value: TransformCollectionWithSelect<TSlug, TSelect>[]) => void;
   isLoading?: boolean;
   isFetching?: boolean;
   gap?: number;
   ItemSeparatorComponent?: FC;
-  ItemComponent: FC<InfiniteListItemProps<TSlug>>;
+  ItemComponent: FC<InfiniteListItemProps<TSlug, TSelect>>;
 }
 
-export function InfiniteList<TSlug extends CollectionSlug = CollectionSlug>({
+export function InfiniteList<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+>({
   fetchOptions,
   slug,
-  style,
   onChange,
   isLoading: isLoadingProp,
   isFetching: isFetchingProp,
@@ -54,10 +61,7 @@ export function InfiniteList<TSlug extends CollectionSlug = CollectionSlug>({
   ItemSeparatorComponent,
   ItemComponent,
   ...props
-}: InfiniteListProps<TSlug>) {
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-
+}: InfiniteListProps<TSlug, TSelect>) {
   const {
     data: paginatedData,
     isLoading: isLoadingData,
@@ -80,7 +84,7 @@ export function InfiniteList<TSlug extends CollectionSlug = CollectionSlug>({
         (_, index) =>
           ({
             id: `placeholder-${index}`,
-          }) as Collection<TSlug>
+          }) as TransformCollectionWithSelect<TSlug, TSelect>
       );
     }
     return [];
@@ -93,7 +97,7 @@ export function InfiniteList<TSlug extends CollectionSlug = CollectionSlug>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  const renderItem = useCallback<ListRenderItem<Collection<TSlug>>>(
+  const renderItem = useCallback<ListRenderItem<TransformCollectionWithSelect<TSlug, TSelect>>>(
     (props) => {
       return <ItemComponent {...props} isLoading={isLoading} />;
     },
@@ -121,7 +125,6 @@ export function InfiniteList<TSlug extends CollectionSlug = CollectionSlug>({
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}
       ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
-      estimatedListSize={{ width, height }}
       refreshControl={<RefreshControl refreshing={!isLoading && isFetching} onRefresh={refetch} />}
       onEndReachedThreshold={0.2}
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}

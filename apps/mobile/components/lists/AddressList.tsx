@@ -125,7 +125,6 @@ export function AddressList({
     <BasicList
       {...props}
       slug="addresses"
-      estimatedItemSize={220}
       ItemComponent={ItemComponent}
       ItemSeparatorComponent={SeparatorComponent}
       ListFooterComponent={FooterComponent}

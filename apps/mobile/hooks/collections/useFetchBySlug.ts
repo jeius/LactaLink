@@ -1,17 +1,25 @@
 import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import { CollectionSlug, FindArgs } from '@lactalink/types';
-import { useQuery } from '@tanstack/react-query';
+import {
+  CollectionSlug,
+  FindMany,
+  FindManyResult,
+  SelectFromCollectionSlug,
+} from '@lactalink/types';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-export type FetchOptions<T extends CollectionSlug> = Omit<
-  Partial<FindArgs<T, true>>,
-  'page' | 'pagination'
->;
+export type FetchOptions<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+> = Omit<Partial<FindMany<TSlug, TSelect, false>>, 'page' | 'pagination'>;
 
-export function useFetchBySlug<TSlug extends CollectionSlug>(
+export function useFetchBySlug<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+>(
   enabled: boolean,
-  options: FetchOptions<TSlug> = {}
-) {
+  options: FetchOptions<TSlug, TSelect> = {}
+): UseQueryResult<FindManyResult<TSlug, TSelect, false> | null> {
   const apiClient = useApiClient();
   const { collection } = options;
 
@@ -20,7 +28,7 @@ export function useFetchBySlug<TSlug extends CollectionSlug>(
     queryKey: [...COLLECTION_QUERY_KEY, collection, JSON.stringify(options)],
     queryFn: () => {
       if (!collection) return null;
-      return apiClient.find({
+      return apiClient.find<TSlug, TSelect, false>({
         collection,
         pagination: false,
         depth: 3,

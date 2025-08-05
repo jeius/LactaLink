@@ -1,32 +1,36 @@
-import { Collection, CollectionSlug, Where } from '@lactalink/types';
+import {
+  CollectionSlug,
+  SelectFromCollectionSlug,
+  TransformCollectionWithSelect,
+  Where,
+} from '@lactalink/types';
 import React, { FC, useEffect, useMemo } from 'react';
 
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { areStrings, extractCollection, extractID, formatKebab } from '@lactalink/utilities';
-import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
+import { FlashList, FlashListProps, ListRenderItemInfo } from '@shopify/flash-list';
 import { NoData } from '../NoData';
 
-export interface BasicListItemProps<TSlug extends CollectionSlug = CollectionSlug>
-  extends ListRenderItemInfo<Collection<TSlug>> {
+export interface BasicListItemProps<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> extends ListRenderItemInfo<TransformCollectionWithSelect<TSlug, TSelect>> {
   isLoading: boolean;
 }
 
-export interface BasicListProps<TSlug extends CollectionSlug = CollectionSlug>
-  extends Omit<
-    FlashListProps<Collection<TSlug>>,
-    | 'data'
-    | 'renderItem'
-    | 'refreshControl'
-    | 'ItemSeparatorComponent'
-    | 'ListEmptyComponent'
-    | 'estimatedListSize'
+export interface BasicListProps<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> extends Omit<
+    FlashListProps<TransformCollectionWithSelect<TSlug, TSelect>>,
+    'data' | 'renderItem' | 'refreshControl' | 'ItemSeparatorComponent' | 'ListEmptyComponent'
   > {
-  data: (string | Collection<TSlug>)[];
+  data: (string | TransformCollectionWithSelect<TSlug, TSelect>)[];
   slug: TSlug;
-  ItemComponent: FC<BasicListItemProps<TSlug>>;
-  onChange?: (value: Collection<TSlug>[]) => void;
+  ItemComponent: FC<BasicListItemProps<TSlug, TSelect>>;
+  onChange?: (value: TransformCollectionWithSelect<TSlug, TSelect>[]) => void;
   isLoading?: boolean;
   isFetching?: boolean;
   gap?: number;
@@ -34,7 +38,10 @@ export interface BasicListProps<TSlug extends CollectionSlug = CollectionSlug>
   placeholderLength?: number;
 }
 
-export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
+export function BasicList<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+>({
   data: dataProp,
   slug,
   onChange,
@@ -47,7 +54,7 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
   ItemSeparatorComponent,
   placeholderLength = 3,
   ...props
-}: BasicListProps<TSlug>) {
+}: BasicListProps<TSlug, TSelect>) {
   const shouldFetch = areStrings(dataProp);
 
   const dataIDs = useMemo(
@@ -63,7 +70,7 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
     isFetching: isFetchingData,
     refetch: refetchData,
     error,
-  } = useFetchBySlug(Boolean(dataIDs.length > 0), {
+  } = useFetchBySlug<TSlug, TSelect>(Boolean(dataIDs.length > 0), {
     collection: slug,
     where,
   });
@@ -80,7 +87,7 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
         (_, index) =>
           ({
             id: `placeholder-${index}`,
-          }) as Collection<TSlug>
+          }) as TransformCollectionWithSelect<TSlug, TSelect>
       );
     }
   }, [isLoading, shouldFetch, fetchedData, dataProp, placeholderLength]);
@@ -91,11 +98,6 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
-  const renderItem: ListRenderItem<Collection<TSlug>> = (props) => {
-    const isLoading = props.item.id.includes('placeholder');
-    return <ItemComponent {...props} isLoading={isLoading} />;
-  };
 
   function handleRefresh() {
     onRefresh?.();
@@ -118,7 +120,10 @@ export function BasicList<TSlug extends CollectionSlug = CollectionSlug>({
     <FlashList
       {...props}
       data={data}
-      renderItem={renderItem}
+      renderItem={(props) => {
+        const isLoading = props.item.id.includes('placeholder');
+        return <ItemComponent {...props} isLoading={isLoading} />;
+      }}
       keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}

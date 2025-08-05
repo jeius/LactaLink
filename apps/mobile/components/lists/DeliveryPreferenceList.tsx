@@ -121,7 +121,6 @@ export function DeliveryPreferenceList({
     <BasicList
       {...props}
       slug="delivery-preferences"
-      estimatedItemSize={170}
       ItemComponent={ItemComponent}
       keyExtractor={(item) => item.id}
       ItemSeparatorComponent={SeparatorComponent}

@@ -15,8 +15,8 @@ type CollectionType<T extends Value | Value[]> = T extends Value[]
  */
 export function extractCollection<T extends Value | Value[]>(value: T): CollectionType<T> {
   if (Array.isArray(value)) {
-    return value.filter((item) => typeof item === 'object') as any;
-  } else if (value && typeof value === 'object') {
+    return value.filter((item) => typeof item !== 'string') as any;
+  } else if (value && typeof value !== 'string') {
     return value as any;
   }
   return null as any;

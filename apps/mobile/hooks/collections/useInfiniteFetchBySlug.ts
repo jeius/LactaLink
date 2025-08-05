@@ -1,25 +1,33 @@
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import { CollectionSlug, FindArgs } from '@lactalink/types';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  CollectionSlug,
+  FindMany,
+  FindManyResult,
+  SelectFromCollectionSlug,
+} from '@lactalink/types';
+import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
 
-export type InfiniteFetchOptions<T extends CollectionSlug> = Pick<
-  FindArgs<T, true>,
-  'depth' | 'where' | 'sort' | 'select' | 'limit'
->;
+export type InfiniteFetchOptions<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> = Pick<FindMany<TSlug, TSelect, true>, 'depth' | 'where' | 'sort' | 'select' | 'limit'>;
 
-export function useInfiniteFetchBySlug<TSlug extends CollectionSlug>(
+export function useInfiniteFetchBySlug<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+>(
   collection: TSlug,
   enabled: boolean,
-  options: InfiniteFetchOptions<TSlug> = {}
-) {
+  options: InfiniteFetchOptions<TSlug, TSelect> = {}
+): UseInfiniteQueryResult<InfiniteData<FindManyResult<TSlug, TSelect, true>>> {
   const apiClient = useApiClient();
 
   return useInfiniteQuery({
     enabled,
     queryKey: [...INFINITE_QUERY_KEY, collection, JSON.stringify(options)],
     queryFn: ({ pageParam }) =>
-      apiClient.find({
+      apiClient.find<TSlug, TSelect, true>({
         collection,
         page: pageParam,
         pagination: true,

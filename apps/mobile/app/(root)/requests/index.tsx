@@ -98,7 +98,6 @@ function SceneRenderer({ route }: SceneRendererProps) {
         isFetching={isFetching}
         fetchOptions={{ where: { and: where } }}
         ItemComponent={Item}
-        estimatedItemSize={120}
         contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
         onScrollBeginDrag={({ nativeEvent }) => {
           previousOffset.current = nativeEvent.contentOffset.y;
