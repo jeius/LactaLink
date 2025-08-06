@@ -14,5 +14,7 @@ export const calculateFulfillmentPercentage: CollectionBeforeReadHook<Request> =
     doc.fulfillmentPercentage = percentage;
   }
 
+  doc.initialVolumeNeeded = volumeNeeded + volumeFulfilled;
+
   return doc;
 };

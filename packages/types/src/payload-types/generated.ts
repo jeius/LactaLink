@@ -735,6 +735,10 @@ export interface Request {
    * Percentage of the request that has been fulfilled.
    */
   fulfillmentPercentage?: number | null;
+  /**
+   * Initial volume needed for the request, used for calculations.
+   */
+  initialVolumeNeeded?: number | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
   rejectedAt?: string | null;
@@ -2236,6 +2240,7 @@ export interface RegionsSelect<T extends boolean = true> {
 export interface RequestsSelect<T extends boolean = true> {
   title?: T;
   fulfillmentPercentage?: T;
+  initialVolumeNeeded?: T;
   completedAt?: T;
   cancelledAt?: T;
   rejectedAt?: T;

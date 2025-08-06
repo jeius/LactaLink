@@ -62,6 +62,17 @@ export const Requests: CollectionConfig<'requests'> = {
       },
     },
 
+    {
+      name: 'initialVolumeNeeded',
+      type: 'number',
+      virtual: true,
+      admin: {
+        description: 'Initial volume needed for the request, used for calculations.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+
     ...statusTimeStamps,
 
     {
