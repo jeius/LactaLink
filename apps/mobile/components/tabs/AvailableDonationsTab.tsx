@@ -64,7 +64,7 @@ function Scene({ route }: SceneProps) {
   const auth = useAuth();
 
   const insets = useSafeAreaInsets();
-  const { onScrollBeginDrag, onScrollEndDrag } = useScroll();
+  const { onScrollBeginDrag, onScrollEndDrag, onScroll } = useScroll();
 
   const collectionSlug = route.key as ExtractedSlug;
 
@@ -86,6 +86,7 @@ function Scene({ route }: SceneProps) {
         fetchOptions={{ where }}
         contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
         onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
+        onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
         onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
         ItemComponent={({ item, isLoading }) => {
           if (isLoading) {

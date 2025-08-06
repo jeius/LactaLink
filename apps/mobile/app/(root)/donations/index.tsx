@@ -21,9 +21,7 @@ export default function ListPage() {
   const router = useRouter();
   const { userID } = useLocalSearchParams<{ userID?: string }>();
   const { user } = useAuth();
-  const { scrolledDown } = useScroll();
-
-  console.log('ScrolledDown:', scrolledDown);
+  const { scrollValue } = useScroll();
 
   const hasUser = Boolean(userID);
   const isOwner = user?.id === userID;
@@ -34,13 +32,16 @@ export default function ListPage() {
 
   return (
     <SafeArea safeTop={false} safeBottom={false}>
-      {hasUser ? <UserDonationsTab /> : <AvailableDonationsTab />}
-      <BottomSheetActionButton
-        show={(isOwner && !scrolledDown) || (!hasUser && !scrolledDown)}
-        icon={PlusIcon}
-        label={`Create New Donation`}
-        onPress={handleCreateNew}
-      />
+      <Tab hasUser={hasUser} />
+      {(isOwner || !hasUser) && (
+        <BottomSheetActionButton
+          icon={PlusIcon}
+          scrollValue={scrollValue}
+          animateDistance={200}
+          label={`Create New Donation`}
+          onPress={handleCreateNew}
+        />
+      )}
     </SafeArea>
   );
 }

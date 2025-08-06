@@ -12,6 +12,7 @@ import {
 } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { formatKebab } from '@lactalink/utilities';
 import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
+import { randomUUID } from 'expo-crypto';
 import { NoData } from '../NoData';
 import { RefreshControl } from '../RefreshControl';
 import { Spinner } from '../ui/spinner';
@@ -35,8 +36,8 @@ type OmittedFlashListProps<T> = Omit<
 >;
 
 export interface InfiniteListProps<
-  TSlug extends CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug>,
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > extends OmittedFlashListProps<TransformCollectionWithSelect<TSlug, TSelect>> {
   slug: TSlug;
   fetchOptions?: InfiniteFetchOptions<TSlug, TSelect>;
@@ -72,7 +73,7 @@ export function InfiniteList<
     refetch,
   } = useInfiniteFetchBySlug(slug, true, fetchOptions);
 
-  const isLoading = true;
+  const isLoading = isLoadingProp || isLoadingData;
   const isFetching = isFetchingProp || isRefetching;
 
   const data = useMemo(() => {
@@ -80,10 +81,10 @@ export function InfiniteList<
       return paginatedData.pages.flatMap((page) => page.docs);
     } else if (isLoading) {
       return Array.from(
-        { length: 15 },
+        { length: 100 },
         (_, index) =>
           ({
-            id: `placeholder-${index}`,
+            id: `placeholder-${index}-${randomUUID()}`,
           }) as TransformCollectionWithSelect<TSlug, TSelect>
       );
     }
