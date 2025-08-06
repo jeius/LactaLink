@@ -1,14 +1,20 @@
 import { COLLECTION_QUERY_KEY } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import { CollectionSlug, FindByIDArgs } from '@lactalink/types';
-import { useQuery } from '@tanstack/react-query';
+import { CollectionSlug, FindOne, FindOneResult, SelectFromCollectionSlug } from '@lactalink/types';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-export type FetchOptions<T extends CollectionSlug> = Partial<FindByIDArgs<T>>;
+export type FetchOptions<
+  T extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<T>,
+> = Partial<FindOne<T, TSelect>>;
 
-export function useFetchById<TSlug extends CollectionSlug>(
+export function useFetchById<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+>(
   enabled: boolean = true,
-  options: FetchOptions<TSlug> = {}
-) {
+  options: FetchOptions<TSlug, TSelect> = {}
+): UseQueryResult<FindOneResult<TSlug, TSelect> | null> {
   const apiClient = useApiClient();
   const { id, collection } = options;
 
