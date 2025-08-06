@@ -159,10 +159,10 @@ importers:
         specifier: ^0.2.5
         version: 0.2.5
       '@shopify/flash-list':
-        specifier: 2.0.1
-        version: 2.0.1(@babel/runtime@7.27.6)(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        specifier: ^2.0.2
+        version: 2.0.2(@babel/runtime@7.27.6)(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@shopify/react-native-skia':
-        specifier: 2.2.0
+        specifier: ^2.2.0
         version: 2.2.0(react-native-reanimated@3.17.5(@babel/core@7.28.0)(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@supabase/supabase-js':
         specifier: ^2.49.4
@@ -3547,8 +3547,8 @@ packages:
   '@rushstack/eslint-patch@1.12.0':
     resolution: {integrity: sha512-5EwMtOqvJMMa3HbmxLlF74e+3/HhwBTMcvt3nqVJgGCozO6hzIPOBlwm8mGVNR9SN2IJpxSnlxczyDjcn7qIyw==}
 
-  '@shopify/flash-list@2.0.1':
-    resolution: {integrity: sha512-bLgwTcVOn1kzSL4q0qk6JxE+4je1xF2yUDVoIKmeI9miFPAvIxzI8cCoksUrGmRt/MXRj4mrOhAjvxQY1lSoVg==}
+  '@shopify/flash-list@2.0.2':
+    resolution: {integrity: sha512-zhlrhA9eiuEzja4wxVvotgXHtqd3qsYbXkQ3rsBfOgbFA9BVeErpDE/yEwtlIviRGEqpuFj/oU5owD6ByaNX+w==}
     peerDependencies:
       '@babel/runtime': '*'
       react: '*'
@@ -13616,7 +13616,7 @@ snapshots:
 
   '@rushstack/eslint-patch@1.12.0': {}
 
-  '@shopify/flash-list@2.0.1(@babel/runtime@7.27.6)(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+  '@shopify/flash-list@2.0.2(@babel/runtime@7.27.6)(react-native@0.79.5(@babel/core@7.28.0)(@react-native-community/cli@18.0.0(typescript@5.8.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@babel/runtime': 7.27.6
       react: 19.0.0
