@@ -21,9 +21,10 @@ export function BottomSheetActionButton({
     <AnimatePresence>
       {show && (
         <Motion.View
-          initial={{ opacity: 0, y: 100 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
+          exit={{ opacity: 0, y: 30 }}
+          transition={{ type: 'timing', duration: 150 }}
           style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
         >
           <Box

@@ -1,19 +1,14 @@
-import { useAuth } from '@/hooks/auth/useAuth';
 import { getHexColor } from '@/lib/colors';
-import { COLLECTION_MODES, DONATION_VOLUME_STATUS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { Donation, Image as ImageType } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities';
-import { useRouter } from 'expo-router';
-import { DropletIcon, EditIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
-import React from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
+import React, { ReactNode } from 'react';
+import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import Avatar from '../Avatar';
-import { BasicBadge, BasicBadgeProps } from '../badges';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
-import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
+import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Skeleton } from '../ui/skeleton';
@@ -21,19 +16,18 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 export interface DonationListCardProps extends React.ComponentProps<typeof Card> {
-  data: Donation;
+  data?: Donation;
   isLoading?: boolean;
+  action?: ReactNode;
 }
 
-export function DonationListCard({ data, isLoading, ...props }: DonationListCardProps) {
-  const router = useRouter();
+export function DonationListCard({ data, isLoading, action, ...props }: DonationListCardProps) {
   const { theme } = useTheme();
-  const { profile } = useAuth();
 
   const fillColor = getHexColor(theme, 'primary', 50)?.toString();
   const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return (
       <Card {...props}>
         <CardSkeleton />
@@ -41,44 +35,13 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
     );
   }
 
-  const { details, volume, remainingVolume, donor, volumeStatus } = data;
+  const { details, volume, remainingVolume } = data;
   const { collectionMode, storageType } = details;
 
   const milkSamples = details.milkSample as ImageType[] | null;
   const image = milkSamples && milkSamples.length ? milkSamples[0] : null;
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
-
-  const isOwner = profile?.id === extractID(donor);
-
-  const avatar = extractCollection(donor)?.avatar;
-  const dpName = extractCollection(donor)?.displayName;
-
-  let finalVolume: number;
-  let badgeAction: BasicBadgeProps['action'] = 'success';
-
-  switch (volumeStatus) {
-    case 'UNALLOCATED':
-      badgeAction = 'success';
-      finalVolume = remainingVolume || 0;
-      break;
-    case 'PARTIALLY_ALLOCATED':
-      badgeAction = 'warning';
-      finalVolume = remainingVolume || 0;
-      break;
-    case 'FULLY_ALLOCATED':
-      badgeAction = 'info';
-      finalVolume = volume || 0;
-      break;
-    default:
-      finalVolume = volume || 0;
-      badgeAction = 'muted';
-      break;
-  }
-
-  function handleEditAction(e: GestureResponderEvent) {
-    e.stopPropagation();
-    router.push(`/donations/edit/${data.id}`);
-  }
+  const availableVolumePercentage = (remainingVolume || 0 / (volume || 0)) * 100;
 
   return (
     <Card {...props}>
@@ -104,7 +67,7 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
             <HStack space="xs" className="w-full items-center">
               <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
               <Text className="font-JakartaSemiBold flex-1" numberOfLines={1} ellipsizeMode="tail">
-                {finalVolume} mL
+                {remainingVolume} mL
               </Text>
             </HStack>
 
@@ -121,36 +84,22 @@ export function DonationListCard({ data, isLoading, ...props }: DonationListCard
                 {COLLECTION_MODES[collectionMode || 'MANUAL'].label}
               </Text>
             </HStack>
-
-            <BasicBadge
-              size="sm"
-              action={badgeAction}
-              text={DONATION_VOLUME_STATUS[volumeStatus].label}
-            />
           </VStack>
 
-          <VStack space="sm" className="flex-shrink-0 items-center justify-between">
-            {isOwner && (
-              <Button
-                action="default"
-                variant="link"
-                className="h-fit w-fit p-0"
-                onPress={handleEditAction}
-                hitSlop={8}
-              >
-                <ButtonIcon as={EditIcon} />
-              </Button>
-            )}
-          </VStack>
+          {action && (
+            <VStack space="sm" className="flex-shrink-0 items-center justify-between">
+              {action}
+            </VStack>
+          )}
         </HStack>
 
-        <Button size="xs" variant="link" action="default" className="p-0">
-          <Avatar
-            size="sm"
-            details={{ name: dpName || 'User', avatar: extractCollection(avatar) }}
-          />
-          <ButtonText className="font-JakartaMedium">{dpName}</ButtonText>
-        </Button>
+        <Divider />
+        <AnimatedProgress
+          size="sm"
+          orientation="horizontal"
+          value={availableVolumePercentage}
+          hidden={false}
+        />
       </VStack>
     </Card>
   );

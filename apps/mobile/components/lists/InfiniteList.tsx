@@ -5,7 +5,6 @@ import {
 } from '@lactalink/types';
 import React, { FC, useCallback, useEffect, useMemo } from 'react';
 
-import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import {
   InfiniteFetchOptions,
@@ -14,6 +13,7 @@ import {
 import { formatKebab } from '@lactalink/utilities';
 import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
 import { NoData } from '../NoData';
+import { RefreshControl } from '../RefreshControl';
 import { Spinner } from '../ui/spinner';
 
 export interface InfiniteListItemProps<
@@ -72,12 +72,12 @@ export function InfiniteList<
     refetch,
   } = useInfiniteFetchBySlug(slug, true, fetchOptions);
 
-  const isLoading = isLoadingProp || isLoadingData;
+  const isLoading = true;
   const isFetching = isFetchingProp || isRefetching;
 
   const data = useMemo(() => {
     if (!isLoading && paginatedData) {
-      return paginatedData?.pages?.flatMap((page) => page.docs);
+      return paginatedData.pages.flatMap((page) => page.docs);
     } else if (isLoading) {
       return Array.from(
         { length: 15 },
@@ -99,7 +99,8 @@ export function InfiniteList<
 
   const renderItem = useCallback<ListRenderItem<TransformCollectionWithSelect<TSlug, TSelect>>>(
     (props) => {
-      return <ItemComponent {...props} isLoading={isLoading} />;
+      const isPlaceholder = props.item.id.includes('placeholder');
+      return <ItemComponent {...props} isLoading={isPlaceholder || isLoading} />;
     },
     [ItemComponent, isLoading]
   );
@@ -120,7 +121,8 @@ export function InfiniteList<
     <FlashList
       {...props}
       data={data}
-      keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
+      maintainVisibleContentPosition={{ disabled: true }}
+      keyExtractor={(item, index) => props.keyExtractor?.(item, index) || `${item.id}-${index}`}
       renderItem={renderItem}
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}

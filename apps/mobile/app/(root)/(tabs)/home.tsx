@@ -88,7 +88,7 @@ export default function Home() {
               if (user) {
                 router.push({
                   pathname: '/donations',
-                  params: { userID: '2a5e7f8d-7149-41b6-9051-5107604ab52a' },
+                  params: { userID: user.id },
                 });
               }
             }}

@@ -67,7 +67,7 @@ export function useAuthListener() {
 
   // Set up auth state change listener
   useEffect(() => {
-    const subscription = apiClient.auth.onAuthStateChange((event, session) => {
+    const subscription = apiClient.auth.onAuthStateChange((event, _session) => {
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in');

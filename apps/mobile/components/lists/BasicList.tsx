@@ -80,7 +80,7 @@ export function BasicList<
 
   const data = useMemo(() => {
     if (!isLoading) {
-      return (shouldFetch ? fetchedData : extractCollection(dataProp)) || [];
+      return (shouldFetch ? fetchedData : (extractCollection(dataProp) as never)) || [];
     } else {
       return Array.from(
         { length: placeholderLength },

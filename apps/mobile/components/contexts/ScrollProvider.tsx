@@ -28,12 +28,14 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   function onScrollBeginDrag(event: NativeScrollEvent) {
     setEvent(event);
     previousEvent.current = event;
+    console.log('onScrollBeginDrag', event.contentOffset.y);
   }
 
   function onScrollEndDrag(event: NativeScrollEvent) {
     setEvent(event);
     const currentOffset = event.contentOffset.y;
     const previousOffset = previousEvent.current?.contentOffset.y || 0;
+    console.log('onScrollEndDrag', currentOffset, previousOffset);
 
     // Determine if scrolled down
     if (currentOffset > previousOffset) {

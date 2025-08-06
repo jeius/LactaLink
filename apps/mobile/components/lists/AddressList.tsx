@@ -33,9 +33,7 @@ export function AddressList({
   const data = props.data;
   const isEmpty = Array.isArray(data) && data.length === 0;
 
-  const ItemComponent: FC<BasicListItemProps<'addresses'>> = ({ item }) => {
-    const isLoading = item.id.includes('placeholder');
-
+  const ItemComponent: FC<BasicListItemProps<'addresses'>> = ({ item, isLoading }) => {
     function handleEdit(e: GestureResponderEvent) {
       e.stopPropagation();
       router.push(`/addresses/edit/${item.id}`);
@@ -126,6 +124,7 @@ export function AddressList({
       {...props}
       slug="addresses"
       ItemComponent={ItemComponent}
+      placeholderLength={5}
       ItemSeparatorComponent={SeparatorComponent}
       ListFooterComponent={FooterComponent}
       contentContainerStyle={{
