@@ -27,7 +27,7 @@ import {
 import { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
 import { mergeHeaders } from '@lactalink/utilities';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { stringify } from 'qs-esm';
+import { stringify } from 'qs';
 import { PaginatedDocs } from '../../types/dist/payload-types/database';
 import { AuthClient } from './auth/AuthClient';
 import { apiFetch } from './utils/apiFetch';

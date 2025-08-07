@@ -8,7 +8,7 @@ import {
   User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { stringify } from 'qs-esm';
+import { stringify } from 'qs';
 import { TransactionService } from '../TransactionService';
 
 import {
