@@ -16,7 +16,7 @@ export function findNearestRequests(location: Point) {
 
   return (qb: QueryBuilder) =>
     qb
-      .selectDistinctOn([requests.id], {
+      .select({
         ...fields,
         distance: distanceSql.as('distance'),
       })

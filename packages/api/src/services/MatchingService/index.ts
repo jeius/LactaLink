@@ -1,5 +1,6 @@
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 import {
+  ApiFetchResponse,
   DonationRequestStatus,
   FindManyResult,
   NearOptions,
@@ -291,19 +292,46 @@ export class MatchingService implements IMatchingService {
   async getNearestDonations(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
-    maxDistance: number = 10000
-  ): Promise<FindManyResult<'donations'>> {
+    maxDistance: number = 10000,
+    paginationOptions?: { page?: number; limit?: number }
+  ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
     const options: NearOptions = { location, status, maxDistance };
-    return this.apiClient.fetch(`/api/donations/near?${stringify({ options })}`);
+    const paginationOpts = {
+      page: paginationOptions?.page || 1,
+      limit: paginationOptions?.limit || 10,
+    };
+    const res = await this.apiClient.fetch<
+      ApiFetchResponse<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>>
+    >(`/api/donations/near?${stringify({ options, ...paginationOpts })}`);
+
+    if (!('data' in res)) {
+      throw new Error('Failed to fetch nearest donations');
+    }
+
+    return res.data;
   }
 
   async getNearestRequests(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
-    maxDistance: number = 10000
-  ): Promise<FindManyResult<'requests'>> {
+    maxDistance: number = 10000,
+    paginationOptions?: { page?: number; limit?: number }
+  ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
     const options: NearOptions = { location, status, maxDistance };
-    return this.apiClient.fetch(`/api/requests/near?${stringify({ options })}`);
+    const paginationOpts = {
+      page: paginationOptions?.page || 1,
+      limit: paginationOptions?.limit || 10,
+    };
+
+    const res = await this.apiClient.fetch<
+      ApiFetchResponse<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>>
+    >(`/api/requests/near?${stringify({ options, ...paginationOpts })}`);
+
+    if (!('data' in res)) {
+      throw new Error('Failed to fetch nearest requests');
+    }
+
+    return res.data as FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>;
   }
 
   //#region Helper Methods

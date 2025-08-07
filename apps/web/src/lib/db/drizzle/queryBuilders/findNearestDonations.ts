@@ -21,7 +21,7 @@ export function findNearestDonations(location: Point) {
 
   return (qb: QueryBuilder) =>
     qb
-      .selectDistinctOn([donations.id], {
+      .select({
         ...fields,
         distance: distanceSql.as('distance'),
       })

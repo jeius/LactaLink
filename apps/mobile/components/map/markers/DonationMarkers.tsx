@@ -7,14 +7,8 @@ import Avatar from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
 import { createPolygonFromRegion } from '@/lib/utils/createPolygonFromRegion';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import {
-  Address,
-  Avatar as AvatarType,
-  DeliveryPreference,
-  Donation,
-  Individual,
-} from '@lactalink/types';
-import { isPointInPolygon } from '@lactalink/utilities';
+import { Address, DeliveryPreference, Donation } from '@lactalink/types';
+import { extractCollection, isPointInPolygon } from '@lactalink/utilities';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated } from 'react-native';
 import {
@@ -56,8 +50,8 @@ export function DonationMarkers({
 
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
-  const profile = data.donor as Individual;
-  const profileAvatar = profile.avatar as AvatarType | null | undefined;
+  const profile = extractCollection(data.donor);
+  const profileAvatar = extractCollection(profile?.avatar);
 
   const markers = useMemo(() => createMarkers(data, region), [data, region]);
 
@@ -136,7 +130,7 @@ export function DonationMarkers({
                 <Avatar
                   size="xs"
                   className="h-full w-full"
-                  details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
+                  details={{ name: profile?.displayName || 'Donor', avatar: profileAvatar }}
                   onLayout={() => {
                     markerRefs.current[marker.identifier!]?.redraw();
                   }}
@@ -157,7 +151,7 @@ export function DonationMarkers({
 function createMarkers(data: Donation, region?: Region) {
   const volume = data.remainingVolume || 0;
   const storageType = data.details.storageType;
-  const preferences = data.deliveryDetails as DeliveryPreference[];
+  const preferences = extractCollection(data.deliveryPreferences) || [];
 
   const markerList: MarkerDetails[] = [];
 

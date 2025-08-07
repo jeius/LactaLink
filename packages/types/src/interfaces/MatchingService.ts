@@ -314,6 +314,7 @@ export interface IMatchingService {
    * @param location - Geographical point to search from
    * @param status - Optional status filter for donations
    * @param maxDistance - Maximum distance in meters to search
+   * @param paginationOptions - Optional pagination parameters
    * @defaults status = 'AVAILABLE'
    * @defaults maxDistance = 10000
    * @returns List of nearest donations
@@ -321,14 +322,16 @@ export interface IMatchingService {
   getNearestDonations(
     location: Point,
     status?: DonationRequestStatus,
-    maxDistance?: number
-  ): Promise<FindManyResult<'donations'>>;
+    maxDistance?: number,
+    paginationOptions?: { page?: number; limit?: number }
+  ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>>;
 
   /**
    * Gets the nearest requests based on location and status.
    * @param location - Geographical point to search from
    * @param status - Optional status filter for requests
    * @param maxDistance - Maximum distance in meters to search
+   * @param paginationOptions - Optional pagination parameters
    * @defaults status = 'AVAILABLE'
    * @defaults maxDistance = 10000
    * @returns List of nearest requests
@@ -336,6 +339,7 @@ export interface IMatchingService {
   getNearestRequests(
     location: Point,
     status?: DonationRequestStatus,
-    maxDistance?: number
-  ): Promise<FindManyResult<'requests'>>;
+    maxDistance?: number,
+    paginationOptions?: { page?: number; limit?: number }
+  ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>>;
 }

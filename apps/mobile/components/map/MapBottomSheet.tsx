@@ -4,11 +4,17 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { CollectionSlug, Donation, Hospital, MilkBank, Request } from '@lactalink/types';
+import {
+  CollectionSlug,
+  Donation,
+  Hospital,
+  MilkBank,
+  PaginatedDocs,
+  Request,
+} from '@lactalink/types';
 import { ListRenderItem } from '@shopify/flash-list';
-import { UseQueryResult } from '@tanstack/react-query';
+import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon } from 'lucide-react-native';
-import { Dimensions } from 'react-native';
 import MapView from 'react-native-maps';
 import DonationCard from '../cards/DonationCard';
 import RequestCard from '../cards/RequestCard';
@@ -34,7 +40,7 @@ type Data = Donation | Request | MilkBank | Hospital | { id: string };
 type Section = {
   slug: Slug;
   title: string;
-  queryResult: UseQueryResult<Data[] | null, Error>;
+  queryResult: UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Data> | null>>;
 };
 
 type Value =
@@ -47,8 +53,8 @@ type Value =
 export interface MapBottomSheetProps {
   value?: Value | null;
   onChange?: (id?: Value) => void;
-  requestQueryResult: UseQueryResult<Request[] | null, Error>;
-  donationQueryResult: UseQueryResult<Donation[] | null, Error>;
+  requestQueryResult: UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Request> | null>>;
+  donationQueryResult: UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Donation> | null>>;
   mapRef?: React.RefObject<MapView | null>;
 }
 
@@ -60,7 +66,6 @@ export function MapBottomSheet({
   mapRef,
 }: MapBottomSheetProps) {
   const sheetRef = useRef<GorhomBottomSheet>(null);
-  const DEVICE_WIDTH = Dimensions.get('window').width;
 
   const hasSelectedItem = Boolean(selected);
 
@@ -93,20 +98,6 @@ export function MapBottomSheet({
       },
     ];
   }, [donationQueryResult, requestQueryResult]);
-
-  function handleGetItemType(item: Data, _idx: number, { slug }: { slug: Slug }): string {
-    if (slug === 'donations') {
-      const status = (item as Donation).status;
-      const volume = (item as Donation).remainingVolume || 0;
-      return `donation-${status}-${volume}`;
-    }
-    if (slug === 'requests') {
-      const status = (item as Request).status;
-      const volume = (item as Request).volumeNeeded || 0;
-      return `request-${status}-${volume}`;
-    }
-    return 'unknown';
-  }
 
   const renderItem: ListRenderItem<Data> = useCallback(
     ({ item, extraData: { slug, isLoading } }) => {
@@ -170,10 +161,9 @@ export function MapBottomSheet({
             sections.map((section, index) => {
               const { queryResult, slug } = section;
               const { isLoading, data } = queryResult;
-
-              if (data?.length === 0) {
-                return null;
-              }
+              console.log('section data', data);
+              const flattenedData =
+                data?.pages.flatMap((page) => page?.docs).filter((v) => v !== undefined) || [];
 
               const placeholder = Array.from({ length: 5 }, (_, idx) => ({
                 id: `placeholder-${slug}-${idx}`,
@@ -188,13 +178,10 @@ export function MapBottomSheet({
                   <Box style={{ height: 256, width: '100%' }}>
                     <BottomSheetFlashList
                       horizontal
-                      data={data || placeholder}
-                      estimatedItemSize={180}
+                      data={isLoading ? flattenedData : placeholder}
                       renderItem={renderItem}
-                      getItemType={handleGetItemType}
                       extraData={{ isLoading, slug }}
                       contentContainerStyle={{ paddingHorizontal: 16 }}
-                      estimatedListSize={{ width: DEVICE_WIDTH, height: 256 }}
                       keyExtractor={(item, idx) => `${section.title}-${idx}-${item.id}`}
                       ItemSeparatorComponent={() => <Box className="w-4" />}
                     />
