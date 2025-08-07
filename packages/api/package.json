@@ -32,13 +32,17 @@
     "build:init": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write .",
-    "generate:sb-types": "node scripts/generate-supabase-types.js"
+    "generate:sb-types": "node scripts/generate-supabase-types.js",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "http-status": "^2.1.0",
-    "qs-esm": "^7.0.2"
+    "qs": "^6.14.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.28.0",
     "@lactalink/enums": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
@@ -47,9 +51,13 @@
     "@supabase/supabase-js": "^2.49.4",
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.5.4",
+    "@types/qs": "^6.14.0",
     "@types/react": "^19.0.14",
+    "babel-jest": "^30.0.5",
     "dotenv": "^16.5.0",
+    "install": "^0.13.0",
     "lodash": "^4.17.21",
+    "npm": "^11.5.2",
     "react": "19.0.0",
     "zustand": "^5.0.5"
   },
