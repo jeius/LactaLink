@@ -32,8 +32,6 @@ export default function MapPage() {
     return nearestDonationRes.data?.pages.flatMap((page) => page?.docs || []) || [];
   }, [nearestDonationRes.data]);
 
-  console.log('donations', donations.length);
-
   const requests = useMemo(() => {
     return nearestRequestRes.data?.pages.flatMap((page) => page?.docs || []) || [];
   }, [nearestRequestRes.data]);

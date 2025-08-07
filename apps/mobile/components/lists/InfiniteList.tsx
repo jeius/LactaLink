@@ -122,7 +122,6 @@ export function InfiniteList<
     <FlashList
       {...props}
       data={data}
-      maintainVisibleContentPosition={{ disabled: true }}
       keyExtractor={(item, index) => props.keyExtractor?.(item, index) || `${item.id}-${index}`}
       renderItem={renderItem}
       ListEmptyComponent={EmptyComponent}

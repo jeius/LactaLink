@@ -22,10 +22,10 @@ export function NoData({ title, description, imageName = 'noData', hideImage }: 
           contentFit="contain"
         />
       )}
-      <Text size="lg" className="font-JakartaSemiBold">
+      <Text size="lg" className="font-JakartaSemiBold text-center">
         {title || 'No Data Available'}
       </Text>
-      {description && <Text className="text-typography-700">{description}</Text>}
+      {description && <Text className="text-typography-700 text-center">{description}</Text>}
     </VStack>
   );
 }

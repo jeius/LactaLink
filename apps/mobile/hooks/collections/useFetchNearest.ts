@@ -8,7 +8,8 @@ import { useCurrentLocation } from '../location/useLocation';
 export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>>(
   collection: TSlug,
   enabled: boolean = true,
-  status: DonationRequestStatus = 'AVAILABLE'
+  status: DonationRequestStatus = 'AVAILABLE',
+  maxDistance: number = Infinity
 ): UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Collection<TSlug>> | null>> {
   const { location } = useCurrentLocation();
   const matchingService = useMatchingService();
@@ -26,12 +27,12 @@ export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations
 
       switch (collection) {
         case 'donations':
-          return matchingService.getNearestDonations(point, status, 20000, {
+          return matchingService.getNearestDonations(point, status, maxDistance, {
             page: pageParam,
             limit: 10,
           });
         case 'requests':
-          return matchingService.getNearestRequests(point, status, 20000, {
+          return matchingService.getNearestRequests(point, status, maxDistance, {
             page: pageParam,
             limit: 10,
           });

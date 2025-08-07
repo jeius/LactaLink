@@ -22,7 +22,7 @@ export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoPr
 
   function DeliveryPreferencesCard({ data }: { data: DeliveryPreference[] }) {
     return data.map((preference, i) => {
-      const [latitude, longitude] = (preference.address as Address).coordinates || [];
+      const [longitude, latitude] = (preference.address as Address).coordinates || [];
 
       function handleViewOnMap() {
         onViewOnMap?.(preference);

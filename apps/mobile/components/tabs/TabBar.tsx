@@ -39,7 +39,7 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
       inactiveColor={getHexColor(theme, 'typography', 900)?.toString()}
       pressColor={getHexColor(theme, 'background', 100)?.toString()}
       options={options}
-      scrollEnabled
+      scrollEnabled={props.scrollEnabled || true}
     />
   );
 }
