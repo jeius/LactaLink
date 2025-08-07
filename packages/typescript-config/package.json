@@ -11,6 +11,7 @@
   },
   "exports": {
     ".": "./base.json",
+    "./base": "./base.json",
     "./next": "./nextjs.json",
     "./react-native": "./react-native.json"
   },

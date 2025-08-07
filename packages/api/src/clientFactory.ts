@@ -19,6 +19,7 @@
 
 import { ApiClientConfig } from '@lactalink/types/interfaces';
 import { ApiClient } from './ApiClient';
+import { MatchingService, TransactionService } from './services';
 import { useStoreApiClient } from './store/useApiClient';
 
 // ============================================================================
@@ -147,7 +148,7 @@ export const getServerApiClient = (): ApiClient => {
  * const users = await apiClient.find({ collection: 'users' });
  * ```
  */
-export const getUniversalApiClient = (): ApiClient => {
+export const getUniversalApiClient = () => {
   const state = useStoreApiClient.getState();
 
   if (state.isServer) {
@@ -161,6 +162,16 @@ export const getUniversalApiClient = (): ApiClient => {
     }
     return state.client;
   }
+};
+
+export const getMatchingService = () => {
+  const client = getUniversalApiClient();
+  return new MatchingService(client);
+};
+
+export const getTransactionService = () => {
+  const client = getUniversalApiClient();
+  return new TransactionService(client);
 };
 
 // ============================================================================
@@ -237,6 +248,16 @@ export const useUniversalApiClient = (): ApiClient => {
     if (!client) throw new Error(CLIENT_ERROR_MESSAGE);
     return client;
   }
+};
+
+export const useMatchingService = (): MatchingService => {
+  const client = useApiClient();
+  return new MatchingService(client);
+};
+
+export const useTransactionService = (): TransactionService => {
+  const client = useApiClient();
+  return new TransactionService(client);
 };
 
 // ============================================================================

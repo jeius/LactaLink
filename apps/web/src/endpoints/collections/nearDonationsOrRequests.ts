@@ -2,7 +2,7 @@ import { findNearestDonations, findNearestRequests } from '@/lib/db/drizzle/quer
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getEndpointSearchParams } from '@/lib/utils/getEndpointSearchParams';
 import { Donation, NearOptions, Point } from '@lactalink/types';
-import { and, eq, lte, sql } from '@payloadcms/db-postgres/drizzle';
+import { and, asc, eq, lte, sql } from '@payloadcms/db-postgres/drizzle';
 import { APIError } from 'payload';
 
 function validateLocation(location: unknown): Point {
@@ -14,7 +14,7 @@ function validateLocation(location: unknown): Point {
 
   const [longitude, latitude] = location;
 
-  if (typeof longitude !== 'number' || typeof latitude !== 'number') {
+  if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
     throw new Error('Invalid point coordinates. Both longitude and latitude must be numbers.');
   }
 
@@ -43,8 +43,8 @@ function validateOptions(options: unknown): NearOptions {
     throw new Error('Status must be a string.');
   }
 
-  if (maxDistance && typeof maxDistance !== 'number') {
-    throw new Error('Max distance must be a number.');
+  if (maxDistance && Number.isNaN(Number(maxDistance))) {
+    throw new Error('Max distance must be a valid number.');
   }
 
   return { location: validateLocation(location), status, maxDistance };
@@ -72,9 +72,9 @@ export const nearDonationsOrRequestsHandler = createPayloadHandler({
     }
 
     const { location, maxDistance, status } = validateOptions(query.options);
-    const { limit = 10, page = 0, ...searchParams } = getEndpointSearchParams(req);
+    const { limit = 10, page = 1, ...searchParams } = getEndpointSearchParams(req);
 
-    const offset = searchParams.pagination ? page * limit : 0;
+    const offset = searchParams.pagination ? Math.max(0, page - 1) * limit : 0;
 
     async function find() {
       if (collection === 'donations') {
@@ -95,7 +95,7 @@ export const nearDonationsOrRequestsHandler = createPayloadHandler({
 
         const totalRowsResult = await payload.db.drizzle
           .with(fetch)
-          .select({ count: sql<number>`COUNT(DISTINCT ${fetch.id})` })
+          .select({ count: sql<number>`COUNT(${fetch.id})` })
           .from(fetch)
           .where(and(...where));
         const totalRows = totalRowsResult[0]?.count ?? 0;
@@ -108,6 +108,7 @@ export const nearDonationsOrRequestsHandler = createPayloadHandler({
           })
           .from(fetch)
           .where(and(...where))
+          .orderBy(asc(fetch.id))
           .limit(limit)
           .offset(offset);
 
@@ -130,7 +131,7 @@ export const nearDonationsOrRequestsHandler = createPayloadHandler({
 
         const totalRowsResult = await payload.db.drizzle
           .with(fetch)
-          .select({ count: sql<number>`COUNT(DISTINCT ${fetch.id})` })
+          .select({ count: sql<number>`COUNT(${fetch.id})` })
           .from(fetch)
           .where(and(...where));
         const totalRows = totalRowsResult[0]?.count ?? 0;
@@ -143,6 +144,7 @@ export const nearDonationsOrRequestsHandler = createPayloadHandler({
           })
           .from(fetch)
           .where(and(...where))
+          .orderBy(asc(fetch.id))
           .limit(limit)
           .offset(offset);
 

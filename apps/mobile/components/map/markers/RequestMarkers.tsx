@@ -5,14 +5,8 @@ import { Box } from '@/components/ui/box';
 import { getHexColor } from '@/lib/colors';
 import { createPolygonFromRegion } from '@/lib/utils/createPolygonFromRegion';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import {
-  Address,
-  Avatar as AvatarType,
-  DeliveryPreference,
-  Individual,
-  Request,
-} from '@lactalink/types';
-import { isPointInPolygon } from '@lactalink/utilities';
+import { Address, DeliveryPreference, Request } from '@lactalink/types';
+import { extractCollection, isPointInPolygon } from '@lactalink/utilities';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated } from 'react-native';
 import {
@@ -54,8 +48,8 @@ export function RequestMarkers({
 
   const markerRefs = useRef<Record<string, MapMarker>>({});
 
-  const profile = data.requester as Individual;
-  const profileAvatar = profile.avatar as AvatarType | null | undefined;
+  const profile = extractCollection(data.requester);
+  const profileAvatar = extractCollection(profile?.avatar);
 
   const markers = useMemo(() => createMarkers(data, region), [data, region]);
 
@@ -135,7 +129,7 @@ export function RequestMarkers({
                 <Avatar
                   size="xs"
                   className="h-full w-full"
-                  details={{ name: profile.displayName || 'Donor', avatar: profileAvatar }}
+                  details={{ name: profile?.displayName || 'Requester', avatar: profileAvatar }}
                   onLayout={() => {
                     markerRefs.current[marker.identifier!]?.redraw();
                   }}
@@ -155,7 +149,7 @@ export function RequestMarkers({
 
 function createMarkers(data: Request, region?: Region) {
   const volume = data.volumeNeeded || 0;
-  const preferences = data.deliveryDetails as DeliveryPreference[];
+  const preferences = extractCollection(data.deliveryPreferences) || [];
 
   const markers: MarkerDetails[] = [];
 
