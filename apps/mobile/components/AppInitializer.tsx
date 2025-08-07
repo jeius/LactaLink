@@ -10,6 +10,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
+import { useOnlineManager } from '@/hooks/useOnlineManager';
 import { RefreshCwIcon } from 'lucide-react-native';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
@@ -23,6 +24,7 @@ type Props = {
 export function AppInitializer({ children }: Props) {
   useAuthListener();
   useGoogleSignInConfig();
+  useOnlineManager();
 
   const { isLoading: isThemeLoading } = useTheme();
   const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();

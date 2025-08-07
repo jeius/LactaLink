@@ -1,13 +1,6 @@
 import { URGENCY_LEVELS } from '@/lib/constants';
-import {
-  Address,
-  Avatar as AvatarType,
-  DeliveryPreference,
-  Image as ImageType,
-  Individual,
-  Request,
-} from '@lactalink/types';
-import { convertDistance, getDistance } from '@lactalink/utilities';
+import { Request } from '@lactalink/types';
+import { convertDistance, extractCollection, getDistance } from '@lactalink/utilities';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
@@ -44,23 +37,22 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
   const {
     details: { urgency, image },
     volumeNeeded,
-    requester,
-    deliveryDetails,
+    deliveryPreferences,
   } = data;
 
-  const name =
-    (requester as Individual)?.displayName ||
-    (requester as Individual)?.givenName ||
-    'Unknown Donor';
-  const userAvatar = (requester as Individual)?.avatar as AvatarType | null;
+  const requester = extractCollection(data.requester);
+  const name = requester?.displayName || requester?.givenName || 'Unknown Requester';
+  const userAvatar = extractCollection(requester?.avatar);
 
-  const requestImage = image as ImageType | null;
+  const requestImage = extractCollection(image);
   const uri = requestImage?.sizes?.small?.url || requestImage?.url || null;
   const blurhash = requestImage?.blurHash || BLUR_HASH;
 
-  const preference = deliveryDetails as DeliveryPreference[];
+  const preference = extractCollection(deliveryPreferences);
   const preferredMode = preference?.[0]?.preferredMode;
-  const [latitude, longitude] = (preference?.[0]?.address as Address)?.coordinates || [0, 0];
+
+  const address = extractCollection(preference?.[0]?.address);
+  const [latitude, longitude] = address?.coordinates || [0, 0];
 
   const distance =
     location &&

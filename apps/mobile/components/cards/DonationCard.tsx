@@ -1,12 +1,5 @@
 import { STORAGE_TYPES } from '@/lib/constants';
-import {
-  Address,
-  Avatar as AvatarType,
-  DeliveryPreference,
-  Donation,
-  Image as ImageType,
-  Individual,
-} from '@lactalink/types';
+import { Donation } from '@lactalink/types';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
@@ -20,7 +13,7 @@ import { Image } from '@/components/Image';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { convertDistance, getDistance } from '@lactalink/utilities';
+import { convertDistance, extractCollection, getDistance } from '@lactalink/utilities';
 import Avatar from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
 import { Icon } from '../ui/icon';
@@ -40,21 +33,22 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
   const {
     details: { milkSample, storageType },
     remainingVolume,
-    donor,
-    deliveryDetails,
+    deliveryPreferences,
   } = data;
 
-  const donorName =
-    (donor as Individual)?.displayName || (donor as Individual)?.givenName || 'Unknown Donor';
-  const donorAvatar = (donor as Individual)?.avatar as AvatarType | null;
+  const donor = extractCollection(data.donor);
+  const donorName = donor?.displayName || donor?.givenName || 'Unknown Donor';
+  const donorAvatar = extractCollection(donor?.avatar);
 
-  const milkSamples = milkSample as ImageType[] | null;
+  const milkSamples = extractCollection(milkSample);
   const uri = milkSamples?.[0]?.sizes?.small?.url || milkSamples?.[0]?.url || null;
   const blurhash = milkSamples?.[0]?.blurHash || BLUR_HASH;
 
-  const preference = deliveryDetails as DeliveryPreference[];
+  const preference = extractCollection(deliveryPreferences);
   const preferredMode = preference?.[0]?.preferredMode;
-  const [latitude, longitude] = (preference?.[0]?.address as Address)?.coordinates || [0, 0];
+
+  const address = extractCollection(preference?.[0]?.address);
+  const [latitude, longitude] = address?.coordinates || [0, 0];
 
   const distance =
     location &&
