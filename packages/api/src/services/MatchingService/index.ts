@@ -1,29 +1,32 @@
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 import {
-  Donation,
-  FetchGetResult,
-  IApiClient,
-  MatchCriteria,
-  Request,
-  SearchParams,
+  DonationRequestStatus,
+  FindManyResult,
+  NearOptions,
+  Point,
+  SelectFromCollectionSlug,
   User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
 import { stringify } from 'qs-esm';
 import { TransactionService } from '../TransactionService';
+
 import {
-  MatchOptions,
+  CreateMatchOptions,
+  FindMatchOptions,
+  IApiClient,
+  IMatchingService,
   MatchResult,
   O2PMatchOptions,
   O2PMatchResult,
   P2OMatchOptions,
   P2OMatchResult,
-} from './types';
+} from '@lactalink/types/interfaces';
 
 /**
  * Service for matching donations to requests and managing their lifecycle.
  */
-export class MatchingService {
+export class MatchingService implements IMatchingService {
   private apiClient: IApiClient;
   private transactionService: TransactionService;
 
@@ -36,16 +39,12 @@ export class MatchingService {
     this.transactionService = new TransactionService(apiClient);
   }
 
-  /**
-   * Finds compatible donations for a request based on specified criteria.
-   * @param requestId - ID of the request to find donations for
-   * @param criteria - Matching criteria
-   * @returns List of compatible donations
-   */
-  async findMatchingDonations(
+  async findMatchingDonations<
+    TSelect extends SelectFromCollectionSlug<'donations'> = SelectFromCollectionSlug<'donations'>,
+  >(
     requestId: string,
-    options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'donations', boolean> }
-  ): Promise<FetchGetResult<Donation>> {
+    options?: FindMatchOptions<'donations', TSelect>
+  ): Promise<FindManyResult<'donations', TSelect, true>> {
     const { criteria, fetchOptions = {} } = options || {};
 
     fetchOptions.pagination =
@@ -57,16 +56,12 @@ export class MatchingService {
     );
   }
 
-  /**
-   * Finds compatible requests for a donation based on specified criteria.
-   * @param donationId - ID of the donation to find requests for
-   * @param criteria - Matching criteria
-   * @returns List of compatible requests
-   */
-  async findMatchingRequests(
+  async findMatchingRequests<
+    TSelect extends SelectFromCollectionSlug<'requests'> = SelectFromCollectionSlug<'requests'>,
+  >(
     donationId: string,
-    options?: { criteria: MatchCriteria; fetchOptions?: SearchParams<'requests', boolean> }
-  ): Promise<FetchGetResult<Request>> {
+    options?: FindMatchOptions<'requests', TSelect>
+  ): Promise<FindManyResult<'requests', TSelect, true>> {
     const { criteria, fetchOptions = {} } = options || {};
 
     fetchOptions.pagination =
@@ -78,17 +73,10 @@ export class MatchingService {
     );
   }
 
-  /**
-   * Creates a match between a donation and request, with optional milk bag selection.
-   * @param donationID - ID of the donation
-   * @param requestID - ID of the request
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction and updated donation/request
-   */
   async createMatch(
     donationID: string,
     requestID: string,
-    options: MatchOptions
+    options: CreateMatchOptions
   ): Promise<MatchResult> {
     // ... existing code ...
     const [donation, request] = await Promise.all([
@@ -179,13 +167,6 @@ export class MatchingService {
     };
   }
 
-  /**
-   * Creates a P2O match (donation to organization).
-   * @param donationId - ID of the donation
-   * @param organization - Organization details (ID and type)
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction
-   */
   async createP2OMatch(
     donationId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
@@ -229,14 +210,6 @@ export class MatchingService {
     });
   }
 
-  /**
-   * Creates an O2P match (organization to request).
-   *
-   * @param requestId - ID of the request
-   * @param organization - Organization details (ID and type)
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction and updated request
-   */
   async createO2PMatch(
     requestId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
@@ -283,17 +256,11 @@ export class MatchingService {
     });
   }
 
-  /**
-   * Gets the best matching donations for a request.
-   * @param requestId - ID of the request
-   * @param limit - Maximum number of donations to return
-   * @returns List of compatible donations
-   */
   async getRecommendedDonationsForRequest(
     requestId: string,
     maxDistance?: number,
     limit: number = 5
-  ): Promise<FetchGetResult<Donation>> {
+  ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
     return this.findMatchingDonations(requestId, {
       criteria: {
         nearestFirst: true,
@@ -305,17 +272,11 @@ export class MatchingService {
     });
   }
 
-  /**
-   * Gets the best matching requests for a donation.
-   * @param donationId - ID of the donation
-   * @param limit - Maximum number of requests to return
-   * @returns List of compatible requests
-   */
   async getRecommendedRequestsForDonation(
     donationId: string,
     maxDistance?: number,
     limit: number = 5
-  ): Promise<FetchGetResult<Request>> {
+  ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
     return this.findMatchingRequests(donationId, {
       criteria: {
         nearestFirst: true,
@@ -325,6 +286,24 @@ export class MatchingService {
       },
       fetchOptions: { pagination: true, limit },
     });
+  }
+
+  async getNearestDonations(
+    location: Point,
+    status: DonationRequestStatus = 'AVAILABLE',
+    maxDistance: number = 10000
+  ): Promise<FindManyResult<'donations'>> {
+    const options: NearOptions = { location, status, maxDistance };
+    return this.apiClient.fetch(`/api/donations/near?${stringify({ options })}`);
+  }
+
+  async getNearestRequests(
+    location: Point,
+    status: DonationRequestStatus = 'AVAILABLE',
+    maxDistance: number = 10000
+  ): Promise<FindManyResult<'requests'>> {
+    const options: NearOptions = { location, status, maxDistance };
+    return this.apiClient.fetch(`/api/requests/near?${stringify({ options })}`);
   }
 
   //#region Helper Methods

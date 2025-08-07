@@ -2,8 +2,6 @@ import { DeepPartial } from 'react-hook-form';
 import { Avatar, CollectionSlug, Config, User } from '../payload-types';
 import { FilterUnion } from '../utils';
 
-export * from './matching';
-
 export type Collections = Config['collections'][keyof Config['collections']];
 
 type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug];
