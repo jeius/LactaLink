@@ -4,47 +4,52 @@ import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isEqual } from 'lodash';
-import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { ErrorSearchParams } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
-import { CompassIcon, LocateFixedIcon, LocateIcon, SearchIcon } from 'lucide-react-native';
+import { SearchIcon } from 'lucide-react-native';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
-import { DonateRequestModal } from '../modals';
+import { useMap } from '../contexts/MapProvider';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-import { UserMarker, UserMarkerRef } from './markers/UserMarker';
+import { UserMarker } from './markers/UserMarker';
 
 interface MapViewProps extends ComponentProps<typeof RNMapView> {
-  mapRef: React.RefObject<RNMapView | null>;
   dataReady?: boolean;
 }
 
-export function MapView({ dataReady = true, mapRef, children, ...props }: MapViewProps) {
+export function MapView({ dataReady = true, children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
 
-  const userMarkerRef = useRef<UserMarkerRef>(null);
+  const {
+    userMarkerRef,
+    mapRef,
+    state: {
+      followUser,
+      isMapLoaded,
+      isMapReady,
+      markersRendered: renderMarkers,
+      showAvatar,
+      locateButtonPressed,
+    },
+    setState,
+  } = useMap();
 
   const { location, error, isLoading } = useCurrentLocation();
 
-  const [followUser, setFollowUser] = useState(false);
   const [userPosition, setUserPosition] = useState<LocationObjectCoords>();
-  const [showAvatar, setShowAvatar] = useState(true);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [isMapReady, setIsMapReady] = useState(false);
-  const [renderMarkers, setMarkersRendered] = useState(false);
 
   const mapReady = useMemo(
     () => isMapReady && isMapLoaded && dataReady && !isLoading,
@@ -86,28 +91,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
     return isCameraInCurrentPosition(camera, userPosition);
   }, [camera, userPosition]);
 
-  useEffect(() => {
-    if (mapReady) {
-      const { latitude, longitude } = latlng;
-      mapRef.current?.animateCamera({ zoom: 16, center: { latitude, longitude } });
-      setTimeout(() => {
-        setMarkersRendered(true);
-      }, 500);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, mapRef]);
-
-  function handleCompassPress() {
-    mapRef.current?.animateCamera(
-      {
-        heading: 0,
-      },
-      { duration: 400 }
-    );
-    setFollowUser(false);
-  }
-
-  function handleLocatePress() {
+  const handleLocatePress = useCallback(() => {
     if (isUserLocated && !followUser) {
       const currentHeading = userMarkerRef.current?.getHeading() || 0;
 
@@ -117,10 +101,10 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
       );
 
       setTimeout(() => {
-        setFollowUser(true);
+        setState((prev) => ({ ...prev, followUser: true }));
       }, 550);
     } else if (followUser) {
-      setFollowUser(false);
+      setState((prev) => ({ ...prev, followUser: false }));
       mapRef.current?.animateCamera(
         { pitch: 0, zoom: Math.min(camera.zoom || 18, 18) },
         { duration: 500 }
@@ -129,13 +113,45 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
       const { latitude, longitude } = userPosition;
       mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
     }
+  }, [isUserLocated, followUser, userMarkerRef, mapRef, camera.zoom, setState, userPosition]);
+
+  useEffect(() => {
+    if (mapReady) {
+      const { latitude, longitude } = latlng;
+      mapRef.current?.animateCamera({ zoom: 16, center: { latitude, longitude } });
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, markersRendered: true }));
+      }, 500);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, mapRef]);
+
+  useEffect(() => {
+    if (locateButtonPressed) {
+      handleLocatePress();
+      setState((prev) => ({ ...prev, locateButtonPressed: false }));
+    }
+  }, [handleLocatePress, locateButtonPressed, setState]);
+
+  useEffect(() => {
+    setState((prev) => ({ ...prev, isUserLocated }));
+  }, [isUserLocated, setState]);
+
+  function handleCompassPress() {
+    mapRef.current?.animateCamera(
+      {
+        heading: 0,
+      },
+      { duration: 400 }
+    );
+    setState((prev) => ({ ...prev, followUser: false }));
   }
 
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
 
     if (details?.isGesture) {
-      setFollowUser(false);
+      setState((prev) => ({ ...prev, followUser: false }));
     }
 
     const newCamera = await mapRef.current?.getCamera();
@@ -143,7 +159,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
       setCamera(newCamera);
     }
 
-    setShowAvatar(newCamera?.pitch === 0);
+    setState((prev) => ({ ...prev, showAvatar: newCamera?.pitch === 0 }));
   }
 
   return (
@@ -160,8 +176,8 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
         showsCompass={false}
         toolbarEnabled={false}
         onRegionChangeComplete={handleRegionChangeEnd}
-        onMapReady={() => setIsMapReady(true)}
-        onMapLoaded={() => setIsMapLoaded(true)}
+        onMapReady={() => setState((prev) => ({ ...prev, isMapReady: true }))}
+        onMapLoaded={() => setState((prev) => ({ ...prev, isMapLoaded: true }))}
       >
         {renderMarkers && children}
 
@@ -185,7 +201,7 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
       )}
 
       <VStack className="relative flex-1" style={{ marginTop: insets.top }}>
-        <Box style={{ position: 'absolute', right: 16, top: '40%' }}>
+        <Box style={{ position: 'absolute', right: 16, top: '10%' }}>
           <VStack space="md" className="shrink">
             {(camera.heading !== 0 || followUser) && (
               <AnimatedPressable onPress={handleCompassPress}>
@@ -194,24 +210,6 @@ export function MapView({ dataReady = true, mapRef, children, ...props }: MapVie
                 </Box>
               </AnimatedPressable>
             )}
-
-            <DonateRequestModal />
-
-            <Button
-              action="info"
-              className={`h-fit w-fit rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
-              onPress={handleLocatePress}
-              accessibilityLabel="Follow user location"
-              accessibilityHint="Toggles following the user's current location"
-              accessibilityRole="button"
-              accessibilityState={{ selected: followUser }}
-            >
-              <ButtonIcon
-                as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
-                height={22}
-                width={22}
-              />
-            </Button>
           </VStack>
         </Box>
 

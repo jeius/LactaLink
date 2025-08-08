@@ -3,6 +3,7 @@ import { Box } from '@/components/ui/box';
 
 import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomSheet';
 
+import { MapProvider } from '@/components/contexts/MapProvider';
 import {
   DonationMarkerPressEvent,
   DonationMarkers,
@@ -121,22 +122,19 @@ export default function MapPage() {
   }, [selectedItem, dataReady, donations, requests, region]);
 
   return (
-    <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-      <MemoizedMapView
-        mapRef={mapRef}
-        dataReady={dataReady}
-        onRegionChangeComplete={handleRegionChangeComplete}
-      >
-        {mapChildren}
-      </MemoizedMapView>
+    <MapProvider mapRef={mapRef}>
+      <Box style={{ flex: 1, marginBottom: insets.bottom }}>
+        <MemoizedMapView dataReady={dataReady} onRegionChangeComplete={handleRegionChangeComplete}>
+          {mapChildren}
+        </MemoizedMapView>
 
-      <MapBottomSheet
-        value={selectedItem}
-        onChange={handleSelectionChange}
-        donationQueryResult={nearestDonationRes}
-        requestQueryResult={nearestRequestRes}
-        mapRef={mapRef}
-      />
-    </Box>
+        <MapBottomSheet
+          value={selectedItem}
+          onChange={handleSelectionChange}
+          donationQueryResult={nearestDonationRes}
+          requestQueryResult={nearestRequestRes}
+        />
+      </Box>
+    </MapProvider>
   );
 }

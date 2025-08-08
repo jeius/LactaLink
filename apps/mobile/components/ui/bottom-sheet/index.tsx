@@ -31,6 +31,7 @@ import React, {
 } from 'react';
 import type { PressableProps, TextProps } from 'react-native';
 import { Platform, Pressable } from 'react-native';
+import { SharedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 
@@ -86,6 +87,7 @@ const BottomSheetContext = createContext<{
   handleClose: () => void;
   handleOpen: () => void;
   disableClose: boolean;
+  position?: SharedValue<number>;
 }>({
   visible: false,
   bottomSheetRef: { current: null },
@@ -94,6 +96,14 @@ const BottomSheetContext = createContext<{
   handleOpen: () => {},
   disableClose: false,
 });
+
+export function useBottomSheet() {
+  const context = useContext(BottomSheetContext);
+  if (!context) {
+    throw new Error('useBottomSheet must be used within a BottomSheet');
+  }
+  return context;
+}
 
 type IBottomSheetProps = React.ComponentProps<typeof GorhomBottomSheet>;
 type IBottomSheetModalProps = React.ComponentProps<typeof GorhomBottomSheetModal>;
@@ -127,6 +137,7 @@ export const BottomSheet = ({
   const bottomSheetModalRef = useRef<GorhomBottomSheetModal>(null);
   const ref = sheetRef || bottomSheetRef;
   const modalRef = sheetModalRef || bottomSheetModalRef;
+  const position = useSharedValue(0);
 
   const [visible, setVisible] = useState(defaultOpen);
 
@@ -170,6 +181,7 @@ export const BottomSheet = ({
         bottomSheetModalRef: modalRef,
         handleClose,
         handleOpen,
+        position: position,
       }}
     >
       {children}
@@ -182,27 +194,33 @@ export const BottomSheetPortal = ({
   handleComponent: DragIndicator,
   backdropComponent: BackDrop,
   snapToIndex = -1,
+  onChange,
   ...props
 }: Partial<IBottomSheetProps> & {
   defaultIsOpen?: boolean;
   snapToIndex?: number;
 }) => {
-  const { bottomSheetRef, handleClose, visible, disableClose } = useContext(BottomSheetContext);
+  const { bottomSheetRef, handleClose, visible, disableClose, position } =
+    useContext(BottomSheetContext);
   const { theme } = useTheme();
   const [open, setOpen] = useState(visible);
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);
 
   const handleSheetChanges = useCallback(
-    (index: number) => {
+    (index: number, pos: number, type: SNAP_POINT_TYPE) => {
       if (index === -1 || (index === 0 && disableClose)) {
         handleClose();
         setOpen(false);
       } else if (index >= 0 || (index === 0 && !disableClose)) {
         setOpen(true);
       }
+      if (position) {
+        position.value = withTiming(pos);
+      }
+      onChange?.(index, pos, type);
     },
-    [disableClose, handleClose]
+    [disableClose, handleClose, position, onChange]
   );
 
   usePreventBackPress(open, handleClose);
@@ -237,19 +255,22 @@ export const BottomSheetModalPortal = ({
 }: Partial<IBottomSheetModalProps> & {
   snapToIndex?: number;
 }) => {
-  const { bottomSheetModalRef, handleClose, visible } = useContext(BottomSheetContext);
+  const { bottomSheetModalRef, handleClose, visible, position } = useContext(BottomSheetContext);
   const { theme } = useTheme();
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
   const backgroundColor = getHexColor(theme, 'background', 50);
 
   const handleSheetChanges = useCallback(
-    (index: number, position: number, type: SNAP_POINT_TYPE) => {
-      onChange?.(index, position, type);
+    (index: number, pos: number, type: SNAP_POINT_TYPE) => {
       if (index === -1) {
         handleClose();
       }
+      if (position) {
+        position.value = withTiming(pos);
+      }
+      onChange?.(index, pos, type);
     },
-    [handleClose, onChange]
+    [handleClose, onChange, position]
   );
 
   usePreventBackPress(visible, handleClose);
