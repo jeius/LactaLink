@@ -212,9 +212,21 @@ export interface Config {
     donations: {
       transactions: 'transactions';
     };
+    hospitals: {
+      inventory: 'inventory';
+      milkBags: 'milkBags';
+      receivedTransactions: 'transactions';
+      sentTransactions: 'transactions';
+    };
     milkBags: {
       donation: 'donations';
       request: 'requests';
+    };
+    milkBanks: {
+      inventory: 'inventory';
+      milkBags: 'milkBags';
+      receivedTransactions: 'transactions';
+      sentTransactions: 'transactions';
     };
     requests: {
       transactions: 'transactions';
@@ -432,8 +444,6 @@ export interface Avatar {
   };
 }
 /**
- * Milk Bank profile of users, including their details such as name, type, head, and contact information.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "milkBanks".
  */
@@ -449,12 +459,112 @@ export interface MilkBank {
   head?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
+  /**
+   * Total volume of milk in stock at the milk bank. (Auto calculated)
+   */
+  totalVolume?: number | null;
+  /**
+   * Inventory of milk bags available in this milk bank.
+   */
+  inventory?: {
+    docs?: (string | Inventory)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Milk bags associated with this milk bank.
+   */
+  milkBags?: {
+    docs?: (string | MilkBag)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Transactions of received donations related to this hospital.
+   */
+  receivedTransactions?: {
+    docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Transactions of fulfilled requests related to this hospital.
+   */
+  sentTransactions?: {
+    docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Hospital profile of users, including their details such as name, type, head, and contact information.
- *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory".
+ */
+export interface Inventory {
+  id: string;
+  organization:
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * Original donation that created this inventory
+   */
+  sourceDonation?: (string | null) | Donation;
+  /**
+   * Initial volume received into inventory (may differ from donation volume)
+   */
+  initialVolume: number;
+  /**
+   * Volume still available for use in milliliters
+   */
+  remainingVolume: number;
+  status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
+  /**
+   * Milk bags in this inventory
+   */
+  milkBags: (string | MilkBag)[];
+  /**
+   * When the organization received this donation
+   */
+  receivedAt?: string | null;
+  /**
+   * When this inventory item expires
+   */
+  expiresAt?: string | null;
+  /**
+   * Additional notes about this inventory item
+   */
+  notes?: string | null;
+  /**
+   * Details about how this inventory was allocated to requests
+   */
+  allocationDetails?:
+    | {
+        request: string | Request;
+        /**
+         * Milk bags allocated to this request
+         */
+        allocatedBags: (string | MilkBag)[];
+        /**
+         * Unique identifier for grouping allocations that fulfill the same request. (Auto generated)
+         */
+        allocationId?: string | null;
+        allocatedAt?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hospitals".
  */
@@ -471,117 +581,38 @@ export interface Hospital {
   hospitalID?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delivery-preferences".
- */
-export interface DeliveryPreference {
-  id: string;
-  createdBy?: (string | null) | User;
-  owner?: (string | null) | User;
-  name?: string | null;
   /**
-   * Preferred delivery modes of the individual. This will be used for matching.
+   * Total volume of milk in stock at the hospital. (Auto calculated)
    */
-  preferredMode: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
+  totalVolume?: number | null;
   /**
-   * Address available for pickup, delivery, or meet-up.
+   * Inventory of milk bags available in this hospital.
    */
-  address: string | Address;
-  /**
-   * Days available for pickup, delivery, or meet-up.
-   */
-  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
-  donations?: {
-    docs?: (string | Donation)[];
+  inventory?: {
+    docs?: (string | Inventory)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  requests?: {
-    docs?: (string | Request)[];
+  /**
+   * Milk bags associated with this hospital.
+   */
+  milkBags?: {
+    docs?: (string | MilkBag)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donations".
- */
-export interface Donation {
-  id: string;
   /**
-   * Title of the donation record.
+   * Transactions of received donations related to this hospital.
    */
-  title?: string | null;
-  /**
-   * Total volume of milk donated.
-   */
-  volume?: number | null;
-  /**
-   * Volume still available for allocation
-   */
-  remainingVolume?: number | null;
-  completedAt?: string | null;
-  cancelledAt?: string | null;
-  rejectedAt?: string | null;
-  expiredAt?: string | null;
-  createdBy?: (string | null) | User;
-  /**
-   * The person donating the milk
-   */
-  donor: string | Individual;
-  /**
-   * Intended recipient for this donation (optional - leave empty for general donation)
-   */
-  recipient?:
-    | ({
-        relationTo: 'individuals';
-        value: string | Individual;
-      } | null)
-    | ({
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      } | null)
-    | ({
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      } | null);
-  status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
-  details: {
-    /**
-     * Type of storage for the milk
-     */
-    storageType: 'FRESH' | 'FROZEN';
-    /**
-     * How the milk was collected
-     */
-    collectionMode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
-    /**
-     * Select the milk bags used for this donation
-     */
-    bags: (string | MilkBag)[];
-    /**
-     * Upload images of the milk sample
-     */
-    milkSample?: (string | Image)[] | null;
-    /**
-     * Additional notes or special instructions from donor
-     */
-    notes?: string | null;
+  receivedTransactions?: {
+    docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   /**
-   * Delivery preferences for the milk
+   * Transactions of fulfilled requests related to this hospital.
    */
-  deliveryPreferences?: (string | DeliveryPreference)[] | null;
-  /**
-   * Transactions associated with this donation
-   */
-  transactions?: {
+  sentTransactions?: {
     docs?: (string | Transaction)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -711,6 +742,172 @@ export interface MilkBagImage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations".
+ */
+export interface Donation {
+  id: string;
+  /**
+   * Title of the donation record.
+   */
+  title?: string | null;
+  /**
+   * Total volume of milk donated.
+   */
+  volume?: number | null;
+  /**
+   * Volume still available for allocation
+   */
+  remainingVolume?: number | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  rejectedAt?: string | null;
+  expiredAt?: string | null;
+  createdBy?: (string | null) | User;
+  /**
+   * The person donating the milk
+   */
+  donor: string | Individual;
+  /**
+   * Intended recipient for this donation (optional - leave empty for general donation)
+   */
+  recipient?:
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
+  status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
+  details: {
+    /**
+     * Type of storage for the milk
+     */
+    storageType: 'FRESH' | 'FROZEN';
+    /**
+     * How the milk was collected
+     */
+    collectionMode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
+    /**
+     * Select the milk bags used for this donation
+     */
+    bags: (string | MilkBag)[];
+    /**
+     * Upload images of the milk sample
+     */
+    milkSample?: (string | Image)[] | null;
+    /**
+     * Additional notes or special instructions from donor
+     */
+    notes?: string | null;
+  };
+  /**
+   * Delivery preferences for the milk
+   */
+  deliveryPreferences?: (string | DeliveryPreference)[] | null;
+  /**
+   * Transactions associated with this donation
+   */
+  transactions?: {
+    docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "images".
+ */
+export interface Image {
+  id: string;
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    small?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-preferences".
+ */
+export interface DeliveryPreference {
+  id: string;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  name?: string | null;
+  /**
+   * Preferred delivery modes of the individual. This will be used for matching.
+   */
+  preferredMode: ('PICKUP' | 'DELIVERY' | 'MEETUP')[];
+  /**
+   * Address available for pickup, delivery, or meet-up.
+   */
+  address: string | Address;
+  /**
+   * Days available for pickup, delivery, or meet-up.
+   */
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
+  donations?: {
+    docs?: (string | Donation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  requests?: {
+    docs?: (string | Request)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "requests".
  */
 export interface Request {
@@ -802,57 +999,6 @@ export interface Request {
   };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "images".
- */
-export interface Image {
-  id: string;
-  alt?: string | null;
-  /**
-   * A string that represents a blurred version of the image.
-   */
-  blurHash?: string | null;
-  createdBy?: (string | null) | User;
-  owner?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    small?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1098,72 +1244,6 @@ export interface Barangay {
   province?: (string | null) | Province;
   region: string | Region;
   islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory".
- */
-export interface Inventory {
-  id: string;
-  organization:
-    | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      }
-    | {
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      };
-  /**
-   * Original donation that created this inventory
-   */
-  sourceDonation?: (string | null) | Donation;
-  /**
-   * Initial volume received into inventory (may differ from donation volume)
-   */
-  initialVolume: number;
-  /**
-   * Volume still available for use in milliliters
-   */
-  remainingVolume: number;
-  status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
-  /**
-   * Milk bags in this inventory
-   */
-  milkBags: (string | MilkBag)[];
-  /**
-   * When the organization received this donation
-   */
-  receivedAt?: string | null;
-  /**
-   * When this inventory item expires
-   */
-  expiresAt?: string | null;
-  /**
-   * Additional notes about this inventory item
-   */
-  notes?: string | null;
-  /**
-   * Details about how this inventory was allocated to requests
-   */
-  allocationDetails?:
-    | {
-        request: string | Request;
-        /**
-         * Milk bags allocated to this request
-         */
-        allocatedBags: (string | MilkBag)[];
-        /**
-         * Unique identifier for grouping allocations that fulfill the same request. (Auto generated)
-         */
-        allocationId?: string | null;
-        allocatedAt?: string | null;
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1814,6 +1894,11 @@ export interface HospitalsSelect<T extends boolean = true> {
   hospitalID?: T;
   type?: T;
   phone?: T;
+  totalVolume?: T;
+  inventory?: T;
+  milkBags?: T;
+  receivedTransactions?: T;
+  sentTransactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2027,6 +2112,11 @@ export interface MilkBanksSelect<T extends boolean = true> {
   head?: T;
   type?: T;
   phone?: T;
+  totalVolume?: T;
+  inventory?: T;
+  milkBags?: T;
+  receivedTransactions?: T;
+  sentTransactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }

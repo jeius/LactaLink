@@ -1,4 +1,5 @@
 import { ownerField } from '@/fields/ownerField';
+import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP, ORGANIZATION_TYPES } from '@/lib/constants';
@@ -16,65 +17,144 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
   },
   admin: {
     group: COLLECTION_GROUP.PROFILES,
-    description:
-      'Hospital profile of users, including their details such as name, type, head, and contact information.',
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
+    beforeRead: [calculateVolumeInStock],
     beforeChange: [generateOwner],
     afterChange: [deletePreviousAvatar],
   },
   fields: [
     ownerField,
     {
-      name: 'avatar',
-      type: 'upload',
-      relationTo: 'avatars',
-    },
-    {
-      name: 'name',
-      label: 'Hospital Name',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'description',
-      label: 'Hospital Description',
-      type: 'textarea',
-    },
-    {
-      name: 'head',
-      label: 'Hospital Head',
-      type: 'text',
-      admin: { description: 'Head or president of the hospital.' },
-    },
-    {
-      type: 'row',
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          name: 'hospitalID',
-          label: 'Hospital ID',
-          type: 'text',
-          admin: { width: '50%' },
+          label: 'Information',
+          fields: [
+            {
+              name: 'avatar',
+              type: 'upload',
+              relationTo: 'avatars',
+            },
+            {
+              name: 'name',
+              label: 'Hospital Name',
+              type: 'text',
+              required: true,
+            },
+            {
+              name: 'description',
+              label: 'Hospital Description',
+              type: 'textarea',
+            },
+            {
+              name: 'head',
+              label: 'Hospital Head',
+              type: 'text',
+              admin: { description: 'Head or president of the hospital.' },
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'hospitalID',
+                  label: 'Hospital ID',
+                  type: 'text',
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'type',
+                  label: 'Hospital Type',
+                  type: 'select',
+                  admin: { width: '50%' },
+                  options: Object.values(ORGANIZATION_TYPES),
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'phone',
+                  type: 'text',
+                  unique: true,
+                  admin: { width: '30%' },
+                },
+              ],
+            },
+          ],
         },
         {
-          name: 'type',
-          label: 'Hospital Type',
-          type: 'select',
-          admin: { width: '50%' },
-          options: Object.values(ORGANIZATION_TYPES),
+          label: 'Inventory',
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'totalVolume',
+                  label: 'Total Volume in Stock',
+                  type: 'number',
+                  virtual: true,
+                  admin: {
+                    description: 'Total volume of milk in stock at the hospital. (Auto calculated)',
+                    width: '50%',
+                    readOnly: true,
+                  },
+                },
+              ],
+            },
+            {
+              name: 'inventory',
+              label: 'Inventory',
+              type: 'join',
+              collection: 'inventory',
+              on: 'organization',
+              admin: {
+                defaultColumns: ['remainingVolume', 'initialVolume', 'status', 'receivedAt'],
+                description: 'Inventory of milk bags available in this hospital.',
+              },
+            },
+            {
+              name: 'milkBags',
+              label: 'Milk Bags',
+              type: 'join',
+              collection: 'milkBags',
+              on: 'owner',
+              admin: {
+                defaultColumns: ['volume', 'status', 'donor', 'createdAt'],
+                description: 'Milk bags associated with this hospital.',
+              },
+            },
+          ],
         },
-      ],
-    },
-    {
-      type: 'row',
-      fields: [
         {
-          name: 'phone',
-          type: 'text',
-          unique: true,
-          admin: { width: '30%' },
+          label: 'Transactions',
+          fields: [
+            {
+              name: 'receivedTransactions',
+              label: 'Donation Received Transactions',
+              type: 'join',
+              collection: 'transactions',
+              on: 'recipient',
+              admin: {
+                defaultColumns: ['sender', 'matchedVolume', 'status', 'donation', 'createdAt'],
+                description: 'Transactions of received donations related to this hospital.',
+              },
+            },
+            {
+              name: 'sentTransactions',
+              label: 'Request Fulfilled Transactions',
+              type: 'join',
+              collection: 'transactions',
+              on: 'sender',
+              admin: {
+                defaultColumns: ['recipient', 'matchedVolume', 'status', 'request', 'createdAt'],
+                description: 'Transactions of fulfilled requests related to this hospital.',
+              },
+            },
+          ],
         },
       ],
     },
