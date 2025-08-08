@@ -292,7 +292,7 @@ export class MatchingService implements IMatchingService {
   async getNearestDonations(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
-    maxDistance: number = 10000,
+    maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
     const options: NearOptions = { location, status, maxDistance };
@@ -314,7 +314,7 @@ export class MatchingService implements IMatchingService {
   async getNearestRequests(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
-    maxDistance: number = 10000,
+    maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
     const options: NearOptions = { location, status, maxDistance };
