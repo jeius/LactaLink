@@ -57,7 +57,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
       >
         {trigger || (
           <Box
-            className={`rounded-full p-3 ${triggerPressed ? 'bg-primary-600' : 'bg-primary-400'}`}
+            className={`rounded-full p-4 ${triggerPressed ? 'bg-primary-600' : 'bg-primary-400'}`}
           >
             <Icon as={PlusIcon} size="xl" className="text-primary-0" />
           </Box>

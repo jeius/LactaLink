@@ -27,7 +27,7 @@ export function DonationListCard({ data, isLoading, action, ...props }: Donation
   const fillColor = getHexColor(theme, 'primary', 50)?.toString();
   const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
 
-  if (isLoading || !data) {
+  if (isLoading || data === undefined) {
     return (
       <Card {...props}>
         <CardSkeleton />
@@ -47,7 +47,10 @@ export function DonationListCard({ data, isLoading, action, ...props }: Donation
     <Card {...props}>
       <VStack space="sm" className="items-start justify-start">
         <HStack space="sm" className="w-full items-stretch">
-          <Box className="bg-primary-50 aspect-square flex-shrink-0 overflow-hidden rounded-md">
+          <Box
+            className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
+            style={{ backgroundColor: fillColor }}
+          >
             {imageUrl ? (
               <Image
                 recyclingKey={imageUrl}

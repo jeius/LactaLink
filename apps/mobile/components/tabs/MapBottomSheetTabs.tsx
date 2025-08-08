@@ -1,35 +1,38 @@
-import { Tab } from '@/components/tabs/Tab';
-import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
 import { CollectionSlug } from '@lactalink/types';
-import { useMemo } from 'react';
 import { Route, SceneMap } from 'react-native-tab-view';
+
+import React, { useMemo } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
-import { OrganizationScene } from './scenes/OrganizationScene';
 import { SceneProps } from './scenes/types';
+import { Tab } from './Tab';
+import { TabBar } from './TabBar';
 
-export function AvailableDonationsTab() {
-  useLiveCollectionRevalidator('donations', ['UPDATE']);
+export function MapBottomSheetTabs() {
   const { routes, sceneMap } = useMemo(() => createRoutesAndScenes(), []);
-
-  return <Tab routes={routes} renderScene={sceneMap} />;
+  const { width } = useWindowDimensions();
+  return (
+    <Tab
+      routes={routes}
+      renderScene={sceneMap}
+      renderTabBar={(props) => (
+        <TabBar {...props} tabStyle={{ width: width / 2 }} scrollEnabled={false} />
+      )}
+    />
+  );
 }
 
 // #region TabHelpers
 function createRoutesAndScenes() {
   const routes: { label: string; value: CollectionSlug }[] = [
-    { label: 'Public', value: 'donations' },
-    { label: 'Hospitals', value: 'hospitals' },
-    { label: 'Milk Banks', value: 'milkBanks' },
+    { label: 'Donations', value: 'donations' },
+    { label: 'Requests', value: 'requests' },
   ];
 
   const scenes: Record<string, React.FC<SceneProps>> = {};
 
   const sceneRoutes: Route[] = routes.map(({ label, value }) => {
-    if (value === 'donations' || value === 'requests') {
-      scenes[value] = DonationRequestScene;
-    } else if (value === 'hospitals' || value === 'milkBanks') {
-      scenes[value] = OrganizationScene;
-    }
+    scenes[value] = DonReqScene;
 
     return {
       key: value,
@@ -42,4 +45,9 @@ function createRoutesAndScenes() {
 
   return { routes: sceneRoutes, sceneMap: SceneMap(scenes) };
 }
+
 // #endregion
+
+function DonReqScene(props: SceneProps) {
+  return <DonationRequestScene {...props} useBottomSheetList={true} />;
+}
