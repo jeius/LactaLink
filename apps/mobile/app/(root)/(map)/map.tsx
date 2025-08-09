@@ -4,12 +4,10 @@ import { Box } from '@/components/ui/box';
 import { MapBottomSheet, MapBottomSheetProps } from '@/components/map/MapBottomSheet';
 
 import { MapProvider } from '@/components/contexts/MapProvider';
-import {
-  DonationMarkerPressEvent,
-  DonationMarkers,
-} from '@/components/map/markers/DonationMarkers';
-import { RequestMarkerPressEvent, RequestMarkers } from '@/components/map/markers/RequestMarkers';
+import { DataMarkers } from '@/components/map/markers/DataMarkers';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
+import { MarkerPressEvent } from '@/lib/types/markers';
+import { Donation, Request } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import _ from 'lodash';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
@@ -57,12 +55,12 @@ export default function MapPage() {
     setSelectedItem(value);
   }
 
-  function handleDonationMarkerPress(event: DonationMarkerPressEvent) {
+  function handleDonationMarkerPress(event: MarkerPressEvent<Donation>) {
     const { data } = event;
     setSelectedItem?.({ data, slug: 'donations' });
   }
 
-  function handleRequestMarkerPress(event: RequestMarkerPressEvent) {
+  function handleRequestMarkerPress(event: MarkerPressEvent<Request>) {
     const { data } = event;
     setSelectedItem?.({ data, slug: 'requests' });
   }
@@ -80,16 +78,18 @@ export default function MapPage() {
       return (
         <>
           {selectedItem.slug === 'donations' ? (
-            <DonationMarkers
+            <DataMarkers
               showAvatar
               data={selectedItem.data}
               onPress={handleDonationMarkerPress}
+              colorTheme="primary"
             />
           ) : selectedItem.slug === 'requests' ? (
-            <RequestMarkers
+            <DataMarkers
               showAvatar
               data={selectedItem.data}
               onPress={handleRequestMarkerPress}
+              colorTheme="tertiary"
             />
           ) : null}
         </>
@@ -99,22 +99,24 @@ export default function MapPage() {
     return (
       <>
         {donations?.map((donation, i) => (
-          <DonationMarkers
+          <DataMarkers
             key={`${donation.id}-${i}`}
             data={donation}
             region={region}
             onPress={handleDonationMarkerPress}
             showAvatar={false}
+            colorTheme="primary"
           />
         ))}
 
         {requests?.map((request, i) => (
-          <RequestMarkers
+          <DataMarkers
             key={`${request.id}-${i}`}
             data={request}
             region={region}
             onPress={handleRequestMarkerPress}
             showAvatar={false}
+            colorTheme="tertiary"
           />
         ))}
       </>
