@@ -10,4 +10,5 @@ export {
 } from 'geolib';
 
 export * from './boundsToPolygon';
+export * from './spatialSearch';
 export * from './validatePoint';

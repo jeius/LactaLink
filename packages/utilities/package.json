@@ -54,15 +54,17 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
-    "geolib": "^3.3.4"
+    "geolib": "^3.3.4",
+    "rbush": "^4.0.1"
   },
   "devDependencies": {
-    "@lactalink/eslint-config": "workspace:*",
     "@lactalink/enums": "workspace:*",
+    "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
+    "@types/rbush": "^4.0.0",
     "@types/react": "^19.0.14",
     "react": "19.0.0"
   },
