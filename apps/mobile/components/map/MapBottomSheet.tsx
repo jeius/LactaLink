@@ -63,30 +63,33 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
     sheetRef.current?.snapToIndex(1);
   }
 
-  function HandleComponent(props: BottomSheetVariables) {
-    return (
-      <Box className="relative">
-        <BottomSheetHandle {...props} />
-        <Box className="absolute right-0 top-0 px-4" style={{ transform: [{ translateY: -64 }] }}>
-          <Button
-            action="info"
-            className={`h-14 w-14 rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
-            onPress={() => setState((prev) => ({ ...prev, locateButtonPressed: true }))}
-            accessibilityLabel="Follow user location"
-            accessibilityHint="Toggles following the user's current location"
-            accessibilityRole="button"
-            accessibilityState={{ selected: followUser }}
-          >
-            <ButtonIcon
-              as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
-              height={22}
-              width={22}
-            />
-          </Button>
+  const HandleComponent = useCallback(
+    (props: BottomSheetVariables) => {
+      return (
+        <Box className="relative">
+          <BottomSheetHandle {...props} />
+          <Box className="absolute right-0 top-0 px-4" style={{ transform: [{ translateY: -64 }] }}>
+            <Button
+              action="info"
+              className={`h-14 w-14 rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
+              onPress={() => setState((prev) => ({ ...prev, locateButtonPressed: true }))}
+              accessibilityLabel="Follow user location"
+              accessibilityHint="Toggles following the user's current location"
+              accessibilityRole="button"
+              accessibilityState={{ selected: followUser }}
+            >
+              <ButtonIcon
+                as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
+                height={22}
+                width={22}
+              />
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    );
-  }
+      );
+    },
+    [followUser, isUserLocated, setState]
+  );
 
   return (
     <BottomSheet sheetRef={sheetRef} disableClose={true} snapToIndex={1}>
