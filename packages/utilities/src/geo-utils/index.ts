@@ -10,3 +10,4 @@ export {
 } from 'geolib';
 
 export * from './boundsToPolygon';
+export * from './validatePoint';
