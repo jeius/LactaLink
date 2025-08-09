@@ -1,12 +1,20 @@
-import { Donation, Request } from '@lactalink/types';
+import { Collection, Donation, Hospital, Request } from '@lactalink/types';
 
 export * from './stringChecker';
 export * from './verifyOtp';
 
-export function isDonation(data: Donation | Request): data is Donation {
+export function isDonation(data: Collection): data is Donation {
   return 'donor' in data;
 }
 
-export function isRequest(data: Donation | Request): data is Request {
+export function isRequest(data: Collection): data is Request {
   return 'requester' in data;
+}
+
+export function isHospital(data: Collection): data is Hospital {
+  return 'hospitalID' in data;
+}
+
+export function isMilkBank(data: Collection): data is Hospital {
+  return 'head' in data && !('hospitalID' in data);
 }

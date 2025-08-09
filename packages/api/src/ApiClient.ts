@@ -187,7 +187,7 @@ export class ApiClient implements IApiClient {
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
     TPaginate extends boolean = boolean,
   >(
-    args: FindMany<TSlug, TSelect>
+    args: FindMany<TSlug, TSelect, TPaginate>
   ): Promise<FindManyResult<TSlug, TSelect, TPaginate>> => {
     const { collection, ...searchParams } = args;
 
