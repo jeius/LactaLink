@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
+import { useInitializeMarkersIndex } from '@/lib/stores/markersStore';
 import { RefreshCwIcon } from 'lucide-react-native';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
@@ -26,11 +27,12 @@ export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   useOnlineManager();
 
+  const markers = useInitializeMarkersIndex();
   const { isLoading: isThemeLoading } = useTheme();
   const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
   const { isSuccess: isLocationReady, error: locationError } = useCurrentLocation();
 
-  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady;
+  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady && markers.isSuccess;
   const error = authError || locationError;
 
   useEffect(() => {
@@ -50,6 +52,12 @@ export function AppInitializer({ children }: Props) {
       console.log('✔️  Auth is ready');
     }
   }, [isAuthLoading]);
+
+  useEffect(() => {
+    if (markers.isSuccess) {
+      console.log('✔️  Markers index is initialized');
+    }
+  }, [markers.isSuccess]);
 
   // Hide the splash screen once the app is ready
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { createMarkerID, useMarkersStore } from '@/lib/stores/markersStore';
+import { createMarkerID, setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { CollectionSlug, DeliveryPreference } from '@lactalink/types';
 import { extractCollection, isDonation, isRequest, validatePoint } from '@lactalink/utilities';
 import { MapIcon } from 'lucide-react-native';
@@ -14,12 +14,12 @@ interface MapMarkerInfoProps {
 }
 
 export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
-  const { selectedMarker: selected, setSelectedMarker, mapRef } = useMap();
-  const { markerMap } = useMarkersStore();
+  const { mapRef } = useMap();
+  const selectedMarker = useMarkersStore((s) => s.selectedMarker);
 
-  if (!selected) return null;
+  if (!selectedMarker) return null;
 
-  const { data } = selected;
+  const { data } = selectedMarker;
 
   function DeliveryPreferencesCard({
     data: prefs,
@@ -37,11 +37,7 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
 
         const [longitude, latitude] = point;
         const markerID = createMarkerID(slug, data.id, point);
-        const markerData = markerMap.get(markerID);
-
-        if (markerData) {
-          setSelectedMarker(markerData);
-        }
+        setSelectedMarker(markerID);
 
         if (mapRef?.current) {
           mapRef.current.animateCamera({

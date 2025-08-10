@@ -1,11 +1,10 @@
 import { CollectionSlug, Donation, Request } from '@lactalink/types';
 import { Route, SceneMap } from 'react-native-tab-view';
 
-import { createMarkerID, useMarkersStore } from '@/lib/stores/markersStore';
+import { createMarkerID, setSelectedMarker } from '@/lib/stores/markersStore';
 import { extractCollection, isDonation, validatePoint } from '@lactalink/utilities';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
-import { useMap } from '../contexts/MapProvider';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
 import { SceneProps } from './scenes/types';
 import { Tab } from './Tab';
@@ -17,6 +16,7 @@ export function MapBottomSheetTabs() {
   return (
     <Tab
       routes={routes}
+      initialLayout={{ width }}
       renderScene={sceneMap}
       renderTabBar={(props) => (
         <TabBar {...props} tabStyle={{ width: width / 2 }} scrollEnabled={false} />
@@ -52,9 +52,6 @@ function createRoutesAndScenes() {
 // #endregion
 
 function DonReqScene(props: SceneProps) {
-  const { setSelectedMarker } = useMap();
-  const { markerMap } = useMarkersStore();
-
   function handlePress(data: Donation | Request) {
     const deliveryPreference = extractCollection(data.deliveryPreferences)?.[0];
     const address = extractCollection(deliveryPreference?.address);
@@ -63,13 +60,7 @@ function DonReqScene(props: SceneProps) {
     if (validatePoint(coordinates)) {
       const slug = isDonation(data) ? 'donations' : 'requests';
       const markerID = createMarkerID(slug, data.id, coordinates);
-      const markerData = markerMap.get(markerID);
-
-      if (markerData) {
-        setSelectedMarker(markerData);
-      } else {
-        console.warn(`Marker data not found for ID: ${markerID}`);
-      }
+      setSelectedMarker(markerID);
     }
   }
 

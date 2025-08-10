@@ -1,11 +1,18 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 
-import GorhomBottomSheet, { BottomSheetFooter, BottomSheetFooterProps } from '@gorhom/bottom-sheet';
+import GorhomBottomSheet, {
+  BottomSheetFooter,
+  BottomSheetFooterProps,
+  BottomSheetScrollViewMethods,
+} from '@gorhom/bottom-sheet';
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
+import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { BottomSheetVariables } from '@gorhom/bottom-sheet/lib/typescript/types';
+import { Motion } from '@legendapp/motion';
 import { ChevronLeftIcon, CompassIcon, LocateFixedIcon, LocateIcon } from 'lucide-react-native';
+import { useWindowDimensions } from 'react-native';
 import { useMap } from '../contexts/MapProvider';
 import { DonateRequestModal } from '../modals';
 import { MapBottomSheetTabs } from '../tabs/MapBottomSheetTabs';
@@ -17,28 +24,27 @@ import { VStack } from '../ui/vstack';
 import { MapMarkerInfo } from './MapMarkerInfo';
 
 const DEFAULT_SNAP_POINT = 30;
+const snapPoints = [DEFAULT_SNAP_POINT, '40%', '60%', '80%'];
 
 export function MapBottomSheet() {
   const sheetRef = useRef<GorhomBottomSheet>(null);
+  const sheetScrollRef = useRef<BottomSheetScrollViewMethods>(null);
+  const { width } = useWindowDimensions();
+
   const {
     setState,
     state: { followUser, isUserLocated },
-    selectedMarker: selected,
-    setSelectedMarker,
   } = useMap();
 
-  const hasSelectedItem = Boolean(selected);
+  const selectedMarker = useMarkersStore((s) => s.selectedMarker);
 
-  usePreventBackPress(hasSelectedItem, () => {
+  usePreventBackPress(Boolean(selectedMarker), () => {
     unselectMarker();
   });
 
-  const snapPoints = useMemo(() => {
-    return [DEFAULT_SNAP_POINT, '40%', '60%', '80%'];
-  }, []);
-
   function handleMinimize() {
     sheetRef.current?.snapToIndex(1);
+    sheetScrollRef.current?.scrollTo({ y: 0, animated: true });
   }
 
   function unselectMarker() {
@@ -85,10 +91,20 @@ export function MapBottomSheet() {
         footerComponent={FooterComponent}
         backgroundStyle={{ backgroundColor: 'transparent' }}
       >
-        {selected ? (
+        <Motion.View
+          animate={{ x: selectedMarker ? -width : 0 }}
+          className="bg-background-50 flex-1 flex-row justify-start"
+          style={{ width: width * 2 }}
+        >
+          <Box className="flex-1">
+            <MapBottomSheetTabs />
+          </Box>
+
           <BottomSheetScrollView
+            ref={sheetScrollRef}
             focusHook={useFocusEffect}
-            contentContainerClassName="gap-2 bg-background-50 py-3"
+            contentContainerClassName="gap-2 py-3"
+            className="flex-1"
           >
             <VStack className="items-start px-5">
               <Button variant="link" onPress={unselectMarker}>
@@ -98,9 +114,7 @@ export function MapBottomSheet() {
               <MapMarkerInfo onViewOnMap={handleMinimize} />
             </VStack>
           </BottomSheetScrollView>
-        ) : (
-          <MapBottomSheetTabs />
-        )}
+        </Motion.View>
       </BottomSheetPortal>
     </BottomSheet>
   );

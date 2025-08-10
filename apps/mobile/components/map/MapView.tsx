@@ -22,7 +22,6 @@ import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-import { UserMarker } from './markers/UserMarker';
 
 interface MapViewProps extends ComponentProps<typeof RNMapView> {
   markersReady?: boolean;
@@ -33,10 +32,12 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
   const { theme } = useTheme();
   const router = useRouter();
 
+  console.log('MapView rendered');
+
   const {
     userMarkerRef,
     mapRef,
-    state: { followUser, isMapLoaded, isMapReady, renderMarkers, showAvatar, locateButtonPressed },
+    state: { followUser, isMapLoaded, isMapReady, showAvatar, locateButtonPressed },
     setState,
   } = useMap();
 
@@ -104,7 +105,10 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
       );
     } else if (userPosition) {
       const { latitude, longitude } = userPosition;
-      mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
+      mapRef.current?.animateCamera(
+        { center: { latitude, longitude }, zoom: Math.max(16, camera.zoom || 0) },
+        { duration: 500 }
+      );
     }
   }, [isUserLocated, followUser, userMarkerRef, mapRef, camera.zoom, setState, userPosition]);
 
@@ -115,15 +119,13 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
         { zoom: 16, center: { latitude, longitude } },
         { duration: 500 }
       );
-      setTimeout(() => {
-        setState((prev) => ({ ...prev, renderMarkers: true }));
-      }, 1000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady, mapRef]);
 
   useEffect(() => {
     if (locateButtonPressed) {
+      console.log('Locate button pressed');
       handleLocatePress();
       setState((prev) => ({ ...prev, locateButtonPressed: false }));
     }
@@ -175,9 +177,9 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
         onMapReady={() => setState((prev) => ({ ...prev, isMapReady: true }))}
         onMapLoaded={() => setState((prev) => ({ ...prev, isMapLoaded: true }))}
       >
-        {renderMarkers && children}
+        {children}
 
-        {location && renderMarkers && (
+        {/* {location && renderMarkers && (
           <UserMarker
             ref={userMarkerRef}
             showAvatar={showAvatar}
@@ -186,7 +188,7 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
             followUser={followUser}
             onChangePosition={setUserPosition}
           />
-        )}
+        )} */}
       </RNMapView.Animated>
 
       {!mapReady && (

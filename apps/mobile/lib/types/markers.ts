@@ -23,4 +23,5 @@ export type MarkerData<TSlug extends MarkerDataSlug = MarkerDataSlug> = {
 export interface MarkersStoreState<TSlug extends MarkerDataSlug = MarkerDataSlug> {
   markerMap: Map<string, MarkerData<TSlug>>;
   markersIndex: SpatialSearch<MapMarkerProps>;
+  selectedMarker: MarkerData<TSlug> | null;
 }

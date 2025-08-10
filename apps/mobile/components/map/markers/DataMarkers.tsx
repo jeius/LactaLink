@@ -3,13 +3,14 @@ import { Image } from '@/components/Image';
 import { getHexColor } from '@/lib/colors';
 
 import { ProfileAvatar } from '@/components/Avatar';
-import { useMap } from '@/components/contexts/MapProvider';
 import { Box } from '@/components/ui/box';
 import {
   assignMarkerRef,
   MapMarkerProps,
   MarkerData,
   MarkerDataSlug,
+  setSelectedMarker,
+  useMarkersStore,
 } from '@/lib/stores/markersStore';
 import { ColorsConfig } from '@/lib/types/colors';
 import { MarkerPressEvent } from '@/lib/types/markers';
@@ -31,6 +32,7 @@ interface DataMarkersProps<TSlug extends MarkerDataSlug = MarkerDataSlug> {
   onPress?: (event: MarkerPressEvent) => void;
   showAvatar?: boolean;
   colorTheme?: keyof ColorsConfig['light'];
+  showCallout?: boolean;
 }
 export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   markerProps,
@@ -38,15 +40,18 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   showAvatar: showAvatarProp,
   colorTheme = 'primary',
   markerData,
+  showCallout,
 }: DataMarkersProps<TSlug>) {
   const { theme } = useTheme();
   const pinColor = getHexColor(theme, colorTheme, 600);
   const iconBgColor = getHexColor(theme, colorTheme, 100);
-  const { setSelectedMarker, selectedMarker } = useMap();
+  const selectedmarker = useMarkersStore((s) => s.selectedMarker)?.marker;
 
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
-  const profile = useMemo(() => profileExtractor(markerData?.data), [markerData]);
+  console.log('DataMarkers rendered', markerProps.identifier);
+
+  const profile = profileExtractor(markerData?.data);
 
   const icon = useMemo(() => {
     const iconName = markerData?.deliveryPreference?.preferredMode[0];
@@ -57,19 +62,21 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
     if (showAvatarProp !== undefined) {
       setShowAvatar(showAvatarProp);
     }
+    redrawMarker();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAvatarProp]);
 
   useEffect(() => {
-    if (selectedMarker?.data.id === markerData.data.id) {
-      setShowAvatar(true);
+    if (selectedmarker?.identifier === markerProps.identifier) {
       markerData.markerRef?.showCallout();
+      setShowAvatar(true);
     } else {
-      setShowAvatar(false);
       markerData.markerRef?.hideCallout();
+      setShowAvatar(false);
     }
     redrawMarker();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMarker, markerData.data.id, markerData.markerRef]);
+  }, [markerData.markerRef, selectedmarker?.identifier, markerProps.identifier]);
 
   function createRef(ref: MapMarker | Animated.LegacyRef<MapMarker> | null) {
     if (ref) {
@@ -77,7 +84,7 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
         assignMarkerRef(markerProps.identifier, ref);
       }
     } else {
-      assignMarkerRef(markerProps.identifier!, ref);
+      assignMarkerRef(markerProps.identifier, ref);
     }
   }
 
@@ -90,7 +97,7 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
     markerProps.onPress?.(event);
     setShowAvatar(true);
     redrawMarker();
-    setSelectedMarker(markerData);
+    setSelectedMarker(markerProps.identifier);
   }
 
   return (

@@ -4,9 +4,10 @@ import { capitalizeFirst } from '@lactalink/utilities';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { PointExtractor, SpatialSearch, validatePoint } from '@lactalink/utilities/geo-utils';
 import { isDonation, isHospital, isMilkBank, isRequest } from '@lactalink/utilities/type-guards';
+import { useQuery } from '@tanstack/react-query';
 import { MapMarker } from 'react-native-maps';
 import { create } from 'zustand';
-import { DONATION_REQUEST_STATUS, PREFERRED_STORAGE_TYPES } from '../constants';
+import { DONATION_REQUEST_STATUS, QUERY_KEYS } from '../constants';
 import { MapMarkerProps, MarkerData, MarkerDataSlug, MarkersStoreState } from '../types/markers';
 
 export type * from '@/lib/types/markers';
@@ -18,7 +19,17 @@ const pointExtractor: PointExtractor<MapMarkerProps> = (marker) => {
 export const useMarkersStore = create<MarkersStoreState>(() => ({
   markerMap: new Map(),
   markersIndex: new SpatialSearch([], pointExtractor),
+  selectedMarker: null,
 }));
+
+export function useInitializeMarkersIndex() {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.MARKERS],
+    queryFn: initializeMarkersIndex,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+}
 
 export async function initializeMarkersIndex() {
   resetMarkersStore();
@@ -30,8 +41,13 @@ export async function initializeMarkersIndex() {
     createDataMarkers('milkBanks'),
   ]);
 
+  console.log('Initializing Markers Index: donations', markers[0].length);
+  console.log('Initializing Markers Index: requests', markers[1].length);
+  console.log('Initializing Markers Index: hospitals', markers[2].length);
+  console.log('Initializing Markers Index: milkBanks', markers[3].length);
+
   const markersIndex = new SpatialSearch(markers.flat(), pointExtractor);
-  useMarkersStore.setState((prevState) => ({ ...prevState, markersIndex }));
+  useMarkersStore.setState({ markersIndex });
   return markersIndex;
 }
 
@@ -50,10 +66,30 @@ export function getMarkerRef(identifier: string): MapMarker | null {
   return (markerData && markerData.markerRef) || null;
 }
 
+export function getMarkersIndex() {
+  const { markersIndex } = useMarkersStore.getState();
+  return markersIndex;
+}
+
+export function setSelectedMarker(identifier: string | null) {
+  const { markerMap } = useMarkersStore.getState();
+
+  if (!identifier) {
+    useMarkersStore.setState({ selectedMarker: null });
+    return;
+  }
+
+  const markerData = markerMap.get(identifier) || null;
+  if (markerData) {
+    useMarkersStore.setState({ selectedMarker: markerData });
+  }
+}
+
 export function resetMarkersStore() {
   useMarkersStore.setState({
     markerMap: new Map(),
     markersIndex: new SpatialSearch([], pointExtractor),
+    selectedMarker: null,
   });
 }
 
@@ -112,17 +148,14 @@ function createMarkersFromDonationOrRequest<
   const markers: MapMarkerProps[] = [];
 
   let volume = 0;
-  let storageType: keyof typeof PREFERRED_STORAGE_TYPES = PREFERRED_STORAGE_TYPES.EITHER.value;
   let description = '';
 
   if (isDonation(data)) {
     volume = data.remainingVolume || 0;
-    storageType = data.details.storageType;
-    description = `${volume} mL of ${PREFERRED_STORAGE_TYPES[storageType].label} milk available.`;
+    description = 'Available milk donation.';
   } else {
     volume = data.volumeNeeded;
-    storageType = data.details.storagePreference || storageType;
-    description = `${volume} mL of milk requested.`;
+    description = 'Open request for milk.';
   }
 
   const preferences = extractCollection(data.deliveryPreferences) || [];

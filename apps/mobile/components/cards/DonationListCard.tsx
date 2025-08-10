@@ -1,6 +1,7 @@
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
-import { Donation, Image as ImageType, MarkKeyRequired } from '@lactalink/types';
+import { Donation, MarkKeyRequired } from '@lactalink/types';
+import { extractCollection } from '@lactalink/utilities';
 import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
@@ -56,7 +57,7 @@ function CardContent({ data, action }: MarkKeyRequired<DonationListCardProps, 'd
   const { details, volume, remainingVolume } = data;
   const { collectionMode, storageType } = details;
 
-  const milkSamples = details.milkSample as ImageType[] | null;
+  const milkSamples = extractCollection(details.milkSample);
   const image = milkSamples && milkSamples.length ? milkSamples[0] : null;
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
   const availableVolumePercentage = (remainingVolume || 0 / (volume || 0)) * 100;

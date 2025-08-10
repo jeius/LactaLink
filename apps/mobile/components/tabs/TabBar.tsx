@@ -21,20 +21,32 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
   return (
     <RNTabBar
       {...props}
-      indicatorStyle={{
-        backgroundColor: getHexColor(theme, 'primary', 500),
-      }}
-      indicatorContainerStyle={{
-        height: 50,
-        backgroundColor: getHexColor(theme, 'background', 0),
-      }}
-      style={{
-        height: 50,
-        backgroundColor: getHexColor(theme, 'background', 50),
-      }}
-      contentContainerStyle={{
-        backgroundColor: getHexColor(theme, 'background', 0),
-      }}
+      indicatorStyle={[
+        {
+          backgroundColor: getHexColor(theme, 'primary', 500),
+        },
+        props.indicatorStyle,
+      ]}
+      indicatorContainerStyle={[
+        {
+          height: 50,
+          backgroundColor: getHexColor(theme, 'background', 0),
+        },
+        props.indicatorContainerStyle,
+      ]}
+      style={[
+        {
+          height: 50,
+          backgroundColor: getHexColor(theme, 'background', 50),
+        },
+        props.style,
+      ]}
+      contentContainerStyle={[
+        {
+          backgroundColor: getHexColor(theme, 'background', 0),
+        },
+        props.contentContainerStyle,
+      ]}
       activeColor={getHexColor(theme, 'primary', 500)?.toString()}
       inactiveColor={getHexColor(theme, 'typography', 900)?.toString()}
       pressColor={getHexColor(theme, 'background', 100)?.toString()}

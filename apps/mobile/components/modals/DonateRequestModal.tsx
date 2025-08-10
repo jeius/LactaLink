@@ -73,9 +73,9 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
         <ModalBackdrop className="bg-background-0" />
         <ModalContent className="border-0 bg-transparent p-0 shadow-none">
           <VStack space="2xl" className="w-full items-center">
-            <Text size="2xl" className="font-JakartaSemiBold text-center">
+            {/* <Text size="2xl" className="font-JakartaSemiBold text-center">
               Do you want to donate or request milk?
-            </Text>
+            </Text> */}
 
             <AnimatedPressable onPress={handleDonatePressed} containerStyle={{ width: '100%' }}>
               <Card size="xl" className="bg-primary-100 border-primary-400 relative h-44 p-0">
@@ -96,7 +96,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
             </AnimatedPressable>
 
             <AnimatedPressable onPress={handleRequestPressed} containerStyle={{ width: '100%' }}>
-              <Card size="xl" className="bg-secondary-50 border-secondary-200 relative h-44 p-0">
+              <Card size="xl" className="bg-tertiary-50 border-tertiary-200 relative h-44 p-0">
                 <Image
                   alt="Request"
                   source={getImageAsset('onboarding3')}
@@ -104,8 +104,8 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
                   style={{ width: '100%', height: '100%' }}
                 />
                 <Box className="absolute inset-0 items-start justify-end p-2">
-                  <Box className="bg-secondary-300 rounded-xl p-3 opacity-90">
-                    <Text size="xl" className="font-JakartaSemiBold text-secondary-900">
+                  <Box className="bg-tertiary-300 rounded-xl p-3 opacity-90">
+                    <Text size="xl" className="font-JakartaSemiBold text-tertiary-900">
                       Request
                     </Text>
                   </Box>

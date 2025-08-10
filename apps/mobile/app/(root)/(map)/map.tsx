@@ -5,43 +5,40 @@ import { MapBottomSheet } from '@/components/map/MapBottomSheet';
 
 import { MapProvider } from '@/components/contexts/MapProvider';
 import { DataMarkers } from '@/components/map/markers/DataMarkers';
-import { useVisibleMarkers } from '@/hooks/collections/useVisibleMarkers';
-import { DEFAULT_REGION } from '@/lib/constants';
-import { useMarkersStore } from '@/lib/stores/markersStore';
-import { MapPageSearchParams } from '@/lib/types';
+import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
+import { MapMarkerProps, MapPageSearchParams } from '@/lib/types';
 import { ColorsConfig } from '@/lib/types/colors';
-import { isDonation, isRequest } from '@lactalink/utilities';
+import { MapRegion } from '@lactalink/types';
+import { isDonation, isRequest, regionToBoundary } from '@lactalink/utilities';
 import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import React, { memo, useMemo, useRef, useState } from 'react';
-import RNMapView, { Region } from 'react-native-maps';
+import RNMapView from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const MemoizedMapView = memo(MapView, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
+const MemoizedDataMarkers = memo(DataMarkers, (prevProps, nextProps) =>
+  _.isEqual(prevProps, nextProps)
+);
 
 export default function MapPage() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<RNMapView>(null);
 
-  const { markerMap } = useMarkersStore();
+  const markerMap = useMarkersStore((s) => s.markerMap);
+  const markersIndex = useMarkersStore((s) => s.markersIndex);
   const { markerID } = useLocalSearchParams<MapPageSearchParams>();
+
+  console.log('MapPage rendered', markerID);
 
   const selectedMarker = useMemo(() => {
     if (!markerID) return null;
     return markerMap.get(markerID) || null;
   }, [markerID, markerMap]);
 
-  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
-
-  const { data: visibleMarkers, isLoading, isSuccess } = useVisibleMarkers(region);
-
-  const markersReady = !isLoading && isSuccess;
+  const [visibleMarkers, setVisibleMarkers] = useState<MapMarkerProps[]>([]);
 
   const markers = useMemo(() => {
-    if (!markersReady) {
-      return null;
-    }
-
     return visibleMarkers.map((markerProps, i) => {
       const markerData = markerMap.get(markerProps.identifier);
 
@@ -60,7 +57,7 @@ export default function MapPage() {
       }
 
       return (
-        <DataMarkers
+        <MemoizedDataMarkers
           key={`${markerProps.id}-${i}`}
           markerData={markerData}
           markerProps={markerProps}
@@ -69,12 +66,27 @@ export default function MapPage() {
         />
       );
     });
-  }, [markersReady, visibleMarkers, markerMap]);
+  }, [visibleMarkers, markerMap]);
+
+  function handleRegionChange(data: MapRegion) {
+    const newMarkers = markersIndex.searchByBoundary(regionToBoundary(data));
+    if (newMarkers.length !== visibleMarkers.length) {
+      setVisibleMarkers(newMarkers);
+    }
+  }
+
+  function unSelectMarker() {
+    setSelectedMarker(null);
+  }
 
   return (
     <MapProvider mapRef={mapRef} selectedMarker={selectedMarker}>
       <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-        <MemoizedMapView markersReady={markersReady} onRegionChangeComplete={setRegion}>
+        <MemoizedMapView
+          markersReady={true}
+          onRegionChangeComplete={handleRegionChange}
+          onPress={unSelectMarker}
+        >
           {markers}
         </MemoizedMapView>
 
