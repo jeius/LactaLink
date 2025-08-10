@@ -5,8 +5,6 @@ import GorhomBottomSheet, { BottomSheetFooter, BottomSheetFooterProps } from '@g
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { BottomSheetVariables } from '@gorhom/bottom-sheet/lib/typescript/types';
-import { Donation, Hospital, MilkBank, PaginatedDocs, Request } from '@lactalink/types';
-import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { ChevronLeftIcon, CompassIcon, LocateFixedIcon, LocateIcon } from 'lucide-react-native';
 import { useMap } from '../contexts/MapProvider';
 import { DonateRequestModal } from '../modals';
@@ -20,40 +18,20 @@ import { MapMarkerInfo } from './MapMarkerInfo';
 
 const DEFAULT_SNAP_POINT = 30;
 
-type Value =
-  | { slug: 'donations'; data: Donation }
-  | { slug: 'requests'; data: Request }
-  | { slug: 'hospitals'; data: Hospital }
-  | { slug: 'milkBanks'; data: MilkBank }
-  | { slug: 'placeholder'; data: { id: string } };
-
-export interface MapBottomSheetProps {
-  value?: Value | null;
-  onChange?: (id?: Value) => void;
-  requestQueryResult: UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Request> | null>>;
-  donationQueryResult: UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Donation> | null>>;
-}
-
-export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProps) {
+export function MapBottomSheet() {
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const {
-    mapRef,
     setState,
     state: { followUser, isUserLocated },
+    selectedMarker: selected,
+    setSelectedMarker,
   } = useMap();
 
   const hasSelectedItem = Boolean(selected);
 
   usePreventBackPress(hasSelectedItem, () => {
-    handleChanged(undefined);
+    unselectMarker();
   });
-
-  const handleChanged = useCallback(
-    (val?: Value) => {
-      onChange?.(val);
-    },
-    [onChange]
-  );
 
   const snapPoints = useMemo(() => {
     return [DEFAULT_SNAP_POINT, '40%', '60%', '80%'];
@@ -61,6 +39,10 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
 
   function handleMinimize() {
     sheetRef.current?.snapToIndex(1);
+  }
+
+  function unselectMarker() {
+    setSelectedMarker(null);
   }
 
   const HandleComponent = useCallback(
@@ -109,11 +91,11 @@ export function MapBottomSheet({ value: selected, onChange }: MapBottomSheetProp
             contentContainerClassName="gap-2 bg-background-50 py-3"
           >
             <VStack className="items-start px-5">
-              <Button variant="link" onPress={() => handleChanged(undefined)}>
+              <Button variant="link" onPress={unselectMarker}>
                 <ButtonIcon as={ChevronLeftIcon} />
                 <ButtonText>Back</ButtonText>
               </Button>
-              <MapMarkerInfo mapRef={mapRef} selected={selected} onViewOnMap={handleMinimize} />
+              <MapMarkerInfo onViewOnMap={handleMinimize} />
             </VStack>
           </BottomSheetScrollView>
         ) : (

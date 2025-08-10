@@ -1,2 +1,2 @@
-export * from './SpatialSearch';
+export * from './KDSpatialSearch';
 export * from './types';

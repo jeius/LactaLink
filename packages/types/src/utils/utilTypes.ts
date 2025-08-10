@@ -20,3 +20,9 @@ export type NonNever<Type extends {}> = Pick<
 export type MarkOptional<Type, Keys extends keyof Type> = Type extends Type
   ? Omit<Type, Keys> & Partial<Pick<Type, Keys>>
   : never;
+
+/**
+ * Utility type to make an optional key K in type T required.
+ * Usage: MarkKeyRequired<T, 'keyName'>
+ */
+export type MarkKeyRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };

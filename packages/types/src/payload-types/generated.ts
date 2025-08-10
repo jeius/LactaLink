@@ -448,8 +448,6 @@ export interface Avatar {
   };
 }
 /**
- * Milk Bank profile of users, including their details such as name, type, head, and contact information.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "milkBanks".
  */
@@ -466,7 +464,7 @@ export interface MilkBank {
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
   /**
-   * Total volume of milk in stock at the milk bank.
+   * Total volume of milk in stock at the milk bank. (Auto calculated)
    */
   totalVolume?: number | null;
   /**
@@ -571,8 +569,6 @@ export interface Inventory {
   createdAt: string;
 }
 /**
- * Hospital profile of users, including their details such as name, type, head, and contact information.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hospitals".
  */
@@ -590,7 +586,7 @@ export interface Hospital {
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
   /**
-   * Total volume of milk in stock at the hospital.
+   * Total volume of milk in stock at the hospital. (Auto calculated)
    */
   totalVolume?: number | null;
   /**

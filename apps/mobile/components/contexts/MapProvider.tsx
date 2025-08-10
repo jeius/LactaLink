@@ -1,4 +1,5 @@
 import { UserMarkerRef } from '@/components/map/markers/UserMarker';
+import { MarkerData } from '@/lib/stores/markersStore';
 import { createContext, useContext, useRef, useState } from 'react';
 import MapView from 'react-native-maps';
 
@@ -8,7 +9,7 @@ type State = {
   showAvatar: boolean;
   isMapLoaded: boolean;
   isMapReady: boolean;
-  markersRendered: boolean;
+  renderMarkers: boolean;
   locateButtonPressed: boolean;
 };
 
@@ -17,6 +18,8 @@ interface MapContextProps {
   userMarkerRef: React.RefObject<UserMarkerRef | null>;
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
+  selectedMarker: MarkerData | null;
+  setSelectedMarker: React.Dispatch<React.SetStateAction<MarkerData | null>>;
 }
 
 const MapContext = createContext<MapContextProps | null>(null);
@@ -31,24 +34,35 @@ export function useMap() {
 
 interface MapProviderProps extends React.PropsWithChildren {
   mapRef?: React.RefObject<MapView | null>;
+  selectedMarker: MarkerData | null;
 }
 
 export function MapProvider({ children, mapRef: mapRefProp }: MapProviderProps) {
   const mapRef = useRef<MapView | null>(null);
   const userMarkerRef = useRef<UserMarkerRef>(null);
+  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
 
   const [state, setState] = useState<State>({
     followUser: false,
     showAvatar: true,
     isMapLoaded: false,
     isMapReady: false,
-    markersRendered: false,
+    renderMarkers: false,
     locateButtonPressed: false,
     isUserLocated: false,
   });
 
   return (
-    <MapContext.Provider value={{ mapRef: mapRefProp || mapRef, userMarkerRef, state, setState }}>
+    <MapContext.Provider
+      value={{
+        mapRef: mapRefProp || mapRef,
+        userMarkerRef,
+        state,
+        setState,
+        selectedMarker,
+        setSelectedMarker,
+      }}
+    >
       {children}
     </MapContext.Provider>
   );

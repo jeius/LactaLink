@@ -18,7 +18,11 @@ import { capitalize } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import { SceneProps } from './types';
 
-export function DonationRequestScene({ route, useBottomSheetList = false }: SceneProps) {
+export function DonationRequestScene<T extends Donation | Request = Donation | Request>({
+  route,
+  useBottomSheetList = false,
+  onPress,
+}: SceneProps<T>) {
   const res = useFetchNearest(route.key as 'donations' | 'requests');
 
   const placeholders = useMemo(
@@ -33,22 +37,24 @@ export function DonationRequestScene({ route, useBottomSheetList = false }: Scen
 
   const icon = getIconAsset(route.key === 'requests' ? 'milkBasket' : 'receiveMilk');
 
-  const renderItem: ListRenderItem<Donation | Request> = useCallback(
+  const renderItem: ListRenderItem<T> = useCallback(
     ({ item }) => {
       const isLoading = item.id.includes('placeholder');
 
       switch (route.key) {
         case 'donations':
-          return <DonationListCard isLoading={isLoading} data={item as Donation} />;
+          return (
+            <DonationListCard onPress={onPress} isLoading={isLoading} data={item as Donation} />
+          );
 
         case 'requests':
-          return <RequestListCard isLoading={isLoading} data={item as Request} />;
+          return <RequestListCard onPress={onPress} isLoading={isLoading} data={item as Request} />;
 
         default:
           return null;
       }
     },
-    [route.key]
+    [onPress, route.key]
   );
 
   function EmptyComponent() {

@@ -2,49 +2,56 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Image } from '@/components/Image';
 import { getHexColor } from '@/lib/colors';
 
-import Avatar from '@/components/Avatar';
+import { ProfileAvatar } from '@/components/Avatar';
+import { useMap } from '@/components/contexts/MapProvider';
 import { Box } from '@/components/ui/box';
+import {
+  assignMarkerRef,
+  MapMarkerProps,
+  MarkerData,
+  MarkerDataSlug,
+} from '@/lib/stores/markersStore';
 import { ColorsConfig } from '@/lib/types/colors';
-import { MarkerDetails, MarkerPressEvent } from '@/lib/types/markers';
-import { createMarkers } from '@/lib/utils/createMarkers';
+import { MarkerPressEvent } from '@/lib/types/markers';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { Avatar as AvatarType, Donation, Individual, Request } from '@lactalink/types';
-import { extractCollection, isDonation } from '@lactalink/utilities';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Collection, Hospital, Individual, MilkBank } from '@lactalink/types';
+import { extractCollection, isDonation, isRequest } from '@lactalink/utilities';
+import { useEffect, useMemo, useState } from 'react';
 import { Animated } from 'react-native';
 import {
   MapMarker,
   MarkerAnimated,
   MarkerPressEvent as RNMarkerPressEvent,
-  Region,
 } from 'react-native-maps';
 import { DefaultMarker } from './DefaultMarker';
 
-interface DataMarkersProps<TData extends Donation | Request> {
-  data: TData;
-  onPress?: (event: MarkerPressEvent<TData>) => void;
+interface DataMarkersProps<TSlug extends MarkerDataSlug = MarkerDataSlug> {
+  markerData: MarkerData<TSlug>;
+  markerProps: MapMarkerProps;
+  onPress?: (event: MarkerPressEvent) => void;
   showAvatar?: boolean;
-  region?: Region;
   colorTheme?: keyof ColorsConfig['light'];
 }
-export function DataMarkers<TData extends Donation | Request>({
-  data,
+export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
+  markerProps,
   onPress,
   showAvatar: showAvatarProp,
-  region,
   colorTheme = 'primary',
-}: DataMarkersProps<TData>) {
+  markerData,
+}: DataMarkersProps<TSlug>) {
   const { theme } = useTheme();
   const pinColor = getHexColor(theme, colorTheme, 600);
   const iconBgColor = getHexColor(theme, colorTheme, 100);
-
-  const markerRefs = useRef<Record<string, MapMarker>>({});
+  const { setSelectedMarker, selectedMarker } = useMap();
 
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
 
-  const { profileAvatar, displayName } = useMemo(() => extractor(data), [data]);
+  const profile = useMemo(() => profileExtractor(markerData?.data), [markerData]);
 
-  const markers = useMemo(() => createMarkers(data, region), [data, region]);
+  const icon = useMemo(() => {
+    const iconName = markerData?.deliveryPreference?.preferredMode[0];
+    return iconName && getDeliveryPreferenceIcon(iconName);
+  }, [markerData?.deliveryPreference?.preferredMode]);
 
   useEffect(() => {
     if (showAvatarProp !== undefined) {
@@ -52,100 +59,91 @@ export function DataMarkers<TData extends Donation | Request>({
     }
   }, [showAvatarProp]);
 
-  function createRef(marker: MarkerDetails<TData>) {
-    return (ref: MapMarker | Animated.LegacyRef<MapMarker> | null) => {
-      if (ref) {
-        if (ref instanceof MapMarker) {
-          markerRefs.current[marker.identifier!] = ref;
-        } else {
-          delete markerRefs.current[marker.identifier!];
-        }
-      } else {
-        delete markerRefs.current[marker.identifier!];
-      }
-    };
-  }
+  useEffect(() => {
+    if (selectedMarker?.data.id === markerData.data.id) {
+      setShowAvatar(true);
+      markerData.markerRef?.showCallout();
+    } else {
+      setShowAvatar(false);
+      markerData.markerRef?.hideCallout();
+    }
+    redrawMarker();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMarker, markerData.data.id, markerData.markerRef]);
 
-  function redrawMarkers() {
-    for (const marker of Object.values(markerRefs.current)) {
-      marker.redraw();
+  function createRef(ref: MapMarker | Animated.LegacyRef<MapMarker> | null) {
+    if (ref) {
+      if (ref instanceof MapMarker) {
+        assignMarkerRef(markerProps.identifier, ref);
+      }
+    } else {
+      assignMarkerRef(markerProps.identifier!, ref);
     }
   }
 
-  function handleMarkerPress(details: MarkerPressEvent<TData>) {
-    return (_event: RNMarkerPressEvent) => {
-      onPress?.(details);
-      setShowAvatar(true);
-      redrawMarkers();
-    };
+  function redrawMarker() {
+    markerData?.markerRef?.redraw();
   }
 
-  return markers.map((marker) => {
-    return (
-      <MarkerAnimated
-        {...marker}
-        ref={createRef(marker)}
-        key={marker.identifier}
-        onPress={handleMarkerPress(marker)}
-        tracksViewChanges={false}
-      >
-        <DefaultMarker
-          size="sm"
-          color={pinColor}
-          circleColor={iconBgColor}
-          circleIcon={
-            !showAvatar ? (
-              <Box className="flex-1 p-0.5">
-                <Image
-                  source={getDeliveryPreferenceIcon(marker.deliveryPreference.preferredMode[0]!)}
-                  style={{ flex: 1 }}
-                  transition={{ duration: 0 }}
-                  onLoad={() => {
-                    markerRefs.current[marker.identifier!]?.redraw();
-                  }}
-                />
-              </Box>
-            ) : (
-              profileAvatar && (
-                <Avatar
-                  size="xs"
-                  className="h-full w-full"
-                  details={{ name: displayName, avatar: profileAvatar }}
-                  onLayout={() => {
-                    markerRefs.current[marker.identifier!]?.redraw();
-                  }}
-                  onLoad={() => {
-                    markerRefs.current[marker.identifier!]?.redraw();
-                  }}
-                  fadeDuration={0}
-                />
-              )
+  function handleMarkerPress(event: RNMarkerPressEvent) {
+    onPress?.({ ...event, identifier: markerProps.identifier || event.nativeEvent.id });
+    markerProps.onPress?.(event);
+    setShowAvatar(true);
+    redrawMarker();
+    setSelectedMarker(markerData);
+  }
+
+  return (
+    <MarkerAnimated
+      {...markerProps}
+      ref={createRef}
+      onPress={handleMarkerPress}
+      tracksViewChanges={false}
+    >
+      <DefaultMarker
+        size="sm"
+        color={pinColor}
+        circleColor={iconBgColor}
+        circleIcon={
+          !showAvatar ? (
+            <Box className="flex-1 p-0.5">
+              <Image
+                source={icon}
+                style={{ flex: 1 }}
+                transition={{ duration: 0 }}
+                onLoad={redrawMarker}
+              />
+            </Box>
+          ) : (
+            profile && (
+              <ProfileAvatar
+                size="xs"
+                className="h-full w-full"
+                profile={profile}
+                onLayout={redrawMarker}
+                onLoad={redrawMarker}
+                fadeDuration={0}
+              />
             )
-          }
-        />
-      </MarkerAnimated>
-    );
-  });
+          )
+        }
+      />
+    </MarkerAnimated>
+  );
 }
 
-function extractor(data: Donation | Request) {
-  let profile: Individual | null;
-  let profileAvatar: AvatarType | null;
-  let displayName: string = isDonation(data) ? 'Donor' : 'Requester';
+function profileExtractor(data: Collection<MarkerDataSlug> | null = null) {
+  let profile: Individual | Hospital | MilkBank | null;
+
+  if (!data) return null;
 
   if (isDonation(data)) {
     profile = extractCollection(data.donor);
-    profileAvatar = extractCollection(profile?.avatar);
-    displayName = profile?.displayName || displayName;
-  } else {
+  } else if (isRequest(data)) {
     profile = extractCollection(data.requester);
-    profileAvatar = extractCollection(profile?.avatar);
-    displayName = profile?.displayName || displayName;
+  } else {
+    profile = data;
   }
 
-  return {
-    profile,
-    profileAvatar,
-    displayName,
-  };
+  return profile;
 }

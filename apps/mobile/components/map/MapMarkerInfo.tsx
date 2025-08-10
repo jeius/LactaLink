@@ -1,38 +1,52 @@
-import { Address, DeliveryPreference } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { createMarkerID, useMarkersStore } from '@/lib/stores/markersStore';
+import { CollectionSlug, DeliveryPreference } from '@lactalink/types';
+import { extractCollection, isDonation, isRequest, validatePoint } from '@lactalink/utilities';
 import { MapIcon } from 'lucide-react-native';
 import React from 'react';
-import MapView from 'react-native-maps';
 import { DeliveryPreferenceCard, DonationInfoCard, RequestInfoCard } from '../cards';
-import { MapBottomSheetProps } from '../map/MapBottomSheet';
+import { useMap } from '../contexts/MapProvider';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { VStack } from '../ui/vstack';
 
 interface MapMarkerInfoProps {
-  selected: MapBottomSheetProps['value'];
-  mapRef?: React.RefObject<MapView | null>;
   onViewOnMap?: (data: DeliveryPreference) => void;
 }
 
-export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoProps) {
+export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
+  const { selectedMarker: selected, setSelectedMarker, mapRef } = useMap();
+  const { markerMap } = useMarkersStore();
+
   if (!selected) return null;
 
-  const { slug, data } = selected;
+  const { data } = selected;
 
-  function DeliveryPreferencesCard({ data }: { data: DeliveryPreference[] }) {
-    return data.map((preference, i) => {
-      const [longitude, latitude] = (preference.address as Address).coordinates || [];
-
+  function DeliveryPreferencesCard({
+    data: prefs,
+    slug,
+  }: {
+    data: DeliveryPreference[];
+    slug: Extract<CollectionSlug, 'donations' | 'requests'>;
+  }) {
+    return prefs.map((preference, i) => {
       function handleViewOnMap() {
         onViewOnMap?.(preference);
 
-        if (latitude && longitude) {
-          if (mapRef?.current) {
-            mapRef.current.animateCamera({
-              center: { latitude, longitude },
-            });
-          }
+        const point = extractCollection(preference.address)?.coordinates;
+        if (!validatePoint(point)) return;
+
+        const [longitude, latitude] = point;
+        const markerID = createMarkerID(slug, data.id, point);
+        const markerData = markerMap.get(markerID);
+
+        if (markerData) {
+          setSelectedMarker(markerData);
+        }
+
+        if (mapRef?.current) {
+          mapRef.current.animateCamera({
+            center: { latitude, longitude },
+          });
         }
       }
 
@@ -51,20 +65,22 @@ export function MapMarkerInfo({ selected, mapRef, onViewOnMap }: MapMarkerInfoPr
     });
   }
 
-  if (slug === 'donations') {
+  if (isDonation(data)) {
+    const preferences = extractCollection(data.deliveryPreferences) || [];
     return (
       <VStack space="lg" className="w-full items-center">
         <DonationInfoCard data={data} />
-        <DeliveryPreferencesCard data={extractCollection(data.deliveryPreferences)} />
+        <DeliveryPreferencesCard slug="donations" data={preferences} />
       </VStack>
     );
   }
 
-  if (slug === 'requests') {
+  if (isRequest(data)) {
+    const preferences = extractCollection(data.deliveryPreferences) || [];
     return (
       <VStack space="lg" className="w-full items-center">
         <RequestInfoCard data={data} />
-        <DeliveryPreferencesCard data={extractCollection(data.deliveryPreferences)} />
+        <DeliveryPreferencesCard slug="requests" data={preferences} />
       </VStack>
     );
   }

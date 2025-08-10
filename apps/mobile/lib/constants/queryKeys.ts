@@ -10,6 +10,7 @@ export const QUERY_KEYS = {
     FORM: ['setup-profile', 'form'],
     VALUES: ['setup-profile', 'values'],
   },
+  MARKERS: ['markers'],
 };
 
 export const INFINITE_QUERY_KEY = ['infinite'];

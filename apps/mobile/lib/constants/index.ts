@@ -10,6 +10,8 @@ import {
 } from '@env';
 
 import { URGENCY_LEVELS } from '@lactalink/enums';
+import { MapRegion } from '@lactalink/types';
+import { LatLng } from 'react-native-maps';
 export * from '@lactalink/enums';
 
 export * from './assets';
@@ -32,9 +34,15 @@ export const BACK_TOAST_ID = 'back-toast-id';
 export const BLUR_HASH =
   '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
-export const PHILIPPINES_COORDINATES = {
+export const PHILIPPINES_COORDINATES: LatLng = {
   latitude: 12.8797,
   longitude: 121.774,
+};
+
+export const DEFAULT_REGION: MapRegion = {
+  ...PHILIPPINES_COORDINATES,
+  latitudeDelta: 10,
+  longitudeDelta: 10,
 };
 
 export const PRIORITY_LEVEL_COLORS: Record<keyof typeof URGENCY_LEVELS, string> = {

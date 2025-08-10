@@ -1,4 +1,4 @@
-import { Coordinates, Polygon } from '@lactalink/types';
+import { Boundary, Coordinates, MapRegion, Polygon } from '@lactalink/types';
 import { getBoundsOfDistance } from 'geolib';
 
 export function boundsToPolygon(center: Coordinates, radius: number): Polygon | undefined {
@@ -23,5 +23,19 @@ export function boundsToPolygon(center: Coordinates, radius: number): Polygon | 
         [southwest.latitude, southwest.longitude], // Close the polygon (back to bottom-left)
       ],
     ],
+  };
+}
+
+export function regionToBoundary(region: MapRegion): Boundary {
+  const latMin = region.latitude - region.latitudeDelta / 2;
+  const latMax = region.latitude + region.latitudeDelta / 2;
+  const lngMin = region.longitude - region.longitudeDelta / 2;
+  const lngMax = region.longitude + region.longitudeDelta / 2;
+
+  return {
+    minX: lngMin,
+    minY: latMin,
+    maxX: lngMax,
+    maxY: latMax,
   };
 }

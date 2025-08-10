@@ -25,10 +25,10 @@ import { VStack } from '../ui/vstack';
 import { UserMarker } from './markers/UserMarker';
 
 interface MapViewProps extends ComponentProps<typeof RNMapView> {
-  dataReady?: boolean;
+  markersReady?: boolean;
 }
 
-export function MapView({ dataReady = true, children, ...props }: MapViewProps) {
+export function MapView({ markersReady = true, children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
@@ -36,24 +36,17 @@ export function MapView({ dataReady = true, children, ...props }: MapViewProps) 
   const {
     userMarkerRef,
     mapRef,
-    state: {
-      followUser,
-      isMapLoaded,
-      isMapReady,
-      markersRendered: renderMarkers,
-      showAvatar,
-      locateButtonPressed,
-    },
+    state: { followUser, isMapLoaded, isMapReady, renderMarkers, showAvatar, locateButtonPressed },
     setState,
   } = useMap();
 
-  const { location, error, isLoading } = useCurrentLocation();
+  const { location, error, isLoading: isLoadingLocation } = useCurrentLocation();
 
   const [userPosition, setUserPosition] = useState<LocationObjectCoords>();
 
   const mapReady = useMemo(
-    () => isMapReady && isMapLoaded && dataReady && !isLoading,
-    [isMapReady, isMapLoaded, dataReady, isLoading]
+    () => isMapReady && isMapLoaded && markersReady && !isLoadingLocation,
+    [isMapReady, isMapLoaded, markersReady, isLoadingLocation]
   );
 
   const latlng = useMemo<LatLng>(() => {
@@ -118,10 +111,13 @@ export function MapView({ dataReady = true, children, ...props }: MapViewProps) 
   useEffect(() => {
     if (mapReady) {
       const { latitude, longitude } = latlng;
-      mapRef.current?.animateCamera({ zoom: 16, center: { latitude, longitude } });
+      mapRef.current?.animateCamera(
+        { zoom: 16, center: { latitude, longitude } },
+        { duration: 500 }
+      );
       setTimeout(() => {
-        setState((prev) => ({ ...prev, markersRendered: true }));
-      }, 500);
+        setState((prev) => ({ ...prev, renderMarkers: true }));
+      }, 1000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady, mapRef]);

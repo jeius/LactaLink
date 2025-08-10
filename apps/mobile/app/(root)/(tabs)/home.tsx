@@ -7,6 +7,7 @@ import { extractErrorMessage } from '@lactalink/utilities';
 import React from 'react';
 import { toast } from 'sonner-native';
 
+import { ProfileAvatar } from '@/components/Avatar';
 import { DonateRequestModal } from '@/components/modals/DonateRequestModal';
 import SafeArea from '@/components/SafeArea';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -16,7 +17,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 export default function Home() {
   const router = useRouter();
 
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   function handleSignOut() {
     toast.promise(signOut(), {
@@ -36,6 +37,8 @@ export default function Home() {
             <ButtonText>Sign out</ButtonText>
             <ButtonIcon as={LogOutIcon} />
           </Button>
+
+          <ProfileAvatar profile={user?.profile} enablePress />
 
           <Button
             action="secondary"

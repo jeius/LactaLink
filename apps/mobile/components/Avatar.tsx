@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/auth/useAuth';
-import { Avatar as AvatarType, User } from '@lactalink/types';
+import { Avatar as AvatarType, Hospital, Individual, MilkBank, User } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
 import { Link } from 'expo-router';
@@ -72,7 +72,7 @@ export default function Avatar({
 }
 
 interface ProfileAvatarProps extends Omit<AvatarProps, 'details'> {
-  profile: User['profile'];
+  profile: NonNullable<User['profile']> | Individual | Hospital | MilkBank;
   enablePress?: boolean;
   isLoading?: boolean;
 }
@@ -86,7 +86,7 @@ export function ProfileAvatar({
   isLoading,
   ...props
 }: ProfileAvatarProps) {
-  const profile = extractCollection(profileProp?.value);
+  const profile = extractCollection('value' in profileProp ? profileProp?.value : profileProp);
   const avatar: AvatarType | null = extractCollection(profile?.avatar);
   const [isPressed, setIsPressed] = useState(false);
 

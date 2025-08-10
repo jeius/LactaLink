@@ -1,8 +1,11 @@
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug, Donation, Request } from '@lactalink/types';
 import { Route, SceneMap } from 'react-native-tab-view';
 
+import { createMarkerID, useMarkersStore } from '@/lib/stores/markersStore';
+import { extractCollection, isDonation, validatePoint } from '@lactalink/utilities';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { useMap } from '../contexts/MapProvider';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
 import { SceneProps } from './scenes/types';
 import { Tab } from './Tab';
@@ -49,5 +52,26 @@ function createRoutesAndScenes() {
 // #endregion
 
 function DonReqScene(props: SceneProps) {
-  return <DonationRequestScene {...props} useBottomSheetList={true} />;
+  const { setSelectedMarker } = useMap();
+  const { markerMap } = useMarkersStore();
+
+  function handlePress(data: Donation | Request) {
+    const deliveryPreference = extractCollection(data.deliveryPreferences)?.[0];
+    const address = extractCollection(deliveryPreference?.address);
+    const coordinates = address?.coordinates;
+
+    if (validatePoint(coordinates)) {
+      const slug = isDonation(data) ? 'donations' : 'requests';
+      const markerID = createMarkerID(slug, data.id, coordinates);
+      const markerData = markerMap.get(markerID);
+
+      if (markerData) {
+        setSelectedMarker(markerData);
+      } else {
+        console.warn(`Marker data not found for ID: ${markerID}`);
+      }
+    }
+  }
+
+  return <DonationRequestScene {...props} onPress={handlePress} useBottomSheetList={true} />;
 }

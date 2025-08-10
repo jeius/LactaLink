@@ -131,7 +131,7 @@
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
-    "@react-native-community/cli": "^18.0.0",
+    "@react-native-community/cli": "^19.1.1",
     "@types/lodash": "^4.17.17",
     "@types/react": "~19.0.14",
     "jscodeshift": "0.15.2"

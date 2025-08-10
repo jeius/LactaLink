@@ -9,6 +9,6 @@ export {
   isPointInPolygon,
 } from 'geolib';
 
-export * from './boundsToPolygon';
+export * from './converters';
 export * from './spatialSearch';
 export * from './validatePoint';

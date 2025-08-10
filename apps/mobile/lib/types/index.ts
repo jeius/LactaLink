@@ -2,6 +2,7 @@ import { SignInSchema, signInSchema } from '@lactalink/types';
 import { Stack } from 'expo-router';
 
 export * from './assets';
+export * from './markers';
 export * from './profile';
 
 export const signUpSchema = signInSchema;
@@ -14,3 +15,5 @@ export type NativeFile = {
 };
 
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
+
+export type MapPageSearchParams = { markerID?: string };
