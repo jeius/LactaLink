@@ -3,13 +3,15 @@ import { StyleSheet } from 'react-native';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { debounce, isEqual } from 'lodash';
+import { debounce } from 'lodash';
 import React, { ComponentProps, useEffect, useMemo } from 'react';
 
-import { ErrorSearchParams } from '@lactalink/types';
+import { ErrorSearchParams, Point } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { useMapStore } from '@/lib/stores/mapStore';
+import { arePointsEqual } from '@lactalink/utilities';
+import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
 import { useSharedValue } from 'react-native-reanimated';
@@ -125,6 +127,17 @@ export function MapView({ children, ...props }: MapViewProps) {
     updateMapHeading();
   }
 
+  async function onUserMarkerPositionChange(position: LocationObjectCoords) {
+    const { latitude, longitude } = position;
+    const camera = await map?.getCamera();
+    if (!camera) return;
+
+    const cameraPoint: Point = [camera.center.longitude, camera.center.latitude];
+    const userPoint: Point = [longitude, latitude];
+
+    setUserLocated(arePointsEqual(cameraPoint, userPoint));
+  }
+
   return (
     <Box style={{ flex: 1 }}>
       <RNMapView.Animated
@@ -149,7 +162,9 @@ export function MapView({ children, ...props }: MapViewProps) {
       >
         {children}
 
-        {location && <UserMarker ref={setUserMarkerRef} />}
+        {location && (
+          <UserMarker ref={setUserMarkerRef} onChangePosition={onUserMarkerPositionChange} />
+        )}
       </RNMapView.Animated>
 
       {!isMapReady && (
@@ -182,14 +197,7 @@ export function MapView({ children, ...props }: MapViewProps) {
 }
 
 function isRegionEqualsUserLocation(region: Region, userLocation: LatLng): boolean {
-  const { latitude, longitude } = userLocation;
-  const pointA: LatLng = {
-    latitude: parseFloat(latitude.toFixed(4)),
-    longitude: parseFloat(longitude.toFixed(4)),
-  };
-  const pointB: LatLng = {
-    latitude: parseFloat(region.latitude.toFixed(4)),
-    longitude: parseFloat(region.longitude.toFixed(4)),
-  };
-  return isEqual(pointA, pointB);
+  const userPoint: Point = [userLocation.longitude, userLocation.latitude];
+  const regionPoint: Point = [region.longitude, region.latitude];
+  return arePointsEqual(userPoint, regionPoint);
 }
