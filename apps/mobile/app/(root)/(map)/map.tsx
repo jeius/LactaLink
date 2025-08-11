@@ -3,8 +3,8 @@ import { Box } from '@/components/ui/box';
 
 import { MapBottomSheet } from '@/components/map/MapBottomSheet';
 
-import { MapProvider } from '@/components/contexts/MapProvider';
 import { DataMarkers } from '@/components/map/markers/DataMarkers';
+import { useMapStore } from '@/lib/stores/mapStore';
 import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { MapMarkerProps, MapPageSearchParams } from '@/lib/types';
 import { ColorsConfig } from '@/lib/types/colors';
@@ -12,8 +12,7 @@ import { MapRegion } from '@lactalink/types';
 import { isDonation, isRequest, regionToBoundary } from '@lactalink/utilities';
 import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import React, { memo, useMemo, useRef, useState } from 'react';
-import RNMapView from 'react-native-maps';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const MemoizedMapView = memo(MapView, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
@@ -23,7 +22,8 @@ const MemoizedDataMarkers = memo(DataMarkers, (prevProps, nextProps) =>
 
 export default function MapPage() {
   const insets = useSafeAreaInsets();
-  const mapRef = useRef<RNMapView>(null);
+
+  const resetMap = useMapStore((s) => s.reset);
 
   const markerMap = useMarkersStore((s) => s.markerMap);
   const markersIndex = useMarkersStore((s) => s.markersIndex);
@@ -68,6 +68,12 @@ export default function MapPage() {
     });
   }, [visibleMarkers, markerMap]);
 
+  useEffect(() => {
+    return () => {
+      resetMap();
+    };
+  }, [resetMap]);
+
   function handleRegionChange(data: MapRegion) {
     const newMarkers = markersIndex.searchByBoundary(regionToBoundary(data));
     if (newMarkers.length !== visibleMarkers.length) {
@@ -80,18 +86,12 @@ export default function MapPage() {
   }
 
   return (
-    <MapProvider mapRef={mapRef} selectedMarker={selectedMarker}>
-      <Box style={{ flex: 1, marginBottom: insets.bottom }}>
-        <MemoizedMapView
-          markersReady={true}
-          onRegionChangeComplete={handleRegionChange}
-          onPress={unSelectMarker}
-        >
-          {markers}
-        </MemoizedMapView>
+    <Box style={{ flex: 1, marginBottom: insets.bottom }}>
+      <MemoizedMapView onRegionChangeComplete={handleRegionChange} onPress={unSelectMarker}>
+        {markers}
+      </MemoizedMapView>
 
-        <MapBottomSheet />
-      </Box>
-    </MapProvider>
+      <MapBottomSheet />
+    </Box>
   );
 }

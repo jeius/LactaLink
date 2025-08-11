@@ -36,7 +36,7 @@
     },
     "dev": {
       "cache": false,
-      "dependsOn": ["@lactalink/web#generate:types", "@lactalink/web#generate:schema"],
+      "dependsOn": ["@lactalink/web#generate:schema"],
       "persistent": true
     },
     "lint": {

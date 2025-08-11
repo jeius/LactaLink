@@ -141,6 +141,7 @@ export async function createDataMarkers<TSlug extends MarkerDataSlug>(slug: TSlu
   return markers;
 }
 
+//#region Helpers
 function createMarkersFromDonationOrRequest<
   TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>,
 >(slug: TSlug, data: Collection<TSlug>) {
@@ -223,3 +224,4 @@ function createMarkerFromOrganization<
 
   return marker;
 }
+//#endregion

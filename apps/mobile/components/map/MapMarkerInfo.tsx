@@ -1,10 +1,10 @@
+import { useMapStore } from '@/lib/stores/mapStore';
 import { createMarkerID, setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { CollectionSlug, DeliveryPreference } from '@lactalink/types';
 import { extractCollection, isDonation, isRequest, validatePoint } from '@lactalink/utilities';
 import { MapIcon } from 'lucide-react-native';
 import React from 'react';
 import { DeliveryPreferenceCard, DonationInfoCard, RequestInfoCard } from '../cards';
-import { useMap } from '../contexts/MapProvider';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { VStack } from '../ui/vstack';
@@ -14,7 +14,7 @@ interface MapMarkerInfoProps {
 }
 
 export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
-  const { mapRef } = useMap();
+  const map = useMapStore((s) => s.map);
   const selectedMarker = useMarkersStore((s) => s.selectedMarker);
 
   if (!selectedMarker) return null;
@@ -29,7 +29,7 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
     slug: Extract<CollectionSlug, 'donations' | 'requests'>;
   }) {
     return prefs.map((preference, i) => {
-      function handleViewOnMap() {
+      async function handleViewOnMap() {
         onViewOnMap?.(preference);
 
         const point = extractCollection(preference.address)?.coordinates;
@@ -39,9 +39,11 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
         const markerID = createMarkerID(slug, data.id, point);
         setSelectedMarker(markerID);
 
-        if (mapRef?.current) {
-          mapRef.current.animateCamera({
+        if (map) {
+          const currentCamera = await map.getCamera();
+          map.animateCamera({
             center: { latitude, longitude },
+            zoom: Math.max(currentCamera.zoom || 16, 16),
           });
         }
       }

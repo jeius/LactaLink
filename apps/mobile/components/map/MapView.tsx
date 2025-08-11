@@ -1,54 +1,51 @@
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { StyleSheet } from 'react-native';
-import RNMapView, { Camera, Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { isEqual } from 'lodash';
-import React, { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
+import { debounce, isEqual } from 'lodash';
+import React, { ComponentProps, useEffect, useMemo } from 'react';
 
 import { ErrorSearchParams } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
-import { LocationObjectCoords } from 'expo-location';
+import { useMapStore } from '@/lib/stores/mapStore';
 import { useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
-import { useMap } from '../contexts/MapProvider';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+import { UserMarker } from './markers/UserMarker';
 
-interface MapViewProps extends ComponentProps<typeof RNMapView> {
-  markersReady?: boolean;
-}
+interface MapViewProps extends ComponentProps<typeof RNMapView> {}
 
-export function MapView({ markersReady = true, children, ...props }: MapViewProps) {
+export function MapView({ children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
 
   console.log('MapView rendered');
 
-  const {
-    userMarkerRef,
-    mapRef,
-    state: { followUser, isMapLoaded, isMapReady, showAvatar, locateButtonPressed },
-    setState,
-  } = useMap();
+  const isMapReady = useMapStore((s) => s.isMapReady);
+  const map = useMapStore((s) => s.map);
+  const setFollowUser = useMapStore((s) => s.setFollowUser);
+  const setMapReady = useMapStore((s) => s.setMapReady);
+  const setMapRef = useMapStore((s) => s.setMapRef);
+  const setUserMarkerRef = useMapStore((s) => s.setUserMarkerRef);
+  const setUserLocated = useMapStore((s) => s.setUserLocated);
 
-  const { location, error, isLoading: isLoadingLocation } = useCurrentLocation();
+  const { location, error, isSuccess } = useCurrentLocation();
 
-  const [userPosition, setUserPosition] = useState<LocationObjectCoords>();
+  const mapHeading = useSharedValue(0);
 
-  const mapReady = useMemo(
-    () => isMapReady && isMapLoaded && markersReady && !isLoadingLocation,
-    [isMapReady, isMapLoaded, markersReady, isLoadingLocation]
-  );
+  const mapReady = useMemo(() => isMapReady && isSuccess, [isMapReady, isSuccess]);
 
   const latlng = useMemo<LatLng>(() => {
     if (location) {
@@ -70,102 +67,75 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
     });
   }
 
-  const [camera, setCamera] = useState<Camera>({
-    zoom: location?.coords ? 12 : 16,
-    heading: 0,
-    pitch: 0,
-    center: {
-      latitude: latlng.latitude,
-      longitude: latlng.longitude,
-    },
-  });
-
-  const isUserLocated = useMemo(() => {
-    if (!userPosition) return false;
-    return isCameraInCurrentPosition(camera, userPosition);
-  }, [camera, userPosition]);
-
-  const handleLocatePress = useCallback(() => {
-    if (isUserLocated && !followUser) {
-      const currentHeading = userMarkerRef.current?.getHeading() || 0;
-
-      mapRef.current?.animateCamera(
-        { pitch: 65, zoom: Math.max(camera.zoom || 18, 18), heading: currentHeading - 90 },
-        { duration: 500 }
-      );
-
-      setTimeout(() => {
-        setState((prev) => ({ ...prev, followUser: true }));
-      }, 550);
-    } else if (followUser) {
-      setState((prev) => ({ ...prev, followUser: false }));
-      mapRef.current?.animateCamera(
-        { pitch: 0, zoom: Math.min(camera.zoom || 18, 18) },
-        { duration: 500 }
-      );
-    } else if (userPosition) {
-      const { latitude, longitude } = userPosition;
-      mapRef.current?.animateCamera(
-        { center: { latitude, longitude }, zoom: Math.max(16, camera.zoom || 0) },
-        { duration: 500 }
-      );
-    }
-  }, [isUserLocated, followUser, userMarkerRef, mapRef, camera.zoom, setState, userPosition]);
-
   useEffect(() => {
     if (mapReady) {
       const { latitude, longitude } = latlng;
-      mapRef.current?.animateCamera(
-        { zoom: 16, center: { latitude, longitude } },
-        { duration: 500 }
-      );
+      map?.animateCamera({ zoom: 16, center: { latitude, longitude } }, { duration: 500 });
+
+      return () => {
+        setMapReady(false);
+      };
     }
+    return;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, mapRef]);
-
-  useEffect(() => {
-    if (locateButtonPressed) {
-      console.log('Locate button pressed');
-      handleLocatePress();
-      setState((prev) => ({ ...prev, locateButtonPressed: false }));
-    }
-  }, [handleLocatePress, locateButtonPressed, setState]);
-
-  useEffect(() => {
-    setState((prev) => ({ ...prev, isUserLocated }));
-  }, [isUserLocated, setState]);
+  }, [mapReady, map]);
 
   function handleCompassPress() {
-    mapRef.current?.animateCamera(
-      {
-        heading: 0,
-      },
-      { duration: 400 }
-    );
-    setState((prev) => ({ ...prev, followUser: false }));
+    map?.animateCamera({ heading: 0 }, { duration: 400 });
+    setFollowUser(false);
   }
 
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
 
     if (details?.isGesture) {
-      setState((prev) => ({ ...prev, followUser: false }));
+      setFollowUser(false);
     }
 
-    const newCamera = await mapRef.current?.getCamera();
+    const userMarker = useMapStore.getState().userMarker;
+    if (!userMarker) return;
+
+    const userPosition = userMarker.getPosition();
+    const userLocation: LatLng = {
+      latitude: userPosition?.latitude || 0,
+      longitude: userPosition?.longitude || 0,
+    };
+
+    if (isRegionEqualsUserLocation(region, userLocation)) {
+      setUserLocated(true);
+    } else {
+      setUserLocated(false);
+    }
+  }
+
+  const updateMapHeading = debounce(async () => {
+    const newCamera = await map?.getCamera();
     if (newCamera) {
-      setCamera(newCamera);
+      mapHeading.value = newCamera.heading || 0;
+    }
+  });
+
+  async function handleRegionChange(region: Region, details: Details) {
+    props.onRegionChange?.(region, details);
+
+    if (details?.isGesture) {
+      setFollowUser(false);
     }
 
-    setState((prev) => ({ ...prev, showAvatar: newCamera?.pitch === 0 }));
+    updateMapHeading();
   }
 
   return (
     <Box style={{ flex: 1 }}>
       <RNMapView.Animated
         {...props}
-        ref={mapRef}
-        initialCamera={camera}
+        ref={setMapRef}
+        initialCamera={{
+          zoom: location?.coords ? 12 : 16,
+          heading: 0,
+          pitch: 0,
+          center: latlng,
+        }}
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
         userInterfaceStyle={theme}
@@ -174,24 +144,15 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
         showsCompass={false}
         toolbarEnabled={false}
         onRegionChangeComplete={handleRegionChangeEnd}
-        onMapReady={() => setState((prev) => ({ ...prev, isMapReady: true }))}
-        onMapLoaded={() => setState((prev) => ({ ...prev, isMapLoaded: true }))}
+        onRegionChange={handleRegionChange}
+        onMapReady={() => setMapReady(true)}
       >
         {children}
 
-        {/* {location && renderMarkers && (
-          <UserMarker
-            ref={userMarkerRef}
-            showAvatar={showAvatar}
-            mapRef={mapRef}
-            camera={camera}
-            followUser={followUser}
-            onChangePosition={setUserPosition}
-          />
-        )} */}
+        {location && <UserMarker ref={setUserMarkerRef} />}
       </RNMapView.Animated>
 
-      {!mapReady && (
+      {!isMapReady && (
         <SafeArea className="absolute inset-0 items-center justify-center">
           <Spinner size={'large'} />
           <Text size="md">Loading google maps...</Text>
@@ -201,13 +162,11 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
       <VStack className="relative flex-1" style={{ marginTop: insets.top }}>
         <Box style={{ position: 'absolute', right: 16, top: '10%' }}>
           <VStack space="md" className="shrink">
-            {(camera.heading !== 0 || followUser) && (
-              <AnimatedPressable onPress={handleCompassPress}>
-                <Box className="bg-background-0 rounded-full p-3">
-                  <Compass heading={camera.heading} />
-                </Box>
-              </AnimatedPressable>
-            )}
+            <AnimatedPressable onPress={handleCompassPress}>
+              <Box className="bg-background-0 rounded-full p-3">
+                <Compass heading={mapHeading} />
+              </Box>
+            </AnimatedPressable>
           </VStack>
         </Box>
 
@@ -222,20 +181,15 @@ export function MapView({ markersReady = true, children, ...props }: MapViewProp
   );
 }
 
-function isCameraInCurrentPosition(
-  camera: Camera,
-  coords: { latitude: number; longitude: number }
-): boolean {
-  const { latitude, longitude } = coords;
-  const cameraCenter = camera.center;
-
+function isRegionEqualsUserLocation(region: Region, userLocation: LatLng): boolean {
+  const { latitude, longitude } = userLocation;
   const pointA: LatLng = {
     latitude: parseFloat(latitude.toFixed(4)),
     longitude: parseFloat(longitude.toFixed(4)),
   };
   const pointB: LatLng = {
-    latitude: parseFloat(cameraCenter.latitude.toFixed(4)),
-    longitude: parseFloat(cameraCenter.longitude.toFixed(4)),
+    latitude: parseFloat(region.latitude.toFixed(4)),
+    longitude: parseFloat(region.longitude.toFixed(4)),
   };
   return isEqual(pointA, pointB);
 }
