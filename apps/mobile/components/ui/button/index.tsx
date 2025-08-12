@@ -252,6 +252,8 @@ const buttonIconStyle = tva({
         'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-700',
       info: 'text-info-500 data-[hover=true]:text-info-600 data-[active=true]:text-info-700',
       negative: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',
+      default:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
     },
     variant: {
       link: 'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',

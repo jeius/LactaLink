@@ -12,8 +12,8 @@ interface UseScreenOptions {
 
 export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
   const { theme } = useTheme();
-  const headerBgColor = getHexColor(theme, 'background', 0);
-  const headerTintColor = getHexColor(theme, 'typography', 900);
+  const headerBgColor = getHexColor(theme, 'primary', 500);
+  const headerTintColor = getHexColor(theme, 'primary', 0);
   const bgColor = getHexColor(theme, 'background', 50);
 
   const { animationType } = args || {};
@@ -39,7 +39,7 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
     headerBackVisible: false,
     headerTitleStyle: {
       fontFamily: 'Jakarta-SemiBold',
-      fontSize: 16,
+      fontSize: 14,
     },
     headerStyle: { backgroundColor: headerBgColor?.toString() },
     headerTintColor: headerTintColor?.toString(),

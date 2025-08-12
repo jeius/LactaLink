@@ -72,7 +72,7 @@ export default function Avatar({
 }
 
 interface ProfileAvatarProps extends Omit<AvatarProps, 'details'> {
-  profile: NonNullable<User['profile']> | Individual | Hospital | MilkBank;
+  profile?: User['profile'] | Individual | Hospital | MilkBank | null;
   enablePress?: boolean;
   isLoading?: boolean;
 }
@@ -86,7 +86,9 @@ export function ProfileAvatar({
   isLoading,
   ...props
 }: ProfileAvatarProps) {
-  const profile = extractCollection('value' in profileProp ? profileProp?.value : profileProp);
+  const profile = extractCollection(
+    profileProp && 'value' in profileProp ? profileProp?.value : profileProp
+  );
   const avatar: AvatarType | null = extractCollection(profile?.avatar);
   const [isPressed, setIsPressed] = useState(false);
 

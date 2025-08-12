@@ -6,7 +6,6 @@ import { usePagination } from '@/hooks/forms/usePagination';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
-import { extractName } from '@lactalink/utilities';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,10 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
-  const { user, profile, isLoading, isFetching } = useAuth();
+  const { profile, isLoading, isFetching } = useAuth();
   const screenOptions = useScreenOptions();
-
-  const userName = user && extractName(user);
 
   const noProfile = !isLoading && !isFetching && !profile;
 
@@ -36,7 +33,6 @@ export default function Layout() {
     <Stack
       screenOptions={{
         ...screenOptions,
-        headerShown: false,
         headerRight: () => <Avatar />,
       }}
     >
@@ -52,13 +48,7 @@ export default function Layout() {
       </Stack.Protected>
 
       <Stack.Protected guard={!noProfile}>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: true,
-            headerTitle: (userName && `Welcome, ${userName}!`) || 'Welcome!',
-          }}
-        />
+        <Stack.Screen name="(drawer)" />
       </Stack.Protected>
     </Stack>
   );

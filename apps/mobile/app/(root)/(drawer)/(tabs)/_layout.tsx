@@ -9,6 +9,7 @@ export default function Layout() {
   const bgColor = getHexColor(theme, 'background', 50);
   return (
     <Tabs
+      initialRouteName="home"
       tabBar={(props) => <BottomTabBar {...props} />}
       screenOptions={{
         animation: 'shift',
