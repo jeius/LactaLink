@@ -6,15 +6,7 @@ import { useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { getHexColor } from '@/lib/colors';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { LocationObjectCoords } from 'expo-location';
-import { debounce } from 'lodash';
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Camera, LatLng } from 'react-native-maps';
 import { SharedValue } from 'react-native-reanimated';
@@ -54,10 +46,11 @@ interface UserMarkerProps {
 
 export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
   ({ hideHeading = false, onChangePosition }: UserMarkerProps, ref) => {
-    const { heading, animatedHeading } = useMagnetometer({ updateInterval: 'fast' });
+    const { heading, animatedHeading, filteredHeading } = useMagnetometer({
+      updateInterval: 'fast',
+    });
     const { location } = useLocationUpdates();
 
-    const filteredHeading = useRef(heading);
     const mapRef = useMapStore((s) => s.map);
     const followUser = useMapStore((s) => s.followUser);
     const setFollowUser = useMapStore((s) => s.setFollowUser);
@@ -69,48 +62,17 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
         latitude: location?.coords.latitude || 0,
         longitude: location?.coords.longitude || 0,
       }),
-      [location]
+      [location?.coords.latitude, location?.coords.longitude]
     );
 
     const animatedRegion = useAnimatedRegion(latlng);
 
-    const debouncedAnimateCamera = useMemo(
-      () =>
-        debounce(
-          (altitude: number) => {
-            filteredHeading.current = filteredHeading.current * 0.8 + heading * 0.2;
-            const newHeading = heading - 90;
-            mapRef?.animateCamera(
-              { center: latlng, heading: newHeading, altitude },
-              { duration: 500 }
-            );
-          },
-          0,
-          { maxWait: 500, leading: false, trailing: true }
-        ),
-      [heading, latlng, mapRef]
-    );
-
-    // useEffect(() => {
-    //   if (followUser) {
-    //     debouncedAnimateCamera(location?.coords.altitude || 0);
-    //   } else {
-    //     debouncedAnimateCamera.cancel();
-    //   }
-    // }, [debouncedAnimateCamera, followUser, location?.coords.altitude]);
-
-    const roundedHeading = useMemo(() => {
-      return Math.round(heading);
-    }, [heading]);
-
     useEffect(() => {
       if (followUser) {
-        const newHeading = roundedHeading - 90;
-        mapRef?.animateCamera({ center: latlng, heading: newHeading }, { duration: 100 });
-      } else {
-        debouncedAnimateCamera.cancel();
+        const heading = filteredHeading - 90;
+        mapRef?.setCamera({ center: latlng, heading, altitude: location?.coords.altitude || 0 });
       }
-    }, [debouncedAnimateCamera, followUser, roundedHeading, latlng, mapRef]);
+    }, [filteredHeading, followUser, latlng, location?.coords.altitude, mapRef]);
 
     useEffect(() => {
       animatedRegion.animate({ ...latlng, duration: 300 });

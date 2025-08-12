@@ -1,3 +1,4 @@
+import { lerpAngle } from '@lactalink/utilities';
 import { Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
 import { useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
@@ -12,6 +13,7 @@ export type MagnetometerOptions = {
 
 export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions = {}) {
   const animatedHeading = useSharedValue(0);
+  const prevReadingRef = useRef(0);
 
   const [{ x, y, z }, setData] = useState<MagnetometerMeasurement>({
     x: 0,
@@ -19,6 +21,9 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     z: 0,
     timestamp: Date.now(),
   });
+
+  const rawHeading = getHeadingFromMagnetometer(x, y);
+  const filteredHeading = Math.round(lerpAngle(prevReadingRef.current, rawHeading, 0.2));
 
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
@@ -39,7 +44,10 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     const setupSubscription = async () => {
       const subscription = await createSubscription((res) => {
         setData(res);
-        animatedHeading.value = getHeadingFromMagnetometer(res.x, res.y);
+        const raw = getHeadingFromMagnetometer(res.x, res.y);
+        const filtered = Math.round(lerpAngle(prevReadingRef.current, raw, 0.2));
+        prevReadingRef.current = filtered;
+        animatedHeading.value = filtered;
       });
       subscriptionRef.current = subscription;
     };
@@ -59,7 +67,8 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     z,
     setSlow: _slow,
     setFast: _fast,
-    heading: getHeadingFromMagnetometer(x, y),
+    heading: rawHeading,
+    filteredHeading,
     animatedHeading,
   };
 }
