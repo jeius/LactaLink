@@ -1,5 +1,4 @@
 import { useCurrentLocation } from '@/hooks/location/useLocation';
-import { StyleSheet } from 'react-native';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,17 +12,14 @@ import { useMapStore } from '@/lib/stores/mapStore';
 import { arePointsEqual } from '@lactalink/utilities';
 import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
-import { SearchIcon } from 'lucide-react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Compass } from '../Compass';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
-import { Input, InputField, InputIcon } from '../ui/input';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
 import { UserMarker } from './markers/UserMarker';
 
 interface MapViewProps extends ComponentProps<typeof RNMapView> {}
@@ -32,8 +28,6 @@ export function MapView({ children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const router = useRouter();
-
-  console.log('MapView rendered');
 
   const isMapReady = useMapStore((s) => s.isMapReady);
   const map = useMapStore((s) => s.map);
@@ -139,7 +133,7 @@ export function MapView({ children, ...props }: MapViewProps) {
   }
 
   return (
-    <Box style={{ flex: 1 }}>
+    <>
       <RNMapView.Animated
         {...props}
         ref={setMapRef}
@@ -149,7 +143,7 @@ export function MapView({ children, ...props }: MapViewProps) {
           pitch: 0,
           center: latlng,
         }}
-        style={StyleSheet.absoluteFill}
+        style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
         userInterfaceStyle={theme}
         showsMyLocationButton={false}
@@ -174,25 +168,14 @@ export function MapView({ children, ...props }: MapViewProps) {
         </SafeArea>
       )}
 
-      <VStack className="relative flex-1" style={{ marginTop: insets.top }}>
-        <Box style={{ position: 'absolute', right: 16, top: '10%' }}>
-          <VStack space="md" className="shrink">
-            <AnimatedPressable onPress={handleCompassPress}>
-              <Box className="bg-background-0 rounded-full p-3">
-                <Compass heading={mapHeading} />
-              </Box>
-            </AnimatedPressable>
-          </VStack>
-        </Box>
-
-        <Box className="px-5 py-2">
-          <Input variant="rounded" className="bg-background-0 shadow-md">
-            <InputIcon as={SearchIcon} className="text-primary-500 ml-3" />
-            <InputField placeholder="Search donors, requesters, hospitals" />
-          </Input>
-        </Box>
-      </VStack>
-    </Box>
+      <Box style={{ position: 'absolute', right: 16, top: '10%', marginTop: insets.top }}>
+        <AnimatedPressable onPress={handleCompassPress}>
+          <Box className="bg-background-0 rounded-full p-3">
+            <Compass heading={mapHeading} />
+          </Box>
+        </AnimatedPressable>
+      </Box>
+    </>
   );
 }
 

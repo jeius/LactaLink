@@ -32,7 +32,6 @@ interface DataMarkersProps<TSlug extends MarkerDataSlug = MarkerDataSlug> {
   onPress?: (event: MarkerPressEvent) => void;
   showAvatar?: boolean;
   colorTheme?: keyof ColorsConfig['light'];
-  showCallout?: boolean;
 }
 export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   markerProps,
@@ -40,7 +39,6 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   showAvatar: showAvatarProp,
   colorTheme = 'primary',
   markerData,
-  showCallout,
 }: DataMarkersProps<TSlug>) {
   const { theme } = useTheme();
   const pinColor = getHexColor(theme, colorTheme, 600);
@@ -48,8 +46,6 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   const selectedmarker = useMarkersStore((s) => s.selectedMarker)?.marker;
 
   const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
-
-  console.log('DataMarkers rendered', markerProps.identifier);
 
   const profile = profileExtractor(markerData?.data);
 

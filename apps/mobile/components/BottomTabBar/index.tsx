@@ -126,7 +126,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             <Button
               size="lg"
               animateOnPress
-              onPress={() => router.push('/map')}
+              onPress={() => router.push('/map/explore')}
               className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
             >
               <ButtonIcon

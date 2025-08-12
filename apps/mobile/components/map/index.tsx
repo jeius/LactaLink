@@ -1,18 +1,15 @@
 import { MapView } from '@/components/map/MapView';
 import { Box } from '@/components/ui/box';
 
-import { MapBottomSheet } from '@/components/map/MapBottomSheet';
-
 import { DataMarkers } from '@/components/map/markers/DataMarkers';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
-import { MapMarkerProps, MapPageSearchParams } from '@/lib/types';
+import { MapMarkerProps } from '@/lib/types';
 import { ColorsConfig } from '@/lib/types/colors';
 import { MapRegion } from '@lactalink/types';
 import { isDonation, isRequest, regionToBoundary } from '@lactalink/utilities';
-import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { ComponentProps, memo, useEffect, useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const MemoizedMapView = memo(MapView, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
@@ -20,21 +17,17 @@ const MemoizedDataMarkers = memo(DataMarkers, (prevProps, nextProps) =>
   _.isEqual(prevProps, nextProps)
 );
 
-export default function MapPage() {
+interface MapProps extends ComponentProps<typeof Box> {
+  selectedMarkerID?: string;
+}
+
+export default function Map({ selectedMarkerID: markerID, ...props }: MapProps) {
   const insets = useSafeAreaInsets();
 
   const resetMap = useMapStore((s) => s.reset);
 
   const markerMap = useMarkersStore((s) => s.markerMap);
   const markersIndex = useMarkersStore((s) => s.markersIndex);
-  const { markerID } = useLocalSearchParams<MapPageSearchParams>();
-
-  console.log('MapPage rendered', markerID);
-
-  const selectedMarker = useMemo(() => {
-    if (!markerID) return null;
-    return markerMap.get(markerID) || null;
-  }, [markerID, markerMap]);
 
   const [visibleMarkers, setVisibleMarkers] = useState<MapMarkerProps[]>([]);
 
@@ -69,10 +62,13 @@ export default function MapPage() {
   }, [visibleMarkers, markerMap]);
 
   useEffect(() => {
+    if (markerID) {
+      setSelectedMarker(markerID);
+    }
     return () => {
       resetMap();
     };
-  }, [resetMap]);
+  }, [markerID, resetMap]);
 
   function handleRegionChange(data: MapRegion) {
     const newMarkers = markersIndex.searchByBoundary(regionToBoundary(data));
@@ -86,12 +82,10 @@ export default function MapPage() {
   }
 
   return (
-    <Box style={{ flex: 1, marginBottom: insets.bottom }}>
+    <Box {...props} style={[props.style, { marginBottom: insets.bottom }]} pointerEvents="box-none">
       <MemoizedMapView onRegionChangeComplete={handleRegionChange} onPress={unSelectMarker}>
         {markers}
       </MemoizedMapView>
-
-      <MapBottomSheet />
     </Box>
   );
 }
