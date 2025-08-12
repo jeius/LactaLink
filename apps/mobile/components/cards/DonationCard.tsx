@@ -61,7 +61,7 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
     );
 
   return (
-    <AnimatedPressable {...props}>
+    <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
       <Card variant="filled" className="p-0">
         <VStack>
           <Box className="bg-primary-50 relative aspect-square h-48">

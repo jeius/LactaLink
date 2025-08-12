@@ -65,7 +65,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
     );
 
   return (
-    <AnimatedPressable {...props}>
+    <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
       <Card variant="filled" className="p-0">
         <VStack>
           <Box className="bg-tertiary-50 relative aspect-square h-48">

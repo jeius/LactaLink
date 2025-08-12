@@ -186,7 +186,7 @@ export function SelectBottomSheet<
       }
 
       return (
-        <AnimatedPressable onPress={handlePress}>
+        <AnimatedPressable className="overflow-hidden rounded-2xl" onPress={handlePress}>
           <CardWrapper isSelected={isSelected}>
             <ItemComponent item={item} isLoading={isLoading} canEdit={allowEdit} />
           </CardWrapper>

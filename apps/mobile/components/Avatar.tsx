@@ -154,6 +154,7 @@ export function ProfileAvatar({
   return enablePress ? (
     <Link href={`/profile/${profile?.id}`} push asChild>
       <AnimatedPressable
+        className="rounded-full"
         onPressIn={() => setIsPressed(true)}
         onPressOut={() => setIsPressed(false)}
       >

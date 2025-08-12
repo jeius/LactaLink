@@ -49,6 +49,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   return (
     <>
       <AnimatedPressable
+        disableRipple
         onPress={() => {
           setOpen(true);
         }}

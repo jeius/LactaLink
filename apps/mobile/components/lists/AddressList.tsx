@@ -79,6 +79,8 @@ export function AddressList({
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <AnimatedPressable
+              className="overflow-hidden rounded-2xl"
+              disableRipple={!allowEdit || showMap}
               disableAnimation={!allowEdit || showMap}
               onPress={allowEdit && !showMap ? handleEdit : undefined}
             >

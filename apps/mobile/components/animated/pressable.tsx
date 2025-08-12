@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   GestureResponderEvent,
   Pressable,
@@ -17,14 +17,20 @@ import Animated, {
 export interface AnimatedPressableProps extends PressableProps {
   containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
   disableAnimation?: boolean;
+  disableRipple?: boolean;
 }
 
 export function AnimatedPressable({
   children,
   containerStyle,
   disableAnimation,
+  disableRipple = false,
   ...props
 }: AnimatedPressableProps) {
+  const rippleColor = 'rgba(128,128,128,0.10)';
+
+  const [pressableWidth, setPressableWidth] = useState(0);
+
   const scale = useSharedValue(1);
 
   const springConfig: WithSpringConfig = {
@@ -49,12 +55,48 @@ export function AnimatedPressable({
   }
 
   return disableAnimation ? (
-    <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+    <Pressable
+      {...props}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onLayout={(event) => {
+        props.onLayout?.(event);
+        const { width } = event.nativeEvent.layout;
+        setPressableWidth(width);
+      }}
+      android_ripple={
+        disableRipple
+          ? undefined
+          : {
+              color: rippleColor,
+              radius: pressableWidth / 2 + 30,
+              foreground: true,
+            }
+      }
+    >
       {children}
     </Pressable>
   ) : (
     <Animated.View style={[animatedStyle, containerStyle]}>
-      <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      <Pressable
+        {...props}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onLayout={(event) => {
+          props.onLayout?.(event);
+          const { width } = event.nativeEvent.layout;
+          setPressableWidth(width);
+        }}
+        android_ripple={
+          disableRipple
+            ? undefined
+            : {
+                color: rippleColor,
+                radius: pressableWidth / 2 + 30,
+                foreground: true,
+              }
+        }
+      >
         {children}
       </Pressable>
     </Animated.View>

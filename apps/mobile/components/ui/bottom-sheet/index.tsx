@@ -305,6 +305,7 @@ export const BottomSheetTrigger = ({
         handleOpen();
       }}
       {...props}
+      disableRipple={props.disableAnimation}
       className={bottomSheetTriggerStyle({
         className: className,
       })}

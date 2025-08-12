@@ -36,7 +36,7 @@ export function DonationListCard(props: DonationListCardProps) {
   }
 
   return onPress ? (
-    <AnimatedPressable onPress={() => onPress(data)}>
+    <AnimatedPressable className="overflow-hidden rounded-2xl" onPress={() => onPress(data)}>
       <Card {...cardProps}>
         <CardContent {...props} data={data} />
       </Card>
