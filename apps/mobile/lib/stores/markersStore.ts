@@ -22,8 +22,9 @@ export const useMarkersStore = create<MarkersStoreState>(() => ({
   selectedMarker: null,
 }));
 
-export function useInitializeMarkersIndex() {
+export function useInitializeMarkersIndex(enabled: boolean = true) {
   return useQuery({
+    enabled,
     queryKey: [...QUERY_KEYS.MARKERS],
     queryFn: initializeMarkersIndex,
     staleTime: Infinity,

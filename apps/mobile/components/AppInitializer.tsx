@@ -27,12 +27,13 @@ export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   useOnlineManager();
 
-  const markers = useInitializeMarkersIndex();
   const { isLoading: isThemeLoading } = useTheme();
-  const { isLoading: isAuthLoading, error: authError, refetchSession } = useAuth();
+  const { isLoading: isAuthLoading, error: authError, refetchSession, ...auth } = useAuth();
   const { isSuccess: isLocationReady, error: locationError } = useCurrentLocation();
 
-  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady && markers.isSuccess;
+  const markers = useInitializeMarkersIndex(Boolean(auth.session));
+
+  const isAppReady = !isThemeLoading && !isAuthLoading && isLocationReady && !markers.isLoading;
   const error = authError || locationError;
 
   useEffect(() => {
