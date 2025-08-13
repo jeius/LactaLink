@@ -44,6 +44,7 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
     headerStyle: { backgroundColor: headerBgColor?.toString() },
     headerTintColor: headerTintColor?.toString(),
     contentStyle: { backgroundColor: bgColor },
+    headerShadowVisible: true,
     animation,
   };
 }

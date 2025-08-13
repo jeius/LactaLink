@@ -50,3 +50,8 @@ export const IMAGE_ASSETS = {
   noData: require('../../assets/images/1x/no_data.png'),
   'noData_0.75x': require('../../assets/images/0.75x/no_data.png'),
 };
+
+export const LOGO_ASSETS = {
+  logo_light: require('../../assets/logo/splash_icon_light.png'),
+  logo_dark: require('../../assets/logo/splash_icon_dark.png'),
+};
