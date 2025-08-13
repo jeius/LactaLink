@@ -10,12 +10,12 @@ export default function Layout() {
   const hasProfile = !isLoading && !isFetching && Boolean(profile);
 
   return (
-    <Stack initialRouteName="(drawer)" screenOptions={screenOptions}>
+    <Stack screenOptions={screenOptions}>
       <Stack.Protected guard={hasProfile}>
+        <Stack.Screen name="(drawer)" />
+
         <Stack.Screen name="(create)/donations/create" />
         <Stack.Screen name="(create)/requests/create" />
-
-        <Stack.Screen name="(drawer)" />
 
         <Stack.Screen name="map" />
 

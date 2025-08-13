@@ -18,7 +18,7 @@ import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
 import React from 'react';
 import { toast } from 'sonner-native';
 
-const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
+const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
 
 export default function Setup() {
   const { nextPage } = usePagination(STEPS);
@@ -35,7 +35,7 @@ export default function Setup() {
       <HStack className="w-full px-2">
         <Button action="default" variant="link" onPress={handleSignOut}>
           <ButtonIcon as={LogOutIcon} />
-          <ButtonText>Sign out</ButtonText>
+          <ButtonText>Log out</ButtonText>
         </Button>
       </HStack>
       <Card className="mx-5">

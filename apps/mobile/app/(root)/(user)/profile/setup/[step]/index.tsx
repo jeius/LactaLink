@@ -37,7 +37,7 @@ import { useFormContext } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
-const STEPS = createDynamicRoute('/setup-profile', SETUP_PROFILE_STEPS);
+const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
 
 type Block = Record<SetupProfileSteps, FC>;
 
@@ -74,14 +74,13 @@ export default function Step() {
     const createPromise = async () => {
       if (!user) throw new Error('User not found.');
 
-      const { addresses, avatar, ...rest } = formData;
+      const { avatar, ...rest } = formData;
 
       const avatarDoc = avatar && (await uploadImage('avatars', avatar));
 
       const createdProfile = await createProfile({
         ...rest,
         avatar: avatarDoc,
-        addresses: addresses,
       });
 
       const profileMap: Record<ProfileType, User['profile']> = {
