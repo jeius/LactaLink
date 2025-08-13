@@ -2,12 +2,13 @@ import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
 import { ArrowLeftIcon } from 'lucide-react-native';
 import { ComponentPropsWithoutRef, useEffect } from 'react';
-import { GestureResponderEvent, StyleSheet } from 'react-native';
+import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
+import { AnimatedPressable } from './animated/pressable';
 import { LeaveToastAction } from './toasts/ToastAction';
-import { Button, ButtonIcon } from './ui/button';
+import { Icon } from './ui/icon';
 
-interface HeaderBackButtonProps extends ComponentPropsWithoutRef<typeof Button> {
+interface HeaderBackButtonProps extends ComponentPropsWithoutRef<typeof AnimatedPressable> {
   preventBack?: boolean;
   message?: string;
   toastAction?: React.ReactNode;
@@ -54,16 +55,14 @@ export function HeaderBackButton({
   }
 
   return (
-    <Button
-      variant="link"
-      action="default"
-      className="h-fit w-fit py-1"
-      hitSlop={32}
+    <AnimatedPressable
+      className="h-fit w-fit"
       {...props}
+      hitSlop={10}
       onPress={handleOnPress}
-      style={StyleSheet.flatten([{ paddingLeft: 0, paddingRight: 8 }, props.style])}
+      style={[{ padding: 8, marginRight: 5 }, props.style]}
     >
-      <ButtonIcon className="h-6 w-6" as={ArrowLeftIcon} />
-    </Button>
+      <Icon className="text-primary-0 h-6 w-6" as={ArrowLeftIcon} />
+    </AnimatedPressable>
   );
 }
