@@ -7,6 +7,7 @@ import React from 'react';
 export default function Layout() {
   const { theme } = useTheme();
   const bgColor = getHexColor(theme, 'background', 50);
+
   return (
     <Tabs
       initialRouteName="home"

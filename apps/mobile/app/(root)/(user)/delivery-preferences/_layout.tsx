@@ -8,17 +8,18 @@ export default function Layout() {
 
   return (
     <Stack
+      initialRouteName="index"
       screenOptions={{
         ...screenOptions,
         headerShown: true,
         headerLeft: () => <HeaderBackButton />,
       }}
     >
-      <Stack.Screen name="index" options={{ headerTitle: 'Addresses' }} />
+      <Stack.Screen name="index" options={{ headerTitle: 'Delivery Preferences' }} />
 
-      <Stack.Screen name="create" options={{ headerTitle: 'Create Address' }} />
+      <Stack.Screen name="create" options={{ headerTitle: 'Create Delivery Preference' }} />
 
-      <Stack.Screen name="edit/[id]" options={{ headerTitle: 'Edit Address' }} />
+      <Stack.Screen name="edit/[id]" options={{ headerTitle: 'Edit Delivery Preference' }} />
     </Stack>
   );
 }

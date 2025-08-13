@@ -19,7 +19,7 @@ import { DonationSchema, ErrorSearchParams, Individual, MilkBag } from '@lactali
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { FormProvider } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
@@ -77,7 +77,7 @@ export default function CreateDonation() {
       queryKey: COLLECTION_QUERY_KEY,
     });
 
-    router.replace('/map');
+    router.replace('/map/explore');
   }
 
   async function handleValidation() {
@@ -94,6 +94,7 @@ export default function CreateDonation() {
 
   return (
     <FormProvider {...form}>
+      <Stack.Screen options={{ headerShown: true, title: 'Create Donation' }} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
@@ -146,7 +147,11 @@ async function createDonation(data: DonationSchema) {
           const milkBagDoc = await apiClient.create({
             depth: 0,
             collection: 'milkBags',
-            data: { ...data, status: 'AVAILABLE' },
+            data: {
+              ...data,
+              status: 'AVAILABLE',
+              owner: { relationTo: 'individuals', value: data.donor },
+            },
           });
           docs.push(milkBagDoc);
         }
@@ -163,7 +168,6 @@ async function createDonation(data: DonationSchema) {
     data: {
       donor,
       status: 'AVAILABLE',
-      volumeStatus: 'UNALLOCATED',
       details: {
         ...restOfDetails,
         bags: extractID(milkBagDocs),
@@ -177,7 +181,7 @@ async function createDonation(data: DonationSchema) {
     const { requester } = await apiClient.updateByID({
       collection: 'requests',
       id: matchedRequest.id,
-      data: { matchedDonation: donationDoc.id, details: { bags: extractID(milkBagDocs) } },
+      data: { details: { bags: extractID(milkBagDocs) } },
     });
 
     const requesterName = (requester as Individual).displayName;

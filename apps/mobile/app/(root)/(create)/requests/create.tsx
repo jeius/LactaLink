@@ -19,7 +19,7 @@ import { ErrorSearchParams, RequestSchema } from '@lactalink/types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { FormProvider } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
@@ -79,7 +79,7 @@ export default function CreateRequest() {
       queryKey: COLLECTION_QUERY_KEY,
     });
 
-    router.replace('/map');
+    router.replace('/map/explore');
   }
 
   async function handleValidation() {
@@ -97,6 +97,7 @@ export default function CreateRequest() {
 
   return (
     <FormProvider {...form}>
+      <Stack.Screen options={{ headerShown: true, title: 'Create Request' }} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
@@ -151,15 +152,12 @@ async function createRequest(data: RequestSchema) {
     data: {
       requester,
       status: 'AVAILABLE',
-      volumeStatus: 'UNFULFILLED',
       details: {
         ...restOfDetails,
         image: imageDoc && extractID(imageDoc),
       },
       deliveryPreferences,
       volumeNeeded,
-      matchedDonation: matchedDonation ? matchedDonation.id : undefined,
-      requestedDonor: requestedDonor,
     },
   });
 

@@ -1,8 +1,8 @@
 import { BottomSheetActionButton } from '@/components/buttons';
-import { useScroll } from '@/components/contexts/ScrollProvider';
+import { ScrollProvider, useScroll } from '@/components/contexts/ScrollProvider';
 import SafeArea from '@/components/SafeArea';
-import { AvailableRequestsTab } from '@/components/tabs/AvailableRequestsTab';
-import { UserRequestsTab } from '@/components/tabs/UserRequestsTab';
+import { AvailableDonationsTab } from '@/components/tabs/AvailableDonationsTab';
+import { UserDonationsTab } from '@/components/tabs/UserDonationsTab';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
@@ -11,13 +11,13 @@ import { memo } from 'react';
 const Tab = memo(
   (props: { hasUser: boolean }) => {
     const { hasUser } = props;
-    return hasUser ? <UserRequestsTab /> : <AvailableRequestsTab />;
+    return hasUser ? <UserDonationsTab /> : <AvailableDonationsTab />;
   },
   (prevProps, nextProps) => prevProps.hasUser === nextProps.hasUser
 );
 Tab.displayName = 'Tab';
 
-export default function ListPage() {
+function ListPage() {
   const router = useRouter();
   const { userID } = useLocalSearchParams<{ userID?: string }>();
   const { user } = useAuth();
@@ -27,7 +27,7 @@ export default function ListPage() {
   const isOwner = user?.id === userID;
 
   function handleCreateNew() {
-    router.push(`/requests/create`);
+    router.push(`/donations/create`);
   }
 
   return (
@@ -38,10 +38,18 @@ export default function ListPage() {
           icon={PlusIcon}
           scrollValue={scrollValue}
           animateDistance={200}
-          label={`Create New Request`}
+          label={`Create New Donation`}
           onPress={handleCreateNew}
         />
       )}
     </SafeArea>
+  );
+}
+
+export default function DonationsPage() {
+  return (
+    <ScrollProvider>
+      <ListPage />
+    </ScrollProvider>
   );
 }

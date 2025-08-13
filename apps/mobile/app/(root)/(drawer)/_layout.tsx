@@ -1,7 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
-import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import HomeIcon from '@/components/icons/HomeIcon';
 import { Icon } from '@/components/ui/icon';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -9,8 +8,8 @@ import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { getHexColor } from '@/lib/colors';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
-import { TruckIcon } from 'lucide-react-native';
-import React from 'react';
+import { HandHeartIcon, PackagePlusIcon } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 
 export default function Layout() {
   const { theme } = useTheme();
@@ -24,10 +23,18 @@ export default function Layout() {
 
   const screenOptions = useScreenOptions();
 
+  const [defaultStatus, setDefaultStatus] = useState<'open' | 'closed'>('closed');
+
+  useEffect(() => {
+    setDefaultStatus('open');
+  }, []);
+
   return (
     <Drawer
       drawerContent={NavigationDrawerContent}
       initialRouteName="(tabs)"
+      backBehavior="initialRoute"
+      defaultStatus={defaultStatus}
       screenOptions={{
         ...screenOptions,
         headerShown: true,
@@ -47,29 +54,31 @@ export default function Layout() {
       <Drawer.Screen
         name="(tabs)"
         options={{
-          headerShown: true,
           headerTitle: (name && `Welcome, ${name}!`) || 'Welcome!',
           headerRight: () => <ProfileAvatar size="sm" profile={profile} />,
+          headerRightContainerStyle: { paddingRight: 12 },
           drawerLabel: 'Home',
           drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" fill={color} stroke={color} />,
         }}
       />
 
       <Drawer.Screen
-        name="addresses"
+        name="donations"
         options={{
-          headerTitle: 'Addresses',
-          drawerLabel: 'Addresses',
-          drawerIcon: ({ color }) => <Icon as={BasicLocationPin} size="md" fill={color} />,
+          title: 'Donations',
+          drawerLabel: 'Available Donations',
+          drawerIcon: ({ color }) => <Icon as={HandHeartIcon} size="md" color={color} />,
+          headerShadowVisible: false,
         }}
       />
 
       <Drawer.Screen
-        name="delivery-preferences"
+        name="requests"
         options={{
-          headerTitle: 'Delivery Preferences',
-          drawerLabel: 'Delivery Preferences',
-          drawerIcon: ({ color }) => <Icon as={TruckIcon} size="md" color={color} />,
+          title: 'Open Requests',
+          drawerLabel: 'Open Requests',
+          drawerIcon: ({ color }) => <Icon as={PackagePlusIcon} size="md" color={color} />,
+          headerShadowVisible: false,
         }}
       />
     </Drawer>
