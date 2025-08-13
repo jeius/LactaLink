@@ -1,4 +1,5 @@
 import { AnimatedProgress } from '@/components/animated/progress';
+import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
@@ -29,7 +30,12 @@ export default function Layout() {
   );
 
   return (
-    <Stack screenOptions={screenOptions}>
+    <Stack
+      screenOptions={{
+        ...screenOptions,
+        headerLeft: () => <HeaderBackButton />,
+      }}
+    >
       <Stack.Protected guard={noProfile}>
         <Stack.Screen
           name="setup"
@@ -39,10 +45,9 @@ export default function Layout() {
             headerShown: true,
           }}
         />
-
-        <Stack.Screen name="[slug]/[id]" />
-        <Stack.Screen name="index" />
       </Stack.Protected>
+
+      <Stack.Screen name="index" options={{ headerTitle: 'My Profile', headerShown: true }} />
     </Stack>
   );
 }
