@@ -33,6 +33,7 @@ export default function Layout() {
     <Stack
       screenOptions={{
         ...screenOptions,
+        headerShown: true,
         headerLeft: () => <HeaderBackButton />,
       }}
     >
@@ -47,7 +48,7 @@ export default function Layout() {
         />
       </Stack.Protected>
 
-      <Stack.Screen name="index" options={{ headerTitle: 'My Profile', headerShown: true }} />
+      <Stack.Screen name="index" options={{ headerTitle: 'My Profile' }} />
     </Stack>
   );
 }

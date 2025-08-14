@@ -18,12 +18,11 @@ export default function Layout() {
         <Stack.Screen name="(create)/requests/create" />
 
         <Stack.Screen name="map" />
-
-        <Stack.Screen name="(user)/addresses" />
-        <Stack.Screen name="(user)/delivery-preferences" />
+        <Stack.Screen name="addresses" />
+        <Stack.Screen name="delivery-preferences" />
       </Stack.Protected>
 
-      <Stack.Screen name="(user)/profile" />
+      <Stack.Screen name="profile" />
     </Stack>
   );
 }

@@ -56,7 +56,7 @@ export default function Layout() {
         name="(tabs)"
         options={{
           headerTitle: (name && `Welcome, ${name}!`) || 'Welcome!',
-          headerRight: () => <ProfileAvatar size="sm" profile={profile} />,
+          headerRight: () => <ProfileAvatar size="sm" profile={profile} enablePress />,
           headerRightContainerStyle: { paddingRight: 12 },
           drawerLabel: 'Home',
           drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" fill={color} stroke={color} />,
@@ -66,8 +66,8 @@ export default function Layout() {
       <Drawer.Screen
         name="donations"
         options={{
-          title: 'Donations',
-          drawerLabel: 'Available Donations',
+          title: 'Milk Donations',
+          drawerLabel: 'Milk Donations',
           drawerIcon: ({ color }) => <Icon as={DonateMilkIcon} size="md" fill={color} />,
           headerShadowVisible: false,
         }}
@@ -76,8 +76,8 @@ export default function Layout() {
       <Drawer.Screen
         name="requests"
         options={{
-          title: 'Open Requests',
-          drawerLabel: 'Open Requests',
+          title: 'Milk Requests',
+          drawerLabel: 'Milk Requests',
           drawerIcon: ({ color }) => <Icon as={MilkBottlePlusIcon} size="md" fill={color} />,
           headerShadowVisible: false,
         }}

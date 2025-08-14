@@ -1,17 +1,23 @@
-import { getHexColor } from '@/lib/colors';
-import { TabBar as RNTabBar, Route, TabBarProps, TabDescriptor } from 'react-native-tab-view';
+import { TabBar as RNTabBar, Route, TabBarProps } from 'react-native-tab-view';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Text } from '../ui/text';
 
 export function TabBar<T extends Route>(props: TabBarProps<T>) {
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
+  const activeTintColor = themeColors.primary[500]?.toString();
+  const inActiveTintColor = themeColors.typography[900]?.toString();
+  const pressColor = themeColors.background[100]?.toString();
+  const bgColor = themeColors.background[50]?.toString();
+  const cardBgColor = themeColors.background[0]?.toString();
+
   const routes = props.navigationState.routes;
-  const options: Record<string, TabDescriptor<T>> = {};
+  const options = { ...props.options };
 
   routes.forEach((route) => {
     options[route.key] = {
+      ...options[route.key],
       label: ({ color, labelText }) => (
-        <Text className="font-JakartaMedium" style={{ color }}>
+        <Text className="font-JakartaMedium" size="sm" style={{ color }}>
           {labelText}
         </Text>
       ),
@@ -21,35 +27,16 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
   return (
     <RNTabBar
       {...props}
-      indicatorStyle={[
-        {
-          backgroundColor: getHexColor(theme, 'primary', 500),
-        },
-        props.indicatorStyle,
-      ]}
+      indicatorStyle={[{ backgroundColor: activeTintColor }, props.indicatorStyle]}
       indicatorContainerStyle={[
-        {
-          height: 50,
-          backgroundColor: getHexColor(theme, 'background', 0),
-        },
+        { height: 50, backgroundColor: cardBgColor },
         props.indicatorContainerStyle,
       ]}
-      style={[
-        {
-          height: 50,
-          backgroundColor: getHexColor(theme, 'background', 50),
-        },
-        props.style,
-      ]}
-      contentContainerStyle={[
-        {
-          backgroundColor: getHexColor(theme, 'background', 0),
-        },
-        props.contentContainerStyle,
-      ]}
-      activeColor={getHexColor(theme, 'primary', 500)?.toString()}
-      inactiveColor={getHexColor(theme, 'typography', 900)?.toString()}
-      pressColor={getHexColor(theme, 'background', 100)?.toString()}
+      style={[{ height: 50, backgroundColor: bgColor }, props.style]}
+      contentContainerStyle={[{ backgroundColor: cardBgColor }, props.contentContainerStyle]}
+      activeColor={activeTintColor}
+      inactiveColor={inActiveTintColor}
+      pressColor={pressColor}
       options={options}
       scrollEnabled={props.scrollEnabled || true}
     />

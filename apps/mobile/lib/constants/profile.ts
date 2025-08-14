@@ -1,10 +1,14 @@
+import HospitalBuildingIcon from '@/components/icons/HospitalBuildingIcon';
+import MilkBankBuildingIcon from '@/components/icons/MilkBankBuildingIcon';
 import {
   HospitalSchema,
   IndividualSchema,
   MilkBankSchema,
   SetupProfileSchema,
 } from '@lactalink/types';
-import { SetupProfileSteps } from '../types';
+import { LucideProps, UserIcon } from 'lucide-react-native';
+import { SvgProps } from 'react-native-svg';
+import { ProfileType, SetupProfileSteps } from '../types';
 
 export const SETUP_PROFILE_STEPS: SetupProfileSteps[] = ['type', 'details', 'contact', 'avatar'];
 
@@ -33,3 +37,9 @@ export const DETAILS_FIELDS = {
 };
 export const CONTACT_FIELDS: (keyof SetupProfileSchema)[] = ['phone'];
 export const AVATAR_FIELDS: (keyof SetupProfileSchema)[] = ['avatar'];
+
+export const PROFILE_TYPE_ICONS: Record<ProfileType, React.FC<SvgProps | LucideProps>> = {
+  INDIVIDUAL: UserIcon,
+  HOSPITAL: HospitalBuildingIcon,
+  MILK_BANK: MilkBankBuildingIcon,
+};

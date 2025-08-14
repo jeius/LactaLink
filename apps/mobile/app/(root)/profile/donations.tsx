@@ -1,7 +1,7 @@
 import { BottomSheetActionButton } from '@/components/buttons';
 import { ScrollProvider, useScroll } from '@/components/contexts/ScrollProvider';
 import SafeArea from '@/components/SafeArea';
-import { AvailableDonationsTab } from '@/components/tabs/AvailableDonationsTab';
+import { UserDonationsTab } from '@/components/tabs/UserDonationsTab';
 import { useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 
@@ -15,7 +15,7 @@ function ListPage() {
 
   return (
     <SafeArea safeTop={false} safeBottom={false}>
-      <AvailableDonationsTab />
+      <UserDonationsTab />
       <BottomSheetActionButton
         icon={PlusIcon}
         scrollValue={scrollValue}

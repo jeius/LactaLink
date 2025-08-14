@@ -113,10 +113,7 @@ export function ProfileAvatar({
     return (
       <UIAvatar.Avatar
         {...props}
-        style={[
-          props.style,
-          { overflow: 'hidden', backgroundColor: isLoading ? 'transparent' : undefined },
-        ]}
+        style={[props.style, { backgroundColor: isLoading ? 'transparent' : undefined }]}
       >
         {isLoading ? (
           <Skeleton speed={4} variant="circular" />
@@ -154,9 +151,9 @@ export function ProfileAvatar({
   ]);
 
   return enablePress ? (
-    <Link href={`/profile/${profile?.id}`} push asChild>
+    <Link href={`/profile`} push asChild>
       <AnimatedPressable
-        className="rounded-full"
+        className="overflow-hidden rounded-full"
         onPressIn={() => setIsPressed(true)}
         onPressOut={() => setIsPressed(false)}
       >

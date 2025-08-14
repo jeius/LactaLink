@@ -88,7 +88,7 @@ function Scene({ route }: SceneProps) {
         ? `My ${formatKebabToTitle(SLUG)}`
         : (fetchedUser && extractName(fetchedUser) + `'s ${formatKebabToTitle(SLUG)}`) ||
           formatKebabToTitle(SLUG)
-      : `Open ${formatKebabToTitle(SLUG)}`;
+      : `Available ${formatKebabToTitle(SLUG)}`;
   }, [hasUser, isAuthenticatedUser, fetchedUser]);
 
   const where = useMemo(() => {
