@@ -11,15 +11,17 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
 
-import { getHexColor } from '@/lib/colors';
+import { colorsConfig, getHexColor } from '@/lib/colors';
+import { ThemeColors } from '@/lib/types/colors';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SystemUI from 'expo-system-ui';
 
 interface ThemeContextType {
-  theme: 'light' | 'dark';
+  theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   isLoading: boolean;
+  themeColors: ThemeColors;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -50,7 +52,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
-  const theme = THEME_OVERRIDE || colorScheme;
+  const theme: Theme = THEME_OVERRIDE || colorScheme;
 
   // Apply stored theme once during startup
   useEffect(() => {
@@ -84,6 +86,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         setTheme,
         toggleTheme,
         isLoading,
+        themeColors: colorsConfig[theme],
       }}
     >
       <GluestackUIProvider mode={theme}>{children}</GluestackUIProvider>

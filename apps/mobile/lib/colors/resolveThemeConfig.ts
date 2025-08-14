@@ -1,10 +1,10 @@
-import { ColorsConfig, ThemeMode } from '@/lib/types/colors';
+import { ColorsConfig, ThemeColors } from '@/lib/types/colors';
 import { vars } from 'nativewind';
 
 type ColorObject = Record<string, string>;
 type Config = { light: ColorObject; dark: ColorObject };
 
-function flattenColors(config: ThemeMode, prefix = '--color-'): ColorObject {
+function flattenColors(config: ThemeColors, prefix = '--color-'): ColorObject {
   const result: ColorObject = {};
 
   for (const [category, value] of Object.entries(config)) {

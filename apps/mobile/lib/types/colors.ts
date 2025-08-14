@@ -1,3 +1,5 @@
+import { Theme } from '@lactalink/types';
+
 export type Shade =
   | '0'
   | '50'
@@ -35,8 +37,8 @@ export type SpecialVariants = {
 
 export type ColorPalette = ColorShades & SpecialVariants;
 
-export type ThemeMode = {
+export type ThemeColors = {
   [key in ColorCategory]: ColorPalette;
 };
 
-export type ColorsConfig = Record<'light' | 'dark', ThemeMode>;
+export type ColorsConfig = Record<Theme, ThemeColors>;
