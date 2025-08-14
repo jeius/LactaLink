@@ -1,14 +1,15 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
+import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
 import HomeIcon from '@/components/icons/HomeIcon';
+import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Icon } from '@/components/ui/icon';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { getHexColor } from '@/lib/colors';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
-import { HandHeartIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 
 export default function Layout() {
@@ -67,7 +68,7 @@ export default function Layout() {
         options={{
           title: 'Donations',
           drawerLabel: 'Available Donations',
-          drawerIcon: ({ color }) => <Icon as={HandHeartIcon} size="md" color={color} />,
+          drawerIcon: ({ color }) => <Icon as={DonateMilkIcon} size="md" fill={color} />,
           headerShadowVisible: false,
         }}
       />
@@ -77,7 +78,7 @@ export default function Layout() {
         options={{
           title: 'Open Requests',
           drawerLabel: 'Open Requests',
-          drawerIcon: ({ color }) => <Icon as={PackagePlusIcon} size="md" color={color} />,
+          drawerIcon: ({ color }) => <Icon as={MilkBottlePlusIcon} size="md" fill={color} />,
           headerShadowVisible: false,
         }}
       />
