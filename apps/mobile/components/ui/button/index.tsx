@@ -35,7 +35,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const buttonStyle = tva({
-  base: 'group/button bg-background-800 data-[focus-visible=true]:web:outline-none data-[focus-visible=true]:web:ring-2 flex-row items-center justify-center gap-2 rounded-xl data-[disabled=true]:opacity-40',
+  base: 'group/button bg-typography-900 data-[focus-visible=true]:web:outline-none data-[focus-visible=true]:web:ring-2 flex-row items-center justify-center gap-2 rounded-xl data-[disabled=true]:opacity-40',
   variants: {
     action: {
       primary:
@@ -48,7 +48,7 @@ const buttonStyle = tva({
         'bg-error-500 border-error-500 data-[hover=true]:bg-error-400 data-[hover=true]:border-error-400 data-[active=true]:bg-error-600 data-[active=true]:border-error-600 data-[focus-visible=true]:web:ring-indicator-info',
       info: 'bg-info-500 border-info-500 data-[hover=true]:bg-info-400 data-[hover=true]:border-info-400 data-[active=true]:bg-info-600 data-[active=true]:border-info-600 data-[focus-visible=true]:web:ring-indicator-info',
       default:
-        'border-typography-700 data-[hover=true]:border-typography-600 data-[active=true]:border-typography-900 data-[hover=true]:bg-background-50 data-[active=true]:bg-background-700',
+        'border-typography-900 data-[hover=true]:border-typography-300 data-[active=true]:border-typography-600 data-[hover=true]:bg-typography-300 data-[active=true]:bg-typography-600',
     },
     variant: {
       link: 'bg-transparent px-0 data-[active=true]:bg-transparent data-[hover=true]:bg-transparent',
