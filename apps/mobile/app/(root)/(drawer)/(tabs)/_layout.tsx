@@ -1,16 +1,15 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { BottomTabBar } from '@/components/BottomTabBar';
-import { getHexColor } from '@/lib/colors';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
-  const { theme } = useTheme();
-  const bgColor = getHexColor(theme, 'background', 50);
+  const { themeColors } = useTheme();
+  const bgColor = themeColors.background[50];
 
   return (
     <Tabs
-      initialRouteName="home"
+      initialRouteName="feed"
       tabBar={(props) => <BottomTabBar {...props} />}
       screenOptions={{
         animation: 'shift',
@@ -19,7 +18,7 @@ export default function Layout() {
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tabs.Screen name="home" />
+      <Tabs.Screen name="feed" />
       <Tabs.Screen name="history" />
       <Tabs.Screen name="notifications" />
       <Tabs.Screen name="messages" />
