@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '../ui/box';
 
 const style = tva({
-  base: 'justifiy-center bg-background-50 relative flex-1 flex-col items-center',
+  base: 'bg-background-50 relative flex-1 flex-col items-center justify-center',
 });
 
 export interface SafeAreaProps extends ComponentPropsWithoutRef<typeof Box> {
