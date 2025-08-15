@@ -37,54 +37,53 @@ export default function ProfilePage() {
   const actionLinks = createActionLinks(user);
 
   return (
-    <SafeArea safeTop={false}>
+    <SafeArea safeTop={false} className="items-stretch">
       <ScrollView
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetchUser} />}
+        contentContainerClassName="p-5 flex-col items-center gap-8"
       >
-        <VStack space="2xl" className="items-center p-5">
-          <HStack space="lg" className="w-full">
-            <VStack space="sm" className="items-center">
-              <ProfileAvatar profile={profile} size="xl" />
-              {profileType && (
-                <HStack space="xs" className="items-center">
-                  <Icon
-                    as={profileIcon}
-                    size="xs"
-                    fill={themeColors.typography[600]}
-                    strokeWidth={0}
-                  />
-                  <Text size="xs" className="text-typography-600 text-center">
-                    {profileType}
-                  </Text>
-                </HStack>
-              )}
-            </VStack>
-
-            <VStack space="sm" className="items-stretch">
-              <Text className="font-JakartaSemiBold">{name}</Text>
-              <HStack space="sm" className="items-center">
-                <Icon as={MailIcon} size="lg" />
-                <Text size="sm">{email}</Text>
+        <HStack space="lg" className="w-full">
+          <VStack space="sm" className="items-center">
+            <ProfileAvatar profile={profile} size="xl" />
+            {profileType && (
+              <HStack space="xs" className="items-center">
+                <Icon
+                  as={profileIcon}
+                  size="xs"
+                  fill={themeColors.typography[600]}
+                  strokeWidth={0}
+                />
+                <Text size="xs" className="text-typography-600 text-center">
+                  {profileType}
+                </Text>
               </HStack>
+            )}
+          </VStack>
 
-              <HStack space="sm" className="items-center">
-                <Icon as={PhoneIcon} size="lg" />
-                <Text size="sm">{phone}</Text>
-              </HStack>
+          <VStack space="sm" className="items-stretch">
+            <Text className="font-JakartaSemiBold">{name}</Text>
+            <HStack space="sm" className="items-center">
+              <Icon as={MailIcon} size="lg" />
+              <Text size="sm">{email}</Text>
+            </HStack>
 
-              <Button size="sm" variant="outline" action="default" className="mt-2 rounded-full">
-                <ButtonIcon as={EditIcon} />
-                <ButtonText>Edit Profile</ButtonText>
-              </Button>
-            </VStack>
-          </HStack>
+            <HStack space="sm" className="items-center">
+              <Icon as={PhoneIcon} size="lg" />
+              <Text size="sm">{phone}</Text>
+            </HStack>
 
-          <HStack space="lg" className="flex-wrap items-center justify-center">
-            {actionLinks.map((link, index) => (
-              <ProfileActionLinkCard {...link} key={index} />
-            ))}
-          </HStack>
-        </VStack>
+            <Button size="sm" variant="outline" action="default" className="mt-2 rounded-full">
+              <ButtonIcon as={EditIcon} />
+              <ButtonText>Edit Profile</ButtonText>
+            </Button>
+          </VStack>
+        </HStack>
+
+        <HStack space="lg" className="flex-wrap items-center justify-center">
+          {actionLinks.map((link, index) => (
+            <ProfileActionLinkCard {...link} key={index} />
+          ))}
+        </HStack>
       </ScrollView>
     </SafeArea>
   );

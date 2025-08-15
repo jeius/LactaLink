@@ -3,24 +3,25 @@ import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
 import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
 import HomeIcon from '@/components/icons/HomeIcon';
+import InventoryIcon from '@/components/icons/InventoryIcon';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Icon } from '@/components/ui/icon';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { getHexColor } from '@/lib/colors';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
 import React, { useEffect, useState } from 'react';
 
 export default function Layout() {
-  const { theme } = useTheme();
-  const bgColor = getHexColor(theme, 'background', 50)?.toString();
-  const activeTintColor = getHexColor(theme, 'primary', 0)?.toString();
-  const activeBgColor = getHexColor(theme, 'primary', 500)?.toString();
-  const inActiveTintColor = getHexColor(theme, 'typography', 900)?.toString();
+  const { themeColors } = useTheme();
+  const bgColor = themeColors.background[50];
+  const activeTintColor = themeColors.primary[0];
+  const activeBgColor = themeColors.primary[500];
+  const inActiveTintColor = themeColors.typography[900];
 
-  const { user, profile } = useAuth();
+  const { user, profile, profileCollection } = useAuth();
   const name = user && extractName(user);
+  const isIndividual = profileCollection === 'individuals';
 
   const screenOptions = useScreenOptions();
 
@@ -82,6 +83,17 @@ export default function Layout() {
           headerShadowVisible: false,
         }}
       />
+
+      <Drawer.Protected guard={!isIndividual}>
+        <Drawer.Screen
+          name="inventory"
+          options={{
+            title: 'Milk Inventory',
+            drawerLabel: 'Milk Inventory',
+            drawerIcon: ({ color }) => <Icon as={InventoryIcon} size="md" fill={color} />,
+          }}
+        />
+      </Drawer.Protected>
     </Drawer>
   );
 }

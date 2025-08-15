@@ -6,7 +6,6 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { getHexColor } from '@/lib/colors';
 import { LOGO_ASSETS } from '@/lib/constants';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -23,20 +22,33 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import { Image } from '../Image';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
-  const { state, navigation, descriptors } = props;
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
+  const { profileCollection } = useAuth();
+
+  let filteredProps = props;
+
+  if (profileCollection === 'individuals') {
+    filteredProps = {
+      ...props,
+      state: {
+        ...props.state,
+        routeNames: props.state.routeNames.filter((routeName) => routeName !== 'Milk Inventory'),
+        routes: props.state.routes.filter((route) => route.name !== 'inventory'),
+      },
+    };
+  }
 
   return (
     <VStack className="flex-1">
       <DrawerHeader />
       <ScrollView className="flex-1" contentContainerClassName="p-4">
-        <DrawerItemList {...props} />
+        <DrawerItemList {...filteredProps} />
         <DrawerItem
           label="Exit App"
           icon={({ color }) => <Icon as={DoorOpenIcon} color={color} />}
           labelStyle={{ fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 }}
           style={{ borderRadius: 14, height: 48 }}
-          inactiveTintColor={getHexColor(theme, 'error', 400)?.toString()}
+          inactiveTintColor={themeColors.error[400]}
           onPress={() => BackHandler.exitApp()}
         />
       </ScrollView>
