@@ -15,6 +15,7 @@ import { LatLng } from 'react-native-maps';
 export * from '@lactalink/enums';
 
 export * from './assets';
+export * from './deviceBreakpoints';
 export * from './queryKeys';
 export * from './storageKeys';
 
