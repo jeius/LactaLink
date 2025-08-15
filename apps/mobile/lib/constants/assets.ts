@@ -55,3 +55,8 @@ export const LOGO_ASSETS = {
   logo_light: require('../../assets/logo/splash_icon_light.png'),
   logo_dark: require('../../assets/logo/splash_icon_dark.png'),
 };
+
+export const SVG_ASSETS = {
+  milkBasket: require('../../assets/svgs/milk_basket.svg'),
+  donateMilk: require('../../assets/svgs/hand_with_basket.svg'),
+};
