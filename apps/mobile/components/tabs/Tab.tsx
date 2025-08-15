@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 
-import { getHexColor } from '@/lib/colors';
 import { Route, TabView, TabViewProps } from 'react-native-tab-view';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { TabBar } from './TabBar';
@@ -17,7 +16,7 @@ export function Tab<T extends Route>({
   onIndexChange,
   ...props
 }: TabProps<T>) {
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
 
@@ -33,7 +32,7 @@ export function Tab<T extends Route>({
       onIndexChange={handleIndexChange}
       initialLayout={props.initialLayout || { width }}
       renderTabBar={renderTabBar}
-      pagerStyle={[{ backgroundColor: getHexColor(theme, 'background', 50) }, props.pagerStyle]}
+      pagerStyle={[{ backgroundColor: themeColors.background[50] }, props.pagerStyle]}
     />
   );
 }

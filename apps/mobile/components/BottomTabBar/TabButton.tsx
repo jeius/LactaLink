@@ -1,4 +1,3 @@
-import { getHexColor } from '@/lib/colors';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { FC, useEffect } from 'react';
 import { LayoutChangeEvent, PressableProps } from 'react-native';
@@ -25,9 +24,9 @@ interface TabButtonProps extends PressableProps {
 export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: TabButtonProps) => {
   const opacity = useSharedValue(!isFocused ? 1 : 0);
   const scale = useSharedValue(!isFocused ? 0.7 : 1);
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
 
-  const iconColor = getHexColor(theme, 'primary', 950)?.toString();
+  const iconColor = themeColors.typography[950];
 
   useEffect(() => {
     opacity.value = withSpring(!isFocused ? 1 : 0, { damping: 20, stiffness: 120 });

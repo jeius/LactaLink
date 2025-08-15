@@ -1,5 +1,4 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { getHexColor } from '@/lib/colors';
 import { StackScreenOptions } from '@/lib/types';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
@@ -11,10 +10,10 @@ interface UseScreenOptions {
 }
 
 export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
-  const { theme } = useTheme();
-  const headerBgColor = getHexColor(theme, 'primary', 500);
-  const headerTintColor = getHexColor(theme, 'primary', 0);
-  const bgColor = getHexColor(theme, 'background', 50);
+  const { themeColors } = useTheme();
+  const headerBgColor = themeColors.primary[500];
+  const headerTintColor = themeColors.primary[0];
+  const bgColor = themeColors.background[50];
 
   const { animationType } = args || {};
 
