@@ -11,6 +11,7 @@ export const QUERY_KEYS = {
     VALUES: ['setup-profile', 'values'],
   },
   MARKERS: ['markers'],
+  TUTORIAL_STATE: ['tutorial-state'],
 };
 
 export const INFINITE_QUERY_KEY = ['infinite'];

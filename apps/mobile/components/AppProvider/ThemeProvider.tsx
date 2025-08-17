@@ -1,6 +1,6 @@
 'use client';
 
-import { getTheme, updateTheme } from '@/lib/api/theme';
+import { getTheme, updateTheme } from '@/lib/api/payload-preferences';
 import { MMKV_KEYS, QUERY_KEYS, THEME_OVERRIDE } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
@@ -36,14 +36,17 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   } = useColorScheme();
 
   const { isLoading } = useQuery({
-    queryKey: QUERY_KEYS.USER_THEME,
     enabled: !Storage.contains(MMKV_KEYS.THEME),
+    queryKey: QUERY_KEYS.USER_THEME,
     queryFn: async () => {
       const serverTheme = await getTheme();
       const fallback = serverTheme || deviceColorScheme || 'light';
       setTheme(fallback);
       return fallback;
     },
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: 3,
   });
 
   const { mutate: saveThemeToServer } = useMutation({

@@ -36,3 +36,12 @@ export type Preference<TMethod extends ApiMethod, TValue = unknown> = TMethod ex
     : TMethod extends 'DELETE'
       ? { message: string }
       : never;
+
+export type TutorialStateValue = {
+  progress?: number;
+  completed: boolean;
+};
+
+export type TutorialState = {
+  donation: TutorialStateValue;
+};

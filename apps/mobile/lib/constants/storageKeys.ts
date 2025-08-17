@@ -11,4 +11,5 @@ export const MMKV_KEYS = {
       CREATE: 'create-address-hint',
     },
   },
+  TUTORIAL_STATE: 'tutorial-state',
 };
