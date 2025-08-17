@@ -7,17 +7,14 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { LOGO_ASSETS } from '@/lib/constants';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { DrawerItem, DrawerItemList } from '@react-navigation/drawer';
-import constants from 'expo-constants';
 import { Link } from 'expo-router';
 import { DoorOpenIcon, LogOutIcon } from 'lucide-react-native';
 import React from 'react';
 import { BackHandler } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { toast } from 'sonner-native';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Image } from '../Image';
 
@@ -83,23 +80,13 @@ function DrawerFooter() {
     (profile && ('name' in profile ? profile.name : profile.displayName)) || 'Unknown User';
   const email = user?.email || 'No email provided';
 
-  const appVersion = constants.expoConfig?.version || 'Unknown Version';
-
-  function handleSignOut() {
-    toast.promise(signOut(), {
-      loading: 'Signing out...',
-      success: (msg) => msg,
-      error: (error) => extractErrorMessage(error),
-    });
-  }
-
   return (
     <VStack
       className="bg-primary-500 border-primary-300 items-center justify-start rounded-br-2xl border-t-2"
       style={{ paddingBottom: insets.bottom }}
     >
       <HStack className="w-full items-start justify-between">
-        <Link href={'/profile'} asChild>
+        <Link href={'/account'} asChild>
           <AnimatedPressable disableAnimation className="flex-1 shrink p-4">
             <HStack space="sm" className="items-center">
               <ProfileAvatar size="md" profile={profile} />
@@ -119,7 +106,7 @@ function DrawerFooter() {
             </HStack>
           </AnimatedPressable>
         </Link>
-        <AnimatedPressable className="p-4" onPress={handleSignOut}>
+        <AnimatedPressable className="p-4" onPress={signOut}>
           <VStack space="xs" className="items-center">
             <Icon as={LogOutIcon} size="xl" className="text-primary-100" />
             <Text size="xs" className="text-primary-100 font-JakartaMedium">
@@ -128,10 +115,6 @@ function DrawerFooter() {
           </VStack>
         </AnimatedPressable>
       </HStack>
-
-      <Text size="xs" className="text-primary-100 px-4">
-        v{appVersion}
-      </Text>
     </VStack>
   );
 }

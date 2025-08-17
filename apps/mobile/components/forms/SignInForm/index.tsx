@@ -31,6 +31,8 @@ export default function SignInForm() {
   async function onSubmit(formData: SignInSchema) {
     const signInPromise = signIn(formData);
 
+    toast.dismiss();
+
     toast.promise(signInPromise, {
       loading: 'Signing in...',
       success: (message: string) => message,

@@ -151,7 +151,7 @@ export function ProfileAvatar({
   ]);
 
   return enablePress ? (
-    <Link href={`/profile`} push asChild>
+    <Link href={`/account`} push asChild>
       <AnimatedPressable
         className="overflow-hidden rounded-full"
         onPressIn={() => setIsPressed(true)}

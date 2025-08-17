@@ -13,27 +13,18 @@ import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getIconAsset } from '@/lib/stores/assetsStore';
-import { extractErrorMessage } from '@lactalink/utilities';
 import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
 import React from 'react';
-import { toast } from 'sonner-native';
 
 const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
 
 export default function Setup() {
   const { nextPage } = usePagination(STEPS);
 
-  function handleSignOut() {
-    toast.promise(signOut(), {
-      loading: 'Signing out...',
-      success: (msg) => msg,
-      error: (error) => extractErrorMessage(error),
-    });
-  }
   return (
     <SafeArea className="justify-center">
       <HStack className="w-full px-2">
-        <Button action="default" variant="link" onPress={handleSignOut}>
+        <Button action="default" variant="link" onPress={signOut}>
           <ButtonIcon as={LogOutIcon} />
           <ButtonText>Log out</ButtonText>
         </Button>

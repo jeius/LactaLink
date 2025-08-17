@@ -1,3 +1,4 @@
+import { AUTH_TOAST_ID } from '@/lib/constants';
 import { SignUpSchema } from '@/lib/types';
 import { getApiClient } from '@lactalink/api';
 import {
@@ -6,11 +7,19 @@ import {
   VerifyOtp,
   VerifyOtpSearchParams,
 } from '@lactalink/types';
-import { extractAuthErrorCode, extractName, isResend } from '@lactalink/utilities';
+import {
+  extractAuthErrorCode,
+  extractErrorMessage,
+  extractName,
+  isResend,
+} from '@lactalink/utilities';
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
+import { toast } from 'sonner-native';
 
 export * from './googleSignIn';
+
+const toastID = AUTH_TOAST_ID;
 
 export async function signIn(formData: SignInSchema) {
   const apiClient = getApiClient();
@@ -20,7 +29,7 @@ export async function signIn(formData: SignInSchema) {
     const user = await apiClient.auth.signIn(formData);
     const name = extractName(user) || user.email;
 
-    router.replace('/home');
+    router.replace('/feed');
 
     return `Welcome back! ${name}`;
   } catch (error) {
@@ -48,8 +57,16 @@ export async function signUp({ email, password }: SignUpSchema) {
 
 export async function signOut() {
   const apiClient = getApiClient();
-  await apiClient.auth.signOut();
-  return 'Signed out successfully!';
+  const signOutPromise = apiClient.auth.signOut;
+
+  toast.promise(signOutPromise(), {
+    loading: 'Signing out...',
+    success: () => 'Signed out successfully!',
+    error: (error) => extractErrorMessage(error),
+  });
+
+  await signOutPromise();
+  return;
 }
 
 export async function verifyOTP(params: VerifyOtpParams) {
@@ -62,10 +79,10 @@ export async function verifyOTP(params: VerifyOtpParams) {
       router.replace('/auth/reset-password');
       return 'OTP verified. You can now reset your password.';
     case 'signup':
-      router.replace('/setup-profile');
+      router.replace('/profile/setup');
       return 'OTP verified. You can now complete your profile setup.';
     default:
-      router.replace('/home');
+      router.replace('/feed');
       break;
   }
   return 'OTP verified successfully.';
