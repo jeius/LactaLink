@@ -19,12 +19,10 @@ import { DonationSchema } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 
 import { AlertCircleIcon, MilkIcon, PlusIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Dimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-
-const DEVICE_WIDTH = Dimensions.get('window').width;
 
 interface MilkBagsFieldProps {
   isLoading?: boolean;
@@ -35,6 +33,8 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   const profile = extractCollection(user?.profile?.value);
 
   const flatListRef = useRef<FlatList>(null);
+  const prevLength = useRef(0);
+  const [removedIndex, setRemovedIndex] = useState<number | null>(null);
 
   const { append, remove, fields } = useFieldArray<DonationSchema>({ name: 'details.bags' });
   const form = useFormContext<DonationSchema>();
@@ -42,23 +42,36 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   const { error } = form.getFieldState('details.bags');
   const disableRemove = fields.length < 2;
 
+  const { width: deviceWidth } = useWindowDimensions();
+
+  const itemWidth = deviceWidth - 40; // Width of each item
+  const separatorWidth = 40; // Width of the separator
+
+  useEffect(() => {
+    if (prevLength.current === 0 && fields.length > 0) {
+      // Scroll to the first item when the field array is initialized
+      flatListRef.current?.scrollToIndex({ animated: false, index: 0 });
+    } else if (prevLength.current < fields.length) {
+      // Scroll to the last item when a new item is added
+      flatListRef.current?.scrollToIndex({ animated: true, index: fields.length - 1 });
+    } else if (prevLength.current > fields.length) {
+      const indexToScroll =
+        removedIndex !== null && removedIndex >= 0 ? Math.min(fields.length - 1, removedIndex) : 0;
+      // Scroll to the previous item when an item is removed
+      flatListRef.current?.scrollToIndex({ animated: true, index: indexToScroll });
+    }
+  }, [fields.length, removedIndex]);
+
   function handleAdd() {
+    prevLength.current = fields.length;
     append({ donor: profile!.id, collectedAt: new Date().toISOString(), volume: 20, quantity: 1 });
-    // Scroll to the end of the list after adding a new item
-    // Delaying the scroll to ensure the new item is rendered
-    setTimeout(() => {
-      flatListRef.current?.scrollToIndex({ animated: true, index: fields.length });
-    }, 200);
   }
 
   function handleRemove(index: number) {
     if (fields.length < 2) return;
-    flatListRef.current?.scrollToIndex({ animated: true, index: Math.max(0, index - 1) });
-    // Delay the removal to allow the scroll animation to complete
-    // This is a workaround to avoid the list jumping back to the first item
-    setTimeout(() => {
-      remove(index);
-    }, 50);
+    prevLength.current = fields.length;
+    remove(index);
+    setRemovedIndex(index);
   }
 
   return (
@@ -77,19 +90,23 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
         data={fields}
         keyExtractor={(item) => item.id}
         horizontal
+        pagingEnabled
         renderItem={({ index }) => (
           <RenderCard
             index={index}
             isLoading={isLoading}
             onRemove={handleRemove}
             disableRemove={disableRemove}
-            isInvalid={!!error}
+            variant="filled"
+            className={`relative ${error ? 'border-error-500' : ''}`}
+            style={{ width: itemWidth }}
           />
         )}
-        contentContainerStyle={{ paddingRight: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16 }}
+        ItemSeparatorComponent={() => <Box style={{ width: separatorWidth }} />}
         getItemLayout={(_, index) => ({
-          length: DEVICE_WIDTH - 40, // Width of each item
-          offset: (DEVICE_WIDTH - 40 + 20) * index, // Item width + marginLeft (20)
+          length: itemWidth,
+          offset: (itemWidth + separatorWidth) * index,
           index,
         })}
       />
@@ -109,26 +126,21 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   );
 }
 
-type RenderCardProps = {
+interface RenderCardProps extends React.ComponentProps<typeof Card> {
   index: number;
   onRemove: (index: number) => void;
   disableRemove?: boolean;
   isLoading?: boolean;
-  isInvalid?: boolean;
-};
+}
 function RenderCard({
   index: i,
   onRemove: handleRemove,
   disableRemove,
   isLoading,
-  isInvalid = false,
+  ...cardProps
 }: RenderCardProps) {
   return (
-    <Card
-      variant="filled"
-      className={`relative ${isInvalid ? 'border-error-500' : ''}`}
-      style={{ width: DEVICE_WIDTH - 40, marginBottom: 16, marginLeft: 20 }}
-    >
+    <Card {...cardProps}>
       <VStack space="md">
         <HStack space="md">
           <FormField
