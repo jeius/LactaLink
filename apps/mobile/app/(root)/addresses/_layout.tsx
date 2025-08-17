@@ -15,8 +15,6 @@ export default function Layout() {
         headerLeft: () => <HeaderBackButton />,
       }}
     >
-      <Stack.Screen name="index" options={{ headerTitle: 'Addresses' }} />
-
       <Stack.Screen name="create" options={{ headerTitle: 'Create Address' }} />
 
       <Stack.Screen name="edit/[id]" options={{ headerTitle: 'Edit Address' }} />

@@ -8,8 +8,9 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
+import { extractCollection } from '@lactalink/utilities';
 import { Href, Link } from 'expo-router';
 import { ChevronRight, LucideIcon, TimerIcon } from 'lucide-react-native';
 import React, { ComponentProps, FC, ReactNode } from 'react';
@@ -18,7 +19,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
 export default function InventoryPage() {
-  const { profile } = useAuth();
+  const { data: user } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
   const name = profile && 'name' in profile && profile.name;
 
   const { width } = useWindowDimensions();

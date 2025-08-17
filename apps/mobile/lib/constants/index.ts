@@ -31,6 +31,7 @@ export const THEME_OVERRIDE = ThemeOverride;
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
 export const BACK_TOAST_ID = 'back-toast-id';
+export const AUTH_TOAST_ID = 'auth-toast-id';
 
 export const BLUR_HASH =
   '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';

@@ -10,7 +10,7 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from '@/components/ui/form-control';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { AlertCircleIcon, Edit2Icon, PlusIcon } from 'lucide-react-native';
 import {
   ControllerProps,
@@ -38,7 +38,7 @@ export function AddressField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ isLoading, helperText, label, name }: AddressFieldProps<TFieldValues, TName>) {
-  const { user } = useAuth();
+  const { data: user } = useMeUser();
   const selections = user?.addresses?.docs || [];
 
   const { getFieldState, formState, watch, setValue } = useFormContext<TFieldValues>();
@@ -107,7 +107,6 @@ export function AddressField<
         slug="addresses"
         title="Select from your Addresses"
         createLabel="Add New Address"
-        estimatedItemSize={220}
         allowCreate={true}
         allowEdit={true}
         collections={selections}

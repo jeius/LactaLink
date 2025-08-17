@@ -1,5 +1,4 @@
-import SafeArea from '@/components/SafeArea';
-import { Spinner } from '@/components/ui/spinner';
+import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
 import { Stack } from 'expo-router';
@@ -14,14 +13,10 @@ export default function Layout() {
 
   const { isLoading, user } = useAuth();
 
-  const form = useSetupForm(user!);
+  const form = useSetupForm(user!); // User is guaranteed to exist here;
 
   if (isLoading) {
-    return (
-      <SafeArea className="items-center justify-center">
-        <Spinner size={'large'} />
-      </SafeArea>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

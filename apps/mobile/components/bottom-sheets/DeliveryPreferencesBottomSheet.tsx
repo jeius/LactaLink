@@ -31,7 +31,6 @@ export function DeliveryPreferencesBottomSheet<TMultiple extends boolean = false
       slug="delivery-preferences"
       title={props.title || 'Select Delivery Preference'}
       ItemComponent={Item}
-      estimatedItemSize={150}
     />
   );
 }

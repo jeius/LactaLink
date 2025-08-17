@@ -1,7 +1,7 @@
 import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-react-native';
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { extractCollection } from '@lactalink/utilities';
 import { useRef } from 'react';
 import {
@@ -43,7 +43,7 @@ export function DeliveryPreferencesField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ name, isLoading, label, helperText }: DeliveryPreferencesFieldProps<TFieldValues, TName>) {
-  const { user } = useAuth();
+  const { data: user } = useMeUser();
   const selections = extractCollection(user?.deliveryPreferences?.docs || []);
 
   const { fields, remove } = useFieldArray({ name });
@@ -126,7 +126,6 @@ export function DeliveryPreferencesField<
         isLoading={isLoading}
         ItemComponent={BasicListItem}
         gap={8}
-        estimatedItemSize={150}
         keyExtractor={(item, index) => fields[index]?.id || item.id}
       />
 

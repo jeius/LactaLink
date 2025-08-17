@@ -1,14 +1,19 @@
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { Collection, CollectionSlug, Where } from '@lactalink/types';
+import {
+  CollectionSlug,
+  SelectFromCollectionSlug,
+  TransformCollectionWithSelect,
+  Where,
+} from '@lactalink/types';
 import { areStrings, extractCollection, extractID, formatKebabToTitle } from '@lactalink/utilities';
 import { useIsFocused } from '@react-navigation/native';
 import { ListRenderItem } from '@shopify/flash-list';
 import { Href, useRouter } from 'expo-router';
 import { Edit2Icon, PlusIcon } from 'lucide-react-native';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { GestureResponderEvent, useWindowDimensions } from 'react-native';
+import { GestureResponderEvent } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
@@ -33,7 +38,7 @@ import { VStack } from '../ui/vstack';
 type TValue<T extends boolean = false> = T extends true ? string[] : string;
 
 export interface SelectItemProps<TSlug extends CollectionSlug = CollectionSlug> {
-  item: Collection<TSlug>;
+  item: TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>;
   isLoading?: boolean;
   canEdit?: boolean;
 }
@@ -47,13 +52,12 @@ export interface SelectBottomSheetProps<
   triggerComponent?: (props: { onPress: (e?: GestureResponderEvent) => void }) => React.ReactNode;
   allowMultipleSelection?: T;
   slug: TSlug;
-  collections?: (string | Collection<TSlug>)[];
+  collections?: (string | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>)[];
   ItemComponent: FC<SelectItemProps<TSlug>>;
   title?: string;
   createLabel?: string;
   allowEdit?: boolean;
   allowCreate?: boolean;
-  estimatedItemSize?: number;
 }
 
 export function SelectBottomSheet<
@@ -71,20 +75,16 @@ export function SelectBottomSheet<
   createLabel,
   allowEdit = false,
   allowCreate = false,
-  estimatedItemSize,
 }: SelectBottomSheetProps<T, TSlug>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { theme } = useTheme();
   const isFocused = useIsFocused();
 
-  const { width: DEVICE_WIDTH } = useWindowDimensions();
-
   const defaultSelectedIDs = useRef<TValue<T> | undefined | null>(selectedProps);
   const [selected, setSelected] = useState<TValue<T> | undefined | null>(selectedProps);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
-  const [listSize, setListSize] = useState({ height: 360, width: DEVICE_WIDTH });
 
   const shouldFetch = areStrings(collections);
   const where: Where = { id: { in: extractID(collections) } };
@@ -106,12 +106,15 @@ export function SelectBottomSheet<
   const data = useMemo(() => {
     const placeholderItems = Array.from({ length: 10 }, (_, i) => ({
       id: `placeholder-${i}`,
-    })) as Collection<TSlug>[];
+    })) as TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>[];
 
     if (shouldFetch) {
-      return isLoading ? placeholderItems : fetchedData;
+      return isLoading ? placeholderItems : fetchedData || [];
     } else {
-      return extractCollection(collections);
+      return (extractCollection(collections) || []) as TransformCollectionWithSelect<
+        TSlug,
+        SelectFromCollectionSlug<TSlug>
+      >[];
     }
   }, [shouldFetch, isLoading, fetchedData, collections]);
 
@@ -150,7 +153,9 @@ export function SelectBottomSheet<
     }
   }
 
-  const renderItem = useCallback<ListRenderItem<Collection<TSlug>>>(
+  const renderItem = useCallback<
+    ListRenderItem<TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>>
+  >(
     ({ item, extraData: { selected, allowMultipleSelection, allowEdit, _allowCreate } }) => {
       const selection: TValue<T> = selected;
 
@@ -279,24 +284,16 @@ export function SelectBottomSheet<
         enableContentPanningGesture={false}
         bottomInset={insets.bottom}
       >
-        <Box
-          className="relative flex-1"
-          onLayout={(e) => {
-            const { height, width } = e.nativeEvent.layout;
-            setListSize({ height, width });
-          }}
-        >
+        <Box className="relative flex-1">
           <BottomSheetFlashList
-            data={data || []}
+            data={data}
             renderItem={renderItem}
-            estimatedItemSize={estimatedItemSize}
             automaticallyAdjustKeyboardInsets
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
             extraData={{ selected, allowMultipleSelection, allowEdit, allowCreate }}
             ListEmptyComponent={EmptyComponent}
-            estimatedListSize={listSize}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             ListHeaderComponent={HeaderComponent}
             ItemSeparatorComponent={() => <Box className="h-3" />}

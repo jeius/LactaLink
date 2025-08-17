@@ -13,9 +13,10 @@ import {
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 
 import { DonationSchema } from '@lactalink/types';
+import { extractCollection } from '@lactalink/utilities';
 
 import { AlertCircleIcon, MilkIcon, PlusIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useRef } from 'react';
@@ -30,7 +31,9 @@ interface MilkBagsFieldProps {
 }
 
 export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
-  const { profile } = useAuth();
+  const { data: user } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
+
   const flatListRef = useRef<FlatList>(null);
 
   const { append, remove, fields } = useFieldArray<DonationSchema>({ name: 'details.bags' });

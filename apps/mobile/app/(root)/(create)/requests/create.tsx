@@ -6,7 +6,7 @@ import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useCreateRequestForm } from '@/hooks/forms';
 
 import { uploadImage } from '@/lib/api/file';
@@ -16,7 +16,7 @@ import { RequestSearchParams } from '@/lib/types/donationRequest';
 
 import { getApiClient } from '@lactalink/api';
 import { ErrorSearchParams, RequestSchema } from '@lactalink/types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -29,12 +29,13 @@ export default function CreateRequest() {
   const { matchedDonation, requestedDonorId } = useLocalSearchParams<RequestSearchParams>();
   const queryClient = useQueryClient();
   const {
-    user,
-    profile,
-    isLoading: isAuthLoading,
+    data: user,
     isFetching: isAuthFetching,
+    isLoading: isAuthLoading,
     error: authError,
-  } = useAuth();
+  } = useMeUser();
+
+  const profile = extractCollection(user?.profile?.value);
 
   const router = useRouter();
 

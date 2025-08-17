@@ -4,10 +4,10 @@ import { Stack } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
-  const { profile, isLoading, isFetching } = useAuth();
+  const { profile } = useAuth();
   const screenOptions = useScreenOptions();
 
-  const hasProfile = !isLoading && !isFetching && Boolean(profile);
+  const hasProfile = Boolean(profile);
 
   return (
     <Stack screenOptions={screenOptions}>

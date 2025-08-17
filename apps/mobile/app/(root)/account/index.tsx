@@ -16,7 +16,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { User } from '@lactalink/types';
 import constants from 'expo-constants';
 import { Href, Link } from 'expo-router';
@@ -36,7 +36,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 
 export default function ProfilePage() {
-  const { user, refetchUser, isRefetching, isLoading } = useAuth();
+  const { data: user, refetch, isRefetching, isLoading } = useMeUser();
   const insets = useSafeAreaInsets();
 
   const actionLinks = createActionLinks(user);
@@ -46,7 +46,7 @@ export default function ProfilePage() {
 
   return (
     <ScrollView
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetchUser} />}
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       className="flex-1"
       contentContainerClassName="flex-1 flex-col items-stretch"
     >

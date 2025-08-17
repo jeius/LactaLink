@@ -3,10 +3,10 @@ import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
 import React from 'react';
 
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { formatDate } from '@lactalink/utilities';
+import { extractCollection, formatDate } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { EditIcon, HandHelpingIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
@@ -36,7 +36,8 @@ interface RequestInfoCardProps {
 }
 
 export function RequestInfoCard({ data }: RequestInfoCardProps) {
-  const { profile } = useAuth();
+  const { data: user } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
   const router = useRouter();
 
   const {

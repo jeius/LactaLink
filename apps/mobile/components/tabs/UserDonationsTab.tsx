@@ -2,7 +2,7 @@ import { useScroll } from '@/components/contexts/ScrollProvider';
 import { InfiniteList } from '@/components/lists/InfiniteList';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
@@ -58,38 +58,38 @@ interface SceneProps {
 
 function Scene({ route }: SceneProps) {
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const auth = useAuth();
+  const meUser = useMeUser();
 
   const insets = useSafeAreaInsets();
   const { onScrollBeginDrag, onScrollEndDrag, onScroll } = useScroll();
 
   const hasUser = Boolean(userID);
-  const isAuthenticatedUser = userID === auth.user?.id;
+  const isMeUser = userID === meUser.data?.id;
 
   const {
     data: fetchedUser,
     isLoading,
     error,
     isFetching,
-  } = useFetchById(hasUser && !isAuthenticatedUser, {
+  } = useFetchById(hasUser && !isMeUser, {
     collection: 'users',
     id: userID,
     depth: 2,
     select: { profile: true, profileType: true },
   });
 
-  const user = fetchedUser || auth.user;
+  const user = fetchedUser || meUser.data;
   const profile = user?.profile;
   const profileID = profile?.value && extractID(profile.value);
 
   const headerTitle = useMemo(() => {
     return hasUser
-      ? isAuthenticatedUser
+      ? isMeUser
         ? `My ${formatKebabToTitle(SLUG)}`
         : (fetchedUser && extractName(fetchedUser) + `'s ${formatKebabToTitle(SLUG)}`) ||
           formatKebabToTitle(SLUG)
       : `Available ${formatKebabToTitle(SLUG)}`;
-  }, [hasUser, isAuthenticatedUser, fetchedUser]);
+  }, [hasUser, isMeUser, fetchedUser]);
 
   const where = useMemo(() => {
     let where: Where | undefined = undefined;

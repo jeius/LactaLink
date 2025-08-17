@@ -5,8 +5,9 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { LOGO_ASSETS } from '@/lib/constants';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { DrawerItem, DrawerItemList } from '@react-navigation/drawer';
 import { Link } from 'expo-router';
@@ -20,11 +21,11 @@ import { Image } from '../Image';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
   const { themeColors } = useTheme();
-  const { profileCollection } = useAuth();
+  const { data: user } = useMeUser();
 
   let filteredProps = props;
 
-  if (profileCollection === 'individuals') {
+  if (user?.profile?.relationTo === 'individuals') {
     filteredProps = {
       ...props,
       state: {
@@ -75,7 +76,9 @@ function DrawerHeader() {
 
 function DrawerFooter() {
   const insets = useSafeAreaInsets();
-  const { profile, user } = useAuth();
+  const { data: user } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
+
   const name =
     (profile && ('name' in profile ? profile.name : profile.displayName)) || 'Unknown User';
   const email = user?.email || 'No email provided';

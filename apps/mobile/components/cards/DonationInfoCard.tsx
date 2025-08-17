@@ -11,8 +11,9 @@ import {
 import { EditIcon, MilkIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { RequestSearchParams } from '@/lib/types/donationRequest';
+import { extractCollection } from '@lactalink/utilities';
 import { useRouter } from 'expo-router';
 import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';
@@ -32,7 +33,8 @@ interface DonationInfoCardProps {
 
 export function DonationInfoCard({ data }: DonationInfoCardProps) {
   const router = useRouter();
-  const { profile } = useAuth();
+  const { data: user } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
 
   const {
     details: { bags, collectionMode, storageType, milkSample, notes },

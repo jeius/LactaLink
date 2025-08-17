@@ -101,7 +101,7 @@ export default function Step() {
 
       cleanUpForm();
       await refetchSession({ throwOnError: true });
-      router.dismissTo('/home');
+      router.replace('/feed');
 
       return 'Profile created successfully!';
     };

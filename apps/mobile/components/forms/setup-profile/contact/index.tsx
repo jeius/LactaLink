@@ -7,14 +7,14 @@ import { AddressList } from '@/components/lists';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRouter } from 'expo-router';
 import { PhoneIcon, PlusIcon } from 'lucide-react-native';
 import React from 'react';
 
 export default function ProfileContact() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { data: user } = useMeUser();
   const addresses = user?.addresses?.docs || [];
 
   function handleAdd() {

@@ -7,11 +7,11 @@ import { areStrings, extractID } from '@lactalink/utilities';
 import { useForm } from 'react-hook-form';
 
 import { useEffect } from 'react';
-import { useAuth } from '../auth/useAuth';
+import { useMeUser } from '../auth/useAuth';
 import { useFetchById } from '../collections/useFetchById';
 
 export function useDeliveryPreferenceForm(id?: string) {
-  const { user, ...auth } = useAuth();
+  const { data: user, ...meUser } = useMeUser();
   const {
     data: preference,
     isLoading: isDPLoading,
@@ -31,9 +31,9 @@ export function useDeliveryPreferenceForm(id?: string) {
       (userAddresses as Address[]).find((address) => address.isDefault)) ||
     undefined;
 
-  const isLoading = auth.isLoading || isDPLoading;
-  const isFetching = auth.isFetching || isDPFetching;
-  const error = dpError || auth.error;
+  const isLoading = meUser.isLoading || isDPLoading;
+  const isFetching = meUser.isFetching || isDPFetching;
+  const error = dpError || meUser.error;
 
   const form = useForm({
     resolver: zodResolver(deliveryPreferenceSchema),

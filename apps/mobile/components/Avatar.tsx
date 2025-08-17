@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { Avatar as AvatarType, Hospital, Individual, MilkBank, User } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
@@ -25,7 +25,8 @@ export default function Avatar({
   fadeDuration,
   ...props
 }: AvatarProps) {
-  const { profile, isLoading } = useAuth();
+  const { data: user, isLoading } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
 
   const avatar: AvatarType | null =
     (details ? details.avatar : (profile?.avatar as AvatarType | undefined)) || null;

@@ -1,7 +1,7 @@
 import { FormField } from '@/components/FormField';
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import {
   CalendarDaysIcon,
@@ -27,7 +27,7 @@ import { Text } from '@/components/ui/text';
 import { useFieldArray } from 'react-hook-form';
 
 export function DeliveryDetailsForm() {
-  const { user } = useAuth();
+  const { data: user } = useMeUser();
 
   const { fields, append, remove } = useFieldArray({ name: 'deliveryDetails', keyName: 'fieldId' });
 

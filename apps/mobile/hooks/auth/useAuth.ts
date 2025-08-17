@@ -3,12 +3,22 @@ import { useApiClient } from '@lactalink/api';
 import { extractCollection } from '@lactalink/utilities';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+
+export function useMeUser() {
+  const apiClient = useApiClient();
+  return useQuery({
+    initialData: null,
+    queryKey: QUERY_KEYS.AUTH.USER,
+    queryFn: () => apiClient.auth.getMeUser(),
+    staleTime: Infinity,
+    retry: false,
+  });
+}
 
 export function useAuth() {
   const apiClient = useApiClient();
   const queryClient = useQueryClient();
-  const [enableFetchUser, setEnableFetchUser] = useState(false);
 
   const { data: session, ...sessionQuery } = useQuery({
     queryKey: QUERY_KEYS.AUTH.SESSION,
@@ -17,21 +27,12 @@ export function useAuth() {
     retry: false,
   });
 
-  const { data: user, ...userQuery } = useQuery({
-    enabled: enableFetchUser,
-    initialData: session?.user || null,
-    queryKey: QUERY_KEYS.AUTH.USER,
-    queryFn: () => apiClient.auth.getMeUser(),
-    staleTime: Infinity,
-    retry: false,
-  });
-
+  const user = session?.user || null;
   const profile = (user?.profile?.value && extractCollection(user.profile.value)) || null;
   const profileCollection = user?.profile?.relationTo || null;
 
   useEffect(() => {
     queryClient.setQueryData(QUERY_KEYS.AUTH.USER, session?.user || null);
-    setEnableFetchUser(Boolean(session));
   }, [session, queryClient]);
 
   return {
@@ -42,15 +43,14 @@ export function useAuth() {
     session,
 
     // Loading states
-    isLoading: sessionQuery.isLoading || userQuery.isLoading,
-    isFetching: sessionQuery.isFetching || userQuery.isFetching,
-    isError: sessionQuery.isError || userQuery.isError,
-    isRefetching: sessionQuery.isRefetching || userQuery.isRefetching,
-    error: sessionQuery.error || userQuery.error,
+    isLoading: sessionQuery.isLoading,
+    isFetching: sessionQuery.isFetching,
+    isError: sessionQuery.isError,
+    isRefetching: sessionQuery.isRefetching,
+    error: sessionQuery.error,
 
     // Manual refetch
     refetchSession: sessionQuery.refetch,
-    refetchUser: userQuery.refetch,
   };
 }
 

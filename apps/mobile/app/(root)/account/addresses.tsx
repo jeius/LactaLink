@@ -3,7 +3,7 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { extractName } from '@lactalink/utilities';
 import { Motion } from '@legendapp/motion';
@@ -16,7 +16,7 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { user: authUser, ...auth } = useAuth();
+  const { data: authUser, ...meUser } = useMeUser();
 
   const isAuthenticatedUser = authUser?.id === userID;
 
@@ -34,9 +34,9 @@ export default function ListPage() {
 
   const user = userID ? fetchedData : authUser;
 
-  const isLoading = fetched.isLoading || auth.isLoading;
-  const isFetching = fetched.isFetching || auth.isFetching;
-  const isRefreshing = shouldFetch ? fetched.isRefetching : auth.isRefetching;
+  const isLoading = fetched.isLoading || meUser.isLoading;
+  const isFetching = fetched.isFetching || meUser.isFetching;
+  const isRefreshing = shouldFetch ? fetched.isRefetching : meUser.isRefetching;
 
   const data = (user && authUser?.addresses?.docs) || [];
   const headerTitle =
@@ -52,7 +52,7 @@ export default function ListPage() {
     if (shouldFetch) {
       fetched.refetch();
     } else {
-      auth.refetchUser();
+      meUser.refetch();
     }
   }
 

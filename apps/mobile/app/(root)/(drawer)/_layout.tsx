@@ -6,7 +6,7 @@ import HomeIcon from '@/components/icons/HomeIcon';
 import InventoryIcon from '@/components/icons/InventoryIcon';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Icon } from '@/components/ui/icon';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
@@ -19,9 +19,10 @@ export default function Layout() {
   const activeBgColor = themeColors.primary[500];
   const inActiveTintColor = themeColors.typography[900];
 
-  const { user, profile, profileCollection } = useAuth();
+  const { data: user } = useMeUser();
   const name = user && extractName(user);
-  const isIndividual = profileCollection === 'individuals';
+  const profile = user?.profile;
+  const isIndividual = profile?.relationTo === 'individuals';
 
   const screenOptions = useScreenOptions();
 

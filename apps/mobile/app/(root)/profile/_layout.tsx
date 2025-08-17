@@ -13,10 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
 
 export default function Layout() {
-  const { profile, isLoading, isFetching } = useAuth();
+  const { profile } = useAuth();
   const screenOptions = useScreenOptions();
 
-  const noProfile = !isLoading && !isFetching && !profile;
+  const noProfile = !profile;
 
   const { currentPageIndex, progress } = usePagination(STEPS);
 

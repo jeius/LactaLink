@@ -14,10 +14,10 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { User } from '@lactalink/types';
-import { capitalizeFirst } from '@lactalink/utilities';
+import { capitalizeFirst, extractCollection } from '@lactalink/utilities';
 import { Href, Link } from 'expo-router';
 import { EditIcon, LucideIcon, LucideProps, MailIcon, PhoneIcon } from 'lucide-react-native';
 import React, { FC } from 'react';
@@ -25,14 +25,17 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
 export default function ProfilePage() {
-  const { profile, user, refetchUser, isRefetching } = useAuth();
   const { themeColors } = useTheme();
+
+  const { data: user, refetch: refetchUser, isRefetching } = useMeUser();
+  const profile = extractCollection(user?.profile?.value);
 
   const name = (profile && ('name' in profile ? profile.name : profile.displayName)) || 'No name';
   const email = user?.email || 'No email';
   const phone = user?.phone || 'No phone number';
   const profileType = user?.profileType && capitalizeFirst(user.profileType.toLowerCase());
-  const profileIcon = user?.profileType && PROFILE_TYPE_ICONS[user.profileType];
+  const profileIcon =
+    (user?.profileType && PROFILE_TYPE_ICONS[user.profileType]) || PROFILE_TYPE_ICONS.INDIVIDUAL;
 
   const actionLinks = createActionLinks(user);
 
@@ -47,12 +50,7 @@ export default function ProfilePage() {
             <ProfileAvatar profile={profile} size="xl" />
             {profileType && (
               <HStack space="xs" className="items-center">
-                <Icon
-                  as={profileIcon}
-                  size="xs"
-                  fill={themeColors.typography[600]}
-                  strokeWidth={0}
-                />
+                <Icon as={profileIcon} size="xs" fill={themeColors.typography[600]} />
                 <Text size="xs" className="text-typography-600 text-center">
                   {profileType}
                 </Text>

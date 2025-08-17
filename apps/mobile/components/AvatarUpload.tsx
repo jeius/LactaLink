@@ -4,7 +4,7 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { Image } from '@/components/Image';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { MAX_IMAGE_SIZE } from '@/lib/constants';
 import { ImageSchema, SetupProfileSchema } from '@lactalink/types';
 import { useQuery } from '@tanstack/react-query';
@@ -48,7 +48,7 @@ export function AvatarUpload({
   const [isPressed, setIsPressed] = useState(false);
   const [isModalOpen, showModal] = useState(false);
 
-  const { user } = useAuth();
+  const { data: user } = useMeUser();
   const lastImageUri = useRef<string | null>(value?.url || null);
 
   const baseOptions: ImagePicker.ImagePickerOptions = {
