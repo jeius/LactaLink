@@ -63,15 +63,15 @@ function Scene({ route }: SceneProps) {
   const insets = useSafeAreaInsets();
   const { onScrollBeginDrag, onScrollEndDrag, onScroll } = useScroll();
 
-  const hasUser = Boolean(userID);
-  const isMeUser = userID === meUser.data?.id;
+  const hasOtherUser = Boolean(userID);
+  const isMeUser = !hasOtherUser || userID === meUser.data?.id;
 
   const {
     data: fetchedUser,
     isLoading,
     error,
     isFetching,
-  } = useFetchById(hasUser && !isMeUser, {
+  } = useFetchById(hasOtherUser && !isMeUser, {
     collection: 'users',
     id: userID,
     depth: 2,
@@ -82,22 +82,20 @@ function Scene({ route }: SceneProps) {
   const profile = user?.profile;
   const profileID = profile?.value && extractID(profile.value);
 
+  const otherUserName = (fetchedUser && extractName(fetchedUser)) || 'LactaLink User';
+  const titleSlug = formatKebabToTitle(SLUG);
+
   const headerTitle = useMemo(() => {
-    return hasUser
-      ? isMeUser
-        ? `My ${formatKebabToTitle(SLUG)}`
-        : (fetchedUser && extractName(fetchedUser) + `'s ${formatKebabToTitle(SLUG)}`) ||
-          formatKebabToTitle(SLUG)
-      : `Open ${formatKebabToTitle(SLUG)}`;
-  }, [hasUser, isMeUser, fetchedUser]);
+    return isMeUser ? `My ${titleSlug}` : otherUserName + `'s ${titleSlug}`;
+  }, [isMeUser, titleSlug, otherUserName]);
 
   const where = useMemo(() => {
     let where: Where | undefined = undefined;
-    if (hasUser && profile && profileID && profile.relationTo === 'individuals') {
-      where = { and: [{ status: { equals: route.key } }, { donor: { equals: profileID } }] };
+    if (profileID) {
+      where = { and: [{ status: { equals: route.key } }, { requester: { equals: profileID } }] };
     }
     return where;
-  }, [hasUser, profile, profileID, route.key]);
+  }, [profileID, route.key]);
 
   return (
     <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
