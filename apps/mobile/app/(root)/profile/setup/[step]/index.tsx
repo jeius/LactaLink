@@ -27,8 +27,7 @@ import { getIconAsset } from '@/lib/stores';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { useApiClient } from '@lactalink/api';
-import { SetupProfileSchema, User } from '@lactalink/types';
+import { SetupProfileSchema } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities';
 
 import { router, useLocalSearchParams } from 'expo-router';
@@ -44,7 +43,6 @@ type Block = Record<SetupProfileSteps, FC>;
 export default function Step() {
   const { user, refetchSession } = useAuth();
   const insets = useSafeAreaInsets();
-  const apiClient = useApiClient();
   const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
   const { nextPage, hasNextPage, prevPage, hasPrevPage } = usePagination(STEPS);
 
@@ -83,27 +81,13 @@ export default function Step() {
         avatar: avatarDoc,
       });
 
-      const profileMap: Record<ProfileType, User['profile']> = {
-        INDIVIDUAL: { relationTo: 'individuals', value: createdProfile.id },
-        HOSPITAL: { relationTo: 'hospitals', value: createdProfile.id },
-        MILK_BANK: { relationTo: 'milkBanks', value: createdProfile.id },
-      };
-
-      await apiClient.updateByID({
-        collection: 'users',
-        id: user.id,
-        depth: 0,
-        data: {
-          profileType: formData.profileType,
-          profile: profileMap[formData.profileType],
-        },
-      });
+      const name = 'name' in createdProfile ? createdProfile.name : createdProfile.displayName;
 
       cleanUpForm();
       await refetchSession({ throwOnError: true });
       router.replace('/feed');
 
-      return 'Profile created successfully!';
+      return name ? `Welcome to LactaLink ${name}!` : 'Profile created successfully!';
     };
 
     toast.promise(createPromise(), {
