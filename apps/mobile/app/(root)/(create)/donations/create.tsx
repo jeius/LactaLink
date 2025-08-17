@@ -136,7 +136,7 @@ async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
   const { details, donor, deliveryPreferences, matchedRequest } = data;
 
-  const { bags, milkSample, ...restOfDetails } = details;
+  const { bags, image, ...restOfDetails } = details;
 
   console.log('Creating donation with data:', data);
 
@@ -161,8 +161,7 @@ async function createDonation(data: DonationSchema) {
     )
   ).flat();
 
-  const milkSampleDocs =
-    milkSample && (await Promise.all(milkSample.map((sample) => uploadImage('images', sample))));
+  const milkImageDoc = image && (await uploadImage('images', image));
 
   const donationDoc = await apiClient.create({
     collection: 'donations',
@@ -172,7 +171,7 @@ async function createDonation(data: DonationSchema) {
       details: {
         ...restOfDetails,
         bags: extractID(milkBagDocs),
-        milkSample: milkSampleDocs && extractID(milkSampleDocs),
+        milkSample: milkImageDoc && [extractID(milkImageDoc)],
       },
       deliveryPreferences,
     },

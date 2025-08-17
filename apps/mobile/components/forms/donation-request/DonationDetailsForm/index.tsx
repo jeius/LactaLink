@@ -50,7 +50,7 @@ export function DonationDetailsForm({
           control={form.control}
           key={'details.storageType'}
           name="details.storageType"
-          label="Select the type of milk you are donating."
+          label="How are you storing/preserving the milk?"
           fieldType="button-group"
           options={Object.values(STORAGE_TYPES)}
           isLoading={isLoading}
@@ -72,13 +72,11 @@ export function DonationDetailsForm({
       <Box className="mx-5">
         <FormField
           control={form.control}
-          name="details.milkSample"
-          label="Milk Samples"
+          name="details.image"
+          label="Cover Image"
           fieldType="image"
-          allowsMultipleSelection
-          selectionLimit={5}
-          showCount
-          helperText="Upload up to 5 images of the milk."
+          allowsMultipleSelection={false}
+          helperText="Upload a cover image to feature your donation."
           isLoading={isLoading}
         />
       </Box>
@@ -87,7 +85,7 @@ export function DonationDetailsForm({
         <FormField
           control={form.control}
           name="details.notes"
-          label="Additional Notes (If any)"
+          label="Additional Notes"
           fieldType="textarea"
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."

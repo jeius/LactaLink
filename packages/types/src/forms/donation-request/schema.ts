@@ -28,7 +28,7 @@ export const donationDetailsSchema = z.object({
     'Select one option'
   ),
   bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
-  milkSample: z.array(imageSchema).optional().nullable(),
+  image: imageSchema.optional().nullable(),
   notes: textAreaSchema.describe('Additional Notes'),
 });
 

@@ -788,7 +788,7 @@ export interface Donation {
     /**
      * Type of storage for the milk
      */
-    storageType: 'FRESH' | 'FROZEN';
+    storageType: 'FRESH' | 'FROZEN' | 'OTHER';
     /**
      * How the milk was collected
      */
@@ -966,7 +966,7 @@ export interface Request {
     /**
      * Preferred storage type
      */
-    storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
+    storagePreference?: ('FRESH' | 'FROZEN' | 'OTHER' | 'EITHER') | null;
     urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
     /**
      * Milk bags that fulfilled this request. If empty, it means the request is still pending.

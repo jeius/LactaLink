@@ -19,5 +19,5 @@ export async function uploadImage<TSlug extends FileCollectionSlug = FileCollect
   const file = createNativeFile(data);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return await apiClient.uploadFile({ collection, data: { alt: data.alt }, file: file as any });
+  return await apiClient.uploadFile({ collection, file: file as any });
 }

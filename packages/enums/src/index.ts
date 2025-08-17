@@ -62,6 +62,7 @@ export const PRIORITY_LEVELS = {
 export const STORAGE_TYPES = {
   FRESH: { label: 'Refrigerated', value: 'FRESH' },
   FROZEN: { label: 'Frozen', value: 'FROZEN' },
+  OTHER: { label: 'Other', value: 'OTHER' },
 } as const;
 
 export const PREFERRED_STORAGE_TYPES = {

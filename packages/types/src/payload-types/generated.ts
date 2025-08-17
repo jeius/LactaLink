@@ -251,9 +251,7 @@ export interface Config {
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
-    notificationCategories:
-      | NotificationCategoriesSelect<false>
-      | NotificationCategoriesSelect<true>;
+    notificationCategories: NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     notificationTypes: NotificationTypesSelect<false> | NotificationTypesSelect<true>;
@@ -262,9 +260,7 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
-    'payload-locked-documents':
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -792,7 +788,7 @@ export interface Donation {
     /**
      * Type of storage for the milk
      */
-    storageType: 'FRESH' | 'FROZEN';
+    storageType: 'FRESH' | 'FROZEN' | 'OTHER';
     /**
      * How the milk was collected
      */
@@ -896,15 +892,7 @@ export interface DeliveryPreference {
   /**
    * Days available for pickup, delivery, or meet-up.
    */
-  availableDays: (
-    | 'MONDAY'
-    | 'TUESDAY'
-    | 'WEDNESDAY'
-    | 'THURSDAY'
-    | 'FRIDAY'
-    | 'SATURDAY'
-    | 'SUNDAY'
-  )[];
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
   donations?: {
     docs?: (string | Donation)[];
     hasNextPage?: boolean;
@@ -978,7 +966,7 @@ export interface Request {
     /**
      * Preferred storage type
      */
-    storagePreference?: ('FRESH' | 'FROZEN' | 'EITHER') | null;
+    storagePreference?: ('FRESH' | 'FROZEN' | 'OTHER' | 'EITHER') | null;
     urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
     /**
      * Milk bags that fulfilled this request. If empty, it means the request is still pending.
@@ -2504,4 +2492,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Auth {
   [k: string]: unknown;
+}
+
+
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
 }

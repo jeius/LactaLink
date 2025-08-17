@@ -141,7 +141,7 @@ function getData({ user, profile }: Params): DonationSchema | undefined {
       notes: storedData?.details?.notes || '',
       collectionMode: storedData?.details?.collectionMode,
       storageType: storedData?.details?.storageType,
-      milkSample: storedData?.details?.milkSample,
+      image: storedData?.details?.image,
       bags: storedData?.details?.bags || [
         { donor, volume: 20, quantity: 1, collectedAt: new Date().toISOString() },
       ],
