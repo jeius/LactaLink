@@ -29,8 +29,6 @@ export async function signIn(formData: SignInSchema) {
     const user = await apiClient.auth.signIn(formData);
     const name = extractName(user) || user.email;
 
-    router.replace('/feed');
-
     return `Welcome back! ${name}`;
   } catch (error) {
     const code = extractAuthErrorCode(error);

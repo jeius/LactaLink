@@ -32,7 +32,7 @@ export function App() {
           <Stack.Screen name="(root)" />
         </Stack.Protected>
 
-        <Stack.Protected guard={isResettingPassword || !isAuthenticated}>
+        <Stack.Protected guard={!isAuthenticated || isResettingPassword}>
           <Stack.Screen name="auth" />
         </Stack.Protected>
       </Stack>

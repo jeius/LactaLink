@@ -7,7 +7,6 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import { AuthError } from '@supabase/supabase-js';
-import { router } from 'expo-router';
 
 export async function signInWithGoogle() {
   try {
@@ -27,8 +26,6 @@ export async function signInWithGoogle() {
 
     const user = await apiClient.auth.signInWithIdToken({ token: idToken, provider: 'google' });
     const name = extractName(user) || user.email;
-
-    router.replace('/home');
 
     return `Welcome! ${name}`;
   } catch (error) {

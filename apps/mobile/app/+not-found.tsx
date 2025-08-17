@@ -15,7 +15,7 @@ export default function NotFoundScreen() {
     if (canGoBack) {
       router.back();
     } else {
-      router.push('/');
+      router.push('/feed');
     }
   }
   return (

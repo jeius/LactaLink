@@ -23,6 +23,8 @@ export default function GoogleButtonWrapper({
 
     const googleSignInPromise = signInWithGoogle();
 
+    toast.dismiss();
+
     toast.promise(googleSignInPromise, {
       loading: 'Signing in with Google...',
       success: (msg) => msg,
