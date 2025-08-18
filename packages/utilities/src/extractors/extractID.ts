@@ -1,6 +1,6 @@
 import { Collection } from '@lactalink/types';
 
-type Value = Collection | string | number;
+type Value = Collection | string | number | { id: string | number };
 
 /**
  * A utility type that extracts the `id` property from an object or an array of objects.
