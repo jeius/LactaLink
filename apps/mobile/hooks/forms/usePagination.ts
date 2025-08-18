@@ -31,6 +31,15 @@ export function usePagination<T extends SearchParams = SearchParams>(
     }
   }
 
+  function skipToPage(index: number) {
+    const page = routes[index];
+
+    if (page) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push({ pathname: page as any, params: searchParams });
+    }
+  }
+
   return {
     pages: enumPages,
     pathname,
@@ -41,5 +50,6 @@ export function usePagination<T extends SearchParams = SearchParams>(
     prevPage: handleBack,
     hasNextPage,
     hasPrevPage,
+    skipToPage,
   };
 }
