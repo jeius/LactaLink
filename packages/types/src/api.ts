@@ -164,6 +164,11 @@ export type UpdateOptions<
   data: DeepPartial<RequiredDataFromCollectionSlug<TSlug>>;
 };
 
+export type DeleteOptions<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> = Omit<UpdateOptions<TSlug, TSelect>, 'data'>;
+
 export type UpdateByID<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
@@ -196,7 +201,7 @@ export type DeleteByID<
    * The ID of the document to delete.
    */
   id: Collection<TSlug>['id'];
-} & UpdateOptions<TSlug, TSelect>;
+} & DeleteOptions<TSlug, TSelect>;
 export type DeleteMany<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
@@ -205,7 +210,7 @@ export type DeleteMany<
    * A filter [query](https://payloadcms.com/docs/queries/overview)
    */
   where: Where;
-} & UpdateOptions<TSlug, TSelect>;
+} & DeleteOptions<TSlug, TSelect>;
 
 export type FindOne<
   TSlug extends CollectionSlug,
