@@ -1,30 +1,10 @@
-import { CollectionSlug, DonationSchema, RequestSchema } from '@lactalink/types';
-import { FieldPath } from 'react-hook-form';
+import { DONATION_CREATE_STEPS } from '../constants/donationRequest';
 
-export type DonationRequestSteps =
-  | keyof Pick<DonationSchema | RequestSchema, 'details' | 'deliveryPreferences'>
-  | 'review';
-
-export type DonationRequestFields = Record<
-  Exclude<DonationRequestSteps, 'review'>,
-  FieldPath<DonationSchema | RequestSchema>[]
->;
-
-export type DonationRequestSlug = Extract<CollectionSlug, 'donations' | 'requests'>;
-
-export type DonationRequestParams = {
-  step: DonationRequestSteps;
-} & (
-  | { slug: Extract<CollectionSlug, 'donations'>; matchedRequest?: string }
-  | {
-      slug: Extract<CollectionSlug, 'requests'>;
-      requestedDonorId?: string;
-      matchedDonation?: string;
-    }
-);
+export type DonationCreateSteps = keyof typeof DONATION_CREATE_STEPS;
 
 export type DonationCreateSearchParams = {
   matchedRequest?: string;
+  step: DonationCreateSteps;
 };
 
 export type RequestSearchParams = {

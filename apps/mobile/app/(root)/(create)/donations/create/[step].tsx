@@ -1,85 +1,129 @@
 import { DonationReviewCard } from '@/components/cards/DonationReviewCard';
 import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
+import MilkBagVerification from '@/components/forms/donation-request/MilkBagVerification';
 import FormPreventBack from '@/components/forms/FormPreventBack';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
+import MilkBagVerificationTutorial from '@/components/tutorials/MilkBagVerification';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
-import { useMeUser } from '@/hooks/auth/useAuth';
-import { useCreateDonationForm } from '@/hooks/forms';
+import { usePagination } from '@/hooks/forms';
 
 import { uploadImage } from '@/lib/api/file';
-import { COLLECTION_QUERY_KEY } from '@/lib/constants';
+import { COLLECTION_QUERY_KEY, MILK_BAG_STATUS } from '@/lib/constants';
+import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
+import { useTutorialStore } from '@/lib/stores/tutorialStore';
 
-import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
+import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
+import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getApiClient } from '@lactalink/api';
-import { DonationSchema, ErrorSearchParams, Individual, MilkBag } from '@lactalink/types';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
+import { DonationSchema, MilkBag, MilkBagsSelect } from '@lactalink/types';
+import { extractErrorMessage, extractID } from '@lactalink/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { FormProvider } from 'react-hook-form';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ReactNode, useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
+
+const routes = createDynamicRoute('/donations/create', Object.keys(DONATION_CREATE_STEPS));
+
+const detailsStep = DONATION_CREATE_STEPS.details.value;
+const tutorialStep = DONATION_CREATE_STEPS['milkbag-tutorial'].value;
+const verificationStep = DONATION_CREATE_STEPS['milkbag-verification'].value;
+
+const buttonTextMap: Record<DonationCreateSteps, string> = {
+  [detailsStep]: 'Verify Milk Bags',
+  [tutorialStep]: 'Proceed to Verification',
+  [verificationStep]: 'Submit',
+};
 
 export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { matchedRequest: matchedRequestID } = useLocalSearchParams<DonationCreateSearchParams>();
 
-  const {
-    data: user,
-    isFetching: isAuthFetching,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useMeUser();
+  const { matchedRequest: matchedRequestID, step } =
+    useLocalSearchParams<DonationCreateSearchParams>();
+  const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
 
-  const profile = extractCollection(user?.profile?.value);
+  const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
+  const setDonationTutorialState = useTutorialStore((s) => s.setDonationState);
 
-  const {
-    form,
-    isLoading: isFormLoading,
-    isFetching: isFormFetching,
-    error: formError,
-  } = useCreateDonationForm({
-    user,
-    profile,
-    matchedRequest: matchedRequestID,
-  });
+  const form = useFormContext<DonationSchema>();
   //#endregion
 
   //#region Form State
-  const isLoading = isAuthLoading || isFormLoading;
-  const isFetching = isAuthFetching || isFormFetching;
-  const error = authError || formError;
   const formData = form.getValues();
-
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
 
-  async function onSubmit(data: DonationSchema) {
-    const createPromise = createDonation(data);
+  const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
+    [detailsStep]: <DonationDetailsForm matchedRequest={matchedRequestID} />,
+    [tutorialStep]: <MilkBagVerificationTutorial />,
+    [verificationStep]: <MilkBagVerification />,
+  };
 
-    toast.promise(createPromise, {
-      loading: `Submitting donation...`,
-      success: (res: { message: string }) => {
-        console.log(res.message, res);
-        return res.message;
-      },
-      error: (error) => extractErrorMessage(error),
-    });
+  //#region Handlers
+  const onSubmit = useCallback(
+    async (data: DonationSchema) => {
+      const createPromise = createDonation(data);
 
-    await createPromise;
+      toast.promise(createPromise, {
+        loading: `Submitting donation...`,
+        success: (res: { message: string }) => {
+          return res.message;
+        },
+        error: (error) => extractErrorMessage(error),
+      });
 
-    queryClient.invalidateQueries({
-      queryKey: COLLECTION_QUERY_KEY,
-    });
+      await createPromise;
 
-    router.replace('/map/explore');
+      queryClient.invalidateQueries({
+        queryKey: COLLECTION_QUERY_KEY,
+      });
+
+      router.replace('/map/explore');
+    },
+    [router, queryClient]
+  );
+
+  const submit = form.handleSubmit(onSubmit);
+
+  async function handleNext() {
+    switch (step) {
+      case detailsStep: {
+        const isValid = await form.trigger('details');
+        if (!isValid) {
+          toast.error('Please fix the errors before proceeding.');
+          return;
+        }
+
+        const updatedData = await createMilkBags(formData);
+        form.reset(updatedData);
+
+        if (tutorialDone) {
+          skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
+        } else {
+          nextPage();
+        }
+        return;
+      }
+
+      case tutorialStep:
+        setDonationTutorialState({ completed: true });
+        nextPage();
+        return;
+
+      default:
+        return;
+    }
   }
+
+  console.log('Current Step:', step);
 
   async function handleValidation() {
     const isValid = await form.trigger();
@@ -87,29 +131,35 @@ export default function CreateDonation() {
       throw new Error('Form validation failed');
     }
   }
-
-  if (!isLoading && error) {
-    const params: ErrorSearchParams = { message: error.message };
-    return <Redirect href={{ pathname: '/error', params }} />;
-  }
+  //#endregion
 
   return (
-    <FormProvider {...form}>
-      <Stack.Screen options={{ headerShown: true, title: 'Create Donation' }} />
+    <>
       <FormPreventBack />
+
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: DONATION_CREATE_STEPS[step]?.label || 'Create Donation',
+        }}
+      />
 
       <SafeArea safeTop={false}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <VStack space="lg">
-            <DonationDetailsForm isLoading={isLoading} matchedRequest={matchedRequestID} />
+            {renderFormMap[step]}
 
-            {!isLoading && (
-              <Box className="mx-5">
+            <Box className="mx-5">
+              {hasNextPage ? (
+                <Button onPress={handleNext}>
+                  <ButtonText>{buttonTextMap[step]}</ButtonText>
+                </Button>
+              ) : (
                 <ActionModal
                   triggerLabel="Submit"
                   action="primary"
                   onTriggerPress={handleValidation}
-                  onConfirm={form.handleSubmit(onSubmit)}
+                  onConfirm={submit}
                   isDisabled={isSubmitting}
                   title="Review Donation"
                   description={
@@ -122,70 +172,108 @@ export default function CreateDonation() {
                     </ScrollView>
                   }
                 />
-              </Box>
-            )}
+              )}
+            </Box>
           </VStack>
         </ScrollView>
       </SafeArea>
-      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
-    </FormProvider>
+    </>
   );
+}
+
+async function createMilkBags(data: DonationSchema) {
+  const apiClient = getApiClient();
+
+  const bags = data.details.bags;
+  const milkBags: DonationSchema['milkBags'] = {};
+
+  const defaultSelect: MilkBagsSelect = {
+    donor: true,
+    volume: true,
+    status: true,
+    code: true,
+    bagImage: true,
+    collectedAt: true,
+  };
+
+  await Promise.all(
+    bags.map(async ({ quantity, groupID, ...bagData }) => {
+      const docs: MilkBag[] = [];
+      const bagsToUpdate = data.milkBags[groupID];
+
+      if (bagsToUpdate?.length) {
+        const updatedBags = await apiClient.update({
+          collection: 'milkBags',
+          where: { id: { in: extractID(bagsToUpdate) } },
+          data: bagData,
+          select: defaultSelect,
+        });
+
+        docs.push(...updatedBags);
+      } else {
+        for (let i = 0; i < quantity; i++) {
+          const milkBagDoc = await apiClient.create({
+            depth: 3,
+            collection: 'milkBags',
+            data: {
+              ...bagData,
+              status: MILK_BAG_STATUS.DRAFT.value,
+              owner: { relationTo: 'individuals', value: data.donor },
+            },
+            select: defaultSelect,
+          });
+
+          docs.push(milkBagDoc);
+        }
+      }
+
+      milkBags[groupID] = docs.map((bag) => ({
+        ...bag,
+        donor: extractID(bag.donor),
+        bagImage: null, // Set null, since draft milk bags does not have an image
+      }));
+    })
+  );
+
+  data.milkBags = milkBags;
+
+  return data;
 }
 
 async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences, matchedRequest } = data;
+  const { details, donor, deliveryPreferences, recipient, milkBags } = data;
 
-  const { bags, image, ...restOfDetails } = details;
+  const { image, ...restOfDetails } = details;
 
   console.log('Creating donation with data:', data);
 
-  const milkBagDocs = (
-    await Promise.all(
-      bags.map(async ({ quantity, ...data }) => {
-        const docs: MilkBag[] = [];
-        for (let i = 0; i < quantity; i++) {
-          const milkBagDoc = await apiClient.create({
-            depth: 0,
-            collection: 'milkBags',
-            data: {
-              ...data,
-              status: 'AVAILABLE',
-              owner: { relationTo: 'individuals', value: data.donor },
-            },
-          });
-          docs.push(milkBagDoc);
-        }
-        return docs;
-      })
-    )
-  ).flat();
+  const milkBagIDs = Object.values(milkBags).flatMap((bags) => extractID(bags));
 
   const milkImageDoc = image && (await uploadImage('images', image));
 
-  const donationDoc = await apiClient.create({
-    collection: 'donations',
-    data: {
-      donor,
-      status: 'AVAILABLE',
-      details: {
-        ...restOfDetails,
-        bags: extractID(milkBagDocs),
-        milkSample: milkImageDoc && [extractID(milkImageDoc)],
+  try {
+    const donationDoc = await apiClient.create({
+      collection: 'donations',
+      data: {
+        donor,
+        status: 'AVAILABLE',
+        details: {
+          ...restOfDetails,
+          bags: milkBagIDs,
+          milkSample: milkImageDoc && [extractID(milkImageDoc)],
+        },
+        deliveryPreferences,
+        recipient,
       },
-      deliveryPreferences,
-    },
-  });
-
-  if (matchedRequest) {
-    const { requester } = await apiClient.updateByID({
-      collection: 'requests',
-      id: matchedRequest.id,
-      data: { details: { bags: extractID(milkBagDocs) } },
     });
-
-    const requesterName = (requester as Individual).displayName;
-    return { message: `Donation created for ${requesterName}!` };
+  } catch (error) {
+    if (milkImageDoc) {
+      await apiClient.deleteByID({
+        collection: 'images',
+        id: extractID(milkImageDoc),
+      });
+    }
   }
 
   return {

@@ -17,6 +17,7 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 
 import { DonationSchema } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
+import { randomUUID } from 'expo-crypto';
 
 import { AlertCircleIcon, MilkIcon, PlusIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -64,7 +65,13 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
 
   function handleAdd() {
     prevLength.current = fields.length;
-    append({ donor: profile!.id, collectedAt: new Date().toISOString(), volume: 20, quantity: 1 });
+    append({
+      donor: profile!.id,
+      collectedAt: new Date().toISOString(),
+      volume: 20,
+      quantity: 1,
+      groupID: randomUUID(),
+    });
   }
 
   function handleRemove(index: number) {

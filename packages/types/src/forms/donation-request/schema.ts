@@ -2,21 +2,37 @@ import * as z from 'zod/v4';
 
 import {
   COLLECTION_MODES,
+  MILK_BAG_STATUS,
   PREFERRED_STORAGE_TYPES,
   STORAGE_TYPES,
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
+import { User } from '../../payload-types';
 import { imageSchema } from '../file';
 import { textAreaSchema } from '../textarea';
 
+const recipientSchema = z.object({
+  relationTo: z.custom<NonNullable<User['profile']>['relationTo']>(),
+  value: z.uuid().nonempty('Required'),
+});
+
 export const milkBagSchema = z.object({
-  id: z.uuid().optional(),
+  id: z.uuid().nonempty('Required'),
   donor: z.uuid().nonempty('Required'),
   volume: z.number('Required').min(20, 'Atleast 20mL').positive(),
+  status: z.enum(Object.keys(MILK_BAG_STATUS), 'Required'),
+  code: z.string().optional().nullable(),
   collectedAt: z.iso.datetime('Required'),
-  quantity: z.number('Required').min(1, 'Atleast 1 bag').positive(),
+  bagImage: imageSchema.optional().nullable(),
 });
+
+export const createMilkBagSchema = z
+  .object({
+    quantity: z.number('Required').min(1, 'Atleast 1 bag').positive(),
+    groupID: z.uuid(),
+  })
+  .and(milkBagSchema.omit({ id: true, code: true, bagImage: true, status: true }));
 
 export const donationDetailsSchema = z.object({
   storageType: z.enum(
@@ -27,9 +43,9 @@ export const donationDetailsSchema = z.object({
     Object.values(COLLECTION_MODES).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
+  bags: z.array(createMilkBagSchema).min(1, 'Required at least one milk bag.'),
   image: imageSchema.optional().nullable(),
-  notes: textAreaSchema.describe('Additional Notes'),
+  notes: textAreaSchema,
 });
 
 export const requestDetailsSchema = z.object({
@@ -70,6 +86,8 @@ export const donationSchema = z
     donor: z.uuid().nonempty('Required'),
     matchedRequest: matchedRequestSchema.optional(),
     details: donationDetailsSchema,
+    recipient: recipientSchema.optional().nullable(),
+    milkBags: z.record(z.uuid(), z.array(milkBagSchema)),
   })
   .and(deliveryPreferencesSchema)
   .refine(
@@ -83,24 +101,8 @@ export const donationSchema = z
       return true;
     },
     {
-      message: 'Does not match the requested type',
+      error: 'Does not match the requested type',
       path: ['details', 'storageType'],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.matchedRequest?.volumeNeeded) {
-        const totalVolume = data.details.bags.reduce(
-          (sum, bag) => sum + bag.volume * bag.quantity,
-          0
-        );
-        return totalVolume >= data.matchedRequest.volumeNeeded;
-      }
-      return true;
-    },
-    {
-      message: 'Insufficient total milk volume',
-      path: ['details', 'bags'],
     }
   );
 

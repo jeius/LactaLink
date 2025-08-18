@@ -58,7 +58,7 @@ function createRoutesAndScenes() {
     { label: 'Milk Banks', value: 'milkBanks' },
   ];
 
-  const scenes: Record<RouteKey, React.FC<SceneProps>> = {};
+  const scenes: Record<string, React.FC<SceneProps>> = {};
 
   const sceneRoutes: Route[] = routes.map(({ label, value }) => {
     if (value === 'donations') {

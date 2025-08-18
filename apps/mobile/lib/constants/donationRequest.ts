@@ -6,3 +6,9 @@ export const VOLUME_PRESET = {
   300: { value: 300, label: '300 mL' },
   500: { value: 500, label: '500 mL' },
 };
+
+export const DONATION_CREATE_STEPS = {
+  details: { label: 'Details', value: 'details' },
+  'milkbag-tutorial': { label: 'Milkbag Verification Tutorial', value: 'milkbag-tutorial' },
+  'milkbag-verification': { label: 'Milkbag Verification', value: 'milkbag-verification' },
+} as const;
