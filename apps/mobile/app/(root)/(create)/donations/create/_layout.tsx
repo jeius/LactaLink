@@ -1,42 +1,41 @@
+import { Form } from '@/components/contexts/FormProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 import { ErrorSearchParams } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities/extractors';
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { FormProvider } from 'react-hook-form';
 
 export default function DonationCreateLayout() {
   const screenOptions = useScreenOptions({ animationType: 'slide' });
 
   const { matchedRequest: matchedRequestID } = useLocalSearchParams<DonationCreateSearchParams>();
 
-  const {
-    data: user,
-    isFetching: isAuthFetching,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useMeUser();
-
-  const profile = extractCollection(user?.profile?.value);
+  const meUser = useMeUser();
 
   const {
     form,
     isLoading: isFormLoading,
     isFetching: isFormFetching,
     error: formError,
+    isRefetching,
+    refetch,
   } = useCreateDonationForm({
-    user,
-    profile,
+    user: meUser.data,
     matchedRequest: matchedRequestID,
   });
 
-  const isLoading = isAuthLoading || isFormLoading;
-  const isFetching = isAuthFetching || isFormFetching;
-  const error = authError || formError;
+  const isLoading = meUser.isLoading || isFormLoading;
+  const isFetching = meUser.isFetching || isFormFetching;
+  const error = meUser.error || formError;
+  const isRefetchingData = meUser.isRefetching || isRefetching;
+
+  function handleRefresh() {
+    meUser.refetch();
+    refetch();
+  }
 
   if (!isLoading && error) {
     const params: ErrorSearchParams = { message: error.message };
@@ -44,10 +43,17 @@ export default function DonationCreateLayout() {
   }
 
   return (
-    <FormProvider {...form}>
+    <Form
+      {...form}
+      isFetching={isFetching}
+      isLoading={isLoading}
+      fetchError={error}
+      refreshing={isRefetchingData}
+      onRefresh={handleRefresh}
+    >
       <Stack screenOptions={screenOptions} />
 
-      <FetchingSpinner isFetching={isFetching || isLoading} />
-    </FormProvider>
+      <FetchingSpinner isFetching={isLoading} />
+    </Form>
   );
 }

@@ -1,12 +1,14 @@
 import { DonationReviewCard } from '@/components/cards/DonationReviewCard';
+import { useForm } from '@/components/contexts/FormProvider';
 import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
 import MilkBagVerification from '@/components/forms/donation-request/MilkBagVerification';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { ActionModal } from '@/components/modals';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import MilkBagVerificationTutorial from '@/components/tutorials/MilkBagVerification';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { usePagination } from '@/hooks/forms';
 
@@ -24,8 +26,8 @@ import { extractErrorMessage, extractID } from '@lactalink/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { ReactNode, useCallback } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { isEqualWith } from 'lodash';
+import { ReactNode, useCallback, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
@@ -53,7 +55,9 @@ export default function CreateDonation() {
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setDonationState);
 
-  const form = useFormContext<DonationSchema>();
+  const form = useForm<DonationSchema>();
+  const additionalFormState = form.additionalState;
+  const [isValidatingDetails, setValidatingDetails] = useState(false);
   //#endregion
 
   //#region Form State
@@ -62,7 +66,9 @@ export default function CreateDonation() {
   // #endregion
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
-    [detailsStep]: <DonationDetailsForm matchedRequest={matchedRequestID} />,
+    [detailsStep]: (
+      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequestID} />
+    ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,
   };
@@ -96,6 +102,7 @@ export default function CreateDonation() {
   async function handleNext() {
     switch (step) {
       case detailsStep: {
+        setValidatingDetails(true);
         const isValid = await form.trigger('details');
         if (!isValid) {
           toast.error('Please fix the errors before proceeding.');
@@ -110,6 +117,7 @@ export default function CreateDonation() {
         } else {
           nextPage();
         }
+        setValidatingDetails(false);
         return;
       }
 
@@ -122,8 +130,6 @@ export default function CreateDonation() {
         return;
     }
   }
-
-  console.log('Current Step:', step);
 
   async function handleValidation() {
     const isValid = await form.trigger();
@@ -145,13 +151,24 @@ export default function CreateDonation() {
       />
 
       <SafeArea safeTop={false}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="grow"
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={additionalFormState.refreshing}
+              onRefresh={additionalFormState.onRefresh}
+            />
+          }
+        >
           <VStack space="lg">
             {renderFormMap[step]}
 
             <Box className="mx-5">
               {hasNextPage ? (
-                <Button onPress={handleNext}>
+                <Button disabled={isValidatingDetails} onPress={handleNext}>
+                  {isValidatingDetails && <ButtonSpinner />}
                   <ButtonText>{buttonTextMap[step]}</ButtonText>
                 </Button>
               ) : (
@@ -199,7 +216,14 @@ async function createMilkBags(data: DonationSchema) {
   await Promise.all(
     bags.map(async ({ quantity, groupID, ...bagData }) => {
       const docs: MilkBag[] = [];
-      const bagsToUpdate = data.milkBags[groupID];
+      const existingBags = data.milkBags[groupID];
+
+      const bagsToUpdate = existingBags?.filter(
+        (bag) =>
+          !isEqualWith(bag, bagData, (a, b) => {
+            return a.donor === b.donor && a.volume === b.volume && a.collectedAt === b.collectedAt;
+          })
+      );
 
       if (bagsToUpdate?.length) {
         const updatedBags = await apiClient.update({
