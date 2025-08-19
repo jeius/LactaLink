@@ -1,9 +1,10 @@
-import { Text } from 'react-native';
 import { Toaster as Sonner } from 'sonner-native';
 import { useTheme } from './AppProvider/ThemeProvider';
 import { Spinner } from './ui/spinner';
 
+import { BanIcon } from 'lucide-react-native';
 import '../global.css';
+import { Icon } from './ui/icon';
 
 export const Toaster: React.FC = () => {
   const { theme } = useTheme();
@@ -20,9 +21,8 @@ export const Toaster: React.FC = () => {
       pauseWhenPageIsHidden
       theme={theme}
       icons={{
-        error: <Text>💥</Text>,
+        error: <Icon as={BanIcon} className="text-red-600" />,
         loading: <Spinner className="text-info-500" size={'small'} />,
-        success: <Text>🎉</Text>,
       }}
       toastOptions={{
         actionButtonStyle: {
