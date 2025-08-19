@@ -1,7 +1,8 @@
 import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
 import { getHexColor } from '@/lib/colors';
 import { FC } from 'react';
-import { RefreshControlProps, RefreshControl as RNRefreshControl } from 'react-native';
+import { RefreshControlProps } from 'react-native';
+import { RefreshControl as RNRefreshControl } from 'react-native-gesture-handler';
 import { useTheme } from './AppProvider/ThemeProvider';
 
 export const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, ...props }) => {
