@@ -39,7 +39,10 @@ export type CollectionWithCreatedBy = Extract<
 
 export type FileCollection = FilterUnion<Collection, { filename?: string | null }>;
 
-export type FileCollectionSlug = keyof Pick<Config['collections'], 'avatars' | 'images'>;
+export type FileCollectionSlug = keyof Pick<
+  Config['collections'],
+  'avatars' | 'images' | 'milk-bag-images'
+>;
 
 export type CollectionOperation = 'CREATE' | 'FIND' | 'UPDATE' | 'DELETE';
 
