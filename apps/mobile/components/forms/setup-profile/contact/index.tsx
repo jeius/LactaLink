@@ -1,13 +1,17 @@
-import { Card } from '@/components/ui/card';
-import { VStack } from '@/components/ui/vstack';
-
 import { FormField } from '@/components/FormField';
 import { HintAlert } from '@/components/HintAlert';
 import { AddressList } from '@/components/lists';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
+import { VStack } from '@/components/ui/vstack';
+
 import { useMeUser } from '@/hooks/auth/useAuth';
+
+import { MMKV_KEYS } from '@/lib/constants/storageKeys';
+import localStorage from '@/lib/localStorage';
+
 import { useRouter } from 'expo-router';
 import { PhoneIcon, PlusIcon } from 'lucide-react-native';
 import React from 'react';
@@ -17,8 +21,16 @@ export default function ProfileContact() {
   const { data: user } = useMeUser();
   const addresses = user?.addresses?.docs || [];
 
+  const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.ADDRESS.CREATE);
+  const [showHint, setShowHint] = React.useState(!hasViewedHint);
+
   function handleAdd() {
     router.push('/addresses/create');
+  }
+
+  function handleHintClose() {
+    localStorage.set(MMKV_KEYS.ALERT.ADDRESS.CREATE, true);
+    setShowHint(true);
   }
 
   return (
@@ -43,7 +55,11 @@ export default function ProfileContact() {
         </FormControlLabel>
 
         <Box className="mx-5 pb-2">
-          <HintAlert message="You can add more addresses." />
+          <HintAlert
+            visible={showHint}
+            message="You can add more addresses."
+            onClose={handleHintClose}
+          />
         </Box>
 
         <Box className="flex-1">
