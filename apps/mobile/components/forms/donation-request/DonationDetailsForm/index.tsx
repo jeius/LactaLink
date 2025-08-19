@@ -13,11 +13,13 @@ import MilkBagsField from './milkbags';
 interface DonationDetailsFormProps {
   isLoading?: boolean;
   matchedRequest?: string;
+  disableFields?: boolean;
 }
 
 export function DonationDetailsForm({
   isLoading: isLoadingProp,
   matchedRequest,
+  disableFields,
 }: DonationDetailsFormProps) {
   const hasMatchedRequest = Boolean(matchedRequest);
   const isLoading = hasMatchedRequest && isLoadingProp;
@@ -54,6 +56,7 @@ export function DonationDetailsForm({
           fieldType="button-group"
           options={Object.values(STORAGE_TYPES)}
           isLoading={isLoading}
+          isDisabled={disableFields}
         />
 
         <FormField
@@ -64,10 +67,11 @@ export function DonationDetailsForm({
           fieldType="button-group"
           options={Object.values(COLLECTION_MODES)}
           isLoading={isLoading}
+          isDisabled={disableFields}
         />
       </VStack>
 
-      <MilkBagsField isLoading={isLoading} />
+      <MilkBagsField isLoading={isLoading} isDisabled={disableFields} />
 
       <Box className="mx-5">
         <FormField
@@ -75,9 +79,9 @@ export function DonationDetailsForm({
           name="details.image"
           label="Cover Image"
           fieldType="image"
-          allowsMultipleSelection={false}
           helperText="Upload a cover image to feature your donation."
           isLoading={isLoading}
+          isDisabled={disableFields}
         />
       </Box>
 
@@ -90,6 +94,7 @@ export function DonationDetailsForm({
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
           isLoading={isLoading}
+          isDisabled={disableFields}
         />
       </Box>
 
@@ -99,6 +104,7 @@ export function DonationDetailsForm({
           name="deliveryPreferences"
           isLoading={isLoading}
           label="Delivery Preferences"
+          isDisabled={disableFields}
         />
       )}
     </VStack>

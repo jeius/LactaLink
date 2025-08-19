@@ -48,6 +48,7 @@ interface BaseProps<
   containerStyle?: StyleProp<ViewStyle>;
   labelClassName?: string;
   useBottomSheetInputs?: boolean;
+  isDisabled?: boolean;
 }
 
 type FormFieldProps<

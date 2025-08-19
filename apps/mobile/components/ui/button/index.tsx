@@ -5,7 +5,7 @@ import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
-import React from 'react';
+import React, { ComponentProps, FC } from 'react';
 import { ActivityIndicator, GestureResponderEvent, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
@@ -481,7 +481,28 @@ const ButtonText: React.ForwardRefExoticComponent<
   }
 );
 
-const ButtonSpinner = UIButton.Spinner;
+const ButtonSpinner: FC<ComponentProps<typeof UIButton.Spinner>> = ({
+  className,
+  size,
+  ...props
+}) => {
+  const { variant: parentVariant, size: parentSize, action: parentAction } = useStyleContext(SCOPE);
+
+  return (
+    <UIButton.Spinner
+      {...props}
+      className={buttonIconStyle({
+        parentVariants: {
+          size: parentSize,
+          variant: parentVariant,
+          action: parentAction,
+        },
+        className: className,
+      })}
+      size={size}
+    />
+  );
+};
 
 type IButtonIcon = React.ComponentPropsWithoutRef<typeof UIButton.Icon> &
   VariantProps<typeof buttonIconStyle> & {

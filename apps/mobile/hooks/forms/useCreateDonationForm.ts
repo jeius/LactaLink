@@ -1,18 +1,10 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  DonationSchema,
-  donationSchema,
-  Hospital,
-  Individual,
-  MilkBank,
-  Request,
-  User,
-} from '@lactalink/types';
+import { DonationSchema, donationSchema, Request, User } from '@lactalink/types';
 
 import { MILK_BAG_STATUS } from '@/lib/constants';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { randomUUID } from 'expo-crypto';
 import { debounce } from 'lodash';
 import { useEffect, useMemo } from 'react';
@@ -25,11 +17,11 @@ const storageKeyPrefix = 'donation-form';
 type Params = {
   matchedRequest?: string;
   user: User | null;
-  profile: Individual | Hospital | MilkBank | null;
   recipient?: User['profile'];
 };
 
-export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient }: Params) => {
+export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Params) => {
+  const profile = extractCollection(user?.profile?.value);
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
   const matchedRequestQuery = useFetchById(Boolean(matchedRequest), {
@@ -59,6 +51,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient
 
   const isLoading = matchedRequestQuery.isLoading || bagsQuery.isLoading;
   const isFetching = matchedRequestQuery.isFetching || bagsQuery.isFetching;
+  const isRefetching = matchedRequestQuery.isRefetching || bagsQuery.isRefetching;
   const error = matchedRequestQuery.error || bagsQuery.error;
 
   const matchedRequestDoc = matchedRequestQuery.data;
@@ -67,7 +60,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient
   const form = useForm({
     resolver: zodResolver(donationSchema),
     mode: 'onTouched',
-    defaultValues: getData({ user, profile }),
+    defaultValues: getData(user),
   });
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
@@ -93,7 +86,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient
         const newDetailsBags: DonationSchema['details']['bags'] = [];
         const newMilkBags: DonationSchema['milkBags'] = {};
 
-        for (const [key, bags] of Object.entries(segregatedBags)) {
+        for (const bags of Object.values(segregatedBags)) {
           if (bags.length === 0) continue;
 
           const groupID = randomUUID();
@@ -101,7 +94,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient
           newDetailsBags.push({
             donor: extractID(bags[0]!.donor),
             volume: bags[0]!.volume,
-            quantity: parseInt(key),
+            quantity: bags.length,
             collectedAt: bags[0]!.collectedAt,
             groupID,
           });
@@ -171,10 +164,16 @@ export const useCreateDonationForm = ({ matchedRequest, user, profile, recipient
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey]);
 
-  return { form, isLoading, isFetching, error };
+  function handleRefetch() {
+    matchedRequestQuery.refetch();
+    bagsQuery.refetch();
+  }
+
+  return { form, isLoading, isFetching, error, isRefetching, refetch: handleRefetch };
 };
 
-function getData({ user, profile }: Params): DonationSchema | undefined {
+function getData(user: User | null): DonationSchema | undefined {
+  const profile = extractCollection(user?.profile?.value);
   const storedData = getStoredData(user);
   const donor = profile?.id;
   return {

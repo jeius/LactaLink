@@ -58,6 +58,7 @@ export interface SelectBottomSheetProps<
   createLabel?: string;
   allowEdit?: boolean;
   allowCreate?: boolean;
+  isDisabled?: boolean;
 }
 
 export function SelectBottomSheet<
@@ -75,6 +76,7 @@ export function SelectBottomSheet<
   createLabel,
   allowEdit = false,
   allowCreate = false,
+  isDisabled,
 }: SelectBottomSheetProps<T, TSlug>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -257,7 +259,9 @@ export function SelectBottomSheet<
     if (triggerComponent) {
       return triggerComponent({
         onPress: () => {
-          setOpen(true);
+          if (!isDisabled) {
+            setOpen(true);
+          }
         },
       });
     }
@@ -271,7 +275,7 @@ export function SelectBottomSheet<
 
   return (
     <BottomSheet open={open} setOpen={setOpen}>
-      <BottomSheetTrigger disableAnimation>
+      <BottomSheetTrigger disabled={isDisabled} disableAnimation>
         <Trigger />
       </BottomSheetTrigger>
       <BottomSheetModalPortal

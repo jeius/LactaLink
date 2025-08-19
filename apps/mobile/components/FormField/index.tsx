@@ -146,7 +146,7 @@ function FormField<
   return (
     <FormControl
       isInvalid={invalid}
-      isDisabled={isSubmitting}
+      isDisabled={props.isDisabled || isSubmitting}
       className={containerStyle({ class: containerClassName })}
       style={style}
     >
@@ -178,7 +178,7 @@ function FormField<
               return isLoading ? (
                 <Skeleton className="h-28" />
               ) : (
-                <Textarea isDisabled={field.disabled} className={className}>
+                <Textarea isDisabled={props.isDisabled || field.disabled} className={className}>
                   <TextareaInput
                     {...rest}
                     value={field.value}
@@ -212,7 +212,11 @@ function FormField<
             case 'password': {
               const { className, variant = 'outline', ...restInputProps } = inputFieldProps || {};
               return (
-                <Input variant={variant} isDisabled={field.disabled} className={className}>
+                <Input
+                  variant={variant}
+                  isDisabled={props.isDisabled || field.disabled}
+                  className={className}
+                >
                   {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
                   <InputField
                     {...restInputProps}
@@ -238,7 +242,7 @@ function FormField<
                   icon={inputIcon}
                   value={field.value}
                   onBlur={field.onBlur}
-                  isDisabled={field.disabled}
+                  isDisabled={props.isDisabled || field.disabled}
                   placeholder={placeholder}
                   onChange={(val) => {
                     field.onChange(val);
@@ -253,7 +257,7 @@ function FormField<
                   {...optionsCardsProps}
                   value={field.value}
                   onBlur={field.onBlur}
-                  isDisabled={field.disabled}
+                  isDisabled={props.isDisabled || field.disabled}
                   containerClassName={containerClassName}
                   onChange={(val) => {
                     field.onChange(val);
@@ -285,7 +289,7 @@ function FormField<
                 <ComboBox
                   {...comboboxProps}
                   value={field.value}
-                  isDisabled={field.disabled}
+                  isDisabled={props.isDisabled || field.disabled}
                   placeholder={placeholder}
                   onChange={(val) => {
                     field.onChange(val);
@@ -299,7 +303,7 @@ function FormField<
                 <ImageUploadField
                   {...imageProps}
                   name={name}
-                  isDisabled={field.disabled || isSubmitting}
+                  isDisabled={props.isDisabled || field.disabled || isSubmitting}
                   value={field.value}
                   onChange={(val) => {
                     field.onChange(val);
@@ -323,7 +327,7 @@ function FormField<
               ) : useBottomSheetInputs ? (
                 <BottomSheetInput
                   variant={variant}
-                  isDisabled={field.disabled}
+                  isDisabled={props.isDisabled || field.disabled}
                   className={className}
                 >
                   {inputIcon && (
@@ -337,12 +341,16 @@ function FormField<
                     value={field.value}
                     onBlur={field.onBlur}
                     onChangeText={field.onChange}
-                    aria-disabled={field.disabled}
+                    aria-disabled={props.isDisabled || field.disabled}
                     placeholder={placeholder}
                   />
                 </BottomSheetInput>
               ) : (
-                <Input variant={variant} isDisabled={field.disabled} className={className}>
+                <Input
+                  variant={variant}
+                  isDisabled={props.isDisabled || field.disabled}
+                  className={className}
+                >
                   {inputIcon && (
                     <InputIcon as={inputIcon} className={`text-primary-500 ${iconMargin}`} />
                   )}
@@ -351,7 +359,7 @@ function FormField<
                     value={field.value}
                     onBlur={field.onBlur}
                     onChangeText={field.onChange}
-                    aria-disabled={field.disabled}
+                    aria-disabled={props.isDisabled || field.disabled}
                     placeholder={placeholder}
                   />
                 </Input>

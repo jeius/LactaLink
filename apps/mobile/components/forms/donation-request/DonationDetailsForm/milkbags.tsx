@@ -27,9 +27,10 @@ import { FlatList } from 'react-native-gesture-handler';
 
 interface MilkBagsFieldProps {
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 
-export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
+export default function MilkBagsField({ isLoading, isDisabled }: MilkBagsFieldProps) {
   const { data: user } = useMeUser();
   const profile = extractCollection(user?.profile?.value);
 
@@ -82,7 +83,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
   }
 
   return (
-    <FormControl isInvalid={!!error} className="w-full">
+    <FormControl isInvalid={!!error} isDisabled={isDisabled} className="w-full">
       <FormControlLabel className="mx-5">
         <FormControlLabelText>Milk Bags</FormControlLabelText>
       </FormControlLabel>
@@ -102,6 +103,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
           <RenderCard
             index={index}
             isLoading={isLoading}
+            isDisabled={isDisabled}
             onRemove={handleRemove}
             disableRemove={disableRemove}
             variant="filled"
@@ -120,6 +122,7 @@ export default function MilkBagsField({ isLoading }: MilkBagsFieldProps) {
 
       <Button
         animateOnPress={false}
+        isDisabled={isDisabled}
         size="sm"
         action="positive"
         variant="link"
@@ -138,6 +141,7 @@ interface RenderCardProps extends React.ComponentProps<typeof Card> {
   onRemove: (index: number) => void;
   disableRemove?: boolean;
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 function RenderCard({
   index: i,

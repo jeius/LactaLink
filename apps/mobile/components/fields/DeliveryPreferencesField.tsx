@@ -37,12 +37,19 @@ interface DeliveryPreferencesFieldProps<
   isLoading?: boolean;
   label?: string;
   helperText?: string;
+  isDisabled?: boolean;
 }
 
 export function DeliveryPreferencesField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({ name, isLoading, label, helperText }: DeliveryPreferencesFieldProps<TFieldValues, TName>) {
+>({
+  name,
+  isLoading,
+  label,
+  helperText,
+  isDisabled,
+}: DeliveryPreferencesFieldProps<TFieldValues, TName>) {
   const { data: user } = useMeUser();
   const selections = extractCollection(user?.deliveryPreferences?.docs || []);
 
@@ -84,6 +91,7 @@ export function DeliveryPreferencesField<
       >
         <DeliveryPreferenceCard
           isLoading={isLoading}
+          isDisabled={isDisabled || isSubmitting}
           preference={item}
           action={
             <HStack space="lg" className="grow justify-end">
@@ -106,7 +114,7 @@ export function DeliveryPreferencesField<
   }
 
   return (
-    <FormControl isInvalid={!!error} isDisabled={isSubmitting} className="px-5">
+    <FormControl isInvalid={!!error} isDisabled={isDisabled || isSubmitting} className="px-5">
       {label && (
         <FormControlLabel className="justify-between">
           <FormControlLabelText>{label}</FormControlLabelText>
@@ -143,8 +151,16 @@ export function DeliveryPreferencesField<
         allowMultipleSelection={true}
         selected={preferenceIDs}
         onChange={handleChange}
+        isDisabled={isDisabled}
         triggerComponent={(props) => (
-          <Button {...props} size="sm" variant="outline" action="positive" className="mt-4">
+          <Button
+            {...props}
+            isDisabled={isDisabled}
+            size="sm"
+            variant="outline"
+            action="positive"
+            className="mt-4"
+          >
             <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
             <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
           </Button>

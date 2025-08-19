@@ -300,11 +300,11 @@ export const BottomSheetTrigger = ({
   const { handleOpen } = useContext(BottomSheetContext);
   return (
     <AnimatedPressable
+      {...props}
       onPress={(e) => {
         props.onPress && props.onPress(e);
         handleOpen();
       }}
-      {...props}
       disableRipple={props.disableAnimation}
       className={bottomSheetTriggerStyle({
         className: className,
