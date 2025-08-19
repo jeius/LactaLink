@@ -2,6 +2,7 @@ import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-r
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { DeliveryPreference } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import { useRef } from 'react';
 import {
@@ -16,7 +17,6 @@ import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPrefere
 import { EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
 import { DraggableWrapper, DraggableWrapperRef } from '../DraggableWrapper';
-import { BasicList, BasicListItemProps } from '../lists/BasicList';
 import {
   FormControl,
   FormControlError,
@@ -29,6 +29,7 @@ import {
 } from '../ui/form-control';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
+import { VStack } from '../ui/vstack';
 
 interface DeliveryPreferencesFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -74,12 +75,13 @@ export function DeliveryPreferencesField<
     draggableRefs.current[id]?.dismiss();
   }
 
-  function BasicListItem({ item, index, isLoading }: BasicListItemProps<'delivery-preferences'>) {
+  function ListItem(item: DeliveryPreference, index: number) {
     const itemID = item.id;
 
     return (
       <DraggableWrapper
         disabled
+        key={fields[index]?.id || `${itemID}-${index}`}
         ref={(ref) => {
           if (ref) {
             draggableRefs.current[itemID] = ref;
@@ -128,14 +130,9 @@ export function DeliveryPreferencesField<
         </FormControlHelper>
       )}
 
-      <BasicList
-        slug="delivery-preferences"
-        data={preferences}
-        isLoading={isLoading}
-        ItemComponent={BasicListItem}
-        gap={8}
-        keyExtractor={(item, index) => fields[index]?.id || item.id}
-      />
+      <VStack space="md" className="mt-1">
+        {preferences.map(ListItem)}
+      </VStack>
 
       <FormControlError>
         <FormControlErrorIcon as={AlertCircleIcon} />
