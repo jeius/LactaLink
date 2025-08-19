@@ -71,6 +71,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               icon={MountainIcon}
               iconPosition="left"
               isLoading={isLoading}
+              isDisabled={isSubmitting}
             />
 
             <FormField
@@ -85,6 +86,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               iconPosition="left"
               where={province ? { province: { equals: province } } : undefined}
               isLoading={isLoading}
+              isDisabled={isSubmitting}
             />
 
             <FormField
@@ -99,6 +101,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               icon={MapPinHouseIcon}
               iconPosition="left"
               isLoading={isLoading}
+              isDisabled={isSubmitting}
               where={
                 cityMunicipality
                   ? { cityMunicipality: { equals: cityMunicipality } }
@@ -119,6 +122,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               textContentType="fullStreetAddress"
               useBottomSheetInputs
               isLoading={isLoading}
+              isDisabled={isSubmitting}
             />
 
             <FormField
@@ -132,6 +136,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               className="max-w-32"
               useBottomSheetInputs
               isLoading={isLoading}
+              isDisabled={isSubmitting}
             />
 
             <FormField
@@ -143,6 +148,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
               helperText="Set a label for this address to easily identify it."
               useBottomSheetInputs
               isLoading={isLoading}
+              isDisabled={isSubmitting}
             />
 
             <HStack space="xl" className="justify-between">
@@ -150,6 +156,7 @@ export function AddressMapBottomSheet({ onSavePress, isLoading }: AddressMapBott
                 value={`address-checkbox`}
                 isChecked={isDefault}
                 onChange={handleSetDefault}
+                isDisabled={isSubmitting}
               >
                 <CheckboxIndicator>
                   <CheckboxIcon as={CheckIcon} />

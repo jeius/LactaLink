@@ -62,11 +62,11 @@ const containerStyle = tva({
 });
 
 const labelIconStyle = tva({
-  base: 'text-primary-500',
+  base: 'text-typography-900',
 });
 
 const labelStyle = tva({
-  base: 'justify-between gap-2',
+  base: 'gap-2',
 });
 
 function FormField<
@@ -152,12 +152,6 @@ function FormField<
     >
       {label && (
         <FormControlLabel className={labelStyle({ className: labelClassName })}>
-          <FormControlLabelText>{label}</FormControlLabelText>
-          {imageProps?.showCount && Array.isArray(currentValue) && (
-            <FormControlLabelText size="sm" className="text-typography-700 font-sans">
-              {currentValue.length || 0}/{imageProps.selectionLimit}
-            </FormControlLabelText>
-          )}
           {labelIcon && (
             <Icon
               {...restOfLabelIconProps}
@@ -165,6 +159,12 @@ function FormField<
               size={labelIconSize}
               className={labelIconStyle({ class: labelIconClassName })}
             />
+          )}
+          <FormControlLabelText>{label}</FormControlLabelText>
+          {imageProps?.showCount && Array.isArray(currentValue) && (
+            <FormControlLabelText size="sm" className="text-typography-700 font-sans">
+              {currentValue.length || 0}/{imageProps.selectionLimit}
+            </FormControlLabelText>
           )}
         </FormControlLabel>
       )}
@@ -387,6 +387,7 @@ function FormField<
             action={isAllSelected ? 'negative' : 'positive'}
             variant={'outline'}
             onPress={handleSelectAll}
+            isDisabled={props.isDisabled || isSubmitting}
           >
             <ButtonIcon as={isAllSelected ? CopyMinusIcon : CheckCheckIcon} />
             <ButtonText>{isAllSelected ? 'Unselect All' : 'Select All'}</ButtonText>

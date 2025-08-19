@@ -13,7 +13,7 @@ import { ListRenderItem } from '@shopify/flash-list';
 import { Href, useRouter } from 'expo-router';
 import { Edit2Icon, PlusIcon } from 'lucide-react-native';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { PressableProps } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
@@ -49,7 +49,7 @@ export interface SelectBottomSheetProps<
 > {
   selected?: TValue<T> | null;
   onChange?: (selected: TValue<T>) => void;
-  triggerComponent?: (props: { onPress: (e?: GestureResponderEvent) => void }) => React.ReactNode;
+  triggerComponent?: (props: PressableProps) => React.ReactNode;
   allowMultipleSelection?: T;
   slug: TSlug;
   collections?: (string | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>)[];
@@ -258,10 +258,9 @@ export function SelectBottomSheet<
   function Trigger() {
     if (triggerComponent) {
       return triggerComponent({
+        disabled: isDisabled,
         onPress: () => {
-          if (!isDisabled) {
-            setOpen(true);
-          }
+          setOpen(true);
         },
       });
     }

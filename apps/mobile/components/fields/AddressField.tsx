@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC } from 'react';
 
 import {
   FormControl,
@@ -11,7 +11,7 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { AlertCircleIcon, Edit2Icon, PlusIcon } from 'lucide-react-native';
+import { AlertCircleIcon, Edit2Icon, LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
 import {
   ControllerProps,
   FieldPath,
@@ -19,25 +19,36 @@ import {
   FieldValues,
   useFormContext,
 } from 'react-hook-form';
+import { SvgProps } from 'react-native-svg';
 import { SelectBottomSheet, SelectItemProps } from '../bottom-sheets/SelectBottomSheet';
 import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { HStack } from '../ui/hstack';
+import { Icon } from '../ui/icon';
 
 interface AddressFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> {
   isLoading?: boolean;
+  isDisabled?: boolean;
   label?: string;
+  labelIcon?: LucideIcon | FC<SvgProps | LucideProps>;
   helperText?: string;
 }
 
 export function AddressField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({ isLoading, helperText, label, name }: AddressFieldProps<TFieldValues, TName>) {
+>({
+  isLoading,
+  helperText,
+  label,
+  name,
+  labelIcon,
+  isDisabled,
+}: AddressFieldProps<TFieldValues, TName>) {
   const { data: user } = useMeUser();
   const selections = user?.addresses?.docs || [];
 
@@ -71,6 +82,7 @@ export function AddressField<
         disableTapOnMap
         isLoading={isLoading}
         action={<Action id={item.id} />}
+        isDisabled={isDisabled || isSubmitting}
       />
     );
   }
@@ -78,7 +90,8 @@ export function AddressField<
   return (
     <FormControl isInvalid={!!addressFieldError} isDisabled={isSubmitting}>
       {label && (
-        <FormControlLabel>
+        <FormControlLabel className="gap-2">
+          {labelIcon && <Icon as={labelIcon} />}
           <FormControlLabelText>{label}</FormControlLabelText>
         </FormControlLabel>
       )}
@@ -95,6 +108,8 @@ export function AddressField<
           showMap
           isLoading={isLoading}
           action={<Action id={address} />}
+          className="mt-1"
+          isDisabled={isDisabled || isSubmitting}
         />
       )}
 
@@ -114,8 +129,16 @@ export function AddressField<
         selected={address}
         onChange={handleAddressChange}
         ItemComponent={Item}
+        isDisabled={isDisabled || isSubmitting}
         triggerComponent={(props) => (
-          <Button {...props} size="sm" variant="outline" action="positive" className="mt-4">
+          <Button
+            {...props}
+            isDisabled={isDisabled}
+            size="sm"
+            variant="outline"
+            action="positive"
+            className="mt-4"
+          >
             <ButtonIcon as={address ? Edit2Icon : PlusIcon} />
             <ButtonText>{address ? 'Change' : 'Add'} Address</ButtonText>
           </Button>

@@ -11,17 +11,19 @@ import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-import { ErrorSearchParams } from '@lactalink/types';
+import { DeliveryPreference, ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { Redirect, useRouter } from 'expo-router';
-import { CalendarDaysIcon, TruckIcon } from 'lucide-react-native';
+import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -31,7 +33,7 @@ export default function CreatePage() {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  const formData = form.getValues();
+  const formData = form.watch();
 
   const submit = form.handleSubmit(onSubmit);
 
@@ -85,6 +87,7 @@ export default function CreatePage() {
               containerClassName="gap-2"
               helperText="You can select multiple mode of delivery."
               allowMultipleSelection
+              isDisabled={isSubmitting}
             />
             <FormField
               control={form.control}
@@ -96,6 +99,7 @@ export default function CreatePage() {
               options={Object.values(DAYS)}
               containerClassName="gap-2"
               allowMultipleSelection
+              isDisabled={isSubmitting}
             />
 
             <AddressField
@@ -103,11 +107,16 @@ export default function CreatePage() {
               name="address"
               isLoading={isLoading}
               label="Preferred Address"
+              labelIcon={MapPinIcon}
+              isDisabled={isSubmitting}
             />
 
             <VStack>
-              <Text className="font-JakartaMedium mb-1">Name</Text>
-              <Card>
+              <HStack space="sm">
+                <Icon as={TagIcon} />
+                <Text className="font-JakartaMedium mb-1">Label</Text>
+              </HStack>
+              <Card isDisabled={isSubmitting}>
                 <FormField
                   control={form.control}
                   name="name"
@@ -124,7 +133,11 @@ export default function CreatePage() {
             <ActionModal
               title="Review Submit"
               description={
-                <DeliveryPreferenceCard preference={formData} variant="ghost" className="p-0" />
+                <DeliveryPreferenceCard
+                  preference={formData as DeliveryPreference}
+                  variant="ghost"
+                  className="p-0"
+                />
               }
               triggerLabel="Submit"
               onTriggerPress={handleValidation}

@@ -106,6 +106,7 @@ export function AddressCard({
             )}
             <MapView
               liteMode
+              cacheEnabled
               style={StyleSheet.absoluteFill}
               pointerEvents="none"
               toolbarEnabled={false}

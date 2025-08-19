@@ -8,7 +8,6 @@ export default function Layout() {
 
   return (
     <Stack
-      initialRouteName="index"
       screenOptions={{
         ...screenOptions,
         headerShown: true,
