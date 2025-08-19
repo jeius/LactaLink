@@ -10,6 +10,7 @@ export const MMKV_KEYS = {
     ADDRESS: {
       CREATE: 'create-address-hint',
     },
+    MILKBAG_VERIFICATION: 'milk-bag-verification-hint',
   },
   TUTORIAL_STATE: 'tutorial-state',
 };

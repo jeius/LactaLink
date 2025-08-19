@@ -21,7 +21,10 @@ export const milkBagSchema = z.object({
   id: z.uuid().nonempty('Required'),
   donor: z.uuid().nonempty('Required'),
   volume: z.number('Required').min(20, 'Atleast 20mL').positive(),
-  status: z.enum(Object.keys(MILK_BAG_STATUS), 'Required'),
+  status: z.enum(
+    Object.values(MILK_BAG_STATUS).map((item) => item.value),
+    'Required'
+  ),
   code: z.string().optional().nullable(),
   collectedAt: z.iso.datetime('Required'),
   bagImage: imageSchema.optional().nullable(),

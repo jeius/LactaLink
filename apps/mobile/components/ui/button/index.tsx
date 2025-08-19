@@ -185,29 +185,29 @@ const buttonTextStyle = tva({
       variant: 'outline',
       action: 'primary',
       class:
-        'text-primary-500 data-[hover=true]:text-primary-300 data-[active=true]:text-primary-300',
+        'text-primary-500 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-600',
     },
     {
       variant: 'outline',
       action: 'secondary',
       class:
-        'text-secondary-500 data-[hover=true]:text-secondary-300 data-[active=true]:text-secondary-300',
+        'text-secondary-500 data-[hover=true]:text-secondary-600 data-[active=true]:text-secondary-600',
     },
     {
       variant: 'outline',
       action: 'info',
-      class: 'text-info-500 data-[hover=true]:text-info-300 data-[active=true]:text-info-300',
+      class: 'text-info-500 data-[hover=true]:text-info-600 data-[active=true]:text-info-600',
     },
     {
       variant: 'outline',
       action: 'positive',
       class:
-        'text-success-500 data-[hover=true]:text-success-300 data-[active=true]:text-success-300',
+        'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-600',
     },
     {
       variant: 'outline',
       action: 'negative',
-      class: 'text-error-500 data-[hover=true]:text-error-300 data-[active=true]:text-error-300',
+      class: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-600',
     },
     {
       variant: 'link',
@@ -301,29 +301,29 @@ const buttonIconStyle = tva({
       variant: 'outline',
       action: 'primary',
       class:
-        'text-primary-500 data-[hover=true]:text-primary-800 data-[active=true]:text-primary-800',
+        'text-primary-500 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-600',
     },
     {
       variant: 'outline',
       action: 'secondary',
       class:
-        'text-secondary-500 data-[hover=true]:text-secondary-800 data-[active=true]:text-secondary-800',
+        'text-secondary-500 data-[hover=true]:text-secondary-600 data-[active=true]:text-secondary-600',
     },
     {
       variant: 'outline',
       action: 'info',
-      class: 'text-secondary-500 data-[hover=true]:text-info-800 data-[active=true]:text-info-800',
+      class: 'text-info-500 data-[hover=true]:text-info-600 data-[active=true]:text-info-600',
     },
     {
       variant: 'outline',
       action: 'positive',
       class:
-        'text-success-500 data-[hover=true]:text-success-800 data-[active=true]:text-success-800',
+        'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-600',
     },
     {
       variant: 'outline',
       action: 'negative',
-      class: 'text-error-500 data-[hover=true]:text-error-800 data-[active=true]:text-error-800',
+      class: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-600',
     },
     {
       variant: 'link',
