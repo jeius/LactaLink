@@ -16,8 +16,14 @@ export async function updateTheme(theme: Theme) {
   return await client.updatePreference(themeKey, theme);
 }
 
-export async function updateTutorialState(state: TutorialState, userID: string) {
+export async function updateTutorialState(state: TutorialState) {
   const client = getApiClient();
+  const user = await client.auth.getMeUser();
+
+  if (!user) return;
+
+  const userID = user.id;
+
   const tutorialKey = MMKV_KEYS.TUTORIAL_STATE.trim();
   const storageKey = tutorialKey + '-' + userID.trim();
 

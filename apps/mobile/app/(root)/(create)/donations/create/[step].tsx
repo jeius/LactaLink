@@ -39,7 +39,7 @@ const verificationStep = DONATION_CREATE_STEPS['milkbag-verification'].value;
 
 const buttonTextMap: Record<DonationCreateSteps, string> = {
   [detailsStep]: 'Verify Milk Bags',
-  [tutorialStep]: 'Proceed to Verification',
+  [tutorialStep]: 'Start Verification',
   [verificationStep]: 'Submit',
 };
 
@@ -62,7 +62,7 @@ export default function CreateDonation() {
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
 
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
-  const setDonationTutorialState = useTutorialStore((s) => s.setDonationState);
+  const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
 
   const form = useForm<DonationSchema>();
   const additionalFormState = form.additionalState;
@@ -166,7 +166,7 @@ export default function CreateDonation() {
       <SafeArea safeTop={false}>
         <ScrollView
           className="flex-1"
-          contentContainerClassName="grow"
+          contentContainerClassName="grow pb-4"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -175,7 +175,7 @@ export default function CreateDonation() {
             />
           }
         >
-          <VStack space="lg">
+          <VStack space="lg" className="flex-1 items-stretch justify-between">
             {renderFormMap[step]}
 
             <Box className="mx-5">
