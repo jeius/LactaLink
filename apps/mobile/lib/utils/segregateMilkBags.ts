@@ -1,10 +1,12 @@
 import { MilkBag } from '@lactalink/types';
 
-export function segregateMilkBags<T extends Pick<MilkBag, 'volume'>>(milkBags: T[]) {
+export function segregateMilkBags<T extends Pick<MilkBag, 'volume' | 'collectedAt'>>(
+  milkBags: T[]
+) {
   const segregated: Record<string, T[]> = {};
 
   milkBags.forEach((bag) => {
-    const key = String(bag.volume);
+    const key = String(bag.volume) + '-' + bag.collectedAt;
     if (!segregated[key]) {
       segregated[key] = [];
     }

@@ -6,7 +6,7 @@ import {
   FindManyResult,
   SelectFromCollectionSlug,
 } from '@lactalink/types';
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { UndefinedInitialDataOptions, useQuery, UseQueryResult } from '@tanstack/react-query';
 
 export type FetchOptions<
   TSlug extends CollectionSlug,
@@ -18,12 +18,17 @@ export function useFetchBySlug<
   TSelect extends SelectFromCollectionSlug<TSlug>,
 >(
   enabled: boolean,
-  options: FetchOptions<TSlug, TSelect> = {}
+  options: FetchOptions<TSlug, TSelect> = {},
+  queryOptions?: Omit<
+    UndefinedInitialDataOptions<FindManyResult<TSlug, TSelect, false> | null>,
+    'queryFn' | 'queryKey' | 'enabled'
+  >
 ): UseQueryResult<FindManyResult<TSlug, TSelect, false> | null> {
   const apiClient = useApiClient();
   const { collection } = options;
 
   return useQuery({
+    ...queryOptions,
     enabled,
     queryKey: [...COLLECTION_QUERY_KEY, collection, JSON.stringify(options)],
     queryFn: () => {
@@ -35,6 +40,6 @@ export function useFetchBySlug<
         ...options,
       });
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: queryOptions?.staleTime || 1000 * 60 * 5, // 5 minutes
   });
 }

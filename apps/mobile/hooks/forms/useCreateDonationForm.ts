@@ -24,31 +24,39 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   const profile = extractCollection(user?.profile?.value);
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
+  // #region Queries
   const matchedRequestQuery = useFetchById(Boolean(matchedRequest), {
     collection: 'requests',
     id: matchedRequest,
     populate: { users: { profile: true, profileType: true, role: true } },
   });
 
-  const bagsQuery = useFetchBySlug(Boolean(profile), {
-    collection: 'milkBags',
-    select: {
-      donor: true,
-      volume: true,
-      status: true,
-      code: true,
-      bagImage: true,
-      title: true,
-      collectedAt: true,
+  const bagsQuery = useFetchBySlug(
+    Boolean(profile),
+    {
+      collection: 'milkBags',
+      select: {
+        donor: true,
+        volume: true,
+        status: true,
+        code: true,
+        bagImage: true,
+        title: true,
+        collectedAt: true,
+      },
+      where: {
+        and: [
+          { status: { equals: MILK_BAG_STATUS.DRAFT.value } },
+          { donor: { equals: profile!.id } },
+        ],
+      },
+      sort: 'createdAt',
     },
-    where: {
-      and: [
-        { status: { equals: MILK_BAG_STATUS.DRAFT.value } },
-        { donor: { equals: profile!.id } },
-      ],
-    },
-  });
+    { refetchOnMount: 'always', refetchOnReconnect: 'always' }
+  );
+  // #endregion
 
+  // #region Form Setup
   const isLoading = matchedRequestQuery.isLoading || bagsQuery.isLoading;
   const isFetching = matchedRequestQuery.isFetching || bagsQuery.isFetching;
   const isRefetching = matchedRequestQuery.isRefetching || bagsQuery.isRefetching;
@@ -70,62 +78,70 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
 
   const debouncedSave = debounce((value: DeepPartial<DonationSchema>) => {
     donationStorage.set(storageKey, JSON.stringify(value));
-  }, 1000);
+  }, 500);
+  // #endregion
 
+  // #region Use Effects
   useEffect(() => {
-    if (!isLoading) {
-      let data = getValues();
+    const data = getValues();
 
-      if (preferences?.length) {
-        data.deliveryPreferences = extractID(preferences);
+    if (bagsQuery.isSuccess && draftMilkBags.length) {
+      const segregatedBags = segregateMilkBags(draftMilkBags);
+
+      const newDetailsBags: DonationSchema['details']['bags'] = [];
+      const newMilkBags: DonationSchema['milkBags'] = {};
+
+      for (const bags of Object.values(segregatedBags)) {
+        if (bags.length === 0) continue;
+
+        const groupID = randomUUID();
+
+        newDetailsBags.push({
+          donor: extractID(bags[0]!.donor),
+          volume: bags[0]!.volume,
+          quantity: bags.length,
+          collectedAt: bags[0]!.collectedAt,
+          groupID,
+        });
+
+        newMilkBags[groupID] = bags.map((bag) => ({
+          ...bag,
+          donor: extractID(bag.donor),
+          bagImage: null, // Set null, since draft milk bags does not have an image yet.
+        }));
       }
 
-      if (draftMilkBags.length) {
-        const segregatedBags = segregateMilkBags(draftMilkBags);
-
-        const newDetailsBags: DonationSchema['details']['bags'] = [];
-        const newMilkBags: DonationSchema['milkBags'] = {};
-
-        for (const bags of Object.values(segregatedBags)) {
-          if (bags.length === 0) continue;
-
-          const groupID = randomUUID();
-
-          newDetailsBags.push({
-            donor: extractID(bags[0]!.donor),
-            volume: bags[0]!.volume,
-            quantity: bags.length,
-            collectedAt: bags[0]!.collectedAt,
-            groupID,
-          });
-
-          newMilkBags[groupID] = bags.map((bag) => ({
-            ...bag,
-            donor: extractID(bag.donor),
-            bagImage: null, // Set null, since draft milk bags does not have an image yet.
-          }));
-        }
-
-        data.details.bags = newDetailsBags;
-        data.milkBags = newMilkBags;
-      }
-
-      if (recipient) {
-        data.recipient = {
-          relationTo: recipient.relationTo,
-          value: extractID(recipient.value),
-        };
-      }
-
-      data = updateDataOnMatchedRequest(data, matchedRequestDoc);
-
-      reset(data);
+      data.details.bags = newDetailsBags;
+      data.milkBags = newMilkBags;
     }
-  }, [isLoading, preferences, matchedRequestDoc, draftMilkBags, getValues, reset, recipient]);
+
+    reset(data);
+  }, [bagsQuery.isSuccess, draftMilkBags, getValues, reset]);
 
   useEffect(() => {
-    const subscription = form.watch((values) => {
-      debouncedSave(values);
+    let data = getValues();
+
+    if (preferences?.length && !data.deliveryPreferences?.length) {
+      data.deliveryPreferences = extractID(preferences);
+    }
+
+    if (recipient) {
+      data.recipient = {
+        relationTo: recipient.relationTo,
+        value: extractID(recipient.value),
+      };
+    }
+
+    if (matchedRequestDoc) {
+      data = updateDataOnMatchedRequest(data, matchedRequestDoc);
+    }
+
+    reset(data);
+  }, [preferences, matchedRequestDoc, getValues, reset, recipient]);
+
+  useEffect(() => {
+    const subscription = form.watch((data) => {
+      debouncedSave(data);
     });
 
     return () => {
@@ -137,17 +153,15 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   }, []);
 
   /**
-   * When the form is successfully submitted, clear the local storage
-   * and save the user preference to local storage.
+   * When the form is successfully submitted,
+   * and save the preferred values to local storage.
    */
   useEffect(() => {
     async function saveUserPreference() {
       if (isSubmitSuccessful) {
-        donationStorage.delete(storageKey);
-
         const data = getValues();
 
-        const values: DeepPartial<DonationSchema> = {
+        const preferredValues: DeepPartial<DonationSchema> = {
           details: {
             notes: data.details.notes,
             collectionMode: data.details.collectionMode,
@@ -157,21 +171,25 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
         };
 
         // Save the preffered values to local storage
-        donationStorage.set(storageKey, JSON.stringify(values));
+        donationStorage.set(storageKey, JSON.stringify(preferredValues));
       }
     }
 
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey]);
+  // #endregion
 
+  // #region Form Methods
   function handleRefetch() {
     matchedRequestQuery.refetch();
     bagsQuery.refetch();
   }
+  // #endregion
 
   return { form, isLoading, isFetching, error, isRefetching, refetch: handleRefetch };
 };
 
+// #region Helper Functions
 function getData(user: User | null): DonationSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
   const storedData = getStoredData(user);
@@ -204,33 +222,29 @@ function getStoredData(user: User | null): DeepPartial<DonationSchema> | undefin
   return raw && JSON.parse(raw);
 }
 
-function updateDataOnMatchedRequest(
-  data: DonationSchema,
-  matchedRequest: Request | null | undefined
-): DonationSchema {
-  if (matchedRequest) {
-    const storagePreference = matchedRequest.details.storagePreference || 'EITHER';
-    const volumeNeeded = matchedRequest.volumeNeeded;
-    const requesterID = extractID(matchedRequest.requester);
+function updateDataOnMatchedRequest(data: DonationSchema, matchedRequest: Request): DonationSchema {
+  const storagePreference = matchedRequest.details.storagePreference || 'EITHER';
+  const volumeNeeded = matchedRequest.volumeNeeded;
+  const requesterID = extractID(matchedRequest.requester);
 
-    data.matchedRequest = {
-      id: matchedRequest.id,
-      requester: requesterID,
-      volumeNeeded,
-      storagePreference,
-    };
+  data.matchedRequest = {
+    id: matchedRequest.id,
+    requester: requesterID,
+    volumeNeeded,
+    storagePreference,
+  };
 
-    data.recipient = { relationTo: 'individuals', value: requesterID };
-    data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
-    data.details.bags = [
-      {
-        collectedAt: new Date().toISOString(),
-        volume: volumeNeeded,
-        quantity: 1,
-        donor: data.donor,
-        groupID: randomUUID(),
-      },
-    ];
-  }
+  data.recipient = { relationTo: 'individuals', value: requesterID };
+  data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
+  data.details.bags = [
+    {
+      collectedAt: new Date().toISOString(),
+      volume: volumeNeeded,
+      quantity: 1,
+      donor: data.donor,
+      groupID: randomUUID(),
+    },
+  ];
   return data;
 }
+// #endregion

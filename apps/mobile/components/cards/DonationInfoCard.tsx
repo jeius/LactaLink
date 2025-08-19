@@ -112,7 +112,7 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
             {Object.entries(segregatedBags).map(([key, bags]) => (
               <Box key={key} className={`bg-primary-200 mb-2 mr-2 rounded-md px-2 py-1`}>
                 <Text size="xs" className="text-primary-900">
-                  {bags.length} x {key} mL
+                  {bags.length} x {key.split('-')[0] || 20} mL
                 </Text>
               </Box>
             ))}

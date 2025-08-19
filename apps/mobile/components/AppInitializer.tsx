@@ -58,7 +58,7 @@ export function AppInitializer({ children }: Props) {
     if (!location.isLoading) {
       console.log('✔️  Location is ready');
     }
-  }, [location]);
+  }, [location.isLoading]);
 
   useEffect(() => {
     if (!isThemeLoading) {
@@ -72,7 +72,7 @@ export function AppInitializer({ children }: Props) {
     } else if (auth.error) {
       console.error('❌  Error during authentication:', auth.error.message);
     }
-  }, [auth]);
+  }, [auth.isLoading, auth.error]);
 
   useEffect(() => {
     if (markers.isSuccess) {
@@ -80,7 +80,7 @@ export function AppInitializer({ children }: Props) {
     } else if (markers.isError) {
       console.error('❌  Error initializing markers index:', markers.error.message);
     }
-  }, [markers]);
+  }, [markers.isSuccess, markers.isError, markers.error]);
 
   useEffect(() => {
     if (tutorialState.isSuccess) {
@@ -88,7 +88,7 @@ export function AppInitializer({ children }: Props) {
     } else if (tutorialState.isError) {
       console.error('❌  Error initializing tutorial state:', tutorialState.error.message);
     }
-  }, [tutorialState]);
+  }, [tutorialState.isSuccess, tutorialState.isError, tutorialState.error]);
 
   // Hide the splash screen once the app is ready
   useEffect(() => {
