@@ -1,5 +1,6 @@
 import { LOCATION_UPDATES } from '@/lib/constants/taskNames';
 import { startBackgroundLocationUpdates, startForgroundLocationUpdates } from '@/lib/location';
+import { getLocationCoordinates, useLocationStore } from '@/lib/stores/locationStore';
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
@@ -37,6 +38,11 @@ export function useCurrentLocation(
 
       console.log('🧭 Getting current location...');
       const loc = await Location.getCurrentPositionAsync(options);
+
+      const locationStore = useLocationStore.getState();
+      locationStore.setLocation(loc);
+      locationStore.setCoordinates(getLocationCoordinates(loc));
+
       return loc;
     },
     refetchOnWindowFocus: true,
