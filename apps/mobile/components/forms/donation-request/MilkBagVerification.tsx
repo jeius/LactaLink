@@ -2,31 +2,35 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { useForm } from '@/components/contexts/FormProvider';
 import { HintAlert } from '@/components/HintAlert';
 import { Image } from '@/components/Image';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionHeader,
+  AccordionIcon,
+  AccordionItem,
+  AccordionTitleText,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
+import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { uploadImage } from '@/lib/api/file';
 
-import { MILK_BAG_STATUS, MMKV_KEYS } from '@/lib/constants';
+import { MMKV_KEYS } from '@/lib/constants';
 
 import localStorage from '@/lib/localStorage';
-import { useApiClient } from '@lactalink/api';
 
 import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/types';
-import {
-  extractCollection,
-  extractErrorMessage,
-  extractID,
-  formatDate,
-} from '@lactalink/utilities';
+import { extractErrorMessage, formatDate } from '@lactalink/utilities';
 
+import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
-import { CameraIcon, CheckIcon } from 'lucide-react-native';
+import { CameraIcon, ChevronDownIcon, ChevronUpIcon, ImageIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { toast } from 'sonner-native';
 
@@ -36,18 +40,64 @@ export default function MilkBagVerification() {
 
   const form = useForm<DonationSchema>();
 
-  const milkBags = form.getValues('milkBags');
+  const milkBags = form.watch('milkBags');
 
-  const bags = Object.values(milkBags).flat();
+  const bags = Object.entries(milkBags);
 
   function handleHintClose() {
     localStorage.set(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION, true);
     setShowHint(true);
   }
 
-  function renderCard(bag: MilkBagSchema, idx: number) {
-    function handleVerify(verifiedBag: MilkBagSchema) {}
-    return <MilkBagCard key={`${bag.id}-${idx}`} data={bag} />;
+  function renderCard([groupID, bags]: [string, MilkBagSchema[]]) {
+    const quantity = bags.length;
+    const volume = bags[0]?.volume || 0;
+    const collectedAt = bags[0]?.collectedAt || new Date().toISOString();
+    const date = formatDate(collectedAt);
+    const time = new Date(collectedAt).toLocaleTimeString('en', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    function handleOnCapture(index: number) {
+      return (image: ImageSchema) => {
+        form.setValue(`milkBags.${groupID}.${index}.bagImage`, image);
+      };
+    }
+
+    return (
+      <AccordionItem value={groupID} key={groupID}>
+        <AccordionHeader>
+          <AccordionTrigger className="px-0">
+            {({ isExpanded }: { isExpanded: boolean }) => {
+              return (
+                <>
+                  <AccordionTitleText className="font-JakartaSemiBold">
+                    {volume} mL, {time}, {date} {`(${quantity})`}
+                  </AccordionTitleText>
+                  {isExpanded ? (
+                    <AccordionIcon as={ChevronUpIcon} className="ml-3" />
+                  ) : (
+                    <AccordionIcon as={ChevronDownIcon} className="ml-3" />
+                  )}
+                </>
+              );
+            }}
+          </AccordionTrigger>
+        </AccordionHeader>
+        <AccordionContent>
+          <HStack space="md" className="flex-wrap items-center justify-center">
+            {bags.map((bag, bagIdx) => (
+              <MilkBagCard
+                key={`${bag.id}-${groupID}`}
+                data={bag}
+                onImageCapture={handleOnCapture(bagIdx)}
+              />
+            ))}
+          </HStack>
+        </AccordionContent>
+      </AccordionItem>
+    );
   }
 
   return (
@@ -57,95 +107,77 @@ export default function MilkBagVerification() {
         message="Ensure that you affix/write the code to the exact milk bag."
         onClose={handleHintClose}
       />
-      <HStack space="xl" className="flex-1 flex-wrap items-center justify-center">
+      <Accordion variant="unfilled" type="multiple" defaultValue={Object.keys(bags)}>
         {bags.map(renderCard)}
-      </HStack>
+      </Accordion>
     </VStack>
   );
 }
 
 interface MilkBagCardProps extends React.ComponentProps<typeof Card> {
   data: MilkBagSchema;
-  onVerify?: (verifiedBag: MilkBagSchema) => void;
-  isLoading?: boolean;
+  onImageCapture?: (image: ImageSchema) => void;
 }
-function MilkBagCard({ data, onVerify, isLoading: isLoadingProp, ...props }: MilkBagCardProps) {
-  const apiClient = useApiClient();
+function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const { themeColors } = useTheme();
 
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<ImageSchema>();
+  const [capturedImage, setCapturedImage] = useState(data.bagImage);
+  const [isModalOpen, setModalOpen] = useState(false);
 
-  const { code = 'Unavailable', volume, collectedAt, status } = data;
+  const { code = 'Unavailable', volume, collectedAt } = data;
 
   const bagImage = data.bagImage || capturedImage;
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
 
-  const verified = status === MILK_BAG_STATUS.AVAILABLE.value;
+  async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
+    if (!rawImage) return;
+
+    const fileExtension = rawImage.fileName?.split('.')?.[1] || 'jpeg';
+    const filename = `${code}-${volume}ml-image.${fileExtension}`;
+
+    const transformedImage: ImageSchema = {
+      url: rawImage.uri,
+      filename,
+      mimeType: rawImage.mimeType || 'image/jpeg',
+      width: rawImage.width,
+      height: rawImage.height,
+      alt: 'Milk Bag Image',
+      filesize: rawImage.fileSize,
+    };
+
+    if (capturedImage) {
+      deletePrev(capturedImage.url);
+    }
+
+    setCapturedImage(transformedImage);
+    onImageCapture?.(transformedImage);
+    setModalOpen(false);
+  }
 
   async function handleCapture() {
     try {
-      const rawImage = await pickFromCamera();
-
-      if (!rawImage) return;
-
-      const transformedImage: ImageSchema = {
-        url: rawImage.uri,
-        filename: rawImage.fileName || '',
-        mimeType: rawImage.type || 'image/jpeg',
-        width: rawImage.width,
-        height: rawImage.height,
-        alt: 'Milk Bag Image',
-        filesize: rawImage.fileSize,
-      };
-      setCapturedImage(transformedImage);
+      const image = await pickFromCamera();
+      handleChange(image);
     } catch (error) {
       toast.error(extractErrorMessage(error));
     }
   }
 
-  async function handleVerify() {
-    setIsVerifying(true);
-
+  async function handleUpload() {
     try {
-      if (!capturedImage) {
-        throw new Error('Please capture an image first.');
-      }
-
-      const imageDoc = await uploadImage('milk-bag-images', capturedImage);
-
-      const verifiedBag = await apiClient
-        .updateByID({
-          collection: 'milkBags',
-          id: data.id,
-          data: {
-            bagImage: imageDoc.id,
-            status: MILK_BAG_STATUS.AVAILABLE.value,
-          },
-          depth: 3,
-          select: {
-            bagImage: true,
-            code: true,
-            volume: true,
-            collectedAt: true,
-            donor: true,
-            status: true,
-          },
-        })
-        .finally(() => setIsVerifying(false));
-
-      const verifiedBagImage = extractCollection(verifiedBag.bagImage);
-
-      const transformedBag: MilkBagSchema = {
-        ...verifiedBag,
-        donor: extractID(verifiedBag.donor),
-        bagImage: capturedImage,
-      };
+      const image = await pickFromLibrary();
+      handleChange(image);
     } catch (error) {
       toast.error(extractErrorMessage(error));
-    } finally {
-      setIsVerifying(false);
+    }
+  }
+
+  async function deletePrev(uri: string) {
+    try {
+      await FileSystem.deleteAsync(uri, { idempotent: false });
+    } catch (error) {
+      console.warn('Failed to delete local file:', error);
     }
   }
 
@@ -193,24 +225,35 @@ function MilkBagCard({ data, onVerify, isLoading: isLoadingProp, ...props }: Mil
           Code: {code}
         </Text>
 
-        {!bagImage ? (
-          <Button variant="outline" onPress={handleCapture}>
-            <ButtonIcon as={CameraIcon} />
-            <ButtonText>Take a photo</ButtonText>
-          </Button>
-        ) : (
-          <Button
-            disabled={verified}
-            action="positive"
-            variant={verified ? 'solid' : 'outline'}
-            onPress={handleVerify}
-          >
-            {verified && <ButtonIcon as={CheckIcon} />}
-            {!verified && isVerifying && <ButtonSpinner />}
-            <ButtonText>{verified ? 'Verified' : 'Verify'}</ButtonText>
-          </Button>
-        )}
+        <Button variant="outline" onPress={() => setModalOpen(true)}>
+          <ButtonIcon as={CameraIcon} />
+          <ButtonText>{bagImage ? 'Retake photo' : 'Take a photo'}</ButtonText>
+        </Button>
       </VStack>
+
+      <Modal
+        isOpen={isModalOpen}
+        closeOnOverlayClick
+        onClose={() => {
+          setModalOpen(false);
+        }}
+      >
+        <ModalBackdrop />
+        <ModalContent>
+          <ModalBody className="my-auto">
+            <VStack space="lg">
+              <Button variant="outline" onPress={handleCapture}>
+                <ButtonIcon as={CameraIcon} />
+                <ButtonText>Open Camera</ButtonText>
+              </Button>
+              <Button onPress={handleUpload}>
+                <ButtonIcon as={ImageIcon} />
+                <ButtonText>Choose from library</ButtonText>
+              </Button>
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Card>
   );
 }
@@ -219,10 +262,27 @@ async function pickFromCamera() {
   const result = await ImagePicker.launchCameraAsync({
     allowsEditing: true,
     quality: 0.75,
-    aspect: [3, 2],
+    aspect: [1, 1],
     mediaTypes: 'images',
     allowsMultipleSelection: false,
-    cameraType: ImagePicker.CameraType.front,
+    cameraType: ImagePicker.CameraType.back,
+  });
+
+  if (!result.canceled && result.assets.length > 0) {
+    const image = result.assets[0]!;
+    return image;
+  }
+  return null;
+}
+
+async function pickFromLibrary() {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    allowsEditing: true,
+    quality: 0.75,
+    aspect: [1, 1],
+    mediaTypes: 'images',
+    allowsMultipleSelection: false,
+    cameraType: ImagePicker.CameraType.back,
   });
 
   if (!result.canceled && result.assets.length > 0) {

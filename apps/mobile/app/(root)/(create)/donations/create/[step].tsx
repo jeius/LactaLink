@@ -101,7 +101,7 @@ export default function CreateDonation() {
         queryKey: COLLECTION_QUERY_KEY,
       });
 
-      router.replace('/map/explore');
+      router.dismissTo('/account/donations');
     },
     [router, queryClient]
   );
@@ -145,7 +145,10 @@ export default function CreateDonation() {
 
   async function handleValidation() {
     const isValid = await form.trigger();
+
     if (!isValid) {
+      const milkBagsError = form.formState.errors.milkBags;
+      toast.error(extractErrorMessage(milkBagsError));
       throw new Error('Form validation failed');
     }
   }
@@ -309,7 +312,23 @@ async function createDonation(data: DonationSchema) {
 
   console.log('Creating donation with data:', data);
 
-  const milkBagIDs = Object.values(milkBags).flatMap((bags) => extractID(bags));
+  const milkBagDocs = await Promise.all(
+    Object.values(milkBags).flatMap((bags) =>
+      bags.map(async (bag) => {
+        const imageDoc = await uploadImage('milk-bag-images', bag.bagImage!);
+        return apiClient.updateByID({
+          collection: 'milkBags',
+          id: bag.id,
+          data: { bagImage: imageDoc.id },
+          depth: 3,
+          select: defaultMilkBagSelect,
+        });
+      })
+    )
+  ).catch((error) => {
+    console.error('Error verifying bags:', error);
+    throw error;
+  });
 
   const milkImageDoc = image && (await uploadImage('images', image));
 
@@ -321,7 +340,7 @@ async function createDonation(data: DonationSchema) {
         status: 'AVAILABLE',
         details: {
           ...restOfDetails,
-          bags: milkBagIDs,
+          bags: extractID(milkBagDocs),
           milkSample: milkImageDoc && [extractID(milkImageDoc)],
         },
         deliveryPreferences,
@@ -329,12 +348,25 @@ async function createDonation(data: DonationSchema) {
       },
     });
   } catch (error) {
-    if (milkImageDoc) {
-      await apiClient.deleteByID({
-        collection: 'images',
-        id: extractID(milkImageDoc),
-      });
-    }
+    await Promise.all([
+      async () => {
+        if (milkImageDoc) {
+          await apiClient.deleteByID({
+            collection: 'images',
+            id: extractID(milkImageDoc),
+          });
+        }
+      },
+      apiClient.update({
+        collection: 'milkBags',
+        where: { id: { in: extractID(milkBagDocs) } },
+        data: { bagImage: null },
+        depth: 3,
+        select: defaultMilkBagSelect,
+      }),
+    ]);
+
+    throw error;
   }
 
   return {
