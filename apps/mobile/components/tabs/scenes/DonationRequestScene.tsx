@@ -25,6 +25,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
   route,
   useBottomSheetList = false,
   onPress,
+  canViewImage = true,
 }: SceneProps<T>) {
   const res = useFetchNearest(route.key as 'donations' | 'requests');
 
@@ -58,6 +59,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
               data={item as Donation}
               showAvatar
               showMinDistance
+              isImageViewable={canViewImage}
               action={
                 <Link
                   href={{ pathname: '/requests/create', params }}
@@ -105,7 +107,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
           return null;
       }
     },
-    [onPress, route.key]
+    [canViewImage, onPress, route.key]
   );
 
   function EmptyComponent() {

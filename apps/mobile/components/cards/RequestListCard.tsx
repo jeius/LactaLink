@@ -11,7 +11,7 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
 import FastTimerIcon from '../icons/FastTimerIcon';
-import { Image } from '../Image';
+import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
@@ -30,6 +30,7 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
   showMinDistance?: boolean;
   hideFooter?: boolean;
   footerAction?: ReactNode;
+  isImageViewable?: boolean;
 }
 
 export function RequestListCard(props: RequestListCardProps) {
@@ -63,6 +64,7 @@ function CardContent({
   showMinDistance,
   footerAction,
   hideFooter,
+  isImageViewable,
 }: MarkKeyRequired<RequestListCardProps, 'data'>) {
   const { themeColors, theme } = useTheme();
   const locationCoords = useLocationStore((s) => s.coordinates);
@@ -90,12 +92,9 @@ function CardContent({
           style={{ backgroundColor: fillColor }}
         >
           {imageUrl ? (
-            <Image
-              recyclingKey={imageUrl}
-              source={{ uri: imageUrl }}
-              alt="Recipient Image"
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
+            <SingleImageViewer
+              disabled={!isImageViewable}
+              image={{ uri: imageUrl, blurHash: image.blurHash, alt: image.alt }}
             />
           ) : (
             <Text size="xs" className="my-auto text-center">

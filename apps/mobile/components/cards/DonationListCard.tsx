@@ -9,7 +9,7 @@ import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
-import { Image } from '../Image';
+import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
@@ -28,6 +28,7 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   showMinDistance?: boolean;
   hideFooter?: boolean;
   footerAction?: ReactNode;
+  isImageViewable?: boolean;
 }
 
 export function DonationListCard(props: DonationListCardProps) {
@@ -71,6 +72,7 @@ function CardContent({
   footerAction,
   hideFooter,
   showMinDistance,
+  isImageViewable = true,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
   const { themeColors } = useTheme();
   const locationCoords = useLocationStore((s) => s.coordinates);
@@ -100,13 +102,9 @@ function CardContent({
           style={{ backgroundColor: fillColor }}
         >
           {imageUrl ? (
-            <Image
-              recyclingKey={imageUrl}
-              source={{ uri: imageUrl }}
-              alt="Milk sample"
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-              placeholder={{ blurhash }}
+            <SingleImageViewer
+              disabled={!isImageViewable}
+              image={{ uri: imageUrl, blurHash: blurhash, alt: image.alt }}
             />
           ) : (
             <Text size="xs" className="my-auto text-center">

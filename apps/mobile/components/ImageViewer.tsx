@@ -58,12 +58,43 @@ export function ImageViewer({ images, initialIndex = 0, contentFit = 'cover' }: 
           renderItem={renderItem}
           extraData={{ width, height }}
           initialScrollIndex={initialIndex}
-          estimatedItemSize={width}
-          estimatedListSize={{ height, width }}
           pagingEnabled
         />
       </Box>
     </Galeria>
+  );
+}
+
+interface SingleImageViewerProps
+  extends Omit<ImageViewerProps, 'initialIndex' | 'images'>,
+    ComponentProps<typeof Box> {
+  disabled?: boolean;
+  image: { uri: string; blurHash?: string | null; alt?: string | null };
+}
+export function SingleImageViewer({
+  image,
+  contentFit,
+  disabled = false,
+  ...props
+}: SingleImageViewerProps) {
+  const backgroundColor = getHexColor('light', 'background', 800)?.toString();
+
+  return (
+    <Box {...props} pointerEvents={disabled ? 'none' : 'auto'}>
+      <Galeria urls={[image.uri]}>
+        <Galeria.Image style={{ backgroundColor }}>
+          <Image
+            source={src(image.uri)}
+            recyclingKey={image.uri}
+            placeholder={{ blurhash: image.blurHash || BLUR_HASH }}
+            style={{ width: '100%', height: '100%' }}
+            contentFit={contentFit}
+            alt={image.alt || 'Image'}
+            accessibilityLabel={image.alt || 'Image'}
+          />
+        </Galeria.Image>
+      </Galeria>
+    </Box>
   );
 }
 

@@ -5,4 +5,5 @@ export interface SceneProps<T = unknown> {
   jumpTo: (key: string) => void;
   useBottomSheetList?: boolean;
   onPress?: (data: T) => void;
+  canViewImage?: boolean;
 }
