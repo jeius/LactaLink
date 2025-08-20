@@ -7,13 +7,16 @@ import { RefreshButton } from '@/components/RefreshButton';
 import { RefreshControl } from '@/components/RefreshControl';
 import { BottomSheetFlashList } from '@/components/ui/bottom-sheet';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { getIconAsset } from '@/lib/stores';
+import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
 import { formatKebab, generatePlaceHolders } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { Link } from 'expo-router';
 import { capitalize } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import { SceneProps } from './types';
@@ -42,13 +45,61 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
       const isLoading = item.id.includes('placeholder');
 
       switch (route.key) {
-        case 'donations':
-          return (
-            <DonationListCard onPress={onPress} isLoading={isLoading} data={item as Donation} />
-          );
+        case 'donations': {
+          const params: RequestSearchParams = {
+            matchedDonation: item.id,
+          };
 
-        case 'requests':
-          return <RequestListCard onPress={onPress} isLoading={isLoading} data={item as Request} />;
+          return (
+            <DonationListCard
+              //@ts-expect-error Generic type mismatch
+              onPress={onPress}
+              isLoading={isLoading}
+              data={item as Donation}
+              showAvatar
+              showMinDistance
+              action={
+                <Link
+                  href={{ pathname: '/requests/create', params }}
+                  onPress={(e) => e.stopPropagation()}
+                  asChild
+                >
+                  <Button size="sm">
+                    <ButtonText>Request</ButtonText>
+                  </Button>
+                </Link>
+              }
+            />
+          );
+        }
+
+        case 'requests': {
+          const params: DonationCreateSearchParams = {
+            matchedRequest: item.id,
+          };
+
+          return (
+            <RequestListCard
+              //@ts-expect-error Generic type mismatch
+              onPress={onPress}
+              isLoading={isLoading}
+              data={item as Request}
+              showAvatar
+              showMinDistance
+              action={
+                <Link
+                  href={{ pathname: '/donations/create', params }}
+                  onPress={(e) => e.stopPropagation()}
+                  asChild
+                >
+                  <Button size="sm">
+                    <ButtonText>Donate</ButtonText>
+                  </Button>
+                </Link>
+              }
+            />
+          );
+        }
 
         default:
           return null;
@@ -82,6 +133,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
 
   return useBottomSheetList ? (
     <BottomSheetFlashList
+      //@ts-expect-error Generic type mismatch
       data={res.isLoading ? placeholders : data}
       renderItem={renderItem}
       keyExtractor={(item, index) => `${item.id}-${index}`}
@@ -96,6 +148,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
     />
   ) : (
     <FlashList
+      //@ts-expect-error Generic type mismatch
       data={res.isLoading ? placeholders : data}
       renderItem={renderItem}
       keyExtractor={(item, index) => `${item.id}-${index}`}

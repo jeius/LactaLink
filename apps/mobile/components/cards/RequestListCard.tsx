@@ -1,13 +1,15 @@
-import { getHexColor } from '@/lib/colors';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
+import { useLocationStore } from '@/lib/stores/locationStore';
+import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { MarkKeyRequired, Request } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import { MilkIcon, PackageIcon } from 'lucide-react-native';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
-import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import { ProfileAvatar } from '../Avatar';
+import BasicLocationPin from '../icons/BasicLocationPin';
 import FastTimerIcon from '../icons/FastTimerIcon';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
@@ -24,6 +26,10 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
   isLoading?: boolean;
   action?: ReactNode;
   onPress?: (data: Request) => void;
+  showAvatar?: boolean;
+  showMinDistance?: boolean;
+  hideFooter?: boolean;
+  footerAction?: ReactNode;
 }
 
 export function RequestListCard(props: RequestListCardProps) {
@@ -50,20 +56,31 @@ export function RequestListCard(props: RequestListCardProps) {
   );
 }
 
-function CardContent({ data, action }: MarkKeyRequired<RequestListCardProps, 'data'>) {
-  const { theme } = useTheme();
+function CardContent({
+  data,
+  action,
+  showAvatar,
+  showMinDistance,
+  footerAction,
+  hideFooter,
+}: MarkKeyRequired<RequestListCardProps, 'data'>) {
+  const { themeColors, theme } = useTheme();
+  const locationCoords = useLocationStore((s) => s.coordinates);
 
-  const fillColor = getHexColor(theme, 'tertiary', 50)?.toString();
-  const strokeColor = getHexColor(theme, 'tertiary', 700)?.toString();
+  const fillColor = themeColors.tertiary[50];
+  const strokeColor = themeColors.tertiary[700];
 
-  const { details, volumeNeeded, initialVolumeNeeded, volumeFulfilled } = data;
+  const { details, volumeNeeded } = data;
   const { urgency, storagePreference } = details;
+  const requester = extractCollection(data.requester);
 
   const image = extractCollection(details.image);
   const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
 
-  const calculatedVolumePercentage =
-    ((volumeFulfilled || 0) / (initialVolumeNeeded || volumeNeeded)) * 100;
+  const minDistance = useMemo(() => {
+    const preferences = extractCollection(data?.deliveryPreferences);
+    return getMinDistance(locationCoords, preferences);
+  }, [locationCoords, data.deliveryPreferences]);
 
   return (
     <VStack space="sm" className="items-start justify-start">
@@ -115,19 +132,35 @@ function CardContent({ data, action }: MarkKeyRequired<RequestListCardProps, 'da
         </VStack>
 
         {action && (
-          <VStack space="sm" className="flex-shrink-0 items-center justify-between">
+          <VStack space="sm" className="flex-shrink-0 items-center justify-center">
             {action}
           </VStack>
         )}
       </HStack>
 
-      <Divider />
-      <AnimatedProgress
-        size="sm"
-        orientation="horizontal"
-        value={calculatedVolumePercentage}
-        hidden={false}
-      />
+      {!hideFooter && (
+        <>
+          <Divider />
+
+          <HStack space="sm" className="w-full items-stretch justify-between">
+            {showAvatar && (
+              <HStack space="sm" className="items-center">
+                <ProfileAvatar size="sm" profile={requester} />
+                <Text size="xs" className="font-JakartaMedium text-typography-800">
+                  {requester?.displayName}
+                </Text>
+              </HStack>
+            )}
+            {footerAction}
+            {showMinDistance && minDistance && (
+              <HStack space="xs" className="items-center">
+                <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                <Text size="xs">{minDistance.toFixed(2)} km</Text>
+              </HStack>
+            )}
+          </HStack>
+        </>
+      )}
     </VStack>
   );
 }

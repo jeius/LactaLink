@@ -1,12 +1,14 @@
-import { getHexColor } from '@/lib/colors';
-import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { BLUR_HASH, COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { useLocationStore } from '@/lib/stores/locationStore';
+import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { Donation, MarkKeyRequired } from '@lactalink/types';
 import { extractCollection } from '@lactalink/utilities';
 import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
-import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import { ProfileAvatar } from '../Avatar';
+import BasicLocationPin from '../icons/BasicLocationPin';
 import { Image } from '../Image';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
@@ -22,10 +24,14 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   isLoading?: boolean;
   action?: ReactNode;
   onPress?: (data: Donation) => void;
+  showAvatar?: boolean;
+  showMinDistance?: boolean;
+  hideFooter?: boolean;
+  footerAction?: ReactNode;
 }
 
 export function DonationListCard(props: DonationListCardProps) {
-  const { data, isLoading, onPress, ...cardProps } = props;
+  const { data, isLoading, onPress, showAvatar, showMinDistance, ...cardProps } = props;
 
   if (isLoading || data === undefined) {
     return (
@@ -38,29 +44,53 @@ export function DonationListCard(props: DonationListCardProps) {
   return onPress ? (
     <AnimatedPressable className="overflow-hidden rounded-2xl" onPress={() => onPress(data)}>
       <Card {...cardProps}>
-        <CardContent {...props} data={data} />
+        <CardContent
+          {...props}
+          data={data}
+          showAvatar={showAvatar}
+          showMinDistance={showMinDistance}
+        />
       </Card>
     </AnimatedPressable>
   ) : (
     <Card {...cardProps}>
-      <CardContent {...props} data={data} />
+      <CardContent
+        {...props}
+        data={data}
+        showAvatar={showAvatar}
+        showMinDistance={showMinDistance}
+      />
     </Card>
   );
 }
 
-function CardContent({ data, action }: MarkKeyRequired<DonationListCardProps, 'data'>) {
-  const { theme } = useTheme();
+function CardContent({
+  data,
+  action,
+  showAvatar,
+  footerAction,
+  hideFooter,
+  showMinDistance,
+}: MarkKeyRequired<DonationListCardProps, 'data'>) {
+  const { themeColors } = useTheme();
+  const locationCoords = useLocationStore((s) => s.coordinates);
 
-  const fillColor = getHexColor(theme, 'primary', 50)?.toString();
-  const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
+  const fillColor = themeColors.primary[50];
+  const strokeColor = themeColors.primary[700];
 
-  const { details, volume, remainingVolume } = data;
+  const { details, remainingVolume } = data;
   const { collectionMode, storageType } = details;
 
   const milkSamples = extractCollection(details.milkSample);
   const image = milkSamples && milkSamples.length ? milkSamples[0] : null;
-  const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
-  const availableVolumePercentage = (remainingVolume || 0 / (volume || 0)) * 100;
+  const imageUrl = image?.sizes?.thumbnail?.url || image?.sizes?.small?.url || image?.url;
+  const blurhash = image?.blurHash || BLUR_HASH;
+  const donor = extractCollection(data.donor);
+
+  const minDistance = useMemo(() => {
+    const preferences = extractCollection(data?.deliveryPreferences);
+    return getMinDistance(locationCoords, preferences);
+  }, [locationCoords, data.deliveryPreferences]);
 
   return (
     <VStack space="sm" className="items-start justify-start">
@@ -76,6 +106,7 @@ function CardContent({ data, action }: MarkKeyRequired<DonationListCardProps, 'd
               alt="Milk sample"
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"
+              placeholder={{ blurhash }}
             />
           ) : (
             <Text size="xs" className="my-auto text-center">
@@ -108,19 +139,35 @@ function CardContent({ data, action }: MarkKeyRequired<DonationListCardProps, 'd
         </VStack>
 
         {action && (
-          <VStack space="sm" className="flex-shrink-0 items-center justify-between">
+          <VStack space="sm" className="flex-shrink-0 items-center justify-center">
             {action}
           </VStack>
         )}
       </HStack>
 
-      <Divider />
-      <AnimatedProgress
-        size="sm"
-        orientation="horizontal"
-        value={availableVolumePercentage}
-        hidden={false}
-      />
+      {!hideFooter && (
+        <>
+          <Divider />
+
+          <HStack space="sm" className="w-full items-stretch justify-between">
+            {showAvatar && (
+              <HStack space="sm" className="items-center">
+                <ProfileAvatar size="sm" profile={donor} />
+                <Text size="xs" className="font-JakartaMedium text-typography-800">
+                  {donor?.displayName}
+                </Text>
+              </HStack>
+            )}
+            {footerAction}
+            {showMinDistance && minDistance && (
+              <HStack space="xs" className="items-center">
+                <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                <Text size="xs">{minDistance.toFixed(2)} km</Text>
+              </HStack>
+            )}
+          </HStack>
+        </>
+      )}
     </VStack>
   );
 }

@@ -81,7 +81,7 @@ export function InfiniteList<
       return paginatedData.pages.flatMap((page) => page.docs);
     } else if (isLoading) {
       return Array.from(
-        { length: 100 },
+        { length: 20 },
         (_, index) =>
           ({
             id: `placeholder-${index}-${randomUUID()}`,

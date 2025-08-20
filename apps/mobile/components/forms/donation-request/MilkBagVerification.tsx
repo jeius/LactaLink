@@ -31,7 +31,7 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { CameraIcon, ChevronDownIcon, ChevronUpIcon, ImageIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner-native';
 
 export default function MilkBagVerification() {
@@ -130,6 +130,13 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
 
+  useEffect(() => {
+    return () => {
+      deletePrev();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
     if (!rawImage) return;
 
@@ -146,10 +153,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
       filesize: rawImage.fileSize,
     };
 
-    if (capturedImage) {
-      deletePrev(capturedImage.url);
-    }
-
+    deletePrev();
     setCapturedImage(transformedImage);
     onImageCapture?.(transformedImage);
     setModalOpen(false);
@@ -173,9 +177,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
     }
   }
 
-  async function deletePrev(uri: string) {
+  async function deletePrev() {
     try {
-      await FileSystem.deleteAsync(uri, { idempotent: false });
+      if (capturedImage) {
+        await FileSystem.deleteAsync(capturedImage.url, { idempotent: false });
+      }
     } catch (error) {
       console.warn('Failed to delete local file:', error);
     }
