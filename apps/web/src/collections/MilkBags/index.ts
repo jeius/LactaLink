@@ -10,6 +10,7 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
 import { initializeMilkBag } from './hooks/initialize';
+import { deleteRemovedImage, updateStatus } from './hooks/update';
 import { updateOwnershipHistory } from './hooks/updateOwnershipHistory';
 
 const REASON_OPTIONS = MILK_BAG_OWNERSHIP_TRANSFER_REASONS;
@@ -37,7 +38,9 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       generateCode,
       generateTitle,
       updateOwnershipHistory,
+      updateStatus,
     ],
+    afterChange: [deleteRemovedImage],
   },
   indexes: [{ fields: ['status', 'expiresAt'] }],
   fields: [
