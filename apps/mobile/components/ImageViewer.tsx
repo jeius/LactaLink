@@ -3,7 +3,8 @@ import { BLUR_HASH } from '@/lib/constants';
 import { Galeria } from '@nandorojo/galeria';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import React, { ComponentProps, useCallback, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { GestureResponderEvent, useWindowDimensions } from 'react-native';
+import { AnimatedPressable } from './animated/pressable';
 import { Image } from './Image';
 import { Box } from './ui/box';
 
@@ -67,7 +68,7 @@ export function ImageViewer({ images, initialIndex = 0, contentFit = 'cover' }: 
 
 interface SingleImageViewerProps
   extends Omit<ImageViewerProps, 'initialIndex' | 'images'>,
-    ComponentProps<typeof Box> {
+    ComponentProps<typeof AnimatedPressable> {
   disabled?: boolean;
   image: { uri: string; blurHash?: string | null; alt?: string | null };
 }
@@ -79,8 +80,19 @@ export function SingleImageViewer({
 }: SingleImageViewerProps) {
   const backgroundColor = getHexColor('light', 'background', 800)?.toString();
 
+  function handlePress(e: GestureResponderEvent) {
+    e.stopPropagation();
+    props.onPress?.(e);
+  }
+
   return (
-    <Box {...props} pointerEvents={disabled ? 'none' : 'auto'}>
+    <AnimatedPressable
+      {...props}
+      pointerEvents={disabled ? 'none' : 'auto'}
+      disableAnimation={props.disableAnimation || true}
+      onPress={handlePress}
+      android_disableSound
+    >
       <Galeria urls={[image.uri]}>
         <Galeria.Image style={{ backgroundColor }}>
           <Image
@@ -94,7 +106,7 @@ export function SingleImageViewer({
           />
         </Galeria.Image>
       </Galeria>
-    </Box>
+    </AnimatedPressable>
   );
 }
 

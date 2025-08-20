@@ -64,12 +64,5 @@ function DonReqScene(props: SceneProps) {
     }
   }
 
-  return (
-    <DonationRequestScene
-      {...props}
-      onPress={handlePress}
-      useBottomSheetList={true}
-      canViewImage={false}
-    />
-  );
+  return <DonationRequestScene {...props} onPress={handlePress} useBottomSheetList={true} />;
 }
