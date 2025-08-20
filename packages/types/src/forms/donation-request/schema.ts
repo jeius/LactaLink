@@ -107,6 +107,21 @@ export const donationSchema = z
       error: 'Does not match the requested type',
       path: ['details', 'storageType'],
     }
+  )
+  .refine(
+    (data) => {
+      for (const bags of Object.values(data.milkBags)) {
+        if (bags.some((bag) => !bag.bagImage)) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    {
+      error: 'Not all milk bags have been verified.',
+      path: ['milkBags'],
+    }
   );
 
 export const matchedDonationSchema = z.object({
