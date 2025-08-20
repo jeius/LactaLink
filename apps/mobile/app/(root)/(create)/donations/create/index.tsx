@@ -1,7 +1,12 @@
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
-import { Redirect } from 'expo-router';
+import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
 export default function CreatePageRedirect() {
-  return <Redirect href={`/donations/create/${DONATION_CREATE_STEPS.details.value}`} />;
+  const { matchedRequest } = useLocalSearchParams<DonationCreateSearchParams>();
+  const firstStep = DONATION_CREATE_STEPS.details.value;
+  return (
+    <Redirect href={{ pathname: `/donations/create/${firstStep}`, params: { matchedRequest } }} />
+  );
 }

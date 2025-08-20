@@ -171,6 +171,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
         };
 
         // Save the preffered values to local storage
+        donationStorage.delete(storageKey);
         donationStorage.set(storageKey, JSON.stringify(preferredValues));
       }
     }

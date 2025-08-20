@@ -52,13 +52,16 @@ const defaultMilkBagSelect: MilkBagsSelect = {
   collectedAt: true,
 };
 
+type SearchParams = {
+  step: DonationCreateSteps;
+} & DonationCreateSearchParams;
+
 export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { matchedRequest: matchedRequestID, step } =
-    useLocalSearchParams<DonationCreateSearchParams>();
+  const { matchedRequest: matchedRequestID, step } = useLocalSearchParams<SearchParams>();
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
 
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
@@ -220,7 +223,7 @@ async function createMilkBags(data: DonationSchema) {
   const apiClient = getApiClient();
 
   const bags = data.details.bags;
-  const milkBags = data.milkBags;
+  const milkBags: DonationSchema['milkBags'] = {};
 
   await Promise.all(
     bags.map(async ({ quantity, groupID, ...bagData }) => {

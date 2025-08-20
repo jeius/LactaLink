@@ -3,7 +3,7 @@ import { AvailableRequestsTab } from '@/components/tabs/AvailableRequestsTab';
 
 export default function RequestsPage() {
   return (
-    <SafeArea safeTop={false} safeBottom={false}>
+    <SafeArea safeTop={false}>
       <AvailableRequestsTab />
     </SafeArea>
   );
