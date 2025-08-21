@@ -130,6 +130,7 @@ export function InfiniteList<
       refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} />}
       onEndReachedThreshold={0.2}
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
+      contentContainerStyle={[props.contentContainerStyle, { flexGrow: 1 }]}
     />
   );
 }

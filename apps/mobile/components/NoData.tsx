@@ -1,19 +1,31 @@
 import { getImageAsset } from '@/lib/stores';
 import { AssetObject } from '@/lib/types';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Image } from './Image';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-interface NoDataProps {
+const defaultClassName = tva({
+  base: 'flex-1 items-center justify-center',
+});
+
+interface NoDataProps extends React.ComponentProps<typeof VStack> {
   title?: string;
   description?: string;
   imageName?: keyof AssetObject['images'];
   hideImage?: boolean;
 }
 
-export function NoData({ title, description, imageName = 'noData', hideImage }: NoDataProps) {
+export function NoData({
+  title,
+  description,
+  imageName = 'noData',
+  hideImage,
+  space = 'xs',
+  ...props
+}: NoDataProps) {
   return (
-    <VStack space="xs" className="flex-1 items-center justify-center">
+    <VStack {...props} space={space} className={defaultClassName({ className: props.className })}>
       {!hideImage && (
         <Image
           alt="No Data"
