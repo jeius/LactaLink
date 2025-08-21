@@ -20,6 +20,7 @@ export default function Layout() {
         <Stack.Screen name="map" />
         <Stack.Screen name="addresses" />
         <Stack.Screen name="delivery-preferences" />
+        <Stack.Screen name="transactions" />
         <Stack.Screen name="account" />
       </Stack.Protected>
 
