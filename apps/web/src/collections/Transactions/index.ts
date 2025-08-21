@@ -5,6 +5,7 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
 import { confirmedField, proposedField } from './fields/deliveryFields';
 import { trackingField } from './fields/tracking';
+import { filterMilkBagsOptions } from './filterOptions';
 import { calculateVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
 import { processDeliveryAgreements } from './hooks/processDeliveryAgreements';
@@ -103,10 +104,12 @@ export const Transactions: CollectionConfig<'transactions'> = {
           required: true,
           defaultValue: 0,
           min: 1,
+          hasMany: false,
           admin: {
             description: 'Volume of milk being matched (in mL)',
             width: '50%',
           },
+          validate: () => true, // Always valid, calculated on read
         },
 
         {
@@ -131,6 +134,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
       relationTo: 'milkBags',
       hasMany: true,
       required: true,
+      filterOptions: filterMilkBagsOptions,
       admin: {
         description: 'Milk bags included in this transaction',
       },
