@@ -17,7 +17,7 @@ const storageKeyPrefix = 'donation-form';
 type Params = {
   matchedRequest?: string;
   user: User | null;
-  recipient?: User['profile'];
+  recipient?: NonNullable<User['profile']>;
 };
 
 export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Params) => {
@@ -125,7 +125,8 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
       data.deliveryPreferences = extractID(preferences);
     }
 
-    if (recipient) {
+    // Only set recipient if there is no matched request.
+    if (recipient && !matchedRequestDoc) {
       data.recipient = {
         relationTo: recipient.relationTo,
         value: extractID(recipient.value),

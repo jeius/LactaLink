@@ -11,7 +11,11 @@ import React from 'react';
 export default function DonationCreateLayout() {
   const screenOptions = useScreenOptions({ animationType: 'slide' });
 
-  const { matchedRequest: matchedRequestID } = useLocalSearchParams<DonationCreateSearchParams>();
+  const {
+    matchedRequest: matchedRequestID,
+    recipientID,
+    recipientSlug,
+  } = useLocalSearchParams<DonationCreateSearchParams>();
 
   const meUser = useMeUser();
 
@@ -25,6 +29,8 @@ export default function DonationCreateLayout() {
   } = useCreateDonationForm({
     user: meUser.data,
     matchedRequest: matchedRequestID,
+    recipient:
+      recipientID && recipientSlug ? { value: recipientID, relationTo: recipientSlug } : undefined,
   });
 
   const isLoading = meUser.isLoading || isFormLoading;

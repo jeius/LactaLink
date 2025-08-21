@@ -10,20 +10,27 @@ import MilkBagVerificationTutorial from '@/components/tutorials/MilkBagVerificat
 import { Box } from '@/components/ui/box';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { usePagination } from '@/hooks/forms';
 
 import { uploadImage } from '@/lib/api/file';
-import { COLLECTION_QUERY_KEY, MILK_BAG_STATUS } from '@/lib/constants';
+import { MILK_BAG_STATUS } from '@/lib/constants';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
 
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { getApiClient } from '@lactalink/api';
-import { CreateMilkBagSchema, DonationSchema, MilkBag, MilkBagsSelect } from '@lactalink/types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities';
-import { useQueryClient } from '@tanstack/react-query';
+import { getApiClient, getTransactionService } from '@lactalink/api';
+import {
+  CreateMilkBagSchema,
+  DonationSchema,
+  MilkBag,
+  MilkBagsSelect,
+  Request,
+  Transaction,
+} from '@lactalink/types';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { isEqualWith } from 'lodash';
@@ -59,10 +66,10 @@ type SearchParams = {
 export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const { matchedRequest: matchedRequestID, step } = useLocalSearchParams<SearchParams>();
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
+  const revalidateDonations = useRevalidateCollectionQueries('donations');
 
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
@@ -98,15 +105,17 @@ export default function CreateDonation() {
         error: (error) => extractErrorMessage(error),
       });
 
-      await createPromise;
+      const { transaction } = await createPromise;
 
-      queryClient.invalidateQueries({
-        queryKey: COLLECTION_QUERY_KEY,
-      });
+      if (transaction) {
+        router.dismissTo(`/transactions/${transaction.id}`);
+      } else {
+        router.dismissTo('/account/donations');
+      }
 
-      router.dismissTo('/account/donations');
+      revalidateDonations();
     },
-    [router, queryClient]
+    [revalidateDonations, router]
   );
 
   const submit = form.handleSubmit(onSubmit);
@@ -309,11 +318,9 @@ async function createMilkBags(data: DonationSchema) {
 
 async function createDonation(data: DonationSchema) {
   const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences, recipient, milkBags } = data;
+  const { details, donor, deliveryPreferences, recipient, milkBags, matchedRequest } = data;
 
   const { image, ...restOfDetails } = details;
-
-  console.log('Creating donation with data:', data);
 
   const milkBagDocs = await Promise.all(
     Object.values(milkBags).flatMap((bags) =>
@@ -323,8 +330,8 @@ async function createDonation(data: DonationSchema) {
           collection: 'milkBags',
           id: bag.id,
           data: { bagImage: imageDoc.id },
-          depth: 3,
-          select: defaultMilkBagSelect,
+          depth: 0,
+          select: {},
         });
       })
     )
@@ -335,8 +342,8 @@ async function createDonation(data: DonationSchema) {
 
   const milkImageDoc = image && (await uploadImage('images', image));
 
-  try {
-    const donationDoc = await apiClient.create({
+  const donationDoc = await apiClient
+    .create({
       collection: 'donations',
       data: {
         donor,
@@ -349,31 +356,57 @@ async function createDonation(data: DonationSchema) {
         deliveryPreferences,
         recipient,
       },
-    });
-  } catch (error) {
-    await Promise.all([
-      async () => {
-        if (milkImageDoc) {
-          await apiClient.deleteByID({
-            collection: 'images',
-            id: extractID(milkImageDoc),
-          });
-        }
-      },
-      apiClient.update({
-        collection: 'milkBags',
-        where: { id: { in: extractID(milkBagDocs) } },
-        data: { bagImage: null },
-        depth: 3,
-        select: defaultMilkBagSelect,
-      }),
-    ]);
+    })
+    .catch(async (error) => {
+      await Promise.all([
+        async () => {
+          if (milkImageDoc) {
+            await apiClient.deleteByID({
+              collection: 'images',
+              id: extractID(milkImageDoc),
+            });
+          }
+        },
+        apiClient.update({
+          collection: 'milkBags',
+          where: { id: { in: extractID(milkBagDocs) } },
+          data: { bagImage: null },
+          depth: 0,
+          select: {},
+        }),
+      ]);
 
-    throw error;
+      throw error;
+    });
+
+  let transaction: Transaction | undefined;
+  let updatedRequest: Request | undefined;
+  let updatedDonation = donationDoc;
+  let updatedMilkBags = extractCollection(donationDoc.details.bags) || [];
+  let message = 'Donation created successfully!';
+
+  if (matchedRequest) {
+    const transactionService = getTransactionService();
+    const serviceResult = await transactionService.createP2PTransaction({
+      donation: donationDoc,
+      request: matchedRequest.id,
+      milkBags: extractID(milkBagDocs),
+    });
+    transaction = serviceResult.transaction;
+    updatedRequest = serviceResult.request;
+    updatedDonation = serviceResult.donation;
+    updatedMilkBags = serviceResult.milkBags;
+
+    const requesterName = extractCollection(updatedRequest.requester)?.givenName || 'Requester';
+    message = `Thank you! ${requesterName} has been notified of your donation.`;
   }
 
   return {
-    message: 'Donation created successfully!',
+    message,
+    donation: updatedDonation,
+    milkBags: updatedMilkBags,
+    transaction: transaction,
+    request: updatedRequest,
   };
 }
 
