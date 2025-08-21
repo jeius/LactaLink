@@ -19,6 +19,9 @@ const badgeStyle = tva({
       success: 'bg-background-success border-success-300',
       info: 'bg-background-info border-info-300',
       muted: 'bg-background-muted border-background-300',
+      primary: 'bg-primary-0 border-primary-300',
+      secondary: 'bg-secondary-0 border-secondary-300',
+      tertiary: 'bg-tertiary-50 border-tertiary-300',
     },
     variant: {
       solid: '',
@@ -42,6 +45,9 @@ const badgeTextStyle = tva({
       success: 'text-success-600',
       info: 'text-info-600',
       muted: 'text-background-800',
+      primary: 'text-primary-600',
+      secondary: 'text-secondary-600',
+      tertiary: 'text-tertiary-700',
     },
     size: {
       sm: 'text-2xs',
@@ -83,6 +89,9 @@ const badgeIconStyle = tva({
       success: 'text-success-600',
       info: 'text-info-600',
       muted: 'text-background-800',
+      primary: 'text-primary-600',
+      secondary: 'text-secondary-600',
+      tertiary: 'text-tertiary-700',
     },
     size: {
       sm: 'h-3 w-3',

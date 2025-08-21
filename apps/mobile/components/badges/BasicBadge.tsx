@@ -2,7 +2,9 @@ import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { ComponentProps, FC } from 'react';
 import { Badge, BadgeIcon, BadgeText } from '../ui/badge';
 
-export interface BasicBadgeProps extends ComponentProps<typeof Badge> {
+type BadgeProps = ComponentProps<typeof Badge>;
+
+export interface BasicBadgeProps extends BadgeProps {
   text: string;
   icon?: LucideIcon | FC<LucideProps>;
   iconOnly?: boolean;
