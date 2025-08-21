@@ -1,6 +1,6 @@
-import { STORAGE_TYPES } from '@/lib/constants';
+import { DEVICE_BREAKPOINTS, STORAGE_TYPES } from '@/lib/constants';
 import { Donation } from '@lactalink/types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
@@ -10,55 +10,51 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
-import { useCurrentLocation } from '@/hooks/location/useLocation';
-import { BLUR_HASH } from '@/lib/constants';
+import { useLocationStore } from '@/lib/stores/locationStore';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { convertDistance, extractCollection, getDistance } from '@lactalink/utilities';
+import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities';
+import { useWindowDimensions } from 'react-native';
 import Avatar from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
+import { SingleImageViewer } from '../ImageViewer';
 import { Icon } from '../ui/icon';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
-  data: Donation;
+  data?: Donation;
   isLoading?: boolean;
 }
 
 export default function DonationCard({ data, isLoading, ...props }: DonationCardProps) {
-  const { location } = useCurrentLocation();
+  const coords = useLocationStore((s) => s.coordinates);
+  const { width: screenWidth } = useWindowDimensions();
+
+  const { distance, deliveryPreference } = useMemo(
+    () =>
+      getNearestDeliveryPreference(extractCollection(data?.deliveryPreferences), coords) || {
+        deliveryPreference: null,
+        distance: null,
+      },
+    [coords, data?.deliveryPreferences]
+  );
+
+  const { details: { storageType } = {}, remainingVolume } = data || {};
+
+  const donor = extractCollection(data?.donor);
+  const donorName = donor?.displayName || donor?.givenName || 'Unknown Donor';
+  const donorAvatar = extractCollection(donor?.avatar);
+
+  const { uri, blurHash, alt } = useMemo(() => {
+    const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
+    const milkSamples = extractCollection(data?.details?.milkSample);
+    return extractOneImageData(milkSamples, imageSize);
+  }, [data?.details?.milkSample, screenWidth]);
+
+  const preferredMode = deliveryPreference?.preferredMode;
 
   if (isLoading) {
     return <DonationSkeleton />;
   }
-
-  const {
-    details: { milkSample, storageType },
-    remainingVolume,
-    deliveryPreferences,
-  } = data;
-
-  const donor = extractCollection(data.donor);
-  const donorName = donor?.displayName || donor?.givenName || 'Unknown Donor';
-  const donorAvatar = extractCollection(donor?.avatar);
-
-  const milkSamples = extractCollection(milkSample);
-  const uri = milkSamples?.[0]?.sizes?.small?.url || milkSamples?.[0]?.url || null;
-  const blurhash = milkSamples?.[0]?.blurHash || BLUR_HASH;
-
-  const preference = extractCollection(deliveryPreferences);
-  const preferredMode = preference?.[0]?.preferredMode;
-
-  const address = extractCollection(preference?.[0]?.address);
-  const [latitude, longitude] = address?.coordinates || [0, 0];
-
-  const distance =
-    location &&
-    convertDistance(
-      getDistance(
-        { latitude: location.coords.latitude, longitude: location.coords.longitude },
-        { latitude, longitude }
-      ),
-      'km'
-    );
 
   return (
     <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
@@ -67,16 +63,7 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
           <Box className="bg-primary-50 relative aspect-square h-48">
             <Box className="h-full w-full overflow-hidden">
               {uri ? (
-                <Image
-                  source={{ uri }}
-                  contentFit="cover"
-                  contentPosition="center"
-                  style={{ width: '100%', height: '100%' }}
-                  alt={`Donation Milk Sample`}
-                  placeholder={{ blurhash }}
-                  cachePolicy={'memory-disk'}
-                  recyclingKey={`donation-image-${data.id}`}
-                />
+                <SingleImageViewer image={{ uri: uri, blurHash, alt }} />
               ) : (
                 <Text className="m-auto">No Image</Text>
               )}
@@ -104,7 +91,7 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
               <Box className="relative px-2 py-1">
                 <Box className="bg-primary-400 absolute inset-0" style={{ opacity: 0.8 }} />
                 <Text size="xs" className="font-JakartaMedium text-white">
-                  {STORAGE_TYPES[storageType].label}
+                  {STORAGE_TYPES[storageType || 'OTHER'].label}
                 </Text>
               </Box>
             </VStack>
@@ -128,10 +115,12 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
               </>
             )}
 
-            <HStack>
-              <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
-              <Text size="xs">{distance?.toFixed(2)} km</Text>
-            </HStack>
+            {distance && (
+              <HStack>
+                <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
+                <Text size="xs">{distance.toFixed(2)} km</Text>
+              </HStack>
+            )}
           </HStack>
 
           <HStack space="sm" className="items-center p-2">

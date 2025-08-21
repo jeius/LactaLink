@@ -1,10 +1,11 @@
-import { BLUR_HASH, COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, DEVICE_BREAKPOINTS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { Donation, MarkKeyRequired } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities';
 import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
@@ -75,6 +76,7 @@ function CardContent({
   isImageViewable = true,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
   const { themeColors } = useTheme();
+  const { width: screenWidth } = useWindowDimensions();
   const locationCoords = useLocationStore((s) => s.coordinates);
 
   const fillColor = themeColors.primary[50];
@@ -83,15 +85,21 @@ function CardContent({
   const { details, remainingVolume } = data;
   const { collectionMode, storageType } = details;
 
-  const milkSamples = extractCollection(details.milkSample);
-  const image = milkSamples && milkSamples.length ? milkSamples[0] : null;
-  const imageUrl = image?.sizes?.thumbnail?.url || image?.sizes?.small?.url || image?.url;
-  const blurhash = image?.blurHash || BLUR_HASH;
-  const donor = extractCollection(data.donor);
+  const {
+    uri: imageUrl,
+    alt,
+    blurHash,
+    donor,
+  } = useMemo(() => {
+    const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
+    const donor = extractCollection(data.donor);
+    const milkSamples = extractCollection(details.milkSample);
+    return { donor, ...extractOneImageData(milkSamples, imageSize) };
+  }, [data.donor, details.milkSample, screenWidth]);
 
   const minDistance = useMemo(() => {
     const preferences = extractCollection(data?.deliveryPreferences);
-    return getMinDistance(locationCoords, preferences);
+    return getMinDistance(preferences, locationCoords);
   }, [locationCoords, data.deliveryPreferences]);
 
   return (
@@ -104,7 +112,7 @@ function CardContent({
           {imageUrl ? (
             <SingleImageViewer
               disabled={!isImageViewable}
-              image={{ uri: imageUrl, blurHash: blurhash, alt: image.alt }}
+              image={{ uri: imageUrl, blurHash, alt }}
             />
           ) : (
             <Text size="xs" className="my-auto text-center">

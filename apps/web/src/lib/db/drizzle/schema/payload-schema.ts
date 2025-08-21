@@ -51,6 +51,7 @@ export const enum_donation_request_status = pgEnum('enum_donation_request_status
 export const enum_donations_details_storage_type = pgEnum('enum_donations_details_storage_type', [
   'FRESH',
   'FROZEN',
+  'OTHER',
 ]);
 export const enum_donations_details_collection_mode = pgEnum(
   'enum_donations_details_collection_mode',
@@ -139,7 +140,7 @@ export const enum_notification_trigger_event = pgEnum('enum_notification_trigger
 ]);
 export const enum_requests_details_storage_preference = pgEnum(
   'enum_requests_details_storage_preference',
-  ['FRESH', 'FROZEN', 'EITHER']
+  ['FRESH', 'FROZEN', 'OTHER', 'EITHER']
 );
 export const enum_users_role = pgEnum('enum_users_role', ['AUTHENTICATED', 'ADMIN']);
 export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
