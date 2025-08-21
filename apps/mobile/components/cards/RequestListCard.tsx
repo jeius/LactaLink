@@ -81,7 +81,7 @@ function CardContent({
 
   const minDistance = useMemo(() => {
     const preferences = extractCollection(data?.deliveryPreferences);
-    return getMinDistance(locationCoords, preferences);
+    return getMinDistance(preferences, locationCoords);
   }, [locationCoords, data.deliveryPreferences]);
 
   return (
