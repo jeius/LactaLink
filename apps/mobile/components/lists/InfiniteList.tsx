@@ -127,7 +127,7 @@ export function InfiniteList<
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}
       ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}
-      refreshControl={<RefreshControl refreshing={!isLoading && isFetching} onRefresh={refetch} />}
+      refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} />}
       onEndReachedThreshold={0.2}
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
     />

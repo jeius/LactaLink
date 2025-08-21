@@ -70,7 +70,7 @@ function Scene({ route }: SceneProps) {
     data: fetchedUser,
     isLoading,
     error,
-    isFetching,
+    isRefetching,
   } = useFetchById(!isMeUser, {
     collection: 'users',
     id: userID,
@@ -103,7 +103,7 @@ function Scene({ route }: SceneProps) {
       <InfiniteList
         slug={SLUG}
         isLoading={isLoading}
-        isFetching={isFetching}
+        isFetching={isRefetching}
         fetchOptions={{ where }}
         contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
         onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
