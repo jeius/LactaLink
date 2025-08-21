@@ -1,6 +1,6 @@
 import { Collection } from '@lactalink/types';
 
-type Value = Collection | string | number | { id: string | number };
+type Value = Collection | string | number | { id: string | number } | null | undefined;
 
 /**
  * A utility type that extracts the `id` property from an object or an array of objects.
@@ -53,10 +53,10 @@ type ExtractID<T> = T extends (infer U)[]
  */
 export function extractID<T extends Value | Value[]>(value: T): ExtractID<T> {
   if (Array.isArray(value)) {
-    return value.map((item) => (typeof item === 'object' ? item.id : item)) as ExtractID<T>;
+    return value.map((item) => (item && typeof item === 'object' ? item.id : item)) as ExtractID<T>;
   }
 
-  if (typeof value === 'object') {
+  if (value && typeof value === 'object') {
     return value.id as ExtractID<T>;
   }
 
