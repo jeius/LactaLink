@@ -1,11 +1,11 @@
 import { ownerField } from '@/fields/ownerField';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
+import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP, GENDER_TYPES, MARITAL_STATUS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
-import { generateDisplayName } from './hooks/generateDisplayName';
 
 export const Individuals: CollectionConfig<'individuals'> = {
   slug: 'individuals',

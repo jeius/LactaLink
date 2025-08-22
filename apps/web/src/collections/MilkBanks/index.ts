@@ -1,6 +1,7 @@
 import { ownerField } from '@/fields/ownerField';
 import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
+import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP, ORGANIZATION_TYPES } from '@/lib/constants';
@@ -23,10 +24,19 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
   },
   hooks: {
     beforeRead: [calculateVolumeInStock],
-    beforeChange: [generateOwner],
+    beforeChange: [generateOwner, generateDisplayName],
     afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
   },
   fields: [
+    {
+      name: 'displayName',
+      label: 'Display Name',
+      type: 'text',
+      admin: {
+        description: 'Display name for the milk bank, used in public profiles.',
+        position: 'sidebar',
+      },
+    },
     ownerField,
     {
       type: 'tabs',
