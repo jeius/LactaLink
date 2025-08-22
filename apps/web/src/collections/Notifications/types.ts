@@ -3,6 +3,7 @@ import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import {
   COLLECTION_GROUP,
+  NOTIFICATION_JS_TYPES,
   NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
   NOTIFICATION_TRIGGER_EVENT_OPTIONS,
 } from '@/lib/constants';
@@ -134,7 +135,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                       required: true,
                       type: 'select',
                       enumName: 'enum_notification_trigger_collection',
-                      options: NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
+                      options: Object.values(NOTIFICATION_TRIGGER_COLLECTION_OPTIONS),
                     },
                     {
                       name: 'event',
@@ -142,7 +143,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                       required: true,
                       type: 'select',
                       enumName: 'enum_notification_trigger_event',
-                      options: NOTIFICATION_TRIGGER_EVENT_OPTIONS,
+                      options: Object.values(NOTIFICATION_TRIGGER_EVENT_OPTIONS),
                     },
                   ],
                 },
@@ -248,14 +249,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
                           required: true,
                           type: 'select',
                           enumName: 'enum_js_types',
-                          options: [
-                            { label: 'String', value: 'string' },
-                            { label: 'Number', value: 'number' },
-                            { label: 'Boolean', value: 'boolean' },
-                            { label: 'Date', value: 'date' },
-                            { label: 'Array', value: 'array' },
-                            { label: 'Object', value: 'object' },
-                          ],
+                          options: Object.values(NOTIFICATION_JS_TYPES),
                           admin: {
                             description: 'Expected data type for this variable (optional)',
                             placeholder: 'number',

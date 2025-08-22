@@ -1,5 +1,6 @@
 export * from './inventory';
 export * from './milkbag';
+export * from './notifications';
 export * from './transactions';
 
 export const PROFILE_TYPES = {

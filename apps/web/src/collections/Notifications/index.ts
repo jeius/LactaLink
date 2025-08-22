@@ -1,7 +1,7 @@
 import { createdByField } from '@/fields/createdByField';
 import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_GROUP, NOTIFICATION_TRIGGER_COLLECTION_OPTIONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 
@@ -158,7 +158,9 @@ export const Notifications: CollectionConfig<'notifications'> = {
               name: 'data',
               label: 'Related Entity',
               type: 'relationship',
-              relationTo: ['requests', 'donations'],
+              relationTo: Object.values(NOTIFICATION_TRIGGER_COLLECTION_OPTIONS).map(
+                (option) => option.value
+              ),
               maxDepth: 2,
               admin: {
                 description:

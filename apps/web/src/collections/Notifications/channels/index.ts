@@ -88,7 +88,7 @@ export const NotificationChannels: CollectionConfig<'notificationChannels'> = {
       type: 'select',
       enumName: 'enum_notification_channel_type',
       required: true,
-      options: NOTIFICATION_CHANNEL_TYPE_OPTIONS,
+      options: Object.values(NOTIFICATION_CHANNEL_TYPE_OPTIONS),
       admin: {
         description:
           'The delivery method this channel uses. Determines available configuration options.',
