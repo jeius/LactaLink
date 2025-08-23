@@ -2,14 +2,12 @@ import { FieldResolver } from '@/lib/utils/collections/FieldResolver';
 import {
   Collection,
   Notification,
-  NotificationCategory,
   NotificationChannel,
   NotificationChannelStats,
   NotificationType,
-  User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
-import { Operation, Payload, PayloadRequest, SanitizedCollectionConfig, Where } from 'payload';
+import { Operation, Payload, PayloadRequest, SanitizedCollectionConfig } from 'payload';
 import { ChannelFactory } from './channels';
 import { TemplateProcessor } from './processors';
 import { CreateNotificationParams } from './types';
@@ -81,13 +79,14 @@ export class NotificationService {
     recipient,
     previousDoc,
     operation,
-    additionalVariables = {},
+    extraVariables,
+    override,
   }: CreateNotificationParams): Promise<Notification[]> {
     const data = await this.handleTriggers(operation, doc, previousDoc);
 
     if (data.length === 0) {
       this.payload.logger.info(
-        `No notification types matched for ${operation} operation on ${this.collection.slug}`
+        `No notification types matched for ${operation.toUpperCase()} operation on ${this.collection.slug}`
       );
       return [];
     }
@@ -95,16 +94,21 @@ export class NotificationService {
     const notifications: Notification[] = [];
 
     for (const { notificationType, relatedData, variables } of data) {
-      const allVariables = { ...variables, ...additionalVariables };
+      const allVariables = { ...variables, ...extraVariables };
 
-      this.templateValidator.validate(notificationType, allVariables);
+      // Only validate variables if not overriding title/message
+      if (!override) {
+        this.templateValidator.validate(notificationType, allVariables);
+      }
 
       // Process templates
-      const title = this.templateProcessor.process(notificationType.template.title, allVariables);
-      const message = this.templateProcessor.process(
-        notificationType.template.message,
-        allVariables
-      );
+      const title =
+        override?.title ||
+        this.templateProcessor.process(notificationType.template.title, allVariables);
+      const message =
+        override?.message ||
+        this.templateProcessor.process(notificationType.template.message, allVariables);
+      const priority = override?.priority || notificationType.priority;
 
       // Build channel stats
       const channelsStats = await this.buildChannelStats(this.getDefaultChannels(notificationType));
@@ -117,7 +121,7 @@ export class NotificationService {
         data: {
           recipient,
           notificationType: notificationType.id,
-          priority: notificationType.priority,
+          priority,
           title,
           message,
           variables: allVariables,
@@ -125,7 +129,6 @@ export class NotificationService {
           relatedData,
           delivery: { channelsStats },
         },
-        populate: { [this.collection.slug]: {} },
       });
 
       // Send if not scheduled
@@ -155,85 +158,6 @@ export class NotificationService {
 
     await this.updateDeliveryStats(notification.id, updatedStats);
     return notification;
-  }
-
-  /**
-   * Mark notification as read
-   */
-  async markAsRead(notificationId: Notification['id'], userId: User['id']): Promise<Notification> {
-    const notification = await this.payload.findByID({
-      collection: 'notifications',
-      id: notificationId,
-      req: this.payloadReq,
-    });
-
-    if (!notification) {
-      throw new Error('Notification not found');
-    }
-
-    if (notification.recipient !== userId) {
-      throw new Error('Unauthorized');
-    }
-
-    return await this.payload.update({
-      collection: 'notifications',
-      id: notificationId,
-      req: this.payloadReq,
-      data: {
-        read: true,
-        readAt: new Date().toISOString(),
-      },
-    });
-  }
-
-  /**
-   * Get active notification types (optionally filtered by category)
-   */
-  async getActiveNotificationTypes(
-    category?: NotificationCategory['key']
-  ): Promise<NotificationType[]> {
-    const where: Where = { active: { equals: true } };
-    if (category) {
-      where['category.key'] = { equals: category };
-    }
-
-    const res = await this.payload.find({
-      collection: 'notificationTypes',
-      where,
-      depth: 1,
-      pagination: false,
-      req: this.payloadReq,
-    });
-
-    return res.docs;
-  }
-
-  /**
-   * Get user notifications with pagination
-   */
-  async getUserNotifications(
-    userId: User['id'],
-    options: {
-      page?: number;
-      limit?: number;
-      unreadOnly?: boolean;
-    } = {}
-  ) {
-    const where: Where = { recipient: { equals: userId } };
-
-    if (options.unreadOnly) {
-      where.read = { equals: false };
-    }
-
-    return await this.payload.find({
-      collection: 'notifications',
-      where,
-      page: options.page || 1,
-      limit: options.limit || 10,
-      sort: '-createdAt',
-      depth: 2,
-      req: this.payloadReq,
-    });
   }
 
   private async buildChannelStats(
