@@ -24,7 +24,7 @@ export const createDonationNotification: CollectionAfterChangeHook<Donation> = a
       return doc; // Skip notification if no owner
     }
 
-    const sentNotifications = await notificationService.createNotification({
+    const sentNotifications = await notificationService.autoCreateNotifications({
       doc,
       previousDoc,
       operation,

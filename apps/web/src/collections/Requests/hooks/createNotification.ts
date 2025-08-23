@@ -18,6 +18,7 @@ export const createRequestNotification: CollectionAfterChangeHook<Request> = asy
       id: extractID(doc.requester),
       depth: 0,
       select: { owner: true },
+      req,
     });
 
     if (!requester.owner) {
@@ -25,7 +26,7 @@ export const createRequestNotification: CollectionAfterChangeHook<Request> = asy
       return doc; // Skip notification if no owner
     }
 
-    const sentNotifications = await notificationService.createNotification({
+    const sentNotifications = await notificationService.autoCreateNotifications({
       doc,
       previousDoc,
       operation,

@@ -39,7 +39,7 @@ export class TransactionService implements ITransactionService {
 
   // #region Transaction Creation Methods
   async createP2PTransaction(params: CreateP2PTransactionParams) {
-    const { milkBags, delivery, proposedDelivery } = params;
+    const { milkBags } = params;
 
     const getDonation = async () => {
       const donation = extractCollection(params.donation);
@@ -57,46 +57,22 @@ export class TransactionService implements ITransactionService {
       getRequest(),
     ]);
 
-    const status = delivery
-      ? TRANSACTION_STATUS.DELIVERY_SCHEDULED.value
-      : proposedDelivery
-        ? TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value
-        : TRANSACTION_STATUS.MATCHED.value;
-
     // Create the transaction
     const transaction = await this.apiClient.create({
       collection: 'transactions',
       data: {
         transactionType: TRANSACTION_TYPE.P2P.value,
-        status: status,
+        status: TRANSACTION_STATUS.MATCHED.value,
         donation: extractID(donation),
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
         request: extractID(request),
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
         matchedBags: extractID(milkBags),
         matchedVolume: volume,
-        delivery: {
-          instructions: params.instructions,
-          confirmedDelivery: delivery,
-          proposedDelivery: proposedDelivery ? [proposedDelivery] : undefined,
-        },
       },
     });
 
-    const [updatedBags, updatedDonation, updatedRequest] = await Promise.all([
-      // Update milk bags to ALLOCATED status
-      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
-      // Update donation and request statuses to MATCHED
-      this.updateDonationStatus(extractID(donation), 'MATCHED'),
-      this.updateRequestStatus(extractID(request), 'MATCHED'),
-    ]);
-
-    return {
-      transaction,
-      donation: updatedDonation,
-      request: updatedRequest,
-      milkBags: updatedBags,
-    };
+    return transaction;
   }
 
   async createP2OTransaction(params: CreateP2OTransactionParams) {
@@ -130,14 +106,7 @@ export class TransactionService implements ITransactionService {
       },
     });
 
-    const [updatedBags, updatedDonation] = await Promise.all([
-      // Update milk bags to ALLOCATED status
-      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
-      // Update donation status to MATCHED
-      this.updateDonationStatus(extractID(donation), 'MATCHED'),
-    ]);
-
-    return { transaction, milkBags: updatedBags, donation: updatedDonation };
+    return transaction;
   }
 
   async createO2PTransaction(params: CreateO2PTransactionParams) {
@@ -171,14 +140,7 @@ export class TransactionService implements ITransactionService {
       },
     });
 
-    const [updatedBag, updatedRequest] = await Promise.all([
-      // Update milk bags to ALLOCATED status
-      this.updateMilkBagStatus(extractID(milkBags), 'ALLOCATED'),
-      // Update request status to MATCHED
-      this.updateRequestStatus(extractID(request), 'MATCHED'),
-    ]);
-
-    return { transaction, milkBags: updatedBag, request: updatedRequest };
+    return transaction;
   }
   // #endregion
 
