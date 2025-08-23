@@ -159,10 +159,10 @@ export class FieldResolver {
 
         case 'array': {
           // Resolve fields in an array
-          const arrayItems = _.get(parentDoc, fieldPath, []);
+          const arrayItems: object[] = _.get(parentDoc, fieldPath, []);
           const resolvedArray = await Promise.all(
-            arrayItems.map(async (item: Collection, index: number) => {
-              const resolvedItem: Partial<Collection> = {};
+            arrayItems.map(async (item, index) => {
+              const resolvedItem = {};
               for (const subField of field.fields) {
                 await this.resolveField(subField, item, `${fieldPath}[${index}]`, resolvedItem);
               }
@@ -201,7 +201,8 @@ export class FieldResolver {
     doc: Collection
   ): NonNullable<Notification['relatedData']> {
     const template = notificationType.template;
-    const collectionSlug = this.collection.slug as 'donations' | 'requests';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collectionSlug = this.collection.slug as any;
 
     if (template.actionUrl && template.actionLabel) {
       return {
