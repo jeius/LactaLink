@@ -5,9 +5,14 @@ import {
   PRIORITY_LEVELS,
 } from '@lactalink/enums';
 import { NotificationType } from '@lactalink/types';
+import { Operator } from 'payload';
+import { validOperatorSet } from 'payload/shared';
 
 const TRIGGER_EVENT = NOTIFICATION_TRIGGER_EVENT_OPTIONS;
 const TRIGGER_COLLECTION = NOTIFICATION_TRIGGER_COLLECTION_OPTIONS;
+
+type ExtendedOperator = Operator | 'changed';
+const operators = new Map<ExtendedOperator, ExtendedOperator>(validOperatorSet.entries());
 
 export const typesData: Omit<
   NotificationType,
@@ -24,7 +29,7 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        recipient: { exists: false },
+        recipient: { [operators.get('exists')!]: false },
       },
     },
     template: {
@@ -52,7 +57,8 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        recipient: { exists: true },
+        status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.PENDING.value },
+        recipient: { [operators.get('exists')!]: true },
       },
     },
     template: {
@@ -87,7 +93,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.EXPIRED.value,
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.EXPIRED.value } },
+          { status: { [operators.get('changed')!]: true } },
+        ],
       },
     },
     template: {
@@ -115,8 +124,12 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: true } },
+          { recipient: { [operators.get('exists')!]: true } },
+          { recipient: { [operators.get('changed')!]: false } },
+        ],
       },
     },
     template: {
@@ -152,8 +165,12 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.REJECTED.value,
-        recipient: { exists: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.REJECTED.value } },
+          { status: { [operators.get('changed')!]: true } },
+          { recipient: { [operators.get('exists')!]: true } },
+          { recipient: { [operators.get('changed')!]: false } },
+        ],
       },
     },
     template: {
@@ -189,9 +206,13 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: false },
-        remainingVolume: 0,
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: true } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
+          { remainingVolume: { [operators.get('equals')!]: 0 } },
+        ],
       },
     },
     template: {
@@ -219,15 +240,60 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: false },
-        remainingVolume: { changed: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
+          { remainingVolume: { [operators.get('greater_than')!]: 0 } },
+          { remainingVolume: { [operators.get('changed')!]: true } },
+        ],
       },
     },
     template: {
       title: 'Your donation has been partially requested!',
       message:
-        'Good news! Part of your {{volume}}mL donation has been requested. Remaining volume is {{remainingVolume}}mL.',
+        'Great news! Part of your {{volume}}mL donation has been requested. Remaining volume is {{remainingVolume}}mL.',
+      variables: [
+        {
+          key: 'volume',
+          description: 'Total volume donated in mL',
+          type: 'number',
+          path: 'volume',
+          required: true,
+        },
+        {
+          key: 'remainingVolume',
+          description: 'Remaining volume available for requests in mL',
+          type: 'number',
+          path: 'remainingVolume',
+          required: true,
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_DONATION_FULLY',
+    name: 'Donation Fully Allocated',
+    description: 'Sent when a donation is fully allocated to a request',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: false } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
+          { remainingVolume: { [operators.get('equals')!]: 0 } },
+          { remainingVolume: { [operators.get('changed')!]: true } },
+        ],
+      },
+    },
+    template: {
+      title: 'Your donation has been fully allocated!',
+      message: 'Great news! Your {{volume}}mL donation has been fully allocated.',
       variables: [
         {
           key: 'volume',
@@ -259,7 +325,7 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        recipient: { exists: false },
+        recipient: { [operators.get('exists')!]: false },
       },
     },
     template: {
@@ -287,7 +353,7 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        recipient: { exists: true },
+        recipient: { [operators.get('exists')!]: true },
       },
     },
     template: {
@@ -322,7 +388,7 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.EXPIRED.value,
+        status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.EXPIRED.value },
       },
     },
     template: {
@@ -350,8 +416,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { recipient: { [operators.get('exists')!]: true } },
+        ],
       },
     },
     template: {
@@ -387,8 +455,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.REJECTED.value,
-        recipient: { exists: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.REJECTED.value } },
+          { recipient: { [operators.get('exists')!]: true } },
+        ],
       },
     },
     template: {
@@ -424,14 +494,18 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: false },
-        volumeNeeded: 0,
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: true } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { volumeNeeded: { [operators.get('equals')!]: 0 } },
+        ],
       },
     },
     template: {
-      title: 'Great news! Someone wants to donate milk to you!',
-      message: 'A generous donor wants to fulfill your {{volumeNeeded}}mL milk request.',
+      title: 'Someone wants to donate milk to you!',
+      message:
+        'Great news! A generous donor wants to fulfill your {{volumeNeeded}}mL milk request.',
       variables: [
         {
           key: 'volumeNeeded',
@@ -453,14 +527,50 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: DONATION_REQUEST_STATUS.MATCHED.value,
-        recipient: { exists: false },
-        volumeNeeded: { changed: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { volumeNeeded: { [operators.get('greater_than')!]: 0 } },
+          { volumeNeeded: { [operators.get('changed')!]: true } },
+        ],
       },
     },
     template: {
-      title: 'Great news! Someone wants to donate milk to you!',
-      message: 'A generous donor wants to partially fulfill your {{volumeNeeded}}mL milk request.',
+      title: 'Someone wants to donate a portion to your milk request!',
+      message:
+        'Great news! A generous donor wants to partially fulfill your {{volumeNeeded}}mL milk request.',
+      variables: [
+        {
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
+          required: true,
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_REQUEST_FULLY',
+    name: 'Request Fully Fulfilled',
+    description: 'Sent when a request is fully fulfilled with a donation',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: false } },
+          { recipient: { [operators.get('exists')!]: false } },
+          { volumeNeeded: { [operators.get('equals')!]: 0 } },
+        ],
+      },
+    },
+    template: {
+      title: 'Your request has been fully fulfilled!',
+      message: 'Great News! Your {{volumeNeeded}}mL milk request has been fully fulfilled.',
       variables: [
         {
           key: 'volumeNeeded',
@@ -473,105 +583,4 @@ export const typesData: Omit<
     },
   },
   // #endregion REQUEST
-
-  // === DELIVERY UPDATES ===
-  {
-    key: 'TRANSACTION_CREATED',
-    name: 'Transaction Created',
-    description: 'Sent when a new transaction is created.',
-    priority: PRIORITY_LEVELS.HIGH.value,
-    trigger: {
-      collection: TRIGGER_COLLECTION.TRANSACTIONS.value,
-      event: TRIGGER_EVENT.CREATE.value,
-      conditions: {},
-    },
-    template: {
-      title: 'Delivery scheduled',
-      message: 'Your {{deliveryMode}} has been scheduled for {{deliveryDate}}.',
-      variables: [
-        {
-          key: 'deliveryMode',
-          description: 'Mode of delivery (pickup/delivery/meetup)',
-          type: 'string',
-          path: 'mode',
-          required: true,
-        },
-        {
-          key: 'deliveryDate',
-          description: 'Scheduled delivery date',
-          type: 'date',
-          path: 'details.confirmedTimeSlot.date',
-          required: true,
-        },
-        {
-          key: 'deliveryTime',
-          description: 'Scheduled delivery time',
-          type: 'string',
-          path: 'details.confirmedTimeSlot.timeSlot',
-          required: true,
-        },
-        {
-          key: 'recipientName',
-          description: 'Name of recipient',
-          type: 'string',
-          path: 'request.requester.displayName',
-          required: true,
-        },
-        {
-          key: 'volume',
-          description: 'Volume being delivered in mL',
-          type: 'number',
-          path: 'request.volumeNeeded',
-          required: true,
-        },
-      ],
-    },
-    active: true,
-  },
-  {
-    key: 'DELIVERY_COMPLETED',
-    name: 'Delivery Completed',
-    description: 'Sent when delivery is successfully completed',
-    priority: 'MEDIUM',
-    trigger: {
-      collection: 'deliveries',
-      event: 'UPDATE',
-    },
-    template: {
-      title: 'Delivery completed successfully!',
-      message:
-        'Your milk {{deliveryMode}} has been completed successfully. Thank you for being part of the LactaLink community!',
-      variables: [
-        {
-          key: 'deliveryMode',
-          description: 'Type of delivery completed',
-          type: 'string',
-          path: 'mode',
-          required: true,
-        },
-        {
-          key: 'recipientName',
-          description: 'Name of recipient',
-          type: 'string',
-          path: 'request.requester.displayName',
-          required: true,
-        },
-        {
-          key: 'volume',
-          description: 'Volume delivered',
-          type: 'number',
-          path: 'request.volumeNeeded',
-          required: true,
-        },
-        {
-          key: 'deliveredAt',
-          description: 'Date delivery was completed',
-          type: 'date',
-          path: 'tracking.deliveredAt',
-          required: true,
-        },
-      ],
-    },
-    active: true,
-  },
 ];

@@ -13,15 +13,15 @@ export async function seedNotificationSystem(payload: Payload) {
     where: {},
   });
   await payload.delete({
-    collection: 'notificationTypes',
+    collection: 'notification-types',
     where: {},
   });
   await payload.delete({
-    collection: 'notificationChannels',
+    collection: 'notification-channels',
     where: {},
   });
   await payload.delete({
-    collection: 'notificationCategories',
+    collection: 'notification-categories',
     where: {},
   });
 
@@ -30,7 +30,7 @@ export async function seedNotificationSystem(payload: Payload) {
   const categories = await Promise.all(
     categoriesData.map((categoryData) =>
       payload.create({
-        collection: 'notificationCategories',
+        collection: 'notification-categories',
         data: categoryData,
       })
     )
@@ -41,7 +41,7 @@ export async function seedNotificationSystem(payload: Payload) {
   const channels = await Promise.all(
     channelsData.map((channelData) =>
       payload.create({
-        collection: 'notificationChannels',
+        collection: 'notification-channels',
         data: channelData,
       })
     )
@@ -91,7 +91,7 @@ export async function seedNotificationSystem(payload: Payload) {
       }
 
       return payload.create({
-        collection: 'notificationTypes',
+        collection: 'notification-types',
         data: {
           ...typeData,
           category: categoryId,
