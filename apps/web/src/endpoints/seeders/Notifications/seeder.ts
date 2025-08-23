@@ -1,6 +1,6 @@
 import { Payload } from 'payload';
-import { categoriesData } from './data/categories';
-import { channelsData } from './data/channels';
+import { categoriesData, CATEGORY_KEYS } from './data/categories';
+import { CHANNEL_KEYS, channelsData } from './data/channels';
 import { typesData } from './data/types';
 
 export async function seedNotificationSystem(payload: Payload) {
@@ -50,39 +50,39 @@ export async function seedNotificationSystem(payload: Payload) {
   // Create notification types with proper relationships
   console.log('Creating notification types...');
   const categoryMap = {
-    DONATION_LIFECYCLE: categories.find((c) => c.key === 'DONATION_LIFECYCLE')?.id,
-    REQUEST_LIFECYCLE: categories.find((c) => c.key === 'REQUEST_LIFECYCLE')?.id,
-    MATCHING: categories.find((c) => c.key === 'MATCHING')?.id,
-    DELIVERY: categories.find((c) => c.key === 'DELIVERY')?.id,
-    SYSTEM: categories.find((c) => c.key === 'SYSTEM')?.id,
+    LIFECYCLE: categories.find((c) => c.key === CATEGORY_KEYS.LIFECYCLE)?.id,
+    MATCHING: categories.find((c) => c.key === CATEGORY_KEYS.MATCHING)?.id,
+    TRANSACTION: categories.find((c) => c.key === CATEGORY_KEYS.TRANSACTION)?.id,
+    SYSTEM: categories.find((c) => c.key === CATEGORY_KEYS.SYSTEM)?.id,
   };
 
   const channelMap = {
-    IN_APP: channels.find((c) => c.key === 'IN_APP_REALTIME')?.id,
-    EMAIL: channels.find((c) => c.key === 'EMAIL_PRIMARY')?.id,
-    SMS: channels.find((c) => c.key === 'SMS_URGENT')?.id,
+    IN_APP: channels.find((c) => c.key === CHANNEL_KEYS.IN_APP)?.id,
+    EMAIL: channels.find((c) => c.key === CHANNEL_KEYS.EMAIL)?.id,
+    SMS: channels.find((c) => c.key === CHANNEL_KEYS.SMS)?.id,
+    PUSH: channels.find((c) => c.key === CHANNEL_KEYS.PUSH)?.id,
   };
 
   const types = await Promise.all(
     typesData.map((typeData) => {
       // Assign category based on notification type
       let categoryId: string | undefined;
-      if (typeData.key.startsWith('DONATION_')) {
-        categoryId = categoryMap.DONATION_LIFECYCLE;
-      } else if (typeData.key.startsWith('REQUEST_')) {
-        categoryId =
-          typeData.key === 'REQUEST_MATCHED' ? categoryMap.MATCHING : categoryMap.REQUEST_LIFECYCLE;
-      } else if (typeData.key.startsWith('DELIVERY_')) {
-        categoryId = categoryMap.DELIVERY;
+      if (typeData.key.startsWith('DONATION_') || typeData.key.startsWith('REQUEST_')) {
+        categoryId = categoryMap.LIFECYCLE;
+      } else if (typeData.key.startsWith('TRANSACTION_')) {
+        categoryId = categoryMap.TRANSACTION;
+      } else if (typeData.key.startsWith('MATCHING_')) {
+        categoryId = categoryMap.MATCHING;
       } else {
         categoryId = categoryMap.SYSTEM;
       }
 
       // Assign default channels based on priority
-      let defaultChannels: (string | undefined)[];
-      if (typeData.priority === 'HIGH') {
-        defaultChannels = [channelMap.IN_APP, channelMap.EMAIL, channelMap.SMS];
-      } else {
+      let defaultChannels = Object.values(channelMap);
+
+      if (typeData.priority === 'LOW') {
+        defaultChannels = [channelMap.IN_APP];
+      } else if (typeData.priority === 'MEDIUM') {
         defaultChannels = [channelMap.IN_APP, channelMap.EMAIL];
       }
 

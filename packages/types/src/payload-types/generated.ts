@@ -453,6 +453,10 @@ export interface Avatar {
  */
 export interface MilkBank {
   id: string;
+  /**
+   * Display name for the milk bank, used in public profiles.
+   */
+  displayName?: string | null;
   owner?: (string | null) | User;
   avatar?: (string | null) | Avatar;
   name: string;
@@ -574,6 +578,10 @@ export interface Inventory {
  */
 export interface Hospital {
   id: string;
+  /**
+   * Display name for the hospital, used in public profiles.
+   */
+  displayName?: string | null;
   owner?: (string | null) | User;
   avatar?: (string | null) | Avatar;
   name: string;
@@ -1267,6 +1275,7 @@ export interface Barangay {
  */
 export interface NotificationCategory {
   id: string;
+  createdBy?: (string | null) | User;
   /**
    * Unique identifier used in code to reference this category. Use UPPERCASE with underscores (e.g., MATCHING, DELIVERY_STATUS, SYSTEM_ALERTS)
    */
@@ -1284,9 +1293,21 @@ export interface NotificationCategory {
    */
   icon?: string | null;
   /**
-   * Hex color code used for UI elements like badges, icons, and category indicators. Should follow your design system colors.
+   * Color used for notifications in this category. Applies to icons, headers, and highlights in the UI.
    */
-  color?: string | null;
+  color?:
+    | (
+        | 'PRIMARY'
+        | 'SECONDARY'
+        | 'TERTIARY'
+        | 'POSITIVE'
+        | 'WARNING'
+        | 'DANGER'
+        | 'INFO'
+        | 'MUTED'
+        | 'DEFAULT'
+      )
+    | null;
   /**
    * Controls the order categories appear in lists and dropdowns. Lower numbers appear first.
    */
@@ -1308,7 +1329,6 @@ export interface NotificationCategory {
      */
     retentionDays?: number | null;
   };
-  createdBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1483,6 +1503,10 @@ export interface Notification {
       | ({
           relationTo: 'donations';
           value: string | Donation;
+        } | null)
+      | ({
+          relationTo: 'transactions';
+          value: string | Transaction;
         } | null);
     /**
      * URL for the primary action button in the notification. Typically links to relevant page in the app.
@@ -1544,7 +1568,7 @@ export interface NotificationType {
  * via the `definition` "NotificationTypeTrigger".
  */
 export interface NotificationTypeTrigger {
-  collection: 'requests' | 'donations' | 'deliveries' | 'system';
+  collection: 'requests' | 'donations' | 'transactions';
   event: 'CREATE' | 'UPDATE' | 'DELETE';
   /**
    * JSON conditions for when to trigger this notification. Use "exists" to check for field existence, "changed" to check for changes, or direct value matches.
@@ -1898,6 +1922,7 @@ export interface DonationsSelect<T extends boolean = true> {
  * via the `definition` "hospitals_select".
  */
 export interface HospitalsSelect<T extends boolean = true> {
+  displayName?: T;
   owner?: T;
   avatar?: T;
   name?: T;
@@ -2117,6 +2142,7 @@ export interface MilkBagImagesSelect<T extends boolean = true> {
  * via the `definition` "milkBanks_select".
  */
 export interface MilkBanksSelect<T extends boolean = true> {
+  displayName?: T;
   owner?: T;
   avatar?: T;
   name?: T;
@@ -2137,6 +2163,7 @@ export interface MilkBanksSelect<T extends boolean = true> {
  * via the `definition` "notificationCategories_select".
  */
 export interface NotificationCategoriesSelect<T extends boolean = true> {
+  createdBy?: T;
   key?: T;
   name?: T;
   description?: T;
@@ -2150,7 +2177,6 @@ export interface NotificationCategoriesSelect<T extends boolean = true> {
         allowUserSettings?: T;
         retentionDays?: T;
       };
-  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,18 +1,31 @@
+import {
+  DONATION_REQUEST_STATUS,
+  NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
+  NOTIFICATION_TRIGGER_EVENT_OPTIONS,
+  PRIORITY_LEVELS,
+} from '@lactalink/enums';
 import { NotificationType } from '@lactalink/types';
+
+const TRIGGER_EVENT = NOTIFICATION_TRIGGER_EVENT_OPTIONS;
+const TRIGGER_COLLECTION = NOTIFICATION_TRIGGER_COLLECTION_OPTIONS;
 
 export const typesData: Omit<
   NotificationType,
   'id' | 'createdAt' | 'updatedAt' | 'category' | 'defaultChannels'
 >[] = [
-  // === DONATION LIFECYCLE ===
+  // #region DONATION
   {
-    key: 'DONATION_CREATED',
+    key: 'DONATION_CREATE',
     name: 'Donation Created',
     description: 'Sent when a new donation is successfully created',
-    priority: 'MEDIUM',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
     trigger: {
-      collection: 'donations',
-      event: 'CREATE',
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.CREATE.value,
+      conditions: {
+        recipient: { exists: false },
+      },
     },
     template: {
       title: 'Thank you for your donation!',
@@ -26,41 +39,25 @@ export const typesData: Omit<
           path: 'volume',
           required: true,
         },
-        {
-          key: 'donorName',
-          description: 'Name of the donor',
-          type: 'string',
-          path: 'donor.displayName',
-          required: true,
-        },
-        {
-          key: 'donationId',
-          description: 'Unique donation identifier',
-          type: 'string',
-          path: 'id',
-          required: true,
-        },
       ],
     },
-    active: true,
   },
   {
-    key: 'DONATION_MATCHED',
-    name: 'Donation Matched',
-    description: 'Sent when a donation is matched with a request',
-    priority: 'HIGH',
+    key: 'DONATION_DIRECT',
+    name: 'Direct Donation',
+    description: 'Sent when a direct donation to a recipient was made.',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
     trigger: {
-      collection: 'donations',
-      event: 'UPDATE',
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        status: 'PARTIALLY_ALLOCATED',
-        remainingVolume: { changed: true },
+        recipient: { exists: true },
       },
     },
     template: {
-      title: 'Your donation has been matched!',
-      message:
-        "Great news! Your donation of {{volume}}mL has been matched with {{requesterName}}'s request. Delivery arrangements will be coordinated soon.",
+      title: 'Thank you for your donation!',
+      message: '{{recipientName}} will be notified of your {{volume}}mL donation.',
       variables: [
         {
           key: 'volume',
@@ -70,46 +67,167 @@ export const typesData: Omit<
           required: true,
         },
         {
-          key: 'donorName',
-          description: 'Name of the donor',
-          type: 'string',
-          path: 'donor.displayName',
-          required: true,
-        },
-        {
-          key: 'requesterName',
-          description: 'Name of the requester',
+          key: 'recipientName',
+          description: 'Name of the recipient',
           type: 'string',
           required: true,
-          defaultValue: 'a family',
+          path: 'recipient.displayName',
+          defaultValue: 'The recipient',
         },
+      ],
+    },
+  },
+  {
+    key: 'DONATION_EXPIRED',
+    name: 'Donation Expired',
+    description: 'Sent when a donation expires without being matched',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.EXPIRED.value,
+      },
+    },
+    template: {
+      title: 'Your donation has expired',
+      message:
+        'Unfortunately, your donation of {{volume}}mL has expired without being matched. Thank you for your willingness to help.',
+      variables: [
         {
-          key: 'requestId',
-          description: 'ID of the matched request',
-          type: 'string',
+          key: 'volume',
+          description: 'Volume of milk donated in mL',
+          type: 'number',
+          path: 'volume',
           required: true,
         },
       ],
     },
-    active: true,
   },
   {
-    key: 'DONATION_FULLY_ALLOCATED',
-    name: 'Donation Fully Allocated',
-    description: 'Sent when a donation is completely allocated',
-    priority: 'HIGH',
+    key: 'DONATION_ACCEPTED',
+    name: 'Donation Accepted',
+    description: 'Sent when a donation is accepted by the recipient',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
     trigger: {
-      collection: 'donations',
-      event: 'UPDATE',
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: 'FULLY_ALLOCATED',
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: true },
+      },
+    },
+    template: {
+      title: 'Your donation has been accepted!',
+      message:
+        'Great news! Your donation of {{volume}}mL has been accepted by {{recipientName}}. Delivery arrangements will be coordinated soon.',
+      variables: [
+        {
+          key: 'volume',
+          description: 'Volume of milk donated in mL',
+          type: 'number',
+          path: 'volume',
+          required: true,
+        },
+        {
+          key: 'recipientName',
+          description: 'Name of the recipient',
+          type: 'string',
+          required: true,
+          path: 'recipient.displayName',
+          defaultValue: 'the recipient',
+        },
+      ],
+    },
+  },
+  {
+    key: 'DONATION_REJECTED',
+    name: 'Donation Rejected',
+    description: 'Sent when a donation is rejected by the recipient',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.REJECTED.value,
+        recipient: { exists: true },
+      },
+    },
+    template: {
+      title: 'Your donation has been rejected!',
+      message:
+        'Unfortunately, your donation of {{volume}}mL has been rejected by {{recipientName}}.',
+      variables: [
+        {
+          key: 'volume',
+          description: 'Volume of milk donated in mL',
+          type: 'number',
+          path: 'volume',
+          required: true,
+        },
+        {
+          key: 'recipientName',
+          description: 'Name of the recipient',
+          type: 'string',
+          required: true,
+          path: 'recipient.displayName',
+          defaultValue: 'the recipient',
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_DONATION',
+    name: 'Donation Matched',
+    description: 'Sent when a donation is matched with a request',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: false },
         remainingVolume: 0,
       },
     },
     template: {
-      title: 'Your donation has been fully allocated!',
+      title: 'Your donation has been requested!',
       message:
-        'Wonderful! Your entire donation of {{volume}}mL has been allocated to help {{recipientCount}} families in need.',
+        'Great news! Your donation of {{volume}}mL has been requested. Delivery arrangements will be coordinated soon.',
+      variables: [
+        {
+          key: 'volume',
+          description: 'Volume of milk donated in mL',
+          type: 'number',
+          path: 'volume',
+          required: true,
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_DONATION_PARTIALLY',
+    name: 'Donation Partially Allocated',
+    description: 'Sent when a donation is partially allocated to a request',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.DONATIONS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: false },
+        remainingVolume: { changed: true },
+      },
+    },
+    template: {
+      title: 'Your donation has been partially requested!',
+      message:
+        'Good news! Part of your {{volume}}mL donation has been requested. Remaining volume is {{remainingVolume}}mL.',
       variables: [
         {
           key: 'volume',
@@ -119,37 +237,35 @@ export const typesData: Omit<
           required: true,
         },
         {
-          key: 'donorName',
-          description: 'Name of the donor',
-          type: 'string',
-          path: 'donor.displayName',
-          required: true,
-        },
-        {
-          key: 'recipientCount',
-          description: 'Number of families helped',
+          key: 'remainingVolume',
+          description: 'Remaining volume available for requests in mL',
           type: 'number',
+          path: 'remainingVolume',
           required: true,
         },
       ],
     },
-    active: true,
   },
+  // #endregion DONATION
 
-  // === REQUEST LIFECYCLE ===
+  // #region REQUEST
   {
     key: 'REQUEST_CREATED',
     name: 'Request Created',
     description: 'Confirmation when a new request is submitted',
-    priority: 'MEDIUM',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
     trigger: {
-      collection: 'requests',
-      event: 'CREATE',
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.CREATE.value,
+      conditions: {
+        recipient: { exists: false },
+      },
     },
     template: {
       title: 'Your milk request has been submitted',
       message:
-        "Your request for {{volumeNeeded}}mL of breast milk has been received. We'll notify you when a matching donation becomes available.",
+        "Your request for {{volumeNeeded}}mL of breast milk has been received. We'll notify you when it gets fulfilled.",
       variables: [
         {
           key: 'volumeNeeded',
@@ -158,48 +274,25 @@ export const typesData: Omit<
           path: 'volumeNeeded',
           required: true,
         },
-        {
-          key: 'requesterName',
-          description: 'Name of the requester',
-          type: 'string',
-          path: 'requester.displayName',
-          required: true,
-        },
-        {
-          key: 'urgency',
-          description: 'Urgency level of the request',
-          type: 'string',
-          path: 'details.urgency',
-          required: true,
-        },
-        {
-          key: 'neededAt',
-          description: 'Date when milk is needed',
-          type: 'date',
-          path: 'details.neededAt',
-          required: false,
-        },
       ],
     },
-    active: true,
   },
   {
-    key: 'REQUEST_MATCHED',
-    name: 'Request Matched',
-    description: 'Sent when a request is matched with a donation',
-    priority: 'HIGH',
+    key: 'REQUEST_DIRECT',
+    name: 'Direct Request',
+    description: 'Sent when a direct request to a donor was made.',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
     trigger: {
-      collection: 'requests',
-      event: 'UPDATE',
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        status: 'MATCHED',
-        matchedDonation: { changed: true },
+        recipient: { exists: true },
       },
     },
     template: {
-      title: 'Great news! Your request has been matched',
-      message:
-        'Your request for {{volumeNeeded}}mL has been matched with a donation from {{donorName}}. Delivery details will be coordinated shortly.',
+      title: 'Your milk request has been submitted',
+      message: '{{recipientName}} will be notified of your {{volumeNeeded}}mL milk request.',
       variables: [
         {
           key: 'volumeNeeded',
@@ -209,34 +302,188 @@ export const typesData: Omit<
           required: true,
         },
         {
-          key: 'donorName',
-          description: 'Name of the donor',
+          key: 'recipientName',
+          description: 'Name of the recipient of this request.',
           type: 'string',
-          path: 'matchedDonation.donor.displayName',
-          defaultValue: 'a generous donor',
           required: true,
+          path: 'recipient.displayName',
+          defaultValue: 'The recipient',
         },
+      ],
+    },
+  },
+  {
+    key: 'REQUEST_EXPIRED',
+    name: 'Request Expired',
+    description: 'Sent when a request expires without being fulfilled.',
+    priority: PRIORITY_LEVELS.LOW.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.EXPIRED.value,
+      },
+    },
+    template: {
+      title: 'Your milk request has expired',
+      message:
+        'Unfortunately, your request for {{volumeNeeded}}mL has expired without being fulfilled.',
+      variables: [
         {
-          key: 'requesterName',
-          description: 'Name of the requester',
-          type: 'string',
-          path: 'requester.displayName',
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
           required: true,
         },
       ],
     },
-    active: true,
   },
+  {
+    key: 'REQUEST_ACCEPTED',
+    name: 'Request Accepted',
+    description: 'Sent when a request is accepted by a donor or organization.',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: true },
+      },
+    },
+    template: {
+      title: 'Your milk request has been accepted!',
+      message:
+        'Great news! Your request for {{volumeNeeded}}mL has been accepted by {{recipientName}}.',
+      variables: [
+        {
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
+          required: true,
+        },
+        {
+          key: 'recipientName',
+          description: 'Name of the recipient of this request.',
+          type: 'string',
+          required: true,
+          path: 'recipient.displayName',
+          defaultValue: 'The recipient',
+        },
+      ],
+    },
+  },
+  {
+    key: 'REQUEST_REJECTED',
+    name: 'Request Rejected',
+    description: 'Sent when a request is rejected by a donor or organization.',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.REJECTED.value,
+        recipient: { exists: true },
+      },
+    },
+    template: {
+      title: 'Your milk request has been rejected',
+      message:
+        'Unfortunately, your request for {{volumeNeeded}}mL has been rejected by {{recipientName}}.',
+      variables: [
+        {
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
+          required: true,
+        },
+        {
+          key: 'recipientName',
+          description: 'Name of the recipient of this request.',
+          type: 'string',
+          required: true,
+          path: 'recipient.displayName',
+          defaultValue: 'The recipient',
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_REQUEST',
+    name: 'Request Matched',
+    description: 'Sent when a request is matched with a donation',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: false },
+        volumeNeeded: 0,
+      },
+    },
+    template: {
+      title: 'Great news! Someone wants to donate milk to you!',
+      message: 'A generous donor wants to fulfill your {{volumeNeeded}}mL milk request.',
+      variables: [
+        {
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
+          required: true,
+        },
+      ],
+    },
+  },
+  {
+    key: 'MATCHED_REQUEST_PARTIALLY',
+    name: 'Request Partially Fulfilled',
+    description: 'Sent when a request is partially fulfilled with a donation',
+    priority: PRIORITY_LEVELS.HIGH.value,
+    active: true,
+    trigger: {
+      collection: TRIGGER_COLLECTION.REQUESTS.value,
+      event: TRIGGER_EVENT.UPDATE.value,
+      conditions: {
+        status: DONATION_REQUEST_STATUS.MATCHED.value,
+        recipient: { exists: false },
+        volumeNeeded: { changed: true },
+      },
+    },
+    template: {
+      title: 'Great news! Someone wants to donate milk to you!',
+      message: 'A generous donor wants to partially fulfill your {{volumeNeeded}}mL milk request.',
+      variables: [
+        {
+          key: 'volumeNeeded',
+          description: 'Volume needed in mL',
+          type: 'number',
+          path: 'volumeNeeded',
+          required: true,
+        },
+      ],
+    },
+  },
+  // #endregion REQUEST
 
   // === DELIVERY UPDATES ===
   {
-    key: 'DELIVERY_SCHEDULED',
-    name: 'Delivery Scheduled',
-    description: 'Sent when a delivery is scheduled',
-    priority: 'HIGH',
+    key: 'TRANSACTION_CREATED',
+    name: 'Transaction Created',
+    description: 'Sent when a new transaction is created.',
+    priority: PRIORITY_LEVELS.HIGH.value,
     trigger: {
-      collection: 'deliveries',
-      event: 'CREATE',
+      collection: TRIGGER_COLLECTION.TRANSACTIONS.value,
+      event: TRIGGER_EVENT.CREATE.value,
+      conditions: {},
     },
     template: {
       title: 'Delivery scheduled',

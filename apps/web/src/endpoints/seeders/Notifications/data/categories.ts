@@ -1,48 +1,44 @@
+import { SYSTEM_COLORS } from '@lactalink/enums';
 import { NotificationCategory } from '@lactalink/types';
+import { RequiredDataFromCollection } from 'payload';
 
-export const categoriesData: Omit<NotificationCategory, 'id' | 'createdAt' | 'updatedAt'>[] = [
+export const CATEGORY_KEYS = {
+  MATCHING: 'MATCHING',
+  TRANSACTION: 'TRANSACTION',
+  LIFECYCLE: 'LIFECYCLE',
+  SYSTEM: 'SYSTEM',
+} as const;
+
+export const categoriesData: RequiredDataFromCollection<NotificationCategory>[] = [
   {
-    key: 'MATCHING',
+    key: CATEGORY_KEYS.MATCHING,
     name: 'Matching & Allocation',
-    description: 'Notifications when donations are matched with requests',
-    color: '#10B981', // Green
-    icon: 'heart-handshake',
+    description: 'Notifications when donations/requests are matched or allocated',
+    color: SYSTEM_COLORS.PRIMARY.value,
     active: true,
     sortOrder: 1,
   },
   {
-    key: 'DELIVERY',
-    name: 'Delivery Updates',
-    description: 'Notifications about delivery status and logistics',
-    color: '#3B82F6', // Blue
-    icon: 'truck',
+    key: CATEGORY_KEYS.TRANSACTION,
+    name: 'Transaction Updates',
+    description: 'Notifications about transaction status and updates',
+    color: SYSTEM_COLORS.PRIMARY.value,
     active: true,
     sortOrder: 2,
   },
   {
-    key: 'DONATION_LIFECYCLE',
-    name: 'Donation Status',
-    description: 'Updates about donation availability and lifecycle',
-    color: '#8B5CF6', // Purple
-    icon: 'droplet',
+    key: CATEGORY_KEYS.LIFECYCLE,
+    name: 'Donation/Request Status',
+    description: 'Updates about the availability and lifecycle of donations and requests',
+    color: SYSTEM_COLORS.INFO.value,
     active: true,
     sortOrder: 3,
   },
   {
-    key: 'REQUEST_LIFECYCLE',
-    name: 'Request Status',
-    description: 'Updates about request fulfillment and status',
-    color: '#F59E0B', // Amber
-    icon: 'hand-heart',
-    active: true,
-    sortOrder: 4,
-  },
-  {
-    key: 'SYSTEM',
+    key: CATEGORY_KEYS.SYSTEM,
     name: 'System Notifications',
     description: 'Important system updates and announcements',
-    color: '#6B7280', // Gray
-    icon: 'bell',
+    color: SYSTEM_COLORS.DEFAULT.value,
     active: true,
     sortOrder: 5,
   },

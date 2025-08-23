@@ -1021,11 +1021,11 @@ export const notification_categories = pgTable(
     color: varchar('color'),
     sortOrder: numeric('sort_order').default('0'),
     active: boolean('active').default(true),
-    metadata_allowUserSettings: boolean('metadata_allow_user_settings').default(true),
-    metadata_retentionDays: numeric('metadata_retention_days').default('30'),
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    metadata_allowUserSettings: boolean('metadata_allow_user_settings').default(true),
+    metadata_retentionDays: numeric('metadata_retention_days').default('30'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
