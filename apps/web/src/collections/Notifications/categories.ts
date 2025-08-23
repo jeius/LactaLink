@@ -22,8 +22,8 @@ import { admin, authenticated } from '../_access-control';
  * - Logical grouping for admin management
  * - Enable/disable functionality for bulk control
  */
-export const NotificationCategories: CollectionConfig<'notificationCategories'> = {
-  slug: 'notificationCategories',
+export const NotificationCategories: CollectionConfig<'notification-categories'> = {
+  slug: 'notification-categories',
 
   access: {
     admin: admin,

@@ -10,8 +10,8 @@ import {
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
 
-export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
-  slug: 'notificationTypes',
+export const NotificationTypes: CollectionConfig<'notification-types'> = {
+  slug: 'notification-types',
   access: {
     admin: admin,
     create: admin,
@@ -43,7 +43,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
       name: 'defaultChannels',
       label: 'Default Delivery Channels',
       type: 'relationship',
-      relationTo: 'notificationChannels',
+      relationTo: 'notification-channels',
       hasMany: true,
       admin: {
         description: 'Default channels for this notification type',
@@ -95,7 +95,7 @@ export const NotificationTypes: CollectionConfig<'notificationTypes'> = {
           name: 'category',
           label: 'Category',
           type: 'relationship',
-          relationTo: 'notificationCategories',
+          relationTo: 'notification-categories',
           required: true,
           admin: {
             description: 'Category this notification type belongs to',

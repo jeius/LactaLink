@@ -67,15 +67,30 @@ export const Notifications: CollectionConfig<'notifications'> = {
     },
 
     {
-      name: 'notificationType',
-      label: 'Notification Type',
-      type: 'relationship',
-      relationTo: 'notificationTypes',
-      required: true,
-      admin: {
-        description:
-          'Template and configuration used to generate this notification. Defines category, priority, and available channels.',
-      },
+      type: 'row',
+      fields: [
+        {
+          name: 'notificationCategory',
+          label: 'Notification Category',
+          type: 'relationship',
+          relationTo: 'notification-categories',
+          required: true,
+          admin: {
+            description: 'Category of this notification. Used for user preferences and filtering.',
+          },
+        },
+        {
+          name: 'notificationType',
+          label: 'Notification Type',
+          type: 'relationship',
+          relationTo: 'notification-types',
+          required: false,
+          admin: {
+            description:
+              'Template and configuration used to generate this notification. Defines priority, and default channels.',
+          },
+        },
+      ],
     },
 
     priorityLevel({
@@ -95,7 +110,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
       required: true,
       admin: {
         description:
-          'Final processed title from notification type template with variables replaced. This is what users see as the notification headline.',
+          'Final processed title from notification type template with variables replaced. This is null if notificationType is not provided.',
         readOnly: true,
       },
     },
@@ -107,7 +122,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
       required: true,
       admin: {
         description:
-          'Final processed message content from template with variables replaced. Contains the main notification text users will read.',
+          'Final processed message content from template with variables replaced. This is null if notificationType is not provided.',
         readOnly: true,
       },
     },
@@ -210,7 +225,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
                   name: 'channel',
                   label: 'Notification Channel',
                   type: 'relationship',
-                  relationTo: 'notificationChannels',
+                  relationTo: 'notification-channels',
                   required: true,
                   admin: {
                     description:

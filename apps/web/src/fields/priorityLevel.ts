@@ -3,7 +3,7 @@ import { Field, SelectField } from 'payload';
 
 export const priorityLevel = ({
   required = true,
-  defaultValue = 'MEDIUM',
+  defaultValue = PRIORITY_LEVELS.MEDIUM.value,
   label,
   admin,
   name = 'priority',

@@ -23,8 +23,8 @@ import { templatesTab } from './templatesTab';
  * - WEBHOOK: HTTP POST to external endpoints for integrations
  * - EXTERNAL_API: Custom API integrations for specialized delivery
  */
-export const NotificationChannels: CollectionConfig<'notificationChannels'> = {
-  slug: 'notificationChannels',
+export const NotificationChannels: CollectionConfig<'notification-channels'> = {
+  slug: 'notification-channels',
 
   access: {
     admin: admin,

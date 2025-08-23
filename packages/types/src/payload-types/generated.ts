@@ -188,10 +188,10 @@ export interface Config {
     milkBags: MilkBag;
     'milk-bag-images': MilkBagImage;
     milkBanks: MilkBank;
-    notificationCategories: NotificationCategory;
-    notificationChannels: NotificationChannel;
+    'notification-categories': NotificationCategory;
+    'notification-channels': NotificationChannel;
     notifications: Notification;
-    notificationTypes: NotificationType;
+    'notification-types': NotificationType;
     provinces: Province;
     regions: Region;
     requests: Request;
@@ -251,20 +251,16 @@ export interface Config {
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
-    notificationCategories:
-      | NotificationCategoriesSelect<false>
-      | NotificationCategoriesSelect<true>;
-    notificationChannels: NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
+    'notification-categories': NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
+    'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
-    notificationTypes: NotificationTypesSelect<false> | NotificationTypesSelect<true>;
+    'notification-types': NotificationTypesSelect<false> | NotificationTypesSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
-    'payload-locked-documents':
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -904,15 +900,7 @@ export interface DeliveryPreference {
   /**
    * Days available for pickup, delivery, or meet-up.
    */
-  availableDays: (
-    | 'MONDAY'
-    | 'TUESDAY'
-    | 'WEDNESDAY'
-    | 'THURSDAY'
-    | 'FRIDAY'
-    | 'SATURDAY'
-    | 'SUNDAY'
-  )[];
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
   donations?: {
     docs?: (string | Donation)[];
     hasNextPage?: boolean;
@@ -1271,7 +1259,7 @@ export interface Barangay {
  * Organize notification types into logical categories with consistent styling and behavior.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationCategories".
+ * via the `definition` "notification-categories".
  */
 export interface NotificationCategory {
   id: string;
@@ -1296,17 +1284,7 @@ export interface NotificationCategory {
    * Color used for notifications in this category. Applies to icons, headers, and highlights in the UI.
    */
   color?:
-    | (
-        | 'PRIMARY'
-        | 'SECONDARY'
-        | 'TERTIARY'
-        | 'POSITIVE'
-        | 'WARNING'
-        | 'DANGER'
-        | 'INFO'
-        | 'MUTED'
-        | 'DEFAULT'
-      )
+    | ('PRIMARY' | 'SECONDARY' | 'TERTIARY' | 'POSITIVE' | 'WARNING' | 'DANGER' | 'INFO' | 'MUTED' | 'DEFAULT')
     | null;
   /**
    * Controls the order categories appear in lists and dropdowns. Lower numbers appear first.
@@ -1336,7 +1314,7 @@ export interface NotificationCategory {
  * Configure delivery channels for sending notifications through different mediums (email, SMS, push, etc.)
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationChannels".
+ * via the `definition` "notification-channels".
  */
 export interface NotificationChannel {
   id: string;
@@ -1456,19 +1434,23 @@ export interface Notification {
    */
   recipient: string | User;
   /**
-   * Template and configuration used to generate this notification. Defines category, priority, and available channels.
+   * Category of this notification. Used for user preferences and filtering.
    */
-  notificationType: string | NotificationType;
+  notificationCategory: string | NotificationCategory;
+  /**
+   * Template and configuration used to generate this notification. Defines priority, and default channels.
+   */
+  notificationType?: (string | null) | NotificationType;
   /**
    * Overrides the default priority from notification type. Affects delivery urgency and user interface prominence.
    */
   priority?: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') | null;
   /**
-   * Final processed title from notification type template with variables replaced. This is what users see as the notification headline.
+   * Final processed title from notification type template with variables replaced. This is null if notificationType is not provided.
    */
   title: string;
   /**
-   * Final processed message content from template with variables replaced. Contains the main notification text users will read.
+   * Final processed message content from template with variables replaced. This is null if notificationType is not provided.
    */
   message: string;
   /**
@@ -1525,7 +1507,7 @@ export interface Notification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationTypes".
+ * via the `definition` "notification-types".
  */
 export interface NotificationType {
   id: string;
@@ -1695,11 +1677,11 @@ export interface PayloadLockedDocument {
         value: string | MilkBank;
       } | null)
     | ({
-        relationTo: 'notificationCategories';
+        relationTo: 'notification-categories';
         value: string | NotificationCategory;
       } | null)
     | ({
-        relationTo: 'notificationChannels';
+        relationTo: 'notification-channels';
         value: string | NotificationChannel;
       } | null)
     | ({
@@ -1707,7 +1689,7 @@ export interface PayloadLockedDocument {
         value: string | Notification;
       } | null)
     | ({
-        relationTo: 'notificationTypes';
+        relationTo: 'notification-types';
         value: string | NotificationType;
       } | null)
     | ({
@@ -2160,7 +2142,7 @@ export interface MilkBanksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationCategories_select".
+ * via the `definition` "notification-categories_select".
  */
 export interface NotificationCategoriesSelect<T extends boolean = true> {
   createdBy?: T;
@@ -2182,7 +2164,7 @@ export interface NotificationCategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationChannels_select".
+ * via the `definition` "notification-channels_select".
  */
 export interface NotificationChannelsSelect<T extends boolean = true> {
   createdBy?: T;
@@ -2240,6 +2222,7 @@ export interface NotificationChannelsSelect<T extends boolean = true> {
 export interface NotificationsSelect<T extends boolean = true> {
   createdBy?: T;
   recipient?: T;
+  notificationCategory?: T;
   notificationType?: T;
   priority?: T;
   title?: T;
@@ -2279,7 +2262,7 @@ export interface NotificationChannelStatsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notificationTypes_select".
+ * via the `definition` "notification-types_select".
  */
 export interface NotificationTypesSelect<T extends boolean = true> {
   active?: T;
@@ -2530,4 +2513,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Auth {
   [k: string]: unknown;
+}
+
+
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
 }

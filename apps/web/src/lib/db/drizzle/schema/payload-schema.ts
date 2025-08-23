@@ -100,6 +100,17 @@ export const enum_milk_banks_type = pgEnum('enum_milk_banks_type', [
   'PRIVATE',
   'OTHER',
 ]);
+export const enum_system_colors = pgEnum('enum_system_colors', [
+  'PRIMARY',
+  'SECONDARY',
+  'TERTIARY',
+  'POSITIVE',
+  'WARNING',
+  'DANGER',
+  'INFO',
+  'MUTED',
+  'DEFAULT',
+]);
 export const enum_notification_channel_type = pgEnum('enum_notification_channel_type', [
   'IN_APP',
   'EMAIL',
@@ -130,8 +141,7 @@ export const enum_js_types = pgEnum('enum_js_types', [
 export const enum_notification_trigger_collection = pgEnum('enum_notification_trigger_collection', [
   'requests',
   'donations',
-  'deliveries',
-  'system',
+  'transactions',
 ]);
 export const enum_notification_trigger_event = pgEnum('enum_notification_trigger_event', [
   'CREATE',
@@ -549,6 +559,7 @@ export const hospitals = pgTable(
   'hospitals',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    displayName: varchar('display_name'),
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -983,6 +994,7 @@ export const milk_banks = pgTable(
   'milk_banks',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    displayName: varchar('display_name'),
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -1014,16 +1026,16 @@ export const notification_categories = pgTable(
   'notification_categories',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     key: varchar('key').notNull(),
     name: varchar('name').notNull(),
     description: varchar('description'),
     icon: varchar('icon'),
-    color: varchar('color'),
+    color: enum_system_colors('color').default('DEFAULT'),
     sortOrder: numeric('sort_order').default('0'),
     active: boolean('active').default(true),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
     metadata_allowUserSettings: boolean('metadata_allow_user_settings').default(true),
     metadata_retentionDays: numeric('metadata_retention_days').default('30'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
@@ -1034,10 +1046,10 @@ export const notification_categories = pgTable(
       .notNull(),
   },
   (columns) => ({
-    notification_categories_key_idx: uniqueIndex('notification_categories_key_idx').on(columns.key),
     notification_categories_created_by_idx: index('notification_categories_created_by_idx').on(
       columns.createdBy
     ),
+    notification_categories_key_idx: uniqueIndex('notification_categories_key_idx').on(columns.key),
     notification_categories_updated_at_idx: index('notification_categories_updated_at_idx').on(
       columns.updatedAt
     ),
@@ -1148,11 +1160,14 @@ export const notifications = pgTable(
       .references(() => users.id, {
         onDelete: 'set null',
       }),
-    notificationType: uuid('notification_type_id')
+    notificationCategory: uuid('notification_category_id')
       .notNull()
-      .references(() => notification_types.id, {
+      .references(() => notification_categories.id, {
         onDelete: 'set null',
       }),
+    notificationType: uuid('notification_type_id').references(() => notification_types.id, {
+      onDelete: 'set null',
+    }),
     priority: enum_priority_level('priority').default('MEDIUM'),
     title: varchar('title').notNull(),
     message: varchar('message').notNull(),
@@ -1171,6 +1186,9 @@ export const notifications = pgTable(
   (columns) => ({
     notifications_created_by_idx: index('notifications_created_by_idx').on(columns.createdBy),
     notifications_recipient_idx: index('notifications_recipient_idx').on(columns.recipient),
+    notifications_notification_category_idx: index('notifications_notification_category_idx').on(
+      columns.notificationCategory
+    ),
     notifications_notification_type_idx: index('notifications_notification_type_idx').on(
       columns.notificationType
     ),
@@ -1188,6 +1206,7 @@ export const notifications_rels = pgTable(
     path: varchar('path').notNull(),
     requestsID: uuid('requests_id'),
     donationsID: uuid('donations_id'),
+    transactionsID: uuid('transactions_id'),
   },
   (columns) => ({
     order: index('notifications_rels_order_idx').on(columns.order),
@@ -1198,6 +1217,9 @@ export const notifications_rels = pgTable(
     ),
     notifications_rels_donations_id_idx: index('notifications_rels_donations_id_idx').on(
       columns.donationsID
+    ),
+    notifications_rels_transactions_id_idx: index('notifications_rels_transactions_id_idx').on(
+      columns.transactionsID
     ),
     parentFk: foreignKey({
       columns: [columns['parent']],
@@ -1213,6 +1235,11 @@ export const notifications_rels = pgTable(
       columns: [columns['donationsID']],
       foreignColumns: [donations.id],
       name: 'notifications_rels_donations_fk',
+    }).onDelete('cascade'),
+    transactionsIdFk: foreignKey({
+      columns: [columns['transactionsID']],
+      foreignColumns: [transactions.id],
+      name: 'notifications_rels_transactions_fk',
     }).onDelete('cascade'),
   })
 );
@@ -1296,7 +1323,7 @@ export const notification_types_rels = pgTable(
     order: integer('order'),
     parent: uuid('parent_id').notNull(),
     path: varchar('path').notNull(),
-    notificationChannelsID: uuid('notification_channels_id'),
+    'notification-channelsID': uuid('notification_channels_id'),
   },
   (columns) => ({
     order: index('notification_types_rels_order_idx').on(columns.order),
@@ -1304,14 +1331,14 @@ export const notification_types_rels = pgTable(
     pathIdx: index('notification_types_rels_path_idx').on(columns.path),
     notification_types_rels_notification_channels_id_idx: index(
       'notification_types_rels_notification_channels_id_idx'
-    ).on(columns.notificationChannelsID),
+    ).on(columns['notification-channelsID']),
     parentFk: foreignKey({
       columns: [columns['parent']],
       foreignColumns: [notification_types.id],
       name: 'notification_types_rels_parent_fk',
     }).onDelete('cascade'),
-    notificationChannelsIdFk: foreignKey({
-      columns: [columns['notificationChannelsID']],
+    'notification-channelsIdFk': foreignKey({
+      columns: [columns['notification-channelsID']],
       foreignColumns: [notification_channels.id],
       name: 'notification_types_rels_notification_channels_fk',
     }).onDelete('cascade'),
@@ -1818,10 +1845,10 @@ export const payload_locked_documents_rels = pgTable(
     milkBagsID: uuid('milk_bags_id'),
     'milk-bag-imagesID': uuid('milk_bag_images_id'),
     milkBanksID: uuid('milk_banks_id'),
-    notificationCategoriesID: uuid('notification_categories_id'),
-    notificationChannelsID: uuid('notification_channels_id'),
+    'notification-categoriesID': uuid('notification_categories_id'),
+    'notification-channelsID': uuid('notification_channels_id'),
     notificationsID: uuid('notifications_id'),
-    notificationTypesID: uuid('notification_types_id'),
+    'notification-typesID': uuid('notification_types_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
     requestsID: uuid('requests_id'),
@@ -1876,16 +1903,16 @@ export const payload_locked_documents_rels = pgTable(
     ).on(columns.milkBanksID),
     payload_locked_documents_rels_notification_categories_id_idx: index(
       'payload_locked_documents_rels_notification_categories_id_idx'
-    ).on(columns.notificationCategoriesID),
+    ).on(columns['notification-categoriesID']),
     payload_locked_documents_rels_notification_channels_id_idx: index(
       'payload_locked_documents_rels_notification_channels_id_idx'
-    ).on(columns.notificationChannelsID),
+    ).on(columns['notification-channelsID']),
     payload_locked_documents_rels_notifications_id_idx: index(
       'payload_locked_documents_rels_notifications_id_idx'
     ).on(columns.notificationsID),
     payload_locked_documents_rels_notification_types_id_idx: index(
       'payload_locked_documents_rels_notification_types_id_idx'
-    ).on(columns.notificationTypesID),
+    ).on(columns['notification-typesID']),
     payload_locked_documents_rels_provinces_id_idx: index(
       'payload_locked_documents_rels_provinces_id_idx'
     ).on(columns.provincesID),
@@ -1976,13 +2003,13 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [milk_banks.id],
       name: 'payload_locked_documents_rels_milk_banks_fk',
     }).onDelete('cascade'),
-    notificationCategoriesIdFk: foreignKey({
-      columns: [columns['notificationCategoriesID']],
+    'notification-categoriesIdFk': foreignKey({
+      columns: [columns['notification-categoriesID']],
       foreignColumns: [notification_categories.id],
       name: 'payload_locked_documents_rels_notification_categories_fk',
     }).onDelete('cascade'),
-    notificationChannelsIdFk: foreignKey({
-      columns: [columns['notificationChannelsID']],
+    'notification-channelsIdFk': foreignKey({
+      columns: [columns['notification-channelsID']],
       foreignColumns: [notification_channels.id],
       name: 'payload_locked_documents_rels_notification_channels_fk',
     }).onDelete('cascade'),
@@ -1991,8 +2018,8 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [notifications.id],
       name: 'payload_locked_documents_rels_notifications_fk',
     }).onDelete('cascade'),
-    notificationTypesIdFk: foreignKey({
-      columns: [columns['notificationTypesID']],
+    'notification-typesIdFk': foreignKey({
+      columns: [columns['notification-typesID']],
       foreignColumns: [notification_types.id],
       name: 'payload_locked_documents_rels_notification_types_fk',
     }).onDelete('cascade'),
@@ -2484,6 +2511,11 @@ export const relations_notifications_rels = relations(notifications_rels, ({ one
     references: [donations.id],
     relationName: 'donations',
   }),
+  transactionsID: one(transactions, {
+    fields: [notifications_rels.transactionsID],
+    references: [transactions.id],
+    relationName: 'transactions',
+  }),
 }));
 export const relations_notifications = relations(notifications, ({ one, many }) => ({
   createdBy: one(users, {
@@ -2495,6 +2527,11 @@ export const relations_notifications = relations(notifications, ({ one, many }) 
     fields: [notifications.recipient],
     references: [users.id],
     relationName: 'recipient',
+  }),
+  notificationCategory: one(notification_categories, {
+    fields: [notifications.notificationCategory],
+    references: [notification_categories.id],
+    relationName: 'notificationCategory',
   }),
   notificationType: one(notification_types, {
     fields: [notifications.notificationType],
@@ -2524,10 +2561,10 @@ export const relations_notification_types_rels = relations(notification_types_re
     references: [notification_types.id],
     relationName: '_rels',
   }),
-  notificationChannelsID: one(notification_channels, {
-    fields: [notification_types_rels.notificationChannelsID],
+  'notification-channelsID': one(notification_channels, {
+    fields: [notification_types_rels['notification-channelsID']],
     references: [notification_channels.id],
-    relationName: 'notificationChannels',
+    relationName: 'notification-channels',
   }),
 }));
 export const relations_notification_types = relations(notification_types, ({ one, many }) => ({
@@ -2807,25 +2844,25 @@ export const relations_payload_locked_documents_rels = relations(
       references: [milk_banks.id],
       relationName: 'milkBanks',
     }),
-    notificationCategoriesID: one(notification_categories, {
-      fields: [payload_locked_documents_rels.notificationCategoriesID],
+    'notification-categoriesID': one(notification_categories, {
+      fields: [payload_locked_documents_rels['notification-categoriesID']],
       references: [notification_categories.id],
-      relationName: 'notificationCategories',
+      relationName: 'notification-categories',
     }),
-    notificationChannelsID: one(notification_channels, {
-      fields: [payload_locked_documents_rels.notificationChannelsID],
+    'notification-channelsID': one(notification_channels, {
+      fields: [payload_locked_documents_rels['notification-channelsID']],
       references: [notification_channels.id],
-      relationName: 'notificationChannels',
+      relationName: 'notification-channels',
     }),
     notificationsID: one(notifications, {
       fields: [payload_locked_documents_rels.notificationsID],
       references: [notifications.id],
       relationName: 'notifications',
     }),
-    notificationTypesID: one(notification_types, {
-      fields: [payload_locked_documents_rels.notificationTypesID],
+    'notification-typesID': one(notification_types, {
+      fields: [payload_locked_documents_rels['notification-typesID']],
       references: [notification_types.id],
-      relationName: 'notificationTypes',
+      relationName: 'notification-types',
     }),
     provincesID: one(provinces, {
       fields: [payload_locked_documents_rels.provincesID],
@@ -2898,6 +2935,7 @@ type DatabaseSchema = {
   enum_milk_bag_transfer_reason: typeof enum_milk_bag_transfer_reason;
   enum_milk_bag_status: typeof enum_milk_bag_status;
   enum_milk_banks_type: typeof enum_milk_banks_type;
+  enum_system_colors: typeof enum_system_colors;
   enum_notification_channel_type: typeof enum_notification_channel_type;
   enum_notification_retry_strategy: typeof enum_notification_retry_strategy;
   enum_priority_level: typeof enum_priority_level;
