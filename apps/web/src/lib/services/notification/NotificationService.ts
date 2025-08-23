@@ -32,19 +32,24 @@ export class NotificationService {
 
   async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
     const collectionSlug = this.collection.slug;
-    const resolver = new FieldResolver(this.payload, this.collection, doc, this.payloadReq);
+    const resolver = new FieldResolver(this.collection);
 
-    const fullDoc = await this.prepareFullDoc(doc, resolver, operation);
-
-    // Fetch notification types with matching triggers
-    const notificationTypes = await this.payload.find({
-      collection: 'notificationTypes',
-      req: this.payloadReq,
-      where: {
-        'trigger.collection': { equals: collectionSlug },
-        'trigger.event': { equals: operation.toUpperCase() },
-      },
-    });
+    const [fullDoc, notificationTypes] = await Promise.all([
+      this.payload.findByID({
+        collection: collectionSlug,
+        req: this.payloadReq,
+        id: doc.id,
+        depth: 5,
+      }),
+      this.payload.find({
+        collection: 'notification-types',
+        req: this.payloadReq,
+        where: {
+          'trigger.collection': { equals: collectionSlug },
+          'trigger.event': { equals: operation.toUpperCase() },
+        },
+      }),
+    ]);
 
     const resolvedData: {
       relatedData: NonNullable<Notification['relatedData']>;
@@ -56,7 +61,7 @@ export class NotificationService {
       const trigger = notificationType.trigger;
       const trigValidator = new TriggerValidator(trigger, doc, previousDoc);
 
-      if (trigValidator.validate()) {
+      if (trigValidator.validate(this.collection.flattenedFields, this.payloadReq)) {
         resolvedData.push({
           relatedData: resolver.resolveRelatedData(notificationType, fullDoc),
           variables: resolver.resolveVariables(notificationType, fullDoc),
@@ -74,7 +79,7 @@ export class NotificationService {
    * builds channel stats, and creates the notification in the database.
    * It also sends the notification immediately if not scheduled for later.
    */
-  async createNotification({
+  async autoCreateNotifications({
     doc,
     recipient,
     previousDoc,
@@ -120,13 +125,14 @@ export class NotificationService {
         req: this.payloadReq,
         data: {
           recipient,
-          notificationType: notificationType.id,
           priority,
           title,
           message,
           variables: allVariables,
           read: false,
           relatedData,
+          notificationType: notificationType.id,
+          notificationCategory: extractID(notificationType.category),
           delivery: { channelsStats },
         },
       });
@@ -165,7 +171,7 @@ export class NotificationService {
     scheduledFor?: NotificationChannelStats[number]['scheduledFor']
   ): Promise<NotificationChannelStats> {
     const channels = await this.payload.find({
-      collection: 'notificationChannels',
+      collection: 'notification-channels',
       req: this.payloadReq,
       where: {
         id: { in: channelIds },
@@ -200,33 +206,13 @@ export class NotificationService {
       collection: 'notifications',
       id: notificationId,
       req: this.payloadReq,
+      depth: 0,
+      select: {},
       data: {
         delivery: {
           channelsStats: updatedStats,
         },
       },
     });
-  }
-
-  private async prepareFullDoc(
-    doc: Collection,
-    resolver: FieldResolver,
-    operation: Operation
-  ): Promise<Collection> {
-    this.payload.logger.info(`Preparing full document for collection ${this.collection.slug}`);
-    // this.payload.logger.info(this.collection.fields, 'Collection fields');
-
-    // Initialize an empty object to hold the full document
-    const fullDoc: Omit<Collection, 'createdAt' | 'updatedAt'> = { id: doc.id };
-
-    // Iterate through all fields in the collection
-    for (const field of this.collection.fields) {
-      await resolver.resolveField(field, doc, '', fullDoc);
-    }
-
-    this.payload.logger.info(
-      `Resolved full document for ${operation} operation on ${this.collection.slug}`
-    );
-    return fullDoc as Collection;
   }
 }
