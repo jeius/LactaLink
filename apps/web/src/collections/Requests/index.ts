@@ -12,10 +12,10 @@ import {
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { requestsEndpoints } from './endpoints';
-import { calculateFulfillmentPercentage } from './hooks/calculateFulfillmentPercentage';
-import { createRequestNotification } from './hooks/createNotification';
+import { calculateVolumes } from './hooks/calculateVolumes';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeRequest } from './hooks/initialize';
+import { createRequestNotification } from './hooks/notifications';
 import { processOrganizationRequest } from './hooks/processOrganizationRequest';
 import { updateVolume } from './hooks/updateVolume';
 
@@ -34,10 +34,10 @@ export const Requests: CollectionConfig<'requests'> = {
     defaultColumns: ['requester', 'volumeNeeded', 'volumeFulfilled', 'status', 'createdAt'],
   },
   hooks: {
-    beforeValidate: [initializeRequest],
+    beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
+    beforeValidate: [initializeRequest, ({ data, req }) => calculateVolumes(data, req)],
     beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateVolume],
     afterChange: [createRequestNotification, processOrganizationRequest],
-    beforeRead: [calculateFulfillmentPercentage],
   },
   endpoints: requestsEndpoints,
   fields: [
@@ -57,17 +57,6 @@ export const Requests: CollectionConfig<'requests'> = {
       virtual: true,
       admin: {
         description: 'Percentage of the request that has been fulfilled.',
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-
-    {
-      name: 'initialVolumeNeeded',
-      type: 'number',
-      virtual: true,
-      admin: {
-        description: 'Initial volume needed for the request, used for calculations.',
         readOnly: true,
         position: 'sidebar',
       },
@@ -117,15 +106,29 @@ export const Requests: CollectionConfig<'requests'> = {
       type: 'row',
       fields: [
         {
-          name: 'volumeNeeded',
-          label: 'Volume Needed (mL)',
+          name: 'initialVolumeNeeded',
+          label: 'Initial Volume Needed (mL)',
           type: 'number',
           required: true,
           min: 20,
+          defaultValue: 20,
+          admin: {
+            description: 'Initial volume needed for the request, used for calculations.',
+            width: '40%',
+            step: 10,
+          },
+        },
+        {
+          name: 'volumeNeeded',
+          label: 'Volume Needed (mL)',
+          type: 'number',
+          defaultValue: 20,
+          required: true,
+          hasMany: false,
+          validate: () => true, // Always valid as it's calculated
           admin: {
             description: 'Amount of milk needed in milliliters',
-            width: '50%',
-            step: 10,
+            width: '30%',
           },
         },
 
@@ -133,12 +136,13 @@ export const Requests: CollectionConfig<'requests'> = {
           name: 'volumeFulfilled',
           label: 'Volume Fulfilled (mL)',
           type: 'number',
-          min: 0,
           defaultValue: 0,
+          required: true,
+          hasMany: false,
+          validate: () => true, // Always valid as it's calculated
           admin: {
             description: 'Amount of milk already fulfilled in milliliters',
-            width: '50%',
-            step: 10,
+            width: '30%',
           },
         },
       ],

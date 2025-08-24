@@ -14,9 +14,10 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { donationsEndpoints } from './endpoints';
 import { filterMilkBagsOptions } from './filterOptions';
-import { createDonationNotification } from './hooks/createNotification';
+import { calculateVolumes } from './hooks/calculateVolumes';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeDonation } from './hooks/initialize';
+import { createDonationNotification } from './hooks/notifications';
 
 export const Donations: CollectionConfig<'donations'> = {
   slug: 'donations',
@@ -33,7 +34,8 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeValidate: [initializeDonation],
+    beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
+    beforeValidate: [initializeDonation, ({ data, req }) => calculateVolumes(data, req)],
     beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle],
     afterChange: [createDonationNotification, processDonationToOrganization],
   },
@@ -52,7 +54,10 @@ export const Donations: CollectionConfig<'donations'> = {
       name: 'volume',
       label: 'Total Volume (mL)',
       type: 'number',
-      defaultValue: 0,
+      defaultValue: 20,
+      hasMany: false,
+      required: true,
+      validate: () => true, // Always valid as it's calculated
       admin: {
         description: 'Total volume of milk donated.',
         readOnly: true,
@@ -63,6 +68,10 @@ export const Donations: CollectionConfig<'donations'> = {
       name: 'remainingVolume',
       label: 'Remaining Volume (mL)',
       type: 'number',
+      defaultValue: 0,
+      hasMany: false,
+      required: true,
+      validate: () => true, // Always valid as it's calculated
       admin: {
         description: 'Volume still available for allocation',
         readOnly: true,

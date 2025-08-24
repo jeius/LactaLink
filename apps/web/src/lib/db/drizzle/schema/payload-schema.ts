@@ -449,8 +449,8 @@ export const donations = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title'),
-    volume: numeric('volume').default('0'),
-    remainingVolume: numeric('remaining_volume'),
+    volume: numeric('volume').notNull().default('20'),
+    remainingVolume: numeric('remaining_volume').notNull().default('0'),
     completedAt: timestamp('completed_at', { mode: 'string', withTimezone: true, precision: 3 }),
     cancelledAt: timestamp('cancelled_at', { mode: 'string', withTimezone: true, precision: 3 }),
     rejectedAt: timestamp('rejected_at', { mode: 'string', withTimezone: true, precision: 3 }),
@@ -1421,8 +1421,9 @@ export const requests = pgTable(
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    volumeNeeded: numeric('volume_needed').notNull(),
-    volumeFulfilled: numeric('volume_fulfilled').default('0'),
+    initialVolumeNeeded: numeric('initial_volume_needed').notNull().default('20'),
+    volumeNeeded: numeric('volume_needed').notNull().default('20'),
+    volumeFulfilled: numeric('volume_fulfilled').notNull().default('0'),
     status: enum_donation_request_status('status').notNull().default('AVAILABLE'),
     details_neededAt: timestamp('details_needed_at', {
       mode: 'string',
