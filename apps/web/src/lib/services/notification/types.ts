@@ -47,7 +47,8 @@ export interface CreateNotificationParams
    * Schedule delivery date for the notification
    */
   scheduleDelivery?: Date;
-  categoryKey: NOTIFICATION_CATEGORY_KEYS;
+  categoryKey: keyof typeof NOTIFICATION_CATEGORY_KEYS;
+  relatedDoc: NonNullable<NonNullable<Notification['relatedData']>['data']>;
 }
 
 export interface TemplateProcessorOptions {

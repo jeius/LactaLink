@@ -41,7 +41,7 @@ export const Notifications: CollectionConfig<'notifications'> = {
   admin: {
     group: COLLECTION_GROUP.SYSTEM,
     useAsTitle: 'title',
-    defaultColumns: ['recipient', 'notificationType', 'title', 'priority', 'read', 'createdAt'],
+    defaultColumns: ['recipient', 'notificationCategory', 'title', 'priority', 'read', 'createdAt'],
     description:
       'Individual notification instances with delivery tracking and user interaction data',
   },

@@ -115,6 +115,7 @@ export class NotificationService {
   async createNotification({
     scheduleDelivery,
     categoryKey,
+    relatedDoc,
     ...params
   }: CreateNotificationParams): Promise<Notification> {
     // Build channel stats
@@ -150,6 +151,12 @@ export class NotificationService {
       throw err;
     });
 
+    const slugLabel = this.collection.labels.singular;
+    const actionLabel = `View ${slugLabel}`;
+    const actionUrl = relatedDoc
+      ? `/${relatedDoc.relationTo}/${extractID(relatedDoc.value)}`
+      : null;
+
     // Create notification
     const notification = await this.payload.create({
       collection: 'notifications',
@@ -161,6 +168,11 @@ export class NotificationService {
         recipient: extractID(params.recipient),
         notificationCategory: extractID(notificationCategory),
         delivery: { channelsStats },
+        relatedData: {
+          data: relatedDoc,
+          actionLabel,
+          actionUrl,
+        },
       },
     });
 
