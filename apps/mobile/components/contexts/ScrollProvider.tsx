@@ -1,6 +1,13 @@
 import { createContext, useCallback, useContext, useRef } from 'react';
 import { NativeScrollEvent } from 'react-native';
-import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import {
+  interpolate,
+  SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ScrollContextType = {
   scrollValue: SharedValue<number>;
@@ -69,4 +76,45 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       {children}
     </ScrollContext.Provider>
   );
+}
+
+export function useHideOnScrollAnimation({
+  animateDistance: animDist,
+  deltaThreshold = 20,
+}: { animateDistance?: number; deltaThreshold?: number } = {}) {
+  const { scrollValue } = useScroll();
+  const insets = useSafeAreaInsets();
+
+  const animateDistance = animDist || insets.bottom + 60;
+
+  const opacity = useSharedValue(1);
+  const translateY = useSharedValue(0);
+
+  return useAnimatedStyle(() => {
+    const delta = scrollValue?.value ?? 0;
+    // Only animate if delta is more than 20 (positive or negative)
+    const shouldAnimate = Math.abs(delta) >= deltaThreshold;
+
+    // Clamp delta for interpolation
+    const clampedDelta = Math.max(-animateDistance, Math.min(delta, animateDistance));
+
+    // Animate translateY and opacity with timing
+    translateY.value = withTiming(
+      shouldAnimate
+        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [0, 0, animateDistance])
+        : 0,
+      { duration: 150 }
+    );
+    opacity.value = withTiming(
+      shouldAnimate
+        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [1, 1, 0])
+        : 1,
+      { duration: 300 }
+    );
+
+    return {
+      transform: [{ translateY: translateY.value }],
+      opacity: opacity.value,
+    };
+  });
 }
