@@ -3,7 +3,7 @@ import { MilkBag } from '@lactalink/types';
 import { randomBytes } from 'crypto';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const generateTitle: CollectionBeforeChangeHook<MilkBag> = async ({ data }) => {
+export const generateTitle: CollectionBeforeChangeHook<MilkBag> = ({ data }) => {
   if (!data.code || !data.volume) return data;
 
   data.title = `${data.code} - ${data.volume} mL`;
@@ -11,7 +11,7 @@ export const generateTitle: CollectionBeforeChangeHook<MilkBag> = async ({ data 
   return data;
 };
 
-export const generateExpiry: CollectionBeforeChangeHook<MilkBag> = async ({ data, operation }) => {
+export const generateExpiry: CollectionBeforeChangeHook<MilkBag> = ({ data, operation }) => {
   if (!data.expiresAt && data.collectedAt && operation === 'create') {
     // If no expiry date is set, generate one based on the collectedAt date
     const dateCollected = data.collectedAt;

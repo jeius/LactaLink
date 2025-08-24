@@ -3,7 +3,7 @@ import { MilkBag, MilkBagOwnershipHistory } from '@lactalink/types';
 import _ from 'lodash';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const updateOwnershipHistory: CollectionBeforeChangeHook<MilkBag> = async ({
+export const updateOwnershipHistory: CollectionBeforeChangeHook<MilkBag> = ({
   originalDoc,
   data,
   operation,
