@@ -109,28 +109,15 @@ export default function NotificationListCard({
 
 function CardSkeleton() {
   return (
-    <VStack space="sm" className="items-stretch">
-      <HStack space="sm" className="items-stretch justify-between">
-        <VStack space="xs" className="items-start justify-stretch">
-          <Skeleton variant="rounded" className="h-6 w-40" />
-          <Skeleton variant="rounded" className="h-6 w-24" />
-        </VStack>
+    <VStack space="sm" className="items-start justify-stretch">
+      <Skeleton variant="circular" className="h-6 w-2/3" />
 
-        <Skeleton variant="rounded" className="h-8 w-20" />
-      </HStack>
-      <HStack space="sm" className="justify-stretch">
-        <VStack space="sm" className="flex-1 items-stretch justify-start">
-          <Skeleton variant="circular" className="h-4 w-24" />
-          <HStack space="sm" className="items-center">
-            <Skeleton variant="circular" className="h-8 w-8" />
-            <VStack space="xs">
-              <Skeleton variant="circular" className="h-3 w-32" />
-              <Skeleton variant="circular" className="h-3 w-16" />
-            </VStack>
-          </HStack>
-        </VStack>
+      <Skeleton variant="circular" className="h-4 w-full" />
+      <Skeleton variant="circular" className="h-4 w-full" />
 
-        <Skeleton variant="circular" className="h-10 w-10" />
+      <HStack space="sm" className="mt-1 w-full items-center justify-between">
+        <Skeleton variant="circular" className="h-3 w-32" />
+        <Skeleton variant="circular" className="h-4 w-20" />
       </HStack>
     </VStack>
   );
