@@ -81,11 +81,10 @@ async function updateStatusOnBagsExpired<T extends Donation>(
 
   // Update the donation status to 'EXPIRED'
   if (doc.id) {
-    await req.payload.update({
+    const updated = await req.payload.update({
       collection: 'donations',
       id: doc.id,
       req,
-      select: {},
       depth: 0,
       data: {
         status: DONATION_REQUEST_STATUS.EXPIRED.value,
@@ -94,7 +93,8 @@ async function updateStatusOnBagsExpired<T extends Donation>(
     });
 
     // Reflect the change in the current read operation
-    doc.status = DONATION_REQUEST_STATUS.EXPIRED.value;
+    doc.status = updated.status;
+    doc.expiredAt = updated.expiredAt;
   }
 
   return doc;

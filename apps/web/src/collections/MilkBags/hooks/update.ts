@@ -96,15 +96,13 @@ export const checkExpiry: CollectionBeforeReadHook<MilkBag> = async ({ doc, req 
     req.context.milkBagStatus = MILK_BAG_STATUS.EXPIRED.value;
 
     // Update the status to 'EXPIRED' if the expiry date has passed
-    await req.payload.update({
+    doc = await req.payload.update({
       collection: 'milkBags',
       id: doc.id,
-      data: { status: MILK_BAG_STATUS.EXPIRED.value },
       req,
+      depth: 0,
+      data: { status: MILK_BAG_STATUS.EXPIRED.value },
     });
-
-    // Reflect the change in the current read operation
-    doc.status = MILK_BAG_STATUS.EXPIRED.value;
   }
 
   return doc;
