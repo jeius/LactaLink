@@ -13,6 +13,7 @@ const TRIGGER_COLLECTION = NOTIFICATION_TRIGGER_COLLECTION_OPTIONS;
 
 type ExtendedOperator = Operator | 'changed';
 const operators = new Map<ExtendedOperator, ExtendedOperator>(validOperatorSet.entries());
+operators.set('changed', 'changed');
 
 export const typesData: Omit<
   NotificationType,
@@ -57,8 +58,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.DONATIONS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.PENDING.value },
-        recipient: { [operators.get('exists')!]: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.PENDING.value } },
+          { recipient: { [operators.get('exists')!]: true } },
+        ],
       },
     },
     template: {

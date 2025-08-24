@@ -9,10 +9,12 @@ export const updateStatusOnRecipient: CollectionBeforeChangeHook<Donation | Requ
   operation,
   data,
 }) => {
+  if (operation !== 'create') return data;
+
   // If there is a recipient and the status is not pending, set it to pending
   if (data.recipient && data.status !== pendingStatus) {
     data.status = pendingStatus;
-  } else if (!data.recipient && operation === 'create') {
+  } else if (!data.recipient) {
     // If there is no recipient and the status is pending, set it to available
     data.status = availableStatus;
   }

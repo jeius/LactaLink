@@ -32,7 +32,7 @@ export class ChannelFactory {
    */
   async createChannel(channelId: NotificationChannel['id']): Promise<BaseChannel> {
     const channel = await this.payload.findByID({
-      collection: 'notificationChannels',
+      collection: 'notification-channels',
       id: channelId,
     });
 
@@ -60,7 +60,7 @@ export class ChannelFactory {
     channelIds: NotificationChannel['id'][]
   ): Promise<NotificationChannel[]> {
     const channels = await this.payload.find({
-      collection: 'notificationChannels',
+      collection: 'notification-channels',
       where: {
         id: { in: channelIds },
         type: { not_equals: 'IN_APP' },
