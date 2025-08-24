@@ -47,16 +47,22 @@ async function autoCreateNotifications<T extends Donation>(
 ): Promise<Notification[]> {
   const { doc, previousDoc, req, operation } = options;
 
-  const donor = await req.payload.findByID({
-    collection: 'individuals',
-    req,
-    id: extractID(doc.donor),
-    depth: 0,
-    select: { owner: true },
-  });
+  const donor = await req.payload
+    .findByID({
+      collection: 'individuals',
+      req,
+      id: extractID(doc.donor),
+      depth: 0,
+      select: { owner: true },
+    })
+    .catch(() => {
+      throw new Error(`Donor not found: ${extractID(doc.donor)}`);
+    });
 
   if (!donor.owner) {
-    req.payload.logger.warn(`No owner found for donor ${donor.id} in donation ${doc.id}`);
+    req.payload.logger.warn(
+      `No user found for donor ${extractID(doc.donor)} in donation ${doc.id}`
+    );
     return [];
   }
 

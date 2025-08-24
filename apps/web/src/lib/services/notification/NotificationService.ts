@@ -198,7 +198,11 @@ export class NotificationService {
     return notification;
   }
 
-  async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
+  handleTriggers = async (
+    operation: Operation,
+    doc: Collection,
+    previousDoc?: Collection | null
+  ) => {
     const collectionSlug = this.collection.slug;
     const resolver = new FieldResolver(this.collection);
 
@@ -242,12 +246,12 @@ export class NotificationService {
     }
 
     return resolvedData;
-  }
+  };
 
-  private buildChannelStats(
+  private buildChannelStats = (
     channelIDs: NotificationChannel['id'][],
     scheduledFor?: NotificationChannelStats[number]['scheduledFor']
-  ): NotificationChannelStats {
+  ): NotificationChannelStats => {
     return channelIDs.map((id) => ({
       channel: id,
       scheduled: !!scheduledFor,
@@ -255,20 +259,22 @@ export class NotificationService {
       sent: false,
       attempts: 0,
     }));
-  }
+  };
 
-  private getDefaultChannels(notificationType: NotificationType): NotificationChannel['id'][] {
+  private getDefaultChannels = (
+    notificationType: NotificationType
+  ): NotificationChannel['id'][] => {
     if (!notificationType.defaultChannels || !notificationType.defaultChannels.length) {
       throw new Error(`Notification type ${notificationType.key} has no default channels defined`);
     }
 
     const channels = notificationType.defaultChannels.map((channel) => extractID(channel));
     return channels;
-  }
+  };
 
-  private async getChannelByPriority(
+  private getChannelByPriority = async (
     priority: NonNullable<Notification['priority']>
-  ): Promise<NotificationChannel[]> {
+  ): Promise<NotificationChannel[]> => {
     const { docs: channels } = await this.payloadReq.payload.find({
       collection: 'notification-channels',
       req: this.payloadReq,
@@ -295,12 +301,12 @@ export class NotificationService {
     }
 
     return defaultChannels.filter((v) => v !== undefined);
-  }
+  };
 
-  private async updateDeliveryStats(
+  private updateDeliveryStats = async (
     notificationId: Notification['id'],
     updatedStats: NotificationChannelStats
-  ): Promise<void> {
+  ): Promise<void> => {
     await this.payload.update({
       collection: 'notifications',
       id: notificationId,
@@ -313,5 +319,5 @@ export class NotificationService {
         },
       },
     });
-  }
+  };
 }
