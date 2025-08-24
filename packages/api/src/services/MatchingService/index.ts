@@ -6,6 +6,7 @@ import {
   NearOptions,
   Point,
   SelectFromCollectionSlug,
+  Transaction,
   User,
 } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities';
@@ -17,11 +18,8 @@ import {
   FindMatchOptions,
   IApiClient,
   IMatchingService,
-  MatchResult,
   O2PMatchOptions,
-  O2PMatchResult,
   P2OMatchOptions,
-  P2OMatchResult,
 } from '@lactalink/types/interfaces';
 
 /**
@@ -78,7 +76,7 @@ export class MatchingService implements IMatchingService {
     donationID: string,
     requestID: string,
     options: CreateMatchOptions
-  ): Promise<MatchResult> {
+  ): Promise<Transaction> {
     // ... existing code ...
     const [donation, request] = await Promise.all([
       this.apiClient.findByID({
@@ -148,31 +146,24 @@ export class MatchingService implements IMatchingService {
     const matchedVolume = matchedBags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
     // Create the transaction using the TransactionService
-    const createResult = await this.transactionService.createP2PTransaction({
+    const transaction = await this.transactionService.createP2PTransaction({
       donation,
       request,
       milkBags: matchedBags,
-      delivery: options.delivery,
-      proposedDelivery: options.proposedDelivery,
-      instructions: options.instructions,
     });
 
     // Calculate if the request is fully fulfilled
     const totalFulfilled = (request.volumeFulfilled || 0) + matchedVolume;
     const fullyFulfilled = totalFulfilled >= request.volumeNeeded;
 
-    return {
-      ...createResult,
-      matchedBags: createResult.milkBags,
-      fullyFulfilled,
-    };
+    return transaction;
   }
 
   async createP2OMatch(
     donationId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
     options: P2OMatchOptions
-  ): Promise<P2OMatchResult> {
+  ): Promise<Transaction> {
     // ... existing code ...
     const donation = await this.apiClient.findByID({
       collection: 'donations',
@@ -215,7 +206,7 @@ export class MatchingService implements IMatchingService {
     requestId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
     options: O2PMatchOptions
-  ): Promise<O2PMatchResult> {
+  ): Promise<Transaction> {
     // ... existing code ...
     // Require milk bag IDs for O2P matches since they come from inventory
     if (!options.milkBagIds?.length) {

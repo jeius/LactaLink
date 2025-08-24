@@ -255,7 +255,7 @@ export interface IMatchingService {
     donationID: string,
     requestID: string,
     options: CreateMatchOptions
-  ): Promise<MatchResult>;
+  ): Promise<Transaction>;
 
   /**
    * Creates a P2O match (donation to organization).
@@ -268,7 +268,7 @@ export interface IMatchingService {
     donationId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
     options: P2OMatchOptions
-  ): Promise<P2OMatchResult>;
+  ): Promise<Transaction>;
 
   /**
    * Creates an O2P match (organization to request).
@@ -281,7 +281,7 @@ export interface IMatchingService {
     requestId: string,
     organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
     options: O2PMatchOptions
-  ): Promise<O2PMatchResult>;
+  ): Promise<Transaction>;
 
   /**
    * Gets the best matching donations for a request.
