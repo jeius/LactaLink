@@ -198,6 +198,7 @@ function getData(user: User | null): DonationSchema | undefined {
   const donor = profile?.id;
   return {
     ...storedData,
+    milkBags: storedData?.milkBags || {},
     donor: storedData?.donor || donor,
     deliveryPreferences: storedData?.deliveryPreferences || [],
     details: {

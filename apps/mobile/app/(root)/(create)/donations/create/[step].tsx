@@ -16,20 +16,15 @@ import { usePagination } from '@/hooks/forms';
 import { uploadImage } from '@/lib/api/file';
 import { MILK_BAG_STATUS } from '@/lib/constants';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
+import { donationStorage } from '@/lib/localStorage';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
 
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
+import { extractImageSchema } from '@/lib/utils/extractImageSchema';
 
 import { getApiClient, getTransactionService } from '@lactalink/api';
-import {
-  CreateMilkBagSchema,
-  DonationSchema,
-  MilkBag,
-  MilkBagsSelect,
-  Request,
-  Transaction,
-} from '@lactalink/types';
+import { CreateMilkBagSchema, DonationSchema, MilkBag, Transaction } from '@lactalink/types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -48,15 +43,6 @@ const buttonTextMap: Record<DonationCreateSteps, string> = {
   [detailsStep]: 'Verify Milk Bags',
   [tutorialStep]: 'Start Verification',
   [verificationStep]: 'Submit',
-};
-
-const defaultMilkBagSelect: MilkBagsSelect = {
-  donor: true,
-  volume: true,
-  status: true,
-  code: true,
-  bagImage: true,
-  collectedAt: true,
 };
 
 type SearchParams = {
@@ -100,6 +86,7 @@ export default function CreateDonation() {
       toast.promise(createPromise, {
         loading: `Submitting donation...`,
         success: (res: { message: string }) => {
+          donationStorage.clearAll();
           return res.message;
         },
         error: (error) => extractErrorMessage(error),
@@ -157,6 +144,7 @@ export default function CreateDonation() {
 
   async function handleValidation() {
     const isValid = await form.trigger();
+    console.log('Form is valid:', form.getValues());
 
     if (!isValid) {
       const milkBagsError = form.formState.errors.milkBags;
@@ -229,23 +217,23 @@ export default function CreateDonation() {
 
 // #region API Functions
 async function createMilkBags(data: DonationSchema) {
-  const apiClient = getApiClient();
-
   const bags = data.details.bags;
   const milkBags: DonationSchema['milkBags'] = {};
 
   await Promise.all(
     bags.map(async ({ quantity, groupID, ...bagData }) => {
       const docs: MilkBag[] = [];
-      const existingBags = data.milkBags[groupID];
+      const existingBags = data.milkBags?.[groupID] || [];
 
       // Calculate how many bags to create or update
-      const numOfBagsToCreate = quantity - (existingBags?.length || 0);
+      const numOfBagsToCreate = quantity - existingBags.length;
 
       if (numOfBagsToCreate > 0) {
         // Create new bags
-        const createdBags = await createManyMilkBags(numOfBagsToCreate, bagData);
-        const updatedBags = await updateBags(existingBags);
+        const [createdBags, updatedBags] = await Promise.all([
+          createManyMilkBags(numOfBagsToCreate, bagData),
+          updateBags(existingBags, bagData),
+        ]);
 
         docs.push(...createdBags, ...updatedBags);
       } else if (numOfBagsToCreate < 0) {
@@ -255,61 +243,23 @@ async function createMilkBags(data: DonationSchema) {
 
         const [_, updatedBags] = await Promise.all([
           deleteBags(bagsToDelete),
-          updateBags(remainingBags),
+          updateBags(remainingBags, bagData),
         ]);
 
         docs.push(...updatedBags);
       } else {
         // No change in number of bags, just update existing ones
-        const updatedBags = await updateBags(existingBags);
+        const updatedBags = await updateBags(existingBags, bagData);
         docs.push(...updatedBags);
       }
 
       milkBags[groupID] = docs.map((bag) => ({
         ...bag,
         donor: extractID(bag.donor),
-        bagImage: null, // Set null, since draft milk bags does not have an image
+        bagImage: extractImageSchema(extractCollection(bag.bagImage)),
       }));
 
-      async function deleteBags(bags: typeof existingBags = []): Promise<MilkBag[]> {
-        if (!bags?.length) return [];
-
-        return await apiClient.delete({
-          collection: 'milkBags',
-          where: { id: { in: extractID(bags) } },
-          depth: 0,
-        });
-      }
-
-      async function updateBags(bags: typeof existingBags = []): Promise<MilkBag[]> {
-        const bagsUnchanged: typeof existingBags = [];
-        const bagsToUpdate: typeof existingBags = [];
-
-        for (const bag of bags) {
-          const hasChanged = !isEqualWith(bag, bagData, (a, b) => {
-            return a.donor === b.donor && a.volume === b.volume && a.collectedAt === b.collectedAt;
-          });
-          if (hasChanged) {
-            bagsToUpdate.push(bag);
-          } else {
-            bagsUnchanged.push(bag);
-          }
-        }
-
-        if (!bagsToUpdate?.length) {
-          return bags as MilkBag[];
-        }
-
-        const updatedBags = await apiClient.update({
-          collection: 'milkBags',
-          where: { id: { in: extractID(bagsToUpdate) } },
-          data: bagData,
-          depth: 3,
-          select: defaultMilkBagSelect,
-        });
-
-        return [...updatedBags, ...(bagsUnchanged as MilkBag[])];
-      }
+      return milkBags[groupID];
     })
   );
 
@@ -331,7 +281,7 @@ async function createDonation(data: DonationSchema) {
           id: bag.id,
           data: { bagImage: imageDoc.id },
           depth: 0,
-          select: {},
+          select: { volume: true, status: true },
         });
       })
     )
@@ -341,11 +291,14 @@ async function createDonation(data: DonationSchema) {
   });
 
   const milkImageDoc = image && (await uploadImage('images', image));
+  const volume = milkBagDocs.reduce((sum, bag) => sum + bag.volume, 0);
 
   const donationDoc = await apiClient
     .create({
       collection: 'donations',
       data: {
+        volume,
+        remainingVolume: volume,
         donor,
         status: 'AVAILABLE',
         details: {
@@ -359,14 +312,14 @@ async function createDonation(data: DonationSchema) {
     })
     .catch(async (error) => {
       await Promise.all([
-        async () => {
+        (() => {
           if (milkImageDoc) {
-            await apiClient.deleteByID({
+            apiClient.deleteByID({
               collection: 'images',
               id: extractID(milkImageDoc),
             });
           }
-        },
+        })(),
         apiClient.update({
           collection: 'milkBags',
           where: { id: { in: extractID(milkBagDocs) } },
@@ -380,33 +333,25 @@ async function createDonation(data: DonationSchema) {
     });
 
   let transaction: Transaction | undefined;
-  let updatedRequest: Request | undefined;
-  let updatedDonation = donationDoc;
-  let updatedMilkBags = extractCollection(donationDoc.details.bags) || [];
   let message = 'Donation created successfully!';
 
   if (matchedRequest) {
     const transactionService = getTransactionService();
-    const serviceResult = await transactionService.createP2PTransaction({
+    transaction = await transactionService.createP2PTransaction({
       donation: donationDoc,
       request: matchedRequest.id,
       milkBags: extractID(milkBagDocs),
     });
-    transaction = serviceResult.transaction;
-    updatedRequest = serviceResult.request;
-    updatedDonation = serviceResult.donation;
-    updatedMilkBags = serviceResult.milkBags;
 
-    const requesterName = extractCollection(updatedRequest.requester)?.givenName || 'Requester';
+    const updatedRequest = extractCollection(transaction.request);
+
+    const requesterName = extractCollection(updatedRequest?.requester)?.givenName || 'Requester';
     message = `Thank you! ${requesterName} has been notified of your donation.`;
   }
 
   return {
     message,
-    donation: updatedDonation,
-    milkBags: updatedMilkBags,
     transaction: transaction,
-    request: updatedRequest,
   };
 }
 
@@ -426,9 +371,56 @@ async function createManyMilkBags(
           status: MILK_BAG_STATUS.DRAFT.value,
           owner: { relationTo: 'individuals', value: bagData.donor },
         },
-        select: defaultMilkBagSelect,
       })
     )
   );
+}
+
+async function deleteBags(bags: DonationSchema['milkBags'][string] = []): Promise<MilkBag[]> {
+  const apiClient = getApiClient();
+  if (!bags?.length) return [];
+
+  return await apiClient.delete({
+    collection: 'milkBags',
+    where: { id: { in: extractID(bags) } },
+    depth: 0,
+  });
+}
+
+async function updateBags(
+  bags: DonationSchema['milkBags'][string] = [],
+  bagData: {
+    volume: number;
+    donor: string;
+    collectedAt: string;
+  }
+): Promise<MilkBag[]> {
+  const apiClient = getApiClient();
+  const bagsUnchanged: DonationSchema['milkBags'][string] = [];
+  const bagsToUpdate: DonationSchema['milkBags'][string] = [];
+
+  for (const bag of bags) {
+    const hasChanged = !isEqualWith(bag, bagData, (a, b) => {
+      return a.donor === b.donor && a.volume === b.volume && a.collectedAt === b.collectedAt;
+    });
+    if (hasChanged) {
+      bagsToUpdate.push(bag);
+    } else {
+      bagsUnchanged.push(bag);
+    }
+  }
+
+  if (!bagsToUpdate?.length) {
+    return bags as MilkBag[];
+  }
+
+  const updatedBags = await apiClient.update({
+    collection: 'milkBags',
+    where: { id: { in: extractID(bagsToUpdate) } },
+    data: bagData,
+    depth: 3,
+  });
+
+  return [...updatedBags, ...(bagsUnchanged as MilkBag[])];
 }
 // #endregion
