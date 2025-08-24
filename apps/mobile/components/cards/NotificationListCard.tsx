@@ -53,6 +53,7 @@ export default function NotificationListCard({
         collection: 'notifications',
         id: data.id,
         data: { read: true },
+        depth: 0,
       })
       .catch((error) => {
         toast.error(extractErrorMessage(error));

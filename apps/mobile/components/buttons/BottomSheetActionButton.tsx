@@ -1,58 +1,26 @@
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { ComponentProps, FC } from 'react';
-import Animated, {
-  interpolate,
-  SharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHideOnScrollAnimation } from '../contexts/ScrollProvider';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 
 interface BottomSheetActionButtonProps extends ComponentProps<typeof Button> {
   icon?: LucideIcon | FC<LucideProps>;
   label?: string;
-  scrollValue?: SharedValue<number>;
   animateDistance?: number;
 }
 
 export function BottomSheetActionButton({
   label,
   icon,
-  scrollValue,
   animateDistance = 100,
   ...props
 }: BottomSheetActionButtonProps) {
   const insets = useSafeAreaInsets();
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const delta = scrollValue?.value ?? 0;
-    // Only animate if delta is more than 50 (positive or negative)
-    const shouldAnimate = Math.abs(delta) >= 50;
-
-    // Clamp delta for interpolation
-    const clampedDelta = Math.max(-animateDistance, Math.min(delta, animateDistance));
-
-    // Animate translateY and opacity with timing
-    const translateY = withTiming(
-      shouldAnimate
-        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [0, 0, animateDistance])
-        : 0,
-      { duration: 250 }
-    );
-    const opacity = withTiming(
-      shouldAnimate
-        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [1, 1, 0])
-        : 1,
-      { duration: 250 }
-    );
-
-    return {
-      transform: [{ translateY }],
-      opacity,
-    };
-  });
+  const animatedStyle = useHideOnScrollAnimation({ animateDistance });
 
   return (
     <Animated.View

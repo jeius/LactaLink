@@ -10,6 +10,7 @@ import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
+import { useHideOnScrollAnimation } from '../contexts/ScrollProvider';
 import HomeIcon from '../icons/HomeIcon';
 import ListIcon from '../icons/ListIcon';
 import { Card } from '../ui/card';
@@ -26,6 +27,8 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
+
+  const containerAnimatedStyle = useHideOnScrollAnimation();
 
   const itemWidth = dimensions.width / state.routes.length;
   const translateX = useSharedValue(itemWidth * state.index);
@@ -52,15 +55,18 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   }, [state.index, itemWidth, translateX]);
 
   return (
-    <Box
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 12,
-        right: 12,
-        zIndex: 1,
-        marginBottom: insets.bottom,
-      }}
+    <Animated.View
+      style={[
+        {
+          position: 'absolute',
+          bottom: 0,
+          left: 12,
+          right: 12,
+          zIndex: 1,
+          marginBottom: insets.bottom,
+        },
+        containerAnimatedStyle,
+      ]}
     >
       <Card className="relative overflow-visible rounded-full p-1">
         <HStack onLayout={onItemLayout} className="relative w-full rounded-full">
@@ -108,6 +114,6 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
           })}
         </HStack>
       </Card>
-    </Box>
+    </Animated.View>
   );
 };
