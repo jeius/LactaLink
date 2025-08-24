@@ -353,7 +353,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.CREATE.value,
       conditions: {
-        recipient: { [operators.get('exists')!]: true },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.PENDING.value } },
+          { recipient: { [operators.get('exists')!]: true } },
+        ],
       },
     },
     template: {
@@ -388,7 +391,10 @@ export const typesData: Omit<
       collection: TRIGGER_COLLECTION.REQUESTS.value,
       event: TRIGGER_EVENT.UPDATE.value,
       conditions: {
-        status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.EXPIRED.value },
+        and: [
+          { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.EXPIRED.value } },
+          { status: { [operators.get('changed')!]: true } },
+        ],
       },
     },
     template: {
@@ -418,7 +424,9 @@ export const typesData: Omit<
       conditions: {
         and: [
           { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
+          { status: { [operators.get('changed')!]: true } },
           { recipient: { [operators.get('exists')!]: true } },
+          { status: { [operators.get('changed')!]: false } },
         ],
       },
     },
@@ -457,7 +465,9 @@ export const typesData: Omit<
       conditions: {
         and: [
           { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.REJECTED.value } },
+          { status: { [operators.get('changed')!]: true } },
           { recipient: { [operators.get('exists')!]: true } },
+          { recipient: { [operators.get('changed')!]: false } },
         ],
       },
     },
@@ -498,6 +508,7 @@ export const typesData: Omit<
           { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
           { status: { [operators.get('changed')!]: true } },
           { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
           { volumeNeeded: { [operators.get('equals')!]: 0 } },
         ],
       },
@@ -530,6 +541,7 @@ export const typesData: Omit<
         and: [
           { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
           { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
           { volumeNeeded: { [operators.get('greater_than')!]: 0 } },
           { volumeNeeded: { [operators.get('changed')!]: true } },
         ],
@@ -564,7 +576,9 @@ export const typesData: Omit<
           { status: { [operators.get('equals')!]: DONATION_REQUEST_STATUS.MATCHED.value } },
           { status: { [operators.get('changed')!]: false } },
           { recipient: { [operators.get('exists')!]: false } },
+          { recipient: { [operators.get('changed')!]: false } },
           { volumeNeeded: { [operators.get('equals')!]: 0 } },
+          { volumeNeeded: { [operators.get('changed')!]: true } },
         ],
       },
     },

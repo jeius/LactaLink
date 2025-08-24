@@ -1,4 +1,5 @@
 import { FieldResolver } from '@/lib/utils/collections/FieldResolver';
+import { NOTIFICATION_CHANNEL_TYPE_OPTIONS, PRIORITY_LEVELS } from '@lactalink/enums';
 import {
   Collection,
   Notification,
@@ -10,7 +11,7 @@ import { extractID } from '@lactalink/utilities';
 import { Operation, Payload, PayloadRequest, SanitizedCollectionConfig } from 'payload';
 import { ChannelFactory } from './channels';
 import { TemplateProcessor } from './processors';
-import { CreateNotificationParams } from './types';
+import { AutoCreateNotificationParams, CreateNotificationParams } from './types';
 import { TemplateValidator } from './validators';
 import { TriggerValidator } from './validators/TriggerValidator';
 
@@ -30,6 +31,161 @@ export class NotificationService {
     this.channelFactory = new ChannelFactory(payloadReq.payload);
   }
 
+  /**
+   * Automatically create notifications based on triggers defined in notification types.
+   * This method validates triggers, processes templates, and sends notifications through appropriate channels.
+   * @param AutoCreateNotificationParams parameters for auto creating notifications
+   * @returns Array of created notifications
+   */
+  async autoCreateNotifications({
+    doc,
+    recipient,
+    previousDoc,
+    operation,
+    extraVariables,
+    override,
+  }: AutoCreateNotificationParams): Promise<Notification[]> {
+    try {
+      const data = await this.handleTriggers(operation, doc, previousDoc);
+
+      if (data.length === 0) {
+        this.payload.logger.info(
+          `No notification types matched for ${operation.toUpperCase()} operation on ${this.collection.slug}`
+        );
+        return [];
+      }
+
+      const notifications: Notification[] = [];
+
+      for (const { notificationType, relatedData, variables } of data) {
+        const allVariables = { ...variables, ...extraVariables };
+
+        // Only validate variables if not overriding title/message
+        if (!override) {
+          this.templateValidator.validate(notificationType, allVariables);
+        }
+
+        // Process templates
+        const title =
+          override?.title ||
+          this.templateProcessor.process(notificationType.template.title, allVariables);
+        const message =
+          override?.message ||
+          this.templateProcessor.process(notificationType.template.message, allVariables);
+        const priority = override?.priority || notificationType.priority;
+
+        // Build channel stats
+        const channelsStats = this.buildChannelStats(this.getDefaultChannels(notificationType));
+
+        // Create notification
+        const notification = await this.payload.create({
+          collection: 'notifications',
+          depth: 3,
+          req: this.payloadReq,
+          data: {
+            recipient,
+            priority,
+            title,
+            message,
+            variables: allVariables,
+            read: false,
+            relatedData,
+            notificationType: notificationType.id,
+            notificationCategory: extractID(notificationType.category),
+            delivery: { channelsStats },
+          },
+        });
+
+        await this.sendNotification(notification);
+        notifications.push(notification);
+      }
+
+      return notifications;
+    } catch (error) {
+      this.payload.logger.error('Error auto creating notifications:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a notification with specified parameters and send it through appropriate channels.
+   * @param CreateNotificationParams parameters for creating a notification
+   * @returns The created notification
+   */
+  async createNotification({
+    scheduleDelivery,
+    categoryKey,
+    ...params
+  }: CreateNotificationParams): Promise<Notification> {
+    // Build channel stats
+    const getChannelStats = async () => {
+      const channels = await this.getChannelByPriority(
+        params.priority || PRIORITY_LEVELS.LOW.value
+      );
+      return this.buildChannelStats(extractID(channels), scheduleDelivery?.toISOString());
+    };
+
+    const getCategory = async () => {
+      const { docs: categories } = await this.payload.find({
+        collection: 'notification-categories',
+        req: this.payloadReq,
+        depth: 0,
+        pagination: false,
+      });
+
+      if (!categories.length) {
+        throw new Error(
+          'No notification categories found. Please create one before sending notifications.'
+        );
+      }
+
+      return categories.find((c) => c.key === categoryKey) || categories[0]!;
+    };
+
+    const [channelsStats, notificationCategory] = await Promise.all([
+      getChannelStats(),
+      getCategory(),
+    ]).catch((err) => {
+      this.payload.logger.error('Error creating notification:', err);
+      throw err;
+    });
+
+    // Create notification
+    const notification = await this.payload.create({
+      collection: 'notifications',
+      depth: 3,
+      req: this.payloadReq,
+      data: {
+        ...params,
+        priority: params.priority || PRIORITY_LEVELS.LOW.value,
+        recipient: extractID(params.recipient),
+        notificationCategory: extractID(notificationCategory),
+        delivery: { channelsStats },
+      },
+    });
+
+    await this.sendNotification(notification);
+
+    return notification;
+  }
+
+  /**
+   * Send notification through all active channels
+   * This method will send the notification immediately if no channels are scheduled,
+   * or schedule it for later if specified.
+   */
+  async sendNotification(notification: Notification): Promise<Notification> {
+    const updatedStats: NotificationChannelStats = await Promise.all(
+      notification.delivery.channelsStats.map(async (stat) => {
+        const channel = await this.channelFactory.createChannel(extractID(stat.channel));
+        return await channel.send(notification, stat);
+      })
+    );
+
+    await this.updateDeliveryStats(notification.id, updatedStats);
+    return notification;
+  }
+
   async handleTriggers(operation: Operation, doc: Collection, previousDoc?: Collection | null) {
     const collectionSlug = this.collection.slug;
     const resolver = new FieldResolver(this.collection);
@@ -45,8 +201,11 @@ export class NotificationService {
         collection: 'notification-types',
         req: this.payloadReq,
         where: {
-          'trigger.collection': { equals: collectionSlug },
-          'trigger.event': { equals: operation.toUpperCase() },
+          and: [
+            { 'trigger.collection': { equals: collectionSlug } },
+            { 'trigger.event': { equals: operation.toUpperCase() } },
+            { active: { equals: true } },
+          ],
         },
       }),
     ]);
@@ -73,115 +232,12 @@ export class NotificationService {
     return resolvedData;
   }
 
-  /**
-   * Create a new notification
-   * This method validates the notification type, processes templates,
-   * builds channel stats, and creates the notification in the database.
-   * It also sends the notification immediately if not scheduled for later.
-   */
-  async autoCreateNotifications({
-    doc,
-    recipient,
-    previousDoc,
-    operation,
-    extraVariables,
-    override,
-  }: CreateNotificationParams): Promise<Notification[]> {
-    const data = await this.handleTriggers(operation, doc, previousDoc);
-
-    if (data.length === 0) {
-      this.payload.logger.info(
-        `No notification types matched for ${operation.toUpperCase()} operation on ${this.collection.slug}`
-      );
-      return [];
-    }
-
-    const notifications: Notification[] = [];
-
-    for (const { notificationType, relatedData, variables } of data) {
-      const allVariables = { ...variables, ...extraVariables };
-
-      // Only validate variables if not overriding title/message
-      if (!override) {
-        this.templateValidator.validate(notificationType, allVariables);
-      }
-
-      // Process templates
-      const title =
-        override?.title ||
-        this.templateProcessor.process(notificationType.template.title, allVariables);
-      const message =
-        override?.message ||
-        this.templateProcessor.process(notificationType.template.message, allVariables);
-      const priority = override?.priority || notificationType.priority;
-
-      // Build channel stats
-      const channelsStats = await this.buildChannelStats(this.getDefaultChannels(notificationType));
-
-      // Create notification
-      const notification = await this.payload.create({
-        collection: 'notifications',
-        depth: 3,
-        req: this.payloadReq,
-        data: {
-          recipient,
-          priority,
-          title,
-          message,
-          variables: allVariables,
-          read: false,
-          relatedData,
-          notificationType: notificationType.id,
-          notificationCategory: extractID(notificationType.category),
-          delivery: { channelsStats },
-        },
-      });
-
-      // Send if not scheduled
-      for (const stat of channelsStats) {
-        if (!stat.scheduled) {
-          await this.sendNotification(notification);
-        }
-      }
-      notifications.push(notification);
-    }
-
-    return notifications;
-  }
-
-  /**
-   * Send notification through all active channels
-   * This method will send the notification immediately if no channels are scheduled,
-   * or schedule it for later if specified.
-   */
-  async sendNotification(notification: Notification): Promise<Notification> {
-    const updatedStats: NotificationChannelStats = await Promise.all(
-      notification.delivery.channelsStats.map(async (stat) => {
-        const channel = await this.channelFactory.createChannel(extractID(stat.channel));
-        return await channel.send(notification, stat);
-      })
-    );
-
-    await this.updateDeliveryStats(notification.id, updatedStats);
-    return notification;
-  }
-
-  private async buildChannelStats(
-    channelIds: NotificationChannel['id'][],
+  private buildChannelStats(
+    channelIDs: NotificationChannel['id'][],
     scheduledFor?: NotificationChannelStats[number]['scheduledFor']
-  ): Promise<NotificationChannelStats> {
-    const channels = await this.payload.find({
-      collection: 'notification-channels',
-      req: this.payloadReq,
-      where: {
-        id: { in: channelIds },
-        active: { equals: true },
-      },
-      pagination: false,
-    });
-
-    return channels.docs.map((channel) => ({
-      channel: channel.id,
+  ): NotificationChannelStats {
+    return channelIDs.map((id) => ({
+      channel: id,
       scheduled: !!scheduledFor,
       scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
       sent: false,
@@ -196,6 +252,37 @@ export class NotificationService {
 
     const channels = notificationType.defaultChannels.map((channel) => extractID(channel));
     return channels;
+  }
+
+  private async getChannelByPriority(
+    priority: NonNullable<Notification['priority']>
+  ): Promise<NotificationChannel[]> {
+    const { docs: channels } = await this.payloadReq.payload.find({
+      collection: 'notification-channels',
+      req: this.payloadReq,
+      where: { active: { equals: true } },
+      pagination: false,
+      depth: 0,
+    });
+
+    const keys = NOTIFICATION_CHANNEL_TYPE_OPTIONS;
+
+    const channelMap = {
+      IN_APP: channels.find((c) => c.key === keys.IN_APP.value),
+      EMAIL: channels.find((c) => c.key === keys.EMAIL.value),
+      SMS: channels.find((c) => c.key === keys.SMS.value),
+      PUSH: channels.find((c) => c.key === keys.PUSH.value),
+    };
+
+    let defaultChannels = Object.values(channelMap);
+
+    if (priority === PRIORITY_LEVELS.LOW.value) {
+      defaultChannels = [channelMap.IN_APP];
+    } else if (priority === PRIORITY_LEVELS.MEDIUM.value) {
+      defaultChannels = [channelMap.IN_APP, channelMap.EMAIL];
+    }
+
+    return defaultChannels.filter((v) => v !== undefined);
   }
 
   private async updateDeliveryStats(

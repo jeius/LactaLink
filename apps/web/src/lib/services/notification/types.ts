@@ -1,4 +1,5 @@
-import { Collection, Notification } from '@lactalink/types';
+import { NOTIFICATION_CATEGORY_KEYS } from '@/lib/constants';
+import { Collection, Notification, User } from '@lactalink/types';
 import { Operation } from 'payload';
 
 export interface VariableValidationOptions {
@@ -7,7 +8,7 @@ export interface VariableValidationOptions {
   strictMode?: boolean;
 }
 
-export interface CreateNotificationParams {
+export interface AutoCreateNotificationParams {
   /**
    * The document triggering the notification
    */
@@ -23,7 +24,7 @@ export interface CreateNotificationParams {
   /**
    * The recipient of the notification, must be a User ID
    */
-  recipient: Extract<Notification['recipient'], string | number>;
+  recipient: User['id'];
   /**
    * Additional variables to be used in the notification template
    */
@@ -31,14 +32,23 @@ export interface CreateNotificationParams {
   /**
    * Override the default title and message
    */
-  override?: CreateNotificationOverride;
+  override?: AutoCreateNotificationOverrides;
 }
 
-export type CreateNotificationOverride = {
+export type AutoCreateNotificationOverrides = {
   title: string;
   message: string;
   priority?: Notification['priority'];
 };
+
+export interface CreateNotificationParams
+  extends Pick<Notification, 'title' | 'message' | 'recipient' | 'priority'> {
+  /**
+   * Schedule delivery date for the notification
+   */
+  scheduleDelivery?: Date;
+  categoryKey: NOTIFICATION_CATEGORY_KEYS;
+}
 
 export interface TemplateProcessorOptions {
   escapeHtml?: boolean;
