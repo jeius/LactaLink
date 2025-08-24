@@ -363,7 +363,7 @@ export const typesData: Omit<
       },
     },
     template: {
-      title: 'Your milk request has been submitted',
+      title: 'Your milk request has been sent!',
       message: '{{recipientName}} will be notified of your {{volumeNeeded}}mL milk request.',
       variables: [
         {

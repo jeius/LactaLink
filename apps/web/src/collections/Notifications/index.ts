@@ -3,7 +3,8 @@ import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP, NOTIFICATION_TRIGGER_COLLECTION_OPTIONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { admin, authenticated } from '../_access-control';
+import { recipientOrAdmin } from './access';
 
 /**
  * Notifications Collection
@@ -33,9 +34,9 @@ export const Notifications: CollectionConfig<'notifications'> = {
   access: {
     admin: admin,
     create: authenticated,
-    read: authenticated,
-    update: collectionCreatorOrAdmin,
-    delete: collectionCreatorOrAdmin,
+    read: recipientOrAdmin,
+    update: recipientOrAdmin,
+    delete: recipientOrAdmin,
   },
 
   admin: {
