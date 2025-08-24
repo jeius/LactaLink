@@ -50,7 +50,7 @@ export const Endpoints: Endpoint[] = [
     handler: seedStatusHandler,
   },
   {
-    method: 'get',
+    method: 'post',
     path: '/seed/notifications',
     handler: seedNotificationsHandler,
   },

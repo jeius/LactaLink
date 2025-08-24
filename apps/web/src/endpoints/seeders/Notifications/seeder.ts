@@ -71,7 +71,7 @@ export async function seedNotificationSystem(payload: Payload) {
         categoryId = categoryMap.LIFECYCLE;
       } else if (typeData.key.startsWith('TRANSACTION_')) {
         categoryId = categoryMap.TRANSACTION;
-      } else if (typeData.key.startsWith('MATCHING_')) {
+      } else if (typeData.key.startsWith('MATCHED_')) {
         categoryId = categoryMap.MATCHING;
       } else {
         categoryId = categoryMap.SYSTEM;

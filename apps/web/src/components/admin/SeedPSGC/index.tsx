@@ -18,10 +18,10 @@ export default function SeedPSGC() {
   const body = (
     <>
       <span>
-        This will populate the barangays, cities/municipalities, provinces, regions, and island
-        groups. It will not delete any existing data, but may take a very long time to complete.
+        This will update the barangays, cities/municipalities, provinces, regions, and island
+        groups. It will not delete any existing data, but may take a long time to complete.
       </span>{' '}
-      <strong>Once executed, you can&apos;t cancel the seeding.</strong>
+      <strong>Once executed, you can&apos;t cancel the process.</strong>
     </>
   );
 
@@ -71,7 +71,7 @@ export default function SeedPSGC() {
   return (
     <>
       <Button buttonStyle="primary" onClick={() => openModal(modalSlug)}>
-        Seed PSGC Data
+        Update PSGC Data
       </Button>
       <ConfirmationModal
         body={body}
