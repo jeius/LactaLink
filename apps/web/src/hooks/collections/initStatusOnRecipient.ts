@@ -5,7 +5,7 @@ import { CollectionBeforeChangeHook } from 'payload';
 const pendingStatus = DONATION_REQUEST_STATUS.PENDING.value;
 const availableStatus = DONATION_REQUEST_STATUS.AVAILABLE.value;
 
-export const updateStatusOnRecipient: CollectionBeforeChangeHook<Donation | Request> = ({
+export const initStatusOnRecipient: CollectionBeforeChangeHook<Donation | Request> = ({
   operation,
   data,
 }) => {
@@ -15,7 +15,7 @@ export const updateStatusOnRecipient: CollectionBeforeChangeHook<Donation | Requ
   if (data.recipient && data.status !== pendingStatus) {
     data.status = pendingStatus;
   } else if (!data.recipient) {
-    // If there is no recipient and the status is pending, set it to available
+    // If there is no recipient set it to available
     data.status = availableStatus;
   }
 

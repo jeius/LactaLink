@@ -2,7 +2,7 @@ import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { updateStatusOnRecipient } from '@/hooks/collections/updateStatusOnRecipient';
+import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import {
   COLLECTION_GROUP,
   DONATION_REQUEST_STATUS,
@@ -35,7 +35,7 @@ export const Requests: CollectionConfig<'requests'> = {
   },
   hooks: {
     beforeValidate: [initializeRequest],
-    beforeChange: [updateStatusOnRecipient, generateCreatedBy, generateTitle, updateVolume],
+    beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateVolume],
     afterChange: [createRequestNotification, processOrganizationRequest],
     beforeRead: [calculateFulfillmentPercentage],
   },
