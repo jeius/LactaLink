@@ -1,8 +1,11 @@
+import { getApiClient } from '@lactalink/api';
 import { Notification } from '@lactalink/types';
-import { Link } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
+import { extractErrorMessage } from '@lactalink/utilities';
+import { useRecyclingState } from '@shopify/flash-list';
+import { Href, Link } from 'expo-router';
 import { ComponentProps } from 'react';
-import { Button, ButtonIcon } from '../ui/button';
+import { toast } from 'sonner-native';
+import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Skeleton } from '../ui/skeleton';
@@ -12,58 +15,93 @@ import { VStack } from '../ui/vstack';
 interface NotificationListCardProps extends ComponentProps<typeof Card> {
   data?: Notification;
   isLoading?: boolean;
-  onPress?: (notification: Notification) => void;
 }
 
 export default function NotificationListCard({
   data,
   isLoading,
-  onPress,
   ...cardProps
 }: NotificationListCardProps) {
+  const [isRead, setIsRead] = useRecyclingState(data?.read || false, [data?.id]);
+
   const title = data?.title || 'Unknown Notification';
   const message = data?.message || 'No message provided';
-  const read = data?.read;
-  const timeStamp = data?.createdAt
+  const date = data?.createdAt
     ? new Date(data.createdAt).toLocaleDateString('en', {
         dateStyle: 'short',
         day: '2-digit',
         dayPeriod: 'short',
       })
     : 'Unknown Date';
+  const time = data?.createdAt
+    ? new Date(data.createdAt).toLocaleTimeString('en', {
+        timeStyle: 'short',
+        hour12: true,
+      })
+    : 'Unknown Time';
 
-  function handlePress() {
-    onPress?.(data!);
+  const actionUrl = (data?.relatedData?.actionUrl || '/+not-found') as Href;
+
+  async function markAsRead() {
+    setIsRead(true);
+
+    if (!data?.id) return;
+
+    const apiClient = getApiClient();
+    await apiClient
+      .updateByID({
+        collection: 'notifications',
+        id: data.id,
+        data: { read: true },
+      })
+      .catch((error) => {
+        toast.error(extractErrorMessage(error));
+        setIsRead(false);
+      });
   }
 
   return (
-    <Card {...cardProps} style={{ opacity: read ? 0.75 : 1 }}>
+    <Card {...cardProps} style={{ opacity: isRead ? 0.75 : 1 }}>
       {isLoading ? (
         <CardSkeleton />
       ) : (
-        <HStack space="sm" className="items-center justify-between">
-          <VStack space="xs" className="items-start justify-stretch">
-            <Text className="font-JakartaMedium shrink" ellipsizeMode="tail" numberOfLines={1}>
-              {title}
-            </Text>
-            <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-              {message}
-            </Text>
+        <VStack space="xs" className="items-start justify-stretch">
+          <Link href={actionUrl} push asChild>
+            <Button
+              animateOnPress={false}
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-0"
+              onPress={markAsRead}
+            >
+              <ButtonText underlineOnPress>{title}</ButtonText>
+            </Button>
+          </Link>
+          <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={2}>
+            {message}
+          </Text>
+
+          <HStack space="sm" className="w-full items-center justify-between">
             <Text
               size="xs"
-              className="text-typography-700 shrink"
+              className="text-typography-700 flex-1"
               ellipsizeMode="tail"
               numberOfLines={1}
             >
-              {timeStamp}
+              {date}, {time}
             </Text>
-          </VStack>
-          <Link href={`/transactions/${data?.id}`} asChild>
-            <Button action="default" onPress={handlePress} className="h-fit w-fit rounded-full p-2">
-              <ButtonIcon as={ChevronRight} />
+            <Button
+              isDisabled={isRead}
+              size="sm"
+              action="default"
+              variant="link"
+              onPress={markAsRead}
+              className="p-0"
+            >
+              <ButtonText>Mark as read</ButtonText>
             </Button>
-          </Link>
-        </HStack>
+          </HStack>
+        </VStack>
       )}
     </Card>
   );
