@@ -1,13 +1,8 @@
-import { SYSTEM_COLORS } from '@lactalink/enums';
+import { NOTIFICATION_CATEGORY_KEYS, SYSTEM_COLORS } from '@lactalink/enums';
 import { NotificationCategory } from '@lactalink/types';
 import { RequiredDataFromCollection } from 'payload';
 
-export const CATEGORY_KEYS = {
-  MATCHING: 'MATCHING',
-  TRANSACTION: 'TRANSACTION',
-  LIFECYCLE: 'LIFECYCLE',
-  SYSTEM: 'SYSTEM',
-} as const;
+export const CATEGORY_KEYS = NOTIFICATION_CATEGORY_KEYS;
 
 export const categoriesData: RequiredDataFromCollection<NotificationCategory>[] = [
   {

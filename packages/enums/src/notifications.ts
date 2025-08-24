@@ -39,3 +39,10 @@ export const NOTIFICATION_JS_TYPES = {
   array: { label: 'Array', value: 'array' },
   object: { label: 'Object', value: 'object' },
 } as const;
+
+export enum NOTIFICATION_CATEGORY_KEYS {
+  MATCHING = 'MATCHING',
+  TRANSACTION = 'TRANSACTION',
+  LIFECYCLE = 'LIFECYCLE',
+  SYSTEM = 'SYSTEM',
+}
