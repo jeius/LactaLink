@@ -128,6 +128,9 @@ const buttonStyle = tva({
 
 const buttonTextStyle = tva({
   base: 'text-typography-900 web:select-none font-JakartaSemiBold',
+  variants: {
+    underlineOnPress: { true: 'data-[active=true]:underline' },
+  },
   parentVariants: {
     action: {
       primary:
@@ -449,12 +452,15 @@ const Button: React.ForwardRefExoticComponent<
 });
 
 type IButtonTextProps = React.ComponentPropsWithoutRef<typeof UIButton.Text> &
-  VariantProps<typeof buttonTextStyle> & { className?: string };
+  VariantProps<typeof buttonTextStyle> & { className?: string; underlineOnPress?: boolean };
 
 const ButtonText: React.ForwardRefExoticComponent<
   IButtonTextProps & React.RefAttributes<React.ComponentRef<typeof UIButton.Text>>
 > = React.forwardRef<React.ComponentRef<typeof UIButton.Text>, IButtonTextProps>(
-  function ButtonText({ className, variant, size, action, ...props }, ref) {
+  function ButtonText(
+    { className, variant, size, action, underlineOnPress = false, ...props },
+    ref
+  ) {
     const {
       variant: parentVariant,
       size: parentSize,
@@ -475,6 +481,7 @@ const ButtonText: React.ForwardRefExoticComponent<
           size,
           action,
           class: className,
+          underlineOnPress,
         })}
       />
     );
