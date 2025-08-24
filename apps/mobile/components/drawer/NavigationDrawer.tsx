@@ -10,8 +10,8 @@ import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { DrawerItem, DrawerItemList } from '@react-navigation/drawer';
-import { Link } from 'expo-router';
-import { DoorOpenIcon, LogOutIcon } from 'lucide-react-native';
+import { Link, useRouter } from 'expo-router';
+import { CompassIcon, DoorOpenIcon, LogOutIcon } from 'lucide-react-native';
 import React from 'react';
 import { BackHandler } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -22,6 +22,7 @@ import { Image } from '../Image';
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
   const { themeColors } = useTheme();
   const { data: user } = useMeUser();
+  const router = useRouter();
 
   let filteredProps = props;
 
@@ -41,6 +42,14 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
       <DrawerHeader />
       <ScrollView className="flex-1" contentContainerClassName="p-4">
         <DrawerItemList {...filteredProps} />
+        <DrawerItem
+          label="Explore"
+          icon={({ color }) => <Icon as={CompassIcon} color={color} />}
+          labelStyle={{ fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 }}
+          style={{ borderRadius: 14, height: 48 }}
+          inactiveTintColor={themeColors.typography[900]}
+          onPress={() => router.push('/map/explore')}
+        />
         <DrawerItem
           label="Exit App"
           icon={({ color }) => <Icon as={DoorOpenIcon} color={color} />}

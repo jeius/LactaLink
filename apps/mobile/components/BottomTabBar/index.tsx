@@ -4,21 +4,15 @@ import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 
 import { getHexColor } from '@/lib/colors';
-import { createShadow } from '@/lib/utils/shadows';
-import { useRouter } from 'expo-router';
 import { BellIcon, type LucideIcon, MessageCircleIcon } from 'lucide-react-native';
 import { FC, useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import HomeIcon from '../icons/HomeIcon';
 import ListIcon from '../icons/ListIcon';
-import LogoIcon from '../icons/LogoIcon';
-import { Button, ButtonIcon } from '../ui/button';
 import { Card } from '../ui/card';
-import { VStack } from '../ui/vstack';
 import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon | FC<SvgProps>> = {
@@ -32,10 +26,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { theme } = useTheme();
 
-  const shadow = createShadow(theme);
   const itemWidth = dimensions.width / state.routes.length;
   const translateX = useSharedValue(itemWidth * state.index);
 
@@ -116,33 +107,6 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             );
           })}
         </HStack>
-        <VStack
-          className="absolute inset-x-0 top-0 items-center"
-          style={{
-            transform: [{ translateY: '-70%' }],
-          }}
-        >
-          <Box className="bg-background-0 rounded-full p-1" style={[shadow.xs]}>
-            <Button
-              size="lg"
-              animateOnPress
-              onPress={() => router.push('/map/explore')}
-              className="dark:bg-background-50 data-[active=true]:dark:bg-background-200 h-fit w-fit rounded-full p-3"
-            >
-              <ButtonIcon
-                as={LogoIcon}
-                width={40}
-                height={40}
-                fill={
-                  theme === 'light'
-                    ? getHexColor('light', 'primary', 0)
-                    : getHexColor('light', 'primary', 500)
-                }
-                style={{ transform: [{ translateX: -1.25 }] }}
-              />
-            </Button>
-          </Box>
-        </VStack>
       </Card>
     </Box>
   );
