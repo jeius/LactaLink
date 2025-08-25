@@ -25,7 +25,7 @@ export function useInfiniteFetchBySlug<
 
   return useInfiniteQuery({
     enabled,
-    queryKey: [...INFINITE_QUERY_KEY, collection, JSON.stringify(options)],
+    queryKey: [...INFINITE_QUERY_KEY, collection, options],
     queryFn: ({ pageParam }) =>
       apiClient.find<TSlug, TSelect, true>({
         collection,

@@ -20,7 +20,7 @@ export function useFetchById<
 
   return useQuery({
     enabled,
-    queryKey: [...COLLECTION_QUERY_KEY, collection, id, JSON.stringify(options)],
+    queryKey: [...COLLECTION_QUERY_KEY, collection, id, options],
     queryFn: () => {
       if (!id || !collection) return null;
 

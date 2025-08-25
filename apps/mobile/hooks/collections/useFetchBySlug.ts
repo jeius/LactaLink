@@ -30,7 +30,7 @@ export function useFetchBySlug<
   return useQuery({
     ...queryOptions,
     enabled,
-    queryKey: [...COLLECTION_QUERY_KEY, collection, JSON.stringify(options)],
+    queryKey: [...COLLECTION_QUERY_KEY, collection, options],
     queryFn: () => {
       if (!collection) return null;
       return apiClient.find<TSlug, TSelect, false>({
