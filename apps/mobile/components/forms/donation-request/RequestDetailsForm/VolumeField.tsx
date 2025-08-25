@@ -1,82 +1,78 @@
 import { FormField } from '@/components/FormField';
-import { OptionsCardItem } from '@/components/cards';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { AnimatedPressable } from '@/components/animated/pressable';
+import { useForm } from '@/components/contexts/FormProvider';
+import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+  FormControlHelper,
+  FormControlHelperText,
+  FormControlLabel,
+  FormControlLabelText,
+} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
-import { MilkBag, RequestSchema } from '@lactalink/types';
-import React, { useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { MatchedDonationSchema, MilkBagSchema, RequestSchema } from '@lactalink/types';
+import { formatDate } from '@lactalink/utilities';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { randomUUID } from 'expo-crypto';
+import { AlertCircleIcon } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 
 interface VolumeFieldProps {
-  donationID?: string;
+  matchedDonation?: MatchedDonationSchema;
   isLoading?: boolean;
 }
 
-export function VolumeField({ donationID: id, isLoading: isLoadingProp }: VolumeFieldProps) {
+export function VolumeField({ isLoading, matchedDonation }: VolumeFieldProps) {
   const [isCustomVolume, setIsCustomVolume] = useState(false);
   const form = useFormContext<RequestSchema>();
 
-  const {
-    data,
-    isLoading: isDataLoading,
-    error,
-  } = useFetchById(Boolean(id), {
-    collection: 'donations',
-    id,
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
-
-  const isLoading = isLoadingProp || isDataLoading;
-
   const selectedBags = form.watch('details.bags');
-  const bags = data?.details?.bags as MilkBag[] | undefined;
+  const setValue = form.setValue;
 
-  const options: OptionsCardItem<string>[] | undefined = bags
-    ?.filter((bag) => bag.status === 'AVAILABLE')
-    .map((bag) => ({
-      label: String(bag.volume) + ' mL',
-      value: bag.id,
-    }));
+  const { bags, bagsMap } = useMemo(() => {
+    const bags = matchedDonation?.bags || [];
+
+    const map = new Map<string, MilkBagSchema>();
+    bags?.forEach((bag) => map.set(bag.id, bag));
+
+    return { bags, bagsMap: map };
+  }, [matchedDonation]);
 
   useEffect(() => {
     if (Array.isArray(selectedBags) && selectedBags.length > 0) {
       const totalVolume = selectedBags.reduce((acc, bagId) => {
-        const bag = bags?.find((b) => b.id === bagId);
+        const bag = bagsMap.get(bagId);
         return acc + (bag?.volume || 0);
       }, 0);
-      form.setValue('volumeNeeded', totalVolume);
+
+      setValue('volumeNeeded', totalVolume);
     }
-  }, [selectedBags, bags, form]);
+  }, [selectedBags, bags, setValue, bagsMap]);
 
   function handleToggleCustomVolume() {
     setIsCustomVolume((prev) => !prev);
   }
 
-  return id ? (
-    <VStack space="sm" className="mx-5">
-      <Text className="font-JakartaMedium">Available Milk Bags</Text>
-      <Card variant="filled">
-        <FormField
-          fieldType="button-group"
-          name="details.bags"
-          allowMultipleSelection
-          helperText="Select the milk bags you want to request."
-          options={options || []}
-          isLoading={isLoading}
-        />
-      </Card>
-    </VStack>
+  return matchedDonation ? (
+    <MilkBagsField bags={bags} isLoading={isLoading} />
   ) : (
     <VStack space="sm" className="mx-5">
-      <Text className="font-JakartaMedium">How much do you need?</Text>
+      <Text className="font-JakartaMedium">How much milk do you need?</Text>
       <Card variant="filled" className="flex-col gap-5">
         <FormField
+          control={form.control}
           name="volumeNeeded"
-          label="Select one"
           fieldType="button-group"
           options={Object.values(VOLUME_PRESET)}
           isDisabled={isCustomVolume}
@@ -94,6 +90,7 @@ export function VolumeField({ donationID: id, isLoading: isLoadingProp }: Volume
 
           {isCustomVolume && (
             <FormField
+              control={form.control}
               name="volumeNeeded"
               fieldType="number"
               placeholder="Enter volume in mL"
@@ -105,5 +102,143 @@ export function VolumeField({ donationID: id, isLoading: isLoadingProp }: Volume
         </HStack>
       </Card>
     </VStack>
+  );
+}
+
+interface MilkBagsFieldProps {
+  bags: MilkBagSchema[];
+  isLoading?: boolean;
+}
+
+function MilkBagsField({ bags, isLoading }: MilkBagsFieldProps) {
+  const form = useForm<RequestSchema>();
+  const { error } = form.getFieldState('details.bags');
+
+  const placeholder = useMemo(
+    () =>
+      Array.from(
+        { length: 6 },
+        (_, index) =>
+          ({
+            id: `placeholder-${index}-${randomUUID()}`,
+          }) as MilkBagSchema
+      ),
+    []
+  );
+
+  return (
+    <FormControl isInvalid={!!error}>
+      <FormControlLabel className="mx-5">
+        <FormControlLabelText>Available Milk Bags</FormControlLabelText>
+      </FormControlLabel>
+
+      <Controller
+        control={form.control}
+        name="details.bags"
+        render={({ field }) => {
+          const renderItem: ListRenderItem<MilkBagSchema> = ({ item }) => {
+            const isPlaceholder = item.id.startsWith('placeholder-');
+
+            const title = `${item.volume || 0} mL`;
+            const date = formatDate(item.collectedAt);
+            const time = new Date(item.collectedAt).toLocaleTimeString('en', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+
+            const imageUrl = item.bagImage?.url;
+            const blurhash = item.bagImage?.blurhash;
+            const alt = item.bagImage?.alt || 'Milk Bag Image';
+
+            const code = item.code || 'No Code';
+
+            const value = Array.isArray(field.value) ? field.value : [];
+
+            const isSelected = value.includes(item.id);
+
+            function handleSelectBag() {
+              if (isSelected) {
+                field.onChange(value?.filter((id) => id !== item.id));
+              } else {
+                field.onChange([...value, item.id]);
+              }
+            }
+
+            return isPlaceholder ? (
+              <CardSkeleton />
+            ) : (
+              <AnimatedPressable onPress={handleSelectBag} className="mr-4">
+                <Card className={`w-40 p-0 ${isSelected ? 'border-primary-500 border-2' : ''}`}>
+                  <VStack className="items-stretch">
+                    <Box className="bg-primary-50 relative h-32 w-full flex-shrink-0 overflow-hidden">
+                      {imageUrl ? (
+                        <SingleImageViewer
+                          disabled
+                          image={{ uri: imageUrl, blurHash: blurhash, alt }}
+                        />
+                      ) : (
+                        <Text size="xs" className="my-auto text-center">
+                          No Image
+                        </Text>
+                      )}
+                      <Text
+                        size="sm"
+                        bold
+                        className="bg-primary-500 text-primary-0 absolute left-0 top-0 px-2 py-1 text-center"
+                        style={{ borderBottomRightRadius: 8 }}
+                      >
+                        {code}
+                      </Text>
+                    </Box>
+                    <VStack space="xs" className="px-3 py-2">
+                      <Text className="font-JakartaSemiBold text-center">{title}</Text>
+                      <Text size="xs" className="text-typography-800 text-center">
+                        {date}, {time}
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </Card>
+              </AnimatedPressable>
+            );
+          };
+
+          return (
+            <FlashList
+              horizontal
+              data={isLoading ? placeholder : bags}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
+              ItemSeparatorComponent={() => <Box style={{ width: 14 }} />}
+            />
+          );
+        }}
+      />
+
+      <FormControlError className="mx-5">
+        <FormControlErrorIcon as={AlertCircleIcon} />
+        <FormControlErrorText>{error?.message}</FormControlErrorText>
+      </FormControlError>
+
+      <FormControlHelper className="mx-5">
+        <FormControlHelperText>Select the milk bags you want to request.</FormControlHelperText>
+      </FormControlHelper>
+    </FormControl>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <Card className={`w-40 p-0`}>
+      <VStack className="items-stretch">
+        <Skeleton variant="sharp" className="h-32 w-full" />
+        <VStack space="xs" className="w-full items-center px-3 py-2">
+          <Skeleton variant="circular" className="h-5 w-2/3" />
+
+          <Skeleton variant="circular" className="h-3 w-full" />
+          <Skeleton variant="circular" className="h-3 w-2/3" />
+        </VStack>
+      </VStack>
+    </Card>
   );
 }

@@ -7,7 +7,7 @@ import {
   TransformCollectionWithSelect,
   Where,
 } from '@lactalink/types';
-import { areStrings, extractCollection, extractID, formatKebabToTitle } from '@lactalink/utilities';
+import { extractCollection, extractID, formatKebabToTitle } from '@lactalink/utilities';
 import { useIsFocused } from '@react-navigation/native';
 import { ListRenderItem } from '@shopify/flash-list';
 import { Href, useRouter } from 'expo-router';
@@ -88,7 +88,7 @@ export function SelectBottomSheet<
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const shouldFetch = areStrings(collections);
+  const shouldFetch = !extractCollection(collections);
   const where: Where = { id: { in: extractID(collections) } };
 
   const { data: fetchedData, ...fetchQuery } = useFetchBySlug(shouldFetch, {
@@ -108,17 +108,12 @@ export function SelectBottomSheet<
   const data = useMemo(() => {
     const placeholderItems = Array.from({ length: 10 }, (_, i) => ({
       id: `placeholder-${i}`,
-    })) as TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>[];
+    }));
 
-    if (shouldFetch) {
-      return isLoading ? placeholderItems : fetchedData || [];
-    } else {
-      return (extractCollection(collections) || []) as TransformCollectionWithSelect<
-        TSlug,
-        SelectFromCollectionSlug<TSlug>
-      >[];
-    }
-  }, [shouldFetch, isLoading, fetchedData, collections]);
+    return (
+      isLoading ? placeholderItems : extractCollection(collections) || fetchedData || []
+    ) as TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>[];
+  }, [isLoading, fetchedData, collections]);
 
   useEffect(() => {
     setSelected(selectedProps);

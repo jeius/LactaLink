@@ -90,7 +90,7 @@ export function DeliveryPreferenceCard({
                   <HStack
                     key={index}
                     space="xs"
-                    className="border-primary-500 items-center rounded-md border px-2 py-1"
+                    className="border-primary-400 bg-primary-0 items-center rounded-md border px-2 py-1"
                   >
                     <Image
                       source={iconAsset}
@@ -106,14 +106,19 @@ export function DeliveryPreferenceCard({
             </HStack>
 
             <HStack space="xs" className="items-start">
-              <Icon as={CalendarDaysIcon} className="text-primary-500" />
-              <Text size="sm" className="font-JakartaMedium flex-1">
+              <Icon size="sm" as={CalendarDaysIcon} style={{ marginTop: 2 }} />
+              <Text
+                size="sm"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                className="font-JakartaMedium flex-1"
+              >
                 {availableDaysText}
               </Text>
             </HStack>
 
             <HStack space="xs" className="items-start">
-              <Icon as={MapPinIcon} className="text-primary-500" />
+              <Icon size="sm" as={MapPinIcon} style={{ marginTop: 2 }} />
               <VStack className="flex-1">
                 {isLoadingAddress ? (
                   <AddressSkeleton />
@@ -122,7 +127,12 @@ export function DeliveryPreferenceCard({
                     <Text size="sm" className="font-JakartaMedium">
                       {addressName}
                     </Text>
-                    <Text size="xs" className="font-JakartaMedium text-typography-700">
+                    <Text
+                      size="xs"
+                      ellipsizeMode="tail"
+                      numberOfLines={2}
+                      className="font-JakartaMedium text-typography-700"
+                    >
                       {fullAddress}
                     </Text>
                   </>
@@ -147,11 +157,11 @@ function AddressSkeleton() {
 
 export function DeliveryPreferenceCardSkeleton() {
   return (
-    <VStack space="lg">
+    <VStack space="sm">
       <Skeleton className="h-8 w-40" />
 
-      <VStack space="md">
-        <HStack space="md" className="flex-wrap">
+      <VStack space="sm">
+        <HStack space="sm" className="flex-wrap">
           <Skeleton className="h-8 w-16" />
           <Skeleton className="h-8 w-16" />
           <Skeleton className="h-8 w-20" />

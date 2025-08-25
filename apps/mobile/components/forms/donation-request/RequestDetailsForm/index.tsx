@@ -6,25 +6,21 @@ import { VStack } from '@/components/ui/vstack';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
 import { MatchedDonationSchema, RequestSchema } from '@lactalink/types';
 
+import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import { ClockIcon } from 'lucide-react-native';
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
 import { VolumeField } from './VolumeField';
 
-interface RequestDetailsFormProps {
-  isLoading?: boolean;
-  matchedDonation?: string;
-}
+interface RequestDetailsFormProps {}
 
-export function RequestDetailsForm({
-  isLoading: isLoadingProp,
-  matchedDonation,
-}: RequestDetailsFormProps) {
-  const hasMatchedDonation = Boolean(matchedDonation);
-  const isLoading = hasMatchedDonation && isLoadingProp;
+export function RequestDetailsForm(_props: RequestDetailsFormProps) {
+  const form = useForm<RequestSchema>();
 
-  const form = useFormContext<RequestSchema>();
+  const matchedDonation = form.watch('matchedDonation');
+
+  const isLoading = form.additionalState.isLoading;
+  const isSubmitting = form.formState.isSubmitting;
 
   function handleMatchedDonationChange(
     donation: MatchedDonationSchema,
@@ -56,7 +52,7 @@ export function RequestDetailsForm({
           <FormField
             control={form.control}
             name="details.storagePreference"
-            label="Select the type of milk you are requesting."
+            label="Select how you would like the milk to be stored/preserved."
             fieldType="button-group"
             options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
             isLoading={isLoading}
@@ -70,6 +66,7 @@ export function RequestDetailsForm({
           fieldType="button-group"
           options={Object.values(URGENCY_LEVELS)}
           isLoading={isLoading}
+          isDisabled={isSubmitting}
         />
       </VStack>
 
@@ -83,9 +80,10 @@ export function RequestDetailsForm({
             mode="date"
             helperText="Select a date when you need the milk."
             datePickerOptions={{ minimumDate: new Date() }}
-            showSetNowButton
             placeholder="Select date..."
+            style={{ maxWidth: 200 }}
             isLoading={isLoading}
+            isDisabled={isSubmitting}
           />
 
           <FormField
@@ -96,14 +94,16 @@ export function RequestDetailsForm({
             helperText="Specify the time when you need the milk."
             placeholder="Select time..."
             inputIcon={ClockIcon}
+            style={{ maxWidth: 200 }}
             showSetNowButton
             datePickerOptions={{ minimumDate: new Date() }}
             isLoading={isLoading}
+            isDisabled={isSubmitting}
           />
         </VStack>
       </VStack>
 
-      <VolumeField donationID={matchedDonation} />
+      <VolumeField matchedDonation={matchedDonation} isLoading={isLoading} />
 
       <Box className="mx-5">
         <FormField
@@ -114,6 +114,7 @@ export function RequestDetailsForm({
           allowsMultipleSelection={false}
           helperText="Optional, but may encourage donors to fulfill your request."
           isLoading={isLoading}
+          isDisabled={isSubmitting}
         />
       </Box>
 
@@ -126,6 +127,7 @@ export function RequestDetailsForm({
           placeholder="Please provide a brief reason for your request."
           helperText="Optional, but helps the donor understand your needs."
           isLoading={isLoading}
+          isDisabled={isSubmitting}
         />
       </Box>
 
@@ -138,15 +140,17 @@ export function RequestDetailsForm({
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
           isLoading={isLoading}
+          isDisabled={isSubmitting}
         />
       </Box>
 
-      {!hasMatchedDonation && (
+      {!matchedDonation && (
         <DeliveryPreferencesField
           control={form.control}
           name="deliveryPreferences"
-          isLoading={isLoading}
           label="Delivery Preferences"
+          isLoading={isLoading}
+          isDisabled={isSubmitting}
         />
       )}
     </VStack>

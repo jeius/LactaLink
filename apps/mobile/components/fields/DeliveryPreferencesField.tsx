@@ -120,7 +120,7 @@ export function DeliveryPreferencesField<
       {label && (
         <FormControlLabel className="justify-between">
           <FormControlLabelText>{label}</FormControlLabelText>
-          <Icon as={TruckIcon} className="text-primary-500" />
+          <Icon as={TruckIcon} />
         </FormControlLabel>
       )}
 

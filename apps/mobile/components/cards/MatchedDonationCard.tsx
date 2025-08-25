@@ -1,11 +1,19 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { Avatar as AvatarType, Individual, MatchedDonationSchema } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import {
+  Avatar as AvatarType,
+  Individual,
+  MatchedDonationSchema,
+  MilkBagSchema,
+} from '@lactalink/types';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { useLocationStore } from '@/lib/stores/locationStore';
+import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
+import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { DropletIcon, PackageIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
@@ -19,7 +27,7 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedDonationCardProps {
-  donation: string;
+  donation: MatchedDonationSchema;
   onChange?: (donation: MatchedDonationSchema, deliveryPreference?: string | null) => void;
   isLoading?: boolean;
 }
@@ -31,20 +39,18 @@ export function MatchedDonationCard({
 }: MatchedDonationCardProps) {
   const { theme } = useTheme();
   const [selectedPreference, setSelectedPreference] = useState<string | null>(null);
-
-  const shouldFetch = isString(donation);
+  const coords = useLocationStore((s) => s.coordinates);
 
   const {
-    data: fetchedData,
+    data,
     isLoading: isDataLoading,
     error,
-  } = useFetchById(shouldFetch, {
+  } = useFetchById(true, {
     collection: 'donations',
     id: extractID(donation),
+    select: { donor: true, details: true, deliveryPreferences: true, remainingVolume: true },
     populate: { users: { profile: true, profileType: true, role: true } },
   });
-
-  const data = shouldFetch ? fetchedData : extractCollection(donation);
 
   const donor = data?.donor as Individual | null;
   const donorAvatar = donor?.avatar as AvatarType | null;
@@ -53,22 +59,26 @@ export function MatchedDonationCard({
   const isLoading = isLoadingProp || isDataLoading;
 
   const matchedDonationData = useMemo((): MatchedDonationSchema | undefined | null => {
+    const bags = extractCollection(data?.details?.bags || []);
     return (
       data && {
         id: data.id,
         donor: extractID(data.donor),
-        bags: extractID(data.details.bags),
         storageType: data.details.storageType,
+        bags: bags.map((bag) => extractMilkBagSchema(bag) as MilkBagSchema),
       }
     );
   }, [data]);
 
-  const deliveryPreferences = data?.deliveryPreferences || [];
+  const deliveryPreferences = useMemo(
+    () => extractCollection(data?.deliveryPreferences) || [],
+    [data?.deliveryPreferences]
+  );
 
   useEffect(() => {
     if (deliveryPreferences.length > 0) {
-      const pref = deliveryPreferences[0];
-      const prefID = (pref && extractID(pref)) || null;
+      const nearest = getNearestDeliveryPreference(deliveryPreferences, coords);
+      const prefID = extractID(nearest.deliveryPreference) || null;
 
       setSelectedPreference(prefID);
 
@@ -76,6 +86,7 @@ export function MatchedDonationCard({
         onChange?.(matchedDonationData, prefID);
       }
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryPreferences, matchedDonationData]);
 
@@ -167,20 +178,20 @@ export function MatchedDonationCard({
 
 function CardPlaceholder() {
   return (
-    <Card className="relative w-full">
+    <Card className="relative w-full p-0">
       <VStack space="lg">
-        <HStack space="md" className="items-start">
+        <HStack space="md" className="bg-background-100 items-start p-4">
           <Skeleton variant="circular" className="h-16 w-16" />
           <VStack space="xs" className="flex-1">
-            <Skeleton variant="sharp" className="h-5 w-32" />
-            <Skeleton variant="sharp" className="h-4 w-24" />
-            <Skeleton variant="sharp" className="h-4 w-16" />
+            <Skeleton variant="circular" className="h-5 w-32" />
+            <Skeleton variant="circular" className="h-4 w-24" />
+            <Skeleton variant="circular" className="h-4 w-20" />
           </VStack>
 
           <Skeleton className="h-8 w-16" />
         </HStack>
 
-        <VStack space="lg" className="p-4">
+        <VStack space="md" className="p-4 pt-0">
           <DeliveryPreferenceCardSkeleton />
           <Skeleton className="h-10" />
         </VStack>
