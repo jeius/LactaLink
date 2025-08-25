@@ -9,6 +9,7 @@ import { filterMilkBagsOptions } from './filterOptions';
 import { calculateVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
 import { processDeliveryAgreements } from './hooks/processDeliveryAgreements';
+import { updateRelatedCollectionsOnCreate } from './hooks/updateRelatedCollectionsOnCreate';
 
 export const Transactions: CollectionConfig<'transactions'> = {
   slug: 'transactions',
@@ -27,6 +28,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
   hooks: {
     beforeRead: [calculateVolume],
     beforeChange: [generateCreatedBy, generateTransactionNumber, processDeliveryAgreements],
+    afterChange: [updateRelatedCollectionsOnCreate],
   },
   fields: [
     {

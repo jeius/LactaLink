@@ -40,7 +40,6 @@ async function updateDonation(id: string, req: PayloadRequest) {
     data: { status: matchedStatus },
     where: { id: { equals: id } },
     depth: 0,
-    select: {},
   });
 }
 
@@ -51,7 +50,6 @@ async function updateRequest(id: string, req: PayloadRequest, doc: Transaction) 
     data: { status: matchedStatus, details: { bags: extractID(doc.matchedBags) } },
     where: { id: { equals: id } },
     depth: 0,
-    select: {},
   });
 }
 
@@ -62,6 +60,5 @@ async function updateMilkBagsStatus(ids: string[], req: PayloadRequest) {
     data: { status: MILK_BAG_STATUS.ALLOCATED.value },
     where: { id: { in: ids } },
     depth: 0,
-    select: {},
   });
 }
