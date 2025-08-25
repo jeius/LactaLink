@@ -8,6 +8,7 @@ export const imageSchema = z.object({
   filesize: z.number().positive('Size must be a positive number').optional(),
   width: z.int().positive('Width must be a positive integer').optional(),
   height: z.int().positive('Height must be a positive integer').optional(),
+  blurhash: z.string().optional(),
 });
 
 export type ImageSchema = z.infer<typeof imageSchema>;
