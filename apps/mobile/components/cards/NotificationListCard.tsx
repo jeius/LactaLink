@@ -1,10 +1,6 @@
-import { getApiClient } from '@lactalink/api';
 import { Notification } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
-import { useRecyclingState } from '@shopify/flash-list';
 import { Href, Link } from 'expo-router';
 import { ComponentProps } from 'react';
-import { toast } from 'sonner-native';
 import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
@@ -15,14 +11,16 @@ import { VStack } from '../ui/vstack';
 interface NotificationListCardProps extends ComponentProps<typeof Card> {
   data?: Notification;
   isLoading?: boolean;
+  onMarkedAsRead?: (item: Notification) => void;
 }
 
 export default function NotificationListCard({
   data,
   isLoading,
+  onMarkedAsRead,
   ...cardProps
 }: NotificationListCardProps) {
-  const [isRead, setIsRead] = useRecyclingState(data?.read || false, [data?.id]);
+  const isRead = data?.read || false;
 
   const title = data?.title || 'Unknown Notification';
   const message = data?.message || 'No message provided';
@@ -43,22 +41,8 @@ export default function NotificationListCard({
   const actionUrl = (data?.relatedData?.actionUrl || '/+not-found') as Href;
 
   async function markAsRead() {
-    setIsRead(true);
-
     if (!data?.id) return;
-
-    const apiClient = getApiClient();
-    await apiClient
-      .updateByID({
-        collection: 'notifications',
-        id: data.id,
-        data: { read: true },
-        depth: 0,
-      })
-      .catch((error) => {
-        toast.error(extractErrorMessage(error));
-        setIsRead(false);
-      });
+    onMarkedAsRead?.(data);
   }
 
   return (
