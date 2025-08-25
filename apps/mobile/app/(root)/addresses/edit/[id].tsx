@@ -7,7 +7,7 @@ import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInp
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -20,7 +20,7 @@ import MapView, { Region } from 'react-native-maps';
 export default function EditPage() {
   const router = useRouter();
 
-  const revalidateQueries = useRevalidateQueries();
+  const revalidateQueries = useRevalidateCollectionQueries();
 
   const { id } = useLocalSearchParams<{ id?: string }>();
 
@@ -43,7 +43,7 @@ export default function EditPage() {
 
     if (!success) return;
 
-    revalidateQueries();
+    revalidateQueries(['addresses', 'users']);
     form.reset(formData);
     router.back();
   }

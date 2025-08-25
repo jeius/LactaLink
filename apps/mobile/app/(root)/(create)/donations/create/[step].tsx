@@ -24,7 +24,13 @@ import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { extractImageSchema } from '@/lib/utils/extractImageSchema';
 
 import { getApiClient, getTransactionService } from '@lactalink/api';
-import { CreateMilkBagSchema, DonationSchema, MilkBag, Transaction } from '@lactalink/types';
+import {
+  CollectionSlug,
+  CreateMilkBagSchema,
+  DonationSchema,
+  MilkBag,
+  Transaction,
+} from '@lactalink/types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -55,7 +61,7 @@ export default function CreateDonation() {
 
   const { matchedRequest: matchedRequestID, step } = useLocalSearchParams<SearchParams>();
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
-  const revalidateDonations = useRevalidateCollectionQueries('donations');
+  const revalidateDonations = useRevalidateCollectionQueries();
 
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
@@ -93,14 +99,16 @@ export default function CreateDonation() {
       });
 
       const { transaction } = await createPromise;
+      const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications'];
 
       if (transaction) {
         router.dismissTo(`/transactions/${transaction.id}`);
+        slugsToRevalidate.push('requests', 'transactions');
       } else {
         router.dismissTo('/account/donations');
       }
 
-      revalidateDonations();
+      revalidateDonations(slugsToRevalidate);
     },
     [revalidateDonations, router]
   );

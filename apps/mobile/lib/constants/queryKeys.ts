@@ -1,15 +1,21 @@
-export const QUERY_KEYS = {
+interface QueryKeys {
+  AUTH: {
+    ALL: string[];
+    SESSION: string[];
+    USER: string[];
+  };
+  USER_THEME: string[];
+  MARKERS: string[];
+  TUTORIAL_STATE: string[];
+}
+
+export const QUERY_KEYS: QueryKeys = {
   AUTH: {
     ALL: ['auth'],
     SESSION: ['auth', 'session'],
-    USER: ['auth', 'user'],
+    USER: ['auth', 'users'],
   },
   USER_THEME: ['user-theme'],
-  SETUP_PROFILE: {
-    ALL: ['setup-profile'],
-    FORM: ['setup-profile', 'form'],
-    VALUES: ['setup-profile', 'values'],
-  },
   MARKERS: ['markers'],
   TUTORIAL_STATE: ['tutorial-state'],
 };

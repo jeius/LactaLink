@@ -1,16 +1,15 @@
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
-import { getHexColor } from '@/lib/colors';
+import { useRevalidateAllQueries } from '@/hooks/collections/useRevalidateQueries';
 import { FC } from 'react';
 import { RefreshControlProps } from 'react-native';
 import { RefreshControl as RNRefreshControl } from 'react-native-gesture-handler';
 import { useTheme } from './AppProvider/ThemeProvider';
 
 export const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, ...props }) => {
-  const { theme } = useTheme();
-  const revalidateQueries = useRevalidateQueries();
+  const { themeColors } = useTheme();
+  const revalidateQueries = useRevalidateAllQueries();
 
-  const tintColor = getHexColor(theme, 'primary', 500);
-  const bgColor = getHexColor(theme, 'background', 50);
+  const tintColor = themeColors.primary[500];
+  const bgColor = themeColors.background[50];
 
   function handleRefresh() {
     if (onRefresh) {

@@ -1,4 +1,4 @@
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { deleteCollection } from '@/lib/api/delete';
 import { CollectionSlug } from '@lactalink/types';
 import { type Href, useRouter } from 'expo-router';
@@ -43,12 +43,12 @@ interface DeleteActionButtonProps extends ComponentProps<typeof ActionModal> {
 }
 
 export function DeleteActionButton({ itemName, slug, id, ...props }: DeleteActionButtonProps) {
-  const revalidateQueries = useRevalidateQueries();
+  const revalidateQueries = useRevalidateCollectionQueries();
 
   async function handleDelete() {
     const deleted = await deleteCollection(slug, id);
     if (deleted) {
-      revalidateQueries();
+      revalidateQueries([slug, 'users']);
     }
   }
 

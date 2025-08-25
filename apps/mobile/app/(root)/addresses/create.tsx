@@ -7,7 +7,7 @@ import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInp
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -22,7 +22,7 @@ export default function CreatePage() {
   const mapRef = useRef<MapView | null>(null);
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
-  const revalidateQueries = useRevalidateQueries();
+  const revalidateQueries = useRevalidateCollectionQueries();
 
   const { form, isLoading, isFetching, error } = useAddressForm();
 
@@ -31,7 +31,7 @@ export default function CreatePage() {
 
     if (!success) return;
 
-    revalidateQueries();
+    revalidateQueries(['addresses', 'users']);
     form.reset(formData);
     router.back();
   }

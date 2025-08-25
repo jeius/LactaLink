@@ -15,7 +15,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
@@ -27,7 +27,7 @@ import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-n
 
 export default function CreatePage() {
   const router = useRouter();
-  const revalidateQueries = useRevalidateQueries();
+  const revalidateQueries = useRevalidateCollectionQueries();
 
   const { form, isLoading, isFetching, error } = useDeliveryPreferenceForm();
 
@@ -52,7 +52,7 @@ export default function CreatePage() {
 
     await promise;
 
-    revalidateQueries();
+    revalidateQueries(['delivery-preferences', 'users']);
 
     form.reset(formData);
     router.back();

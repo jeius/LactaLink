@@ -9,7 +9,7 @@ import { useRevalidateCollectionQueries } from '../collections/useRevalidateQuer
 type EventType = 'INSERT' | 'UPDATE' | 'DELETE';
 
 export function useLiveCollectionRevalidator(slug: CollectionSlug, events: EventType[] = []) {
-  const revalidateQueries = useRevalidateCollectionQueries(slug);
+  const revalidateQueries = useRevalidateCollectionQueries();
   const isFocused = useIsFocused();
   const broadcastRef = useRef<RealtimeChannel>(null);
 
@@ -21,7 +21,7 @@ export function useLiveCollectionRevalidator(slug: CollectionSlug, events: Event
         'postgres_changes',
         { event: '*', schema: 'public', table: formatKebabToUnderscore(slug) },
         () => {
-          revalidateQueries();
+          revalidateQueries(slug);
         }
       );
     } else {
@@ -31,7 +31,7 @@ export function useLiveCollectionRevalidator(slug: CollectionSlug, events: Event
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { event: event as any, schema: 'public', table: formatKebabToUnderscore(slug) },
           () => {
-            revalidateQueries();
+            revalidateQueries(slug);
           }
         );
       });

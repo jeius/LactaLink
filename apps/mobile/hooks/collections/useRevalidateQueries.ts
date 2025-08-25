@@ -3,7 +3,7 @@ import { CollectionSlug } from '@lactalink/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-export function useRevalidateQueries() {
+export function useRevalidateAllQueries() {
   const queryClient = useQueryClient();
 
   const revalidate = useCallback(
@@ -28,22 +28,25 @@ export function useRevalidateQueries() {
   return revalidate;
 }
 
-export function useRevalidateCollectionQueries(collectionSlug: CollectionSlug) {
+/**
+ * Revalidate queries for a specific collection or multiple collections.
+ * @param collection Collection slug or array of slugs to revalidate
+ * @returns Function to revalidate queries for the specified collection(s)
+ */
+export function useRevalidateCollectionQueries<T extends CollectionSlug>() {
   const queryClient = useQueryClient();
 
-  const revalidate = useCallback(() => {
-    queryClient.invalidateQueries({
-      predicate(query) {
-        const willInvalidate = [
-          ...COLLECTION_QUERY_KEY,
-          ...INFINITE_QUERY_KEY,
-          collectionSlug,
-        ].some((key) => query.queryKey.includes(key));
-
-        return willInvalidate;
-      },
-    });
-  }, [queryClient, collectionSlug]);
+  const revalidate = useCallback(
+    (collection: T | T[]) => {
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const slugs = Array.isArray(collection) ? collection : [collection];
+          return slugs.some((slug) => query.queryKey.includes(slug));
+        },
+      });
+    },
+    [queryClient]
+  );
 
   return revalidate;
 }

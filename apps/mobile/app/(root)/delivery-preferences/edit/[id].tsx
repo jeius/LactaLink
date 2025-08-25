@@ -15,7 +15,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useRevalidateQueries } from '@/hooks/collections/useRevalidateQueries';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { deleteCollection } from '@/lib/api/delete';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
@@ -30,7 +30,7 @@ import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';
 export default function EditPage() {
   //#region Hooks
   const router = useRouter();
-  const revalidateQueries = useRevalidateQueries();
+  const revalidateQueries = useRevalidateCollectionQueries();
   const [floatingButtonHeight, setFloatingButtonHeight] = useState(0);
 
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,7 +64,7 @@ export default function EditPage() {
 
     await promise;
 
-    revalidateQueries();
+    revalidateQueries(['delivery-preferences', 'users']);
     router.back();
     form.reset(formData);
   }
@@ -72,7 +72,7 @@ export default function EditPage() {
   async function handleDelete() {
     const deleted = await deleteCollection('delivery-preferences', id);
     if (!deleted) return;
-    revalidateQueries();
+    revalidateQueries(['delivery-preferences', 'users']);
     router.back();
   }
 
