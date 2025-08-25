@@ -1,15 +1,10 @@
 import { requestStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Hospital,
-  Individual,
-  MilkBank,
-  requestSchema,
-  RequestSchema,
-  User,
-} from '@lactalink/types';
+import { MilkBagSchema, requestSchema, RequestSchema, User } from '@lactalink/types';
 
-import { extractID } from '@lactalink/utilities';
+import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
+import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { debounce } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
@@ -18,42 +13,12 @@ import { useFetchById } from '../collections/useFetchById';
 const storageKeyPrefix = 'create-request-form';
 
 type Params = {
-  requestedDonorId?: string;
+  recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
   matchedDonation?: string;
   user: User | null;
-  profile: Individual | Hospital | MilkBank | null;
 };
 
-function getStoredData({ user, requestedDonorId, profile }: Params): RequestSchema | undefined {
-  if (!user) return undefined;
-
-  const id = user.id;
-  const storageKey = `${storageKeyPrefix}-${id}`;
-  const raw = requestStorage.getString(storageKey);
-
-  const storedData: DeepPartial<RequestSchema> | undefined = raw && JSON.parse(raw);
-  const requester = profile?.id;
-
-  return {
-    requester: storedData?.requester || requester,
-    requestedDonor: storedData?.requestedDonor || requestedDonorId,
-    volumeNeeded: storedData?.volumeNeeded || 20,
-    deliveryPreferences: storedData?.deliveryPreferences || [],
-    details: {
-      ...storedData?.details,
-      reason: storedData?.details?.reason || '',
-      notes: storedData?.details?.notes || '',
-      storagePreference: storedData?.details?.storagePreference || 'EITHER',
-    },
-  } as RequestSchema;
-}
-
-export const useCreateRequestForm = ({
-  requestedDonorId,
-  user,
-  profile,
-  matchedDonation,
-}: Params) => {
+export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Params) => {
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
   const {
@@ -61,6 +26,7 @@ export const useCreateRequestForm = ({
     isLoading,
     isFetching,
     error,
+    ...restOfQuery
   } = useFetchById(Boolean(matchedDonation), {
     collection: 'donations',
     id: matchedDonation,
@@ -70,41 +36,49 @@ export const useCreateRequestForm = ({
   const form = useForm({
     resolver: zodResolver(requestSchema),
     mode: 'onTouched',
-    defaultValues: getStoredData({ user, requestedDonorId, profile }),
+    defaultValues: getStoredData({ user }),
   });
 
   const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
   const isSubmitSuccessful = form.formState.isSubmitSuccessful;
   const getValues = form.getValues;
+  const reset = form.reset;
 
   const debouncedSave = debounce((value: DeepPartial<RequestSchema>) => {
     requestStorage.set(storageKey, JSON.stringify(value));
-  }, 1000);
+  }, 200);
 
   useEffect(() => {
-    if (!isLoading && preferences?.length) {
-      const data = form.getValues();
+    const data = getValues();
+
+    if (preferences?.length && !data.deliveryPreferences?.length) {
+      data.deliveryPreferences = extractID(preferences);
+    }
+
+    if (recipient && !matchedDonationDoc) {
+      data.recipient = recipient;
+    } else if (matchedDonationDoc) {
+      const storagePreference = matchedDonationDoc.details.storageType;
+      const bags = extractCollection(matchedDonationDoc.details.bags);
+
+      data.matchedDonation = {
+        id: matchedDonationDoc.id,
+        donor: extractID(matchedDonationDoc.donor),
+        storageType: storagePreference,
+        bags: bags.map((bag) => extractMilkBagSchema(bag) as MilkBagSchema),
+      };
 
       if (preferences?.length) {
-        data.deliveryPreferences = extractID(preferences);
+        const nearestPref = getNearestDeliveryPreference(extractCollection(preferences));
+        const prefID = extractID(nearestPref?.deliveryPreference);
+        data.deliveryPreferences = prefID ? [prefID] : data.deliveryPreferences;
       }
 
-      if (matchedDonationDoc) {
-        const storagePreference = matchedDonationDoc.details.storageType;
-
-        data.matchedDonation = {
-          id: matchedDonationDoc.id,
-          donor: extractID(matchedDonationDoc.donor),
-          storageType: storagePreference,
-          bags: extractID(matchedDonationDoc.details.bags),
-        };
-
-        data.details.storagePreference = storagePreference;
-      }
-
-      form.reset(data);
+      data.details.storagePreference = storagePreference;
     }
-  }, [isLoading, preferences, form, form.getValues, matchedDonationDoc]);
+
+    reset(data);
+  }, [isLoading, preferences, getValues, matchedDonationDoc, recipient, reset]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -147,5 +121,31 @@ export const useCreateRequestForm = ({
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey]);
 
-  return { form, isLoading, isFetching, error };
+  return { form, isLoading, isFetching, error, ...restOfQuery };
 };
+
+function getStoredData({ user, recipient }: Params): RequestSchema | undefined {
+  if (!user) return undefined;
+  const profile = extractCollection(user.profile?.value);
+
+  const id = user.id;
+  const storageKey = `${storageKeyPrefix}-${id}`;
+  const raw = requestStorage.getString(storageKey);
+
+  const storedData: DeepPartial<RequestSchema> | undefined = raw && JSON.parse(raw);
+  const requester = profile?.id;
+
+  return {
+    requester: storedData?.requester || requester,
+    recipient: storedData?.recipient || recipient,
+    volumeNeeded: storedData?.volumeNeeded || 20,
+    deliveryPreferences: storedData?.deliveryPreferences || [],
+    details: {
+      ...storedData?.details,
+      bags: storedData?.details?.bags || [],
+      reason: storedData?.details?.reason || '',
+      notes: storedData?.details?.notes || '',
+      storagePreference: storedData?.details?.storagePreference || 'EITHER',
+    },
+  } as RequestSchema;
+}

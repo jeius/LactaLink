@@ -12,6 +12,7 @@ import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { usePagination } from '@/hooks/forms';
+import { deleteCollection } from '@/lib/api/delete';
 
 import { uploadImage } from '@/lib/api/file';
 import { MILK_BAG_STATUS } from '@/lib/constants';
@@ -320,14 +321,7 @@ async function createDonation(data: DonationSchema) {
     })
     .catch(async (error) => {
       await Promise.all([
-        (() => {
-          if (milkImageDoc) {
-            apiClient.deleteByID({
-              collection: 'images',
-              id: extractID(milkImageDoc),
-            });
-          }
-        })(),
+        deleteCollection('images', milkImageDoc?.id),
         apiClient.update({
           collection: 'milkBags',
           where: { id: { in: extractID(milkBagDocs) } },
@@ -357,10 +351,7 @@ async function createDonation(data: DonationSchema) {
     message = `Thank you! ${requesterName} has been notified of your donation.`;
   }
 
-  return {
-    message,
-    transaction: transaction,
-  };
+  return { message, transaction: transaction };
 }
 
 async function createManyMilkBags(

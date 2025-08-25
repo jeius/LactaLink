@@ -131,16 +131,31 @@ export const matchedDonationSchema = z.object({
     Object.values(STORAGE_TYPES).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(z.uuid().nonempty('Required')).min(1, 'Required at least one milk bag.'),
+  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
 });
 
 export const requestSchema = z
   .object({
     id: z.uuid().optional(),
     requester: z.uuid().nonempty('Required'),
-    requestedDonor: z.uuid().optional().nullable(),
+    recipient: recipientSchema.optional().nullable(),
     volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
     details: requestDetailsSchema,
     matchedDonation: matchedDonationSchema.optional(),
   })
-  .and(deliveryPreferencesSchema);
+  .and(deliveryPreferencesSchema)
+  .refine(
+    (data) => {
+      if (data.matchedDonation) {
+        if (!data.details.bags || data.details.bags.length === 0) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    {
+      error: 'Atleast one milk bag must be selected.',
+      path: ['details', 'bags'],
+    }
+  );

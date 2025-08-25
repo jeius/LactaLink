@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DonationSchema, donationSchema, Request, User } from '@lactalink/types';
 
 import { MILK_BAG_STATUS } from '@/lib/constants';
+import { extractImageSchema } from '@/lib/utils/extractImageSchema';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
 import { extractCollection, extractID } from '@lactalink/utilities';
 import { randomUUID } from 'expo-crypto';
@@ -17,7 +18,7 @@ const storageKeyPrefix = 'donation-form';
 type Params = {
   matchedRequest?: string;
   user: User | null;
-  recipient?: NonNullable<User['profile']>;
+  recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
 };
 
 export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Params) => {
@@ -107,7 +108,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
         newMilkBags[groupID] = bags.map((bag) => ({
           ...bag,
           donor: extractID(bag.donor),
-          bagImage: null, // Set null, since draft milk bags does not have an image yet.
+          bagImage: extractImageSchema(extractCollection(bag.bagImage)),
         }));
       }
 
@@ -127,10 +128,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
 
     // Only set recipient if there is no matched request.
     if (recipient && !matchedRequestDoc) {
-      data.recipient = {
-        relationTo: recipient.relationTo,
-        value: extractID(recipient.value),
-      };
+      data.recipient = recipient;
     }
 
     if (matchedRequestDoc) {
