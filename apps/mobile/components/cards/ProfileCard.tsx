@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -10,7 +10,7 @@ import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { User } from '@lactalink/types';
 import { capitalizeFirst, extractCollection } from '@lactalink/utilities';
 import { Link } from 'expo-router';
-import { MailIcon, PhoneIcon, UserSearchIcon } from 'lucide-react-native';
+import { MailIcon, PhoneIcon } from 'lucide-react-native';
 import React, { ComponentProps, ReactNode } from 'react';
 import { Skeleton } from '../ui/skeleton';
 
@@ -49,7 +49,7 @@ export default function ProfileCard({
             <ProfileAvatar profile={profile} size="xl" />
             {profileType && (
               <HStack space="xs" className="items-center">
-                <Icon as={profileIcon} size="xs" fill={themeColors.typography[600]} />
+                <Icon as={profileIcon} size="xs" color={themeColors.typography[600]} />
                 <Text size="xs" className="text-typography-600 text-center">
                   {profileType}
                 </Text>
@@ -57,8 +57,8 @@ export default function ProfileCard({
             )}
           </VStack>
 
-          <VStack space="sm" className="grow items-stretch">
-            <Text className="font-JakartaSemiBold" ellipsizeMode="tail" numberOfLines={1}>
+          <VStack space="sm" className="grow items-start">
+            <Text className="font-JakartaMedium" ellipsizeMode="tail" numberOfLines={1}>
               {name}
             </Text>
             <HStack space="sm" className="items-center">
@@ -76,8 +76,7 @@ export default function ProfileCard({
             </HStack>
 
             <Link href={`/profile`} push asChild>
-              <Button size="sm" variant="outline" action="default" className="mt-2 rounded-full">
-                <ButtonIcon as={UserSearchIcon} />
+              <Button variant="link" action="default" className="p-0">
                 <ButtonText>View Profile</ButtonText>
               </Button>
             </Link>

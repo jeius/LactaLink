@@ -1,12 +1,10 @@
-import HospitalBuildingIcon from '@/components/icons/HospitalBuildingIcon';
-import MilkBankBuildingIcon from '@/components/icons/MilkBankBuildingIcon';
 import {
   HospitalSchema,
   IndividualSchema,
   MilkBankSchema,
   SetupProfileSchema,
 } from '@lactalink/types';
-import { LucideProps, UserIcon } from 'lucide-react-native';
+import { Building2Icon, BuildingIcon, LucideProps, UserIcon } from 'lucide-react-native';
 import { SvgProps } from 'react-native-svg';
 import { ProfileType, SetupProfileSteps } from '../types';
 
@@ -40,6 +38,6 @@ export const AVATAR_FIELDS: (keyof SetupProfileSchema)[] = ['avatar'];
 
 export const PROFILE_TYPE_ICONS: Record<ProfileType, React.FC<SvgProps | LucideProps>> = {
   INDIVIDUAL: UserIcon,
-  HOSPITAL: HospitalBuildingIcon,
-  MILK_BANK: MilkBankBuildingIcon,
+  HOSPITAL: Building2Icon,
+  MILK_BANK: BuildingIcon,
 };

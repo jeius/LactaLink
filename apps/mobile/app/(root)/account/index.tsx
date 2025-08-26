@@ -8,7 +8,7 @@ import InTransitIcon from '@/components/icons/InTransitIcon';
 import InventoryIcon from '@/components/icons/InventoryIcon';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { RefreshControl } from '@/components/RefreshControl';
-import { Box } from '@/components/ui/box';
+import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -31,13 +31,11 @@ import {
   TruckIcon,
 } from 'lucide-react-native';
 import React, { FC, Fragment } from 'react';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
 export default function ProfilePage() {
   const { data: user, refetch, isRefetching, isLoading } = useMeUser();
-  const insets = useSafeAreaInsets();
 
   const actionLinks = createActionLinks(user);
   const quickLinks = createQuickActionLinks(user);
@@ -45,58 +43,49 @@ export default function ProfilePage() {
   const appVersion = constants.expoConfig?.version || 'Unknown Version';
 
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-      className="flex-1"
-      contentContainerClassName="flex-1 flex-col items-stretch"
-    >
-      <VStack>
-        <ProfileCard className="p-5" profile={user?.profile} isLoading={isLoading} />
-
-        <Box className="mb-5">
-          <FlatList
-            horizontal
-            data={actionLinks}
-            keyExtractor={(item, idx) => `${item.href}-${idx}`}
-            renderItem={({ item }) => <ProfileActionLinkCard {...item} />}
-            contentContainerClassName="px-5 justify-center grow"
-            ItemSeparatorComponent={() => <Box className="w-5" />}
-            getItemLayout={(_data, index) => ({ length: 144, offset: 164 * index, index })}
-            showsHorizontalScrollIndicator={false}
-          />
-        </Box>
-      </VStack>
-
-      <VStack
-        space="sm"
-        className="bg-background-0 grow items-stretch p-5"
-        style={{ paddingBottom: insets.bottom }}
+    <SafeArea safeTop={false} className="bg-background-0 items-stretch">
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+        className="flex-1"
+        contentContainerClassName="grow flex-col items-stretch bg-background-50"
       >
-        <VStack className="grow">
-          <Text size="lg" bold className="mb-1">
-            Quick Actions
-          </Text>
+        <VStack>
+          <ProfileCard className="p-5" profile={user?.profile} isLoading={isLoading} />
 
-          {quickLinks.map((link, idx) => {
-            const isLast = idx === quickLinks.length - 1;
-            return (
-              <Fragment key={idx}>
-                <QuickActionItem key={idx} {...link} />
-                {!isLast && <Divider />}
-              </Fragment>
-            );
-          })}
+          <HStack space="md" className="mb-5 flex-wrap justify-center px-5">
+            {actionLinks.map((link, i) => (
+              <ProfileActionLinkCard key={i} {...link} />
+            ))}
+          </HStack>
         </VStack>
 
-        <Button variant="outline" action="default" onPress={signOut}>
-          <ButtonIcon as={LogOutIcon} />
-          <ButtonText>Logout</ButtonText>
-        </Button>
-        <Text size="sm" className="text-center">
-          Version: {appVersion}
-        </Text>
-      </VStack>
-    </ScrollView>
+        <VStack space="sm" className="bg-background-0 grow items-stretch p-5 pb-2">
+          <VStack className="grow">
+            <Text size="lg" bold className="mb-1">
+              Quick Actions
+            </Text>
+
+            {quickLinks.map((link, idx) => {
+              const isLast = idx === quickLinks.length - 1;
+              return (
+                <Fragment key={idx}>
+                  <QuickActionItem key={idx} {...link} />
+                  {!isLast && <Divider />}
+                </Fragment>
+              );
+            })}
+          </VStack>
+
+          <Button variant="outline" action="default" onPress={signOut}>
+            <ButtonIcon as={LogOutIcon} />
+            <ButtonText>Logout</ButtonText>
+          </Button>
+          <Text size="sm" className="text-center">
+            Version: {appVersion}
+          </Text>
+        </VStack>
+      </ScrollView>
+    </SafeArea>
   );
 }
 
