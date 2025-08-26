@@ -38,9 +38,9 @@ export async function calculateVolumes<T extends Request>(
 
   volumeNeeded = Math.max(0, volumeNeeded - volumeFulfilled);
 
-  if (volumeNeeded > 0) {
+  if (volumeNeeded >= 0) {
     // Calculate fulfillment percentage
-    const percentage = Math.min(100, Math.round((volumeFulfilled / volumeNeeded) * 100));
+    const percentage = Math.min(100, Math.round((volumeFulfilled / volumeNeeded) * 100)); // 0 to 100
 
     doc.fulfillmentPercentage = percentage;
   }
