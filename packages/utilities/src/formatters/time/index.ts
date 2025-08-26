@@ -1,3 +1,33 @@
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const MONTHS_SHORT = [
+  'Jan.',
+  'Feb.',
+  'Mar.',
+  'Apr.',
+  'May.',
+  'Jun.',
+  'Jul.',
+  'Aug.',
+  'Sept.',
+  'Oct.',
+  'Nov.',
+  'Dec.',
+];
+
 /**
  * Formats a given time in seconds into a `minutes:seconds` string format.
  *
@@ -23,30 +53,49 @@ export const formatTime = (totalSeconds: number): string => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-export function formatDate(param: Date | string): string {
+interface DateOptions {
+  shortMonth?: boolean;
+  monthOnly?: boolean;
+  includeYear?: boolean;
+}
+
+export function formatDate(param: Date | string, options: DateOptions = {}): string {
   const date = new Date(param);
+  const { shortMonth = false, monthOnly = false, includeYear = true } = options;
 
   if (isNaN(date.getTime())) {
     return '';
   }
 
   const day = date.getDate();
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
 
-  return `${month} ${day}, ${year}`;
+  let month = MONTHS[date.getMonth()];
+
+  if (shortMonth) {
+    month = MONTHS_SHORT[date.getMonth()];
+  }
+
+  if (monthOnly) {
+    return month || '';
+  }
+
+  if (includeYear) {
+    return `${month} ${day}, ${year}`;
+  }
+
+  return `${month} ${day}`;
+}
+
+export function formatLocaleTime(param: Date | string): string {
+  const date = new Date(param);
+
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toLocaleTimeString('en', {
+    timeStyle: 'short',
+    hour12: true,
+  });
 }
