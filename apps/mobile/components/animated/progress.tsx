@@ -1,7 +1,7 @@
 import { getHexColor } from '@/lib/colors';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { VariantProps } from '@gluestack-ui/nativewind-utils/types';
-import React, { useEffect } from 'react';
+import React, { ComponentProps, useEffect } from 'react';
 import { ColorValue } from 'react-native';
 import Animated, {
   Easing,
@@ -63,13 +63,15 @@ const progressStyle = tva({
   ],
 });
 
-type AnimatedProgressTrackProps = VariantProps<typeof progressStyle> & {
+interface AnimatedProgressTrackProps
+  extends VariantProps<typeof progressStyle>,
+    ComponentProps<typeof Box> {
   value: number; // 0 to 100
   duration?: number;
   className?: string;
   trackColor?: ColorValue;
   hidden?: boolean;
-};
+}
 
 export function AnimatedProgress({
   value: targetProgress,
@@ -79,6 +81,7 @@ export function AnimatedProgress({
   className,
   trackColor,
   hidden = false,
+  ...props
 }: AnimatedProgressTrackProps) {
   const animatedProgress = useSharedValue(0);
   const animatedOpacity = useSharedValue(1);
@@ -116,7 +119,7 @@ export function AnimatedProgress({
 
   return (
     <Animated.View style={[animatedOpacityStyle]}>
-      <Box className={progressStyle({ size, orientation, class: className })}>
+      <Box {...props} className={progressStyle({ size, orientation, class: className })}>
         <Animated.View
           style={[
             animatedStyle,

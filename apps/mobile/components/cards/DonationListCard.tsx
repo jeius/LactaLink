@@ -7,6 +7,7 @@ import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from '../animated/pressable';
+import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
@@ -30,6 +31,7 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   hideFooter?: boolean;
   footerAction?: ReactNode;
   isImageViewable?: boolean;
+  showProgressBar?: boolean;
 }
 
 export function DonationListCard(props: DonationListCardProps) {
@@ -74,6 +76,7 @@ function CardContent({
   hideFooter,
   showMinDistance,
   isImageViewable = true,
+  showProgressBar,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
   const { themeColors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
@@ -82,8 +85,11 @@ function CardContent({
   const fillColor = themeColors.primary[50];
   const strokeColor = themeColors.primary[700];
 
-  const { details, remainingVolume } = data;
+  const { details } = data;
   const { collectionMode, storageType } = details;
+
+  const volume = data.volume;
+  const percentage = Math.round((data.remainingVolume / data.volume) * 100);
 
   const {
     uri: imageUrl,
@@ -125,7 +131,7 @@ function CardContent({
           <HStack space="xs" className="w-full items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
             <Text className="font-JakartaSemiBold flex-1" numberOfLines={1} ellipsizeMode="tail">
-              {remainingVolume} mL
+              {volume} mL
             </Text>
           </HStack>
 
@@ -155,23 +161,46 @@ function CardContent({
         <>
           <Divider />
 
-          <HStack space="sm" className="w-full items-stretch justify-between">
-            {showAvatar && (
-              <HStack space="sm" className="items-center">
-                <ProfileAvatar size="sm" profile={donor} />
-                <Text size="xs" className="font-JakartaMedium text-typography-800">
-                  {donor?.displayName}
+          {showProgressBar ? (
+            <HStack space="sm" className="w-full flex-wrap items-center justify-between">
+              <VStack className="items-stretch">
+                <AnimatedProgress
+                  size="sm"
+                  orientation="horizontal"
+                  value={percentage}
+                  className="w-48"
+                />
+                <Text size="xs" className="text-typography-700 text-center">
+                  {data.remainingVolume} mL remaining
                 </Text>
-              </HStack>
-            )}
-            {footerAction}
-            {showMinDistance && minDistance && (
-              <HStack space="xs" className="items-center">
-                <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
-                <Text size="xs">{minDistance.toFixed(2)} km</Text>
-              </HStack>
-            )}
-          </HStack>
+              </VStack>
+
+              {footerAction}
+            </HStack>
+          ) : (
+            <HStack space="sm" className="w-full flex-wrap items-stretch justify-between">
+              {showAvatar && (
+                <HStack space="sm" className="items-center">
+                  <ProfileAvatar size="sm" profile={donor} />
+                  <VStack>
+                    <Text size="xs" className="font-JakartaMedium">
+                      {donor?.displayName}
+                    </Text>
+                    <Text size="xs" className="text-typography-700">
+                      Donor
+                    </Text>
+                  </VStack>
+                </HStack>
+              )}
+              {footerAction}
+              {showMinDistance && minDistance && (
+                <HStack space="xs" className="items-center">
+                  <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                  <Text size="xs">{minDistance.toFixed(2)} km</Text>
+                </HStack>
+              )}
+            </HStack>
+          )}
         </>
       )}
     </VStack>

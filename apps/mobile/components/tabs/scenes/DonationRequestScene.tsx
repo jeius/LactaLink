@@ -88,6 +88,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
               data={item as Request}
               showAvatar
               showMinDistance
+              isImageViewable={canViewImage}
               action={
                 <Link
                   href={{ pathname: '/donations/create', params }}

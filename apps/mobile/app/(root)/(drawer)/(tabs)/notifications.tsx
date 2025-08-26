@@ -95,8 +95,7 @@ function markRead(notification: Notification) {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function onMutate(queryClient: QueryClient, queryKey: any[]) {
+function onMutate(queryClient: QueryClient, queryKey: unknown[]) {
   return async (inputData: Notification) => {
     await queryClient.cancelQueries({ queryKey });
 

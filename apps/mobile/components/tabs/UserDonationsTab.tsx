@@ -3,8 +3,13 @@ import { InfiniteList } from '@/components/lists/InfiniteList';
 import { Tab } from '@/components/tabs/Tab';
 import { Box } from '@/components/ui/box';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import {
+  isStatusPendingOrAvailable,
+  useDonationRequestCancelMutation,
+} from '@/hooks/collections/useDonationRequestCancelMutation';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
+import { INFINITE_QUERY_KEY } from '@/lib/constants';
+import { getTimeStampWithLabel } from '@/lib/utils/getTimestampWithLabel';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { CollectionSlug, Where } from '@lactalink/types';
 import { extractID, extractName, formatKebabToTitle } from '@lactalink/utilities';
@@ -14,6 +19,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Route, SceneMap } from 'react-native-tab-view';
 import { EditActionButton } from '../buttons';
 import { DonationListCard } from '../cards';
+import { ActionModal } from '../modals';
+import { Button, ButtonText } from '../ui/button';
+import { HStack } from '../ui/hstack';
+import { Text } from '../ui/text';
+import { VStack } from '../ui/vstack';
 
 const SLUG: Extract<CollectionSlug, 'donations'> = 'donations';
 
@@ -21,7 +31,6 @@ const routes = createTabRoutes();
 const renderScene = createTabSceneMap(routes);
 
 export function UserDonationsTab() {
-  useLiveCollectionRevalidator(SLUG, ['UPDATE']);
   return <Tab routes={routes} renderScene={renderScene} />;
 }
 
@@ -97,6 +106,9 @@ function Scene({ route }: SceneProps) {
     return where;
   }, [profileID, route.key]);
 
+  const queryKey = [...INFINITE_QUERY_KEY, SLUG, { where }];
+  const actionMutation = useDonationRequestCancelMutation(queryKey, SLUG);
+
   return (
     <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
       <Stack.Screen options={{ headerTitle }} />
@@ -115,11 +127,50 @@ function Scene({ route }: SceneProps) {
           }
 
           const isOwner = (profile && extractID(profile.value)) === extractID(item.donor);
+          const isStatusMatched = DONATION_REQUEST_STATUS.MATCHED.value === item.status;
+          const timestamp = getTimeStampWithLabel(item);
 
           return (
             <DonationListCard
               data={item}
-              action={isOwner && <EditActionButton href={`/donations/edit/${item.id}`} />}
+              showProgressBar={isStatusMatched}
+              action={
+                isOwner &&
+                isStatusPendingOrAvailable(item.status) && (
+                  <VStack className="flex-1 items-start">
+                    <EditActionButton href={`/donations/edit/${item.id}`} />
+                  </VStack>
+                )
+              }
+              footerAction={
+                <HStack space="sm" className="flex-1 items-center justify-end">
+                  {!isStatusMatched && (
+                    <VStack className="flex-1">
+                      <Text size="xs" className="text-typography-700">
+                        {timestamp?.label}
+                      </Text>
+                      <Text size="xs" className="text-typography-700">
+                        {timestamp?.value}
+                      </Text>
+                    </VStack>
+                  )}
+                  {isStatusPendingOrAvailable(item.status) ? (
+                    <ActionModal
+                      size="xs"
+                      variant="outline"
+                      action="negative"
+                      triggerLabel="Cancel"
+                      title="Cancel Donation"
+                      onConfirm={() => actionMutation.mutate(item)}
+                      description={`Are you sure you want to cancel this donation? This action cannot be undone.`}
+                    />
+                  ) : (
+                    <Button size="xs" variant="outline" action="default">
+                      <ButtonText>View Details</ButtonText>
+                    </Button>
+                  )}
+                </HStack>
+              }
             />
           );
         }}

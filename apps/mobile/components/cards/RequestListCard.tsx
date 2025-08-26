@@ -1,12 +1,13 @@
-import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
+import { PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { MarkKeyRequired, Request } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { extractCollection, formatDate } from '@lactalink/utilities';
 import { MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
+import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';
@@ -31,6 +32,7 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
   hideFooter?: boolean;
   footerAction?: ReactNode;
   isImageViewable?: boolean;
+  showProgressBar?: boolean;
 }
 
 export function RequestListCard(props: RequestListCardProps) {
@@ -64,7 +66,8 @@ function CardContent({
   showMinDistance,
   footerAction,
   hideFooter,
-  isImageViewable,
+  isImageViewable = true,
+  showProgressBar,
 }: MarkKeyRequired<RequestListCardProps, 'data'>) {
   const { themeColors, theme } = useTheme();
   const locationCoords = useLocationStore((s) => s.coordinates);
@@ -72,8 +75,8 @@ function CardContent({
   const fillColor = themeColors.tertiary[50];
   const strokeColor = themeColors.tertiary[700];
 
-  const { details, volumeNeeded } = data;
-  const { urgency, storagePreference } = details;
+  const { details } = data;
+  const { urgency, storagePreference, neededAt } = details;
   const requester = extractCollection(data.requester);
 
   const image = extractCollection(details.image);
@@ -83,6 +86,11 @@ function CardContent({
     const preferences = extractCollection(data?.deliveryPreferences);
     return getMinDistance(preferences, locationCoords);
   }, [locationCoords, data.deliveryPreferences]);
+
+  const neededAtDate = formatDate(neededAt, { shortMonth: true });
+
+  const volume = data.initialVolumeNeeded;
+  const percentage = data.fulfillmentPercentage || 0;
 
   return (
     <VStack space="sm" className="items-start justify-start">
@@ -107,7 +115,7 @@ function CardContent({
           <HStack space="xs" className="w-full items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
             <Text className="font-JakartaSemiBold" numberOfLines={1} ellipsizeMode="tail">
-              {volumeNeeded} mL
+              {volume} mL
             </Text>
           </HStack>
 
@@ -125,7 +133,8 @@ function CardContent({
               fill={getPriorityColor(theme, urgency)?.toString()}
             />
             <Text size="sm" style={{ color: getPriorityColor(theme, urgency) }}>
-              {URGENCY_LEVELS[urgency || 'LOW'].label}
+              {/* {URGENCY_LEVELS[urgency || 'LOW'].label} */}
+              {neededAtDate}
             </Text>
           </HStack>
         </VStack>
@@ -141,23 +150,51 @@ function CardContent({
         <>
           <Divider />
 
-          <HStack space="sm" className="w-full items-stretch justify-between">
-            {showAvatar && (
-              <HStack space="sm" className="items-center">
-                <ProfileAvatar size="sm" profile={requester} />
-                <Text size="xs" className="font-JakartaMedium text-typography-800">
-                  {requester?.displayName}
+          {showProgressBar ? (
+            <HStack space="sm" className="w-full items-center justify-between">
+              <VStack className="items-stretch">
+                <AnimatedProgress
+                  size="sm"
+                  orientation="horizontal"
+                  value={percentage}
+                  className="w-48"
+                />
+                <Text size="xs" className="text-typography-700 text-center">
+                  {data.volumeFulfilled} mL fulfilled
                 </Text>
-              </HStack>
-            )}
-            {footerAction}
-            {showMinDistance && minDistance && (
-              <HStack space="xs" className="items-center">
-                <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
-                <Text size="xs">{minDistance.toFixed(2)} km</Text>
-              </HStack>
-            )}
-          </HStack>
+              </VStack>
+
+              {footerAction}
+            </HStack>
+          ) : (
+            <HStack space="sm" className="w-full items-stretch justify-between">
+              {showAvatar && (
+                <HStack space="sm" className="items-center">
+                  <ProfileAvatar size="sm" profile={requester} />
+                  <VStack className="shrink">
+                    <Text
+                      size="xs"
+                      className="font-JakartaMedium"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {requester?.displayName}
+                    </Text>
+                    <Text size="xs" className="text-typography-700">
+                      Requester
+                    </Text>
+                  </VStack>
+                </HStack>
+              )}
+              {footerAction}
+              {showMinDistance && minDistance && (
+                <HStack space="xs" className="items-center">
+                  <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                  <Text size="xs">{minDistance.toFixed(2)} km</Text>
+                </HStack>
+              )}
+            </HStack>
+          )}
         </>
       )}
     </VStack>
