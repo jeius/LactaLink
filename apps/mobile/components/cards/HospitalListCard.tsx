@@ -1,7 +1,8 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { getHexColor } from '@/lib/colors';
 import { Hospital } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { areStrings, extractCollection, extractID, isString } from '@lactalink/utilities';
 import { Building2Icon, MapPinIcon, MilkIcon } from 'lucide-react-native';
 import React, { ReactNode } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -42,20 +43,29 @@ export function HospitalListCard({
   const isLoading = isLoadingProp || query.isLoading;
   const data = extractCollection(dataProp) || query.data;
 
-  if (isLoading || data === undefined) {
+  const name = data?.name;
+  const avatar = extractCollection(data?.avatar);
+  const totalVolume = data?.totalVolume || 0;
+  const imageUrl = avatar?.sizes?.thumbnail?.url || avatar?.url;
+  const addresses = extractCollection(data?.owner)?.addresses?.docs || [];
+
+  const getAddressRes = useFetchBySlug(areStrings(addresses), {
+    collection: 'addresses',
+    where: {
+      and: [{ id: { in: extractID(addresses) } }, { isDefault: { equals: true } }],
+    },
+    select: { displayName: true, coordinates: true, isDefault: true },
+  });
+
+  const defaultAddress = getAddressRes.data?.[0] || null;
+
+  if (isLoading) {
     return (
       <Card {...props}>
         <CardSkeleton />
       </Card>
     );
   }
-
-  const name = data?.name;
-  const avatar = extractCollection(data?.avatar);
-  const totalVolume = data?.totalVolume || 0;
-  const imageUrl = avatar?.sizes?.thumbnail?.url || avatar?.url;
-  const addresses = extractCollection(data?.owner)?.addresses?.docs || [];
-  const defaultAddress = extractCollection(addresses).find((addr) => addr.isDefault);
 
   return (
     <Card {...props}>
@@ -94,9 +104,13 @@ export function HospitalListCard({
 
             <HStack space="xs" className="w-full items-center">
               <Icon size="sm" as={MapPinIcon} fill={fillColor} stroke={strokeColor} />
-              <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
-                {defaultAddress ? defaultAddress.displayName : 'No Address'}
-              </Text>
+              {getAddressRes.isLoading ? (
+                <Skeleton variant="circular" className="h-3 w-32" />
+              ) : (
+                <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+                  {defaultAddress ? defaultAddress.displayName : 'No Address'}
+                </Text>
+              )}
             </HStack>
           </VStack>
 

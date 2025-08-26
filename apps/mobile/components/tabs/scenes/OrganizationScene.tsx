@@ -43,6 +43,24 @@ export function OrganizationScene({ route, useBottomSheetList = false }: ScenePr
     where: { and: conditions },
   });
 
+  const data = useMemo(
+    () =>
+      res.data?.pages
+        .flatMap((p) =>
+          p?.docs.map((d) => {
+            const profile = extractCollection(d?.owner)?.profile;
+            return (
+              (profile?.relationTo !== 'individuals' && extractCollection(profile?.value)) ||
+              undefined
+            );
+          })
+        )
+        .filter((v) => v !== undefined) || [],
+    [res.data]
+  );
+
+  const isLoading = res.isLoading;
+
   const placeholders = useMemo(
     () =>
       generatePlaceHoldersWithID<Hospital | MilkBank>(20, {
@@ -52,24 +70,6 @@ export function OrganizationScene({ route, useBottomSheetList = false }: ScenePr
         updatedAt: 'placeholder',
       }),
     []
-  );
-
-  const data = useMemo(
-    () =>
-      res.data?.pages
-        .flatMap((p) =>
-          p?.docs
-            .map((d) => {
-              const owner = extractCollection(d.owner);
-              const profile = extractCollection(owner?.profile);
-              return profile?.relationTo !== 'individuals'
-                ? extractCollection(profile?.value)
-                : null;
-            })
-            .filter((p) => p !== null)
-        )
-        .filter((v) => v !== undefined) || [],
-    [res.data]
   );
 
   const renderItem: ListRenderItem<Hospital | MilkBank> = useCallback(
@@ -112,7 +112,7 @@ export function OrganizationScene({ route, useBottomSheetList = false }: ScenePr
 
   return useBottomSheetList ? (
     <BottomSheetFlashList
-      data={res.isLoading ? placeholders : data}
+      data={isLoading ? placeholders : data}
       renderItem={renderItem}
       keyExtractor={(item, index) => `${extractID(item)}-${index}`}
       ListHeaderComponent={HeaderComponent}
@@ -126,7 +126,7 @@ export function OrganizationScene({ route, useBottomSheetList = false }: ScenePr
     />
   ) : (
     <FlashList
-      data={res.isLoading ? placeholders : data}
+      data={isLoading ? placeholders : data}
       renderItem={renderItem}
       keyExtractor={(item, index) => `${extractID(item)}-${index}`}
       ListHeaderComponent={HeaderComponent}
