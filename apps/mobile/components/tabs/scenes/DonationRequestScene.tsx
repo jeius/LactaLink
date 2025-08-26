@@ -1,7 +1,6 @@
 import { Donation, Request } from '@lactalink/types';
 
 import { DonationListCard, RequestListCard } from '@/components/cards';
-import { Image } from '@/components/Image';
 import { NoData } from '@/components/NoData';
 import { RefreshButton } from '@/components/RefreshButton';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -12,7 +11,6 @@ import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
-import { getIconAsset } from '@/lib/stores';
 import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
 import { formatKebab, generatePlaceHolders } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
@@ -38,8 +36,6 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
     () => res.data?.pages.flatMap((p) => p?.docs).filter((v) => v !== undefined) || [],
     [res.data]
   );
-
-  const icon = getIconAsset(route.key === 'requests' ? 'milkBasket' : 'receiveMilk');
 
   const renderItem: ListRenderItem<T> = useCallback(
     ({ item }) => {
@@ -125,10 +121,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
     if (!data.length && !res.isLoading) return null;
     return (
       <HStack space="lg" className="items-center justify-between">
-        <HStack space="sm" className="items-center">
-          <Image source={icon} style={{ width: 24, aspectRatio: 1 }} />
-          <Text className="font-JakartaSemiBold">Available {capitalize(route.key)}</Text>
-        </HStack>
+        <Text className="font-JakartaSemiBold">Available {capitalize(route.key)}</Text>
         <RefreshButton refreshing={res.isRefetching} onRefresh={res.refetch} />
       </HStack>
     );

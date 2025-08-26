@@ -1,14 +1,11 @@
 import { Tab } from '@/components/tabs/Tab';
 import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
 import { CollectionSlug } from '@lactalink/types';
-import { LucideProps } from 'lucide-react-native';
+import { Building2Icon, BuildingIcon, LucideProps, UsersIcon } from 'lucide-react-native';
 import { FC, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { SvgProps } from 'react-native-svg';
 import { Route, SceneMap } from 'react-native-tab-view';
-import HospitalBuildingIcon from '../icons/HospitalBuildingIcon';
-import MilkBankBuildingIcon from '../icons/MilkBankBuildingIcon';
-import PeopleIcon from '../icons/PeopleIcon';
 import { Icon } from '../ui/icon';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
 import { OrganizationScene } from './scenes/OrganizationScene';
@@ -18,9 +15,9 @@ import { TabBar } from './TabBar';
 type RouteKey = Extract<CollectionSlug, 'requests' | 'hospitals' | 'milkBanks'>;
 
 const iconMap: Record<RouteKey, FC<SvgProps | LucideProps>> = {
-  requests: PeopleIcon,
-  hospitals: HospitalBuildingIcon,
-  milkBanks: MilkBankBuildingIcon,
+  requests: UsersIcon,
+  hospitals: Building2Icon,
+  milkBanks: BuildingIcon,
 };
 
 export function AvailableRequestsTab() {
@@ -35,13 +32,13 @@ export function AvailableRequestsTab() {
       renderScene={sceneMap}
       commonOptions={{
         icon: ({ color, route }) => (
-          <Icon as={iconMap[route.key as RouteKey]} size="lg" fill={color} />
+          <Icon as={iconMap[route.key as RouteKey]} size="lg" color={color} />
         ),
       }}
       renderTabBar={(props) => (
         <TabBar
           {...props}
-          style={{ height: 56 }}
+          style={{ height: 54 }}
           tabStyle={{ width: width / 3 }}
           indicatorContainerStyle={{ height: 56 }}
         />
