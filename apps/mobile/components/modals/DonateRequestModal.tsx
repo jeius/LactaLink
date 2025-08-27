@@ -8,10 +8,11 @@ import { VStack } from '@/components/ui/vstack';
 
 import { getImageAsset } from '@/lib/stores';
 
+import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { ComponentProps, ReactNode, useState } from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { GestureResponderEvent, useWindowDimensions } from 'react-native';
 import { Icon } from '../ui/icon';
 
 interface ModalProps extends ComponentProps<typeof Modal> {
@@ -23,6 +24,16 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   const [triggerPressed, setTriggerPressed] = useState(false);
   const router = useRouter();
 
+  const { width } = useWindowDimensions();
+  const donateImageSrc =
+    width >= DEVICE_BREAKPOINTS.phone
+      ? getImageAsset('pumpingMilk_0.75x')
+      : getImageAsset('pumpingMilk');
+  const requestImageSrc =
+    width >= DEVICE_BREAKPOINTS.phone
+      ? getImageAsset('deliveryGuy_0.75x')
+      : getImageAsset('deliveryGuy');
+
   const handleModalTrigger = (event: GestureResponderEvent) => {
     setOpen((prev) => !prev);
     onClose?.(event);
@@ -31,18 +42,14 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
   const handleDonatePressed = () => {
     setOpen(false);
     setTimeout(() => {
-      router.push('/donations/create', {
-        withAnchor: true,
-      });
+      router.push('/donations/create');
     }, 100); // Delay to allow modal to close before navigating
   };
 
   const handleRequestPressed = () => {
     setOpen(false);
     setTimeout(() => {
-      router.push('/requests/create', {
-        withAnchor: true,
-      });
+      router.push('/requests/create');
     }, 100); // Delay to allow modal to close before navigating
   };
 
@@ -82,7 +89,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
               <Card size="xl" className="bg-primary-100 border-primary-400 relative h-44 p-0">
                 <Image
                   alt="Donate"
-                  source={getImageAsset('onboarding2')}
+                  source={donateImageSrc}
                   contentFit="contain"
                   style={{ width: '100%', height: '100%' }}
                 />
@@ -100,7 +107,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
               <Card size="xl" className="bg-tertiary-50 border-tertiary-200 relative h-44 p-0">
                 <Image
                   alt="Request"
-                  source={getImageAsset('onboarding3')}
+                  source={requestImageSrc}
                   contentFit="contain"
                   style={{ width: '100%', height: '100%' }}
                 />
