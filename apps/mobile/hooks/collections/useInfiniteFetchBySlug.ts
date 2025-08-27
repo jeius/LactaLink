@@ -4,40 +4,71 @@ import {
   CollectionSlug,
   FindMany,
   FindManyResult,
+  MarkOptional,
   SelectFromCollectionSlug,
 } from '@lactalink/types';
-import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  UndefinedInitialDataInfiniteOptions,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+} from '@tanstack/react-query';
 
 export type InfiniteFetchOptions<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = Pick<FindMany<TSlug, TSelect, true>, 'depth' | 'where' | 'sort' | 'select' | 'limit'>;
+> = Omit<FindMany<TSlug, TSelect, true>, 'pagination'>;
 
+export type InfiniteQueryOptions<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+> = MarkOptional<
+  UndefinedInitialDataInfiniteOptions<FindManyResult<TSlug, TSelect, true>>,
+  | 'queryFn'
+  | 'queryKey'
+  | 'enabled'
+  | 'getNextPageParam'
+  | 'getPreviousPageParam'
+  | 'initialPageParam'
+>;
+
+/**
+ * Fetch paginated data from a collection by its slug using react-query.
+ * @param enabled Set to false to disable the query from automatically running
+ * @param apiOptions Api fetch options for fetching data
+ * @param queryOptions Overrides for the react-query options
+ * @returns A react-query object with paginated data, error, and status of the query
+ */
 export function useInfiniteFetchBySlug<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
 >(
-  collection: TSlug,
   enabled: boolean,
-  options: InfiniteFetchOptions<TSlug, TSelect> = {}
+  apiOptions: InfiniteFetchOptions<TSlug, TSelect>,
+  queryOptions?: InfiniteQueryOptions<TSlug, TSelect>
 ): UseInfiniteQueryResult<InfiniteData<FindManyResult<TSlug, TSelect, true>>> {
   const apiClient = useApiClient();
+  const { collection, page = 0, depth = 3, limit = 15, ...rest } = apiOptions;
 
   return useInfiniteQuery({
     enabled,
-    queryKey: [...INFINITE_QUERY_KEY, collection, options],
-    queryFn: ({ pageParam }) =>
-      apiClient.find<TSlug, TSelect, true>({
+    initialPageParam: page,
+    queryKey: [...INFINITE_QUERY_KEY, collection, apiOptions],
+    queryFn: ({ pageParam }) => {
+      if (!collection) throw new Error('Collection is required');
+
+      return apiClient.find<TSlug, TSelect, true>({
         collection,
-        page: pageParam,
+        page: pageParam as number,
         pagination: true,
-        depth: 3,
-        limit: 10,
-        ...options,
-      }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    getPreviousPageParam: (firstPage) => firstPage.prevPage,
+        depth,
+        limit,
+        ...rest,
+      });
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage || null,
+    getPreviousPageParam: (firstPage) => firstPage.prevPage || null,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    ...queryOptions,
   });
 }

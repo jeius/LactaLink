@@ -176,6 +176,7 @@ export default function ComboBox<
   const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
   const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
   const options: InfiniteFetchOptions<T, TSelect> = {
+    collection,
     depth: 0,
     where,
     sort: String(searchPath),
@@ -183,7 +184,7 @@ export default function ComboBox<
   };
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage, isRefetching, refetch } =
-    useInfiniteFetchBySlug(collection, true, options);
+    useInfiniteFetchBySlug(true, options);
 
   const items = useMemo(() => data?.pages?.flatMap((page) => page.docs) || [], [data]);
 

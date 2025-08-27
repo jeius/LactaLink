@@ -1,5 +1,6 @@
 import {
   CollectionSlug,
+  MarkOptional,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
 } from '@lactalink/types';
@@ -8,6 +9,7 @@ import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { Box } from '@/components/ui/box';
 import {
   InfiniteFetchOptions,
+  InfiniteQueryOptions,
   useInfiniteFetchBySlug,
 } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { formatKebab } from '@lactalink/utilities';
@@ -40,7 +42,8 @@ export interface InfiniteListProps<
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > extends OmittedFlashListProps<TransformCollectionWithSelect<TSlug, TSelect>> {
   slug: TSlug;
-  fetchOptions?: InfiniteFetchOptions<TSlug, TSelect>;
+  fetchOptions?: MarkOptional<InfiniteFetchOptions<TSlug, TSelect>, 'collection'>;
+  queryOptions?: InfiniteQueryOptions<TSlug, TSelect>;
   onChange?: (value: TransformCollectionWithSelect<TSlug, TSelect>[]) => void;
   isLoading?: boolean;
   isFetching?: boolean;
@@ -54,6 +57,7 @@ export function InfiniteList<
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 >({
   fetchOptions,
+  queryOptions,
   slug,
   onChange,
   isLoading: isLoadingProp,
@@ -71,7 +75,7 @@ export function InfiniteList<
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useInfiniteFetchBySlug(slug, true, fetchOptions);
+  } = useInfiniteFetchBySlug(true, { collection: slug, ...fetchOptions }, queryOptions);
 
   const isLoading = isLoadingProp || isLoadingData;
   const isFetching = isFetchingProp || isRefetching;
