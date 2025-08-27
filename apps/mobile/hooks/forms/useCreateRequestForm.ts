@@ -5,9 +5,11 @@ import { MilkBagSchema, requestSchema, RequestSchema, User } from '@lactalink/ty
 import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { extractCollection, extractID } from '@lactalink/utilities';
-import { debounce } from 'lodash';
+
+import { debounce, isEqual } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
+
 import { useFetchById } from '../collections/useFetchById';
 
 const storageKeyPrefix = 'create-request-form';
@@ -21,16 +23,9 @@ type Params = {
 export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Params) => {
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
-  const {
-    data: matchedDonationDoc,
-    isLoading,
-    isFetching,
-    error,
-    ...restOfQuery
-  } = useFetchById(Boolean(matchedDonation), {
+  const { data: matchedDonationDoc, ...restOfQuery } = useFetchById(Boolean(matchedDonation), {
     collection: 'donations',
     id: matchedDonation,
-    populate: { users: { profile: true, profileType: true, role: true } },
   });
 
   const form = useForm({
@@ -44,9 +39,15 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
   const getValues = form.getValues;
   const reset = form.reset;
 
-  const debouncedSave = debounce((value: DeepPartial<RequestSchema>) => {
-    requestStorage.set(storageKey, JSON.stringify(value));
-  }, 200);
+  const debouncedSave = useMemo(
+    () =>
+      debounce((value: DeepPartial<RequestSchema>) => {
+        requestStorage.set(storageKey, JSON.stringify(value));
+      }, 200),
+    [storageKey]
+  );
+
+  const formData = getValues();
 
   useEffect(() => {
     const data = getValues();
@@ -55,9 +56,11 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
       data.deliveryPreferences = extractID(preferences);
     }
 
-    if (recipient && !matchedDonationDoc) {
+    if (recipient) {
       data.recipient = recipient;
-    } else if (matchedDonationDoc) {
+    }
+
+    if (matchedDonationDoc) {
       const storagePreference = matchedDonationDoc.details.storageType;
       const bags = extractCollection(matchedDonationDoc.details.bags);
 
@@ -77,8 +80,10 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
       data.details.storagePreference = storagePreference;
     }
 
-    reset(data);
-  }, [isLoading, preferences, getValues, matchedDonationDoc, recipient, reset]);
+    if (!isEqual(data, getValues())) {
+      reset(data);
+    }
+  }, [preferences, matchedDonationDoc, reset, recipient, formData, getValues]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -121,10 +126,10 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
     saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey]);
 
-  return { form, isLoading, isFetching, error, ...restOfQuery };
+  return { form, ...restOfQuery };
 };
 
-function getStoredData({ user, recipient }: Params): RequestSchema | undefined {
+function getStoredData({ user, recipient, matchedDonation }: Params): RequestSchema | undefined {
   if (!user) return undefined;
   const profile = extractCollection(user.profile?.value);
 
@@ -137,9 +142,11 @@ function getStoredData({ user, recipient }: Params): RequestSchema | undefined {
 
   return {
     requester: storedData?.requester || requester,
-    recipient: storedData?.recipient || recipient,
     volumeNeeded: storedData?.volumeNeeded || 20,
     deliveryPreferences: storedData?.deliveryPreferences || [],
+    recipient: storedData?.recipient || recipient,
+    matchedDonation:
+      storedData?.matchedDonation || (matchedDonation ? { id: matchedDonation } : undefined),
     details: {
       ...storedData?.details,
       bags: storedData?.details?.bags || [],
