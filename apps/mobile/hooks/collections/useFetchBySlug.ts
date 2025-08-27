@@ -4,6 +4,7 @@ import {
   CollectionSlug,
   FindMany,
   FindManyResult,
+  MarkOptional,
   SelectFromCollectionSlug,
 } from '@lactalink/types';
 import { UndefinedInitialDataOptions, useQuery, UseQueryResult } from '@tanstack/react-query';
@@ -11,35 +12,53 @@ import { UndefinedInitialDataOptions, useQuery, UseQueryResult } from '@tanstack
 export type FetchOptions<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
-> = Omit<Partial<FindMany<TSlug, TSelect, false>>, 'page' | 'pagination'>;
+> = Omit<FindMany<TSlug, TSelect, false>, 'page' | 'pagination'>;
 
+type QueryOptions<
+  TSlug extends CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug>,
+> = MarkOptional<
+  UndefinedInitialDataOptions<FindManyResult<TSlug, TSelect, false>>,
+  'queryFn' | 'queryKey' | 'enabled'
+>;
+
+/**
+ * Fetch data from a collection by its slug using react-query.
+ * @param enabled Set to false to disable the query from automatically running
+ * @param apiOptions Api fetch options for fetching data
+ * @param queryOptions Overrides for the react-query options
+ * @returns A react-query object with the data, error, and status of the query
+ */
 export function useFetchBySlug<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
 >(
   enabled: boolean,
-  options: FetchOptions<TSlug, TSelect> = {},
-  queryOptions?: Omit<
-    UndefinedInitialDataOptions<FindManyResult<TSlug, TSelect, false> | null>,
-    'queryFn' | 'queryKey' | 'enabled'
-  >
-): UseQueryResult<FindManyResult<TSlug, TSelect, false> | null> {
+  apiOptions: FetchOptions<TSlug, TSelect>,
+  queryOptions?: QueryOptions<TSlug, TSelect>
+): UseQueryResult<FindManyResult<TSlug, TSelect, false>> {
   const apiClient = useApiClient();
-  const { collection } = options;
+  const { collection, depth = 3, ...rest } = apiOptions;
+
+  // If no where condition is provided, set a high limit to avoid fetching all items
+  if (!rest.where) {
+    rest.limit = 1000; // default limit to 1000
+  }
 
   return useQuery({
-    ...queryOptions,
     enabled,
-    queryKey: [...COLLECTION_QUERY_KEY, collection, options],
+    queryKey: [...COLLECTION_QUERY_KEY, collection, apiOptions],
     queryFn: () => {
-      if (!collection) return null;
+      if (!collection) throw new Error('Collection is required');
+
       return apiClient.find<TSlug, TSelect, false>({
         collection,
         pagination: false,
-        depth: 3,
-        ...options,
+        depth,
+        ...rest,
       });
     },
-    staleTime: queryOptions?.staleTime || 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    ...queryOptions,
   });
 }
