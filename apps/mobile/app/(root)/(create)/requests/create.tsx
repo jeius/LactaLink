@@ -90,9 +90,6 @@ export default function CreateRequest() {
 
   async function handleValidation() {
     const isValid = await form.trigger();
-    const errors = form.formState.errors;
-    console.log('Validation Errors:', errors);
-    console.log('FormValues:', form.getValues());
     if (!isValid) {
       throw new Error('Form validation failed');
     }

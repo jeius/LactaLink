@@ -153,7 +153,6 @@ export default function CreateDonation() {
 
   async function handleValidation() {
     const isValid = await form.trigger();
-    console.log('Form is valid:', form.getValues());
 
     if (!isValid) {
       const milkBagsError = form.formState.errors.milkBags;
