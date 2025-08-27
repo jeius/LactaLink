@@ -61,7 +61,7 @@ function createRoutesAndScenes() {
     if (value === 'donations') {
       scenes[value] = DonationRequestScene;
     } else if (value === 'hospitals' || value === 'milkBanks') {
-      scenes[value] = OrganizationScene;
+      scenes[value] = OrgScene;
     }
 
     return {
@@ -76,3 +76,7 @@ function createRoutesAndScenes() {
   return { routes: sceneRoutes, sceneMap: SceneMap(scenes) };
 }
 // #endregion
+
+function OrgScene(props: SceneProps) {
+  return <OrganizationScene {...props} actionCollection="requests" />;
+}
