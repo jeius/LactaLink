@@ -3,14 +3,13 @@ import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { Donation, MarkKeyRequired } from '@lactalink/types';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities';
-import { DropletIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
+import { DropletIcon, MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from '../animated/pressable';
 import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
-import BasicLocationPin from '../icons/BasicLocationPin';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
@@ -30,7 +29,7 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   showMinDistance?: boolean;
   hideFooter?: boolean;
   footerAction?: ReactNode;
-  isImageViewable?: boolean;
+  canViewThumbnail?: boolean;
   showProgressBar?: boolean;
 }
 
@@ -75,7 +74,7 @@ function CardContent({
   footerAction,
   hideFooter,
   showMinDistance,
-  isImageViewable = true,
+  canViewThumbnail = true,
   showProgressBar,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
   const { themeColors } = useTheme();
@@ -91,16 +90,11 @@ function CardContent({
   const volume = data.volume;
   const percentage = Math.round((data.remainingVolume / data.volume) * 100);
 
-  const {
-    uri: imageUrl,
-    alt,
-    blurHash,
-    donor,
-  } = useMemo(() => {
+  const { donor, image } = useMemo(() => {
     const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
     const donor = extractCollection(data.donor);
     const milkSamples = extractCollection(details.milkSample);
-    return { donor, ...extractOneImageData(milkSamples, imageSize) };
+    return { donor, image: extractOneImageData(milkSamples, imageSize) };
   }, [data.donor, details.milkSample, screenWidth]);
 
   const minDistance = useMemo(() => {
@@ -115,16 +109,7 @@ function CardContent({
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
         >
-          {imageUrl ? (
-            <SingleImageViewer
-              disabled={!isImageViewable}
-              image={{ uri: imageUrl, blurHash, alt }}
-            />
-          ) : (
-            <Text size="xs" className="my-auto text-center">
-              No Image
-            </Text>
-          )}
+          <SingleImageViewer disabled={!canViewThumbnail} image={image} />
         </Box>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
@@ -150,11 +135,7 @@ function CardContent({
           </HStack>
         </VStack>
 
-        {action && (
-          <VStack space="sm" className="flex-shrink-0 items-center justify-center">
-            {action}
-          </VStack>
-        )}
+        {action}
       </HStack>
 
       {!hideFooter && (
@@ -195,7 +176,7 @@ function CardContent({
               {footerAction}
               {showMinDistance && minDistance && (
                 <HStack space="xs" className="items-center">
-                  <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                  <Icon size="sm" as={MapPinIcon} fill={fillColor} stroke={strokeColor} />
                   <Text size="xs">{minDistance.toFixed(2)} km</Text>
                 </HStack>
               )}

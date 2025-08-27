@@ -3,7 +3,7 @@ import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { MarkKeyRequired, Request } from '@lactalink/types';
-import { extractCollection, formatDate } from '@lactalink/utilities';
+import { extractCollection, extractImageData, formatDate } from '@lactalink/utilities';
 import { MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
@@ -79,8 +79,7 @@ function CardContent({
   const { urgency, storagePreference, neededAt } = details;
   const requester = extractCollection(data.requester);
 
-  const image = extractCollection(details.image);
-  const imageUrl = image?.sizes?.thumbnail?.url || image?.url;
+  const image = extractImageData(extractCollection(details.image));
 
   const minDistance = useMemo(() => {
     const preferences = extractCollection(data?.deliveryPreferences);
@@ -99,16 +98,7 @@ function CardContent({
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
         >
-          {imageUrl ? (
-            <SingleImageViewer
-              disabled={!isImageViewable}
-              image={{ uri: imageUrl, blurHash: image.blurHash, alt: image.alt }}
-            />
-          ) : (
-            <Text size="xs" className="my-auto text-center">
-              No Image
-            </Text>
-          )}
+          <SingleImageViewer disabled={!isImageViewable} image={image} />
         </Box>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
@@ -133,17 +123,12 @@ function CardContent({
               fill={getPriorityColor(theme, urgency)?.toString()}
             />
             <Text size="sm" style={{ color: getPriorityColor(theme, urgency) }}>
-              {/* {URGENCY_LEVELS[urgency || 'LOW'].label} */}
               {neededAtDate}
             </Text>
           </HStack>
         </VStack>
 
-        {action && (
-          <VStack space="sm" className="flex-shrink-0 items-center justify-center">
-            {action}
-          </VStack>
-        )}
+        {action}
       </HStack>
 
       {!hideFooter && (

@@ -1,11 +1,11 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getHexColor } from '@/lib/colors';
-import { MilkBank } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { Address, MilkBank } from '@lactalink/types';
+import { extractCollection, extractID, extractImageData, isString } from '@lactalink/utilities';
 import { Building2Icon, MapPinIcon, MilkIcon } from 'lucide-react-native';
 import React, { ReactNode } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { Image } from '../Image';
+import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
@@ -17,14 +17,18 @@ import { VStack } from '../ui/vstack';
 
 export interface MilkBankListCardProps extends React.ComponentProps<typeof Card> {
   data?: string | MilkBank;
+  address?: string | Address;
   isLoading?: boolean;
   action?: ReactNode;
+  canViewThumbnail?: boolean;
 }
 
 export function MilkBankListCard({
   data: dataProp,
   isLoading: isLoadingProp,
   action,
+  address: addressProp,
+  canViewThumbnail = true,
   ...props
 }: MilkBankListCardProps) {
   const { theme } = useTheme();
@@ -32,17 +36,34 @@ export function MilkBankListCard({
   const fillColor = getHexColor(theme, 'primary', 50)?.toString();
   const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
 
-  const query = useFetchById(isString(dataProp), {
+  const dataQuery = useFetchById(isString(dataProp), {
     id: extractID(dataProp || ''),
     collection: 'milkBanks',
     select: { avatar: true, name: true, owner: true, totalVolume: true },
     populate: { users: { addresses: true } },
   });
 
-  const isLoading = isLoadingProp || query.isLoading;
-  const data = extractCollection(dataProp) || query.data;
+  const addressQuery = useFetchById(isString(addressProp), {
+    id: extractID(addressProp || ''),
+    collection: 'addresses',
+    depth: 0,
+    select: { displayName: true, coordinates: true, isDefault: true },
+  });
 
-  if (isLoading || data === undefined) {
+  const isLoading = isLoadingProp || dataQuery.isLoading || addressQuery.isLoading;
+
+  const data = extractCollection(dataProp) || dataQuery.data;
+  const address = extractCollection(addressProp) || addressQuery.data;
+
+  const name = data?.name;
+  const totalVolume = data?.totalVolume || 0;
+  const avatar = extractCollection(data?.avatar);
+  const image = extractImageData(avatar);
+
+  const addresses = extractCollection(data?.owner)?.addresses?.docs || [];
+  const defaultAddress = extractCollection(addresses).find((addr) => addr.isDefault) || address;
+
+  if (isLoading) {
     return (
       <Card {...props}>
         <CardSkeleton />
@@ -50,31 +71,15 @@ export function MilkBankListCard({
     );
   }
 
-  const name = data?.name;
-  const avatar = extractCollection(data?.avatar);
-  const totalVolume = data?.totalVolume || 0;
-  const imageUrl = avatar?.sizes?.thumbnail?.url || avatar?.url;
-  const addresses = extractCollection(data?.owner)?.addresses?.docs || [];
-  const defaultAddress = extractCollection(addresses).find((addr) => addr.isDefault);
-
   return (
     <Card {...props}>
       <VStack space="sm" className="items-start justify-start">
         <HStack space="sm" className="w-full items-stretch">
-          <Box className="bg-primary-50 aspect-square flex-shrink-0 overflow-hidden rounded-md">
-            {imageUrl ? (
-              <Image
-                recyclingKey={imageUrl}
-                source={{ uri: imageUrl }}
-                alt="Hospital Image"
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
-            ) : (
-              <Text size="xs" className="my-auto text-center">
-                No Image
-              </Text>
-            )}
+          <Box
+            className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
+            style={{ backgroundColor: fillColor }}
+          >
+            <SingleImageViewer disabled={!canViewThumbnail} image={image} />
           </Box>
 
           <VStack space="xs" className="min-w-0 flex-1 items-start">
@@ -100,11 +105,7 @@ export function MilkBankListCard({
             </HStack>
           </VStack>
 
-          {action && (
-            <VStack space="sm" className="flex-shrink-0 items-center justify-between">
-              {action}
-            </VStack>
-          )}
+          {action}
         </HStack>
 
         <Divider />
