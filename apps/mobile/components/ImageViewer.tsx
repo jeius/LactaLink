@@ -7,6 +7,7 @@ import { GestureResponderEvent, useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from './animated/pressable';
 import { Image } from './Image';
 import { Box } from './ui/box';
+import { Text } from './ui/text';
 
 interface ImageViewerProps extends Pick<ComponentProps<typeof Image>, 'contentFit'> {
   images: { uri: string; blurHash?: string }[];
@@ -39,8 +40,7 @@ export function ImageViewer({ images, initialIndex = 0, contentFit = 'cover' }: 
         </Galeria.Image>
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [contentFit, width, height]
+    [contentFit]
   );
 
   return (
@@ -70,7 +70,7 @@ interface SingleImageViewerProps
   extends Omit<ImageViewerProps, 'initialIndex' | 'images'>,
     ComponentProps<typeof AnimatedPressable> {
   disabled?: boolean;
-  image: { uri: string; blurHash?: string | null; alt?: string | null };
+  image?: { uri: string | null; blurHash?: string | null; alt?: string | null } | null;
 }
 export function SingleImageViewer({
   image,
@@ -85,7 +85,7 @@ export function SingleImageViewer({
     props.onPress?.(e);
   }
 
-  return (
+  return image?.uri ? (
     <AnimatedPressable
       {...props}
       pointerEvents={disabled ? 'none' : 'auto'}
@@ -107,6 +107,10 @@ export function SingleImageViewer({
         </Galeria.Image>
       </Galeria>
     </AnimatedPressable>
+  ) : (
+    <Text size="xs" className="flex-1 text-center align-middle">
+      No Image
+    </Text>
   );
 }
 
