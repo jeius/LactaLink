@@ -10,22 +10,25 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
 import { formatKebab, generatePlaceHolders } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { capitalize } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
+import { GestureResponderEvent } from 'react-native';
 import { SceneProps } from './types';
 
 export function DonationRequestScene<T extends Donation | Request = Donation | Request>({
   route,
   useBottomSheetList = false,
   onPress,
-  canViewImage = true,
+  canViewThumbnails: canViewImage = true,
 }: SceneProps<T>) {
   const res = useFetchNearest(route.key as 'donations' | 'requests');
+  const router = useRouter();
 
   const placeholders = useMemo(
     () => generatePlaceHolders(20, { id: 'placeholder' } as Donation | Request),
@@ -41,12 +44,47 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
     ({ item }) => {
       const isLoading = item.id.includes('placeholder');
 
+      function Action() {
+        let actionButtonLabel = '';
+        switch (route.key) {
+          case 'donations':
+            actionButtonLabel = 'Request';
+            break;
+          case 'requests':
+            actionButtonLabel = 'Donate';
+            break;
+          default:
+            actionButtonLabel = 'View';
+            break;
+        }
+
+        function handleAction(e: GestureResponderEvent) {
+          e.stopPropagation();
+
+          if (route.key === 'donations') {
+            const params: RequestSearchParams = {
+              matchedDonation: item.id,
+            };
+            router.push({ pathname: '/requests/create', params });
+          } else if (route.key === 'requests') {
+            const params: DonationCreateSearchParams = {
+              matchedRequest: item.id,
+            };
+            router.push({ pathname: '/donations/create', params });
+          }
+        }
+
+        return (
+          <VStack space="sm" className="items-center justify-center">
+            <Button size="sm" onPress={handleAction}>
+              <ButtonText>{actionButtonLabel}</ButtonText>
+            </Button>
+          </VStack>
+        );
+      }
+
       switch (route.key) {
         case 'donations': {
-          const params: RequestSearchParams = {
-            matchedDonation: item.id,
-          };
-
           return (
             <DonationListCard
               //@ts-expect-error Generic type mismatch
@@ -55,27 +93,13 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
               data={item as Donation}
               showAvatar
               showMinDistance
-              isImageViewable={canViewImage}
-              action={
-                <Link
-                  href={{ pathname: '/requests/create', params }}
-                  onPress={(e) => e.stopPropagation()}
-                  asChild
-                >
-                  <Button size="sm">
-                    <ButtonText>Request</ButtonText>
-                  </Button>
-                </Link>
-              }
+              canViewThumbnail={canViewImage}
+              action={<Action />}
             />
           );
         }
 
         case 'requests': {
-          const params: DonationCreateSearchParams = {
-            matchedRequest: item.id,
-          };
-
           return (
             <RequestListCard
               //@ts-expect-error Generic type mismatch
@@ -85,17 +109,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
               showAvatar
               showMinDistance
               isImageViewable={canViewImage}
-              action={
-                <Link
-                  href={{ pathname: '/donations/create', params }}
-                  onPress={(e) => e.stopPropagation()}
-                  asChild
-                >
-                  <Button size="sm">
-                    <ButtonText>Donate</ButtonText>
-                  </Button>
-                </Link>
-              }
+              action={<Action />}
             />
           );
         }
@@ -104,7 +118,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
           return null;
       }
     },
-    [canViewImage, onPress, route.key]
+    [canViewImage, onPress, route.key, router]
   );
 
   function EmptyComponent() {
@@ -136,7 +150,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
       ListHeaderComponent={HeaderComponent}
       ListHeaderComponentStyle={{ marginBottom: 12 }}
       ListEmptyComponent={EmptyComponent}
-      ItemSeparatorComponent={() => <Box className="h-4" />}
+      ItemSeparatorComponent={() => <Box style={{ height: 16 }} />}
       ListFooterComponent={res.isFetchingNextPage ? <Spinner size="small" /> : null}
       onEndReachedThreshold={0.2}
       onEndReached={res.hasNextPage && !res.isFetchingNextPage ? res.fetchNextPage : undefined}
@@ -151,7 +165,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
       ListHeaderComponent={HeaderComponent}
       ListHeaderComponentStyle={{ marginBottom: 12 }}
       ListEmptyComponent={EmptyComponent}
-      ItemSeparatorComponent={() => <Box className="h-4" />}
+      ItemSeparatorComponent={() => <Box style={{ height: 16 }} />}
       ListFooterComponent={res.isFetchingNextPage ? <Spinner size="small" /> : null}
       onEndReachedThreshold={0.2}
       onEndReached={res.hasNextPage && !res.isFetchingNextPage ? res.fetchNextPage : undefined}
