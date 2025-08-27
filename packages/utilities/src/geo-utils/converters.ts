@@ -1,4 +1,4 @@
-import { Boundary, Coordinates, MapRegion, Polygon } from '@lactalink/types';
+import { Boundary, Coordinates, MapRegion, Point, Polygon } from '@lactalink/types';
 import { getBoundsOfDistance } from 'geolib';
 
 export function boundsToPolygon(center: Coordinates, radius: number): Polygon | undefined {
@@ -38,4 +38,8 @@ export function regionToBoundary(region: MapRegion): Boundary {
     maxX: lngMax,
     maxY: latMax,
   };
+}
+
+export function latLngToPoint({ latitude, longitude }: Coordinates): Point {
+  return [longitude, latitude];
 }
