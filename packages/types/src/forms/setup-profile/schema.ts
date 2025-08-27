@@ -1,4 +1,4 @@
-import * as z from 'zod/v4';
+import * as z from 'zod';
 
 import { GENDER_TYPES, MARITAL_STATUS, ORGANIZATION_TYPES, PROFILE_TYPES } from '@lactalink/enums';
 import { imageSchema } from '../file';

@@ -1,5 +1,5 @@
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
-import * as z from 'zod/v4';
+import * as z from 'zod';
 import { nullTransform } from './transformers';
 
 export const deliveryPreferenceSchema = z.object({
