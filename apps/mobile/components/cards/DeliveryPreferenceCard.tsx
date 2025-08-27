@@ -32,44 +32,40 @@ export function DeliveryPreferenceCard({
   variant = 'filled',
   ...props
 }: DeliveryPreferenceCardProps) {
-  const shouldFetchDP = isString(preference);
-
-  const { data: fetchedDP, ...dpQuery } = useFetchById(shouldFetchDP, {
+  const dpQuery = useFetchById(isString(preference), {
     collection: 'delivery-preferences',
     id: extractID(preference),
     select: { name: true, address: true, availableDays: true, preferredMode: true },
     depth: 0,
   });
 
-  const {
-    address: addressProp,
-    preferredMode,
-    availableDays,
-    name,
-  } = (shouldFetchDP ? fetchedDP : extractCollection(preference)) || {};
+  const deliveryPreference = extractCollection(preference) || dpQuery.data;
 
-  const shouldFetchAddress = isString(addressProp);
-  const { data: fetchedAddress, isLoading: isLoadingAddress } = useFetchById(shouldFetchAddress, {
+  const { preferredMode, availableDays, name } = deliveryPreference || {};
+
+  const addressQuery = useFetchById(isString(deliveryPreference?.address), {
     collection: 'addresses',
-    id: addressProp && extractID(addressProp),
-    select: { name: true, displayName: true },
+    id: extractID(deliveryPreference?.address),
+    select: { name: true, displayName: true, coordinates: true, isDefault: true },
     depth: 0,
   });
 
-  if (isLoadingProp || dpQuery.isLoading) {
+  const isLoading = isLoadingProp || dpQuery.isLoading || addressQuery.isLoading;
+
+  const preferenceName = name || `Delivery Preference`;
+  const availableDaysText = formatDaysToText(availableDays || []);
+
+  const address = extractCollection(deliveryPreference?.address) || addressQuery.data;
+  const addressName = address?.name || 'Address';
+  const fullAddress = address?.displayName || 'Unknown Address';
+
+  if (isLoading) {
     return (
       <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
         <DeliveryPreferenceCardSkeleton />
       </Card>
     );
   }
-
-  const preferenceName = name || `Delivery Preference`;
-  const availableDaysText = formatDaysToText(availableDays || []);
-
-  const address = shouldFetchAddress ? fetchedAddress : extractCollection(addressProp);
-  const addressName = address?.name || 'Address';
-  const fullAddress = address?.displayName || 'Unknown Address';
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
@@ -120,23 +116,17 @@ export function DeliveryPreferenceCard({
             <HStack space="xs" className="items-start">
               <Icon size="sm" as={MapPinIcon} style={{ marginTop: 2 }} />
               <VStack className="flex-1">
-                {isLoadingAddress ? (
-                  <AddressSkeleton />
-                ) : (
-                  <>
-                    <Text size="sm" className="font-JakartaMedium">
-                      {addressName}
-                    </Text>
-                    <Text
-                      size="xs"
-                      ellipsizeMode="tail"
-                      numberOfLines={2}
-                      className="font-JakartaMedium text-typography-700"
-                    >
-                      {fullAddress}
-                    </Text>
-                  </>
-                )}
+                <Text size="sm" className="font-JakartaMedium">
+                  {addressName}
+                </Text>
+                <Text
+                  size="xs"
+                  ellipsizeMode="tail"
+                  numberOfLines={2}
+                  className="font-JakartaMedium text-typography-700"
+                >
+                  {fullAddress}
+                </Text>
               </VStack>
             </HStack>
           </VStack>

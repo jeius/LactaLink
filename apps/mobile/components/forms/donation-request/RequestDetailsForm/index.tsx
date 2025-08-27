@@ -4,10 +4,11 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
-import { MatchedDonationSchema, RequestSchema } from '@lactalink/types';
+import { DeliveryPreference, MatchedDonationSchema, RequestSchema } from '@lactalink/types';
 
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
+import { extractID } from '@lactalink/utilities';
 import { ClockIcon } from 'lucide-react-native';
 import React from 'react';
 import { VolumeField } from './VolumeField';
@@ -24,10 +25,10 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
 
   function handleMatchedDonationChange(
     donation: MatchedDonationSchema,
-    preferenceID?: string | null
+    preference?: DeliveryPreference | null
   ) {
     form.setValue('matchedDonation', donation);
-    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
+    form.setValue('deliveryPreferences', preference ? [extractID(preference)] : []);
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import {
   Avatar as AvatarType,
+  DeliveryPreference,
   Individual,
   MatchedDonationSchema,
   MilkBagSchema,
@@ -28,7 +29,10 @@ import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './Delive
 
 interface MatchedDonationCardProps {
   donation: MatchedDonationSchema;
-  onChange?: (donation: MatchedDonationSchema, deliveryPreference?: string | null) => void;
+  onChange?: (
+    donation: MatchedDonationSchema,
+    deliveryPreference?: DeliveryPreference | null
+  ) => void;
   isLoading?: boolean;
 }
 
@@ -38,18 +42,12 @@ export function MatchedDonationCard({
   isLoading: isLoadingProp,
 }: MatchedDonationCardProps) {
   const { theme } = useTheme();
-  const [selectedPreference, setSelectedPreference] = useState<string | null>(null);
+  const [selectedPreference, setSelectedPreference] = useState<DeliveryPreference | null>(null);
   const coords = useLocationStore((s) => s.coordinates);
 
-  const {
-    data,
-    isLoading: isDataLoading,
-    error,
-  } = useFetchById(true, {
+  const { data, isLoading: isDataLoading } = useFetchById(true, {
     collection: 'donations',
     id: extractID(donation),
-    select: { donor: true, details: true, deliveryPreferences: true, remainingVolume: true },
-    populate: { users: { profile: true, profileType: true, role: true } },
   });
 
   const donor = data?.donor as Individual | null;
@@ -77,13 +75,12 @@ export function MatchedDonationCard({
 
   useEffect(() => {
     if (deliveryPreferences.length > 0) {
-      const nearest = getNearestDeliveryPreference(deliveryPreferences, coords);
-      const prefID = extractID(nearest.deliveryPreference) || null;
+      const { deliveryPreference } = getNearestDeliveryPreference(deliveryPreferences, coords);
 
-      setSelectedPreference(prefID);
+      setSelectedPreference(deliveryPreference);
 
       if (matchedDonationData) {
-        onChange?.(matchedDonationData, prefID);
+        onChange?.(matchedDonationData, deliveryPreference);
       }
     }
 
@@ -91,9 +88,11 @@ export function MatchedDonationCard({
   }, [deliveryPreferences, matchedDonationData]);
 
   function handlePreferenceChange(preference: string) {
-    setSelectedPreference(preference);
+    const preferenceObj = deliveryPreferences.find((p) => extractID(p) === preference) || null;
+    setSelectedPreference(preferenceObj);
+
     if (onChange && matchedDonationData) {
-      onChange(matchedDonationData, preference);
+      onChange(matchedDonationData, preferenceObj);
     }
   }
 
@@ -155,7 +154,7 @@ export function MatchedDonationCard({
             />
           )}
           <DeliveryPreferencesBottomSheet
-            selected={selectedPreference}
+            selected={extractID(selectedPreference)}
             collections={deliveryPreferences}
             onChange={handlePreferenceChange}
             triggerComponent={(props) => (
