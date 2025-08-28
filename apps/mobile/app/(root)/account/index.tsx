@@ -21,6 +21,7 @@ import { User } from '@lactalink/types';
 import constants from 'expo-constants';
 import { Href, Link } from 'expo-router';
 import {
+  BellIcon,
   ChevronRightIcon,
   ClipboardListIcon,
   HandHeartIcon,
@@ -188,6 +189,11 @@ function createQuickActionLinks(user: User | null): ProfileActionLinkCardProps[]
       icon: PackagePlusIcon,
       href: '/account/requests',
       label: 'Incoming Requests',
+    },
+    {
+      icon: BellIcon,
+      href: '/account/notifications',
+      label: 'Notifications',
     },
     {
       icon: TruckIcon,
