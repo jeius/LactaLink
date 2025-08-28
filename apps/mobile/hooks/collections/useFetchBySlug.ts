@@ -9,12 +9,12 @@ import {
 } from '@lactalink/types';
 import { UndefinedInitialDataOptions, useQuery, UseQueryResult } from '@tanstack/react-query';
 
-export type FetchOptions<
+export type FetchBySlugOptions<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
 > = Omit<FindMany<TSlug, TSelect, false>, 'page' | 'pagination'>;
 
-type QueryOptions<
+export type FetchBySlugQueryOptions<
   TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
 > = MarkOptional<
@@ -34,8 +34,8 @@ export function useFetchBySlug<
   TSelect extends SelectFromCollectionSlug<TSlug>,
 >(
   enabled: boolean,
-  apiOptions: FetchOptions<TSlug, TSelect>,
-  queryOptions?: QueryOptions<TSlug, TSelect>
+  apiOptions: FetchBySlugOptions<TSlug, TSelect>,
+  queryOptions?: FetchBySlugQueryOptions<TSlug, TSelect>
 ): UseQueryResult<FindManyResult<TSlug, TSelect, false>> {
   const apiClient = useApiClient();
   const { collection, depth = 3, ...rest } = apiOptions;
