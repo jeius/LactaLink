@@ -1,0 +1,11 @@
+import { OrganizationList } from '@/components/lists/OrganizationList';
+import SafeArea from '@/components/SafeArea';
+import React from 'react';
+
+export default function MilkBankListsPage() {
+  return (
+    <SafeArea safeTop={false} className="items-stretch">
+      <OrganizationList collection="milkBanks" />
+    </SafeArea>
+  );
+}

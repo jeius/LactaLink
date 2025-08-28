@@ -1,15 +1,13 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
-import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
-import HomeIcon from '@/components/icons/HomeIcon';
 import InventoryIcon from '@/components/icons/InventoryIcon';
-import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Icon } from '@/components/ui/icon';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
+import { Building2Icon, BuildingIcon, HomeIcon, MilkIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 
 export default function Layout() {
@@ -61,27 +59,7 @@ export default function Layout() {
           headerRight: () => <ProfileAvatar size="sm" profile={profile} enablePress />,
           headerRightContainerStyle: { paddingRight: 12 },
           drawerLabel: 'Home',
-          drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" fill={color} stroke={color} />,
-        }}
-      />
-
-      <Drawer.Screen
-        name="donations"
-        options={{
-          title: 'Milk Donations',
-          drawerLabel: 'Milk Donations',
-          drawerIcon: ({ color }) => <Icon as={DonateMilkIcon} size="md" fill={color} />,
-          headerShadowVisible: false,
-        }}
-      />
-
-      <Drawer.Screen
-        name="requests"
-        options={{
-          title: 'Milk Requests',
-          drawerLabel: 'Milk Requests',
-          drawerIcon: ({ color }) => <Icon as={MilkBottlePlusIcon} size="md" fill={color} />,
-          headerShadowVisible: false,
+          drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" color={color} />,
         }}
       />
 
@@ -95,6 +73,36 @@ export default function Layout() {
           }}
         />
       </Drawer.Protected>
+
+      <Drawer.Screen
+        name="listings"
+        options={{
+          title: 'Donations & Requests',
+          drawerLabel: 'Donations & Requests',
+          drawerIcon: ({ color }) => <Icon as={MilkIcon} size="md" color={color} />,
+          headerShadowVisible: false,
+        }}
+      />
+
+      <Drawer.Screen
+        name="hospitals"
+        options={{
+          title: 'Hospitals',
+          drawerLabel: 'Hospitals',
+          drawerIcon: ({ color }) => <Icon as={Building2Icon} size="md" color={color} />,
+          headerShadowVisible: false,
+        }}
+      />
+
+      <Drawer.Screen
+        name="milk-banks"
+        options={{
+          title: 'Milk Banks',
+          drawerLabel: 'Milk Banks',
+          drawerIcon: ({ color }) => <Icon as={BuildingIcon} size="md" color={color} />,
+          headerShadowVisible: false,
+        }}
+      />
     </Drawer>
   );
 }

@@ -129,15 +129,16 @@ export function HospitalListCard({
 
 function CardSkeleton() {
   return (
-    <HStack space="sm" className="w-full items-start">
-      <Skeleton style={{ width: 92, aspectRatio: 1 }} />
+    <HStack space="sm" className="w-full items-stretch">
+      <Skeleton className="aspect-square h-auto w-auto" />
 
-      <VStack space="xs" className="flex-1 items-start">
-        <Skeleton className="h-6 w-20" />
-        <Skeleton className="h-5 w-24" />
-        <Skeleton className="h-5 w-24" />
-        <Skeleton className="h-6 w-16" />
+      <VStack space="xs" className="flex-1">
+        <Skeleton variant="rounded" className="h-6 w-40" />
+        <Skeleton variant="circular" className="h-4 w-32" />
+        <Skeleton variant="circular" className="h-4 w-32" />
       </VStack>
+
+      <Skeleton variant="circular" className="m-auto h-8 w-8" />
     </HStack>
   );
 }
