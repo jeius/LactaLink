@@ -12,6 +12,7 @@ import { VStack } from '@/components/ui/vstack';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
+import { deleteCollection } from '@/lib/api/delete';
 
 import { uploadImage } from '@/lib/api/file';
 import { createProfile } from '@/lib/api/profile/createProfile';
@@ -79,9 +80,12 @@ export default function Step() {
       const createdProfile = await createProfile({
         ...rest,
         avatar: avatarDoc,
+      }).catch(async (error) => {
+        await deleteCollection('avatars', avatarDoc?.id, { silent: true });
+        throw error;
       });
 
-      const name = 'name' in createdProfile ? createdProfile.name : createdProfile.displayName;
+      const name = createdProfile.displayName;
 
       cleanUpForm();
       await refetchSession({ throwOnError: true });
