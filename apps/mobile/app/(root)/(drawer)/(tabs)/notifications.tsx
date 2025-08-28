@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
 import { useScroll } from '@/components/contexts/ScrollProvider';
@@ -12,6 +12,7 @@ import { getApiClient } from '@lactalink/api';
 import { Notification, PaginatedDocs, User, Where } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { InfiniteData, QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Tabs } from 'expo-router';
 import { toast } from 'sonner-native';
 
 const depth = 3;
@@ -28,6 +29,12 @@ export default function NotificationsTab() {
 
   const queryClient = useQueryClient();
   const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
+
+  const tabNotifications = queryClient.getQueryData<ListData>(queryKey);
+  const tabNotificationsUnreadCount = useMemo(
+    () => tabNotifications?.pages.flatMap((page) => page.docs).filter((n) => !n.read).length || 12,
+    [tabNotifications]
+  );
 
   const { mutateAsync: markAsRead } = useMutation({
     mutationFn: markRead,
@@ -57,6 +64,7 @@ export default function NotificationsTab() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
+      <Tabs.Screen options={{ tabBarBadge: tabNotificationsUnreadCount }} />
       <InfiniteList
         slug="notifications"
         ItemComponent={Item}

@@ -19,6 +19,7 @@ import { SvgProps } from 'react-native-svg';
 import { useHideOnScrollAnimation, useScroll } from '../contexts/ScrollProvider';
 import HomeIcon from '../icons/HomeIcon';
 import { Card } from '../ui/card';
+import { Text } from '../ui/text';
 import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon | FC<SvgProps>> = {
@@ -28,7 +29,7 @@ const icons: Record<string, LucideIcon | FC<SvgProps>> = {
   messages: MessageSquareIcon,
 };
 
-export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
+export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
@@ -89,9 +90,10 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             </Animated.View>
           </Box>
 
-          {state.routes.map((route: { key: string; name: string }, index: number) => {
+          {state.routes.map((route, index: number) => {
             const isFocused: boolean = state.index === index;
             const routeName: string = route.name.split('/')[0]!;
+            const badgeNumber = descriptors[route.key]?.options.tabBarBadge;
 
             const onPress: () => void = () => {
               const event: { defaultPrevented: boolean } = navigation.emit({
@@ -106,7 +108,7 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
             };
 
             return (
-              <Box key={route.key} className="flex-1">
+              <Box key={route.key} className="relative flex-1">
                 <TabButton
                   isFocused={isFocused}
                   onPress={onPress}
@@ -115,6 +117,16 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
                   onIconLayout={onButtonLayout}
                   className="mx-auto"
                 />
+                {badgeNumber && (
+                  <Box
+                    className="bg-primary-0 absolute right-2 top-0 rounded-full p-1.5"
+                    style={{ minWidth: 24, minHeight: 18 }}
+                  >
+                    <Text size="xs" className="font-JakartaSemiBold text-primary-500 text-center">
+                      {badgeNumber.toString().length > 2 ? '99+' : badgeNumber}
+                    </Text>
+                  </Box>
+                )}
               </Box>
             );
           })}
