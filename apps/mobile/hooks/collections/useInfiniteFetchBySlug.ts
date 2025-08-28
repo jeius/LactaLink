@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-query';
 
 export type InfiniteFetchOptions<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = Omit<FindMany<TSlug, TSelect, true>, 'pagination'>;
 

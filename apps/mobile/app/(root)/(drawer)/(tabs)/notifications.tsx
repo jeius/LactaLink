@@ -1,22 +1,29 @@
-import React, { FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
 import { useScroll } from '@/components/contexts/ScrollProvider';
-import { InfiniteList, InfiniteListItemProps } from '@/components/lists/InfiniteList';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
+import { NoData } from '@/components/NoData';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
 import { Notification, PaginatedDocs, User, Where } from '@lactalink/types';
+import { generatePlaceHolders } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { formatKebab } from '@lactalink/utilities/formatters';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { InfiniteData, QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs } from 'expo-router';
 import { toast } from 'sonner-native';
 
 const depth = 3;
 const collection = 'notifications';
+const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Notification);
 
 type ListData = InfiniteData<PaginatedDocs<Notification>>;
 
@@ -30,11 +37,17 @@ export default function NotificationsTab() {
   const queryClient = useQueryClient();
   const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
 
-  const tabNotifications = queryClient.getQueryData<ListData>(queryKey);
-  const tabNotificationsUnreadCount = useMemo(
-    () => tabNotifications?.pages.flatMap((page) => page.docs).filter((n) => !n.read).length || 12,
-    [tabNotifications]
+  const { isLoading, ...query } = useInfiniteFetchBySlug(
+    true,
+    { collection, ...fetchOptions },
+    { queryKey }
   );
+
+  const { data, unReadCount } = useMemo(() => {
+    const data = isLoading ? placeholder : query.data?.pages.flatMap((page) => page.docs) || [];
+    const unReadCount = data.reduce((count, n) => (n.read ? count : count + 1), 0);
+    return { data, unReadCount };
+  }, [isLoading, query.data]);
 
   const { mutateAsync: markAsRead } = useMutation({
     mutationFn: markRead,
@@ -58,22 +71,38 @@ export default function NotificationsTab() {
     },
   });
 
-  const Item: FC<InfiniteListItemProps<'notifications'>> = ({ item, isLoading }) => {
+  const renderItem: ListRenderItem<Notification> = ({ item }) => {
+    const isLoading = item.id.includes('placeholder');
     return <NotificationListCard data={item} isLoading={isLoading} onMarkedAsRead={markAsRead} />;
   };
 
+  function EmptyComponent() {
+    return !isLoading && <NoData title={`No ${formatKebab(collection)} found`} />;
+  }
+
+  function SeparatorComponent() {
+    return <Box style={{ height: 12 }} />;
+  }
+
+  function ListHeaderComponent() {
+    return (
+      <Text size="lg" className="font-JakartaMedium">
+        Notifications
+      </Text>
+    );
+  }
+
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <Tabs.Screen options={{ tabBarBadge: tabNotificationsUnreadCount }} />
-      <InfiniteList
-        slug="notifications"
-        ItemComponent={Item}
-        isFetching={meUser.isRefetching}
-        fetchOptions={fetchOptions}
-        ListHeaderComponent={
-          <Text size="lg" className="font-JakartaMedium">
-            Notifications
-          </Text>
+      <Tabs.Screen options={{ tabBarBadge: unReadCount }} />
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        ListEmptyComponent={EmptyComponent}
+        ItemSeparatorComponent={SeparatorComponent}
+        ListHeaderComponent={ListHeaderComponent}
+        refreshControl={
+          <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
         }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
