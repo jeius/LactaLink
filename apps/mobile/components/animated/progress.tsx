@@ -1,4 +1,3 @@
-import { getHexColor } from '@/lib/colors';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { VariantProps } from '@gluestack-ui/nativewind-utils/types';
 import React, { ComponentProps, useEffect } from 'react';
@@ -66,10 +65,22 @@ const progressStyle = tva({
 interface AnimatedProgressTrackProps
   extends VariantProps<typeof progressStyle>,
     ComponentProps<typeof Box> {
-  value: number; // 0 to 100
+  /**
+   * The value of the progress bar (0 to 100).
+   */
+  value: number;
+  /**
+   * The duration of the animation in milliseconds. Default is 500ms.
+   */
   duration?: number;
   className?: string;
+  /**
+   * The color of the progress track. Defaults to the theme's primary color.
+   */
   trackColor?: ColorValue;
+  /**
+   * If true, the progress bar will be hidden with a fade-out animation.
+   */
   hidden?: boolean;
 }
 
@@ -86,8 +97,8 @@ export function AnimatedProgress({
   const animatedProgress = useSharedValue(0);
   const animatedOpacity = useSharedValue(1);
 
-  const { theme } = useTheme();
-  const defaultTrackColor = getHexColor(theme, 'primary', 500);
+  const { themeColors } = useTheme();
+  const defaultTrackColor = themeColors.primary[500];
 
   const isHorizontal = orientation === 'horizontal';
 

@@ -22,11 +22,7 @@ export default function ListPage() {
 
   const shouldFetch = Boolean(userID) && !isAuthenticatedUser;
 
-  const {
-    data: fetchedData,
-    error,
-    ...fetched
-  } = useFetchById(shouldFetch, {
+  const { data: fetchedData, ...fetched } = useFetchById(shouldFetch, {
     collection: 'users',
     id: userID,
     select: { addresses: true, profile: true },

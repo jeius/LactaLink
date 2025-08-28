@@ -320,7 +320,7 @@ async function createDonation(data: DonationSchema) {
     })
     .catch(async (error) => {
       await Promise.all([
-        deleteCollection('images', milkImageDoc?.id),
+        deleteCollection('images', milkImageDoc?.id, { silent: true }),
         apiClient.update({
           collection: 'milkBags',
           where: { id: { in: extractID(milkBagDocs) } },

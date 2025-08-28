@@ -178,7 +178,7 @@ async function createRequest(data: RequestSchema) {
       },
     })
     .catch(async (err) => {
-      await Promise.all([deleteCollection('images', imageDoc?.id)]);
+      await Promise.all([deleteCollection('images', imageDoc?.id, { silent: true })]);
       throw err;
     });
 

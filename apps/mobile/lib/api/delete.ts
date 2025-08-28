@@ -5,8 +5,14 @@ import { toast } from 'sonner-native';
 
 const apiClient = getApiClient();
 
-export async function deleteCollection(slug: CollectionSlug, id?: string | null) {
+export async function deleteCollection(
+  slug: CollectionSlug,
+  id?: string | null,
+  options: { silent?: boolean } = {}
+): Promise<boolean> {
   if (!id) return false;
+
+  const { silent = false } = options;
 
   async function promise(id: string) {
     const doc = await apiClient.deleteByID({
@@ -22,11 +28,13 @@ export async function deleteCollection(slug: CollectionSlug, id?: string | null)
 
   const executePromise = promise(id);
 
-  toast.promise(executePromise, {
-    loading: 'Deleting...',
-    success: (res: { message: string }) => res.message,
-    error: (error) => extractErrorMessage(error),
-  });
+  if (!silent) {
+    toast.promise(executePromise, {
+      loading: 'Deleting...',
+      success: (res: { message: string }) => res.message,
+      error: (error) => extractErrorMessage(error),
+    });
+  }
 
   const { message } = await executePromise.catch(() => ({ message: null }));
 
