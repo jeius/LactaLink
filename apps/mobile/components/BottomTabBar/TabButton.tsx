@@ -50,7 +50,7 @@ export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: Ta
     <Pressable {...props} className="flex-1 py-2" hitSlop={{ top: 6, bottom: 6 }}>
       <VStack space="xs" className="items-center">
         <Animated.View onLayout={isFocused ? onIconLayout : undefined} style={[animateIcon]}>
-          <Icon as={icon} size="xl" fill={iconColor} stroke={iconColor} />
+          <Icon as={icon} size="xl" color={iconColor} />
         </Animated.View>
 
         <Animated.View style={[animateText]}>

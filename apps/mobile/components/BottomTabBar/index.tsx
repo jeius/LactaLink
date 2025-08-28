@@ -4,23 +4,28 @@ import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 
 import { getHexColor } from '@/lib/colors';
-import { BellIcon, type LucideIcon, MessageCircleIcon } from 'lucide-react-native';
+import {
+  BellIcon,
+  ClipboardListIcon,
+  type LucideIcon,
+  MessageSquareIcon,
+  NewspaperIcon,
+} from 'lucide-react-native';
 import { FC, useEffect, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
-import { useHideOnScrollAnimation } from '../contexts/ScrollProvider';
+import { useHideOnScrollAnimation, useScroll } from '../contexts/ScrollProvider';
 import HomeIcon from '../icons/HomeIcon';
-import ListIcon from '../icons/ListIcon';
 import { Card } from '../ui/card';
 import { TabButton } from './TabButton';
 
 const icons: Record<string, LucideIcon | FC<SvgProps>> = {
-  home: HomeIcon,
-  history: ListIcon,
+  feed: NewspaperIcon,
+  history: ClipboardListIcon,
   notifications: BellIcon,
-  messages: MessageCircleIcon,
+  messages: MessageSquareIcon,
 };
 
 export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
@@ -28,7 +33,8 @@ export const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => {
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
 
-  const containerAnimatedStyle = useHideOnScrollAnimation();
+  const { scrollValue } = useScroll();
+  const containerAnimatedStyle = useHideOnScrollAnimation(scrollValue);
 
   const itemWidth = dimensions.width / state.routes.length;
   const translateX = useSharedValue(itemWidth * state.index);
