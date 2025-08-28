@@ -28,6 +28,113 @@ export function useScroll() {
 }
 
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
+  const methods = useScrollAnimationMethods();
+
+  return <ScrollContext.Provider value={methods}>{children}</ScrollContext.Provider>;
+}
+
+type HideOnScrollOptions = {
+  animateDistance?: number;
+  deltaThreshold?: number;
+  animationDirection?: 'up' | 'down' | 'left' | 'right';
+};
+
+export function useHideOnScrollAnimation(
+  scrollValue: SharedValue<number>,
+  {
+    animateDistance: animDist,
+    deltaThreshold = 20,
+    animationDirection = 'down',
+  }: HideOnScrollOptions = {}
+) {
+  const insets = useSafeAreaInsets();
+
+  const animateDistance = animDist || insets.bottom + 60;
+
+  const opacity = useSharedValue(1);
+  const translateY = useSharedValue(0);
+  const translateX = useSharedValue(0);
+
+  return useAnimatedStyle(() => {
+    const delta = scrollValue?.value ?? 0;
+    // Only animate if delta is more than 20 (positive or negative)
+    const shouldAnimate = Math.abs(delta) >= deltaThreshold;
+
+    // Clamp delta for interpolation
+    const clampedDelta = Math.max(-animateDistance, Math.min(delta, animateDistance));
+
+    switch (animationDirection) {
+      case 'down':
+        translateY.value = withTiming(
+          shouldAnimate
+            ? interpolate(
+                clampedDelta,
+                [-animateDistance, 0, animateDistance],
+                [0, 0, animateDistance]
+              )
+            : 0,
+          { duration: 150 }
+        );
+        break;
+
+      case 'up':
+        translateY.value = withTiming(
+          shouldAnimate
+            ? interpolate(
+                clampedDelta,
+                [animateDistance, 0, -animateDistance],
+                [0, 0, animateDistance]
+              )
+            : 0,
+          { duration: 150 }
+        );
+        break;
+
+      case 'left':
+        translateX.value = withTiming(
+          shouldAnimate
+            ? interpolate(
+                clampedDelta,
+                [animateDistance, 0, -animateDistance],
+                [0, 0, animateDistance]
+              )
+            : 0,
+          { duration: 150 }
+        );
+        break;
+
+      case 'right':
+        translateX.value = withTiming(
+          shouldAnimate
+            ? interpolate(
+                clampedDelta,
+                [-animateDistance, 0, animateDistance],
+                [0, 0, animateDistance]
+              )
+            : 0,
+          { duration: 150 }
+        );
+        break;
+
+      default:
+        break;
+    }
+
+    opacity.value = withTiming(
+      shouldAnimate
+        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [1, 1, 0])
+        : 1,
+      { duration: 300 }
+    );
+
+    return {
+      transform: [{ translateY: translateY.value }, { translateX: translateX.value }],
+      opacity: opacity.value,
+    };
+  });
+}
+
+export function useScrollAnimationMethods() {
   const previousEvent = useRef<NativeScrollEvent>(null);
   const previousDirection = useRef<'up' | 'down' | null>(null);
   const accumulatedDelta = useRef(0);
@@ -71,50 +178,5 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     [scrollValue]
   );
 
-  return (
-    <ScrollContext.Provider value={{ scrollValue, onScrollBeginDrag, onScroll, onScrollEndDrag }}>
-      {children}
-    </ScrollContext.Provider>
-  );
-}
-
-export function useHideOnScrollAnimation({
-  animateDistance: animDist,
-  deltaThreshold = 20,
-}: { animateDistance?: number; deltaThreshold?: number } = {}) {
-  const { scrollValue } = useScroll();
-  const insets = useSafeAreaInsets();
-
-  const animateDistance = animDist || insets.bottom + 60;
-
-  const opacity = useSharedValue(1);
-  const translateY = useSharedValue(0);
-
-  return useAnimatedStyle(() => {
-    const delta = scrollValue?.value ?? 0;
-    // Only animate if delta is more than 20 (positive or negative)
-    const shouldAnimate = Math.abs(delta) >= deltaThreshold;
-
-    // Clamp delta for interpolation
-    const clampedDelta = Math.max(-animateDistance, Math.min(delta, animateDistance));
-
-    // Animate translateY and opacity with timing
-    translateY.value = withTiming(
-      shouldAnimate
-        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [0, 0, animateDistance])
-        : 0,
-      { duration: 150 }
-    );
-    opacity.value = withTiming(
-      shouldAnimate
-        ? interpolate(clampedDelta, [-animateDistance, 0, animateDistance], [1, 1, 0])
-        : 1,
-      { duration: 300 }
-    );
-
-    return {
-      transform: [{ translateY: translateY.value }],
-      opacity: opacity.value,
-    };
-  });
+  return { scrollValue, onScrollBeginDrag, onScrollEndDrag, onScroll };
 }

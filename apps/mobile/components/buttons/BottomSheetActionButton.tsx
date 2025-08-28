@@ -2,7 +2,7 @@ import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { ComponentProps, FC } from 'react';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useHideOnScrollAnimation } from '../contexts/ScrollProvider';
+import { useHideOnScrollAnimation, useScroll } from '../contexts/ScrollProvider';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 
@@ -20,7 +20,8 @@ export function BottomSheetActionButton({
 }: BottomSheetActionButtonProps) {
   const insets = useSafeAreaInsets();
 
-  const animatedStyle = useHideOnScrollAnimation({ animateDistance });
+  const { scrollValue } = useScroll();
+  const animatedStyle = useHideOnScrollAnimation(scrollValue, { animateDistance });
 
   return (
     <Animated.View
