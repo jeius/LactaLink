@@ -89,11 +89,7 @@ export default function TransactionListCard({
           <HStack space="sm" className="justify-stretch">
             <VStack space="sm" className="flex-1 items-stretch justify-start">
               <Text size="sm" className="text-typography-800">
-                {isMeSender
-                  ? 'Donated to:'
-                  : isMeRecipient
-                    ? 'Requested from:'
-                    : 'Transaction with:'}
+                Sent to:
               </Text>
               <HStack space="sm" className="items-center">
                 {otherUserProfile && <ProfileAvatar size="sm" profile={otherUserProfile} />}

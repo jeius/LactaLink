@@ -93,7 +93,7 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
           {state.routes.map((route, index: number) => {
             const isFocused: boolean = state.index === index;
             const routeName: string = route.name.split('/')[0]!;
-            const badgeNumber = descriptors[route.key]?.options.tabBarBadge;
+            const badge = descriptors[route.key]?.options.tabBarBadge;
 
             const onPress: () => void = () => {
               const event: { defaultPrevented: boolean } = navigation.emit({
@@ -117,13 +117,13 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
                   onIconLayout={onButtonLayout}
                   className="mx-auto"
                 />
-                {badgeNumber && (
+                {badge && (
                   <Box
-                    className="bg-primary-0 absolute right-2 top-0 rounded-full p-1.5"
-                    style={{ minWidth: 24, minHeight: 18 }}
+                    className="bg-primary-0 absolute right-2 top-0 rounded-full"
+                    style={{ minWidth: 22, minHeight: 22, padding: 4 }}
                   >
                     <Text size="xs" className="font-JakartaSemiBold text-primary-500 text-center">
-                      {badgeNumber.toString().length > 2 ? '99+' : badgeNumber}
+                      {badge}
                     </Text>
                   </Box>
                 )}

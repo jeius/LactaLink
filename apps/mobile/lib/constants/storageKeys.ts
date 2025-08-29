@@ -17,4 +17,8 @@ export const MMKV_KEYS = {
     LAST_FETCH: 'notifications-last-fetch',
     LAST_DATA: 'notifications-last-data',
   },
+  TRANSACTIONS: {
+    LAST_FETCH: 'transactions-last-fetch',
+    LAST_DATA: 'transactions-last-data',
+  },
 };

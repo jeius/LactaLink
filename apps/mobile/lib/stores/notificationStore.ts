@@ -35,7 +35,7 @@ interface NotificationStoreState {
 
 export const useNotificationStore = create<NotificationStoreState>((set) => ({
   notifications: [],
-  unReadCount: 0,
+  unReadCount: undefined,
   setters: {
     setNotifications: (notifications: Notification[]) => set({ notifications }),
     setUnReadCount: (count: number | undefined) => set({ unReadCount: count }),
@@ -74,11 +74,12 @@ export function useFetchNotifications() {
   // Derive notifications and unReadCount from query data
   const { data: notifications, unReadCount } = useMemo(() => {
     const isLoading = queryRes.isLoading;
-    const data = isLoading ? placeholder : queryData?.pages.flatMap((page) => page.docs) || [];
-    const unReadCount = isLoading
-      ? undefined
-      : data.reduce((count, n) => (n.read ? count : count + 1), 0);
-    return { data, unReadCount };
+    const data = queryData?.pages.flatMap((page) => page.docs) || [];
+    const unReadCount = data.reduce((count, n) => (n.read ? count : count + 1), 0);
+    return {
+      data: isLoading ? placeholder : data,
+      unReadCount: isLoading ? undefined : unReadCount,
+    };
   }, [queryRes.isLoading, queryData]);
 
   // Persist last fetched data to storage
