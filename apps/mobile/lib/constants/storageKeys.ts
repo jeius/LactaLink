@@ -13,4 +13,8 @@ export const MMKV_KEYS = {
     MILKBAG_VERIFICATION: 'milk-bag-verification-hint',
   },
   TUTORIAL_STATE: 'tutorial-state',
+  NOTIFICATIONS: {
+    LAST_FETCH: 'notifications-last-fetch',
+    LAST_DATA: 'notifications-last-data',
+  },
 };

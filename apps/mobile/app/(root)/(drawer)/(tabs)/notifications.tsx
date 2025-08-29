@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
 import { useScroll } from '@/components/contexts/ScrollProvider';
@@ -9,67 +9,18 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { INFINITE_QUERY_KEY } from '@/lib/constants';
-import { getApiClient } from '@lactalink/api';
-import { Notification, PaginatedDocs, User, Where } from '@lactalink/types';
-import { generatePlaceHolders } from '@lactalink/utilities';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
-import { formatKebab } from '@lactalink/utilities/formatters';
+import { useFetchNotifications, useNotificationStore } from '@/lib/stores/notificationStore';
+import { Notification } from '@lactalink/types';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { InfiniteData, QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Tabs } from 'expo-router';
-import { toast } from 'sonner-native';
-
-const depth = 3;
-const collection = 'notifications';
-const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Notification);
-
-type ListData = InfiniteData<PaginatedDocs<Notification>>;
 
 export default function NotificationsTab() {
   const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
 
+  const markAsRead = useNotificationStore((s) => s.markAsRead);
+
   const meUser = useMeUser();
-  const where = createQueryFilter(meUser.data);
-  const fetchOptions = { where, sort: '-createdAt', depth };
 
-  const queryClient = useQueryClient();
-  const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
-
-  const { isLoading, ...query } = useInfiniteFetchBySlug(
-    true,
-    { collection, ...fetchOptions },
-    { queryKey }
-  );
-
-  const { data, unReadCount } = useMemo(() => {
-    const data = isLoading ? placeholder : query.data?.pages.flatMap((page) => page.docs) || [];
-    const unReadCount = data.reduce((count, n) => (n.read ? count : count + 1), 0);
-    return { data, unReadCount };
-  }, [isLoading, query.data]);
-
-  const { mutateAsync: markAsRead } = useMutation({
-    mutationFn: markRead,
-    onMutate: onMutate(queryClient, queryKey),
-    onSuccess: (newData, inputData) => {
-      queryClient.setQueryData(queryKey, (oldData: ListData | undefined) => {
-        if (!oldData) return oldData;
-
-        const newPages = oldData.pages.map((page) => {
-          const newDocs = page.docs.map((item) => (item.id === inputData.id ? newData : item));
-          return { ...page, docs: newDocs };
-        });
-
-        return { ...oldData, pages: newPages };
-      });
-    },
-    onError: (err, _vars, ctx) => {
-      const message = extractErrorMessage(err);
-      toast.error(`Failed to mark notification as read: ${message}`);
-      queryClient.setQueryData(queryKey, ctx?.previousData);
-    },
-  });
+  const { data, isLoading, ...query } = useFetchNotifications();
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
@@ -77,7 +28,7 @@ export default function NotificationsTab() {
   };
 
   function EmptyComponent() {
-    return !isLoading && <NoData title={`No ${formatKebab(collection)} found`} />;
+    return !isLoading && <NoData title={`No new notifications found`} />;
   }
 
   function SeparatorComponent() {
@@ -94,7 +45,6 @@ export default function NotificationsTab() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <Tabs.Screen options={{ tabBarBadge: unReadCount }} />
       <FlashList
         data={data}
         renderItem={renderItem}
@@ -113,46 +63,4 @@ export default function NotificationsTab() {
       <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>
   );
-}
-
-function createQueryFilter(user: User | null): Where | undefined {
-  if (!user) return undefined;
-  return {
-    recipient: { equals: user.id },
-  };
-}
-
-function markRead(notification: Notification) {
-  const apiClient = getApiClient();
-  return apiClient.updateByID({
-    collection: 'notifications',
-    id: notification.id,
-    data: { read: true, readAt: new Date().toISOString() },
-    depth,
-  });
-}
-
-function onMutate(queryClient: QueryClient, queryKey: unknown[]) {
-  return async (inputData: Notification) => {
-    await queryClient.cancelQueries({ queryKey });
-
-    const previousData = queryClient.getQueryData<ListData>(queryKey);
-
-    queryClient.setQueryData<ListData | undefined>(queryKey, (oldData) => {
-      if (!oldData) return oldData;
-
-      const newPages = oldData.pages.map((page) => {
-        const newDocs = page.docs.map((item) =>
-          item.id === inputData.id
-            ? { ...item, read: true, readAt: new Date().toISOString() }
-            : item
-        );
-        return { ...page, docs: newDocs };
-      });
-
-      return { ...oldData, pages: newPages };
-    });
-
-    return { previousData };
-  };
 }
