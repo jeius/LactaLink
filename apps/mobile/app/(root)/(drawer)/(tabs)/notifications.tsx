@@ -7,28 +7,28 @@ import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useFetchNotifications, useNotificationStore } from '@/lib/stores/notificationStore';
+import { useNotification } from '@/hooks/notifications';
 import { Notification } from '@lactalink/types';
+import { isPlaceHolderData } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 
 export default function NotificationsTab() {
   const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
 
-  const markAsRead = useNotificationStore((s) => s.markAsRead);
-
   const meUser = useMeUser();
 
-  const { data, isLoading, ...query } = useFetchNotifications();
+  const { markAsRead, notifications: data, queryMethods: query } = useNotification();
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
-    const isLoading = item.id.includes('placeholder');
+    const isLoading = isPlaceHolderData(item);
     return <NotificationListCard data={item} isLoading={isLoading} onMarkedAsRead={markAsRead} />;
   };
 
   function EmptyComponent() {
-    return !isLoading && <NoData title={`No new notifications found`} />;
+    return !query.isLoading && <NoData title={`No new notifications found`} />;
   }
 
   function SeparatorComponent() {
@@ -41,6 +41,12 @@ export default function NotificationsTab() {
         Notifications
       </Text>
     );
+  }
+
+  function handleFetchNextPage() {
+    if (query.hasNextPage && !query.isFetchingNextPage) {
+      query.fetchNextPage();
+    }
   }
 
   return (
@@ -59,6 +65,10 @@ export default function NotificationsTab() {
         onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
         onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
         onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
+        ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
+        ListFooterComponentStyle={{ marginTop: 8 }}
+        onEndReachedThreshold={0.25}
+        onEndReached={handleFetchNextPage}
       />
       <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>

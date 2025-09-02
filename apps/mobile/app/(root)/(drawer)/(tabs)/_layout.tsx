@@ -1,13 +1,13 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { ScrollProvider } from '@/components/contexts/ScrollProvider';
-import { useNotificationStoreInitializer } from '@/lib/stores/notificationStore';
+import { useNotification } from '@/hooks/notifications';
 import { useTransactionStore } from '@/lib/stores/transactionStore';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
-  const { unReadCount } = useNotificationStoreInitializer();
+  const { unReadCount } = useNotification();
   const { newDataAvailable } = useTransactionStore((s) => s.badgeStates);
 
   const { themeColors } = useTheme();
