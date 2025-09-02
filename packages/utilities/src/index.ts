@@ -1,6 +1,6 @@
 export * from './apiFetch';
 export * from './batching';
-export * from './checkIsOwner';
+export * from './checkers';
 export * from './createStorageKey';
 export * from './delay';
 export * from './errors';

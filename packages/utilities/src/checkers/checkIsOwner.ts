@@ -1,6 +1,6 @@
 import type { User } from '@lactalink/types';
 import type { CollectionWithOwner } from '@lactalink/types/collections';
-import { extractID } from './extractors';
+import { extractID } from '../extractors';
 
 export function checkIsOwner(user: string | User, collections: CollectionWithOwner[]): boolean {
   if (typeof user === 'string') {
