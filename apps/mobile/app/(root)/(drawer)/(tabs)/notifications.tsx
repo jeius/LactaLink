@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
 import { useScroll } from '@/components/contexts/ScrollProvider';
@@ -11,9 +11,11 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useNotification } from '@/hooks/notifications';
+import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Notification } from '@lactalink/types';
 import { isPlaceHolderData } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { useFocusEffect } from 'expo-router';
 
 export default function NotificationsTab() {
   const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
@@ -21,11 +23,14 @@ export default function NotificationsTab() {
   const meUser = useMeUser();
 
   const { markAsRead, notifications: data, queryMethods: query } = useNotification();
+  const { resetNotificationsBadge } = useHomeTabsBadgeStore((s) => s.setters);
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
     const isLoading = isPlaceHolderData(item);
     return <NotificationListCard data={item} isLoading={isLoading} onMarkedAsRead={markAsRead} />;
   };
+
+  useFocusEffect(useCallback(resetNotificationsBadge, [resetNotificationsBadge]));
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title={`No new notifications found`} />;
