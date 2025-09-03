@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { ComponentProps } from 'react';
 import { ProfileAvatar } from '../Avatar';
 import { BasicBadge } from '../badges';
+import { Box } from '../ui/box';
 import { Button, ButtonIcon } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
@@ -18,6 +19,7 @@ interface TransactionListCardProps extends ComponentProps<typeof Card> {
   user: Pick<User, 'profile'> | null;
   isLoading?: boolean;
   onPress?: (transaction: Transaction) => void;
+  showBadge?: boolean;
 }
 
 export default function TransactionListCard({
@@ -25,6 +27,7 @@ export default function TransactionListCard({
   isLoading,
   onPress,
   user,
+  showBadge = false,
   ...cardProps
 }: TransactionListCardProps) {
   const { matchedVolume, status, sender, recipient } = data || {};
@@ -115,6 +118,13 @@ export default function TransactionListCard({
               </Button>
             </Link>
           </HStack>
+
+          {showBadge && (
+            <Box
+              className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full"
+              style={{ transform: [{ translateY: -4 }, { translateX: 4 }] }}
+            />
+          )}
         </VStack>
       )}
     </Card>

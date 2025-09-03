@@ -51,7 +51,7 @@ export default function NotificationsTab() {
   );
 
   function EmptyComponent() {
-    return !query.isLoading && <NoData title={`No new notifications found`} />;
+    return !query.isLoading && <NoData title="You have no notifications" />;
   }
 
   function SeparatorComponent() {
@@ -84,7 +84,7 @@ export default function NotificationsTab() {
           <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
         }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
         onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
         onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
         onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}

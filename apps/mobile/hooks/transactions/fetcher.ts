@@ -1,0 +1,134 @@
+import { useMeUser } from '@/hooks/auth/useAuth';
+import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { MMKV_KEYS, TRANSACTION_STATUS } from '@/lib/constants';
+import { INFINITE_QUERY_KEY } from '@/lib/constants/queryKeys';
+import localStorage from '@/lib/localStorage';
+import { Transaction, User, Where } from '@lactalink/types';
+import { createStorageKeyByUser, extractID, generatePlaceHolders } from '@lactalink/utilities';
+import { useEffect, useMemo } from 'react';
+import { depth, ListData, Overrides } from './utils';
+
+const { LAST_DATA, LAST_FETCH_AT } = MMKV_KEYS.TRANSACTIONS;
+
+const collection = 'transactions';
+const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Transaction);
+
+export function useFetchTransactions(overrides: Overrides = {}) {
+  // Get current user to create query filter and storage keys
+  const meUser = useMeUser();
+
+  const { fetchOptions, queryKey } = useMemo(() => {
+    const where = createQueryFilter(meUser.data?.profile, overrides.where);
+    const fetchOptions = { where, sort: '-createdAt', depth };
+    const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
+    return { fetchOptions, queryKey };
+  }, [meUser.data?.profile, overrides.where]);
+
+  // Load last fetched data from storage as placeholder data
+  const { lastStoredData, lastDataKey, lastFetchAt, lastFetchAtKey } = useMemo(() => {
+    const baseKey = `${LAST_DATA}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
+    const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
+    const lastFetchAtKey = createStorageKeyByUser(meUser.data, LAST_FETCH_AT);
+
+    const lastFetchAt = localStorage.getString(lastFetchAtKey);
+    const lastFetchedData = localStorage.getString(lastDataKey);
+
+    let parsedData: ListData | undefined = undefined;
+    try {
+      if (lastFetchedData) {
+        parsedData = JSON.parse(lastFetchedData);
+      }
+    } catch (err) {
+      console.warn('Failed to parse stored transactions data', err);
+    }
+
+    return { lastDataKey, lastFetchAtKey, lastFetchAt, lastStoredData: parsedData };
+  }, [meUser.data, queryKey]);
+
+  // Infinite query to fetch transactions
+  const { data: queryData, ...queryRes } = useInfiniteFetchBySlug(
+    true,
+    { collection, ...fetchOptions },
+    { queryKey, placeholderData: lastStoredData }
+  );
+
+  const aggregatedResults = useMemo(() => {
+    const newData: Transaction[] = [];
+    let newDataCount = 0;
+
+    if (queryRes.isLoading) {
+      return { data: placeholder, newData, newDataCount };
+    }
+
+    const data: Transaction[] = [];
+
+    queryData?.pages.forEach((page) => {
+      page.docs.forEach((doc) => {
+        data.push(doc);
+
+        if (!lastFetchAt) return;
+
+        const dateCreated = new Date(doc.createdAt);
+        const dateUpdated = new Date(doc.updatedAt);
+        const dateFetched = new Date(lastFetchAt);
+
+        // Count as new only if it's created after last fetch time
+        if (dateCreated > dateFetched || dateUpdated > dateFetched) {
+          ++newDataCount;
+          newData.push(doc);
+        }
+      });
+    });
+
+    return { data, newData, newDataCount };
+  }, [queryRes.isLoading, queryData?.pages, lastFetchAt]);
+
+  // Persist last fetched data to storage
+  useEffect(() => {
+    const currentFetchTimestamp = new Date(queryRes.dataUpdatedAt).toISOString();
+    if (lastFetchAt !== currentFetchTimestamp) {
+      localStorage.set(lastFetchAtKey, currentFetchTimestamp);
+    }
+
+    if (queryData) {
+      localStorage.set(lastDataKey, JSON.stringify(queryData));
+    }
+  }, [lastDataKey, lastFetchAt, lastFetchAtKey, queryData, queryRes.dataUpdatedAt]);
+
+  return { ...aggregatedResults, queryKey, ...queryRes };
+}
+
+// #region Helpers
+function createQueryFilter(profile: User['profile'], override?: Where): Where | undefined {
+  if (!profile) return undefined;
+
+  const doneStatuses = [
+    TRANSACTION_STATUS.COMPLETED.value,
+    TRANSACTION_STATUS.CANCELLED.value,
+    TRANSACTION_STATUS.DELIVERED.value,
+    TRANSACTION_STATUS.FAILED.value,
+  ];
+
+  return {
+    and: [
+      override || { status: { not_in: doneStatuses } },
+      {
+        or: [
+          {
+            and: [
+              { 'sender.relationTo': { equals: profile.relationTo } },
+              { 'sender.value': { equals: extractID(profile.value) } },
+            ],
+          },
+          {
+            and: [
+              { 'recipient.relationTo': { equals: profile.relationTo } },
+              { 'recipient.value': { equals: extractID(profile.value) } },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+// #endregion

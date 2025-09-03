@@ -9,9 +9,11 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useFetchTransactions } from '@/lib/stores/transactionStore';
+import { useTransactions } from '@/hooks/transactions';
+import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Transaction } from '@lactalink/types';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
@@ -22,15 +24,28 @@ export default function TransactionsTab() {
 
   const meUser = useMeUser();
 
-  const { data, isLoading, markDataAsSeen, ...query } = useFetchTransactions();
+  const { transactions: data, queryMethods: query } = useTransactions();
+
+  const { newDataIDs } = useHomeTabsBadgeStore((s) => s.transactions);
 
   const renderItem: ListRenderItem<Transaction> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
-    return <TransactionListCard data={item} user={meUser.data} isLoading={isLoading} />;
+    const isNew = newDataIDs?.includes(item.id);
+    return (
+      <TransactionListCard data={item} showBadge={isNew} user={meUser.data} isLoading={isLoading} />
+    );
   };
 
+  // Clear transactions badge when screen is unfocused
+  useFocusEffect(
+    useCallback(() => {
+      const { resetTransactions } = useHomeTabsBadgeStore.getState();
+      return resetTransactions;
+    }, [])
+  );
+
   function EmptyComponent() {
-    return !isLoading && <NoData title={`No active transactions found`} />;
+    return !query.isLoading && <NoData title="You have no active transactions" />;
   }
 
   function SeparatorComponent() {
@@ -38,20 +53,27 @@ export default function TransactionsTab() {
   }
 
   function HeaderComponent() {
+    const isEmpty = data.length === 0;
     return (
       <HStack space="sm" className="items-center justify-between">
         <Text size="lg" className="font-JakartaMedium">
           Active Transactions
         </Text>
-        <Button size="sm" variant="link" action="default" className="h-fit w-fit p-0" hitSlop={8}>
-          <ButtonText className="font-sans">See All</ButtonText>
-          <ButtonIcon as={ChevronRightIcon} />
-        </Button>
+        {!isEmpty && (
+          <Button size="sm" variant="link" action="default" className="h-fit w-fit p-0" hitSlop={8}>
+            <ButtonText className="font-sans">See All</ButtonText>
+            <ButtonIcon as={ChevronRightIcon} />
+          </Button>
+        )}
       </HStack>
     );
   }
 
-  useFocusEffect(useCallback(markDataAsSeen, [markDataAsSeen]));
+  function handleFetchNextPage() {
+    if (query.hasNextPage && !query.isFetchingNextPage) {
+      query.fetchNextPage();
+    }
+  }
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
@@ -65,10 +87,14 @@ export default function TransactionsTab() {
         refreshControl={
           <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
         }
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
         onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
         onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
         onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
+        ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
+        ListFooterComponentStyle={{ marginTop: 8 }}
+        onEndReachedThreshold={0.25}
+        onEndReached={handleFetchNextPage}
       />
       <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>
