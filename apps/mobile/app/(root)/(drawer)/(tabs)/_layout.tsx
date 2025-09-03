@@ -38,7 +38,7 @@ export default function Layout() {
         }}
       >
         <Tabs.Screen name="feed" />
-        <Tabs.Screen name="history" options={{ tabBarBadge: transactionsBadge }} />
+        <Tabs.Screen name="active-transactions" options={{ tabBarBadge: transactionsBadge }} />
         <Tabs.Screen name="notifications" options={{ tabBarBadge: notificationsBadge }} />
         <Tabs.Screen name="messages" />
       </Tabs>

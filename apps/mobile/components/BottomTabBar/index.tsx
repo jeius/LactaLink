@@ -22,11 +22,16 @@ import { Card } from '../ui/card';
 import { Text } from '../ui/text';
 import { TabButton } from './TabButton';
 
-const icons: Record<string, LucideIcon | FC<SvgProps>> = {
-  feed: NewspaperIcon,
-  history: ClipboardListIcon,
-  notifications: BellIcon,
-  messages: MessageSquareIcon,
+type Route = {
+  label: string;
+  icon: LucideIcon | FC<SvgProps>;
+};
+
+const routeDetails: Record<string, Route> = {
+  feed: { label: 'Feed', icon: NewspaperIcon },
+  'active-transactions': { label: 'Transactions', icon: ClipboardListIcon },
+  notifications: { label: 'Notifications', icon: BellIcon },
+  messages: { label: 'Messages', icon: MessageSquareIcon },
 };
 
 export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarProps) => {
@@ -112,8 +117,8 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
                 <TabButton
                   isFocused={isFocused}
                   onPress={onPress}
-                  label={routeName}
-                  icon={icons[routeName] || HomeIcon}
+                  label={routeDetails[routeName]?.label || 'Home'}
+                  icon={routeDetails[routeName]?.icon || HomeIcon}
                   onIconLayout={onButtonLayout}
                   className="mx-auto"
                 />
