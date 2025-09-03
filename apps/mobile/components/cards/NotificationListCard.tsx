@@ -1,6 +1,7 @@
 import { Notification } from '@lactalink/types';
 import { Href, Link } from 'expo-router';
 import { ComponentProps } from 'react';
+import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
@@ -12,12 +13,14 @@ interface NotificationListCardProps extends ComponentProps<typeof Card> {
   data?: Notification;
   isLoading?: boolean;
   onMarkedAsRead?: (item: Notification) => void;
+  showBadge?: boolean;
 }
 
 export default function NotificationListCard({
   data,
   isLoading,
   onMarkedAsRead,
+  showBadge = false,
   ...cardProps
 }: NotificationListCardProps) {
   const isRead = data?.read || false;
@@ -46,11 +49,11 @@ export default function NotificationListCard({
   }
 
   return (
-    <Card {...cardProps} style={{ opacity: isRead ? 0.75 : 1 }}>
+    <Card {...cardProps} style={[{ opacity: isRead ? 0.75 : 1 }, cardProps.style]}>
       {isLoading ? (
         <CardSkeleton />
       ) : (
-        <VStack space="xs" className="items-start justify-stretch">
+        <VStack space="xs" className="relative items-start justify-stretch">
           <Link href={actionUrl} push asChild>
             <Button
               animateOnPress={false}
@@ -86,6 +89,10 @@ export default function NotificationListCard({
               <ButtonText>Mark as read</ButtonText>
             </Button>
           </HStack>
+
+          {showBadge && (
+            <Box className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full" />
+          )}
         </VStack>
       )}
     </Card>

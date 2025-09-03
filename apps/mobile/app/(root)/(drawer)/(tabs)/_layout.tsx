@@ -2,19 +2,27 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { ScrollProvider } from '@/components/contexts/ScrollProvider';
 import { useNotification } from '@/hooks/notifications';
-import { useTransactionStore } from '@/lib/stores/transactionStore';
+import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
-  const { unReadCount } = useNotification();
-  const { newDataAvailable } = useTransactionStore((s) => s.badgeStates);
+  useNotification();
 
   const { themeColors } = useTheme();
   const bgColor = themeColors.background[50];
 
-  const notificationsBadge = unReadCount && unReadCount > 100 ? '99+' : unReadCount?.toString();
-  const transactionsBadge = newDataAvailable ? '!' : undefined;
+  const notificationsBadgeState = useHomeTabsBadgeStore((s) => s.notifications);
+  const newNotifCount = notificationsBadgeState.newDataIDs?.length;
+  const notificationsBadge = newNotifCount
+    ? newNotifCount > 100
+      ? '99+'
+      : newNotifCount.toString()
+    : undefined;
+
+  const transactionsBadgeState = useHomeTabsBadgeStore((s) => s.transactions);
+  const newTransCount = transactionsBadgeState.newDataIDs?.length;
+  const transactionsBadge = newTransCount > 0 ? '!' : undefined;
 
   return (
     <ScrollProvider>

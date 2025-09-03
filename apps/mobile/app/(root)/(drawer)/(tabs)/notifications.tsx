@@ -10,6 +10,7 @@ import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
 import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Notification } from '@lactalink/types';
@@ -18,19 +19,36 @@ import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 
 export default function NotificationsTab() {
+  useLiveNotifications();
+
   const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
 
   const meUser = useMeUser();
 
   const { markAsRead, notifications: data, queryMethods: query } = useNotification();
-  const { resetNotificationsBadge } = useHomeTabsBadgeStore((s) => s.setters);
+
+  const { newDataIDs } = useHomeTabsBadgeStore((s) => s.notifications);
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
     const isLoading = isPlaceHolderData(item);
-    return <NotificationListCard data={item} isLoading={isLoading} onMarkedAsRead={markAsRead} />;
+    const isNew = newDataIDs?.includes(item.id);
+    return (
+      <NotificationListCard
+        data={item}
+        showBadge={isNew}
+        isLoading={isLoading}
+        onMarkedAsRead={markAsRead}
+      />
+    );
   };
 
-  useFocusEffect(useCallback(resetNotificationsBadge, [resetNotificationsBadge]));
+  // Clear notifications badge when screen is unfocused
+  useFocusEffect(
+    useCallback(() => {
+      const { resetNotifications } = useHomeTabsBadgeStore.getState();
+      return resetNotifications;
+    }, [])
+  );
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title={`No new notifications found`} />;

@@ -30,7 +30,7 @@ export function NoData({
         <Image
           alt="No Data"
           source={getImageAsset(imageName)}
-          style={{ width: '75%', aspectRatio: 1.75, marginBottom: 10 }}
+          style={{ width: '85%', aspectRatio: 1.75, marginBottom: 16 }}
           contentFit="contain"
         />
       )}

@@ -14,11 +14,13 @@ export const MMKV_KEYS = {
   },
   TUTORIAL_STATE: 'tutorial-state',
   NOTIFICATIONS: {
-    LAST_FETCH: 'notifications-last-fetch',
+    LAST_FETCH_AT: 'notifications-last-fetch',
     LAST_DATA: 'notifications-last-data',
+    NEW_DATA_IDS: 'notifications-new-data-ids',
   },
   TRANSACTIONS: {
-    LAST_FETCH: 'transactions-last-fetch',
+    LAST_FETCH_AT: 'transactions-last-fetch',
     LAST_DATA: 'transactions-last-data',
+    NEW_DATA_IDS: 'transactions-new-data-ids',
   },
 };
