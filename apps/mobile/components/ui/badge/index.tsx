@@ -28,7 +28,8 @@ const badgeStyle = tva({
       outline: 'border',
     },
     size: {
-      sm: '',
+      xs: 'px-1 py-0.5',
+      sm: 'px-1 py-0.5',
       md: '',
       lg: '',
     },
@@ -50,6 +51,7 @@ const badgeTextStyle = tva({
       tertiary: 'text-tertiary-700',
     },
     size: {
+      xs: 'text-[8px]',
       sm: 'text-2xs',
       md: 'text-xs',
       lg: 'text-sm',
@@ -94,6 +96,7 @@ const badgeIconStyle = tva({
       tertiary: 'text-tertiary-700',
     },
     size: {
+      xs: 'h-2 w-2',
       sm: 'h-3 w-3',
       md: 'h-3.5 w-3.5',
       lg: 'h-4 w-4',
