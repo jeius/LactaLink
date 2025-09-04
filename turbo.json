@@ -22,6 +22,7 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "S3_BUCKET_IMAGES",
+        "S3_BUCKET_MILK_BAG_IMAGES",
         "S3_BUCKET_MEDIA",
         "S3_BUCKET_FILES",
         "S3_BUCKET_AVATARS",
@@ -31,7 +32,8 @@
         "S3_ENDPOINT",
         "PSGC_API_URL",
         "NEXT_PUBLIC_SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "RESEND_API_KEY"
       ]
     },
     "dev": {
