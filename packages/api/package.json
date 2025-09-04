@@ -32,7 +32,6 @@
     "build:init": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write .",
-    "generate:sb-types": "node scripts/generate-supabase-types.js",
     "test": "jest --runInBand --passWithNoTests",
     "test:watch": "jest --watch"
   },

@@ -1,3 +1,5 @@
+// THIS SCRIPT IS NOT IMPLEMENTED YET
+
 const { execSync } = require('child_process');
 const path = require('path');
 
