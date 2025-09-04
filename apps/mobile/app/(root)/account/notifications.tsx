@@ -1,123 +1,93 @@
-import React, { FC } from 'react';
+import React, { useCallback } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
-import { useScroll } from '@/components/contexts/ScrollProvider';
-import { InfiniteList, InfiniteListItemProps } from '@/components/lists/InfiniteList';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
+import { NoData } from '@/components/NoData';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { INFINITE_QUERY_KEY } from '@/lib/constants';
-import { getApiClient } from '@lactalink/api';
-import { Notification, PaginatedDocs, User, Where } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
-import { InfiniteData, QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
-import { toast } from 'sonner-native';
-
-const depth = 3;
-const collection = 'notifications';
-
-type ListData = InfiniteData<PaginatedDocs<Notification>>;
+import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
+import { useNotification } from '@/hooks/notifications';
+import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
+import { Notification } from '@lactalink/types';
+import { isPlaceHolderData } from '@lactalink/utilities';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { useFocusEffect } from 'expo-router';
 
 export default function NotificationsTab() {
-  const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
+  useLiveNotifications();
 
   const meUser = useMeUser();
-  const where = createQueryFilter(meUser.data);
-  const fetchOptions = { where, sort: '-createdAt', depth };
 
-  const queryClient = useQueryClient();
-  const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
+  const { markAsRead, notifications: data, queryMethods: query } = useNotification();
 
-  const { mutateAsync: markAsRead } = useMutation({
-    mutationFn: markRead,
-    onMutate: onMutate(queryClient, queryKey),
-    onSuccess: (newData, inputData) => {
-      queryClient.setQueryData(queryKey, (oldData: ListData | undefined) => {
-        if (!oldData) return oldData;
+  const { newDataIDs } = useHomeTabsBadgeStore((s) => s.notifications);
 
-        const newPages = oldData.pages.map((page) => {
-          const newDocs = page.docs.map((item) => (item.id === inputData.id ? newData : item));
-          return { ...page, docs: newDocs };
-        });
-
-        return { ...oldData, pages: newPages };
-      });
-    },
-    onError: (err, _vars, ctx) => {
-      const message = extractErrorMessage(err);
-      toast.error(`Failed to mark notification as read: ${message}`);
-      queryClient.setQueryData(queryKey, ctx?.previousData);
-    },
-  });
-
-  const Item: FC<InfiniteListItemProps<'notifications'>> = ({ item, isLoading }) => {
-    return <NotificationListCard data={item} isLoading={isLoading} onMarkedAsRead={markAsRead} />;
+  const renderItem: ListRenderItem<Notification> = ({ item }) => {
+    const isLoading = isPlaceHolderData(item);
+    const isNew = newDataIDs?.includes(item.id);
+    return (
+      <NotificationListCard
+        data={item}
+        showBadge={isNew}
+        isLoading={isLoading}
+        onMarkedAsRead={markAsRead}
+      />
+    );
   };
+
+  // Clear notifications badge when screen is unfocused
+  useFocusEffect(
+    useCallback(() => {
+      const { resetNotifications } = useHomeTabsBadgeStore.getState();
+      return resetNotifications;
+    }, [])
+  );
+
+  function EmptyComponent() {
+    return !query.isLoading && <NoData title="You have no notifications" />;
+  }
+
+  function SeparatorComponent() {
+    return <Box style={{ height: 12 }} />;
+  }
+
+  function ListHeaderComponent() {
+    return (
+      <Text size="lg" className="font-JakartaMedium">
+        Notifications
+      </Text>
+    );
+  }
+
+  function handleFetchNextPage() {
+    if (query.hasNextPage && !query.isFetchingNextPage) {
+      query.fetchNextPage();
+    }
+  }
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <Stack.Screen options={{ headerTitle: 'Notifications' }} />
-      <InfiniteList
-        slug="notifications"
-        ItemComponent={Item}
-        isFetching={meUser.isRefetching}
-        fetchOptions={fetchOptions}
-        ListHeaderComponent={
-          <Text size="lg" className="font-JakartaMedium">
-            Notifications
-          </Text>
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        ListEmptyComponent={EmptyComponent}
+        ItemSeparatorComponent={SeparatorComponent}
+        ListHeaderComponent={ListHeaderComponent}
+        refreshControl={
+          <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
         }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-        onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
-        onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
-        onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
+        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
+        ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
+        ListFooterComponentStyle={{ marginTop: 8 }}
+        onEndReachedThreshold={0.25}
+        onEndReached={handleFetchNextPage}
       />
       <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>
   );
-}
-
-function createQueryFilter(user: User | null): Where | undefined {
-  if (!user) return undefined;
-  return {
-    recipient: { equals: user.id },
-  };
-}
-
-function markRead(notification: Notification) {
-  const apiClient = getApiClient();
-  return apiClient.updateByID({
-    collection: 'notifications',
-    id: notification.id,
-    data: { read: true, readAt: new Date().toISOString() },
-    depth,
-  });
-}
-
-function onMutate(queryClient: QueryClient, queryKey: unknown[]) {
-  return async (inputData: Notification) => {
-    await queryClient.cancelQueries({ queryKey });
-
-    const previousData = queryClient.getQueryData<ListData>(queryKey);
-
-    queryClient.setQueryData<ListData | undefined>(queryKey, (oldData) => {
-      if (!oldData) return oldData;
-
-      const newPages = oldData.pages.map((page) => {
-        const newDocs = page.docs.map((item) =>
-          item.id === inputData.id
-            ? { ...item, read: true, readAt: new Date().toISOString() }
-            : item
-        );
-        return { ...page, docs: newDocs };
-      });
-
-      return { ...oldData, pages: newPages };
-    });
-
-    return { previousData };
-  };
 }
