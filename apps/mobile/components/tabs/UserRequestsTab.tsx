@@ -79,7 +79,7 @@ function Scene({ route }: SceneProps) {
     isRefetching,
   } = useFetchById(hasOtherUser && !isMeUser, {
     collection: 'users',
-    id: userID,
+    id: userID || '',
     depth: 2,
     select: { profile: true, profileType: true },
   });
@@ -134,7 +134,7 @@ function Scene({ route }: SceneProps) {
               action={
                 isOwner &&
                 isStatusPendingOrAvailable(item.status) && (
-                  <VStack space="sm" className="flex-1 justify-start">
+                  <VStack space="sm" className="justify-start">
                     <EditActionButton href={`/requests/edit/${item.id}`} />
                   </VStack>
                 )

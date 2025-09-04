@@ -13,6 +13,7 @@ import {
 import { Building2Icon, MapPinIcon, MilkIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import { BasicBadge } from '../badges';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card } from '../ui/card';
@@ -107,17 +108,23 @@ export function HospitalListCard({
           </HStack>
 
           <HStack space="xs" className="w-full items-center">
-            <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
-              {totalVolume} mL in stock
-            </Text>
-          </HStack>
-
-          <HStack space="xs" className="w-full items-center">
             <Icon size="sm" as={MapPinIcon} fill={fillColor} stroke={strokeColor} />
             <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
               {distance} away
             </Text>
+          </HStack>
+
+          <HStack space="xs" className="w-full items-center">
+            {totalVolume > 0 ? (
+              <>
+                <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
+                <Text size="md" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+                  {totalVolume} mL in stock
+                </Text>
+              </>
+            ) : (
+              <BasicBadge size="sm" text="Out of stock" variant="outline" action="muted" />
+            )}
           </HStack>
         </VStack>
 
@@ -137,8 +144,6 @@ function CardSkeleton() {
         <Skeleton variant="circular" className="h-4 w-32" />
         <Skeleton variant="circular" className="h-4 w-32" />
       </VStack>
-
-      <Skeleton variant="circular" className="m-auto h-8 w-8" />
     </HStack>
   );
 }

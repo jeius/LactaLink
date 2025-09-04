@@ -4,13 +4,12 @@ import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { MarkKeyRequired, Request } from '@lactalink/types';
 import { extractCollection, extractImageData, formatDate } from '@lactalink/utilities';
-import { MilkIcon, PackageIcon } from 'lucide-react-native';
+import { MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
 import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { ProfileAvatar } from '../Avatar';
-import BasicLocationPin from '../icons/BasicLocationPin';
 import FastTimerIcon from '../icons/FastTimerIcon';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
@@ -174,7 +173,7 @@ function CardContent({
               {footerAction}
               {showMinDistance && minDistance && (
                 <HStack space="xs" className="items-center">
-                  <Icon as={BasicLocationPin} fill={themeColors.primary[500]} />
+                  <Icon size="sm" as={MapPinIcon} fill={fillColor} stroke={strokeColor} />
                   <Text size="xs">{minDistance.toFixed(2)} km</Text>
                 </HStack>
               )}

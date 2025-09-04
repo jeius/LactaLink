@@ -5,9 +5,7 @@ import { MilkBankListCard } from '@/components/cards/MilkBankListCard';
 import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { VStack } from '@/components/ui/vstack';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import {
@@ -15,14 +13,15 @@ import {
   extractID,
   formatCamelCase,
   generatePlaceHolders,
+  isPlaceHolderData,
   latLngToPoint,
 } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { Href, Link } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { debounce } from 'lodash';
-import { ChevronRightIcon } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import Animated from 'react-native-reanimated';
+import { AnimatedPressable } from '../animated/pressable';
 import { useHideOnScrollAnimation, useScrollAnimationMethods } from '../contexts/ScrollProvider';
 import { Input, InputField } from '../ui/input';
 
@@ -52,6 +51,8 @@ interface OrganizationListProps {
 }
 
 export function OrganizationList({ collection }: OrganizationListProps) {
+  const router = useRouter();
+
   const { scrollValue, ...scroll } = useScrollAnimationMethods();
   const headerAnimatedStyle = useHideOnScrollAnimation(scrollValue, {
     animationDirection: 'up',
@@ -136,29 +137,27 @@ export function OrganizationList({ collection }: OrganizationListProps) {
 
   const renderItem: ListRenderItem<DataType> = useCallback(
     ({ item: { data, address } }) => {
-      const isLoading = extractID(data).includes('placeholder');
+      const isLoading = isPlaceHolderData(data);
 
-      function Action() {
-        return (
-          <VStack space="sm" className="items-stretch justify-around">
-            <Link href={{ pathname: `/${collection}/${data.id}` } as Href} asChild>
-              <Button className="h-fit w-fit rounded-full p-2">
-                <ButtonIcon as={ChevronRightIcon} />
-              </Button>
-            </Link>
-          </VStack>
-        );
+      function handlePress() {
+        if (isLoading) return;
+        router.push(`/${collection}/${data.id}` as Href);
       }
 
       return (
-        <>
+        <AnimatedPressable
+          disableAnimation={isLoading}
+          onPress={handlePress}
+          className="overflow-hidden rounded-xl"
+        >
           {collection === 'hospitals' && (
             <HospitalListCard
               isLoading={isLoading}
               data={data as Hospital}
               address={address}
               canViewThumbnail
-              action={<Action />}
+              size="sm"
+              className="rounded-xl"
             />
           )}
           {collection === 'milkBanks' && (
@@ -167,13 +166,14 @@ export function OrganizationList({ collection }: OrganizationListProps) {
               data={data as MilkBank}
               address={address}
               canViewThumbnail
-              action={<Action />}
+              size="sm"
+              className="rounded-xl"
             />
           )}
-        </>
+        </AnimatedPressable>
       );
     },
-    [collection]
+    [collection, router]
   );
 
   function EmptyComponent() {
