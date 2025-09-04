@@ -2,6 +2,7 @@ import { PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { MarkKeyRequired, Request } from '@lactalink/types';
 import { extractCollection, extractImageData, formatDate } from '@lactalink/utilities';
 import { MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
@@ -21,6 +22,10 @@ import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
+const cardDefaultStyle = tva({
+  base: 'rounded-xl p-0',
+});
+
 export interface RequestListCardProps extends React.ComponentProps<typeof Card> {
   data?: Request;
   isLoading?: boolean;
@@ -35,24 +40,32 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
 }
 
 export function RequestListCard(props: RequestListCardProps) {
-  const { data, isLoading, onPress, ...cardProps } = props;
+  const { data, isLoading, onPress, size = 'sm', ...cardProps } = props;
 
   if (isLoading || data === undefined) {
     return (
-      <Card {...props}>
+      <Card {...props} size={size} className={cardDefaultStyle({ className: cardProps.className })}>
         <CardSkeleton />
       </Card>
     );
   }
 
   return onPress ? (
-    <AnimatedPressable className="overflow-hidden rounded-2xl" onPress={() => onPress(data)}>
-      <Card {...cardProps}>
+    <AnimatedPressable className="overflow-hidden rounded-xl" onPress={() => onPress(data)}>
+      <Card
+        {...cardProps}
+        size={size}
+        className={cardDefaultStyle({ className: cardProps.className })}
+      >
         <CardContent {...props} data={data} />
       </Card>
     </AnimatedPressable>
   ) : (
-    <Card {...cardProps}>
+    <Card
+      {...cardProps}
+      size={size}
+      className={cardDefaultStyle({ className: cardProps.className })}
+    >
       <CardContent {...props} data={data} />
     </Card>
   );
@@ -91,8 +104,8 @@ function CardContent({
   const percentage = data.fulfillmentPercentage || 0;
 
   return (
-    <VStack space="sm" className="items-start justify-start">
-      <HStack space="sm" className="w-full items-stretch">
+    <VStack className="items-start justify-start">
+      <HStack space="sm" className="w-full items-stretch p-3">
         <Box
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
@@ -101,27 +114,27 @@ function CardContent({
         </Box>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text className="font-JakartaSemiBold" numberOfLines={1} ellipsizeMode="tail">
+            <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
               {volume} mL
             </Text>
           </HStack>
 
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" numberOfLines={1} ellipsizeMode="tail">
+            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
               {PREFERRED_STORAGE_TYPES[storagePreference || 'EITHER'].label}
             </Text>
           </HStack>
 
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon
               size="sm"
               as={FastTimerIcon}
               fill={getPriorityColor(theme, urgency)?.toString()}
             />
-            <Text size="sm" style={{ color: getPriorityColor(theme, urgency) }}>
+            <Text size="sm" className="shrink" style={{ color: getPriorityColor(theme, urgency) }}>
               {neededAtDate}
             </Text>
           </HStack>
@@ -135,7 +148,7 @@ function CardContent({
           <Divider />
 
           {showProgressBar ? (
-            <HStack space="sm" className="w-full items-center justify-between">
+            <HStack space="sm" className="w-full items-center justify-between p-3">
               <VStack className="items-stretch">
                 <AnimatedProgress
                   size="sm"
@@ -151,7 +164,7 @@ function CardContent({
               {footerAction}
             </HStack>
           ) : (
-            <HStack space="sm" className="w-full items-stretch justify-between">
+            <HStack space="sm" className="w-full items-stretch justify-between p-3">
               {showAvatar && (
                 <HStack space="sm" className="items-center">
                   <ProfileAvatar size="sm" profile={requester} />
@@ -187,8 +200,8 @@ function CardContent({
 
 function CardSkeleton() {
   return (
-    <VStack space="sm">
-      <HStack space="sm" className="w-full items-stretch">
+    <VStack>
+      <HStack space="sm" className="w-full items-stretch p-3">
         <Skeleton className="aspect-square h-auto w-auto" />
 
         <VStack space="xs" className="flex-1">
@@ -202,7 +215,7 @@ function CardSkeleton() {
 
       <Divider />
 
-      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between">
+      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
         <HStack space="sm" className="flex-1 items-center">
           <Skeleton variant="circular" className="h-8 w-8" />
           <VStack space="xs">

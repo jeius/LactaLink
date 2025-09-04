@@ -5,6 +5,7 @@ import { DonationRequestScene } from '@/components/tabs/scenes/DonationRequestSc
 import { SceneProps } from '@/components/tabs/scenes/types';
 import { Tab } from '@/components/tabs/Tab';
 import { TabBar } from '@/components/tabs/TabBar';
+import { Icon } from '@/components/ui/icon';
 import { CollectionSlug } from '@lactalink/types';
 import { LucideProps } from 'lucide-react-native';
 import React, { FC, useMemo } from 'react';
@@ -27,17 +28,17 @@ export default function ListingsPage() {
       <Tab
         routes={routes}
         renderScene={sceneMap}
-        // commonOptions={{
-        //   icon: ({ color, route }) => (
-        //     <Icon as={iconMap[route.key as RouteKey]} size="lg" color={color} />
-        //   ),
-        // }}
+        commonOptions={{
+          icon: ({ color, route }) => (
+            <Icon as={iconMap[route.key as RouteKey]} size="sm" fill={color} />
+          ),
+        }}
         renderTabBar={(props) => (
           <TabBar
             {...props}
-            style={{ height: 52 }}
+            style={{ height: 54 }}
             tabStyle={{ width: width / 2 }}
-            indicatorContainerStyle={{ height: 52 }}
+            indicatorContainerStyle={{ height: 56 }}
           />
         )}
       />

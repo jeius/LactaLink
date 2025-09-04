@@ -1,6 +1,7 @@
 import { COLLECTION_MODES, DEVICE_BREAKPOINTS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Donation, MarkKeyRequired } from '@lactalink/types';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities';
 import { DropletIcon, MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
@@ -20,6 +21,10 @@ import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
+const cardDefaultStyle = tva({
+  base: 'rounded-xl p-0',
+});
+
 export interface DonationListCardProps extends React.ComponentProps<typeof Card> {
   data?: Donation;
   isLoading?: boolean;
@@ -34,35 +39,33 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
 }
 
 export function DonationListCard(props: DonationListCardProps) {
-  const { data, isLoading, onPress, showAvatar, showMinDistance, ...cardProps } = props;
+  const { data, isLoading, onPress, size = 'sm', ...cardProps } = props;
 
   if (isLoading || data === undefined) {
     return (
-      <Card {...cardProps}>
+      <Card {...props} size={size} className={cardDefaultStyle({ className: cardProps.className })}>
         <CardSkeleton />
       </Card>
     );
   }
 
   return onPress ? (
-    <AnimatedPressable className="overflow-hidden rounded-2xl" onPress={() => onPress(data)}>
-      <Card {...cardProps}>
-        <CardContent
-          {...props}
-          data={data}
-          showAvatar={showAvatar}
-          showMinDistance={showMinDistance}
-        />
+    <AnimatedPressable className="overflow-hidden rounded-xl" onPress={() => onPress(data)}>
+      <Card
+        {...cardProps}
+        size={size}
+        className={cardDefaultStyle({ className: cardProps.className })}
+      >
+        <CardContent {...props} data={data} />
       </Card>
     </AnimatedPressable>
   ) : (
-    <Card {...cardProps}>
-      <CardContent
-        {...props}
-        data={data}
-        showAvatar={showAvatar}
-        showMinDistance={showMinDistance}
-      />
+    <Card
+      {...cardProps}
+      size={size}
+      className={cardDefaultStyle({ className: cardProps.className })}
+    >
+      <CardContent {...props} data={data} />
     </Card>
   );
 }
@@ -103,8 +106,8 @@ function CardContent({
   }, [locationCoords, data.deliveryPreferences]);
 
   return (
-    <VStack space="sm" className="items-start justify-start">
-      <HStack space="sm" className="w-full items-stretch">
+    <VStack className="items-start justify-start">
+      <HStack space="sm" className="w-full items-stretch p-3">
         <Box
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
@@ -113,23 +116,23 @@ function CardContent({
         </Box>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text className="font-JakartaSemiBold flex-1" numberOfLines={1} ellipsizeMode="tail">
+            <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
               {volume} mL
             </Text>
           </HStack>
 
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
               {PREFERRED_STORAGE_TYPES[storageType].label}
             </Text>
           </HStack>
 
-          <HStack space="xs" className="w-full items-center">
+          <HStack space="xs" className="items-center">
             <Icon size="sm" as={DropletIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="flex-1" numberOfLines={1} ellipsizeMode="tail">
+            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
               {COLLECTION_MODES[collectionMode || 'MANUAL'].label}
             </Text>
           </HStack>
@@ -143,7 +146,7 @@ function CardContent({
           <Divider />
 
           {showProgressBar ? (
-            <HStack space="sm" className="w-full flex-wrap items-center justify-between">
+            <HStack space="sm" className="w-full flex-wrap items-center justify-between p-3">
               <VStack className="items-stretch">
                 <AnimatedProgress
                   size="sm"
@@ -159,7 +162,7 @@ function CardContent({
               {footerAction}
             </HStack>
           ) : (
-            <HStack space="sm" className="w-full flex-wrap items-stretch justify-between">
+            <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
               {showAvatar && (
                 <HStack space="sm" className="items-center">
                   <ProfileAvatar size="sm" profile={donor} />
@@ -190,8 +193,8 @@ function CardContent({
 
 function CardSkeleton() {
   return (
-    <VStack space="sm">
-      <HStack space="sm" className="w-full items-stretch">
+    <VStack>
+      <HStack space="sm" className="w-full items-stretch p-3">
         <Skeleton className="aspect-square h-auto w-auto" />
 
         <VStack space="xs" className="flex-1">
@@ -205,7 +208,7 @@ function CardSkeleton() {
 
       <Divider />
 
-      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between">
+      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
         <HStack space="sm" className="flex-1 items-center">
           <Skeleton variant="circular" className="h-8 w-8" />
           <VStack space="xs">
