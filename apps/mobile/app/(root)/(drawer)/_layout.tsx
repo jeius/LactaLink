@@ -1,7 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
-import InventoryIcon from '@/components/icons/InventoryIcon';
 import { Icon } from '@/components/ui/icon';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
@@ -20,7 +19,6 @@ export default function Layout() {
   const { data: user } = useMeUser();
   const name = user && extractName(user);
   const profile = user?.profile;
-  const isIndividual = profile?.relationTo === 'individuals';
 
   const screenOptions = useScreenOptions();
 
@@ -36,6 +34,7 @@ export default function Layout() {
       initialRouteName="(tabs)"
       backBehavior="initialRoute"
       defaultStatus={defaultStatus}
+      //@ts-expect-error Expected type mismatch due to screenOptions custom type
       screenOptions={{
         ...screenOptions,
         headerShown: true,
@@ -62,17 +61,6 @@ export default function Layout() {
           drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" color={color} />,
         }}
       />
-
-      <Drawer.Protected guard={!isIndividual}>
-        <Drawer.Screen
-          name="inventory"
-          options={{
-            title: 'Milk Inventory',
-            drawerLabel: 'Milk Inventory',
-            drawerIcon: ({ color }) => <Icon as={InventoryIcon} size="md" fill={color} />,
-          }}
-        />
-      </Drawer.Protected>
 
       <Drawer.Screen
         name="listings"

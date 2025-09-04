@@ -166,7 +166,7 @@ function createActionLinks(user: User | null): ProfileActionLinkCardProps[] {
   } else {
     baseLinks.push({
       icon: InventoryIcon,
-      href: '/inventory',
+      href: '/account/inventory',
       label: 'Inventory',
     });
   }

@@ -40,10 +40,6 @@ export default function InventoryPage() {
     <SafeArea safeTop={false} className="items-stretch">
       <ScrollView style={{ flex: 1 }} contentContainerClassName="p-5">
         <VStack space="xl" className="justify-start">
-          <Text className="font-JakartaSemiBold shrink">
-            {name ? `${name}'s Inventory` : 'Inventory'}
-          </Text>
-
           <DynamicStack
             orientation={isMobile ? 'vertical' : 'horizontal'}
             space="xl"
@@ -79,28 +75,28 @@ export default function InventoryPage() {
               title="Consumed"
               value={volumeUsed}
               valueSize="md"
-              action={<ActionButton href="/inventory/consumed" />}
+              action={<ActionButton href="/account/inventory/consumed" />}
               className="grow"
             />
             <VolumeStatCard
               title="Expired"
               value={volumeExpired}
               valueSize="md"
-              action={<ActionButton href="/inventory/expired" />}
+              action={<ActionButton href="/account/inventory/expired" />}
               className="grow"
             />
             <VolumeStatCard
               title="Donated"
               value={volumeDonated}
               valueSize="md"
-              action={<ActionButton href="/inventory/donated" />}
+              action={<ActionButton href="/account/inventory/donated" />}
               className="grow"
             />
             <VolumeStatCard
               title="Received"
               value={volumeReceived}
               valueSize="md"
-              action={<ActionButton href="/inventory/received" />}
+              action={<ActionButton href="/account/inventory/received" />}
               className="grow"
             />
           </HStack>

@@ -21,27 +21,13 @@ import { Image } from '../Image';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
   const { themeColors } = useTheme();
-  const { data: user } = useMeUser();
   const router = useRouter();
-
-  let filteredProps = props;
-
-  if (user?.profile?.relationTo === 'individuals') {
-    filteredProps = {
-      ...props,
-      state: {
-        ...props.state,
-        routeNames: props.state.routeNames.filter((routeName) => routeName !== 'Milk Inventory'),
-        routes: props.state.routes.filter((route) => route.name !== 'inventory'),
-      },
-    };
-  }
 
   return (
     <VStack className="flex-1">
       <DrawerHeader />
       <ScrollView className="flex-1" contentContainerClassName="p-4">
-        <DrawerItemList {...filteredProps} />
+        <DrawerItemList {...props} />
         <DrawerItem
           label="Explore"
           icon={({ color }) => <Icon as={CompassIcon} color={color} />}
