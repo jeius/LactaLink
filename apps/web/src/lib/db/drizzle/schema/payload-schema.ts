@@ -458,6 +458,8 @@ export const donations = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    seen: boolean('seen').default(false),
+    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
     donor: uuid('donor_id')
       .notNull()
       .references(() => individuals.id, {
@@ -1155,6 +1157,8 @@ export const notifications = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    seen: boolean('seen').default(false),
+    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
     recipient: uuid('recipient_id')
       .notNull()
       .references(() => users.id, {
@@ -1416,6 +1420,8 @@ export const requests = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    seen: boolean('seen').default(false),
+    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
     requester: uuid('requester_id')
       .notNull()
       .references(() => individuals.id, {
@@ -1674,6 +1680,8 @@ export const transactions = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    seen: boolean('seen').default(false),
+    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
     donation: uuid('donation_id').references(() => donations.id, {
       onDelete: 'set null',
     }),

@@ -1,6 +1,8 @@
 import { createdByField } from '@/fields/createdByField';
 import { priorityLevel } from '@/fields/priorityLevel';
+import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import { COLLECTION_GROUP, NOTIFICATION_TRIGGER_COLLECTION_OPTIONS } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
@@ -48,11 +50,12 @@ export const Notifications: CollectionConfig<'notifications'> = {
   },
 
   hooks: {
-    beforeChange: [generateCreatedBy],
+    beforeChange: [generateCreatedBy, updateSeenTracking],
   },
 
   fields: [
     createdByField,
+    ...seenTrackingFields,
 
     // Core Notification Data
     {

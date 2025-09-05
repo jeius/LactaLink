@@ -1,9 +1,11 @@
 import { processDonationToOrganization } from '@/collections/Donations/hooks/processDonationToOrganization';
 import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
+import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
+import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import {
   COLLECTION_GROUP,
   COLLECTION_MODES,
@@ -36,7 +38,7 @@ export const Donations: CollectionConfig<'donations'> = {
   hooks: {
     beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
     beforeValidate: [initializeDonation, ({ data, req }) => calculateVolumes(data, req)],
-    beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle],
+    beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateSeenTracking],
     afterChange: [createDonationNotification, processDonationToOrganization],
   },
   endpoints: donationsEndpoints,
@@ -91,6 +93,7 @@ export const Donations: CollectionConfig<'donations'> = {
     },
 
     createdByField,
+    ...seenTrackingFields,
 
     {
       type: 'row',

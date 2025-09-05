@@ -1,8 +1,10 @@
 import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
+import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
+import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import {
   COLLECTION_GROUP,
   DONATION_REQUEST_STATUS,
@@ -36,7 +38,13 @@ export const Requests: CollectionConfig<'requests'> = {
   hooks: {
     beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
     beforeValidate: [initializeRequest, ({ data, req }) => calculateVolumes(data, req)],
-    beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateVolume],
+    beforeChange: [
+      initStatusOnRecipient,
+      generateCreatedBy,
+      generateTitle,
+      updateVolume,
+      updateSeenTracking,
+    ],
     afterChange: [createRequestNotification, processOrganizationRequest],
   },
   endpoints: requestsEndpoints,
@@ -74,6 +82,7 @@ export const Requests: CollectionConfig<'requests'> = {
     },
 
     createdByField,
+    ...seenTrackingFields,
 
     {
       type: 'row',

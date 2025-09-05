@@ -1,5 +1,7 @@
 import { createdByField } from '@/fields/createdByField';
+import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import { COLLECTION_GROUP, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
@@ -27,7 +29,12 @@ export const Transactions: CollectionConfig<'transactions'> = {
   },
   hooks: {
     beforeRead: [calculateVolume],
-    beforeChange: [generateCreatedBy, generateTransactionNumber, processDeliveryAgreements],
+    beforeChange: [
+      generateCreatedBy,
+      generateTransactionNumber,
+      processDeliveryAgreements,
+      updateSeenTracking,
+    ],
     afterChange: [updateRelatedCollectionsOnCreate],
   },
   fields: [
@@ -43,6 +50,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
     },
 
     createdByField,
+    ...seenTrackingFields,
 
     {
       type: 'row',

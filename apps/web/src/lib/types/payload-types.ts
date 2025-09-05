@@ -772,6 +772,14 @@ export interface Donation {
   expiredAt?: string | null;
   createdBy?: (string | null) | User;
   /**
+   * Indicates whether the collection has been seen by the user
+   */
+  seen?: boolean | null;
+  /**
+   * The timestamp when the collection was last seen by the user
+   */
+  seenAt?: string | null;
+  /**
    * The person donating the milk
    */
   donor: string | Individual;
@@ -934,6 +942,14 @@ export interface Request {
   expiredAt?: string | null;
   createdBy?: (string | null) | User;
   /**
+   * Indicates whether the collection has been seen by the user
+   */
+  seen?: boolean | null;
+  /**
+   * The timestamp when the collection was last seen by the user
+   */
+  seenAt?: string | null;
+  /**
    * The person requesting the milk
    */
   requester: string | Individual;
@@ -1019,6 +1035,14 @@ export interface Transaction {
    */
   transactionNumber?: string | null;
   createdBy?: (string | null) | User;
+  /**
+   * Indicates whether the collection has been seen by the user
+   */
+  seen?: boolean | null;
+  /**
+   * The timestamp when the collection was last seen by the user
+   */
+  seenAt?: string | null;
   donation?: (string | null) | Donation;
   request?: (string | null) | Request;
   sender:
@@ -1429,6 +1453,14 @@ export interface NotificationChannel {
 export interface Notification {
   id: string;
   createdBy?: (string | null) | User;
+  /**
+   * Indicates whether the collection has been seen by the user
+   */
+  seen?: boolean | null;
+  /**
+   * The timestamp when the collection was last seen by the user
+   */
+  seenAt?: string | null;
   /**
    * User who will receive this notification. Determines delivery preferences and contact methods.
    */
@@ -1882,6 +1914,8 @@ export interface DonationsSelect<T extends boolean = true> {
   rejectedAt?: T;
   expiredAt?: T;
   createdBy?: T;
+  seen?: T;
+  seenAt?: T;
   donor?: T;
   recipient?: T;
   status?: T;
@@ -2221,6 +2255,8 @@ export interface NotificationChannelsSelect<T extends boolean = true> {
  */
 export interface NotificationsSelect<T extends boolean = true> {
   createdBy?: T;
+  seen?: T;
+  seenAt?: T;
   recipient?: T;
   notificationCategory?: T;
   notificationType?: T;
@@ -2344,6 +2380,8 @@ export interface RequestsSelect<T extends boolean = true> {
   rejectedAt?: T;
   expiredAt?: T;
   createdBy?: T;
+  seen?: T;
+  seenAt?: T;
   requester?: T;
   recipient?: T;
   initialVolumeNeeded?: T;
@@ -2392,6 +2430,8 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TransactionsSelect<T extends boolean = true> {
   transactionNumber?: T;
   createdBy?: T;
+  seen?: T;
+  seenAt?: T;
   donation?: T;
   request?: T;
   sender?: T;
