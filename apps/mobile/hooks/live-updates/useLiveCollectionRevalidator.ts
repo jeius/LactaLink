@@ -14,10 +14,10 @@ export function useLiveCollectionRevalidator(slug: CollectionSlug, events: Event
   const broadcastRef = useRef<RealtimeChannel>(null);
 
   useEffect(() => {
-    const changes = supabase.channel(`${slug}-updates`);
+    const channel = supabase.channel(`${slug}-updates`);
 
     if (events.length === 0) {
-      changes.on(
+      channel.on(
         'postgres_changes',
         { event: '*', schema: 'public', table: formatKebabToUnderscore(slug) },
         () => {
@@ -26,7 +26,7 @@ export function useLiveCollectionRevalidator(slug: CollectionSlug, events: Event
       );
     } else {
       events.forEach((event) => {
-        changes.on(
+        channel.on(
           'postgres_changes',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { event: event as any, schema: 'public', table: formatKebabToUnderscore(slug) },
@@ -37,12 +37,12 @@ export function useLiveCollectionRevalidator(slug: CollectionSlug, events: Event
       });
     }
 
-    changes.subscribe();
+    channel.subscribe();
 
-    broadcastRef.current = changes;
+    broadcastRef.current = channel;
 
     return () => {
-      supabase.removeChannel(changes);
+      supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

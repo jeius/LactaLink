@@ -8,7 +8,7 @@ import { createStorageKeyByUser, extractID, generatePlaceHolders } from '@lactal
 import { useEffect, useMemo } from 'react';
 import { depth, ListData, Overrides } from './utils';
 
-const { LAST_DATA, LAST_FETCH_AT } = MMKV_KEYS.TRANSACTIONS;
+const { LAST_DATA } = MMKV_KEYS.TRANSACTIONS;
 
 const collection = 'transactions';
 const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Transaction);
@@ -25,12 +25,9 @@ export function useFetchTransactions(overrides: Overrides = {}) {
   }, [meUser.data?.profile, overrides.where]);
 
   // Load last fetched data from storage as placeholder data
-  const { lastStoredData, lastDataKey, lastFetchAt, lastFetchAtKey } = useMemo(() => {
-    const baseKey = `${LAST_DATA}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
+  const { lastStoredData, lastDataKey } = useMemo(() => {
+    const baseKey = `${LAST_DATA}-${meUser.data?.id}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
     const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
-    const lastFetchAtKey = createStorageKeyByUser(meUser.data, LAST_FETCH_AT);
-
-    const lastFetchAt = localStorage.getString(lastFetchAtKey);
     const lastFetchedData = localStorage.getString(lastDataKey);
 
     let parsedData: ListData | undefined = undefined;
@@ -42,7 +39,7 @@ export function useFetchTransactions(overrides: Overrides = {}) {
       console.warn('Failed to parse stored transactions data', err);
     }
 
-    return { lastDataKey, lastFetchAtKey, lastFetchAt, lastStoredData: parsedData };
+    return { lastDataKey, lastStoredData: parsedData };
   }, [meUser.data, queryKey]);
 
   // Infinite query to fetch transactions
@@ -53,11 +50,10 @@ export function useFetchTransactions(overrides: Overrides = {}) {
   );
 
   const aggregatedResults = useMemo(() => {
-    const newData: Transaction[] = [];
-    let newDataCount = 0;
+    const unSeenData: Transaction[] = [];
 
     if (queryRes.isLoading) {
-      return { data: placeholder, newData, newDataCount };
+      return { data: placeholder, unSeenData };
     }
 
     const data: Transaction[] = [];
@@ -65,35 +61,21 @@ export function useFetchTransactions(overrides: Overrides = {}) {
     queryData?.pages.forEach((page) => {
       page.docs.forEach((doc) => {
         data.push(doc);
-
-        if (!lastFetchAt) return;
-
-        const dateCreated = new Date(doc.createdAt);
-        const dateUpdated = new Date(doc.updatedAt);
-        const dateFetched = new Date(lastFetchAt);
-
-        // Count as new only if it's created after last fetch time
-        if (dateCreated > dateFetched || dateUpdated > dateFetched) {
-          ++newDataCount;
-          newData.push(doc);
+        if (!doc.seen) {
+          unSeenData.push(doc);
         }
       });
     });
 
-    return { data, newData, newDataCount };
-  }, [queryRes.isLoading, queryData?.pages, lastFetchAt]);
+    return { data, unSeenData };
+  }, [queryRes.isLoading, queryData?.pages]);
 
   // Persist last fetched data to storage
   useEffect(() => {
-    const currentFetchTimestamp = new Date(queryRes.dataUpdatedAt).toISOString();
-    if (lastFetchAt !== currentFetchTimestamp) {
-      localStorage.set(lastFetchAtKey, currentFetchTimestamp);
-    }
-
     if (queryData) {
       localStorage.set(lastDataKey, JSON.stringify(queryData));
     }
-  }, [lastDataKey, lastFetchAt, lastFetchAtKey, queryData, queryRes.dataUpdatedAt]);
+  }, [lastDataKey, queryData]);
 
   return { ...aggregatedResults, queryKey, ...queryRes };
 }

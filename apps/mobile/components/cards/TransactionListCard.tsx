@@ -32,6 +32,7 @@ export default function TransactionListCard({
 }: TransactionListCardProps) {
   const { matchedVolume, status, sender, recipient } = data || {};
 
+  const isNotSeen = !data?.seen;
   const isMeSender = extractID(user?.profile?.value) === extractID(sender?.value);
   const isMeRecipient = extractID(user?.profile?.value) === extractID(recipient?.value);
 
@@ -119,7 +120,7 @@ export default function TransactionListCard({
             </Link>
           </HStack>
 
-          {showBadge && (
+          {showBadge && isNotSeen && (
             <Box
               className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full"
               style={{ transform: [{ translateY: -4 }, { translateX: 4 }] }}

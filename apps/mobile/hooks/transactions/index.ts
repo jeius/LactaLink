@@ -1,15 +1,15 @@
-import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { extractID } from '@lactalink/utilities/extractors';
-import { useEffect } from 'react';
+import { useMarkSeenMutation } from '../collections/useMarkSeenMutation';
 import { useFetchTransactions } from './fetcher';
 
 export function useTransactions() {
-  const { queryKey: _, data, newData, ...queryMethods } = useFetchTransactions();
+  const { queryKey, data, unSeenData, ...queryMethods } = useFetchTransactions();
 
-  useEffect(() => {
-    const { pushNewTransactionID } = useHomeTabsBadgeStore.getState();
-    pushNewTransactionID(extractID(newData));
-  }, [newData]);
+  const markAsSeenMutation = useMarkSeenMutation('transactions', queryKey);
 
-  return { transactions: data, newData, queryMethods };
+  function markAsSeen() {
+    markAsSeenMutation.mutateAsync(extractID(unSeenData));
+  }
+
+  return { transactions: data, markAsSeen, unSeenCount: unSeenData.length, queryMethods };
 }

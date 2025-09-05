@@ -16,10 +16,10 @@ import { LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
+import NumberBadge from '../badges/NumberBadge';
 import { useHideOnScrollAnimation, useScroll } from '../contexts/ScrollProvider';
 import HomeIcon from '../icons/HomeIcon';
 import { Card } from '../ui/card';
-import { Text } from '../ui/text';
 import { TabButton } from './TabButton';
 
 type Route = {
@@ -122,15 +122,12 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
                   onIconLayout={onButtonLayout}
                   className="mx-auto"
                 />
-                {badge && (
-                  <Box
-                    className="bg-primary-0 absolute right-2 top-0 rounded-full"
-                    style={{ minWidth: 22, minHeight: 22, padding: 4 }}
-                  >
-                    <Text size="xs" className="font-JakartaSemiBold text-primary-500 text-center">
-                      {badge}
-                    </Text>
-                  </Box>
+                {badge !== undefined && (
+                  <NumberBadge
+                    className="absolute right-3 top-0"
+                    count={Number(badge)}
+                    variant="primary-light"
+                  />
                 )}
               </Box>
             );

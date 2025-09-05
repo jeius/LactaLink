@@ -13,7 +13,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useTransactions } from '@/hooks/transactions';
-import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Transaction } from '@lactalink/types';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
@@ -24,25 +23,16 @@ export default function TransactionsTab() {
 
   const meUser = useMeUser();
 
-  const { transactions: data, queryMethods: query } = useTransactions();
-
-  const { newDataIDs } = useHomeTabsBadgeStore((s) => s.transactions);
+  const { transactions: data, queryMethods: query, markAsSeen } = useTransactions();
 
   const renderItem: ListRenderItem<Transaction> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
-    const isNew = newDataIDs?.includes(item.id);
-    return (
-      <TransactionListCard data={item} showBadge={isNew} user={meUser.data} isLoading={isLoading} />
-    );
+    return <TransactionListCard data={item} showBadge user={meUser.data} isLoading={isLoading} />;
   };
 
   // Clear transactions badge when screen is unfocused
-  useFocusEffect(
-    useCallback(() => {
-      const { resetTransactions } = useHomeTabsBadgeStore.getState();
-      return resetTransactions;
-    }, [])
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useFocusEffect(useCallback(() => markAsSeen, []));
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no active transactions" />;

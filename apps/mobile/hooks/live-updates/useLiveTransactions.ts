@@ -3,9 +3,11 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useMeUser } from '../auth/useAuth';
 import { useRevalidateCollectionQueries } from '../collections/useRevalidateQueries';
 
-const slug = 'notifications';
+const slug = 'transactions';
 
-export function useLiveNotifications(callback?: () => void) {
+// Todo: Revise this implementation.
+// Try listening to broadcast channel.
+export function useLiveTransactions(callback?: () => void) {
   const meUser = useMeUser();
   const userID = meUser.data?.id.trim();
   const revalidateQuery = useRevalidateCollectionQueries();
@@ -20,19 +22,18 @@ export function useLiveNotifications(callback?: () => void) {
 
   const channel = useMemo(
     () =>
-      supabase.channel('table-notifications-inserts').on(
+      supabase.channel(`table-${slug}-changes`).on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: slug,
-          filter: `recipient_id=eq.${userID || 'null'}`,
         },
         (_payload) => {
           revalidate();
         }
       ),
-    [userID, revalidate]
+    [revalidate]
   );
 
   useEffect(() => {

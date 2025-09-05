@@ -1,6 +1,7 @@
 import { signOut } from '@/auth';
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import NumberBadge from '@/components/badges/NumberBadge';
 import ProfileCard from '@/components/cards/ProfileCard';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
@@ -17,6 +18,9 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
+import { useNotification } from '@/hooks/notifications';
+import { useTransactions } from '@/hooks/transactions';
 import { User } from '@lactalink/types';
 import constants from 'expo-constants';
 import { Href, Link } from 'expo-router';
@@ -31,15 +35,17 @@ import {
   PackagePlusIcon,
   TruckIcon,
 } from 'lucide-react-native';
-import React, { FC, Fragment } from 'react';
+import React, { FC, Fragment, ReactNode } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
 export default function ProfilePage() {
+  useLiveNotifications();
+
   const { data: user, refetch, isRefetching, isLoading } = useMeUser();
 
   const actionLinks = createActionLinks(user);
-  const quickLinks = createQuickActionLinks(user);
+  const quickLinks = createQuickLinks(user);
 
   const appVersion = constants.expoConfig?.version || 'Unknown Version';
 
@@ -63,7 +69,7 @@ export default function ProfilePage() {
         <VStack space="sm" className="bg-background-0 grow items-stretch p-5 pb-2">
           <VStack className="grow">
             <Text size="lg" bold className="mb-1">
-              Quick Actions
+              Quick Links
             </Text>
 
             {quickLinks.map((link, idx) => {
@@ -94,6 +100,7 @@ interface ProfileActionLinkCardProps {
   icon: FC<LucideProps | SvgProps> | LucideIcon;
   href: Href;
   label: string;
+  badge?: ReactNode;
 }
 function ProfileActionLinkCard({ icon, href, label }: ProfileActionLinkCardProps) {
   const { themeColors } = useTheme();
@@ -115,7 +122,7 @@ function ProfileActionLinkCard({ icon, href, label }: ProfileActionLinkCardProps
   );
 }
 
-function QuickActionItem({ icon, href, label }: ProfileActionLinkCardProps) {
+function QuickActionItem({ icon, href, label, badge }: ProfileActionLinkCardProps) {
   const { themeColors } = useTheme();
   const iconFillColor = themeColors.typography[900];
 
@@ -125,6 +132,7 @@ function QuickActionItem({ icon, href, label }: ProfileActionLinkCardProps) {
         <HStack space="sm" className="w-full items-center justify-start py-5">
           <Icon as={icon} color={iconFillColor} />
           <Text className="font-JakartaMedium grow">{label}</Text>
+          {badge}
           <Icon as={ChevronRightIcon} color={iconFillColor} />
         </HStack>
       </AnimatedPressable>
@@ -174,7 +182,7 @@ function createActionLinks(user: User | null): ProfileActionLinkCardProps[] {
   return baseLinks;
 }
 
-function createQuickActionLinks(user: User | null): ProfileActionLinkCardProps[] {
+function createQuickLinks(user: User | null): ProfileActionLinkCardProps[] {
   if (!user) {
     return [];
   }
@@ -184,28 +192,58 @@ function createQuickActionLinks(user: User | null): ProfileActionLinkCardProps[]
       icon: HandHeartIcon,
       href: '/account/donations',
       label: 'Incoming Donations',
+      badge: <IncomingDonationsBadge />,
     },
     {
       icon: PackagePlusIcon,
       href: '/account/requests',
       label: 'Incoming Requests',
+      badge: <IncomingRequestsBadge />,
     },
     {
       icon: BellIcon,
       href: '/account/notifications',
       label: 'Notifications',
+      badge: <NotificationBadge />,
     },
     {
       icon: TruckIcon,
       href: '/account/deliveries',
       label: 'Deliveries',
+      badge: <DeliveriesBadge />,
     },
     {
       icon: ClipboardListIcon,
       href: '/account/transactions',
       label: 'Transactions',
+      badge: <TransactionBadge />,
     },
   ];
 
   return baseLinks;
+}
+
+function NotificationBadge() {
+  const { unSeenCount } = useNotification();
+  return <NumberBadge count={unSeenCount} />;
+}
+
+function TransactionBadge() {
+  const { unSeenCount } = useTransactions();
+  return <NumberBadge count={unSeenCount} />;
+}
+
+function IncomingRequestsBadge() {
+  // Mocked for now
+  return <NumberBadge count={3} />;
+}
+
+function IncomingDonationsBadge() {
+  // Mocked for now
+  return <NumberBadge count={5} />;
+}
+
+function DeliveriesBadge() {
+  // Mocked for now
+  return <NumberBadge count={235} />;
 }

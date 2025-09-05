@@ -24,6 +24,7 @@ export default function NotificationListCard({
   ...cardProps
 }: NotificationListCardProps) {
   const isRead = data?.read || false;
+  const isNotSeen = !data?.seen;
 
   const title = data?.title || 'Unknown Notification';
   const message = data?.message || 'No message provided';
@@ -90,7 +91,7 @@ export default function NotificationListCard({
             </Button>
           </HStack>
 
-          {showBadge && (
+          {showBadge && isNotSeen && (
             <Box className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full" />
           )}
         </VStack>

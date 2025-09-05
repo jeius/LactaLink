@@ -1,8 +1,10 @@
 import { getApiClient } from '@lactalink/api';
 import { Notification } from '@lactalink/types';
+import { extractID } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
-import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner-native';
+import { useMarkSeenMutation } from '../collections/useMarkSeenMutation';
 import { depth, ListData } from './utils';
 
 export function useMutateNotifications(queryKey: unknown[]) {
@@ -10,18 +12,21 @@ export function useMutateNotifications(queryKey: unknown[]) {
 
   const markAsReadMutation = useMutation({
     mutationFn: markRead,
-    onMutate: onMarkRead(queryClient, queryKey),
-    onSuccess: (newData, inputData) => {
-      queryClient.setQueryData(queryKey, (oldData: ListData | undefined) => {
-        if (!oldData) return oldData;
+    onMutate: async (inputData) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<ListData>(queryKey);
 
-        const newPages = oldData.pages.map((page) => {
-          const newDocs = page.docs.map((item) => (item.id === inputData.id ? newData : item));
-          return { ...page, docs: newDocs };
-        });
+      if (previousData) {
+        const updatedData = applyOptimisticUpdate(previousData, inputData);
+        queryClient.setQueryData(queryKey, updatedData);
+      }
 
-        return { ...oldData, pages: newPages };
-      });
+      return { previousData };
+    },
+    onSuccess: (updatedData) => {
+      queryClient.setQueryData<ListData>(queryKey, (oldData) =>
+        oldData ? applyServerUpdate(oldData, updatedData) : oldData
+      );
     },
     onError: (err, _vars, ctx) => {
       const message = extractErrorMessage(err);
@@ -30,40 +35,45 @@ export function useMutateNotifications(queryKey: unknown[]) {
     },
   });
 
-  return { markAsReadMutation };
+  const markAsSeenMutation = useMarkSeenMutation('notifications', queryKey);
+
+  return { markAsReadMutation, markAsSeenMutation };
 }
 
-function markRead(notification: Notification) {
+//#region Helpers
+
+// API call to mark a notification as read
+function markRead(notification: string | Notification) {
   const apiClient = getApiClient();
   return apiClient.updateByID({
     collection: 'notifications',
-    id: notification.id,
+    id: extractID(notification),
     data: { read: true, readAt: new Date().toISOString() },
     depth,
   });
 }
 
-function onMarkRead(queryClient: QueryClient, queryKey: unknown[]) {
-  return async (inputData: Notification) => {
-    await queryClient.cancelQueries({ queryKey });
+// Helper function for optimistic updates
+function applyOptimisticUpdate(oldData: ListData, inputData: string | Notification): ListData {
+  const newPages = oldData.pages.map((page) => ({
+    ...page,
+    docs: page.docs.map((item) =>
+      item.id === extractID(inputData)
+        ? { ...item, read: true, readAt: new Date().toISOString() }
+        : item
+    ),
+  }));
 
-    const previousData = queryClient.getQueryData<ListData>(queryKey);
-
-    queryClient.setQueryData<ListData | undefined>(queryKey, (oldData) => {
-      if (!oldData) return oldData;
-
-      const newPages = oldData.pages.map((page) => {
-        const newDocs = page.docs.map((item) =>
-          item.id === inputData.id
-            ? { ...item, read: true, readAt: new Date().toISOString() }
-            : item
-        );
-        return { ...page, docs: newDocs };
-      });
-
-      return { ...oldData, pages: newPages };
-    });
-
-    return { previousData };
-  };
+  return { ...oldData, pages: newPages };
 }
+
+// Helper function for server updates
+function applyServerUpdate(oldData: ListData, updatedData: Notification): ListData {
+  const newPages = oldData.pages.map((page) => ({
+    ...page,
+    docs: page.docs.map((item) => (item.id === extractID(updatedData) ? updatedData : item)),
+  }));
+
+  return { ...oldData, pages: newPages };
+}
+//#endregion

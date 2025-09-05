@@ -12,7 +12,6 @@ import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
-import { useHomeTabsBadgeStore } from '@/lib/stores/homeTabBadgeStore';
 import { Notification } from '@lactalink/types';
 import { isPlaceHolderData } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
@@ -25,17 +24,14 @@ export default function NotificationsTab() {
 
   const meUser = useMeUser();
 
-  const { markAsRead, notifications: data, queryMethods: query } = useNotification();
-
-  const { newDataIDs } = useHomeTabsBadgeStore((s) => s.notifications);
+  const { markAsRead, notifications: data, queryMethods: query, markAsSeen } = useNotification();
 
   const renderItem: ListRenderItem<Notification> = ({ item }) => {
     const isLoading = isPlaceHolderData(item);
-    const isNew = newDataIDs?.includes(item.id);
     return (
       <NotificationListCard
         data={item}
-        showBadge={isNew}
+        showBadge
         isLoading={isLoading}
         onMarkedAsRead={markAsRead}
       />
@@ -43,12 +39,8 @@ export default function NotificationsTab() {
   };
 
   // Clear notifications badge when screen is unfocused
-  useFocusEffect(
-    useCallback(() => {
-      const { resetNotifications } = useHomeTabsBadgeStore.getState();
-      return resetNotifications;
-    }, [])
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useFocusEffect(useCallback(() => markAsSeen, []));
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no notifications" />;

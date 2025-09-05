@@ -8,7 +8,7 @@ import { INFINITE_QUERY_KEY } from '../../lib/constants/queryKeys';
 import localStorage from '../../lib/localStorage';
 import { depth, ListData } from './utils';
 
-const { LAST_DATA, LAST_FETCH_AT } = MMKV_KEYS.NOTIFICATIONS;
+const { LAST_DATA } = MMKV_KEYS.NOTIFICATIONS;
 
 const collection = 'notifications';
 const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Notification);
@@ -25,12 +25,9 @@ export function useFetchNotifications() {
   }, [meUser.data]);
 
   // Load last fetched data from storage as placeholder data
-  const { lastStoredData, lastDataKey, lastFetchAt, lastFetchAtKey } = useMemo(() => {
-    const baseKey = `${LAST_DATA}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
+  const { lastStoredData, lastDataKey } = useMemo(() => {
+    const baseKey = `${LAST_DATA}-${meUser.data?.id}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
     const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
-    const lastFetchAtKey = createStorageKeyByUser(meUser.data, LAST_FETCH_AT);
-
-    const lastFetchAt = localStorage.getString(lastFetchAtKey);
     const lastFetchedData = localStorage.getString(lastDataKey);
 
     let parsedData: ListData | undefined = undefined;
@@ -42,7 +39,7 @@ export function useFetchNotifications() {
       console.warn('Failed to parse stored notifications data', err);
     }
 
-    return { lastDataKey, lastFetchAtKey, lastFetchAt, lastStoredData: parsedData };
+    return { lastDataKey, lastStoredData: parsedData };
   }, [meUser.data, queryKey]);
 
   // Infinite query to fetch notifications
@@ -54,12 +51,11 @@ export function useFetchNotifications() {
 
   // Derive notifications and unReadCount from query data
   const aggregatedResults = useMemo(() => {
-    const newData: Notification[] = [];
     let unReadCount = 0;
-    let newDataCount = 0;
+    const unSeenData: Notification[] = [];
 
     if (queryRes.isLoading) {
-      return { data: placeholder, newData, newDataCount, unReadCount };
+      return { data: placeholder, unReadCount, unSeenData };
     }
 
     const data: Notification[] = [];
@@ -67,36 +63,22 @@ export function useFetchNotifications() {
     queryData?.pages.forEach((page) => {
       page.docs.forEach((doc) => {
         data.push(doc);
-
         if (!doc.read) ++unReadCount;
-
-        if (!lastFetchAt) return;
-
-        const dateCreated = new Date(doc.createdAt);
-        const dateFetched = new Date(lastFetchAt);
-
-        // Count as new only if it's created after last fetch time
-        if (dateCreated > dateFetched) {
-          ++newDataCount;
-          newData.push(doc);
+        if (!doc.seen) {
+          unSeenData.push(doc);
         }
       });
     });
 
-    return { data, newData, unReadCount, newDataCount };
-  }, [queryRes.isLoading, queryData?.pages, lastFetchAt]);
+    return { data, unReadCount, unSeenData };
+  }, [queryRes.isLoading, queryData?.pages]);
 
   // Persist last fetched data to storage
   useEffect(() => {
-    const currentFetchTimestamp = new Date(queryRes.dataUpdatedAt).toISOString();
-    if (lastFetchAt !== currentFetchTimestamp) {
-      localStorage.set(lastFetchAtKey, currentFetchTimestamp);
-    }
-
     if (queryData) {
       localStorage.set(lastDataKey, JSON.stringify(queryData));
     }
-  }, [lastDataKey, lastFetchAt, lastFetchAtKey, queryData, queryRes.dataUpdatedAt]);
+  }, [lastDataKey, queryData, queryRes.dataUpdatedAt]);
 
   return { ...aggregatedResults, queryKey, ...queryRes };
 }
