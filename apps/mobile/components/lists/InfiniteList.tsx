@@ -50,6 +50,7 @@ export interface InfiniteListProps<
   gap?: number;
   ItemSeparatorComponent?: FC;
   ItemComponent: FC<InfiniteListItemProps<TSlug, TSelect>>;
+  emptyListLabel?: string;
 }
 
 export function InfiniteList<
@@ -65,6 +66,7 @@ export function InfiniteList<
   gap = 12,
   ItemSeparatorComponent,
   ItemComponent,
+  emptyListLabel,
   ...props
 }: InfiniteListProps<TSlug, TSelect>) {
   const {
@@ -81,7 +83,7 @@ export function InfiniteList<
   const isFetching = isFetchingProp || isRefetching;
 
   const data = useMemo(() => {
-    if (!isLoading && paginatedData) {
+    if (paginatedData) {
       return paginatedData.pages.flatMap((page) => page.docs);
     } else if (isLoading) {
       return Array.from(
@@ -111,7 +113,7 @@ export function InfiniteList<
   );
 
   function EmptyComponent() {
-    return !isLoading && <NoData title={`No ${formatKebab(slug)} found`} />;
+    return !isLoading && <NoData title={emptyListLabel || `No ${formatKebab(slug)} found`} />;
   }
 
   function SeparatorComponent() {

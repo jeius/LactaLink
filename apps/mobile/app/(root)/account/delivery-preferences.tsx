@@ -28,7 +28,7 @@ export default function ListPage() {
     ...fetched
   } = useFetchById(shouldFetch, {
     collection: 'users',
-    id: userID,
+    id: userID || '',
     select: { deliveryPreferences: true, profile: true },
   });
 

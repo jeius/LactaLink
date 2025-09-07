@@ -18,6 +18,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
 import { useTransactions } from '@/hooks/transactions';
@@ -43,16 +44,22 @@ export default function ProfilePage() {
   useLiveNotifications();
 
   const { data: user, refetch, isRefetching, isLoading } = useMeUser();
+  const revalidate = useRevalidateCollectionQueries();
 
   const actionLinks = createActionLinks(user);
   const quickLinks = createQuickLinks(user);
 
   const appVersion = constants.expoConfig?.version || 'Unknown Version';
 
+  function handleRefetch() {
+    refetch();
+    revalidate(['donations', 'requests', 'transactions', 'notifications']);
+  }
+
   return (
     <SafeArea safeTop={false} className="bg-background-0 items-stretch">
       <ScrollView
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefetch} />}
         className="flex-1"
         contentContainerClassName="grow flex-col items-stretch bg-background-50"
       >
@@ -190,13 +197,13 @@ function createQuickLinks(user: User | null): ProfileActionLinkCardProps[] {
   const baseLinks: ProfileActionLinkCardProps[] = [
     {
       icon: HandHeartIcon,
-      href: '/account/donations',
+      href: '/account/donations/incoming',
       label: 'Incoming Donations',
       badge: <IncomingDonationsBadge />,
     },
     {
       icon: PackagePlusIcon,
-      href: '/account/requests',
+      href: '/account/requests/incoming',
       label: 'Incoming Requests',
       badge: <IncomingRequestsBadge />,
     },
