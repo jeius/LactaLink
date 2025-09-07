@@ -36,7 +36,8 @@ export function DeliveryPreferenceCard({
     collection: 'delivery-preferences',
     id: extractID(preference),
     select: { name: true, address: true, availableDays: true, preferredMode: true },
-    depth: 0,
+    populate: { addresses: { name: true, displayName: true, coordinates: true, isDefault: true } },
+    depth: 3,
   });
 
   const deliveryPreference = extractCollection(preference) || dpQuery.data;
@@ -45,7 +46,7 @@ export function DeliveryPreferenceCard({
 
   const addressQuery = useFetchById(isString(deliveryPreference?.address), {
     collection: 'addresses',
-    id: extractID(deliveryPreference?.address),
+    id: extractID(deliveryPreference?.address) || '',
     select: { name: true, displayName: true, coordinates: true, isDefault: true },
     depth: 0,
   });

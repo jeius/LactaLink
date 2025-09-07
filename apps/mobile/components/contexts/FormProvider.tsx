@@ -15,6 +15,7 @@ type AdditionalContextType = {
   fetchError: Error | null;
   refreshing: boolean;
   onRefresh: () => void;
+  extraData?: any;
 };
 
 const AdditionalContext = createContext<AdditionalContextType | undefined>(undefined);

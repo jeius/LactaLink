@@ -1,8 +1,7 @@
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { Avatar as AvatarType, Individual, MatchedRequestSchema, Request } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { DeliveryPreference, Request } from '@lactalink/types';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -21,71 +20,39 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedRequestCardProps {
-  request: string | Request;
-  onChange?: (request: MatchedRequestSchema, deliveryPreference?: string | null) => void;
+  request?: Request;
+  selected?: DeliveryPreference | null;
+  onSelect?: (deliveryPreference?: DeliveryPreference | null) => void;
   isLoading?: boolean;
 }
 
 export default function MatchedRequestCard({
-  request: requestProp,
-  onChange,
-  isLoading: isLoadingProp,
+  request: data,
+  onSelect,
+  selected,
+  isLoading,
 }: MatchedRequestCardProps) {
   const { theme } = useTheme();
-  const [selectedPreference, setSelectedPreference] = useState<string | null>(null);
+  const [selectedPreference, setSelectedPreference] = useState(selected);
 
-  const shouldFetch = isString(requestProp);
-
-  const {
-    data: fetchedData,
-    isLoading: isDataLoading,
-    error,
-  } = useFetchById(shouldFetch, {
-    collection: 'requests',
-    id: extractID(requestProp),
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
-
-  const data = shouldFetch ? fetchedData : extractCollection(requestProp);
-
-  const requester = data?.requester as Individual | null;
-  const requesterAvatar = requester?.avatar as AvatarType | null;
+  const requester = extractCollection(data?.requester);
+  const requesterAvatar = extractCollection(requester?.avatar);
   const { details: { urgency, storagePreference } = {} } = data || {};
 
-  const isLoading = isLoadingProp || isDataLoading;
-
-  const matchedRequestData = useMemo((): MatchedRequestSchema | undefined | null => {
-    return (
-      data && {
-        id: data.id,
-        requester: extractID(data.requester),
-        storagePreference: data.details.storagePreference || 'EITHER',
-        volumeNeeded: data.volumeNeeded,
-      }
-    );
-  }, [data]);
-
-  const deliveryPreferences = data?.deliveryPreferences || [];
+  const deliveryPreferences = useMemo(
+    () => extractCollection(data?.deliveryPreferences) || [],
+    [data?.deliveryPreferences]
+  );
 
   useEffect(() => {
-    if (deliveryPreferences.length > 0) {
-      const pref = deliveryPreferences[0];
-      const prefID = (pref && extractID(pref)) || null;
+    setSelectedPreference(selected);
+  }, [selected]);
 
-      setSelectedPreference(prefID);
-
-      if (matchedRequestData) {
-        onChange?.(matchedRequestData, prefID);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deliveryPreferences, matchedRequestData]);
-
-  function handlePreferenceChange(preference: string) {
+  function handlePreferenceChange(preferenceID: string) {
+    const selectedPref = deliveryPreferences.find((dp) => extractID(dp) === preferenceID);
+    const preference = extractCollection(selectedPref);
     setSelectedPreference(preference);
-    if (onChange && matchedRequestData) {
-      onChange(matchedRequestData, preference);
-    }
+    onSelect?.(preference);
   }
 
   return isLoading ? (
@@ -170,9 +137,10 @@ export default function MatchedRequestCard({
             />
           )}
           <DeliveryPreferencesBottomSheet
-            selected={selectedPreference}
+            selected={extractID(selectedPreference)}
             collections={deliveryPreferences}
             onChange={handlePreferenceChange}
+            allowMultipleSelection={false}
             triggerComponent={(props) => (
               <Button
                 {...props}
@@ -193,20 +161,20 @@ export default function MatchedRequestCard({
 
 function CardPlaceholder() {
   return (
-    <Card className="relative w-full">
+    <Card className="relative w-full p-0">
       <VStack space="lg">
-        <HStack space="md" className="items-start">
+        <HStack space="md" className="bg-background-100 items-start p-4">
           <Skeleton variant="circular" className="h-16 w-16" />
           <VStack space="xs" className="flex-1">
-            <Skeleton variant="sharp" className="h-5 w-32" />
-            <Skeleton variant="sharp" className="h-4 w-24" />
-            <Skeleton variant="sharp" className="h-4 w-16" />
+            <Skeleton variant="circular" className="h-5 w-32" />
+            <Skeleton variant="circular" className="h-4 w-24" />
+            <Skeleton variant="circular" className="h-4 w-20" />
           </VStack>
 
           <Skeleton className="h-8 w-16" />
         </HStack>
 
-        <VStack space="lg" className="p-4">
+        <VStack space="md" className="p-4 pt-0">
           <DeliveryPreferenceCardSkeleton />
           <Skeleton className="h-10" />
         </VStack>

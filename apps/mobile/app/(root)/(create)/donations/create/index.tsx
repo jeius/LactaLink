@@ -4,9 +4,7 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
 export default function CreatePageRedirect() {
-  const { matchedRequest } = useLocalSearchParams<DonationCreateSearchParams>();
+  const params = useLocalSearchParams<DonationCreateSearchParams>();
   const firstStep = DONATION_CREATE_STEPS.details.value;
-  return (
-    <Redirect href={{ pathname: `/donations/create/${firstStep}`, params: { matchedRequest } }} />
-  );
+  return <Redirect href={{ pathname: `/donations/create/${firstStep}`, params }} />;
 }

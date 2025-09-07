@@ -35,7 +35,7 @@ export default function CreateRequest() {
 
   const router = useRouter();
 
-  const { form, ...restOfForm } = useCreateRequestForm({
+  const { form } = useCreateRequestForm({
     user: meUser?.data || null,
     matchedDonation,
     recipient:
@@ -49,13 +49,12 @@ export default function CreateRequest() {
   //#endregion
 
   //#region Form State
-  const isLoading = meUser.isLoading || restOfForm.isLoading;
-  const isFetching = meUser.isFetching || restOfForm.isFetching;
-  const error = meUser.error || restOfForm.error;
-  const isRefetching = meUser.isRefetching || restOfForm.isRefetching;
+  const isLoading = meUser.isLoading;
+  const isFetching = meUser.isFetching;
+  const error = meUser.error;
+  const isRefetching = meUser.isRefetching;
   const onRefresh = () => {
     meUser.refetch();
-    restOfForm.refetch();
   };
 
   const isSubmitting = form.formState.isSubmitting;
@@ -119,7 +118,7 @@ export default function CreateRequest() {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
         >
           <VStack space="lg">
-            <RequestDetailsForm />
+            <RequestDetailsForm matchedDonation={matchedDonation} />
 
             {!isLoading && (
               <Box className="mx-5">

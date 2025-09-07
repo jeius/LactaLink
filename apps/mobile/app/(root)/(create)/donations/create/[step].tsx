@@ -60,7 +60,7 @@ export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
 
-  const { matchedRequest: matchedRequestID, step } = useLocalSearchParams<SearchParams>();
+  const { matchedRequest, step } = useLocalSearchParams<SearchParams>();
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
   const revalidateDonations = useRevalidateCollectionQueries();
 
@@ -79,7 +79,7 @@ export default function CreateDonation() {
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
     [detailsStep]: (
-      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequestID} />
+      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequest} />
     ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,

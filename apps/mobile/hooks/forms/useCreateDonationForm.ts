@@ -1,19 +1,18 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DonationSchema, donationSchema, Request, User } from '@lactalink/types';
+import { DonationSchema, donationSchema, MilkBag, User } from '@lactalink/types';
 
 import { MILK_BAG_STATUS } from '@/lib/constants';
-import { extractImageSchema } from '@/lib/utils/extractImageSchema';
+import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import { createStorageKeyByUser, extractCollection, extractID } from '@lactalink/utilities';
 import { randomUUID } from 'expo-crypto';
-import { debounce } from 'lodash';
+import { debounce, isEqual } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
-import { useFetchById } from '../collections/useFetchById';
 import { useFetchBySlug } from '../collections/useFetchBySlug';
 
-const storageKeyPrefix = 'donation-form';
+const BASE_STORAGE_KEY = 'create-donation-form';
 
 type Params = {
   matchedRequest?: string;
@@ -26,53 +25,36 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
   // #region Queries
-  const matchedRequestQuery = useFetchById(Boolean(matchedRequest), {
-    collection: 'requests',
-    id: matchedRequest,
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
-
-  const bagsQuery = useFetchBySlug(
+  const { data: draftMilkBags = [], ...bagsQuery } = useFetchBySlug(
     Boolean(profile),
     {
       collection: 'milkBags',
-      select: {
-        donor: true,
-        volume: true,
-        status: true,
-        code: true,
-        bagImage: true,
-        title: true,
-        collectedAt: true,
-      },
       where: {
         and: [
           { status: { equals: MILK_BAG_STATUS.DRAFT.value } },
-          { donor: { equals: profile!.id } },
+          { donor: { equals: extractID(profile) } },
         ],
       },
       sort: 'createdAt',
     },
     { refetchOnMount: 'always', refetchOnReconnect: 'always' }
   );
+
+  const isLoading = bagsQuery.isLoading;
+  const isFetching = bagsQuery.isFetching;
+  const isRefetching = bagsQuery.isRefetching;
+  const error = bagsQuery.error;
   // #endregion
 
   // #region Form Setup
-  const isLoading = matchedRequestQuery.isLoading || bagsQuery.isLoading;
-  const isFetching = matchedRequestQuery.isFetching || bagsQuery.isFetching;
-  const isRefetching = matchedRequestQuery.isRefetching || bagsQuery.isRefetching;
-  const error = matchedRequestQuery.error || bagsQuery.error;
-
-  const matchedRequestDoc = matchedRequestQuery.data;
-  const draftMilkBags = useMemo(() => bagsQuery.data || [], [bagsQuery.data]);
+  const storageKey = useMemo(() => createStorageKeyByUser(user, BASE_STORAGE_KEY), [user]);
 
   const form = useForm({
     resolver: zodResolver(donationSchema),
     mode: 'onTouched',
-    defaultValues: getData(user),
+    defaultValues: getData(user, storageKey),
   });
 
-  const storageKey = `${storageKeyPrefix}-${user?.id || ''}`;
   const isSubmitSuccessful = form.formState.isSubmitSuccessful;
   const getValues = form.getValues;
   const reset = form.reset;
@@ -83,61 +65,39 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   // #endregion
 
   // #region Use Effects
+  // When draft milk bags exist, update the form values.
+  useEffect(() => {
+    if (matchedRequest || !draftMilkBags.length || !bagsQuery.isSuccess) {
+      return;
+    }
+
+    const { newDetailsBags, newMilkBags } = updateDataOnDraftBagsExist(draftMilkBags);
+
+    const data = getValues();
+    data.details.bags = newDetailsBags;
+    data.milkBags = newMilkBags;
+    reset(data);
+  }, [bagsQuery.isSuccess, draftMilkBags, getValues, matchedRequest, reset]);
+
+  // When user preferences or recipient prop changes, update the form values.
   useEffect(() => {
     const data = getValues();
 
-    if (bagsQuery.isSuccess && draftMilkBags.length) {
-      const segregatedBags = segregateMilkBags(draftMilkBags);
-
-      const newDetailsBags: DonationSchema['details']['bags'] = [];
-      const newMilkBags: DonationSchema['milkBags'] = {};
-
-      for (const bags of Object.values(segregatedBags)) {
-        if (bags.length === 0) continue;
-
-        const groupID = randomUUID();
-
-        newDetailsBags.push({
-          donor: extractID(bags[0]!.donor),
-          volume: bags[0]!.volume,
-          quantity: bags.length,
-          collectedAt: bags[0]!.collectedAt,
-          groupID,
-        });
-
-        newMilkBags[groupID] = bags.map((bag) => ({
-          ...bag,
-          donor: extractID(bag.donor),
-          bagImage: extractImageSchema(extractCollection(bag.bagImage)),
-        }));
-      }
-
-      data.details.bags = newDetailsBags;
-      data.milkBags = newMilkBags;
-    }
-
-    reset(data);
-  }, [bagsQuery.isSuccess, draftMilkBags, getValues, reset]);
-
-  useEffect(() => {
-    let data = getValues();
-
-    if (preferences?.length && !data.deliveryPreferences?.length) {
+    if (!data.deliveryPreferences?.length && preferences?.length) {
       data.deliveryPreferences = extractID(preferences);
     }
 
     // Only set recipient if there is no matched request.
-    if (recipient && !matchedRequestDoc) {
+    if (recipient && !matchedRequest) {
       data.recipient = recipient;
     }
 
-    if (matchedRequestDoc) {
-      data = updateDataOnMatchedRequest(data, matchedRequestDoc);
+    if (!isEqual(data, getValues())) {
+      reset(data);
     }
+  }, [preferences, getValues, reset, recipient, matchedRequest]);
 
-    reset(data);
-  }, [preferences, matchedRequestDoc, getValues, reset, recipient]);
-
+  // Watch form changes and save to local storage (debounced).
   useEffect(() => {
     const subscription = form.watch((data) => {
       debouncedSave(data);
@@ -151,37 +111,29 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * When the form is successfully submitted,
-   * and save the preferred values to local storage.
-   */
+  // When the form is successfully submitted, save preferred values to local storage and clear old data.
   useEffect(() => {
-    async function saveUserPreference() {
-      if (isSubmitSuccessful) {
-        const data = getValues();
+    if (isSubmitSuccessful) {
+      const data = getValues();
 
-        const preferredValues: DeepPartial<DonationSchema> = {
-          details: {
-            notes: data.details.notes,
-            collectionMode: data.details.collectionMode,
-            storageType: data.details.storageType,
-          },
-          deliveryPreferences: data.deliveryPreferences,
-        };
+      const preferredValues: DeepPartial<DonationSchema> = {
+        details: {
+          notes: data.details.notes,
+          collectionMode: data.details.collectionMode,
+          storageType: data.details.storageType,
+        },
+        deliveryPreferences: data.deliveryPreferences,
+      };
 
-        // Save the preffered values to local storage
-        donationStorage.delete(storageKey);
-        donationStorage.set(storageKey, JSON.stringify(preferredValues));
-      }
+      // Save the preffered values to local storage
+      donationStorage.delete(storageKey);
+      donationStorage.set(storageKey, JSON.stringify(preferredValues));
     }
-
-    saveUserPreference();
   }, [isSubmitSuccessful, getValues, storageKey]);
   // #endregion
 
   // #region Form Methods
   function handleRefetch() {
-    matchedRequestQuery.refetch();
     bagsQuery.refetch();
   }
   // #endregion
@@ -190,9 +142,33 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
 };
 
 // #region Helper Functions
-function getData(user: User | null): DonationSchema | undefined {
+function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
+  const segregatedBags = segregateMilkBags(draftMilkBags);
+
+  const newDetailsBags: DonationSchema['details']['bags'] = [];
+  const newMilkBags: DonationSchema['milkBags'] = {};
+
+  for (const bags of Object.values(segregatedBags)) {
+    if (bags.length === 0) continue;
+
+    const groupID = randomUUID();
+
+    newDetailsBags.push({
+      donor: extractID(bags[0]!.donor),
+      volume: bags[0]!.volume,
+      quantity: bags.length,
+      collectedAt: bags[0]!.collectedAt,
+      groupID,
+    });
+
+    newMilkBags[groupID] = bags.map((bag) => extractMilkBagSchema(bag));
+  }
+  return { newDetailsBags, newMilkBags };
+}
+
+function getData(user: User | null, storageKey: string): DonationSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
-  const storedData = getStoredData(user);
+  const storedData = getStoredData(user, storageKey);
   const donor = profile?.id;
   return {
     ...storedData,
@@ -215,37 +191,12 @@ function getData(user: User | null): DonationSchema | undefined {
   } as DonationSchema;
 }
 
-function getStoredData(user: User | null): DeepPartial<DonationSchema> | undefined {
+function getStoredData(
+  user: User | null,
+  storageKey: string
+): DeepPartial<DonationSchema> | undefined {
   if (!user) return undefined;
-  const userID = user.id;
-  const storageKey = `${storageKeyPrefix}-${userID}`;
   const raw = donationStorage.getString(storageKey);
   return raw && JSON.parse(raw);
-}
-
-function updateDataOnMatchedRequest(data: DonationSchema, matchedRequest: Request): DonationSchema {
-  const storagePreference = matchedRequest.details.storagePreference || 'EITHER';
-  const volumeNeeded = matchedRequest.volumeNeeded;
-  const requesterID = extractID(matchedRequest.requester);
-
-  data.matchedRequest = {
-    id: matchedRequest.id,
-    requester: requesterID,
-    volumeNeeded,
-    storagePreference,
-  };
-
-  data.recipient = { relationTo: 'individuals', value: requesterID };
-  data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
-  data.details.bags = [
-    {
-      collectedAt: new Date().toISOString(),
-      volume: volumeNeeded,
-      quantity: 1,
-      donor: data.donor,
-      groupID: randomUUID(),
-    },
-  ];
-  return data;
 }
 // #endregion

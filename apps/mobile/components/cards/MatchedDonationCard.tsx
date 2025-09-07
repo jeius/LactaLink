@@ -1,20 +1,10 @@
-import { useFetchById } from '@/hooks/collections/useFetchById';
-import {
-  Avatar as AvatarType,
-  DeliveryPreference,
-  Individual,
-  MatchedDonationSchema,
-  MilkBagSchema,
-} from '@lactalink/types';
+import { DeliveryPreference, Donation } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
-import { useLocationStore } from '@/lib/stores/locationStore';
-import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
-import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { DropletIcon, PackageIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
@@ -28,45 +18,24 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard, DeliveryPreferenceCardSkeleton } from './DeliveryPreferenceCard';
 
 interface MatchedDonationCardProps {
-  donation: MatchedDonationSchema;
-  onChange?: (
-    donation: MatchedDonationSchema,
-    deliveryPreference?: DeliveryPreference | null
-  ) => void;
+  donation?: Donation;
+  selected?: DeliveryPreference | null;
+  onSelect?: (deliveryPreference?: DeliveryPreference | null) => void;
   isLoading?: boolean;
 }
 
 export function MatchedDonationCard({
-  donation,
-  onChange,
-  isLoading: isLoadingProp,
+  donation: data,
+  onSelect,
+  selected,
+  isLoading,
 }: MatchedDonationCardProps) {
   const { theme } = useTheme();
-  const [selectedPreference, setSelectedPreference] = useState<DeliveryPreference | null>(null);
-  const coords = useLocationStore((s) => s.coordinates);
+  const [selectedPreference, setSelectedPreference] = useState(selected);
 
-  const { data, isLoading: isDataLoading } = useFetchById(true, {
-    collection: 'donations',
-    id: extractID(donation),
-  });
-
-  const donor = data?.donor as Individual | null;
-  const donorAvatar = donor?.avatar as AvatarType | null;
+  const donor = extractCollection(data?.donor);
+  const donorAvatar = extractCollection(donor?.avatar);
   const { details: { storageType, collectionMode } = {} } = data || {};
-
-  const isLoading = isLoadingProp || isDataLoading;
-
-  const matchedDonationData = useMemo((): MatchedDonationSchema | undefined | null => {
-    const bags = extractCollection(data?.details?.bags || []);
-    return (
-      data && {
-        id: data.id,
-        donor: extractID(data.donor),
-        storageType: data.details.storageType,
-        bags: bags.map((bag) => extractMilkBagSchema(bag) as MilkBagSchema),
-      }
-    );
-  }, [data]);
 
   const deliveryPreferences = useMemo(
     () => extractCollection(data?.deliveryPreferences) || [],
@@ -74,26 +43,14 @@ export function MatchedDonationCard({
   );
 
   useEffect(() => {
-    if (deliveryPreferences.length > 0) {
-      const { deliveryPreference } = getNearestDeliveryPreference(deliveryPreferences, coords);
+    setSelectedPreference(selected);
+  }, [selected]);
 
-      setSelectedPreference(deliveryPreference);
-
-      if (matchedDonationData) {
-        onChange?.(matchedDonationData, deliveryPreference);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deliveryPreferences, matchedDonationData]);
-
-  function handlePreferenceChange(preference: string) {
-    const preferenceObj = deliveryPreferences.find((p) => extractID(p) === preference) || null;
-    setSelectedPreference(preferenceObj);
-
-    if (onChange && matchedDonationData) {
-      onChange(matchedDonationData, preferenceObj);
-    }
+  function handlePreferenceChange(preferenceID: string) {
+    const selectedPref = deliveryPreferences.find((dp) => extractID(dp) === preferenceID);
+    const preference = extractCollection(selectedPref);
+    setSelectedPreference(preference);
+    onSelect?.(preference);
   }
 
   return isLoading ? (

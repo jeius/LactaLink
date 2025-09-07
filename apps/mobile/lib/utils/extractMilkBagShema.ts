@@ -2,8 +2,8 @@ import { MilkBag, MilkBagSchema } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { extractImageSchema } from './extractImageSchema';
 
-export function extractMilkBagSchema<T extends string | MilkBag | null>(
-  bag?: string | MilkBag | null
+export function extractMilkBagSchema<T extends string | MilkBag | null | undefined>(
+  bag: T
 ): T extends MilkBag ? MilkBagSchema : null {
   if (!bag || typeof bag === 'string') return null as T extends MilkBag ? MilkBagSchema : null;
 

@@ -1,33 +1,59 @@
 import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
+import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@/lib/constants';
-import { DonationSchema, MatchedRequestSchema } from '@lactalink/types';
-import React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { DeliveryPreference, DonationSchema, Request } from '@lactalink/types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { randomUUID } from 'expo-crypto';
+import React, { useEffect, useMemo } from 'react';
 import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
-  isLoading?: boolean;
   matchedRequest?: string;
   disableFields?: boolean;
 }
 
 export function DonationDetailsForm({
-  isLoading: isLoadingProp,
   matchedRequest,
-  disableFields,
+  disableFields: disableProp,
 }: DonationDetailsFormProps) {
   const hasMatchedRequest = Boolean(matchedRequest);
-  const isLoading = hasMatchedRequest && isLoadingProp;
+  const { data: matchedRequestDoc, ...restQuery } = useFetchById(hasMatchedRequest, {
+    collection: 'requests',
+    id: matchedRequest || '',
+    populate: { users: { profile: true, profileType: true, role: true } },
+  });
 
-  const form = useFormContext<DonationSchema>();
+  const form = useForm<DonationSchema>();
+  const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
 
-  function handleMatchedRequestChange(request: MatchedRequestSchema, preferenceID?: string | null) {
-    form.setValue('matchedRequest', request);
+  const selectedPref = useMemo(() => {
+    const deliveryPreferences = matchedRequestDoc?.deliveryPreferences || [];
+    const selectedPref = deliveryPreferences?.find((dp) => extractID(dp) === selectedDPID);
+    return extractCollection(selectedPref);
+  }, [matchedRequestDoc, selectedDPID]);
+
+  const getValues = form.getValues;
+  const reset = form.reset;
+
+  const isLoading = restQuery.isLoading;
+  const disableFields = disableProp || form.formState.isSubmitting;
+
+  // When matched request data is fetched, update the form values.
+  useEffect(() => {
+    const data = getValues();
+    const updatedData = updateDataOnMatchedRequest(data, matchedRequestDoc);
+    reset(updatedData);
+  }, [matchedRequestDoc, getValues, reset]);
+
+  function handleDPChange(preference?: DeliveryPreference | null) {
+    const preferenceID = extractID(preference);
     form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
   }
 
@@ -37,9 +63,10 @@ export function DonationDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
           <MatchedRequestCard
-            request={matchedRequest}
+            request={matchedRequestDoc}
             isLoading={isLoading}
-            onChange={handleMatchedRequestChange}
+            selected={selectedPref}
+            onSelect={handleDPChange}
           />
         </Box>
       )}
@@ -55,8 +82,7 @@ export function DonationDetailsForm({
           label="How are you storing/preserving the milk?"
           fieldType="button-group"
           options={Object.values(STORAGE_TYPES)}
-          isLoading={isLoading}
-          isDisabled={disableFields}
+          isDisabled={isLoading || disableFields}
         />
 
         <FormField
@@ -66,8 +92,7 @@ export function DonationDetailsForm({
           label="How did you collect the milk?"
           fieldType="button-group"
           options={Object.values(COLLECTION_MODES)}
-          isLoading={isLoading}
-          isDisabled={disableFields}
+          isDisabled={isLoading || disableFields}
         />
       </VStack>
 
@@ -80,8 +105,7 @@ export function DonationDetailsForm({
           label="Cover Image"
           fieldType="image"
           helperText="Upload a cover image to feature your donation."
-          isLoading={isLoading}
-          isDisabled={disableFields}
+          isDisabled={isLoading || disableFields}
         />
       </Box>
 
@@ -93,8 +117,7 @@ export function DonationDetailsForm({
           fieldType="textarea"
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
-          isLoading={isLoading}
-          isDisabled={disableFields}
+          isDisabled={isLoading || disableFields}
         />
       </Box>
 
@@ -109,4 +132,45 @@ export function DonationDetailsForm({
       )}
     </VStack>
   );
+}
+
+function updateDataOnMatchedRequest(
+  data: DonationSchema,
+  matchedRequest?: Request
+): DonationSchema {
+  if (!matchedRequest) {
+    data.matchedRequest = undefined;
+    return data;
+  }
+
+  const storagePreference = matchedRequest.details.storagePreference || 'EITHER';
+  const volumeNeeded = matchedRequest.volumeNeeded;
+  const requesterID = extractID(matchedRequest.requester);
+  const deliveryPreferences = matchedRequest.deliveryPreferences || [];
+
+  const { deliveryPreference: nearestPref } = getNearestDeliveryPreference(
+    extractCollection(deliveryPreferences)
+  );
+
+  data.matchedRequest = {
+    id: matchedRequest.id,
+    requester: requesterID,
+    volumeNeeded,
+    storagePreference,
+  };
+
+  data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
+  data.details.bags = [
+    {
+      collectedAt: new Date().toISOString(),
+      volume: volumeNeeded,
+      quantity: 1,
+      donor: data.donor,
+      groupID: randomUUID(),
+    },
+  ];
+
+  data.deliveryPreferences = nearestPref ? [extractID(nearestPref)] : [];
+
+  return data;
 }

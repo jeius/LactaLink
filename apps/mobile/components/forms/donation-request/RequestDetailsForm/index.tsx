@@ -4,31 +4,54 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
-import { DeliveryPreference, MatchedDonationSchema, RequestSchema } from '@lactalink/types';
+import { DeliveryPreference, Donation, RequestSchema } from '@lactalink/types';
 
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import { extractID } from '@lactalink/utilities';
+import { useFetchById } from '@/hooks/collections/useFetchById';
+import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
+import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { ClockIcon } from 'lucide-react-native';
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { VolumeField } from './VolumeField';
 
-interface RequestDetailsFormProps {}
+interface RequestDetailsFormProps {
+  matchedDonation?: string;
+}
 
-export function RequestDetailsForm(_props: RequestDetailsFormProps) {
+export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps) {
+  const { data: matchedDonationDoc, ...restOfQuery } = useFetchById(Boolean(matchedDonation), {
+    collection: 'donations',
+    id: matchedDonation || '',
+    populate: { users: { profile: true, profileType: true, role: true } },
+  });
+
   const form = useForm<RequestSchema>();
+  const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
 
-  const matchedDonation = form.watch('matchedDonation');
+  const selectedPref = useMemo(() => {
+    const deliveryPreferences = matchedDonationDoc?.deliveryPreferences || [];
+    const selectedPref = deliveryPreferences?.find((dp) => extractID(dp) === selectedDPID);
+    return extractCollection(selectedPref);
+  }, [matchedDonationDoc, selectedDPID]);
 
-  const isLoading = form.additionalState.isLoading;
+  const getValues = form.getValues;
+  const reset = form.reset;
+
+  const isLoading = restOfQuery.isLoading;
   const isSubmitting = form.formState.isSubmitting;
 
-  function handleMatchedDonationChange(
-    donation: MatchedDonationSchema,
-    preference?: DeliveryPreference | null
-  ) {
-    form.setValue('matchedDonation', donation);
-    form.setValue('deliveryPreferences', preference ? [extractID(preference)] : []);
+  // When matched donation data is fetched, update the form values.
+  useEffect(() => {
+    const data = getValues();
+    const updatedData = updateDataOnMatchedDonation(data, matchedDonationDoc);
+    reset(updatedData);
+  }, [getValues, matchedDonationDoc, reset]);
+
+  function handleDPChange(preference?: DeliveryPreference | null) {
+    const preferenceID = extractID(preference);
+    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
   }
 
   return (
@@ -37,9 +60,10 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Donation</Text>
           <MatchedDonationCard
-            donation={matchedDonation}
+            donation={matchedDonationDoc}
             isLoading={isLoading}
-            onChange={handleMatchedDonationChange}
+            onSelect={handleDPChange}
+            selected={selectedPref}
           />
         </Box>
       )}
@@ -66,8 +90,7 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
           label="How urgently do you need the milk?"
           fieldType="button-group"
           options={Object.values(URGENCY_LEVELS)}
-          isLoading={isLoading}
-          isDisabled={isSubmitting}
+          isDisabled={isLoading || isSubmitting}
         />
       </VStack>
 
@@ -83,8 +106,7 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
             datePickerOptions={{ minimumDate: new Date() }}
             placeholder="Select date..."
             style={{ maxWidth: 200 }}
-            isLoading={isLoading}
-            isDisabled={isSubmitting}
+            isDisabled={isLoading || isSubmitting}
           />
 
           <FormField
@@ -98,13 +120,16 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
             style={{ maxWidth: 200 }}
             showSetNowButton
             datePickerOptions={{ minimumDate: new Date() }}
-            isLoading={isLoading}
-            isDisabled={isSubmitting}
+            isDisabled={isLoading || isSubmitting}
           />
         </VStack>
       </VStack>
 
-      <VolumeField matchedDonation={matchedDonation} isLoading={isLoading} />
+      <VolumeField
+        matchedDonation={matchedDonationDoc}
+        isLoading={isLoading}
+        isDisabled={isLoading || isSubmitting}
+      />
 
       <Box className="mx-5">
         <FormField
@@ -114,8 +139,7 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
           fieldType="image"
           allowsMultipleSelection={false}
           helperText="Optional, but may encourage donors to fulfill your request."
-          isLoading={isLoading}
-          isDisabled={isSubmitting}
+          isDisabled={isLoading || isSubmitting}
         />
       </Box>
 
@@ -127,8 +151,7 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
           fieldType="textarea"
           placeholder="Please provide a brief reason for your request."
           helperText="Optional, but helps the donor understand your needs."
-          isLoading={isLoading}
-          isDisabled={isSubmitting}
+          isDisabled={isLoading || isSubmitting}
         />
       </Box>
 
@@ -140,8 +163,7 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
           fieldType="textarea"
           placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
-          isLoading={isLoading}
-          isDisabled={isSubmitting}
+          isDisabled={isLoading || isSubmitting}
         />
       </Box>
 
@@ -150,10 +172,37 @@ export function RequestDetailsForm(_props: RequestDetailsFormProps) {
           control={form.control}
           name="deliveryPreferences"
           label="Delivery Preferences"
-          isLoading={isLoading}
           isDisabled={isSubmitting}
         />
       )}
     </VStack>
   );
+}
+
+function updateDataOnMatchedDonation(data: RequestSchema, matchedDonationDoc?: Donation) {
+  if (!matchedDonationDoc) {
+    data.matchedDonation = undefined;
+    return data;
+  }
+
+  const storagePreference = matchedDonationDoc.details.storageType;
+  const bags = extractCollection(matchedDonationDoc.details.bags);
+  const preferences = matchedDonationDoc.deliveryPreferences || [];
+
+  data.matchedDonation = {
+    id: matchedDonationDoc.id,
+    donor: extractID(matchedDonationDoc.donor),
+    storageType: storagePreference,
+    bags: bags.map((bag) => extractMilkBagSchema(bag)),
+  };
+
+  if (preferences?.length) {
+    const nearestPref = getNearestDeliveryPreference(extractCollection(preferences));
+    const prefID = extractID(nearestPref?.deliveryPreference);
+    data.deliveryPreferences = prefID ? [prefID] : data.deliveryPreferences;
+  }
+
+  data.details.storagePreference = storagePreference;
+
+  return data;
 }

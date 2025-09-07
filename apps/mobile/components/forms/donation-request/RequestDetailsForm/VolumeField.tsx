@@ -20,8 +20,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
-import { MatchedDonationSchema, MilkBagSchema, RequestSchema } from '@lactalink/types';
-import { formatDate } from '@lactalink/utilities';
+import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
+import { Donation, MilkBagSchema, RequestSchema } from '@lactalink/types';
+import { extractCollection, extractID, formatDate } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
 import { AlertCircleIcon } from 'lucide-react-native';
@@ -29,11 +30,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 interface VolumeFieldProps {
-  matchedDonation?: MatchedDonationSchema;
+  matchedDonation?: Donation;
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 
-export function VolumeField({ isLoading, matchedDonation }: VolumeFieldProps) {
+export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFieldProps) {
   const [isCustomVolume, setIsCustomVolume] = useState(false);
   const form = useFormContext<RequestSchema>();
 
@@ -41,12 +43,12 @@ export function VolumeField({ isLoading, matchedDonation }: VolumeFieldProps) {
   const setValue = form.setValue;
 
   const { bags, bagsMap } = useMemo(() => {
-    const bags = matchedDonation?.bags || [];
+    const bags = extractCollection(matchedDonation?.details.bags) || [];
 
     const map = new Map<string, MilkBagSchema>();
-    bags?.forEach((bag) => map.set(bag.id, bag));
+    bags?.forEach((bag) => map.set(extractID(bag), extractMilkBagSchema(bag)));
 
-    return { bags, bagsMap: map };
+    return { bags: Array.from(map.values()), bagsMap: map };
   }, [matchedDonation]);
 
   useEffect(() => {
@@ -65,11 +67,11 @@ export function VolumeField({ isLoading, matchedDonation }: VolumeFieldProps) {
   }
 
   return matchedDonation ? (
-    <MilkBagsField bags={bags} isLoading={isLoading} />
+    <MilkBagsField bags={bags} isLoading={isLoading} isDisabled={isDisabled} />
   ) : (
     <VStack space="sm" className="mx-5">
       <Text className="font-JakartaMedium">How much milk do you need?</Text>
-      <Card variant="filled" className="flex-col gap-5">
+      <Card variant="filled" className="flex-col gap-5" isDisabled={isDisabled}>
         <FormField
           control={form.control}
           name="volumeNeeded"
@@ -108,9 +110,10 @@ export function VolumeField({ isLoading, matchedDonation }: VolumeFieldProps) {
 interface MilkBagsFieldProps {
   bags: MilkBagSchema[];
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 
-function MilkBagsField({ bags, isLoading }: MilkBagsFieldProps) {
+function MilkBagsField({ bags, isLoading, isDisabled }: MilkBagsFieldProps) {
   const form = useForm<RequestSchema>();
   const { error } = form.getFieldState('details.bags');
 
@@ -127,7 +130,7 @@ function MilkBagsField({ bags, isLoading }: MilkBagsFieldProps) {
   );
 
   return (
-    <FormControl isInvalid={!!error}>
+    <FormControl isInvalid={!!error} isDisabled={isDisabled}>
       <FormControlLabel className="mx-5">
         <FormControlLabelText>Available Milk Bags</FormControlLabelText>
       </FormControlLabel>
@@ -167,8 +170,11 @@ function MilkBagsField({ bags, isLoading }: MilkBagsFieldProps) {
             return isPlaceholder ? (
               <CardSkeleton />
             ) : (
-              <AnimatedPressable onPress={handleSelectBag} className="mr-4">
-                <Card className={`w-40 p-0 ${isSelected ? 'border-primary-500 border-2' : ''}`}>
+              <AnimatedPressable disabled={isDisabled} onPress={handleSelectBag} className="mr-4">
+                <Card
+                  isDisabled={isDisabled}
+                  className={`w-40 p-0 ${isSelected ? 'border-primary-500 border-2' : ''}`}
+                >
                   <VStack className="items-stretch">
                     <Box className="bg-primary-50 relative h-32 w-full flex-shrink-0 overflow-hidden">
                       {imageUrl ? (
