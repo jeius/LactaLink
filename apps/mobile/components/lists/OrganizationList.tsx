@@ -17,7 +17,7 @@ import {
   latLngToPoint,
 } from '@lactalink/utilities';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { debounce } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
 import Animated from 'react-native-reanimated';
@@ -141,7 +141,7 @@ export function OrganizationList({ collection }: OrganizationListProps) {
 
       function handlePress() {
         if (isLoading) return;
-        router.push(`/${collection}/${data.id}` as Href);
+        router.push(`/profile/${collection}/${data.id}`);
       }
 
       return (

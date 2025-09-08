@@ -27,7 +27,7 @@ export const MARITAL_STATUS = {
   SEPARATED: { label: 'Separated', value: 'SEPARATED' },
   WIDOWED: { label: 'Widowed', value: 'WIDOWED' },
   DIVORCED: { label: 'Divorced', value: 'DIVORCED' },
-  N_A: { label: 'Prefer not to say', value: 'N/A' },
+  'N/A': { label: 'Prefer not to say', value: 'N/A' },
 } as const;
 
 export const DELIVERY_OPTIONS = {

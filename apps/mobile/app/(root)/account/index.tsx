@@ -33,10 +33,12 @@ import {
   LogOutIcon,
   LucideIcon,
   LucideProps,
+  MessageSquareIcon,
   PackagePlusIcon,
   TruckIcon,
+  UserRoundCheckIcon,
 } from 'lucide-react-native';
-import React, { FC, Fragment, ReactNode } from 'react';
+import React, { FC, ReactNode } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
@@ -46,8 +48,10 @@ export default function ProfilePage() {
   const { data: user, refetch, isRefetching, isLoading } = useMeUser();
   const revalidate = useRevalidateCollectionQueries();
 
-  const actionLinks = createActionLinks(user);
-  const quickLinks = createQuickLinks(user);
+  const actionLinks = createActionCardLinks(user);
+  const deliveryLinks = createDeliveryLinks(user);
+  const incomingLinks = createIncomingLinks(user);
+  const otherLinks = createOtherLinks(user);
 
   const appVersion = constants.expoConfig?.version || 'Unknown Version';
 
@@ -63,34 +67,51 @@ export default function ProfilePage() {
         className="flex-1"
         contentContainerClassName="grow flex-col items-stretch bg-background-50"
       >
-        <VStack>
-          <ProfileCard className="p-5" profile={user?.profile} isLoading={isLoading} />
+        <VStack className="items-stretch">
+          <ProfileCard className="p-5 pb-0" profile={user?.profile} isLoading={isLoading} />
 
-          <HStack space="md" className="mb-5 flex-wrap justify-center px-5">
+          <Link href={`/profile`} push asChild>
+            <Button
+              animateOnPress={false}
+              variant="link"
+              action="default"
+              className="mx-2 mt-2 h-fit w-fit self-start px-5"
+            >
+              <ButtonText>View Profile</ButtonText>
+            </Button>
+          </Link>
+
+          <HStack space="md" className="flex-wrap justify-center p-5">
             {actionLinks.map((link, i) => (
-              <ProfileActionLinkCard key={i} {...link} />
+              <ActionCard key={i} {...link} />
             ))}
           </HStack>
         </VStack>
 
-        <VStack space="sm" className="bg-background-0 grow items-stretch p-5 pb-2">
+        <VStack
+          space="sm"
+          className="bg-background-0 border-outline-200 grow items-stretch"
+          style={{ borderTopWidth: 1 }}
+        >
           <VStack className="grow">
-            <Text size="lg" bold className="mb-1">
-              Quick Links
-            </Text>
+            {incomingLinks.map((link, idx) => (
+              <ActionLink key={idx} {...link} />
+            ))}
 
-            {quickLinks.map((link, idx) => {
-              const isLast = idx === quickLinks.length - 1;
-              return (
-                <Fragment key={idx}>
-                  <QuickActionItem key={idx} {...link} />
-                  {!isLast && <Divider />}
-                </Fragment>
-              );
-            })}
+            <Divider />
+
+            {deliveryLinks.map((link, idx) => (
+              <ActionLink key={idx} {...link} />
+            ))}
+
+            <Divider />
+
+            {otherLinks.map((link, idx) => (
+              <ActionLink key={idx} {...link} />
+            ))}
           </VStack>
 
-          <Button variant="outline" action="default" onPress={signOut}>
+          <Button variant="outline" action="default" onPress={signOut} className="mx-5 mt-5">
             <ButtonIcon as={LogOutIcon} />
             <ButtonText>Logout</ButtonText>
           </Button>
@@ -103,13 +124,13 @@ export default function ProfilePage() {
   );
 }
 
-interface ProfileActionLinkCardProps {
+interface ActionProps {
   icon: FC<LucideProps | SvgProps> | LucideIcon;
   href: Href;
   label: string;
   badge?: ReactNode;
 }
-function ProfileActionLinkCard({ icon, href, label }: ProfileActionLinkCardProps) {
+function ActionCard({ icon, href, label }: ActionProps) {
   const { themeColors } = useTheme();
   const iconFillColor = themeColors.typography[900];
 
@@ -129,14 +150,14 @@ function ProfileActionLinkCard({ icon, href, label }: ProfileActionLinkCardProps
   );
 }
 
-function QuickActionItem({ icon, href, label, badge }: ProfileActionLinkCardProps) {
+function ActionLink({ icon, href, label, badge }: ActionProps) {
   const { themeColors } = useTheme();
   const iconFillColor = themeColors.typography[900];
 
   return (
     <Link href={href} push asChild>
       <AnimatedPressable disableAnimation>
-        <HStack space="sm" className="w-full items-center justify-start py-5">
+        <HStack space="sm" className="w-full items-center justify-start px-5 py-4">
           <Icon as={icon} color={iconFillColor} />
           <Text className="font-JakartaMedium grow">{label}</Text>
           {badge}
@@ -147,12 +168,12 @@ function QuickActionItem({ icon, href, label, badge }: ProfileActionLinkCardProp
   );
 }
 
-function createActionLinks(user: User | null): ProfileActionLinkCardProps[] {
+function createActionCardLinks(user: User | null): ActionProps[] {
   if (!user) {
     return [];
   }
 
-  const baseLinks: ProfileActionLinkCardProps[] = [
+  const baseLinks: ActionProps[] = [
     {
       icon: BasicLocationPin,
       href: '/account/addresses',
@@ -189,12 +210,12 @@ function createActionLinks(user: User | null): ProfileActionLinkCardProps[] {
   return baseLinks;
 }
 
-function createQuickLinks(user: User | null): ProfileActionLinkCardProps[] {
+function createIncomingLinks(user: User | null): ActionProps[] {
   if (!user) {
     return [];
   }
 
-  const baseLinks: ProfileActionLinkCardProps[] = [
+  const baseLinks: ActionProps[] = [
     {
       icon: HandHeartIcon,
       href: '/account/donations/incoming',
@@ -207,12 +228,17 @@ function createQuickLinks(user: User | null): ProfileActionLinkCardProps[] {
       label: 'Incoming Requests',
       badge: <IncomingRequestsBadge />,
     },
-    {
-      icon: BellIcon,
-      href: '/account/notifications',
-      label: 'Notifications',
-      badge: <NotificationBadge />,
-    },
+  ];
+
+  return baseLinks;
+}
+
+function createDeliveryLinks(user: User | null): ActionProps[] {
+  if (!user) {
+    return [];
+  }
+
+  const baseLinks: ActionProps[] = [
     {
       icon: TruckIcon,
       href: '/account/deliveries',
@@ -224,6 +250,33 @@ function createQuickLinks(user: User | null): ProfileActionLinkCardProps[] {
       href: '/account/transactions',
       label: 'Transactions',
       badge: <TransactionBadge />,
+    },
+  ];
+
+  return baseLinks;
+}
+
+function createOtherLinks(user: User | null): ActionProps[] {
+  if (!user) {
+    return [];
+  }
+
+  const baseLinks: ActionProps[] = [
+    {
+      icon: BellIcon,
+      href: '/account/notifications',
+      label: 'Notifications',
+      badge: <NotificationBadge />,
+    },
+    {
+      icon: MessageSquareIcon,
+      href: '/messages',
+      label: 'Messages',
+    },
+    {
+      icon: UserRoundCheckIcon,
+      href: '/donor-screening',
+      label: 'Donor Screening',
     },
   ];
 

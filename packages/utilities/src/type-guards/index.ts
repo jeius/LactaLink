@@ -1,4 +1,4 @@
-import { Collection, Donation, Hospital, Request } from '@lactalink/types';
+import { Collection, Donation, Hospital, Individual, Request } from '@lactalink/types';
 
 export * from './stringChecker';
 export * from './verifyOtp';
@@ -17,4 +17,8 @@ export function isHospital(data: Collection): data is Hospital {
 
 export function isMilkBank(data: Collection): data is Hospital {
   return 'head' in data && !('hospitalID' in data);
+}
+
+export function isIndividual(data: Collection): data is Individual {
+  return 'givenName' in data && 'birth' in data;
 }

@@ -38,6 +38,8 @@ export default function Layout() {
       screenOptions={{
         ...screenOptions,
         headerShown: true,
+        headerRightContainerStyle: { paddingRight: 12 },
+        headerRight: () => <ProfileAvatar size="sm" profile={profile} enablePress />,
         drawerActiveTintColor: activeTintColor,
         drawerActiveBackgroundColor: activeBgColor,
         drawerItemStyle: {
@@ -55,8 +57,6 @@ export default function Layout() {
         name="(tabs)"
         options={{
           headerTitle: (name && `Welcome, ${name}!`) || 'Welcome!',
-          headerRight: () => <ProfileAvatar size="sm" profile={profile} enablePress />,
-          headerRightContainerStyle: { paddingRight: 12 },
           drawerLabel: 'Home',
           drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" color={color} />,
         }}
