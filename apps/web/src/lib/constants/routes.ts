@@ -12,6 +12,7 @@ export const ERROR_PAGES = {
 export const PUBLIC_ROUTES = {
   AUTH: '/auth/callback',
   API: '/api',
+  PUBLIC: '/',
   ...AUTH_PAGES,
   ...ERROR_PAGES,
 };

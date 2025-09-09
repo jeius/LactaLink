@@ -7,6 +7,7 @@ import { seedProvincesHandler } from './seeders/PSGC/seedProvinces';
 import { seedPSGCHandler } from './seeders/PSGC/seedPSGC';
 import { seedRegionsHandler } from './seeders/PSGC/seedRegions';
 import { seedStatusHandler } from './seeders/Status';
+import { userVerificationHandler } from './user-verification';
 
 export const Endpoints: Endpoint[] = [
   {
@@ -53,5 +54,10 @@ export const Endpoints: Endpoint[] = [
     method: 'post',
     path: '/seed/notifications',
     handler: seedNotificationsHandler,
+  },
+  {
+    method: 'post',
+    path: '/user-verification',
+    handler: userVerificationHandler,
   },
 ];
