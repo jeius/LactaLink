@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   backgroundColor: '#f6f6f6',
   primaryColor: '#FE828C',
   scheme: 'lactalink',
-  userInterfaceStyle: 'automatic',
+  userInterfaceStyle: 'light',
   newArchEnabled: true,
   platforms: ['ios', 'android'],
   ios: {
@@ -42,10 +42,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-image-picker',
+    'expo-mail-composer',
+    'expo-sms',
+    'react-native-compressor',
     [
       'expo-asset',
       {
         assets: ['./assets/images', './assets/icons', './assets/logo'],
+      },
+    ],
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Allow LactaLink to access your camera',
+        microphonePermission: 'Allow LactaLink to access your microphone',
+        recordAudioAndroid: true,
       },
     ],
     [
