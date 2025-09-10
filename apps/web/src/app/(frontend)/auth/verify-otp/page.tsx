@@ -9,11 +9,11 @@ import {
 import { Metadata } from 'next';
 
 import { Button } from '@/components/ui/button';
+import Image from '@/components/ui/image';
 import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
 import { ChevronLeft } from 'lucide-react';
-import NextImage from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -76,7 +76,7 @@ export default async function Page({ searchParams }: Props) {
         </Button>
         <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
           <div className="relative h-40 w-full overflow-clip lg:h-full">
-            <NextImage
+            <Image
               src={imgUrl.toString()}
               alt="Phone verification"
               width={1080}

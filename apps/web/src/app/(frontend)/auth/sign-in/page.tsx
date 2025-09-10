@@ -10,10 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import Image from '@/components/ui/image';
 import { getServerSideURL } from '@/lib/utils/getURL';
 
 import { Metadata } from 'next';
-import NextImage from 'next/image';
 import Link from 'next/link';
 
 import { Suspense } from 'react';
@@ -28,7 +28,7 @@ export default function Page() {
       <div className="container mx-auto mt-5 max-w-lg lg:mt-10 lg:max-w-4xl">
         <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
           <div className="relative h-40 w-full overflow-clip lg:h-full">
-            <NextImage
+            <Image
               src={`${getServerSideURL()}/images/sign-in.png`}
               alt="Mother Breastfeeding"
               width={1080}

@@ -9,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import Image from '@/components/ui/image';
 import { getServerSideURL } from '@/lib/utils/getURL';
 
 import config from '@payload-config';
 import { Metadata } from 'next';
-import NextImage from 'next/image';
 import { redirect } from 'next/navigation';
 
 import { getPayload } from 'payload';
@@ -42,7 +42,7 @@ export default async function Page() {
       <div className="container mx-auto mt-5 max-w-lg lg:mt-10 lg:max-w-4xl">
         <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
           <div className="relative h-40 w-full overflow-clip lg:h-full">
-            <NextImage
+            <Image
               src={`${getServerSideURL()}/images/admin.png`}
               alt="Mother in chair"
               width={1024}
