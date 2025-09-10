@@ -44,20 +44,25 @@ export const Images: CollectionConfig<'images'> = {
   ],
   upload: {
     adminThumbnail: 'thumbnail',
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    mimeTypes: ['image/*'],
     focalPoint: true,
+    displayPreview: true,
+    formatOptions: { format: 'webp' },
     imageSizes: [
       {
         name: 'thumbnail',
         width: 300,
+        withoutEnlargement: false,
       },
       {
         name: 'small',
         width: 600,
+        withoutEnlargement: false,
       },
       {
         name: 'large',
         width: 1400,
+        withoutEnlargement: false,
       },
     ],
   },

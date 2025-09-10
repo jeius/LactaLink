@@ -10,6 +10,7 @@ declare global {
       S3_BUCKET_MEDIA: string;
       S3_BUCKET_FILES: string;
       S3_BUCKET_AVATARS: string;
+      S3_BUCKET_MILK_BAG_IMAGES: string;
       S3_ACCESS_KEY_ID: string;
       S3_SECRET_ACCESS_KEY: string;
       S3_ENDPOINT: string;
@@ -21,6 +22,7 @@ declare global {
       NEXT_PUBLIC_SUPABASE_URL: string;
       NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
       VERCEL_AUTOMATION_BYPASS_SECRET?: string;
+      GOOGLE_CLOUD_VISION_API_KEY: string;
     }
   }
 }

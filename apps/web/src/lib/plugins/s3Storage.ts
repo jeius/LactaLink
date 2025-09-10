@@ -17,21 +17,26 @@ export const s3StoragePlugin: Plugin[] = [
     collections: {
       images: true,
     },
-    bucket: process.env.S3_BUCKET_IMAGES!,
+    bucket: process.env.S3_BUCKET_IMAGES,
     config: StorageConfig,
+    clientUploads: true,
+    acl: 'public-read',
   }),
   s3Storage({
     collections: {
       'milk-bag-images': true,
     },
-    bucket: process.env.S3_BUCKET_MILK_BAG_IMAGES!,
+    bucket: process.env.S3_BUCKET_MILK_BAG_IMAGES,
     config: StorageConfig,
+    clientUploads: true,
   }),
   s3Storage({
     collections: {
       avatars: true,
     },
-    bucket: process.env.S3_BUCKET_AVATARS!,
+    bucket: process.env.S3_BUCKET_AVATARS,
     config: StorageConfig,
+    clientUploads: true,
+    acl: 'public-read',
   }),
 ];

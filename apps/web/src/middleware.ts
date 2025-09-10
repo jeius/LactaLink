@@ -9,27 +9,29 @@ export async function middleware(request: NextRequest) {
   const redirect = request.nextUrl.searchParams.get(SEARCH_PARAMS_KEYS.REDIRECT) || pathname;
 
   const isPublicRoute = isStartsWith(pathname, PUBLIC_ROUTES);
-  const isAuthPage = isStartsWith(pathname, AUTH_PAGES);
   const isHomePage = pathname === '/';
+  const isAdminLoginPage = pathname === '/admin/login';
+  const isSignInPage = pathname === AUTH_PAGES.SIGN_IN;
 
   // Temporary: Redirect to /admin since the website currently serves as an admin panel.
   // Remove this redirect when the public-facing web platform is implemented.
   if (isHomePage) {
-    return NextResponse.redirect(new URL('/admin', request.url));
+    return NextResponse.redirect(new URL('/admin', baseUrl));
+  }
+
+  // Redirect /admin/login to /auth/sign-in to unify the login experience.
+  if (isAdminLoginPage) {
+    return NextResponse.redirect(new URL('/auth/sign-in', baseUrl));
   }
 
   const { response, user } = await updateSession(request);
 
   // If the user is not authenticated and the pathname is not in the
   // public route, homepage, and auth pages.
-  if (!user && !isHomePage && !isPublicRoute) {
+  if (!user && !isHomePage && !isPublicRoute && !isSignInPage) {
     const url = new URL('/auth/sign-in', baseUrl);
     url.searchParams.set(SEARCH_PARAMS_KEYS.REDIRECT, redirect);
     return NextResponse.redirect(url);
-  }
-
-  if (user && isAuthPage) {
-    return NextResponse.redirect(new URL('/', baseUrl));
   }
 
   return response;

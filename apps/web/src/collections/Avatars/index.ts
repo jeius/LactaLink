@@ -49,17 +49,21 @@ export const Avatars: CollectionConfig<'avatars'> = {
   ],
   upload: {
     adminThumbnail: 'thumbnail',
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    mimeTypes: ['image/*'],
     focalPoint: true,
+    displayPreview: true,
+    formatOptions: { format: 'webp' },
     imageSizes: [
       {
         name: 'thumbnail',
         width: 300,
+        withoutEnlargement: false,
       },
       {
         name: 'icon',
         width: 50,
         height: 50,
+        withoutEnlargement: false,
       },
     ],
   },
