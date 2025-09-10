@@ -51,10 +51,6 @@ async function handler(req: PayloadRequest) {
   }
 
   try {
-    // Dynamically import TensorFlow.js for Node.js
-    // Optional but improves performance significantly
-    // const _tf = await import('@tensorflow/tfjs-node');
-
     // Patch nodejs environment, we need to provide an implementation of
     // HTMLCanvasElement and HTMLImageElement
     // @ts-expect-error Expected type mismatch since we are monkey patching

@@ -33,7 +33,8 @@
         "PSGC_API_URL",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "GOOGLE_CLOUD_VISION_API_KEY"
       ]
     },
     "dev": {

@@ -38,7 +38,6 @@
     "@tailwindcss/postcss": "^4.1.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.80.7",
-    "@tensorflow/tfjs-node": "^4.22.0",
     "blurhash": "^2.0.5",
     "canvas": "^3.2.0",
     "class-variance-authority": "^0.7.1",
