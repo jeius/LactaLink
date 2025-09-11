@@ -23,6 +23,10 @@ export async function initServerApi() {
 }
 
 export function createSupabaseServerClient(cookieStore: ReadonlyRequestCookies) {
+  if (globalThis.window !== undefined) {
+    throw new Error('createSupabaseServerClient should not be called on the client-side');
+  }
+
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
