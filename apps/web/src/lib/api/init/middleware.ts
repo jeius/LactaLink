@@ -9,16 +9,15 @@ export async function updateSession(request: NextRequest) {
     // Let Supabase handle session automatically from cookies
     const {
       data: { user },
-      error,
     } = await supabase.auth.getUser();
 
-    if (error) {
-      console.warn('Session validation error:', error.message);
+    if (user) {
+      // If there is a user, we set the session variable for RLS
+      await supabase.rpc('set_auth_uid', { uid: user.id });
     }
 
     return { response, user };
   } catch (e) {
-    console.error('Middleware error:', e);
     return {
       user: null,
       response: NextResponse.next({
@@ -29,11 +28,7 @@ export async function updateSession(request: NextRequest) {
 }
 
 function createClient(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
@@ -42,9 +37,9 @@ function createClient(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({
-          request,
-        });
+
+        response = NextResponse.next({ request });
+
         cookiesToSet.forEach(({ name, value, options }) =>
           response.cookies.set(name, value, options)
         );

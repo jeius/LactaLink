@@ -1,13 +1,14 @@
-import { createClient } from '@/lib/utils/supabase/server';
-import { NextResponse } from 'next/server';
+import { createSupabaseServerClient } from '@/lib/api/init/server';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') || '/';
 
   if (code) {
-    const supabase = await createClient();
+    const supabase = createSupabaseServerClient(await cookies());
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}${next}`);
       }
     }
-    console.log(error);
+    console.warn(error);
   }
 
   // return the user to an error page with instructions

@@ -11,17 +11,18 @@ import { initApiClient } from '@lactalink/api';
 import { createBrowserClient } from '@supabase/ssr';
 
 export function initClientApi() {
-  const supabase = () =>
-    createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      cookieOptions: {
-        name: SESSION_NAME,
-      },
-    });
-
   initApiClient({
     apiUrl: API_URL,
-    supabase,
+    supabase: createSupabaseClient,
     environment: 'nextjs',
     bypassToken: VERCEL_BYPASS_TOKEN,
+  });
+}
+
+export function createSupabaseClient() {
+  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookieOptions: {
+      name: SESSION_NAME,
+    },
   });
 }

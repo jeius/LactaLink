@@ -1,10 +1,11 @@
+import { createSupabaseServerClient } from '@/lib/api/init/server';
 import { extractToken } from '@/lib/utils/extractToken';
-import { createClient } from '@/lib/utils/supabase/server';
 import { users } from '@db/drizzle/schema';
 import { extractErrorMessage } from '@lactalink/utilities/errors';
 import { eq } from '@payloadcms/db-postgres/drizzle';
 import { AuthError, SupabaseClient, User } from '@supabase/supabase-js';
 import status from 'http-status';
+import { cookies } from 'next/headers';
 import { AuthStrategyFunction, AuthStrategyResult, type CollectionSlug } from 'payload';
 
 export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
@@ -14,7 +15,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
 
   payload.logger.info('Authenticating...');
 
-  const supabase = await createClient();
+  const supabase = createSupabaseServerClient(await cookies());
 
   try {
     const sbUser = await getSupabaseAuthUser(supabase, headers);
@@ -48,8 +49,8 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     };
 
     return { user };
-  } catch (_) {
-    payload.logger.warn(extractErrorMessage(_));
+  } catch (err) {
+    payload.logger.warn(extractErrorMessage(err));
     return { user: null };
   }
 };
