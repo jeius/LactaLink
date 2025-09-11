@@ -114,7 +114,7 @@ export function ProfileAvatar({
     return (
       <UIAvatar.Avatar
         {...props}
-        style={[props.style, { backgroundColor: isLoading ? 'transparent' : undefined }]}
+        className={`${props.className} ${isLoading ? 'bg-transparent' : ''}`}
       >
         {isLoading ? (
           <Skeleton speed={4} variant="circular" />

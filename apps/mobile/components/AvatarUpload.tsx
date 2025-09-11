@@ -1,11 +1,10 @@
 import { Text } from '@/components/ui/text';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { Image } from '@/components/Image';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { MAX_IMAGE_SIZE } from '@/lib/constants';
+import { MAX_IMAGE_SIZE, QUERY_KEYS } from '@/lib/constants';
 import { ImageSchema, SetupProfileSchema } from '@lactalink/types';
 import { useQuery } from '@tanstack/react-query';
 import { CameraIcon, ImageIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
@@ -18,8 +17,11 @@ import { Pressable } from './ui/pressable';
 import { VStack } from './ui/vstack';
 
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
-import { showErrorToast } from '@/lib/utils/showErrorToast';
-import { sanitizeStringForFilename } from '@lactalink/utilities';
+import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
+import { transformImage } from '@/lib/utils/imageProcessors';
+import { extractErrorMessage, sanitizeStringForFilename } from '@lactalink/utilities';
+import { Directory, File, Paths } from 'expo-file-system/next';
+import { toast } from 'sonner-native';
 
 const containerStyle = tva({
   base: 'h-64 w-full',
@@ -58,24 +60,27 @@ export function AvatarUpload({
     mediaTypes: 'images',
   };
 
-  const localDir = FileSystem.documentDirectory!;
-
   const { data: googlePicture } = useQuery<ImageSchema | null>({
-    staleTime: 1000 * 60 * 20, // 20 minutes
-    queryKey: ['avatar', 'download', user?.picture],
+    enabled: !!user?.picture,
+    staleTime: Infinity,
+    queryKey: [...QUERY_KEYS.AUTH.USER, 'download', user?.picture],
     queryFn: async () => {
       if (!user || !user.picture) return null;
 
+      const destination = new Directory(Paths.cache, 'google-pictures');
+      const googlePict = await File.downloadFileAsync(user.picture, destination);
+
+      if (!googlePict.exists) return null;
+
       const namePrefix =
         (filenameProp && sanitizeStringForFilename(filenameProp)) || user.email.split('@')[0];
-      const filename = `${namePrefix}_avatar.jpeg`;
-      const fileUri = localDir + filename;
-      const downloaded = await FileSystem.downloadAsync(user.picture, fileUri);
+      const filename = `${namePrefix!}_avatar.jpeg`;
 
       return {
         filename: filename,
-        mimeType: downloaded.mimeType || 'image/jpeg',
-        url: downloaded.uri,
+        filesize: googlePict.size || undefined,
+        mimeType: googlePict.type || 'image/jpeg',
+        url: googlePict.uri,
         alt: 'Google Profile Picture',
       };
     },
@@ -87,53 +92,40 @@ export function AvatarUpload({
     }
   }, [googlePicture, onChange, value]);
 
-  async function transformImage(
+  async function handleTransform(
     pickedImage: ImagePicker.ImagePickerAsset
   ): Promise<ImageSchema | undefined> {
-    if (pickedImage.fileSize && pickedImage.fileSize > MAX_IMAGE_SIZE) {
-      showErrorToast('Selected image exceeds the 5MB size limit.');
-      return;
-    }
+    const transformedImage = await transformImage(pickedImage).catch((err) => {
+      toast.error(extractErrorMessage(err));
+      return null;
+    });
+
+    if (!transformedImage) return undefined;
 
     // Delete the previously stored image URI if it's a file stored locally
-    if (lastImageUri.current && lastImageUri.current.startsWith(localDir)) {
-      try {
-        await FileSystem.deleteAsync(lastImageUri.current, { idempotent: true });
-      } catch (error) {
-        console.warn('Failed to delete previous image:', error);
-      }
+    if (lastImageUri.current) {
+      deleteLocalFiles([lastImageUri.current]);
     }
 
     // Save the current URI for possible future deletion
-    lastImageUri.current = pickedImage.uri;
+    lastImageUri.current = transformedImage.url;
 
-    const type = pickedImage.fileName?.split('.').pop() || 'jpg';
-    const namePrefix =
-      (filenameProp && sanitizeStringForFilename(filenameProp)) ||
-      (user && sanitizeStringForFilename(user.email.split('@')[0] || '')) ||
-      'temp';
-    const filename = namePrefix + `_avatar.${type}`;
-
-    return {
-      filename,
-      mimeType: pickedImage.mimeType || 'image/jpeg',
-      filesize: pickedImage.fileSize,
-      width: pickedImage.width,
-      height: pickedImage.height,
-      url: pickedImage.uri,
-    };
+    return transformedImage;
   }
 
   async function handleChange(result: ImagePicker.ImagePickerResult) {
     if (!result.canceled && result.assets[0]) {
       showModal(false);
-      const avatar = await transformImage(result.assets[0]);
+      const avatar = await handleTransform(result.assets[0]);
       if (avatar) onChange?.(avatar);
     }
   }
 
   async function pickFromLibrary() {
-    const result = await ImagePicker.launchImageLibraryAsync(baseOptions);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      ...baseOptions,
+      defaultTab: 'photos',
+    });
     await handleChange(result);
   }
 
@@ -151,12 +143,8 @@ export function AvatarUpload({
   }
 
   async function handleRemove() {
-    if (lastImageUri.current && lastImageUri.current.startsWith(localDir)) {
-      try {
-        await FileSystem.deleteAsync(lastImageUri.current, { idempotent: true });
-      } catch (error) {
-        console.warn('Failed to delete removed image:', error);
-      }
+    if (lastImageUri.current) {
+      deleteLocalFiles([lastImageUri.current]);
     }
     lastImageUri.current = null;
     onChange?.(null);
@@ -178,11 +166,12 @@ export function AvatarUpload({
           }}
         >
           <Icon as={UploadCloudIcon} size="2xl" className="text-primary-500 h-16 w-16" />
-          <Text size={'md'} className="text-primary-500 font-JakartaMedium">
-            Tap to upload
+          <Text className="text-primary-500 font-JakartaMedium text-center">Tap to upload</Text>
+          <Text size="xs" className="text-typography-700 text-center">
+            PNG, JPG, WEBP
           </Text>
-          <Text size="2xs" className="text-typography-500">
-            PNG, JPG, WEBP (Max: 5mb)
+          <Text size="2xs" className="text-typography-500 text-center">
+            Image is compressed when size exceeds {MAX_IMAGE_SIZE / 1024 / 1024}MB
           </Text>
         </Pressable>
       )}
