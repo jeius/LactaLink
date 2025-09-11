@@ -43,7 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-image-picker',
     'expo-mail-composer',
-    'expo-sms',
     'react-native-compressor',
     [
       'expo-asset',

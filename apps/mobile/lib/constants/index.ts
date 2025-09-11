@@ -28,7 +28,8 @@ export const ANDROID_MAPS_API_KEY = AndroidKey;
 export const IOS_MAPS_API_KEY = IosKey;
 export const THEME_OVERRIDE = ThemeOverride;
 
-export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+export const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
+export const IMAGE_COMPRESSION_SIZE = 2048; // 2048px (max width or height)
 
 export const BACK_TOAST_ID = 'back-toast-id';
 export const AUTH_TOAST_ID = 'auth-toast-id';
