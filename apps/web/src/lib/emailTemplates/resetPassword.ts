@@ -1,0 +1,225 @@
+export function createResetPasswordEmailTemplate(token: string) {
+  return resetPasswordEmailTemplate.replace('{{ .Token }}', token);
+}
+
+const resetPasswordEmailTemplate = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
+<head>
+<title>Reset Your Password</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--[if !mso]>-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!--<![endif]-->
+<meta name="x-apple-disable-message-reformatting" content="" />
+<meta content="target-densitydpi=device-dpi" name="viewport" />
+<meta content="true" name="HandheldFriendly" />
+<meta content="width=device-width" name="viewport" />
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
+<style type="text/css">
+table {
+border-collapse: separate;
+table-layout: fixed;
+mso-table-lspace: 0pt;
+mso-table-rspace: 0pt
+}
+table td {
+border-collapse: collapse
+}
+.ExternalClass {
+width: 100%
+}
+.ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+line-height: 100%
+}
+body, a, li, p, h1, h2, h3 {
+-ms-text-size-adjust: 100%;
+-webkit-text-size-adjust: 100%;
+}
+html {
+-webkit-text-size-adjust: none !important
+}
+body {
+min-width: 100%;
+Margin: 0px;
+padding: 0px;
+}
+body, #innerTable {
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale
+}
+#innerTable img+div {
+display: none;
+display: none !important
+}
+img {
+Margin: 0;
+padding: 0;
+-ms-interpolation-mode: bicubic
+}
+h1, h2, h3, p, a {
+line-height: inherit;
+overflow-wrap: normal;
+white-space: normal;
+word-break: break-word
+}
+a {
+text-decoration: none
+}
+h1, h2, h3, p {
+min-width: 100%!important;
+width: 100%!important;
+max-width: 100%!important;
+display: inline-block!important;
+border: 0;
+padding: 0;
+margin: 0
+}
+a[x-apple-data-detectors] {
+color: inherit !important;
+text-decoration: none !important;
+font-size: inherit !important;
+font-family: inherit !important;
+font-weight: inherit !important;
+line-height: inherit !important
+}
+u + #body a {
+color: inherit;
+text-decoration: none;
+font-size: inherit;
+font-family: inherit;
+font-weight: inherit;
+line-height: inherit;
+}
+a[href^="mailto"],
+a[href^="tel"],
+a[href^="sms"] {
+color: inherit;
+text-decoration: none
+}
+</style>
+<style type="text/css">
+@media (min-width: 481px) {
+.hd { display: none!important }
+}
+</style>
+<style type="text/css">
+@media (max-width: 480px) {
+.hm { display: none!important }
+}
+</style>
+<style type="text/css">
+@media (max-width: 480px) {
+.t66,.t7,.t77,.t99{vertical-align:top!important}.t82{padding:0 0 22px!important}.t5,.t64{padding-right:30px!important}.t100,.t67,.t78,.t8{text-align:left!important}.t66,.t7,.t77{width:600px!important}.t5{border-top-left-radius:0!important;border-top-right-radius:0!important;padding-left:28px!important}.t64{border-bottom-right-radius:0!important;border-bottom-left-radius:0!important;padding-left:30px!important}.t21,.t27,.t51{mso-line-height-alt:24px!important;line-height:24px!important}.t16{font-size:30px!important}.t108,.t92{mso-line-height-alt:20px!important;line-height:20px!important}.t99{width:611px!important}.t91{font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif!important;font-weight:400!important;color:#524848!important}.t3{width:118px!important}.t22,.t52{font-size:14px!important}.t33{mso-line-height-alt:18px!important;line-height:18px!important}.t28{font-size:16px!important;mso-text-raise:2px!important}.t34{font-size:32px!important;letter-spacing:6px!important;mso-text-raise:-3px!important}.t58{font-size:18px!important}
+}
+</style>
+<!--[if !mso]>-->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Albert+Sans:wght@500;600&amp;display=swap" rel="stylesheet" type="text/css" />
+<!--<![endif]-->
+<!--[if mso]>
+<xml>
+<o:OfficeDocumentSettings>
+<o:AllowPNG/>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
+</head>
+<body id=body class=t111 style="min-width:100%;Margin:0px;padding:0px;background-color:#E0E0E0;"><div style="display:none; font-size:1px; color:#333333; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">Here is your OTP Verification Code: {{ .Token }}&#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &shy; &nbsp;</div><div class=t110 style="background-color:#E0E0E0;"><table role=presentation width=100% cellpadding=0 cellspacing=0 border=0 align=center><tr><td class=t109 style="font-size:0;line-height:0;mso-line-height-rule:exactly;background-color:#E0E0E0;" valign=top align=center>
+<!--[if mso]>
+<v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false">
+<v:fill color=#E0E0E0/>
+</v:background>
+<![endif]-->
+<table role=presentation width=100% cellpadding=0 cellspacing=0 border=0 align=center id=innerTable><tr><td align=center>
+<table class=t85 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=566 class=t84 style="width:566px;">
+<table class=t83 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t82 style="padding:50px 10px 31px 10px;"><div class=t81 style="width:100%;text-align:left;"><div class=t80 style="display:inline-block;"><table class=t79 role=presentation cellpadding=0 cellspacing=0 align=left valign=top>
+<tr class=t78><td></td><td class=t77 width=546 valign=top>
+<table role=presentation width=100% cellpadding=0 cellspacing=0 class=t76 style="width:100%;"><tr><td class=t75 style="background-color:transparent;"><table role=presentation width=100% cellpadding=0 cellspacing=0 style="width:100% !important;"><tr><td align=center>
+<table class=t15 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=546 class=t14 style="width:600px;">
+<table class=t13 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t12><div class=t11 style="width:100%;text-align:left;"><div class=t10 style="display:inline-block;"><table class=t9 role=presentation cellpadding=0 cellspacing=0 align=left valign=top>
+<tr class=t8><td></td><td class=t7 width=546 valign=top>
+<table role=presentation width=100% cellpadding=0 cellspacing=0 class=t6 style="width:100%;"><tr><td class=t5 style="overflow:hidden;background-color:#272625;padding:0 50px 0 42px;border-radius:18px 18px 0 0;"><table role=presentation width=100% cellpadding=0 cellspacing=0 style="width:100% !important;"><tr><td align=left>
+<table class=t4 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=135 class=t3 style="width:135px;">
+<table class=t2 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t1><div style="font-size:0px;"><img class=t0 style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width=135 height=135 alt="LactaLink logo icon" src="https://www.lactalink.com/images/logo_dark.png"/></div></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td>
+<td></td></tr>
+</table></div></div></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td align=center>
+<table class=t74 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=546 class=t73 style="width:600px;">
+<table class=t72 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t71><div class=t70 style="width:100%;text-align:left;"><div class=t69 style="display:inline-block;"><table class=t68 role=presentation cellpadding=0 cellspacing=0 align=left valign=top>
+<tr class=t67><td></td><td class=t66 width=546 valign=top>
+<table role=presentation width=100% cellpadding=0 cellspacing=0 class=t65 style="width:100%;"><tr><td class=t64 style="overflow:hidden;background-color:#F8F8F8;padding:50px 50px 50px 50px;border-radius:0 0 18px 18px;"><table role=presentation width=100% cellpadding=0 cellspacing=0 style="width:100% !important;"><tr><td align=center>
+<table class=t20 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=446 class=t19 style="width:671px;">
+<table class=t18 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t17><h1 class=t16 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:41px;font-weight:700;font-style:normal;font-size:32px;text-decoration:none;text-transform:none;letter-spacing:-1.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:3px;">Forgot Your Password?&nbsp;</h1></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t21 style="mso-line-height-rule:exactly;mso-line-height-alt:32px;line-height:32px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t26 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t25 style="width:563px;">
+<table class=t24 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t23><p class=t22 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:400;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">We received a request to reset the password for your account. Use the OTP code below to set your new password.</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t27 style="mso-line-height-rule:exactly;mso-line-height-alt:32px;line-height:32px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t32 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t31 style="width:563px;">
+<table class=t30 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t29><p class=t28 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:600;font-style:normal;font-size:18px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:1px;">Here is your One Time Password (OTP) code:</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t33 style="mso-line-height-rule:exactly;mso-line-height-alt:20px;line-height:20px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t38 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t37 style="width:563px;">
+<table class=t36 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t35 style="overflow:hidden;background-color:#FE828C;padding:24px 24px 24px 24px;border-radius:10px 10px 10px 10px;"><p class=t34 style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:600;font-style:normal;font-size:36px;text-decoration:none;text-transform:none;letter-spacing:14px;direction:ltr;color:#361517;text-align:center;mso-line-height-rule:exactly;mso-text-raise:-4px;">{{ .Token }}</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t39 style="mso-line-height-rule:exactly;mso-line-height-alt:28px;line-height:28px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t44 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t43 style="width:563px;">
+<table class=t42 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t41><p class=t40 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:400;font-style:normal;font-size:14px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">This code is valid for 5 minutes. Please enter it promptly to proceed resetting your password.</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t45 style="mso-line-height-rule:exactly;mso-line-height-alt:24px;line-height:24px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t50 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t49 style="width:563px;">
+<table class=t48 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t47><p class=t46 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:400;font-style:normal;font-size:14px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#524848;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">If you didn’t request a password reset, please ignore this email or contact support if you’re concerned about your account’s security.</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t51 style="mso-line-height-rule:exactly;mso-line-height-alt:36px;line-height:36px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t56 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t55 style="width:563px;">
+<table class=t54 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t53><p class=t52 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:400;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">With love and gratitude,</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t57 style="mso-line-height-rule:exactly;mso-line-height-alt:8px;line-height:8px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=left>
+<table class=t62 role=presentation cellpadding=0 cellspacing=0 style="Margin-right:auto;"><tr><td width=446 class=t61 style="width:563px;">
+<table class=t60 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t59><p class=t58 style="margin:0;Margin:0;font-family:Plus Jakarta Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:400;font-style:normal;font-size:20px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#361517;text-align:left;mso-line-height-rule:exactly;mso-text-raise:1px;">The LactaLink Team&nbsp;</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t63 style="mso-line-height-rule:exactly;mso-line-height-alt:24px;line-height:24px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr></table></td></tr></table>
+</td>
+<td></td></tr>
+</table></div></div></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td>
+<td></td></tr>
+</table></div></div></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td align=center>
+<table class=t107 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=566 class=t106 style="width:566px;">
+<table class=t105 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t104><div class=t103 style="width:100%;text-align:left;"><div class=t102 style="display:inline-block;"><table class=t101 role=presentation cellpadding=0 cellspacing=0 align=left valign=top>
+<tr class=t100><td></td><td class=t99 width=566 valign=top>
+<table role=presentation width=100% cellpadding=0 cellspacing=0 class=t98 style="width:100%;"><tr><td class=t97 style="padding:0 50px 0 50px;"><table role=presentation width=100% cellpadding=0 cellspacing=0 style="width:100% !important;"><tr><td align=center>
+<table class=t90 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=114 class=t89 style="width:114px;">
+<table class=t88 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t87><div style="font-size:0px;"><img class=t86 style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width=114 height=86.30634146341464 alt="LactaLink Logo" src="https://lactalink.com/images/logo.png"/></div></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t92 style="mso-line-height-rule:exactly;mso-line-height-alt:16px;line-height:16px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align=center>
+<table class=t96 role=presentation cellpadding=0 cellspacing=0 style="Margin-left:auto;Margin-right:auto;"><tr><td width=466 class=t95 style="width:600px;">
+<table class=t94 role=presentation cellpadding=0 cellspacing=0 width=100% style="width:100%;"><tr><td class=t93><p class=t91 style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:12px;text-decoration:none;text-transform:none;direction:ltr;color:#888888;text-align:center;mso-line-height-rule:exactly;mso-text-raise:3px;">© 2025 LactaLink Philippines. All Rights Reserved<br/></p></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td>
+<td></td></tr>
+</table></div></div></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class=t108 style="mso-line-height-rule:exactly;mso-line-height-alt:50px;line-height:50px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr></table></td></tr></table></div>
+<!--[if !mso]>-->
+<div itemscope itemtype="http://schema.org/EmailMessage"><meta itemprop="subjectLine" content="Reset Your Password" /></div>
+<!--<![endif]-->
+<div class="gmail-fix" style="display: none; white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
+</body>
+</html>`;
