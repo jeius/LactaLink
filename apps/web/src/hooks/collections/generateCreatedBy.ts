@@ -7,10 +7,6 @@ export const generateCreatedBy: CollectionBeforeChangeHook<CollectionWithCreated
   data,
 }) => {
   if (operation !== 'create' || data.createdBy || !req.user) return data;
-
-  const user = req.user;
-
-  data.createdBy = user.id;
-
+  data.createdBy = req.user;
   return data;
 };

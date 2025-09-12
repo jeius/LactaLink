@@ -76,6 +76,7 @@ export const enum_identities_id_type = pgEnum('enum_identities_id_type', [
 ]);
 export const enum_identities_status = pgEnum('enum_identities_status', [
   'PENDING',
+  'REQUIRED_ACTION',
   'APPROVED',
   'REJECTED',
 ]);

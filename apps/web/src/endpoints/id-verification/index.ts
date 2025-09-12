@@ -1,5 +1,6 @@
+import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import { getServerSideURL } from '@/lib/utils/getURL';
+import { getServerSideURL, validateUrl } from '@/lib/utils/getURL';
 import { IDVerficationTask } from '@lactalink/types';
 import { extractErrorMessage, extractErrorStatus, mergeHeaders } from '@lactalink/utilities';
 import { Canvas, Image, ImageData } from 'canvas';
@@ -13,7 +14,7 @@ import {
 } from 'face-api.js';
 import status from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
-import { createImageFromFile, validateImage } from './helpers';
+import { createImageFromResponse, validateImage } from './helpers';
 
 const BASE_PATH = `${getServerSideURL()}/ai-models`;
 const RECOGNITION_MODEL = `${BASE_PATH}/face_recognition`;
@@ -38,8 +39,8 @@ async function handler(req: PayloadRequest) {
     );
   }
 
-  const { queryImageUrl, refImageUrl }: Omit<IDVerficationTask['input'], 'identityID'> =
-    (await req.json?.()) || {};
+  const body: Omit<IDVerficationTask['input'], 'identityID'> | undefined = await req.json?.();
+  const { queryImageUrl, refImageUrl } = body || {};
 
   const missingFields: string[] = [];
 
@@ -47,12 +48,15 @@ async function handler(req: PayloadRequest) {
   if (!refImageUrl) missingFields.push('refImageUrl');
 
   if (missingFields.length) {
-    throw new APIError(
-      `Missing required field(s): ${missingFields.join(', ')}`,
-      status.BAD_REQUEST,
-      null,
-      true
-    );
+    throw createBadRequestError(`Missing required field(s): ${missingFields.join(', ')}`);
+  }
+
+  if (!validateUrl(queryImageUrl)) {
+    throw createBadRequestError('Invalid queryImageUrl');
+  }
+
+  if (!validateUrl(refImageUrl)) {
+    throw createBadRequestError('Invalid refImageUrl');
   }
 
   // Function to include auth headers in fetch requests made by face-api.js
@@ -61,6 +65,7 @@ async function handler(req: PayloadRequest) {
     return fetch(url, { ...init, headers });
   }
 
+  // Fetch the images
   const [refImageRes, queryImageRes] = await Promise.all([
     modifiedFetch(refImageUrl, { method: 'GET' }),
     modifiedFetch(queryImageUrl, { method: 'GET' }),
@@ -72,18 +77,10 @@ async function handler(req: PayloadRequest) {
   if (!queryImageRes.ok) failedRequests.push('query image');
 
   if (failedRequests.length) {
-    throw new APIError(
-      `Failed to fetch the following image(s): ${failedRequests.join(', ')}`,
-      status.BAD_REQUEST,
-      null,
-      true
+    throw createBadRequestError(
+      `Failed to fetch the following image(s): ${failedRequests.join(', ')}`
     );
   }
-
-  const [refImageBlob, queryImageBlob] = await Promise.all([
-    refImageRes.blob(),
-    queryImageRes.blob(),
-  ]);
 
   try {
     // Patch nodejs environment, we need to provide an implementation of
@@ -98,12 +95,13 @@ async function handler(req: PayloadRequest) {
       nets.faceRecognitionNet.load(RECOGNITION_MODEL),
     ]);
 
+    // Create images from responses
     const [refImage, queryImage] = await Promise.all([
-      createImageFromFile(refImageBlob),
-      createImageFromFile(queryImageBlob),
+      createImageFromResponse(refImageRes),
+      createImageFromResponse(queryImageRes),
     ]);
 
-    // Process inputs
+    // Process and validate inputs
     const [refInput, queryInput] = await Promise.all([
       validateImage(refImage),
       validateImage(queryImage),
@@ -130,11 +128,11 @@ async function handler(req: PayloadRequest) {
     ]);
 
     if (!refFaceData) {
-      throw new APIError('No face detected in reference image', status.BAD_REQUEST, null, true);
+      throw createBadRequestError('No face detected in reference image');
     }
 
     if (!queryFaceData) {
-      throw new APIError('No face detected in government ID image', status.BAD_REQUEST, null, true);
+      throw createBadRequestError('No face detected in government ID image');
     }
 
     refFaceData = resizeResults(refFaceData, refImage);
@@ -153,12 +151,7 @@ async function handler(req: PayloadRequest) {
       distance: bestMatch.distance,
     };
   } catch (error) {
-    throw new APIError(
-      extractErrorMessage(error) || 'Internal Server Error',
-      extractErrorStatus(error) || status.INTERNAL_SERVER_ERROR,
-      null,
-      true
-    );
+    throw new APIError(extractErrorMessage(error), extractErrorStatus(error), null, true);
   }
 }
 

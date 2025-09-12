@@ -54,6 +54,10 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, './lib/types/payload-types.ts'),
   },
+  logger: {
+    level: process.env.NODE_ENV === 'production' ? 'error' : 'trace',
+    options: { enabled: true },
+  },
   editor: lexicalEditor({
     features: ({ rootFeatures }) => {
       return [

@@ -6,11 +6,11 @@ export const generateUpdatedBy: CollectionBeforeChangeHook<Identity> = ({
   operation,
   data,
 }) => {
-  if (operation !== 'update' || data.updatedAt || !req.user) return data;
+  if (operation !== 'update' || data.updatedBy || !req.user) return data;
 
   const user = req.user;
 
-  data.updatedAt = user.id;
+  data.updatedBy = user.id;
 
   return data;
 };

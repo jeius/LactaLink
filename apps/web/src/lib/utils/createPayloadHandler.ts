@@ -54,8 +54,9 @@ interface HandlerOptions<T = unknown> {
  *
  * @description
  * This function wraps a custom handler with additional functionality:
+ * - If `requireAuth` is `true`, it checks if the user is authenticated and throws an error if not.
  * - If `requireAdmin` is `true`, it checks if the user is an admin and throws an error if not.
- * - Executes the custom handler and logs the elapsed time for the operation.
+ * - Executes the custom handler.
  * - Logs success or error messages and returns a standardized JSON response.
  * - Handles errors gracefully, including `APIError` instances.
  */
@@ -66,21 +67,16 @@ export function createPayloadHandler<T>({
   successMessage,
 }: HandlerOptions<T>): PayloadHandler {
   return async (req) => {
-    const { user, payload } = req;
+    const { user, payload, t } = req;
 
     try {
       if (requireAuth && !user) {
-        throw new APIError(
-          'Unauthorized: User not authenticated.',
-          HttpStatus.UNAUTHORIZED,
-          null,
-          true
-        );
+        throw new APIError(t('error:unauthorized'), HttpStatus.UNAUTHORIZED, null, true);
       }
 
       // Check if the operation requires admin privileges and validate the user.
       if (requireAuth && user && requireAdmin && user.role !== 'ADMIN') {
-        throw new APIError('Unauthorized: Only admin users allowed.', HttpStatus.UNAUTHORIZED);
+        throw new APIError(t('error:unauthorizedAdmin'), HttpStatus.UNAUTHORIZED);
       }
 
       // Execute the custom handler and capture the result.
@@ -96,7 +92,7 @@ export function createPayloadHandler<T>({
             : 'Operation completed successfully.';
 
       // Log the success message and elapsed time.
-      if (message) payload.logger.info(`> ${message}`);
+      if (message) payload.logger.info(`${message}`);
 
       // Exclude data in the response if its null or undefined;
       if (data === null || data === undefined) {
@@ -113,7 +109,7 @@ export function createPayloadHandler<T>({
       const status: number = extractErrorStatus(error);
       const res: ApiFetchResponse<T> = { message, error, status };
 
-      payload.logger.error(error, `> API Error: ${message}`);
+      payload.logger.error(error, `API Error: ${message}`);
 
       // Return the error response.
       return Response.json(res, { status });

@@ -73,6 +73,7 @@ export const Identities: CollectionConfig<'identities'> = {
           admin: {
             description: 'Image of the submitted ID (e.g., passport, driver’s license).',
             width: '50%',
+            readOnly: true,
           },
         },
         {
@@ -84,6 +85,7 @@ export const Identities: CollectionConfig<'identities'> = {
           admin: {
             description: 'Clear image of the user holding the ID next to their face.',
             width: '50%',
+            readOnly: true,
           },
         },
       ],

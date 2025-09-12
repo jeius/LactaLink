@@ -7,10 +7,6 @@ export const generateOwner: CollectionBeforeChangeHook<CollectionWithOwner> = ({
   data,
 }) => {
   if (operation !== 'create' || data.owner || !req.user) return data;
-
-  const user = req.user;
-
-  data.owner = user.id;
-
+  data.owner = req.user;
   return data;
 };

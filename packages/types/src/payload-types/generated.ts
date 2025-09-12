@@ -256,9 +256,7 @@ export interface Config {
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
-    'notification-categories':
-      | NotificationCategoriesSelect<false>
-      | NotificationCategoriesSelect<true>;
+    'notification-categories': NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'notification-types': NotificationTypesSelect<false> | NotificationTypesSelect<true>;
@@ -268,9 +266,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
-    'payload-locked-documents':
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -924,15 +920,7 @@ export interface DeliveryPreference {
   /**
    * Days available for pickup, delivery, or meet-up.
    */
-  availableDays: (
-    | 'MONDAY'
-    | 'TUESDAY'
-    | 'WEDNESDAY'
-    | 'THURSDAY'
-    | 'FRIDAY'
-    | 'SATURDAY'
-    | 'SUNDAY'
-  )[];
+  availableDays: ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[];
   donations?: {
     docs?: (string | Donation)[];
     hasNextPage?: boolean;
@@ -1440,17 +1428,7 @@ export interface NotificationCategory {
    * Color used for notifications in this category. Applies to icons, headers, and highlights in the UI.
    */
   color?:
-    | (
-        | 'PRIMARY'
-        | 'SECONDARY'
-        | 'TERTIARY'
-        | 'POSITIVE'
-        | 'WARNING'
-        | 'DANGER'
-        | 'INFO'
-        | 'MUTED'
-        | 'DEFAULT'
-      )
+    | ('PRIMARY' | 'SECONDARY' | 'TERTIARY' | 'POSITIVE' | 'WARNING' | 'DANGER' | 'INFO' | 'MUTED' | 'DEFAULT')
     | null;
   /**
    * Controls the order categories appear in lists and dropdowns. Lower numbers appear first.
@@ -2891,6 +2869,7 @@ export interface IDVerficationTask {
     refImageUrl: string;
     queryImageUrl: string;
     identityID: string;
+    email: string;
   };
   output: {
     identity: string | Identity;
@@ -2902,4 +2881,9 @@ export interface IDVerficationTask {
  */
 export interface Auth {
   [k: string]: unknown;
+}
+
+
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
 }

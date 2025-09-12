@@ -1,6 +1,12 @@
+import isString from 'lodash/isString';
 import canUseDOM from './canUseDOM';
 
-export const getClientSideURL = () => {
+const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
+export const getClientSideURL = (): string | 'http://localhost:3000' => {
+  let url = serverUrl;
+
   if (canUseDOM) {
     const protocol = window.location.protocol;
     const domain = window.location.hostname;
@@ -8,26 +14,35 @@ export const getClientSideURL = () => {
 
     const origin = window.location.origin;
 
-    return origin || `${protocol}//${domain}${port ? `:${port}` : ''}`;
-  }
-
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-
-  return process.env.NEXT_PUBLIC_SERVER_URL || '';
-};
-
-export const getServerSideURL = () => {
-  let url = process.env.NEXT_PUBLIC_SERVER_URL;
-
-  if (!url && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-
-  if (!url) {
+    url = origin || `${protocol}//${domain}${port ? `:${port}` : ''}`;
+  } else if (!url && vercelProdUrl) {
+    url = `https://${vercelProdUrl}`;
+  } else if (!url) {
     url = 'http://localhost:3000';
   }
 
   return url;
 };
+
+export const getServerSideURL = (): string | 'http://localhost:3000' => {
+  let url = serverUrl;
+
+  if (!url && vercelProdUrl) {
+    url = `https://${vercelProdUrl}`;
+  } else if (!url) {
+    url = 'http://localhost:3000';
+  }
+
+  return url;
+};
+
+export function validateUrl(url: unknown): url is string {
+  try {
+    if (url === null || url === undefined || !isString(url) || url.trim() === '') return false;
+
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol.includes('http:') || parsedUrl.protocol.includes('https:');
+  } catch (e) {
+    return false;
+  }
+}

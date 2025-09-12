@@ -2869,6 +2869,7 @@ export interface IDVerficationTask {
     refImageUrl: string;
     queryImageUrl: string;
     identityID: string;
+    email: string;
   };
   output: {
     identity: string | Identity;

@@ -1,6 +1,6 @@
 import { JOB_QUEUES } from '@/lib/constants/jobs';
 import { Identity } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
@@ -8,7 +8,7 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
   operation,
   doc,
 }) => {
-  if (operation !== 'create') return doc;
+  if (operation !== 'create' || !doc.owner) return doc;
 
   const findByID = (id: string) =>
     req.payload.findByID({
@@ -17,6 +17,7 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
       req,
       depth: 0,
       select: { url: true },
+      overrideAccess: true,
     });
 
   const [{ url: queryImageUrl }, { url: refImageUrl }] = await Promise.all([
@@ -31,10 +32,21 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
     return doc;
   }
 
+  const ownerDoc =
+    extractCollection(doc.owner) ||
+    (await req.payload.findByID({
+      collection: 'users',
+      id: extractID(doc.owner),
+      req,
+      depth: 0,
+      overrideAccess: true,
+      select: { email: true },
+    }));
+
   // Queue the ID verification job
   const job = await req.payload.jobs.queue({
     task: 'id-verification',
-    input: { queryImageUrl, refImageUrl, identityID: doc.id },
+    input: { queryImageUrl, refImageUrl, identityID: doc.id, email: ownerDoc.email },
     queue: JOB_QUEUES['id-verification'],
     req,
   });
