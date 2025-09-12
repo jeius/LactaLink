@@ -1,8 +1,7 @@
-'use server';
-
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities';
+import { IDVerficationTask } from '@lactalink/types';
+import { extractErrorMessage, extractErrorStatus, mergeHeaders } from '@lactalink/utilities';
 import { Canvas, Image, ImageData } from 'canvas';
 import {
   detectSingleFace,
@@ -12,7 +11,6 @@ import {
   resizeResults,
   TinyFaceDetectorOptions,
 } from 'face-api.js';
-import { readFile } from 'fs';
 import status from 'http-status';
 import { APIError, PayloadRequest } from 'payload';
 import { createImageFromFile, validateImage } from './helpers';
@@ -25,36 +23,73 @@ const LANDMARK_MODEL = `${BASE_PATH}/face_landmark_68_tiny`;
 const MAX_DESCRIPTOR_DISTANCE = 0.5;
 
 async function handler(req: PayloadRequest) {
-  const { method } = req;
+  const { method, headers } = req;
 
   if (method !== 'POST') {
     throw new APIError('HTTP Method Not Allowed', status.METHOD_NOT_ALLOWED, null, true);
   }
 
-  const formData = await req.formData?.();
-  const govIDFile = formData?.get('govID');
-  const faceImageFile = formData?.get('face');
-
-  // Ensure files are provided
-  if (!govIDFile || !faceImageFile) {
+  if (!headers.get('content-type')?.includes('application/json')) {
     throw new APIError(
-      'Missing required files: govID and faceImage',
+      'Content-Type must be application/json',
+      status.UNSUPPORTED_MEDIA_TYPE,
+      null,
+      true
+    );
+  }
+
+  const { queryImageUrl, refImageUrl }: Omit<IDVerficationTask['input'], 'identityID'> =
+    (await req.json?.()) || {};
+
+  const missingFields: string[] = [];
+
+  if (!queryImageUrl) missingFields.push('queryImageUrl');
+  if (!refImageUrl) missingFields.push('refImageUrl');
+
+  if (missingFields.length) {
+    throw new APIError(
+      `Missing required field(s): ${missingFields.join(', ')}`,
       status.BAD_REQUEST,
       null,
       true
     );
   }
 
-  // Check if the entries are File objects
-  if (!(govIDFile instanceof File) || !(faceImageFile instanceof File)) {
-    throw new APIError('Invalid file uploads', status.BAD_REQUEST, null, true);
+  // Function to include auth headers in fetch requests made by face-api.js
+  function modifiedFetch(url: string | URL, init?: RequestInit) {
+    const headers = mergeHeaders(req.headers, new Headers(init?.headers));
+    return fetch(url, { ...init, headers });
   }
+
+  const [refImageRes, queryImageRes] = await Promise.all([
+    modifiedFetch(refImageUrl, { method: 'GET' }),
+    modifiedFetch(queryImageUrl, { method: 'GET' }),
+  ]);
+
+  const failedRequests: string[] = [];
+
+  if (!refImageRes.ok) failedRequests.push('reference image');
+  if (!queryImageRes.ok) failedRequests.push('query image');
+
+  if (failedRequests.length) {
+    throw new APIError(
+      `Failed to fetch the following image(s): ${failedRequests.join(', ')}`,
+      status.BAD_REQUEST,
+      null,
+      true
+    );
+  }
+
+  const [refImageBlob, queryImageBlob] = await Promise.all([
+    refImageRes.blob(),
+    queryImageRes.blob(),
+  ]);
 
   try {
     // Patch nodejs environment, we need to provide an implementation of
     // HTMLCanvasElement and HTMLImageElement
     // @ts-expect-error Expected type mismatch since we are monkey patching
-    faceApiEnv.monkeyPatch({ Canvas, Image, ImageData, readFile });
+    faceApiEnv.monkeyPatch({ Canvas, Image, ImageData, fetch: modifiedFetch });
 
     // Load models
     await Promise.all([
@@ -64,8 +99,8 @@ async function handler(req: PayloadRequest) {
     ]);
 
     const [refImage, queryImage] = await Promise.all([
-      createImageFromFile(faceImageFile),
-      createImageFromFile(govIDFile),
+      createImageFromFile(refImageBlob),
+      createImageFromFile(queryImageBlob),
     ]);
 
     // Process inputs

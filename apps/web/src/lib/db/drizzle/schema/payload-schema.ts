@@ -62,12 +62,23 @@ export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
   'PRIVATE',
   'OTHER',
 ]);
+export const enum_identities_id_type = pgEnum('enum_identities_id_type', [
+  'PASSPORT',
+  'DRIVER_LICENSE',
+  'UMID',
+  'SSS',
+  'POSTAL_ID',
+  'TIN',
+  'PHILHEALTH',
+  'PHILID',
+  'PRC',
+  'OTHERS',
+]);
 export const enum_identities_status = pgEnum('enum_identities_status', [
   'PENDING',
   'APPROVED',
   'REJECTED',
 ]);
-export const enum_identities_id_type = pgEnum('enum_identities_id_type', []);
 export const enum_individuals_gender = pgEnum('enum_individuals_gender', [
   'MALE',
   'FEMALE',
@@ -176,6 +187,18 @@ export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'CANCELLED',
 ]);
 export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
+export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', [
+  'inline',
+  'id-verification',
+]);
+export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', [
+  'failed',
+  'succeeded',
+]);
+export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug', [
+  'inline',
+  'id-verification',
+]);
 
 export const addresses = pgTable(
   'addresses',
@@ -600,8 +623,39 @@ export const identities = pgTable(
   'identities',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedBy: uuid('updated_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    idType: enum_identities_id_type('id_type').notNull(),
     status: enum_identities_status('status').notNull().default('PENDING'),
-    idType: enum_identities_id_type('id_type'),
+    idImage: uuid('id_image_id')
+      .notNull()
+      .references(() => identity_images.id, {
+        onDelete: 'set null',
+      }),
+    refImage: uuid('ref_image_id')
+      .notNull()
+      .references(() => identity_images.id, {
+        onDelete: 'set null',
+      }),
+    givenName: varchar('given_name').notNull(),
+    middleName: varchar('middle_name'),
+    familyName: varchar('family_name').notNull(),
+    suffix: varchar('suffix'),
+    address: varchar('address').notNull(),
+    idNumber: varchar('id_number').notNull(),
+    issueDate: timestamp('issue_date', { mode: 'string', withTimezone: true, precision: 3 }),
+    expirationDate: timestamp('expiration_date', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -610,6 +664,11 @@ export const identities = pgTable(
       .notNull(),
   },
   (columns) => ({
+    identities_created_by_idx: index('identities_created_by_idx').on(columns.createdBy),
+    identities_owner_idx: index('identities_owner_idx').on(columns.owner),
+    identities_updated_by_idx: index('identities_updated_by_idx').on(columns.updatedBy),
+    identities_id_image_idx: index('identities_id_image_idx').on(columns.idImage),
+    identities_ref_image_idx: index('identities_ref_image_idx').on(columns.refImage),
     identities_updated_at_idx: index('identities_updated_at_idx').on(columns.updatedAt),
     identities_created_at_idx: index('identities_created_at_idx').on(columns.createdAt),
   })
@@ -1879,6 +1938,73 @@ export const transactions_rels = pgTable(
   })
 );
 
+export const payload_jobs_log = pgTable(
+  'payload_jobs_log',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    executedAt: timestamp('executed_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    completedAt: timestamp('completed_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    taskSlug: enum_payload_jobs_log_task_slug('task_slug').notNull(),
+    taskID: varchar('task_i_d').notNull(),
+    input: jsonb('input'),
+    output: jsonb('output'),
+    state: enum_payload_jobs_log_state('state').notNull(),
+    error: jsonb('error'),
+  },
+  (columns) => ({
+    _orderIdx: index('payload_jobs_log_order_idx').on(columns._order),
+    _parentIDIdx: index('payload_jobs_log_parent_id_idx').on(columns._parentID),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [payload_jobs.id],
+      name: 'payload_jobs_log_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
+export const payload_jobs = pgTable(
+  'payload_jobs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    input: jsonb('input'),
+    completedAt: timestamp('completed_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    totalTried: numeric('total_tried').default('0'),
+    hasError: boolean('has_error').default(false),
+    error: jsonb('error'),
+    taskSlug: enum_payload_jobs_task_slug('task_slug'),
+    queue: varchar('queue').default('default'),
+    waitUntil: timestamp('wait_until', { mode: 'string', withTimezone: true, precision: 3 }),
+    processing: boolean('processing').default(false),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    payload_jobs_completed_at_idx: index('payload_jobs_completed_at_idx').on(columns.completedAt),
+    payload_jobs_total_tried_idx: index('payload_jobs_total_tried_idx').on(columns.totalTried),
+    payload_jobs_has_error_idx: index('payload_jobs_has_error_idx').on(columns.hasError),
+    payload_jobs_task_slug_idx: index('payload_jobs_task_slug_idx').on(columns.taskSlug),
+    payload_jobs_queue_idx: index('payload_jobs_queue_idx').on(columns.queue),
+    payload_jobs_wait_until_idx: index('payload_jobs_wait_until_idx').on(columns.waitUntil),
+    payload_jobs_processing_idx: index('payload_jobs_processing_idx').on(columns.processing),
+    payload_jobs_updated_at_idx: index('payload_jobs_updated_at_idx').on(columns.updatedAt),
+    payload_jobs_created_at_idx: index('payload_jobs_created_at_idx').on(columns.createdAt),
+  })
+);
+
 export const payload_locked_documents = pgTable(
   'payload_locked_documents',
   {
@@ -1936,6 +2062,7 @@ export const payload_locked_documents_rels = pgTable(
     requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
     transactionsID: uuid('transactions_id'),
+    'payload-jobsID': uuid('payload_jobs_id'),
   },
   (columns) => ({
     order: index('payload_locked_documents_rels_order_idx').on(columns.order),
@@ -2016,6 +2143,9 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_transactions_id_idx: index(
       'payload_locked_documents_rels_transactions_id_idx'
     ).on(columns.transactionsID),
+    payload_locked_documents_rels_payload_jobs_id_idx: index(
+      'payload_locked_documents_rels_payload_jobs_id_idx'
+    ).on(columns['payload-jobsID']),
     parentFk: foreignKey({
       columns: [columns['parent']],
       foreignColumns: [payload_locked_documents.id],
@@ -2145,6 +2275,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['transactionsID']],
       foreignColumns: [transactions.id],
       name: 'payload_locked_documents_rels_transactions_fk',
+    }).onDelete('cascade'),
+    'payload-jobsIdFk': foreignKey({
+      columns: [columns['payload-jobsID']],
+      foreignColumns: [payload_jobs.id],
+      name: 'payload_locked_documents_rels_payload_jobs_fk',
     }).onDelete('cascade'),
   })
 );
@@ -2410,7 +2545,33 @@ export const relations_hospitals = relations(hospitals, ({ one }) => ({
     relationName: 'avatar',
   }),
 }));
-export const relations_identities = relations(identities, () => ({}));
+export const relations_identities = relations(identities, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [identities.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [identities.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  updatedBy: one(users, {
+    fields: [identities.updatedBy],
+    references: [users.id],
+    relationName: 'updatedBy',
+  }),
+  idImage: one(identity_images, {
+    fields: [identities.idImage],
+    references: [identity_images.id],
+    relationName: 'idImage',
+  }),
+  refImage: one(identity_images, {
+    fields: [identities.refImage],
+    references: [identity_images.id],
+    relationName: 'refImage',
+  }),
+}));
 export const relations_identity_images = relations(identity_images, ({ one }) => ({
   createdBy: one(users, {
     fields: [identity_images.createdBy],
@@ -2877,6 +3038,18 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     relationName: '_rels',
   }),
 }));
+export const relations_payload_jobs_log = relations(payload_jobs_log, ({ one }) => ({
+  _parentID: one(payload_jobs, {
+    fields: [payload_jobs_log._parentID],
+    references: [payload_jobs.id],
+    relationName: 'log',
+  }),
+}));
+export const relations_payload_jobs = relations(payload_jobs, ({ many }) => ({
+  log: many(payload_jobs_log, {
+    relationName: 'log',
+  }),
+}));
 export const relations_payload_locked_documents_rels = relations(
   payload_locked_documents_rels,
   ({ one }) => ({
@@ -3010,6 +3183,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [transactions.id],
       relationName: 'transactions',
     }),
+    'payload-jobsID': one(payload_jobs, {
+      fields: [payload_locked_documents_rels['payload-jobsID']],
+      references: [payload_jobs.id],
+      relationName: 'payload-jobs',
+    }),
   })
 );
 export const relations_payload_locked_documents = relations(
@@ -3050,8 +3228,8 @@ type DatabaseSchema = {
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
   enum_hospitals_type: typeof enum_hospitals_type;
-  enum_identities_status: typeof enum_identities_status;
   enum_identities_id_type: typeof enum_identities_id_type;
+  enum_identities_status: typeof enum_identities_status;
   enum_individuals_gender: typeof enum_individuals_gender;
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
   enum_inventory_status: typeof enum_inventory_status;
@@ -3070,6 +3248,9 @@ type DatabaseSchema = {
   enum_users_profile_type: typeof enum_users_profile_type;
   enum_transaction_status: typeof enum_transaction_status;
   enum_transaction_type: typeof enum_transaction_type;
+  enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
+  enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
+  enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug;
   addresses: typeof addresses;
   avatars: typeof avatars;
   barangays: typeof barangays;
@@ -3111,6 +3292,8 @@ type DatabaseSchema = {
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
+  payload_jobs_log: typeof payload_jobs_log;
+  payload_jobs: typeof payload_jobs;
   payload_locked_documents: typeof payload_locked_documents;
   payload_locked_documents_rels: typeof payload_locked_documents_rels;
   payload_preferences: typeof payload_preferences;
@@ -3157,6 +3340,8 @@ type DatabaseSchema = {
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;
+  relations_payload_jobs_log: typeof relations_payload_jobs_log;
+  relations_payload_jobs: typeof relations_payload_jobs;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;
   relations_payload_locked_documents: typeof relations_payload_locked_documents;
   relations_payload_preferences_rels: typeof relations_payload_preferences_rels;

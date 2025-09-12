@@ -1,5 +1,6 @@
 export const ID_STATUS = {
   PENDING: { label: 'Pending', value: 'PENDING' },
+  REQUIRED_ACTION: { label: 'Action Required', value: 'REQUIRED_ACTION' },
   APPROVED: { label: 'Approved', value: 'APPROVED' },
   REJECTED: { label: 'Rejected', value: 'REJECTED' },
 } as const;

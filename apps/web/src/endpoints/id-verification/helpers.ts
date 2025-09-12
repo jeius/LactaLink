@@ -7,8 +7,8 @@ export async function validateImage(image: Image): Promise<NetInput> {
   return await toNetInput(imageToCanvas(image));
 }
 
-export async function createImageFromFile(file: File): Promise<Image> {
-  const buffer = Buffer.from(await file.arrayBuffer());
+export async function createImageFromFile(blob: Blob): Promise<Image> {
+  const buffer = Buffer.from(await blob.arrayBuffer());
   return await loadImage(buffer);
 }
 

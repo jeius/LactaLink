@@ -1,3 +1,14 @@
+import {
+  ID_VERIFICATION_URL,
+  SEED_BARANGAYS_URL,
+  SEED_CITIES_MUNICIPALITIES_URL,
+  SEED_ISLAND_GROUPS_URL,
+  SEED_NOTIFICATIONS_URL,
+  SEED_PROVINCES_URL,
+  SEED_PSGC_URL,
+  SEED_REGIONS_URL,
+  SEED_STATUS_URL,
+} from '@/lib/constants/routes';
 import { Endpoint } from 'payload';
 import { idVerificationHandler } from './id-verification';
 import { seedNotificationsHandler } from './seeders/Notifications';
@@ -12,52 +23,52 @@ import { seedStatusHandler } from './seeders/Status';
 export const Endpoints: Endpoint[] = [
   {
     method: 'post',
-    path: '/seed/psgc',
+    path: SEED_PSGC_URL.replace('/api', ''),
     handler: seedPSGCHandler,
   },
   {
     method: 'post',
-    path: '/seed/island-groups',
+    path: SEED_ISLAND_GROUPS_URL.replace('/api', ''),
     handler: seedIslandGroupsHandler,
   },
   {
     method: 'post',
-    path: '/seed/regions',
+    path: SEED_REGIONS_URL.replace('/api', ''),
     handler: seedRegionsHandler,
   },
   {
     method: 'post',
-    path: '/seed/provinces',
+    path: SEED_PROVINCES_URL.replace('/api', ''),
     handler: seedProvincesHandler,
   },
   {
     method: 'post',
-    path: '/seed/cities-municipalities',
+    path: SEED_CITIES_MUNICIPALITIES_URL.replace('/api', ''),
     handler: seedCitiesMunicipalitiesHandler,
   },
   {
     method: 'post',
-    path: '/seed/barangays',
+    path: SEED_BARANGAYS_URL.replace('/api', ''),
     handler: seedBarangaysHandler,
   },
   {
     method: 'get',
-    path: '/seed/status',
+    path: SEED_STATUS_URL.replace('/api', ''),
     handler: seedStatusHandler,
   },
   {
     method: 'post',
-    path: '/seed/status',
+    path: SEED_STATUS_URL.replace('/api', ''),
     handler: seedStatusHandler,
   },
   {
     method: 'post',
-    path: '/seed/notifications',
+    path: SEED_NOTIFICATIONS_URL.replace('/api', ''),
     handler: seedNotificationsHandler,
   },
   {
     method: 'post',
-    path: '/id-verification',
+    path: ID_VERIFICATION_URL.replace('/api', ''),
     handler: idVerificationHandler,
   },
 ];

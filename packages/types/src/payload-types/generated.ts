@@ -199,6 +199,7 @@ export interface Config {
     requests: Request;
     users: User;
     transactions: Transaction;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -266,6 +267,7 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
       | PayloadLockedDocumentsSelect<true>;
@@ -282,7 +284,13 @@ export interface Config {
     collection: 'users';
   };
   jobs: {
-    tasks: unknown;
+    tasks: {
+      'id-verification': IDVerficationTask;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -1304,6 +1312,10 @@ export interface Identity {
   createdBy?: (string | null) | User;
   owner?: (string | null) | User;
   /**
+   * The admin user who last updated this record.
+   */
+  updatedBy?: (string | null) | User;
+  /**
    * The type of ID being submitted for verification.
    */
   idType:
@@ -1320,7 +1332,7 @@ export interface Identity {
   /**
    * The current verification status of the ID.
    */
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING' | 'REQUIRED_ACTION' | 'APPROVED' | 'REJECTED';
   /**
    * Image of the submitted ID (e.g., passport, driver’s license).
    */
@@ -1329,10 +1341,6 @@ export interface Identity {
    * Clear image of the user holding the ID next to their face.
    */
   refImage: string | IdentityImage;
-  /**
-   * The identification number as it appears on the ID.
-   */
-  idNumber: string;
   /**
    * The first name of the user as it appears on the ID.
    */
@@ -1353,6 +1361,18 @@ export interface Identity {
    * The address of the user as it appears on the ID.
    */
   address: string;
+  /**
+   * The identification number as it appears on the ID.
+   */
+  idNumber: string;
+  /**
+   * The date when the ID was issued (if available).
+   */
+  issueDate?: string | null;
+  /**
+   * The date when the ID will expire (if available).
+   */
+  expirationDate?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1769,6 +1789,98 @@ export interface NotificationTypeTemplate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: string;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'id-verification';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'id-verification') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -1873,6 +1985,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'payload-jobs';
+        value: string | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2092,16 +2208,19 @@ export interface HospitalsSelect<T extends boolean = true> {
 export interface IdentitiesSelect<T extends boolean = true> {
   createdBy?: T;
   owner?: T;
+  updatedBy?: T;
   idType?: T;
   status?: T;
   idImage?: T;
   refImage?: T;
-  idNumber?: T;
   givenName?: T;
   middleName?: T;
   familyName?: T;
   suffix?: T;
   address?: T;
+  idNumber?: T;
+  issueDate?: T;
+  expirationDate?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2702,6 +2821,37 @@ export interface ConfirmedDeliverySelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -2731,6 +2881,20 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IDVerficationTask".
+ */
+export interface IDVerficationTask {
+  input: {
+    refImageUrl: string;
+    queryImageUrl: string;
+    identityID: string;
+  };
+  output: {
+    identity: string | Identity;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -14,6 +14,7 @@ import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
+import { jobs } from './jobs';
 import { views } from './lib/db/drizzle/schema';
 import { plugins } from './lib/plugins';
 import { baseAdminMeta } from './lib/utils/baseMeta';
@@ -40,11 +41,14 @@ export default buildConfig({
     suppressHydrationWarning: true,
     meta: baseAdminMeta,
   },
-  collections: Collections,
   serverURL: getServerSideURL(),
+  collections: Collections,
+  jobs: jobs,
   endpoints: Endpoints,
   sharp,
   plugins,
+  maxDepth: 5,
+  defaultDepth: 3,
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

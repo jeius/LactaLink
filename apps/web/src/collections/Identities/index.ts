@@ -4,6 +4,9 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP, ID_STATUS, ID_TYPES } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
+import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { generateUpdatedBy } from './hooks/generateUpdatedBy';
+import { verifyAfterCreate } from './hooks/verifyAfterCreate';
 
 export const Identities: CollectionConfig<'identities'> = {
   slug: 'identities',
@@ -12,12 +15,29 @@ export const Identities: CollectionConfig<'identities'> = {
     useAsTitle: 'idNumber',
     defaultColumns: ['givenName', 'familyName', 'idType', 'status'],
   },
+  access: {
+    create: authenticated,
+    read: collectionCreatorOrAdmin,
+    update: admin,
+    delete: admin,
+  },
   hooks: {
-    beforeChange: [generateCreatedBy, generateOwner],
+    beforeChange: [generateCreatedBy, generateOwner, generateUpdatedBy],
+    afterChange: [verifyAfterCreate],
   },
   fields: [
     createdByField,
     ownerField,
+    {
+      name: 'updatedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        description: 'The admin user who last updated this record.',
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
 
     {
       name: 'idType',
