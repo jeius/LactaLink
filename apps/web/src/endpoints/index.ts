@@ -1,4 +1,5 @@
 import { Endpoint } from 'payload';
+import { idVerificationHandler } from './id-verification';
 import { seedNotificationsHandler } from './seeders/Notifications';
 import { seedBarangaysHandler } from './seeders/PSGC/seedBarangays';
 import { seedCitiesMunicipalitiesHandler } from './seeders/PSGC/seedCitiesMunicipalities';
@@ -7,7 +8,6 @@ import { seedProvincesHandler } from './seeders/PSGC/seedProvinces';
 import { seedPSGCHandler } from './seeders/PSGC/seedPSGC';
 import { seedRegionsHandler } from './seeders/PSGC/seedRegions';
 import { seedStatusHandler } from './seeders/Status';
-import { userVerificationHandler } from './user-verification';
 
 export const Endpoints: Endpoint[] = [
   {
@@ -57,7 +57,7 @@ export const Endpoints: Endpoint[] = [
   },
   {
     method: 'post',
-    path: '/user-verification',
-    handler: userVerificationHandler,
+    path: '/id-verification',
+    handler: idVerificationHandler,
   },
 ];

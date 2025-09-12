@@ -127,4 +127,9 @@ async function handler(req: PayloadRequest) {
   }
 }
 
-export const userVerificationHandler = createPayloadHandler({ handler });
+export const idVerificationHandler = createPayloadHandler({
+  handler,
+  successMessage: (_, data) => {
+    return data.isVerified ? 'ID Verification successful.' : 'ID Verification failed.';
+  },
+});
