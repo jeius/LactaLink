@@ -62,6 +62,12 @@ export const enum_hospitals_type = pgEnum('enum_hospitals_type', [
   'PRIVATE',
   'OTHER',
 ]);
+export const enum_identities_status = pgEnum('enum_identities_status', [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+]);
+export const enum_identities_id_type = pgEnum('enum_identities_id_type', []);
 export const enum_individuals_gender = pgEnum('enum_individuals_gender', [
   'MALE',
   'FEMALE',
@@ -587,6 +593,71 @@ export const hospitals = pgTable(
     hospitals_phone_idx: uniqueIndex('hospitals_phone_idx').on(columns.phone),
     hospitals_updated_at_idx: index('hospitals_updated_at_idx').on(columns.updatedAt),
     hospitals_created_at_idx: index('hospitals_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const identities = pgTable(
+  'identities',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    status: enum_identities_status('status').notNull().default('PENDING'),
+    idType: enum_identities_id_type('id_type'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    identities_updated_at_idx: index('identities_updated_at_idx').on(columns.updatedAt),
+    identities_created_at_idx: index('identities_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const identity_images = pgTable(
+  'identity_images',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize'),
+    width: numeric('width'),
+    height: numeric('height'),
+    focalX: numeric('focal_x'),
+    focalY: numeric('focal_y'),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width'),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height'),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize'),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+  },
+  (columns) => ({
+    identity_images_created_by_idx: index('identity_images_created_by_idx').on(columns.createdBy),
+    identity_images_owner_idx: index('identity_images_owner_idx').on(columns.owner),
+    identity_images_updated_at_idx: index('identity_images_updated_at_idx').on(columns.updatedAt),
+    identity_images_created_at_idx: index('identity_images_created_at_idx').on(columns.createdAt),
+    identity_images_filename_idx: uniqueIndex('identity_images_filename_idx').on(columns.filename),
+    identity_images_sizes_thumbnail_sizes_thumbnail_filename_idx: index(
+      'identity_images_sizes_thumbnail_sizes_thumbnail_filename_idx'
+    ).on(columns.sizes_thumbnail_filename),
   })
 );
 
@@ -1744,8 +1815,8 @@ export const transactions = pgTable(
     transactions_created_by_idx: index('transactions_created_by_idx').on(columns.createdBy),
     transactions_donation_idx: index('transactions_donation_idx').on(columns.donation),
     transactions_request_idx: index('transactions_request_idx').on(columns.request),
-    transactions_delivery_confirmed_delivery_delivery_confirmed_delivery_address_idx: index(
-      'transactions_delivery_confirmed_delivery_delivery_confirmed_delivery_address_idx'
+    transactions_delivery_confirmed_delivery_delivery_confir_idx: index(
+      'transactions_delivery_confirmed_delivery_delivery_confir_idx'
     ).on(columns.delivery_confirmedDelivery_address),
     transactions_updated_at_idx: index('transactions_updated_at_idx').on(columns.updatedAt),
     transactions_created_at_idx: index('transactions_created_at_idx').on(columns.createdAt),
@@ -1847,6 +1918,8 @@ export const payload_locked_documents_rels = pgTable(
     'delivery-preferencesID': uuid('delivery_preferences_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
+    identitiesID: uuid('identities_id'),
+    'identity-imagesID': uuid('identity_images_id'),
     imagesID: uuid('images_id'),
     individualsID: uuid('individuals_id'),
     inventoryID: uuid('inventory_id'),
@@ -1889,6 +1962,12 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_hospitals_id_idx: index(
       'payload_locked_documents_rels_hospitals_id_idx'
     ).on(columns.hospitalsID),
+    payload_locked_documents_rels_identities_id_idx: index(
+      'payload_locked_documents_rels_identities_id_idx'
+    ).on(columns.identitiesID),
+    payload_locked_documents_rels_identity_images_id_idx: index(
+      'payload_locked_documents_rels_identity_images_id_idx'
+    ).on(columns['identity-imagesID']),
     payload_locked_documents_rels_images_id_idx: index(
       'payload_locked_documents_rels_images_id_idx'
     ).on(columns.imagesID),
@@ -1976,6 +2055,16 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['hospitalsID']],
       foreignColumns: [hospitals.id],
       name: 'payload_locked_documents_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    identitiesIdFk: foreignKey({
+      columns: [columns['identitiesID']],
+      foreignColumns: [identities.id],
+      name: 'payload_locked_documents_rels_identities_fk',
+    }).onDelete('cascade'),
+    'identity-imagesIdFk': foreignKey({
+      columns: [columns['identity-imagesID']],
+      foreignColumns: [identity_images.id],
+      name: 'payload_locked_documents_rels_identity_images_fk',
     }).onDelete('cascade'),
     imagesIdFk: foreignKey({
       columns: [columns['imagesID']],
@@ -2319,6 +2408,19 @@ export const relations_hospitals = relations(hospitals, ({ one }) => ({
     fields: [hospitals.avatar],
     references: [avatars.id],
     relationName: 'avatar',
+  }),
+}));
+export const relations_identities = relations(identities, () => ({}));
+export const relations_identity_images = relations(identity_images, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [identity_images.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [identity_images.owner],
+    references: [users.id],
+    relationName: 'owner',
   }),
 }));
 export const relations_images = relations(images, ({ one }) => ({
@@ -2818,6 +2920,16 @@ export const relations_payload_locked_documents_rels = relations(
       references: [hospitals.id],
       relationName: 'hospitals',
     }),
+    identitiesID: one(identities, {
+      fields: [payload_locked_documents_rels.identitiesID],
+      references: [identities.id],
+      relationName: 'identities',
+    }),
+    'identity-imagesID': one(identity_images, {
+      fields: [payload_locked_documents_rels['identity-imagesID']],
+      references: [identity_images.id],
+      relationName: 'identity-images',
+    }),
     imagesID: one(images, {
       fields: [payload_locked_documents_rels.imagesID],
       references: [images.id],
@@ -2938,6 +3050,8 @@ type DatabaseSchema = {
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
   enum_hospitals_type: typeof enum_hospitals_type;
+  enum_identities_status: typeof enum_identities_status;
+  enum_identities_id_type: typeof enum_identities_id_type;
   enum_individuals_gender: typeof enum_individuals_gender;
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
   enum_inventory_status: typeof enum_inventory_status;
@@ -2966,6 +3080,8 @@ type DatabaseSchema = {
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
+  identities: typeof identities;
+  identity_images: typeof identity_images;
   images: typeof images;
   individuals: typeof individuals;
   inventory_allocation_details: typeof inventory_allocation_details;
@@ -3010,6 +3126,8 @@ type DatabaseSchema = {
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals: typeof relations_hospitals;
+  relations_identities: typeof relations_identities;
+  relations_identity_images: typeof relations_identity_images;
   relations_images: typeof relations_images;
   relations_individuals: typeof relations_individuals;
   relations_inventory_allocation_details: typeof relations_inventory_allocation_details;

@@ -181,6 +181,8 @@ export interface Config {
     'delivery-preferences': DeliveryPreference;
     donations: Donation;
     hospitals: Hospital;
+    identities: Identity;
+    'identity-images': IdentityImage;
     images: Image;
     individuals: Individual;
     inventory: Inventory;
@@ -244,6 +246,8 @@ export interface Config {
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
+    identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
+    'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     inventory: InventorySelect<false> | InventorySelect<true>;
@@ -1280,6 +1284,102 @@ export interface Barangay {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identities".
+ */
+export interface Identity {
+  id: string;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  /**
+   * The type of ID being submitted for verification.
+   */
+  idType:
+    | 'PASSPORT'
+    | 'DRIVER_LICENSE'
+    | 'UMID'
+    | 'SSS'
+    | 'POSTAL_ID'
+    | 'TIN'
+    | 'PHILHEALTH'
+    | 'PHILID'
+    | 'PRC'
+    | 'OTHERS';
+  /**
+   * The current verification status of the ID.
+   */
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  /**
+   * Image of the submitted ID (e.g., passport, driver’s license).
+   */
+  idImage: string | IdentityImage;
+  /**
+   * Clear image of the user holding the ID next to their face.
+   */
+  refImage: string | IdentityImage;
+  /**
+   * The identification number as it appears on the ID.
+   */
+  idNumber: string;
+  /**
+   * The first name of the user as it appears on the ID.
+   */
+  givenName: string;
+  /**
+   * The middle name of the user as it appears on the ID (if applicable).
+   */
+  middleName?: string | null;
+  /**
+   * The last name of the user as it appears on the ID.
+   */
+  familyName: string;
+  /**
+   * The suffix of the user as it appears on the ID (if applicable).
+   */
+  suffix?: string | null;
+  /**
+   * The address of the user as it appears on the ID.
+   */
+  address: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identity-images".
+ */
+export interface IdentityImage {
+  id: string;
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * Organize notification types into logical categories with consistent styling and behavior.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1681,6 +1781,14 @@ export interface PayloadLockedDocument {
         value: string | Hospital;
       } | null)
     | ({
+        relationTo: 'identities';
+        value: string | Identity;
+      } | null)
+    | ({
+        relationTo: 'identity-images';
+        value: string | IdentityImage;
+      } | null)
+    | ({
         relationTo: 'images';
         value: string | Image;
       } | null)
@@ -1954,6 +2062,61 @@ export interface HospitalsSelect<T extends boolean = true> {
   sentTransactions?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identities_select".
+ */
+export interface IdentitiesSelect<T extends boolean = true> {
+  createdBy?: T;
+  owner?: T;
+  idType?: T;
+  status?: T;
+  idImage?: T;
+  refImage?: T;
+  idNumber?: T;
+  givenName?: T;
+  middleName?: T;
+  familyName?: T;
+  suffix?: T;
+  address?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identity-images_select".
+ */
+export interface IdentityImagesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

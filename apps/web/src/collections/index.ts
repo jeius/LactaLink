@@ -4,6 +4,8 @@ import { Avatars } from './Avatars';
 import { DeliveryPreferences } from './DeliveryPreferences';
 import { Donations } from './Donations';
 import { Hospitals } from './Hospitals';
+import { Identities } from './Identities';
+import { IdentityImages } from './IdentityImages';
 import { Images } from './Images';
 import { Individuals } from './Individuals';
 import { Inventory } from './Inventory';
@@ -28,6 +30,8 @@ const Collections: CollectionConfig[] = [
   DeliveryPreferences,
   Donations,
   Hospitals,
+  Identities,
+  IdentityImages,
   Images,
   Individuals,
   Inventory,
@@ -54,6 +58,8 @@ export {
   DeliveryPreferences,
   Donations,
   Hospitals,
+  Identities,
+  IdentityImages,
   Images,
   Individuals,
   Inventory,

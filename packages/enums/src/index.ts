@@ -1,3 +1,4 @@
+export * from './identityVerification';
 export * from './inventory';
 export * from './milkbag';
 export * from './notifications';

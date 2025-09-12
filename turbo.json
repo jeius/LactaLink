@@ -23,6 +23,7 @@
         "GOOGLE_CLIENT_SECRET",
         "S3_BUCKET_IMAGES",
         "S3_BUCKET_MILK_BAG_IMAGES",
+        "S3_BUCKET_ID_IMAGES",
         "S3_BUCKET_MEDIA",
         "S3_BUCKET_FILES",
         "S3_BUCKET_AVATARS",

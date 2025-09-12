@@ -11,6 +11,7 @@ declare global {
       S3_BUCKET_FILES: string;
       S3_BUCKET_AVATARS: string;
       S3_BUCKET_MILK_BAG_IMAGES: string;
+      S3_BUCKET_ID_IMAGES: string;
       S3_ACCESS_KEY_ID: string;
       S3_SECRET_ACCESS_KEY: string;
       S3_ENDPOINT: string;

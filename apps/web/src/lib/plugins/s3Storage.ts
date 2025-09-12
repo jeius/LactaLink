@@ -9,7 +9,6 @@ const StorageConfig: S3StorageOptions['config'] = {
   region: process.env.S3_REGION,
   endpoint: process.env.S3_ENDPOINT,
   forcePathStyle: true,
-  // ... Other S3 configuration
 };
 
 export const s3StoragePlugin: Plugin[] = [
@@ -29,6 +28,7 @@ export const s3StoragePlugin: Plugin[] = [
     bucket: process.env.S3_BUCKET_MILK_BAG_IMAGES,
     config: StorageConfig,
     clientUploads: true,
+    acl: 'private',
   }),
   s3Storage({
     collections: {
@@ -38,5 +38,14 @@ export const s3StoragePlugin: Plugin[] = [
     config: StorageConfig,
     clientUploads: true,
     acl: 'public-read',
+  }),
+  s3Storage({
+    collections: {
+      'identity-images': true,
+    },
+    bucket: process.env.S3_BUCKET_ID_IMAGES,
+    config: StorageConfig,
+    clientUploads: true,
+    acl: 'private',
   }),
 ];
