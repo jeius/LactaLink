@@ -1,3 +1,5 @@
+'use server';
+
 import { initServerApi } from '@/lib/api/init/server';
 import { getServerApiClient } from '@lactalink/api';
 import { cache } from 'react';

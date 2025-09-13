@@ -1,4 +1,3 @@
-import isString from 'lodash/isString';
 import canUseDOM from './canUseDOM';
 
 const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
@@ -38,7 +37,9 @@ export const getServerSideURL = (): string | 'http://localhost:3000' => {
 
 export function validateUrl(url: unknown): url is string {
   try {
-    if (url === null || url === undefined || !isString(url) || url.trim() === '') return false;
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return false;
+    }
 
     const parsedUrl = new URL(url);
     return parsedUrl.protocol.includes('http:') || parsedUrl.protocol.includes('https:');

@@ -39,7 +39,7 @@ async function handler(req: PayloadRequest) {
     );
   }
 
-  const body: Omit<IDVerficationTask['input'], 'identityID'> | undefined = await req.json?.();
+  const body: IDVerficationTask['input'] | undefined = await req.json?.();
   const { queryImageUrl, refImageUrl } = body || {};
 
   const missingFields: string[] = [];

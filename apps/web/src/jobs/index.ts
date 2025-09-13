@@ -1,9 +1,33 @@
+import { admin } from '@/collections/_access-control';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { JobsConfig } from 'payload';
-import { idVerification } from './tasks/idVerification';
+import { idVerificationTask } from './tasks/idVerification';
+import { sendEmailTask } from './tasks/sendEmail';
+import { idVerificationWorkflow } from './workflows/id-verification';
 
 export const jobs: JobsConfig = {
   access: {
     run: ({ req: { user } }) => Boolean(user),
   },
-  tasks: [idVerification],
+  tasks: [idVerificationTask, sendEmailTask],
+  workflows: [idVerificationWorkflow],
+  jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
+    ...defaultJobsCollection,
+    admin: {
+      ...defaultJobsCollection.admin,
+      group: COLLECTION_GROUP.SYSTEM,
+      hidden: false,
+      defaultColumns: ['id', 'queue', 'processing', 'hasError', 'createdAt', 'completedAt'],
+    },
+    access: {
+      read: admin,
+      create: () => false,
+      update: () => false,
+      delete: admin,
+    },
+    labels: {
+      singular: 'System Job',
+      plural: 'System Jobs',
+    },
+  }),
 };

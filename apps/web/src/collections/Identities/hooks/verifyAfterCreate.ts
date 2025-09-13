@@ -1,4 +1,3 @@
-import { JOB_QUEUES } from '@/lib/constants/jobs';
 import { Identity } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities';
 import { CollectionAfterChangeHook } from 'payload';
@@ -45,9 +44,8 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
 
   // Queue the ID verification job
   const job = await req.payload.jobs.queue({
-    task: 'id-verification',
+    workflow: 'id-verification-workflow',
     input: { queryImageUrl, refImageUrl, identityID: doc.id, email: ownerDoc.email },
-    queue: JOB_QUEUES['id-verification'],
     req,
   });
 
