@@ -1,6 +1,6 @@
-export * from './identityVerification';
+export * from './identities';
 export * from './inventory';
-export * from './milkbag';
+export * from './milkbags';
 export * from './notifications';
 export * from './transactions';
 

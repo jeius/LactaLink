@@ -16,6 +16,26 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./inventory": {
+      "types": "./dist/inventory.d.ts",
+      "default": "./dist/inventory.js"
+    },
+    "./notifications": {
+      "types": "./dist/notifications.d.ts",
+      "default": "./dist/notifications.js"
+    },
+    "./transactions": {
+      "types": "./dist/transactions.d.ts",
+      "default": "./dist/transactions.js"
+    },
+    "./milkbags": {
+      "types": "./dist/milkbags.d.ts",
+      "default": "./dist/milkbags.js"
+    },
+    "./identities": {
+      "types": "./dist/identities.d.ts",
+      "default": "./dist/identities.js"
     }
   },
   "scripts": {
