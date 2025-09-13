@@ -1,6 +1,6 @@
-import { ApiFetchResponse } from './api';
-import { Collection } from './collections';
-import { CollectionSlug } from './payload-types/config';
+import type { ApiFetchResponse } from './api';
+import type { Collection } from './collections';
+import type { CollectionSlug } from './payload-types/config';
 
 export type SlugPSGC =
   | 'island-groups'

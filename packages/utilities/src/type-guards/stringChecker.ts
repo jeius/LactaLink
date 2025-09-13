@@ -2,7 +2,7 @@
  * Imports the `Collection` type from `@lactalink/types`.
  * This type is used as part of the union type `StringOrCollection`.
  */
-import { Collection } from '@lactalink/types';
+import type { Collection } from '@lactalink/types/collections';
 
 /**
  * A union type that can either be a `string` or a `Collection`.

@@ -1,5 +1,5 @@
 import { Boundary, Coordinates, MapRegion, Point, Polygon } from '@lactalink/types';
-import { getBoundsOfDistance } from 'geolib';
+import getBoundsOfDistance from 'geolib/es/getBoundsOfDistance';
 
 export function boundsToPolygon(center: Coordinates, radius: number): Polygon | undefined {
   // Get the southwestern and northeastern bounds

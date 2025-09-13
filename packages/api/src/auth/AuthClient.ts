@@ -1,20 +1,23 @@
-import { BackendSession, BaseApiFetchArgs, ErrorCodes, User } from '@lactalink/types';
-import { ApiClientConfig, IAuthClient } from '@lactalink/types/interfaces';
-import { Database } from '@lactalink/types/supabase';
+import type { BaseApiFetchArgs } from '@lactalink/types/api';
+import type { BackendSession } from '@lactalink/types/auth';
+import type { ErrorCodes } from '@lactalink/types/errors';
+import type { ApiClientConfig, IAuthClient } from '@lactalink/types/interfaces';
+import type { User } from '@lactalink/types/payload-generated-types';
+import type { Database } from '@lactalink/types/supabase';
 import {
   AuthError,
-  ResendParams,
-  Session,
-  SignInWithIdTokenCredentials,
-  SignInWithOAuthCredentials,
-  SignInWithPasswordCredentials,
-  SignOut,
-  SignUpWithPasswordCredentials,
-  Subscription,
-  SupabaseClient,
-  VerifyOtpParams,
+  type ResendParams,
+  type Session,
+  type SignInWithIdTokenCredentials,
+  type SignInWithOAuthCredentials,
+  type SignInWithPasswordCredentials,
+  type SignOut,
+  type SignUpWithPasswordCredentials,
+  type Subscription,
+  type SupabaseClient,
+  type VerifyOtpParams,
 } from '@supabase/supabase-js';
-import { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
+import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
 import status from 'http-status';
 import { apiFetch } from '../utils/apiFetch';
 import { isServerEnvironment } from '../utils/getEnvironment';

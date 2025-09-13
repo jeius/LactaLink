@@ -1,6 +1,6 @@
-import type { CollectionSlug, GlobalSlug } from '../index.js';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Document, SelectType, Sort, Where } from './collection';
-import type { TypeWithID } from './config';
+import type { CollectionSlug, GlobalSlug, TypeWithID } from './config';
 
 export type FindOneArgs = {
   collection: CollectionSlug;

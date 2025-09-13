@@ -1,5 +1,5 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-import {
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type {
   ApiMethod,
   CreateOptions,
   DeleteByID,
@@ -12,9 +12,9 @@ import {
   UpdateMany,
   UploadFile,
 } from '../api';
-import { FileCollectionSlug } from '../collections';
-import { CollectionSlug, SelectFromCollectionSlug } from '../payload-types';
-import { IAuthClient } from './AuthClient';
+import type { FileCollectionSlug } from '../collections';
+import type { CollectionSlug, SelectFromCollectionSlug } from '../payload-types/config';
+import type { IAuthClient } from './AuthClient';
 
 /**
  * Interface defining the contract for API client implementations.
@@ -117,7 +117,7 @@ export interface IApiClient {
    * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
    */
   find<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TPaginate extends boolean = boolean,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
@@ -132,7 +132,7 @@ export interface IApiClient {
    * @throws Error if document is not found or access is denied
    */
   findByID<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: FindOne<TSlug, TSelect>
@@ -146,7 +146,7 @@ export interface IApiClient {
    * @throws Error if creation fails or validation errors occur
    */
   create<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: CreateOptions<TSlug, TSelect>
@@ -176,7 +176,7 @@ export interface IApiClient {
    * @throws Error if document is not found, access is denied, or validation fails
    */
   update<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: UpdateMany<TSlug, TSelect>
@@ -190,7 +190,7 @@ export interface IApiClient {
    * @throws Error if document is not found, access is denied, or validation fails
    */
   updateByID<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: UpdateByID<TSlug, TSelect>
@@ -205,7 +205,7 @@ export interface IApiClient {
    * @returns Promise resolving to the found documents (paginated or not based on IsPaginated)
    */
   delete<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: DeleteMany<TSlug, TSelect>
@@ -219,7 +219,7 @@ export interface IApiClient {
    * @throws Error if document is not found or access is denied
    */
   deleteByID<
-    TSlug extends CollectionSlug,
+    TSlug extends CollectionSlug = CollectionSlug,
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: DeleteByID<TSlug, TSelect>

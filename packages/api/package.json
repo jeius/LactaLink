@@ -17,6 +17,14 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./auth-client": {
+      "types": "./dist/auth/AuthClient.d.ts",
+      "default": "./dist/auth/AuthClient.js"
+    },
+    "./client": {
+      "types": "./dist/ApiClient.d.ts",
+      "default": "./dist/ApiClient.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"

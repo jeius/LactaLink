@@ -1,4 +1,4 @@
-import { ErrorCodes } from '@lactalink/types';
+import { ErrorCodes } from '@lactalink/types/errors';
 import { isAuthApiError, isAuthError } from '@supabase/supabase-js';
 
 /**

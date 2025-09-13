@@ -1,4 +1,4 @@
-import { Address, User } from '@lactalink/types';
+import { Address, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from './extractCollection';
 
 /**

@@ -8,7 +8,7 @@ import {
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
-import { User } from '../../payload-types';
+import { User } from '../../payload-types/generated';
 import { imageSchema } from '../file';
 import { textAreaSchema } from '../textarea';
 

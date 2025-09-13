@@ -798,6 +798,7 @@ export const individuals = pgTable(
     owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    isVerified: boolean('is_verified'),
     avatar: uuid('avatar_id').references(() => avatars.id, {
       onDelete: 'set null',
     }),

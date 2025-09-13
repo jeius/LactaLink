@@ -1,15 +1,14 @@
-import {
+import type { FindMany, FindManyResult } from '../api';
+import type { SelectFromCollectionSlug } from '../payload-types/config';
+import type {
   Address,
   Donation,
   MilkBag,
   ProposedDelivery,
   Request,
-  SelectFromCollectionSlug,
   Transaction,
   User,
-} from '../payload-types';
-
-import { FindMany, FindManyResult } from '../api';
+} from '../payload-types/generated';
 
 /**
  * Parameters for updating delivery details.

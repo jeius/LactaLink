@@ -1,17 +1,20 @@
 import { DeepPartial } from 'react-hook-form';
-import { Collection, Populate, Select } from './collections';
 import { CustomError } from './errors';
+import type {
+  PopulateType,
+  Sort,
+  TransformCollectionWithSelect,
+  Where,
+} from './payload-types/collection';
 import type {
   BulkOperationResult,
   CollectionSlug,
   RequiredDataFromCollectionSlug,
   SelectFromCollectionSlug,
-  Sort,
-  TransformCollectionWithSelect,
+  TypedCollection,
   TypedLocale,
-  Where,
-} from './payload-types';
-import { PaginatedDocs } from './payload-types/database';
+} from './payload-types/config';
+import type { PaginatedDocs } from './payload-types/database';
 
 //#region API Types
 export type ApiFetchResponse<T> =
@@ -27,8 +30,6 @@ export type ApiFetchResponse<T> =
     };
 export type ApiMethod = 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
 
-export type ApiMethodWithBody = 'POST' | 'PATCH' | 'PUT';
-
 export type BaseApiFetchArgs = {
   url: URL | string;
   token?: string | null;
@@ -40,35 +41,11 @@ export type ApiFetchArgs<T extends CollectionSlug> = {
   method: ApiMethod;
   body?: RequiredDataFromCollectionSlug<T> | FormData | { value: unknown };
 } & BaseApiFetchArgs;
-
-export type SearchParams<S extends CollectionSlug = CollectionSlug, P extends boolean = boolean> = {
-  page?: number;
-  limit?: number;
-  where?: Where;
-  select?: Select<Collection<S>>;
-  sort?: string;
-  populate?: Populate;
-  depth?: number;
-  pagination?: P;
-};
-
-export type FetchGetResult<C extends Collection> = {
-  docs: C[];
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-  limit: number;
-  nextPage: number | null;
-  prevPage: number | null;
-  page: number;
-  totalPages: number;
-  totalDocs: number;
-  pagingCounter: number;
-};
 //#endregion
 
 //#region  Arguments and Options Types
 export interface Options<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > {
@@ -117,7 +94,7 @@ export interface Options<
   /**
    * Specify [populate](https://payloadcms.com/docs/queries/select#populate) to control which fields to include to the result from populated documents.
    */
-  populate?: Populate;
+  populate?: PopulateType;
   /**
    * Specify [select](https://payloadcms.com/docs/queries/select) to control which fields to include to the result.
    */
@@ -135,13 +112,13 @@ export interface Options<
 }
 
 export type FindOptions<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = Options<TSlug, TSelect, TPaginate>;
 
 export type CreateOptions<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = {
@@ -149,7 +126,7 @@ export type CreateOptions<
 } & Options<TSlug, TSelect, TPaginate>;
 
 export type UploadFile<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = {
@@ -158,26 +135,26 @@ export type UploadFile<
 } & Options<TSlug, TSelect, TPaginate>;
 
 export type UpdateOptions<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = Omit<Options<TSlug, TSelect, false>, 'pagination' | 'page' | 'limit' | 'where' | 'sort'> & {
   data: DeepPartial<RequiredDataFromCollectionSlug<TSlug>>;
 };
 
 export type DeleteOptions<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = Omit<UpdateOptions<TSlug, TSelect>, 'data'>;
 
 export type UpdateByID<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
-  id: Collection<TSlug>['id'];
+  id: TypedCollection[TSlug]['id'];
 } & UpdateOptions<TSlug, TSelect>;
 
 export type UpdateMany<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   limit?: number;
@@ -194,16 +171,16 @@ export type UpdateMany<
 } & UpdateOptions<TSlug, TSelect>;
 
 export type DeleteByID<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   /**
    * The ID of the document to delete.
    */
-  id: Collection<TSlug>['id'];
+  id: TypedCollection[TSlug]['id'];
 } & DeleteOptions<TSlug, TSelect>;
 export type DeleteMany<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   /**
@@ -213,14 +190,14 @@ export type DeleteMany<
 } & DeleteOptions<TSlug, TSelect>;
 
 export type FindOne<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = Omit<FindOptions<TSlug, TSelect, false>, 'page' | 'limit' | 'pagination' | 'sort'> & {
-  id: Collection<TSlug>['id'];
+  id: TypedCollection[TSlug]['id'];
 };
 
 export type FindMany<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = FindOptions<TSlug, TSelect, TPaginate>;
@@ -228,7 +205,7 @@ export type FindMany<
 
 //#region Result Types
 export type CreateResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   message: string;
@@ -236,12 +213,12 @@ export type CreateResult<
 };
 
 export type FindOneResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = TransformCollectionWithSelect<TSlug, TSelect>;
 
 export type FindManyResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = TPaginate extends true
@@ -249,7 +226,7 @@ export type FindManyResult<
   : TransformCollectionWithSelect<TSlug, TSelect>[];
 
 export type UpdateByIDResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   doc: TransformCollectionWithSelect<TSlug, TSelect>;
@@ -257,17 +234,17 @@ export type UpdateByIDResult<
 };
 
 export type UpdateManyResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = BulkOperationResult<TSlug, TSelect>;
 
 export type DeleteByIDResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = TransformCollectionWithSelect<TSlug, TSelect>;
 
 export type DeleteManyResult<
-  TSlug extends CollectionSlug,
+  TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = BulkOperationResult<TSlug, TSelect>;
 //#endregion

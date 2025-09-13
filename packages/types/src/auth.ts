@@ -5,7 +5,8 @@ import type {
   SupabaseClient,
   VerifyOtpParams,
 } from '@supabase/supabase-js';
-import type { SanitizedPermissions, User } from './payload-types';
+import { SanitizedPermissions } from './payload-types/auth';
+import { User } from './payload-types/generated';
 
 export type MeUser =
   | {

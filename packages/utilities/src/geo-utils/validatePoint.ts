@@ -1,5 +1,5 @@
 import { Point } from '@lactalink/types';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 export function validatePoint(point?: Point | null): point is Point {
   if (!point || !Array.isArray(point) || point.length !== 2) {
@@ -31,5 +31,5 @@ export function arePointsEqual(pointA: Point, pointB: Point): boolean {
   const roundedPointA: Point = [parseFloat(lngA.toFixed(4)), parseFloat(latA.toFixed(4))];
   const roundedPointB: Point = [parseFloat(lngB.toFixed(4)), parseFloat(latB.toFixed(4))];
 
-  return _.isEqual(roundedPointA, roundedPointB);
+  return isEqual(roundedPointA, roundedPointB);
 }

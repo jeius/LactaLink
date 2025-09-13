@@ -1,7 +1,3 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
-
 /**
  * Delays the execution of code for a specified amount of time.
  *
@@ -21,49 +17,4 @@ import { useEffect, useRef, useState } from 'react';
  */
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function useDebounce<T>(
-  value: T,
-  delay = 300,
-  options: { leading?: boolean; trailing?: boolean } = { leading: false, trailing: true }
-): T {
-  const { leading = false, trailing = true } = options;
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastCallTimeRef = useRef<number | null>(null);
-  const leadingCalledRef = useRef(false);
-
-  useEffect(() => {
-    const now = Date.now();
-
-    // Handle leading edge
-    if (leading && !leadingCalledRef.current) {
-      setDebouncedValue(value);
-      leadingCalledRef.current = true;
-      lastCallTimeRef.current = now;
-    }
-
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Handle trailing edge
-    timeoutRef.current = setTimeout(() => {
-      if (trailing && (!leading || now - (lastCallTimeRef.current || 0) >= delay)) {
-        setDebouncedValue(value);
-      }
-      leadingCalledRef.current = false; // Reset leading call
-    }, delay);
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [value, delay, leading, trailing]);
-
-  return debouncedValue;
 }

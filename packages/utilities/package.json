@@ -17,33 +17,33 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./formatters": {
-      "types": "./dist/formatters/index.d.ts",
-      "default": "./dist/formatters/index.js"
-    },
-    "./hooks": {
-      "types": "./dist/hooks/index.d.ts",
-      "default": "./dist/hooks/index.js"
+    "./checkers": {
+      "types": "./dist/checkers/index.d.ts",
+      "default": "./dist/checkers/index.js"
     },
     "./extractors": {
       "types": "./dist/extractors/index.d.ts",
       "default": "./dist/extractors/index.js"
     },
-    "./errors": {
-      "types": "./dist/errors/index.d.ts",
-      "default": "./dist/errors/index.js"
-    },
-    "./getters": {
-      "types": "./dist/getters/index.d.ts",
-      "default": "./dist/getters/index.js"
-    },
-    "./type-guards": {
-      "types": "./dist/type-guards/index.d.ts",
-      "default": "./dist/type-guards/index.js"
+    "./formatters": {
+      "types": "./dist/formatters/index.d.ts",
+      "default": "./dist/formatters/index.js"
     },
     "./geo-utils": {
       "types": "./dist/geo-utils/index.d.ts",
       "default": "./dist/geo-utils/index.js"
+    },
+    "./geolib": {
+      "types": "./dist/geo-utils/geolib.d.ts",
+      "default": "./dist/geo-utils/geolib.js"
+    },
+    "./spatial-search": {
+      "types": "./dist/spatialSearch/index.d.ts",
+      "default": "./dist/spatialSearch/index.js"
+    },
+    "./type-guards": {
+      "types": "./dist/type-guards/index.d.ts",
+      "default": "./dist/type-guards/index.js"
     }
   },
   "scripts": {

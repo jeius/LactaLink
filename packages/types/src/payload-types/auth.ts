@@ -104,6 +104,7 @@ type BaseUser = {
   username?: string;
 };
 export type AuthUser = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 } & BaseUser;
 

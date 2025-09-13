@@ -1,4 +1,10 @@
-import { Collection, Donation, Hospital, Individual, Request } from '@lactalink/types';
+import type { Collection } from '@lactalink/types/collections';
+import type {
+  Donation,
+  Hospital,
+  Individual,
+  Request,
+} from '@lactalink/types/payload-generated-types';
 
 export * from './stringChecker';
 export * from './verifyOtp';

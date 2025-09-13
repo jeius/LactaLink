@@ -1,24 +1,24 @@
 import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
-import {
-  DeliveryAgreements,
-  Donation,
-  FindMany,
-  FindManyResult,
-  IApiClient,
-  MilkBag,
-  Request,
-  SelectFromCollectionSlug,
-  Transaction,
-  User,
-} from '@lactalink/types';
-import {
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+
+import type { FindMany, FindManyResult } from '@lactalink/types/api';
+import type {
   CreateO2PTransactionParams,
   CreateP2OTransactionParams,
   CreateP2PTransactionParams,
   DeliveryDetailsParams,
+  IApiClient,
   ITransactionService,
 } from '@lactalink/types/interfaces';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import type {
+  DeliveryAgreements,
+  Donation,
+  MilkBag,
+  Request,
+  Transaction,
+  User,
+} from '@lactalink/types/payload-generated-types';
+import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 /**
  * Service for managing transactions throughout their lifecycle.

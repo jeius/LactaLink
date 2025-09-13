@@ -64,6 +64,7 @@ export type BulkOperationResult<
   }[];
 };
 export type TypeWithID = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   docId?: any;
   id: number | string;
 };

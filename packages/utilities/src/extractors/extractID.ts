@@ -1,6 +1,4 @@
-import { Collection } from '@lactalink/types';
-
-type Value = Collection | string | number | { id: string | number } | null | undefined;
+type Value = string | number | { id: string | number } | null | undefined;
 
 /**
  * A utility type that extracts the `id` property from an object or an array of objects.
@@ -11,14 +9,14 @@ type Value = Collection | string | number | { id: string | number } | null | und
  *
  * @template T - The type of the input value.
  */
-type ExtractID<T> = T extends (infer U)[]
-  ? U extends { id: infer ID }
-    ? ID extends string
+type ID<T> = T extends (infer U)[]
+  ? U extends { id: infer IDType }
+    ? IDType extends string
       ? string[]
-      : ID[]
+      : IDType[]
     : U[]
-  : T extends { id: infer ID }
-    ? ID
+  : T extends { id: infer IDType }
+    ? IDType
     : T;
 
 /**
@@ -51,14 +49,14 @@ type ExtractID<T> = T extends (infer U)[]
  * const resultNum = extractID(num); // 42
  * ```
  */
-export function extractID<T extends Value | Value[]>(value: T): ExtractID<T> {
+export function extractID<T extends Value | Value[]>(value: T): ID<T> {
   if (Array.isArray(value)) {
-    return value.map((item) => (item && typeof item === 'object' ? item.id : item)) as ExtractID<T>;
+    return value.map((item) => (item && typeof item === 'object' ? item.id : item)) as ID<T>;
   }
 
   if (value && typeof value === 'object') {
-    return value.id as ExtractID<T>;
+    return value.id as ID<T>;
   }
 
-  return value as ExtractID<T>;
+  return value as ID<T>;
 }

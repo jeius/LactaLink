@@ -1,19 +1,11 @@
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
-import {
-  ApiFetchResponse,
-  DonationRequestStatus,
-  FindManyResult,
-  NearOptions,
-  Point,
-  SelectFromCollectionSlug,
-  Transaction,
-  User,
-} from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities/extractors';
 import { stringify } from 'qs';
 import { TransactionService } from '../TransactionService';
 
-import {
+import type { DonationRequestStatus, NearOptions, Point } from '@lactalink/types';
+import type { ApiFetchResponse, FindManyResult } from '@lactalink/types/api';
+import type {
   CreateMatchOptions,
   FindMatchOptions,
   IApiClient,
@@ -21,6 +13,8 @@ import {
   O2PMatchOptions,
   P2OMatchOptions,
 } from '@lactalink/types/interfaces';
+import type { Transaction, User } from '@lactalink/types/payload-generated-types';
+import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 /**
  * Service for matching donations to requests and managing their lifecycle.

@@ -1,20 +1,19 @@
 import { PREFERRED_STORAGE_TYPES, STORAGE_TYPES } from '@lactalink/enums';
 
-import { FindManyResult, FindOptions } from '../api';
+import type { FindManyResult, FindOptions } from '../api';
 
-import { Point } from '../geo-types';
-import {
+import type { Point } from '../geo-types';
+import type { CollectionSlug, SelectFromCollectionSlug } from '../payload-types/config';
+import type {
   Address,
-  CollectionSlug,
   Delivery,
   Donation,
   MilkBag,
   Request,
-  SelectFromCollectionSlug,
   Transaction,
   User,
-} from '../payload-types';
-import { DonationRequestStatus, MatchCriteria } from '../views';
+} from '../payload-types/generated';
+import type { DonationRequestStatus, MatchCriteria } from '../views';
 
 type Options<
   TSlug extends CollectionSlug,

@@ -1,7 +1,6 @@
-export * from './auth';
-export * from './collection';
-export * from './config';
-export * from './constants';
+export type { SanitizedPermissions } from './auth';
+export type * from './collection';
+export type * from './config';
+export type * from './constants';
 export type { PaginatedDocs } from './database';
-export * from './error';
-export * from './generated';
+export type * from './error';

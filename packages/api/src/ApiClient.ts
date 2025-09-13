@@ -1,34 +1,36 @@
-import {
+import type { GetPreference, UpdatePreference } from '@lactalink/types';
+import type {
   ApiFetchArgs,
   ApiMethod,
   BaseApiFetchArgs,
-  CollectionSlug,
   CreateOptions,
   CreateResult,
   DeleteByID,
   DeleteByIDResult,
   DeleteMany,
   DeleteManyResult,
-  FileCollectionSlug,
   FindMany,
   FindManyResult,
   FindOne,
   FindOneResult,
-  GetPreference,
-  SelectFromCollectionSlug,
-  TransformCollectionWithSelect,
   UpdateByID,
   UpdateByIDResult,
   UpdateMany,
   UpdateManyResult,
-  UpdatePreference,
   UploadFile,
-} from '@lactalink/types';
-import { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
+} from '@lactalink/types/api';
+import type { FileCollectionSlug } from '@lactalink/types/collections';
+import type { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
+import type {
+  CollectionSlug,
+  PaginatedDocs,
+  SelectFromCollectionSlug,
+} from '@lactalink/types/payload-types';
+
 import { mergeHeaders } from '@lactalink/utilities';
-import { SupabaseClient } from '@supabase/supabase-js';
+
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'qs';
-import { PaginatedDocs } from '../../types/dist/payload-types/database';
 import { AuthClient } from './auth/AuthClient';
 import { apiFetch } from './utils/apiFetch';
 
@@ -113,7 +115,7 @@ export class ApiClient implements IApiClient {
 
   // PUBLIC METHODS (arrow functions to preserve 'this' context)
 
-  getSupabaseClient = (): SupabaseClient => {
+  getSupabaseClient = () => {
     if (typeof this.supabaseClient === 'function') {
       // Create fresh client for each request (perfect for Next.js SSR)
       return this.supabaseClient();
@@ -123,36 +125,36 @@ export class ApiClient implements IApiClient {
     }
   };
 
-  setSupabaseClient = (supabase: SupabaseClient | (() => SupabaseClient)): void => {
+  setSupabaseClient = (supabase: SupabaseClient | (() => SupabaseClient)) => {
     this.supabaseClient = supabase;
   };
 
-  setBypassToken = (bypassToken?: string): void => {
+  setBypassToken = (bypassToken?: string) => {
     this.bypassToken = bypassToken;
   };
 
-  updateHeaders = (headers: Headers): void => {
+  updateHeaders = (headers: Headers) => {
     this.headers = mergeHeaders(this.headers, headers);
   };
 
-  setHeaders = (headers: Headers): void => {
+  setHeaders = (headers: Headers) => {
     this.headers = headers;
   };
 
-  getHeaders = (): Headers => {
+  getHeaders = () => {
     return this.headers;
   };
 
   // Utility methods
-  getAppEnvironment = (): ApiClientConfig['environment'] => {
+  getAppEnvironment = () => {
     return this.appEnvironment;
   };
 
-  isExpoApp = (): boolean => {
+  isExpoApp = () => {
     return this.getAppEnvironment() === 'expo';
   };
 
-  isNextJsApp = (): boolean => {
+  isNextJsApp = () => {
     return this.getAppEnvironment() === 'nextjs';
   };
 
@@ -183,19 +185,17 @@ export class ApiClient implements IApiClient {
   };
 
   find = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug>,
     TPaginate extends boolean = boolean,
   >(
     args: FindMany<TSlug, TSelect, TPaginate>
-  ): Promise<FindManyResult<TSlug, TSelect, TPaginate>> => {
+  ) => {
     const { collection, ...searchParams } = args;
 
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
-    const result = await this._makeApiRequest<
-      PaginatedDocs<TransformCollectionWithSelect<TSlug, TSelect>>
-    >(endpoint, 'GET');
+    const result = await this._makeApiRequest<PaginatedDocs>(endpoint, 'GET');
 
     return (searchParams.pagination ? result : result.docs) as FindManyResult<
       TSlug,
@@ -204,12 +204,9 @@ export class ApiClient implements IApiClient {
     >;
   };
 
-  findByID = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  >(
+  findByID = async <TSlug extends CollectionSlug, TSelect extends SelectFromCollectionSlug<TSlug>>(
     args: FindOne<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>> => {
+  ) => {
     const { collection, id, ...searchParams } = args;
     const queryParams = { ...searchParams, pagination: false };
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
@@ -217,12 +214,9 @@ export class ApiClient implements IApiClient {
     return this._makeApiRequest<FindOneResult<TSlug, TSelect>>(endpoint, 'GET');
   };
 
-  create = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  >(
+  create = async <TSlug extends CollectionSlug, TSelect extends SelectFromCollectionSlug<TSlug>>(
     args: CreateOptions<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>> => {
+  ) => {
     const { collection, data, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
 
@@ -235,7 +229,7 @@ export class ApiClient implements IApiClient {
     TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   >(
     args: UploadFile<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>> => {
+  ) => {
     const { collection, data, file } = args;
 
     const formData = new FormData();
@@ -256,12 +250,9 @@ export class ApiClient implements IApiClient {
     return result.doc;
   };
 
-  update = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  >(
+  update = async <TSlug extends CollectionSlug, TSelect extends SelectFromCollectionSlug<TSlug>>(
     args: UpdateMany<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>[]> => {
+  ) => {
     const { collection, data, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
     const result = await this._makeApiRequest<UpdateManyResult<TSlug, TSelect>>(
@@ -273,11 +264,11 @@ export class ApiClient implements IApiClient {
   };
 
   updateByID = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+    TSlug extends CollectionSlug,
+    TSelect extends SelectFromCollectionSlug<TSlug>,
   >(
     args: UpdateByID<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>> => {
+  ) => {
     const { collection, data, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
     const result = await this._makeApiRequest<UpdateByIDResult<TSlug, TSelect>>(
@@ -288,12 +279,9 @@ export class ApiClient implements IApiClient {
     return result.doc;
   };
 
-  delete = async <
-    TSlug extends CollectionSlug = CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  >(
+  delete = async <TSlug extends CollectionSlug, TSelect extends SelectFromCollectionSlug<TSlug>>(
     args: DeleteMany<TSlug, TSelect>
-  ): Promise<FindOneResult<TSlug, TSelect>[]> => {
+  ) => {
     const { collection, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
     const result = await this._makeApiRequest<DeleteManyResult<TSlug, TSelect>>(endpoint, 'DELETE');
@@ -302,23 +290,23 @@ export class ApiClient implements IApiClient {
 
   deleteByID = async <
     TSlug extends CollectionSlug,
-    TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+    TSelect extends SelectFromCollectionSlug<TSlug>,
   >(
     args: DeleteByID<TSlug, TSelect>
-  ): Promise<DeleteByIDResult<TSlug, TSelect>> => {
+  ) => {
     const { collection, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
 
     return this._makeApiRequest<DeleteByIDResult<TSlug, TSelect>>(endpoint, 'DELETE');
   };
 
-  getPreference = async <TValue = unknown>(key: string): Promise<TValue> => {
+  getPreference = async <TValue = unknown>(key: string) => {
     const endpoint = `/api/payload-preferences/${key}`;
     const result = await this._makeApiRequest<GetPreference<TValue>>(endpoint, 'GET');
     return result.value;
   };
 
-  updatePreference = async <TValue = unknown>(key: string, value: TValue): Promise<TValue> => {
+  updatePreference = async <TValue = unknown>(key: string, value: TValue) => {
     const endpoint = `/api/payload-preferences/${key}`;
     const data = { value };
     const result = await this._makeApiRequest<UpdatePreference<TValue>>(endpoint, 'POST', data);

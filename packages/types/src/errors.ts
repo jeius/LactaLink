@@ -1,4 +1,4 @@
-import { AuthError } from '@supabase/supabase-js';
+import type { AuthError } from '@supabase/supabase-js';
 
 export type CustomError =
   | Error
