@@ -3,7 +3,7 @@ import { COLLECTION_GROUP } from '@/lib/constants';
 import { JobsConfig } from 'payload';
 import { idVerificationTask } from './tasks/idVerification';
 import { sendEmailTask } from './tasks/sendEmail';
-import { idVerificationWorkflow } from './workflows/id-verification';
+import { idVerificationWorkflow } from './workflows/idVerification';
 
 export const jobs: JobsConfig = {
   access: {

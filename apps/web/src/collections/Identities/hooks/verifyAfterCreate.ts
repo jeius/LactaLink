@@ -9,20 +9,26 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
 }) => {
   if (operation !== 'create' || !doc.owner) return doc;
 
-  const findByID = (id: string) =>
-    req.payload.findByID({
+  const defaultQueryOptions = { req, depth: 0, overrideAccess: true };
+
+  function getImage(id: string) {
+    req.payload.logger.info(`Fetching identity image with ID: ${id}`);
+    return req.payload.findByID({
       collection: 'identity-images',
       id,
-      req,
-      depth: 0,
-      select: { url: true },
-      overrideAccess: true,
+      select: { url: true, filename: true },
+      ...defaultQueryOptions,
     });
+  }
 
   const [{ url: queryImageUrl }, { url: refImageUrl }] = await Promise.all([
-    findByID(extractID(doc.idImage)),
-    findByID(extractID(doc.refImage)),
+    getImage(extractID(doc.idImage)),
+    getImage(extractID(doc.refImage)),
   ]);
+
+  req.payload.logger.info(
+    `Fetched images for identity ${doc.id}: queryImageUrl=${queryImageUrl}, refImageUrl=${refImageUrl}`
+  );
 
   if (!queryImageUrl || !refImageUrl) {
     req.payload.logger.error(
@@ -36,10 +42,8 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
     (await req.payload.findByID({
       collection: 'users',
       id: extractID(doc.owner),
-      req,
-      depth: 0,
-      overrideAccess: true,
       select: { email: true },
+      ...defaultQueryOptions,
     }));
 
   // Queue the ID verification job
