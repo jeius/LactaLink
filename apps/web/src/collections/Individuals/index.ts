@@ -39,6 +39,15 @@ export const Individuals: CollectionConfig<'individuals'> = {
     },
     ownerField,
     {
+      name: 'isVerified',
+      label: 'Identity Verified',
+      type: 'checkbox',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'avatar',
       type: 'upload',
       relationTo: 'avatars',

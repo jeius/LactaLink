@@ -12,7 +12,6 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
   const defaultQueryOptions = { req, depth: 0, overrideAccess: true };
 
   function getImage(id: string) {
-    req.payload.logger.info(`Fetching identity image with ID: ${id}`);
     return req.payload.findByID({
       collection: 'identity-images',
       id,
@@ -25,10 +24,6 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
     getImage(extractID(doc.idImage)),
     getImage(extractID(doc.refImage)),
   ]);
-
-  req.payload.logger.info(
-    `Fetched images for identity ${doc.id}: queryImageUrl=${queryImageUrl}, refImageUrl=${refImageUrl}`
-  );
 
   if (!queryImageUrl || !refImageUrl) {
     req.payload.logger.error(

@@ -6,6 +6,7 @@ import { COLLECTION_GROUP, ID_STATUS, ID_TYPES } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateUpdatedBy } from './hooks/generateUpdatedBy';
+import { updateOwnerOnApprove } from './hooks/update';
 import { verifyAfterCreate } from './hooks/verifyAfterCreate';
 
 export const Identities: CollectionConfig<'identities'> = {
@@ -23,7 +24,7 @@ export const Identities: CollectionConfig<'identities'> = {
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateOwner, generateUpdatedBy],
-    afterChange: [verifyAfterCreate],
+    afterChange: [verifyAfterCreate, updateOwnerOnApprove],
   },
   fields: [
     createdByField,

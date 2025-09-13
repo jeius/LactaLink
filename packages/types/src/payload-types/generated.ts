@@ -402,6 +402,7 @@ export interface Individual {
   id: string;
   displayName?: string | null;
   owner?: (string | null) | User;
+  isVerified?: boolean | null;
   avatar?: (string | null) | Avatar;
   givenName: string;
   middleName?: string | null;
@@ -2303,6 +2304,7 @@ export interface ImagesSelect<T extends boolean = true> {
 export interface IndividualsSelect<T extends boolean = true> {
   displayName?: T;
   owner?: T;
+  isVerified?: T;
   avatar?: T;
   givenName?: T;
   middleName?: T;
