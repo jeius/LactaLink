@@ -16,6 +16,7 @@ import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
 import { jobs } from './jobs';
 import { views } from './lib/db/drizzle/schema';
+import { logger } from './lib/logger';
 import { plugins } from './lib/plugins';
 import { baseAdminMeta } from './lib/utils/baseMeta';
 import { getServerSideURL } from './lib/utils/getURL';
@@ -57,10 +58,8 @@ export default buildConfig({
     autoGenerate: true,
     declare: false,
   },
-  logger: {
-    level: process.env.NODE_ENV === 'production' ? 'error' : 'info',
-    options: {},
-  },
+  // @ts-expect-error PayloadLogger type is not up to date
+  logger: logger,
   editor: lexicalEditor({
     features: ({ rootFeatures }) => {
       return [
