@@ -190,15 +190,20 @@ export const enum_transaction_status = pgEnum('enum_transaction_status', [
 export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
 export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', [
   'inline',
-  'id-verification',
+  'id-verification-task',
+  'send-email',
 ]);
 export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', [
   'failed',
   'succeeded',
 ]);
+export const enum_payload_jobs_workflow_slug = pgEnum('enum_payload_jobs_workflow_slug', [
+  'id-verification-workflow',
+]);
 export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug', [
   'inline',
-  'id-verification',
+  'id-verification-task',
+  'send-email',
 ]);
 
 export const addresses = pgTable(
@@ -1982,6 +1987,7 @@ export const payload_jobs = pgTable(
     totalTried: numeric('total_tried').default('0'),
     hasError: boolean('has_error').default(false),
     error: jsonb('error'),
+    workflowSlug: enum_payload_jobs_workflow_slug('workflow_slug'),
     taskSlug: enum_payload_jobs_task_slug('task_slug'),
     queue: varchar('queue').default('default'),
     waitUntil: timestamp('wait_until', { mode: 'string', withTimezone: true, precision: 3 }),
@@ -1997,6 +2003,9 @@ export const payload_jobs = pgTable(
     payload_jobs_completed_at_idx: index('payload_jobs_completed_at_idx').on(columns.completedAt),
     payload_jobs_total_tried_idx: index('payload_jobs_total_tried_idx').on(columns.totalTried),
     payload_jobs_has_error_idx: index('payload_jobs_has_error_idx').on(columns.hasError),
+    payload_jobs_workflow_slug_idx: index('payload_jobs_workflow_slug_idx').on(
+      columns.workflowSlug
+    ),
     payload_jobs_task_slug_idx: index('payload_jobs_task_slug_idx').on(columns.taskSlug),
     payload_jobs_queue_idx: index('payload_jobs_queue_idx').on(columns.queue),
     payload_jobs_wait_until_idx: index('payload_jobs_wait_until_idx').on(columns.waitUntil),
@@ -3251,6 +3260,7 @@ type DatabaseSchema = {
   enum_transaction_type: typeof enum_transaction_type;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
+  enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
   enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug;
   addresses: typeof addresses;
   avatars: typeof avatars;

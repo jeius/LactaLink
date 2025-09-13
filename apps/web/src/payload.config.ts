@@ -52,11 +52,14 @@ export default buildConfig({
   i18n: { translations: { en: { general: { payloadSettings: 'Settings' } } } },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
-    outputFile: path.resolve(dirname, './lib/types/payload-types.ts'),
+    // Output to @lactalink/types package
+    outputFile: path.resolve(dirname, '../../../packages/types/src/payload-types/generated.ts'),
+    autoGenerate: true,
+    declare: false,
   },
   logger: {
-    level: process.env.NODE_ENV === 'production' ? 'error' : 'trace',
-    options: { enabled: true },
+    level: process.env.NODE_ENV === 'production' ? 'error' : 'info',
+    options: {},
   },
   editor: lexicalEditor({
     features: ({ rootFeatures }) => {

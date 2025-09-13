@@ -281,13 +281,16 @@ export interface Config {
   };
   jobs: {
     tasks: {
-      'id-verification': IDVerficationTask;
+      'id-verification-task': IDVerficationTask;
+      'send-email': SendEmailTask;
       inline: {
         input: unknown;
         output: unknown;
       };
     };
-    workflows: unknown;
+    workflows: {
+      'id-verification-workflow': IDVerificationWorkflow;
+    };
   };
 }
 export interface UserAuthOperations {
@@ -1817,7 +1820,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'id-verification';
+        taskSlug: 'inline' | 'id-verification-task' | 'send-email';
         taskID: string;
         input?:
           | {
@@ -1850,7 +1853,8 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'id-verification') | null;
+  workflowSlug?: 'id-verification-workflow' | null;
+  taskSlug?: ('inline' | 'id-verification-task' | 'send-email') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -2821,6 +2825,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
         error?: T;
         id?: T;
       };
+  workflowSlug?: T;
   taskSlug?: T;
   queue?: T;
   waitUntil?: T;
@@ -2869,10 +2874,39 @@ export interface IDVerficationTask {
     refImageUrl: string;
     queryImageUrl: string;
     identityID: string;
-    email: string;
   };
   output: {
-    identity: string | Identity;
+    isVerified: boolean;
+    label: string;
+    distance: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SendEmailTask".
+ */
+export interface SendEmailTask {
+  input: {
+    to: string;
+    subject: string;
+    html?: string | null;
+    text?: string | null;
+  };
+  output: {
+    message: string;
+    sent: boolean;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IDVerificationWorkflow".
+ */
+export interface IDVerificationWorkflow {
+  input: {
+    refImageUrl: string;
+    queryImageUrl: string;
+    identityID: string;
+    email: string;
   };
 }
 /**
@@ -2881,9 +2915,4 @@ export interface IDVerficationTask {
  */
 export interface Auth {
   [k: string]: unknown;
-}
-
-
-declare module 'payload' {
-  export interface GeneratedTypes extends Config {}
 }

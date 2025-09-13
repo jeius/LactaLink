@@ -1,3 +1,5 @@
+import { Config as PayloadConfig } from '@lactalink/types/payload-generated-types';
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -26,6 +28,10 @@ declare global {
       GOOGLE_CLOUD_VISION_API_KEY: string;
     }
   }
+}
+
+declare module 'payload' {
+  export interface GeneratedTypes extends PayloadConfig {}
 }
 
 // If this file has no import/export statements (i.e. is a script)

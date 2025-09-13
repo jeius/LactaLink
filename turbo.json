@@ -40,7 +40,7 @@
     },
     "dev": {
       "cache": false,
-      "dependsOn": ["@lactalink/web#generate:schema"],
+      "dependsOn": ["@lactalink/web#generate:schema", "@lactalink/web#generate:types"],
       "persistent": true
     },
     "lint": {
@@ -52,9 +52,11 @@
     "@lactalink/web#generate:types": {
       "inputs": [
         "src/collections/**/*",
+        "src/jobs/**/*",
         "src/hooks/collections/**/*",
         "src/fields/**/*",
-        "src/lib/constants/**/*"
+        "src/lib/constants/**/*",
+        "src/payload.config.ts"
       ],
       "outputs": [
         "src/lib/types/payload-types.ts",
