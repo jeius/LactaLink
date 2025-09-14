@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from '@/components/Image';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { MAX_IMAGE_SIZE, QUERY_KEYS } from '@/lib/constants';
-import { ImageSchema, SetupProfileSchema } from '@lactalink/types';
+import { ImageSchema, SetupProfileSchema } from '@lactalink/form-schemas';
 import { useQuery } from '@tanstack/react-query';
 import { CameraIcon, ImageIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -19,7 +19,8 @@ import { VStack } from './ui/vstack';
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
 import { transformImage } from '@/lib/utils/imageProcessors';
-import { extractErrorMessage, sanitizeStringForFilename } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { sanitizeStringForFilename } from '@lactalink/utilities/formatters';
 import { Directory, File, Paths } from 'expo-file-system/next';
 import { toast } from 'sonner-native';
 

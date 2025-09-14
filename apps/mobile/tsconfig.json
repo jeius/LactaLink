@@ -3,10 +3,12 @@
   "compilerOptions": {
     "strict": true,
     "rootDir": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": ["./*"],
       "tailwind.config": ["./tailwind.config.js"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      "@lactalink/form-schemas": ["./lib/types/formSchemas.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]

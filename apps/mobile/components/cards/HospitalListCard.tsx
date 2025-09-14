@@ -1,17 +1,12 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getHexColor } from '@/lib/colors';
 import { useLocationStore } from '@/lib/stores/locationStore';
-import { Address, Hospital } from '@lactalink/types';
-import {
-  convertDistance,
-  extractCollection,
-  extractID,
-  extractImageData,
-  getDistance,
-  isString,
-} from '@lactalink/utilities';
+import { Address, Hospital } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID, extractImageData } from '@lactalink/utilities/extractors';
+import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
+import { isString } from '@lactalink/utilities/type-guards';
 import { Building2Icon, MapPinIcon, MilkIcon } from 'lucide-react-native';
-import React, { ReactNode, useMemo } from 'react';
+import { ComponentProps, ReactNode, useMemo } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { BasicBadge } from '../badges';
 import { SingleImageViewer } from '../ImageViewer';
@@ -23,7 +18,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-export interface HospitalListCardProps extends React.ComponentProps<typeof Card> {
+export interface HospitalListCardProps extends ComponentProps<typeof Card> {
   data?: string | Hospital;
   isLoading?: boolean;
   action?: ReactNode;

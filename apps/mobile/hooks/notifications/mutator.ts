@@ -1,7 +1,6 @@
 import { getApiClient } from '@lactalink/api';
-import { Notification } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { Notification } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner-native';
 import { useMarkSeenMutation } from '../collections/useMarkSeenMutation';

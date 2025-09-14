@@ -9,7 +9,7 @@ import { ErrorSearchParams, Point } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { useMapStore } from '@/lib/stores/mapStore';
-import { arePointsEqual } from '@lactalink/utilities';
+import { arePointsEqual } from '@lactalink/utilities/geo-utils';
 import { LocationObjectCoords } from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useSharedValue } from 'react-native-reanimated';
@@ -22,7 +22,7 @@ import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { UserMarker } from './markers/UserMarker';
 
-interface MapViewProps extends ComponentProps<typeof RNMapView> {}
+type MapViewProps = ComponentProps<typeof RNMapView>;
 
 export function MapView({ children, ...props }: MapViewProps) {
   const insets = useSafeAreaInsets();

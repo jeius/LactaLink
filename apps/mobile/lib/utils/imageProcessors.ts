@@ -1,5 +1,5 @@
-import { ImageSchema } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { ImageSchema } from '@lactalink/form-schemas';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system/next';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { Image, getImageMetaData } from 'react-native-compressor';

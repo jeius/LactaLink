@@ -7,11 +7,8 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeftIcon, HomeIcon } from 'lucide-react-native';
 
 const ErrorPage = () => {
-  const {
-    message = 'Sorry! Something went wrong.',
-    title = 'Unexpected Error',
-    action: _,
-  } = useLocalSearchParams<ErrorSearchParams>();
+  const { message = 'Sorry! Something went wrong.', title = 'Unexpected Error' } =
+    useLocalSearchParams<ErrorSearchParams>();
   const router = useRouter();
   const canGoBack = router.canGoBack();
 

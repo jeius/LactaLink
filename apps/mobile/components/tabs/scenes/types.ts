@@ -1,4 +1,4 @@
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Route } from 'react-native-tab-view';
 
 export interface SceneProps<T = unknown> {

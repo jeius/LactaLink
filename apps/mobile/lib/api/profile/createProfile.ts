@@ -1,13 +1,7 @@
 import { getApiClient } from '@lactalink/api';
-import {
-  Hospital,
-  HospitalSchema,
-  Individual,
-  IndividualSchema,
-  MilkBank,
-  MilkBankSchema,
-} from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/form-schemas';
+import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 
 type Input = IndividualSchema | HospitalSchema | MilkBankSchema;
 type Output = Individual | Hospital | MilkBank;

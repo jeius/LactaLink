@@ -5,7 +5,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { extractName } from '@lactalink/utilities';
+import { extractName } from '@lactalink/utilities/extractors';
 import { Motion } from '@legendapp/motion';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';

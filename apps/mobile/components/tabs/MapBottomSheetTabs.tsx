@@ -1,8 +1,11 @@
-import { CollectionSlug, Donation, Request } from '@lactalink/types';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { Route, SceneMap } from 'react-native-tab-view';
 
 import { createMarkerID, setSelectedMarker } from '@/lib/stores/markersStore';
-import { extractCollection, isDonation, validatePoint } from '@lactalink/utilities';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { validatePoint } from '@lactalink/utilities/geo-utils';
+import { isDonation } from '@lactalink/utilities/type-guards';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { DonationRequestScene } from './scenes/DonationRequestScene';

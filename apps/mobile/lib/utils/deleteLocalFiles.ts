@@ -1,4 +1,4 @@
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system/next';
 
 export function deleteLocalFiles(uris: string[]) {

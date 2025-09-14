@@ -3,7 +3,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import * as ImagePicker from 'expo-image-picker';
 
 import { MAX_IMAGE_SIZE } from '@/lib/constants';
-import { ImageSchema } from '@lactalink/types';
+import { ImageSchema } from '@lactalink/form-schemas';
 import { CameraIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
 import React, { forwardRef, Ref, useImperativeHandle, useRef, useState } from 'react';
 import { Box } from './ui/box';
@@ -15,7 +15,7 @@ import { VStack } from './ui/vstack';
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
 import { transformImage } from '@/lib/utils/imageProcessors';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
 const containerStyle = tva({

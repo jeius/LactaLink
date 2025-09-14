@@ -1,4 +1,4 @@
-import { SetupProfileSchema } from '@lactalink/types';
+import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { FieldPath } from 'react-hook-form';
 
 export type ProfileType = SetupProfileSchema['profileType'];

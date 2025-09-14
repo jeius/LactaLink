@@ -1,6 +1,6 @@
-import { DeliveryPreference } from '@lactalink/types';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { convertDistance, getDistance } from '@lactalink/utilities/geo-utils';
+import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
 import { LatLng } from 'react-native-maps';
 import { useLocationStore } from '../stores/locationStore';
 

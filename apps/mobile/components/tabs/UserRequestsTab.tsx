@@ -8,8 +8,9 @@ import { useFetchById } from '@/hooks/collections/useFetchById';
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
 import { getTimeStampWithLabel } from '@/lib/utils/getTimestampWithLabel';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import { CollectionSlug, Where } from '@lactalink/types';
-import { extractID, extractName, formatKebabToTitle } from '@lactalink/utilities';
+import { CollectionSlug, Where } from '@lactalink/types/payload-types';
+import { extractID, extractName } from '@lactalink/utilities/extractors';
+import { formatKebabToTitle } from '@lactalink/utilities/formatters';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -75,7 +76,6 @@ function Scene({ route }: SceneProps) {
   const {
     data: fetchedUser,
     isLoading,
-    error,
     isRefetching,
   } = useFetchById(hasOtherUser && !isMeUser, {
     collection: 'users',

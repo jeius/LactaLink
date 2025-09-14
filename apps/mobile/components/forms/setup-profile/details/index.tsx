@@ -1,7 +1,7 @@
 import { FormField, FormFieldProps } from '@/components/FormField';
 import { VStack } from '@/components/ui/vstack';
 import { ProfileType } from '@/lib/types';
-import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
+import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/form-schemas';
 import { BabyIcon, HashIcon, HospitalIcon, User2Icon } from 'lucide-react-native';
 import React from 'react';
 import { buildingTypeOptions, genderOptions, maritalStatusOptions } from './options';

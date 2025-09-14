@@ -1,5 +1,5 @@
 import { COLLECTION_QUERY_KEY, INFINITE_QUERY_KEY, QUERY_KEYS } from '@/lib/constants';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 

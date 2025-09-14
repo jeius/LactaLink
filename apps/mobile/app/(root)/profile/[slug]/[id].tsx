@@ -3,8 +3,8 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { CollectionSlug } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 

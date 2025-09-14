@@ -4,7 +4,7 @@ import { AppProvider } from '@/components/AppProvider';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
-import { ApiClientConfig } from '@lactalink/types';
+import { ApiClientConfig } from '@lactalink/types/interfaces';
 
 import '@/global.css';
 import 'react-native-get-random-values';

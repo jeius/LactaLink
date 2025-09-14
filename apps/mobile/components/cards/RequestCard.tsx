@@ -1,6 +1,6 @@
-import { URGENCY_LEVELS } from '@/lib/constants';
-import { Request } from '@lactalink/types';
-import { convertDistance, extractCollection, getDistance } from '@lactalink/utilities';
+import { URGENCY_LEVELS } from '@lactalink/enums';
+import { Request } from '@lactalink/types/payload-generated-types';
+import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
 import React from 'react';
 import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
 import { Box } from '../ui/box';
@@ -15,6 +15,7 @@ import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
 import BasicLocationPin from '../icons/BasicLocationPin';

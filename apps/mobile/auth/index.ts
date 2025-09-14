@@ -1,18 +1,20 @@
 import { AUTH_TOAST_ID } from '@/lib/constants';
-import { SignUpSchema } from '@/lib/types';
 import { getApiClient } from '@lactalink/api';
+import { SignInSchema } from '@lactalink/form-schemas';
+
 import {
   ResendEmailOtpSearchParams,
-  SignInSchema,
   VerifyOtp,
   VerifyOtpSearchParams,
-} from '@lactalink/types';
+} from '@lactalink/types/auth';
+
 import {
   extractAuthErrorCode,
   extractErrorMessage,
   extractName,
-  isResend,
-} from '@lactalink/utilities';
+} from '@lactalink/utilities/extractors';
+import { isResend } from '@lactalink/utilities/type-guards';
+
 import { VerifyOtpParams } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { toast } from 'sonner-native';
@@ -43,7 +45,7 @@ export async function signIn(formData: SignInSchema) {
   }
 }
 
-export async function signUp({ email, password }: SignUpSchema) {
+export async function signUp({ email, password }: SignInSchema) {
   const apiClient = getApiClient();
   await apiClient.auth.signUp({ email, password });
 

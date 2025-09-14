@@ -1,4 +1,4 @@
-import { MilkBag } from '@lactalink/types';
+import { MilkBag } from '@lactalink/types/payload-generated-types';
 
 export function segregateMilkBags<T extends Pick<MilkBag, 'volume' | 'collectedAt'>>(
   milkBags: T[]

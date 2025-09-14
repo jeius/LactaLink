@@ -1,10 +1,13 @@
 import { requestStorage } from '@/lib/localStorage';
+import { requestSchema, RequestSchema } from '@lactalink/form-schemas';
+
+import { User } from '@lactalink/types/payload-generated-types';
+import { createStorageKeyByUser } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { requestSchema, RequestSchema, User } from '@lactalink/types';
-
-import { createStorageKeyByUser, extractCollection, extractID } from '@lactalink/utilities';
-
-import { debounce, isEqual } from 'lodash';
+import debounce from 'lodash/debounce';
+import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 

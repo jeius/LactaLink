@@ -1,5 +1,5 @@
 import { getApiClient } from '@lactalink/api';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 
 type Slug = Extract<CollectionSlug, 'donations' | 'notifications' | 'requests' | 'transactions'>;
 

@@ -25,6 +25,7 @@
     "refresh": "pnpm clean:all && pnpm install && pnpm run build:packages"
   },
   "devDependencies": {
+    "@babel/cli": "^7.28.3",
     "@types/jest": "^29.5.14",
     "glob": "^11.0.3",
     "jest": "^30.0.5",

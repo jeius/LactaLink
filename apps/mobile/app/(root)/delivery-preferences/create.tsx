@@ -18,10 +18,11 @@ import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
-import { DeliveryPreference, ErrorSearchParams } from '@lactalink/types';
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
+import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, useRouter } from 'expo-router';
 import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
 

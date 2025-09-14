@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addressSchema } from '@lactalink/types/forms';
-import { extractID } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities/extractors';
 
 import { useForm } from 'react-hook-form';
 
@@ -16,7 +16,7 @@ export function useAddressForm(id?: string) {
     error,
   } = useFetchById(Boolean(id), {
     collection: 'addresses',
-    id: id,
+    id: id || '',
     depth: 0,
   });
 

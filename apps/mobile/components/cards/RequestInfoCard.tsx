@@ -1,12 +1,13 @@
-import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@/lib/constants';
+import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 
-import { Avatar as AvatarType, Image as ImageType, Individual, Request } from '@lactalink/types';
+import { Image as ImageType, Request } from '@lactalink/types/payload-generated-types';
 import React from 'react';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { extractCollection, formatDate } from '@lactalink/utilities';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useRouter } from 'expo-router';
 import { EditIcon, HandHelpingIcon } from 'lucide-react-native';
 import Avatar from '../Avatar';
@@ -45,15 +46,15 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
     volumeNeeded,
   } = data;
 
-  const requester = data.requester as Individual;
-  const requestername = requester.displayName;
-  const requesterAvatar = requester.avatar as AvatarType | null | undefined;
+  const requester = extractCollection(data.requester);
+  const requestername = requester?.displayName;
+  const requesterAvatar = extractCollection(requester?.avatar);
 
   const milkImage = image as ImageType | undefined | null;
   const imageUrl = milkImage?.sizes?.large?.url || milkImage?.url;
   const blurHash = milkImage?.blurHash || undefined;
 
-  const isOwner = profile && profile.id === requester.id;
+  const isOwner = profile && profile.id === requester?.id;
 
   function handleDonatePress() {
     const params: DonationCreateSearchParams = { matchedRequest: data.id };
@@ -85,8 +86,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
         <Text size="sm">
           Needed at:{' '}
           <Text size="sm" className="text-primary-500 font-JakartaSemiBold">
-            {formatDate(neededAt)},{' '}
-            {new Date(neededAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {formatLocaleTime(neededAt)}, {formatDate(neededAt, { shortMonth: true })}
           </Text>
         </Text>
 

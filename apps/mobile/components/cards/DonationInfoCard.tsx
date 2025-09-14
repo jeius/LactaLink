@@ -1,5 +1,5 @@
-import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
+import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 
 import {
   Avatar as AvatarType,
@@ -7,13 +7,14 @@ import {
   Image as ImageType,
   Individual,
   MilkBag,
-} from '@lactalink/types';
+} from '@lactalink/types/payload-generated-types';
+
 import { EditIcon, MilkIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { RequestSearchParams } from '@/lib/types/donationRequest';
-import { extractCollection } from '@lactalink/utilities';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { AnimatedProgress } from '../animated/progress';
 import Avatar from '../Avatar';

@@ -1,4 +1,5 @@
-import { TutorialState, TutorialStateValue, User } from '@lactalink/types';
+import { TutorialState, TutorialStateValue } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 import { useQuery } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { getTutorialState, updateTutorialState } from '../api/payload-preferences';

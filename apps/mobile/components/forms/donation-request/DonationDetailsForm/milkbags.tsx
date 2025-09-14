@@ -15,8 +15,8 @@ import { VStack } from '@/components/ui/vstack';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 
-import { DonationSchema } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { DonationSchema } from '@lactalink/form-schemas';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { randomUUID } from 'expo-crypto';
 
 import { AlertCircleIcon, MilkIcon, PlusIcon, TimerIcon, Trash2Icon } from 'lucide-react-native';

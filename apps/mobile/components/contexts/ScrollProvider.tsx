@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useRef } from 'react';
-import { NativeScrollEvent } from 'react-native';
+import type { NativeScrollEvent } from 'react-native';
 import {
   interpolate,
   SharedValue,

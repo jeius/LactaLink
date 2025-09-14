@@ -1,4 +1,4 @@
-import { extractID } from '@lactalink/utilities';
+import { extractID } from '@lactalink/utilities/extractors';
 import { useFetchNotifications } from './fetcher';
 import { useMutateNotifications } from './mutator';
 

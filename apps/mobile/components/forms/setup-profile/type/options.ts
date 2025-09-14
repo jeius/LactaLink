@@ -1,5 +1,5 @@
 import { getImageAsset } from '@/lib/stores';
-import { SetupProfileSchema } from '@lactalink/types';
+import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { ImageSource } from 'expo-image';
 
 type ProfileTypeOptions = {

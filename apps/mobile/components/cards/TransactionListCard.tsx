@@ -1,6 +1,7 @@
 import { TRANSACTION_STATUS } from '@lactalink/enums';
-import { Transaction, User } from '@lactalink/types';
-import { extractCollection, extractID, isHospital, isMilkBank } from '@lactalink/utilities';
+import { Transaction, User } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { isHospital, isMilkBank } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { ComponentProps } from 'react';

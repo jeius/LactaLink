@@ -6,7 +6,7 @@ import { SceneProps } from '@/components/tabs/scenes/types';
 import { Tab } from '@/components/tabs/Tab';
 import { TabBar } from '@/components/tabs/TabBar';
 import { Icon } from '@/components/ui/icon';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { LucideProps } from 'lucide-react-native';
 import React, { FC, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';

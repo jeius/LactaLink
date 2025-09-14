@@ -4,7 +4,7 @@ import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 import { OptionsCardType } from '@/components/cards/OptionsCards';
 import { InputField } from '@/components/ui/input';
 import { TextareaInput } from '@/components/ui/textarea';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { StyleProp, ViewStyle } from 'react-native';
 import { ComboboxType } from '../Combobox';

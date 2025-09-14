@@ -1,4 +1,4 @@
-import { DeliveryPreference } from '@lactalink/types';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { Asset } from 'expo-asset';
 import { getIconAsset } from '../stores';
 

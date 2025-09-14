@@ -24,7 +24,7 @@ export default function CreatePage() {
 
   const revalidateQueries = useRevalidateCollectionQueries();
 
-  const { form, isLoading, isFetching, error } = useAddressForm();
+  const { form, isLoading, error } = useAddressForm();
 
   async function onSubmit(formData: AddressSchema) {
     const success = await upsertAddress(formData);

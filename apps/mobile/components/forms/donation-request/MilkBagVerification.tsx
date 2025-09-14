@@ -24,12 +24,13 @@ import { MMKV_KEYS } from '@/lib/constants';
 
 import localStorage from '@/lib/localStorage';
 
-import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/types';
-import { extractErrorMessage, formatDate } from '@lactalink/utilities';
+import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
 import * as ImagePicker from 'expo-image-picker';
 
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { CameraIcon, ChevronDownIcon, ChevronUpIcon, ImageIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner-native';
@@ -53,11 +54,8 @@ export default function MilkBagVerification() {
     const quantity = bags.length;
     const volume = bags[0]?.volume || 0;
     const collectedAt = bags[0]?.collectedAt || new Date().toISOString();
-    const date = formatDate(collectedAt);
-    const time = new Date(collectedAt).toLocaleTimeString('en', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const date = formatDate(collectedAt, { shortMonth: true });
+    const time = formatLocaleTime(collectedAt);
 
     function handleOnCapture(index: number) {
       return (image: ImageSchema) => {
@@ -180,10 +178,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   async function deletePrev() {
     try {
       if (capturedImage) {
-        await FileSystem.deleteAsync(capturedImage.url, { idempotent: false });
+        const file = new File(capturedImage.url);
+        file.delete();
       }
     } catch (error) {
-      console.warn('Failed to delete local file:', error);
+      console.warn('Failed to delete local file:', extractErrorMessage(error));
     }
   }
 
@@ -213,13 +212,10 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
           >
             <VStack className="items-start">
               <Text className="text-typography-800 font-JakartaMedium">
-                {new Date(collectedAt).toLocaleTimeString('en', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {formatLocaleTime(collectedAt)}
               </Text>
               <Text className="text-typography-800 font-JakartaMedium">
-                {formatDate(collectedAt)}
+                {formatDate(collectedAt, { shortMonth: true })}
               </Text>
             </VStack>
 

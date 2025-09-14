@@ -1,12 +1,12 @@
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Address } from '@lactalink/types';
-import { deliveryPreferenceSchema } from '@lactalink/types/forms';
-import { areStrings, extractID } from '@lactalink/utilities';
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
+import { deliveryPreferenceSchema } from '@lactalink/form-schemas';
 
-import { useForm } from 'react-hook-form';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+
 import { useMeUser } from '../auth/useAuth';
 import { useFetchById } from '../collections/useFetchById';
 
@@ -20,16 +20,13 @@ export function useDeliveryPreferenceForm(id?: string) {
     error: dpError,
   } = useFetchById(Boolean(id), {
     collection: 'delivery-preferences',
-    id: id,
+    id: id || '',
     select: { name: true, address: true, availableDays: true, preferredMode: true, owner: true },
     depth: 0,
   });
 
-  const userAddresses = user?.addresses?.docs || [];
-  const defaultAddress =
-    (!areStrings(userAddresses) &&
-      (userAddresses as Address[]).find((address) => address.isDefault)) ||
-    undefined;
+  const userAddresses = extractCollection(user?.addresses?.docs) || [];
+  const defaultAddress = userAddresses.find((address) => address.isDefault) || undefined;
 
   const isLoading = meUser.isLoading || isDPLoading;
   const isFetching = meUser.isFetching || isDPFetching;

@@ -1,7 +1,7 @@
 import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
-import { DonationSchema } from '@lactalink/types';
-import { formatDate } from '@lactalink/utilities';
+import { DonationSchema } from '@lactalink/form-schemas';
+import { formatDate } from '@lactalink/utilities/formatters';
 import { DotIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';

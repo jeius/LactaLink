@@ -1,9 +1,8 @@
 import {
   CollectionSlug,
-  MarkOptional,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
-} from '@lactalink/types';
+} from '@lactalink/types/payload-types';
 import React, { FC, useCallback, useEffect, useMemo } from 'react';
 
 import { Box } from '@/components/ui/box';
@@ -12,7 +11,9 @@ import {
   InfiniteQueryOptions,
   useInfiniteFetchBySlug,
 } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { formatKebab } from '@lactalink/utilities';
+import { MarkOptional } from '@lactalink/types/utils';
+import { formatKebab } from '@lactalink/utilities/formatters';
+
 import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
 import { NoData } from '../NoData';

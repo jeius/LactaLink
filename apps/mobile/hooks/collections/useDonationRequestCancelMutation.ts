@@ -1,14 +1,11 @@
 import { getApiClient } from '@lactalink/api';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import {
-  Collection,
-  CollectionSlug,
-  Donation,
-  DonationRequestStatus,
-  PaginatedDocs,
-  Request,
-} from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { DonationRequestStatus } from '@lactalink/types';
+import { Collection } from '@lactalink/types/collections';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug, PaginatedDocs } from '@lactalink/types/payload-types';
+
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { InfiniteData, QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner-native';
 

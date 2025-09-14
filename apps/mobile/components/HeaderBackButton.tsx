@@ -2,7 +2,7 @@ import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
 import { ArrowLeftIcon } from 'lucide-react-native';
 import { ComponentPropsWithoutRef, useEffect } from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
 import { AnimatedPressable } from './animated/pressable';
 import { LeaveToastAction } from './toasts/ToastAction';
@@ -60,7 +60,7 @@ export function HeaderBackButton({
       {...props}
       hitSlop={10}
       onPress={handleOnPress}
-      style={[{ padding: 8, marginRight: 5 }, props.style]}
+      style={StyleSheet.flatten([{ padding: 8, marginRight: 5 }, props.style])}
     >
       <Icon className="text-primary-0 h-6 w-6" as={ArrowLeftIcon} />
     </AnimatedPressable>

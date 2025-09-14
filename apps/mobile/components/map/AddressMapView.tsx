@@ -141,13 +141,7 @@ export function AddressMapView({
         {children}
 
         {location && isMapLoaded && (
-          <UserMarker
-            ref={userMarkerRef}
-            hideHeading
-            showAvatar={false}
-            mapRef={mapRef}
-            camera={camera}
-          />
+          <UserMarker ref={userMarkerRef} hideHeading showAvatar={false} camera={camera} />
         )}
       </RNMapView>
 

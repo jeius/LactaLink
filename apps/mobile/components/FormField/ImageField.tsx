@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { ImageSchema } from '@lactalink/types';
+import { ImageSchema } from '@lactalink/form-schemas';
 import { Motion } from '@legendapp/motion';
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';

@@ -1,5 +1,5 @@
 import { Asset } from 'expo-asset';
-import { ICON_ASSETS, IMAGE_ASSETS } from '../constants';
+import { ICON_ASSETS, IMAGE_ASSETS } from '../constants/assets';
 
 export type IconAsset = typeof ICON_ASSETS;
 

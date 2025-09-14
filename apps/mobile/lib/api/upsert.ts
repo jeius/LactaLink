@@ -1,7 +1,7 @@
 import { getApiClient } from '@lactalink/api';
-import { Address, DeliveryPreference } from '@lactalink/types';
 import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/types/forms';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
 const apiClient = getApiClient();

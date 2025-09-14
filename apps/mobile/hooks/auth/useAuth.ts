@@ -1,6 +1,6 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import { extractCollection } from '@lactalink/utilities';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';

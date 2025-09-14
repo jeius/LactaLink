@@ -1,18 +1,21 @@
-import { Card } from '@/components/ui/card';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { Address } from '@lactalink/types';
-import React, { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
-
 import { BasicBadge } from '@/components/badges';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { isString } from '@lactalink/utilities/type-guards';
+
+import { ComponentProps, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import MapView, { LatLng, MapMarker, Marker } from 'react-native-maps';
 import { Pressable } from '../ui/pressable';
@@ -30,7 +33,7 @@ interface AddressCardProps extends ComponentProps<typeof Card> {
   data: string | Address;
   isLoading?: boolean;
   showMap?: boolean;
-  action?: React.ReactNode;
+  action?: ReactNode;
   disableTapOnMap?: boolean;
 }
 

@@ -12,18 +12,20 @@ module.exports = function (api) {
           alias: {
             '@': './',
             'tailwind.config': './tailwind.config.js',
+            '@lactalink/form-schemas': './lib/types/formSchemas.ts',
           },
         },
       ],
       [
-        'dotenv-import',
+        'module:react-native-dotenv',
         {
+          envName: 'APP_ENV',
           moduleName: '@env',
-          path: ['.env', '.env.development', '.env.production'],
+          paths: ['.env', '.env.development', '.env.production'],
           blocklist: null,
           allowlist: null,
           safe: false,
-          allowUndefined: false,
+          allowUndefined: true,
         },
       ],
     ],

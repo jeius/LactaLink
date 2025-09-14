@@ -12,7 +12,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { getImageAsset } from '@/lib/stores';
-import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
+import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types/auth';
 
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';

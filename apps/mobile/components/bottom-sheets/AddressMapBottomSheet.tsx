@@ -1,4 +1,4 @@
-import { AddressSchema } from '@lactalink/types';
+import { AddressSchema } from '@lactalink/form-schemas';
 import {
   CheckIcon,
   LandmarkIcon,

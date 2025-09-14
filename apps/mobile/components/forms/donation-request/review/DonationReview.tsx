@@ -9,10 +9,10 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 
-import { COLLECTION_MODES, DAYS, DELIVERY_OPTIONS, STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, DAYS, DELIVERY_OPTIONS, STORAGE_TYPES } from '@lactalink/enums';
 
-import { DonationSchema } from '@lactalink/types';
-import { formatDate } from '@lactalink/utilities';
+import { DonationSchema } from '@lactalink/form-schemas';
+import { formatDate } from '@lactalink/utilities/formatters';
 import { DotIcon, MapPinIcon, MilkIcon, TruckIcon } from 'lucide-react-native';
 import { Fragment, useMemo } from 'react';
 
@@ -21,8 +21,8 @@ import { useFormContext } from 'react-hook-form';
 export function DonationReview() {
   const { getValues } = useFormContext<DonationSchema>();
   const {
-    details: { storageType, collectionMode, bags, notes, milkSample },
-    deliveryDetails: formDeliveryDetails,
+    details: { storageType, collectionMode, bags, notes, image: milkSample },
+    deliveryPreferences: formDeliveryDetails,
   } = getValues();
 
   const { data: addressDocs, isLoading } = useFetchBySlug(true, {
@@ -104,22 +104,20 @@ export function DonationReview() {
 
           {milkSample ? (
             <VStack space="sm">
-              <Text>Milk Sample{milkSample.length > 1 ? 's' : null}:</Text>
+              <Text>Milk Sample:</Text>
 
               <HStack space="md" className="flex-wrap items-center">
-                {milkSample.map((image, index) => (
-                  <Card key={index} size="lg" variant="outline" className="h-24 w-20 p-0">
-                    <Image
-                      alt={image.alt}
-                      contentFit="cover"
-                      source={{ uri: image.url }}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  </Card>
-                ))}
+                <Card size="lg" variant="outline" className="h-24 w-20 p-0">
+                  <Image
+                    alt={milkSample.alt}
+                    contentFit="cover"
+                    source={{ uri: milkSample.url }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  />
+                </Card>
               </HStack>
             </VStack>
           ) : (

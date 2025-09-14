@@ -28,8 +28,8 @@ import { getIconAsset } from '@/lib/stores';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { SetupProfileSchema } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { SetupProfileSchema } from '@lactalink/form-schemas';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { FC, useState } from 'react';

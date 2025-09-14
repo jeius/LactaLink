@@ -1,7 +1,7 @@
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { DeliveryPreference, Request } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';

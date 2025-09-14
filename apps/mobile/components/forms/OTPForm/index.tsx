@@ -5,11 +5,12 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
+import { OtpSchema, otpSchema } from '@lactalink/form-schemas';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { OtpSchema, otpSchema, VerifyOtp } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';

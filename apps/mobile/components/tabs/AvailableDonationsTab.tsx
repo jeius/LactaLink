@@ -1,6 +1,6 @@
 import { Tab } from '@/components/tabs/Tab';
 import { useLiveCollectionRevalidator } from '@/hooks/live-updates/useLiveCollectionRevalidator';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Building2Icon, BuildingIcon, LucideProps, UsersIcon } from 'lucide-react-native';
 import { FC, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';

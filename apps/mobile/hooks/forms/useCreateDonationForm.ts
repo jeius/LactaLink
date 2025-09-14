@@ -1,13 +1,17 @@
 import { donationStorage } from '@/lib/localStorage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DonationSchema, donationSchema, MilkBag, User } from '@lactalink/types';
+import { MilkBag, User } from '@lactalink/types/payload-generated-types';
+import { createStorageKeyByUser } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
-import { MILK_BAG_STATUS } from '@/lib/constants';
 import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
-import { createStorageKeyByUser, extractCollection, extractID } from '@lactalink/utilities';
+import { MILK_BAG_STATUS } from '@lactalink/enums';
+import { DonationSchema, donationSchema } from '@lactalink/form-schemas';
+
 import { randomUUID } from 'expo-crypto';
-import { debounce, isEqual } from 'lodash';
+import debounce from 'lodash/debounce';
+import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 import { useFetchBySlug } from '../collections/useFetchBySlug';

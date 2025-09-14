@@ -1,24 +1,25 @@
-import { DEVICE_BREAKPOINTS, STORAGE_TYPES } from '@/lib/constants';
-import { Donation } from '@lactalink/types';
-import React, { useMemo } from 'react';
-import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
-import { Box } from '../ui/box';
-import { Card } from '../ui/card';
-import { HStack } from '../ui/hstack';
-import { Skeleton } from '../ui/skeleton';
-import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
-
+import { AnimatedPressable, AnimatedPressableProps } from '@/components/animated/pressable';
+import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Image } from '@/components/Image';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+
+import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
-import { extractCollection, extractOneImageData } from '@lactalink/utilities';
+import { STORAGE_TYPES } from '@lactalink/enums';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
+import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Avatar from '../Avatar';
-import BasicLocationPin from '../icons/BasicLocationPin';
-import { SingleImageViewer } from '../ImageViewer';
-import { Icon } from '../ui/icon';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data?: Donation;

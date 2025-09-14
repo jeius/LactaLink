@@ -1,4 +1,4 @@
-import { Donation, Request } from '@lactalink/types';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
 
 import { DonationListCard, RequestListCard } from '@/components/cards';
 import { NoData } from '@/components/NoData';
@@ -13,7 +13,8 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
-import { formatKebab, generatePlaceHolders } from '@lactalink/utilities';
+import { generatePlaceHolders } from '@lactalink/utilities';
+import { formatKebab } from '@lactalink/utilities/formatters';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { capitalize } from 'lodash';

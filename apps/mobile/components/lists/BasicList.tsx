@@ -3,13 +3,15 @@ import {
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
   Where,
-} from '@lactalink/types';
+} from '@lactalink/types/payload-types';
 import React, { FC, useEffect, useMemo } from 'react';
 
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { areStrings, extractCollection, extractID, formatKebab } from '@lactalink/utilities';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { formatKebab } from '@lactalink/utilities/formatters';
+import { areStrings } from '@lactalink/utilities/type-guards';
 import { FlashList, FlashListProps, ListRenderItemInfo } from '@shopify/flash-list';
 import { NoData } from '../NoData';
 
@@ -69,7 +71,6 @@ export function BasicList<
     isLoading: isLoadingData,
     isFetching: isFetchingData,
     refetch: refetchData,
-    error,
   } = useFetchBySlug<TSlug, TSelect>(Boolean(dataIDs.length > 0), {
     collection: slug,
     where,

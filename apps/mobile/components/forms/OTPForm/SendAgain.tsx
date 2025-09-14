@@ -1,8 +1,9 @@
 import { sendOtp } from '@/auth';
 import { Button, ButtonText } from '@/components/ui/button';
 import { RESEND_OTP } from '@/lib/constants';
-import { VerifyOtp } from '@lactalink/types';
-import { extractErrorMessage, formatTime } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { formatTime } from '@lactalink/utilities/formatters';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner-native';
 
@@ -34,7 +35,6 @@ export default function SendAgain(params: VerifyOtp) {
 
   useEffect(() => {
     setSecondsLeft(RESEND_OTP);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

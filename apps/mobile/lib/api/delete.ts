@@ -1,6 +1,6 @@
 import { getApiClient } from '@lactalink/api';
-import { CollectionSlug } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
 const apiClient = getApiClient();

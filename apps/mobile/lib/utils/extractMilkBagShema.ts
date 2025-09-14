@@ -1,4 +1,5 @@
-import { MilkBag, MilkBagSchema } from '@lactalink/types';
+import { MilkBagSchema } from '@lactalink/form-schemas';
+import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { extractImageSchema } from './extractImageSchema';
 

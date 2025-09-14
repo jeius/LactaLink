@@ -4,8 +4,8 @@ import {
   PaginatedDocs,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
-} from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+} from '@lactalink/types/payload-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
 
 type Slug = Extract<CollectionSlug, 'donations' | 'notifications' | 'requests' | 'transactions'>;

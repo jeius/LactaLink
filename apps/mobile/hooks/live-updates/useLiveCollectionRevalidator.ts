@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import { CollectionSlug } from '@lactalink/types';
-import { formatKebabToUnderscore } from '@lactalink/utilities';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { formatKebabToUnderscore } from '@lactalink/utilities/formatters';
 import { useIsFocused } from '@react-navigation/native';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect, useRef } from 'react';

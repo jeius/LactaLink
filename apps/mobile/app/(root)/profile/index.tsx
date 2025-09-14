@@ -16,15 +16,14 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { Shade } from '@/lib/types/colors';
 import { shadow } from '@/lib/utils/shadows';
-import { User } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 import {
-  capitalizeFirst,
   extractCollection,
   extractDefaultAddress,
   extractName,
-  isHospital,
-  isIndividual,
-} from '@lactalink/utilities';
+} from '@lactalink/utilities/extractors';
+import { capitalizeFirst } from '@lactalink/utilities/formatters';
+import { isHospital, isIndividual } from '@lactalink/utilities/type-guards';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import {
   BadgeCheckIcon,

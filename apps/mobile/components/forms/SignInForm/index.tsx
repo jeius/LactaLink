@@ -6,13 +6,13 @@ import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, type SignInSchema } from '@lactalink/types';
+import { signInSchema, type SignInSchema } from '@lactalink/form-schemas';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { signIn } from '@/auth';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';

@@ -15,8 +15,8 @@ import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { getImageAsset } from '@/lib/stores';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emailSchema } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { emailSchema } from '@lactalink/form-schemas';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { Image } from 'expo-image';
 import { router } from 'expo-router';

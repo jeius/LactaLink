@@ -1,6 +1,7 @@
 import { getHexColor } from '@/lib/colors';
 import { BLUR_HASH } from '@/lib/constants';
-import { Image as ImageType } from '@lactalink/types';
+import { FileCollection } from '@lactalink/types/collections';
+import { Image as ImageType } from '@lactalink/types/payload-generated-types';
 import React, { useRef } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel, {
@@ -14,16 +15,16 @@ import { Box } from './ui/box';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-interface ImageCarouselProps {
-  images: ImageType[];
+interface ImageCarouselProps<T extends FileCollection> {
+  images: T[];
   carouselHeight?: number;
   carouselWidth?: number;
 }
-export function ImageCarousel({
+export function ImageCarousel<T extends FileCollection = FileCollection>({
   images,
   carouselHeight = 160,
   carouselWidth = 260,
-}: ImageCarouselProps) {
+}: ImageCarouselProps<T>) {
   const carouselRef = useRef<ICarouselInstance>(null);
   const { theme } = useTheme();
 

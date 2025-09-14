@@ -1,14 +1,15 @@
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
-import { DELIVERY_OPTIONS } from '@/lib/constants';
+import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { CalendarDaysIcon, MapPinIcon } from 'lucide-react-native';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { DeliveryPreference } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
+import { isString } from '@lactalink/utilities/type-guards';
 import { ComponentProps, ReactNode } from 'react';
 import { Image } from '../Image';
 import { HStack } from '../ui/hstack';

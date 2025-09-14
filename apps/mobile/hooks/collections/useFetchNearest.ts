@@ -1,7 +1,8 @@
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
 import { useMatchingService } from '@lactalink/api';
-import { Collection, CollectionSlug, DonationRequestStatus, Point } from '@lactalink/types';
-import { PaginatedDocs } from '@lactalink/types/';
+import { DonationRequestStatus, Point } from '@lactalink/types';
+import { Collection } from '@lactalink/types/collections';
+import { CollectionSlug, PaginatedDocs } from '@lactalink/types/payload-types';
 import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { useCurrentLocation } from '../location/useLocation';
 

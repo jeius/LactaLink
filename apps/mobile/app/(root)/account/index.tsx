@@ -22,7 +22,7 @@ import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidat
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
 import { useTransactions } from '@/hooks/transactions';
-import { User } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 import constants from 'expo-constants';
 import { Href, Link } from 'expo-router';
 import {

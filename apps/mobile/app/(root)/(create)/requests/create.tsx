@@ -16,11 +16,14 @@ import { deleteCollection } from '@/lib/api/delete';
 import { uploadImage } from '@/lib/api/file';
 
 import { RequestSearchParams } from '@/lib/types/donationRequest';
+import { RequestSchema } from '@lactalink/form-schemas';
 
 import { getApiClient, getTransactionService } from '@lactalink/api';
-import { CollectionSlug, ErrorSearchParams, RequestSchema, Transaction } from '@lactalink/types';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
+import { ErrorSearchParams } from '@lactalink/types';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
+import { Transaction } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
@@ -153,8 +156,7 @@ export default function CreateRequest() {
 async function createRequest(data: RequestSchema) {
   const apiClient = getApiClient();
 
-  const { deliveryPreferences, details, requester, volumeNeeded, recipient, matchedDonation } =
-    data;
+  const { deliveryPreferences, details, requester, volumeNeeded, matchedDonation } = data;
 
   const { image, ...restOfDetails } = details;
 

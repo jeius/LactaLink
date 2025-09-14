@@ -1,4 +1,4 @@
-import { Notification } from '@lactalink/types';
+import { Notification } from '@lactalink/types/payload-generated-types';
 import { Href, Link } from 'expo-router';
 import { ComponentProps } from 'react';
 import { Box } from '../ui/box';

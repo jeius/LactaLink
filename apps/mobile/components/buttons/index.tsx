@@ -1,6 +1,6 @@
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { deleteCollection } from '@/lib/api/delete';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { type Href, useRouter } from 'expo-router';
 import { EditIcon, Trash2Icon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';

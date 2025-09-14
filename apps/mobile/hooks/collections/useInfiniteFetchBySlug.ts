@@ -1,12 +1,8 @@
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
 import { useApiClient } from '@lactalink/api';
-import {
-  CollectionSlug,
-  FindMany,
-  FindManyResult,
-  MarkOptional,
-  SelectFromCollectionSlug,
-} from '@lactalink/types';
+import { FindMany, FindManyResult } from '@lactalink/types/api';
+import { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import { MarkOptional } from '@lactalink/types/utils';
 import {
   InfiniteData,
   UndefinedInitialDataInfiniteOptions,

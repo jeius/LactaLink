@@ -1,32 +1,14 @@
-/* eslint-disable import/no-unresolved */
-import {
-  ANDROID_MAPS_API_KEY as AndroidKey,
-  EXPO_PUBLIC_API_URL,
-  EXPO_PUBLIC_SUPABASE_ANON_KEY,
-  EXPO_PUBLIC_SUPABASE_URL,
-  IOS_MAPS_API_KEY as IosKey,
-  EXPO_THEME as ThemeOverride,
-  VERCEL_AUTOMATION_BYPASS_SECRET,
-} from '@env';
-
 import { URGENCY_LEVELS } from '@lactalink/enums';
 import { MapRegion } from '@lactalink/types';
 import { LatLng } from 'react-native-maps';
-export * from '@lactalink/enums';
 
 export * from './assets';
 export * from './deviceBreakpoints';
+export * from './env';
 export * from './queryKeys';
 export * from './storageKeys';
 
-export const API_URL = EXPO_PUBLIC_API_URL;
 export const RESEND_OTP = 90; // seconds
-export const SUPABASE_URL = EXPO_PUBLIC_SUPABASE_URL;
-export const SUPABASE_ANON_KEY = EXPO_PUBLIC_SUPABASE_ANON_KEY;
-export const VERCEL_BYPASS_TOKEN = VERCEL_AUTOMATION_BYPASS_SECRET;
-export const ANDROID_MAPS_API_KEY = AndroidKey;
-export const IOS_MAPS_API_KEY = IosKey;
-export const THEME_OVERRIDE = ThemeOverride;
 
 export const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
 export const IMAGE_COMPRESSION_SIZE = 2048; // 2048px (max width or height)

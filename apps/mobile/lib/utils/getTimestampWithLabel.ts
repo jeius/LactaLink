@@ -1,6 +1,6 @@
-import { Donation, Request } from '@lactalink/types';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
-import { DONATION_REQUEST_STATUS } from '../constants';
 
 export function getTimeStampWithLabel(
   data: Donation | Request

@@ -1,6 +1,6 @@
 import { OptionsCardItem } from '@/components/cards/OptionsCards';
 import { getIconAsset } from '@/lib/stores';
-import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/types';
+import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/form-schemas';
 
 export const genderOptions: OptionsCardItem<IndividualSchema['gender']>[] = [
   {

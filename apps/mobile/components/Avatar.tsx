@@ -1,6 +1,12 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { Avatar as AvatarType, Hospital, Individual, MilkBank, User } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import {
+  Avatar as AvatarType,
+  Hospital,
+  Individual,
+  MilkBank,
+  User,
+} from '@lactalink/types/payload-generated-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { Motion } from '@legendapp/motion';
 import { Link } from 'expo-router';
 import { ComponentProps, useCallback, useState } from 'react';
@@ -28,13 +34,9 @@ export default function Avatar({
   const { data: user, isLoading } = useMeUser();
   const profile = extractCollection(user?.profile?.value);
 
-  const avatar: AvatarType | null =
-    (details ? details.avatar : (profile?.avatar as AvatarType | undefined)) || null;
+  const avatar = (details ? details.avatar : extractCollection(profile?.avatar)) || null;
 
-  const avatarName =
-    (details
-      ? details.name
-      : profile && ('name' in profile ? profile.name : profile.displayName)) || 'User';
+  const avatarName = (details ? details.name : profile?.displayName) || 'User';
 
   let avatarUrl: string | null = avatar?.url || null;
 
@@ -93,8 +95,7 @@ export function ProfileAvatar({
   const avatar: AvatarType | null = extractCollection(profile?.avatar);
   const [isPressed, setIsPressed] = useState(false);
 
-  const fallbackName =
-    (profile && ('name' in profile ? profile.name : profile.displayName)) || 'User';
+  const fallbackName = profile?.displayName || 'User';
 
   let avatarUrl: string | null = avatar?.url || null;
 

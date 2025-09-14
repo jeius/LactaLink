@@ -1,5 +1,6 @@
 import { getApiClient } from '@lactalink/api';
-import { FileCollectionSlug, ImageSchema } from '@lactalink/types';
+import { ImageSchema } from '@lactalink/form-schemas';
+import { FileCollectionSlug } from '@lactalink/types/collections';
 import { NativeFile } from '../types';
 
 type FileData = { url: string; filename: string; mimeType: string };

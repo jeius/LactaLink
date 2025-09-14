@@ -2,8 +2,8 @@ import SafeArea from '@/components/SafeArea';
 import { RequestListCard } from '@/components/cards';
 import { InfiniteList } from '@/components/lists';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { Where } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Where } from '@lactalink/types/payload-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { Stack } from 'expo-router';
 import React from 'react';
 

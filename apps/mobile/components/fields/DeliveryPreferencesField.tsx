@@ -2,8 +2,8 @@ import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-r
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DeliveryPreference } from '@lactalink/types';
-import { extractCollection } from '@lactalink/utilities';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { useRef } from 'react';
 import {
   ControllerProps,

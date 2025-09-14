@@ -3,7 +3,7 @@ import {
   IndividualSchema,
   MilkBankSchema,
   SetupProfileSchema,
-} from '@lactalink/types';
+} from '@lactalink/form-schemas';
 import { Building2Icon, BuildingIcon, LucideProps, UserIcon } from 'lucide-react-native';
 import { SvgProps } from 'react-native-svg';
 import { ProfileType, SetupProfileSteps } from '../types';

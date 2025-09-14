@@ -8,7 +8,7 @@ import React, { ReactNode, useEffect } from 'react';
 
 import { Image } from '@/components/Image';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { SetupProfileSchema } from '@lactalink/types';
+import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { useFormContext } from 'react-hook-form';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { options } from './options';

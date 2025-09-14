@@ -1,4 +1,4 @@
-import { createClient, SupportedStorage } from '@supabase/supabase-js';
+import { createClient, type SupportedStorage } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
 import 'react-native-url-polyfill/auto';
 import { MMKV_KEYS, SUPABASE_ANON_KEY, SUPABASE_URL } from './constants';

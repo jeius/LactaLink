@@ -1,13 +1,17 @@
 import { getApiClient } from '@lactalink/api';
-import { Collection, CollectionSlug, Point, Where } from '@lactalink/types';
-import { capitalizeFirst } from '@lactalink/utilities';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { Point } from '@lactalink/types';
+import { Collection } from '@lactalink/types/collections';
+import { CollectionSlug, Where } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { PointExtractor, SpatialSearch, validatePoint } from '@lactalink/utilities/geo-utils';
+import { capitalizeFirst } from '@lactalink/utilities/formatters';
+import { validatePoint } from '@lactalink/utilities/geo-utils';
+import { PointExtractor, SpatialSearch } from '@lactalink/utilities/spatial-search';
 import { isDonation, isHospital, isMilkBank, isRequest } from '@lactalink/utilities/type-guards';
 import { useQuery } from '@tanstack/react-query';
 import { MapMarker } from 'react-native-maps';
 import { create } from 'zustand';
-import { DONATION_REQUEST_STATUS, QUERY_KEYS } from '../constants';
+import { QUERY_KEYS } from '../constants';
 import { MapMarkerProps, MarkerData, MarkerDataSlug, MarkersStoreState } from '../types/markers';
 
 export type * from '@/lib/types/markers';

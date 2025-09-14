@@ -15,27 +15,23 @@ import { usePagination } from '@/hooks/forms';
 import { deleteCollection } from '@/lib/api/delete';
 
 import { uploadImage } from '@/lib/api/file';
-import { MILK_BAG_STATUS } from '@/lib/constants';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
 import { donationStorage } from '@/lib/localStorage';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
+import { MILK_BAG_STATUS } from '@lactalink/enums';
 
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { extractImageSchema } from '@/lib/utils/extractImageSchema';
 
 import { getApiClient, getTransactionService } from '@lactalink/api';
-import {
-  CollectionSlug,
-  CreateMilkBagSchema,
-  DonationSchema,
-  MilkBag,
-  Transaction,
-} from '@lactalink/types';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities';
+import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
+import { CreateMilkBagSchema, DonationSchema } from '@lactalink/form-schemas';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { isEqualWith } from 'lodash';
+import isEqualWith from 'lodash/isEqualWith';
 import { ReactNode, useCallback, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';

@@ -13,7 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useTransactions } from '@/hooks/transactions';
-import { Transaction } from '@lactalink/types';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 import { ChevronRightIcon } from 'lucide-react-native';

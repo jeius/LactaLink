@@ -1,4 +1,4 @@
-import { User } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 import { DONATION_CREATE_STEPS } from '../constants/donationRequest';
 
 export type DonationCreateSteps = keyof typeof DONATION_CREATE_STEPS;

@@ -3,9 +3,9 @@ import {
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
   Where,
-} from '@lactalink/types';
-import { useDebounce } from '@lactalink/utilities';
+} from '@lactalink/types/payload-types';
 import { useQuery } from '@tanstack/react-query';
+import debounce from 'lodash/debounce';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -30,6 +30,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
 import { BottomSheetTextInputProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetTextInput';
 import { ListRenderItem } from '@shopify/flash-list';
+import { useFocusEffect } from 'expo-router';
 import { TextInput } from 'react-native';
 import { Image } from './Image';
 import { RefreshControl } from './RefreshControl';
@@ -171,9 +172,9 @@ export default function ComboBox<
   });
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSetSearch = useMemo(() => debounce(setSearch, 300), []);
 
-  const searchQuery: Where = { [searchPath]: { contains: debouncedSearch.toLowerCase() } };
+  const searchQuery: Where = { [searchPath]: { contains: search.toLowerCase() } };
   const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
   const options: InfiniteFetchOptions<T, TSelect> = {
     collection,
@@ -187,6 +188,8 @@ export default function ComboBox<
     useInfiniteFetchBySlug(true, options);
 
   const items = useMemo(() => data?.pages?.flatMap((page) => page.docs) || [], [data]);
+
+  useFocusEffect(useCallback(() => debouncedSetSearch.cancel(), [debouncedSetSearch]));
 
   useEffect(() => {
     setSelected(selectedProps);
@@ -315,7 +318,7 @@ export default function ComboBox<
             <BottomSheetInputField
               ref={inputRef}
               defaultValue={searchDefault}
-              onChangeText={setSearch}
+              onChangeText={debouncedSetSearch}
               placeholder={searchPlaceholder}
             />
             {search && (

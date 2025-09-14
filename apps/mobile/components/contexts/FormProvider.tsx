@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MarkOptional } from '@lactalink/types';
+import { MarkOptional } from '@lactalink/types/utils';
 import { createContext, useContext } from 'react';
 import {
   FieldValues,
@@ -42,7 +42,7 @@ export function useForm<
   try {
     const formContext = useFormContext<TFieldValues, TContext, TTransformedValues>();
     return { ...formContext, additionalState: additionalContext };
-  } catch (error) {
+  } catch (_) {
     throw new Error('useForm must be used within a FormProvider');
   }
 }

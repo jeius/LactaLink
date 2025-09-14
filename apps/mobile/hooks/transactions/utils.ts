@@ -1,4 +1,5 @@
-import { PaginatedDocs, Transaction, Where } from '@lactalink/types';
+import { Transaction } from '@lactalink/types/payload-generated-types';
+import { PaginatedDocs, Where } from '@lactalink/types/payload-types';
 import { InfiniteData } from '@tanstack/react-query';
 
 export type ListData = InfiniteData<PaginatedDocs<Transaction>>;

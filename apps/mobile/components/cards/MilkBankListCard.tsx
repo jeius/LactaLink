@@ -1,7 +1,10 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getHexColor } from '@/lib/colors';
-import { Address, MilkBank } from '@lactalink/types';
-import { extractCollection, extractID, extractImageData, isString } from '@lactalink/utilities';
+
+import { Address, MilkBank } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID, extractImageData } from '@lactalink/utilities/extractors';
+import { isString } from '@lactalink/utilities/type-guards';
+
 import { Building2Icon, MapPinIcon, MilkIcon } from 'lucide-react-native';
 import React, { ReactNode } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';

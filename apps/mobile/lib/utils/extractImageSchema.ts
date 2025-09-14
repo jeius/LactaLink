@@ -1,5 +1,5 @@
+import { ImageSchema } from '@lactalink/form-schemas';
 import { FileCollection } from '@lactalink/types/collections';
-import { ImageSchema } from '@lactalink/types/forms';
 
 export function extractImageSchema<T extends FileCollection | null>(
   image?: T

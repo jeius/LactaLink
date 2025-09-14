@@ -1,5 +1,5 @@
 import { getApiClient } from '@lactalink/api';
-import { extractName } from '@lactalink/utilities';
+import { extractName } from '@lactalink/utilities/extractors';
 import {
   GoogleSignin,
   isErrorWithCode,

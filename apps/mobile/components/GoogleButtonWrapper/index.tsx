@@ -1,7 +1,7 @@
 import { signInWithGoogle } from '@/auth';
 import { Image } from '@/components/Image';
 import { getIconAsset } from '@/lib/stores';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import React, { useState } from 'react';
 import { ViewProps } from 'react-native';
 import { toast } from 'sonner-native';

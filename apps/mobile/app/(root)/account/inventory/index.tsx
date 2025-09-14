@@ -10,7 +10,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
-import { extractCollection } from '@lactalink/utilities';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { Href, Link } from 'expo-router';
 import { ChevronRight, LucideIcon, TimerIcon } from 'lucide-react-native';
 import React, { ComponentProps, FC, ReactNode } from 'react';

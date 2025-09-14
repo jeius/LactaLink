@@ -12,8 +12,8 @@ import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
-import { Notification } from '@lactalink/types';
-import { isPlaceHolderData } from '@lactalink/utilities';
+import { Notification } from '@lactalink/types/payload-generated-types';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 

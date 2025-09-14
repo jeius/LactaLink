@@ -2,7 +2,7 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { SetupProfileSchema } from '@lactalink/types';
+import { SetupProfileSchema } from '@lactalink/form-schemas';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 

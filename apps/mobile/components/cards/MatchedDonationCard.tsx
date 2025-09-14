@@ -1,11 +1,11 @@
-import { DeliveryPreference, Donation } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import { DeliveryPreference, Donation } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '../AppProvider/ThemeProvider';
 
 import { getHexColor } from '@/lib/colors';
-import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { DropletIcon, PackageIcon } from 'lucide-react-native';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
 import { Button, ButtonText } from '../ui/button';

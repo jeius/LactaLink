@@ -19,10 +19,10 @@ import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidat
 import { useDeliveryPreferenceForm } from '@/hooks/forms';
 import { deleteCollection } from '@/lib/api/delete';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';

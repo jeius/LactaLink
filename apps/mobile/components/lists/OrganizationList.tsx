@@ -1,4 +1,4 @@
-import { Address, CollectionSlug, Hospital, MilkBank, Where } from '@lactalink/types';
+import { Address, Hospital, MilkBank } from '@lactalink/types/payload-generated-types';
 
 import { HospitalListCard } from '@/components/cards/HospitalListCard';
 import { MilkBankListCard } from '@/components/cards/MilkBankListCard';
@@ -8,14 +8,12 @@ import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { useLocationStore } from '@/lib/stores/locationStore';
-import {
-  extractCollection,
-  extractID,
-  formatCamelCase,
-  generatePlaceHolders,
-  isPlaceHolderData,
-  latLngToPoint,
-} from '@lactalink/utilities';
+import { CollectionSlug, Where } from '@lactalink/types/payload-types';
+import { generatePlaceHolders } from '@lactalink/utilities';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { formatCamelCase } from '@lactalink/utilities/formatters';
+import { latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { debounce } from 'lodash';

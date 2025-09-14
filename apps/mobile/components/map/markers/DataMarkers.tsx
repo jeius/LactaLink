@@ -15,8 +15,10 @@ import {
 import { ColorsConfig } from '@/lib/types/colors';
 import { MarkerPressEvent } from '@/lib/types/markers';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { Collection, Hospital, Individual, MilkBank } from '@lactalink/types';
-import { extractCollection, isDonation, isRequest } from '@lactalink/utilities';
+import { Collection } from '@lactalink/types/collections';
+import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { useEffect, useMemo, useState } from 'react';
 import { Animated } from 'react-native';
 import {

@@ -1,6 +1,7 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { Notification, User, Where } from '@lactalink/types';
+import { Notification, User } from '@lactalink/types/payload-generated-types';
+import { Where } from '@lactalink/types/payload-types';
 import { createStorageKeyByUser, generatePlaceHolders } from '@lactalink/utilities';
 import { useEffect, useMemo } from 'react';
 import { MMKV_KEYS } from '../../lib/constants';

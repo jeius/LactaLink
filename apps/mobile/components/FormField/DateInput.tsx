@@ -4,7 +4,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { formatDate } from '@lactalink/utilities';
+import { formatDate } from '@lactalink/utilities/formatters';
 import DateTimePicker, {
   DatePickerOptions,
   DateTimePickerEvent,
@@ -140,7 +140,7 @@ export function DateInput({
         break;
       case 'date':
       default:
-        inputValue = formatDate(date);
+        inputValue = formatDate(date, { shortMonth: true });
         break;
     }
   }

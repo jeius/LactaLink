@@ -2,7 +2,7 @@ import { FormField } from '@/components/FormField';
 import { Card } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import {
   CalendarDaysIcon,
   ChevronDownIcon,

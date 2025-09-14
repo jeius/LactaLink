@@ -1,5 +1,8 @@
-import { Collection, CollectionSlug, DeliveryPreference, MarkKeyRequired } from '@lactalink/types';
-import { SpatialSearch } from '@lactalink/utilities/geo-utils';
+import { Collection } from '@lactalink/types/collections';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { MarkKeyRequired } from '@lactalink/types/utils';
+import { SpatialSearch } from '@lactalink/utilities/spatial-search';
 import type { MarkerPressEvent as RNMarkerPressEvent } from 'react-native-maps';
 import { MapMarker, MapMarkerProps as RNMarkerProps } from 'react-native-maps';
 

@@ -8,11 +8,11 @@ import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { FormSlide } from './FormSlide';
 
 import { FormFieldProps } from '@/components/FormField';
-import { signUpSchema, SignUpSchema } from '@/lib/types';
 
 import { signUp } from '@/auth';
-import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
+import { SignUpSchema, signUpSchema } from './schema';
 
 const FIELDS: FormFieldProps<SignUpSchema>[] = [
   {

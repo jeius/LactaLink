@@ -1,6 +1,5 @@
 'use client';
-// eslint-disable-next-line import/no-unresolved
-import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@env';
+import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@/lib/constants';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 

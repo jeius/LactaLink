@@ -2,7 +2,7 @@ import { FormField, FormFieldProps } from '@/components/FormField';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
-import { SignUpSchema } from '@/lib/types';
+import { SignUpSchema } from './schema';
 
 import { ChevronLeftIcon } from 'lucide-react-native';
 

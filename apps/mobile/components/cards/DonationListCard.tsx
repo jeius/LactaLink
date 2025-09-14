@@ -1,9 +1,11 @@
-import { COLLECTION_MODES, DEVICE_BREAKPOINTS, PREFERRED_STORAGE_TYPES } from '@/lib/constants';
+import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { Donation, MarkKeyRequired } from '@lactalink/types';
-import { extractCollection, extractOneImageData } from '@lactalink/utilities';
+import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { MarkKeyRequired } from '@lactalink/types/utils';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { DropletIcon, MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
