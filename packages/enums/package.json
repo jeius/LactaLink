@@ -6,8 +6,8 @@
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.d.ts",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "src"

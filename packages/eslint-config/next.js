@@ -1,18 +1,19 @@
-const base = require('./base.js');
+import { FlatCompat } from '@eslint/eslintrc';
+import base from './base.js';
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
 
 /**
  * A custom ESLint configuration for libraries that use Next.js.
  *
  * @type {import("eslint").Linter.Config[]}
  * */
-module.exports = {
+export default [
   ...base,
-  extends: [...base.extends, 'next/core-web-vitals', 'next/typescript'],
-  parserOptions: {
-    ecmaVersion: 2021,
-    sourceType: 'module',
-    ecmaFeatures: {
-      jsx: true,
-    },
-  },
-};
+  ...compat.config({
+    extends: ['next/core-web-vitals', 'next/typescript'],
+    plugins: ['@next/eslint-plugin-next'],
+  }),
+];

@@ -5,7 +5,7 @@
   "description": "LactaLink shared typescript configuration.",
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
   "license": "MIT",
-  "main": "base.js",
+  "main": "base.json",
   "publishConfig": {
     "access": "public"
   },
