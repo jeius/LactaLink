@@ -21,6 +21,10 @@
       "types": "./dist/checkers/index.d.ts",
       "default": "./dist/checkers/index.js"
     },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "default": "./dist/errors/index.js"
+    },
     "./extractors": {
       "types": "./dist/extractors/index.d.ts",
       "default": "./dist/extractors/index.js"

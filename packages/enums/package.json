@@ -36,6 +36,10 @@
     "./identities": {
       "types": "./dist/identities.d.ts",
       "default": "./dist/identities.js"
+    },
+    "./error-names": {
+      "types": "./dist/errorNames.d.ts",
+      "default": "./dist/errorNames.js"
     }
   },
   "scripts": {

@@ -1,0 +1,16 @@
+export enum ValidationErrorNames {
+  REQUIRED_FIELD_MISSING = 'required_field_missing',
+  INVALID_TYPE = 'invalid_type',
+  VALUE_OUT_OF_RANGE = 'value_out_of_range',
+  INVALID_FORMAT = 'invalid_format',
+  DUPLICATE_ENTRY = 'duplicate_entry',
+  UNKNOWN_FIELD = 'unknown_field',
+  ENUM_VALUE_MISMATCH = 'enum_value_mismatch',
+  ARRAY_LENGTH_MISMATCH = 'array_length_mismatch',
+  INVALID_DATE = 'invalid_date',
+  INVALID_EMAIL = 'invalid_email',
+  INVALID_URL = 'invalid_url',
+  INVALID_UUID = 'invalid_uuid',
+  CUSTOM_VALIDATION_FAILED = 'custom_validation_failed',
+  DEFAULT = 'validation_error',
+}
