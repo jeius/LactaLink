@@ -1,5 +1,6 @@
-import { Request } from '@lactalink/types';
-import _ from 'lodash';
+import { Request } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
+import isEqual from 'lodash/isEqual';
 import { CollectionBeforeChangeHook } from 'payload';
 import { updateVolumeFields } from '../utils/updateVolumeFields';
 
@@ -14,7 +15,7 @@ export const updateVolume: CollectionBeforeChangeHook<Request> = async ({
   if (
     operation !== 'update' ||
     !originalDoc ||
-    _.isEqual(data.details?.bags, originalDoc.details?.bags)
+    isEqual(extractID(data.details?.bags), extractID(originalDoc.details?.bags))
   ) {
     return data;
   }

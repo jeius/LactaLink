@@ -1,4 +1,4 @@
-import { NotificationChannel } from '@lactalink/types';
+import { NotificationChannel } from '@lactalink/types/payload-generated-types';
 import { Payload } from 'payload';
 import { BaseChannel } from './BaseChannel';
 import { EmailChannel } from './EmailChannel';

@@ -1,5 +1,5 @@
-import { Identity } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import { Identity } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({

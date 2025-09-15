@@ -1,5 +1,5 @@
 import { PROFILE_TYPES } from '@lactalink/enums';
-import { Hospital, Individual, MilkBank } from '@lactalink/types';
+import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
 import { CollectionAfterChangeHook, CollectionSlug } from 'payload';
 
 type Collection = Individual | Hospital | MilkBank;

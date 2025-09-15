@@ -1,5 +1,5 @@
-import { Inventory, Request } from '@lactalink/types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities';
+import { Inventory, Request } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const updateInventoryStatus: CollectionBeforeChangeHook<Inventory> = async ({

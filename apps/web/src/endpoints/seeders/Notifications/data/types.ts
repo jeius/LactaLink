@@ -4,7 +4,7 @@ import {
   NOTIFICATION_TRIGGER_EVENT_OPTIONS,
   PRIORITY_LEVELS,
 } from '@lactalink/enums';
-import { NotificationType } from '@lactalink/types';
+import { NotificationType } from '@lactalink/types/payload-generated-types';
 import { Operator } from 'payload';
 import { validOperatorSet } from 'payload/shared';
 

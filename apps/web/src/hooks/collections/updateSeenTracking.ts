@@ -1,4 +1,4 @@
-import { Collections } from '@lactalink/types';
+import { Collections } from '@lactalink/types/collections';
 import { CollectionBeforeChangeHook } from 'payload';
 
 type CollectionWithSeenTracking = Extract<

@@ -1,5 +1,5 @@
-import { TRANSACTION_STATUS } from '@/lib/constants';
-import { Transaction } from '@lactalink/types';
+import { TRANSACTION_STATUS } from '@lactalink/enums';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { Field } from 'payload';
 
 const deliveredStatus = TRANSACTION_STATUS.DELIVERED.value;

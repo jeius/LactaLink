@@ -1,4 +1,4 @@
-import { Image, MilkBagImage } from '@lactalink/types';
+import { Image, MilkBagImage } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateAlt: CollectionBeforeChangeHook<Image | MilkBagImage> = ({

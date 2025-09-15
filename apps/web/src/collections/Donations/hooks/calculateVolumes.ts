@@ -1,6 +1,6 @@
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
-import { Donation } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { PayloadRequest } from 'payload';
 
 export async function calculateVolumes<T extends Donation>(

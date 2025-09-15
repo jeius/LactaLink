@@ -1,7 +1,8 @@
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getEndpointSearchParams } from '@/lib/utils/getEndpointSearchParams';
 import { matchDonationsAndRequestsByCriteria } from '@db/drizzle/queryBuilders';
-import { Donation, MatchCriteria } from '@lactalink/types';
+import { MatchCriteria } from '@lactalink/types';
+import { Donation } from '@lactalink/types/payload-generated-types';
 import { and, eq, sql } from '@payloadcms/db-postgres/drizzle';
 import status from 'http-status';
 import { APIError, PaginatedDocs } from 'payload';

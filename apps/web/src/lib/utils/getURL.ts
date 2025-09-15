@@ -43,7 +43,7 @@ export function validateUrl(url: unknown): url is string {
 
     const parsedUrl = new URL(url);
     return parsedUrl.protocol.includes('http:') || parsedUrl.protocol.includes('https:');
-  } catch (e) {
+  } catch (_) {
     return false;
   }
 }

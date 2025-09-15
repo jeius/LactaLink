@@ -6,12 +6,8 @@ import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
-import {
-  COLLECTION_GROUP,
-  COLLECTION_MODES,
-  DONATION_REQUEST_STATUS,
-  STORAGE_TYPES,
-} from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants';
+import { COLLECTION_MODES, DONATION_REQUEST_STATUS, STORAGE_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { donationsEndpoints } from './endpoints';

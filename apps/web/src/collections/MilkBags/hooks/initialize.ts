@@ -1,6 +1,6 @@
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { MilkBag } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { MilkBag } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook } from 'payload';
 
 export const initializeMilkBag: CollectionBeforeValidateHook<MilkBag> = async ({

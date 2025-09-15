@@ -1,4 +1,5 @@
-import { COLLECTION_GROUP, INVENTORY_STATUS } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { INVENTORY_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { initializeInventory } from './hooks/initializeInventory';
 import { updateInventoryStatus } from './hooks/updateInventoryStatus';

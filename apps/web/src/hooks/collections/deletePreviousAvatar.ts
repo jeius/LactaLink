@@ -1,5 +1,5 @@
-import { CollectionWithAvatar } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { CollectionWithAvatar } from '@lactalink/types/collections';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const deletePreviousAvatar: CollectionAfterChangeHook<CollectionWithAvatar> = async ({

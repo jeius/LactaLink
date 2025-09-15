@@ -1,7 +1,8 @@
 import { admin, authenticated } from '@/collections/_access-control';
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP, NOTIFICATION_CHANNEL_TYPE_OPTIONS } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { NOTIFICATION_CHANNEL_TYPE_OPTIONS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { text } from 'payload/shared';
 import { configTab } from './configTab';

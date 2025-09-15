@@ -1,4 +1,4 @@
-import { Transaction } from '@lactalink/types';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { randomBytes } from 'crypto';
 import { CollectionBeforeChangeHook } from 'payload';
 

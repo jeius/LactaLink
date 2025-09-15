@@ -1,4 +1,4 @@
-import { Identity } from '@lactalink/types';
+import { Identity } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateUpdatedBy: CollectionBeforeChangeHook<Identity> = ({

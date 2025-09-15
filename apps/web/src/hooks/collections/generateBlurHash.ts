@@ -1,4 +1,4 @@
-import { CollectionWithBlurHash } from '@lactalink/types';
+import { CollectionWithBlurHash } from '@lactalink/types/collections';
 import { encode } from 'blurhash';
 import { CollectionBeforeChangeHook } from 'payload';
 import sharp from 'sharp';

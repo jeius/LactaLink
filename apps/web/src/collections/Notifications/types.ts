@@ -1,12 +1,12 @@
 import { createdByField } from '@/fields/createdByField';
 import { priorityLevel } from '@/fields/priorityLevel';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import {
-  COLLECTION_GROUP,
   NOTIFICATION_JS_TYPES,
   NOTIFICATION_TRIGGER_COLLECTION_OPTIONS,
   NOTIFICATION_TRIGGER_EVENT_OPTIONS,
-} from '@/lib/constants';
+} from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
 

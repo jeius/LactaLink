@@ -1,5 +1,5 @@
-import { Address } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateIslandGroupAndRegion: CollectionBeforeChangeHook<Address> = async ({

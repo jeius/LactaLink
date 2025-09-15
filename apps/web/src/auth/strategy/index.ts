@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/api/init/server';
 import { extractToken } from '@/lib/utils/extractToken';
 import { users } from '@db/drizzle/schema';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { eq } from '@payloadcms/db-postgres/drizzle';
 import { AuthError, SupabaseClient, User } from '@supabase/supabase-js';
 import status from 'http-status';

@@ -1,5 +1,5 @@
-import { Donation } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateTitle: CollectionBeforeChangeHook<Donation> = async ({ data, req }) => {

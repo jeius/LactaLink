@@ -1,4 +1,8 @@
-import { Notification, NotificationChannel, NotificationChannelStats } from '@lactalink/types';
+import {
+  Notification,
+  NotificationChannel,
+  NotificationChannelStats,
+} from '@lactalink/types/payload-generated-types';
 import { Payload } from 'payload';
 
 /**

@@ -1,4 +1,4 @@
-import { User } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 import { Payload } from 'payload';
 import SeedNotificationService from './SeedNotificationService';
 import SeedPSGC from './SeedPSGC';

@@ -1,4 +1,4 @@
-import { CollectionWithCreatedBy } from '@/lib/types';
+import { CollectionWithCreatedBy } from '@lactalink/types/collections';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateCreatedBy: CollectionBeforeChangeHook<CollectionWithCreatedBy> = ({

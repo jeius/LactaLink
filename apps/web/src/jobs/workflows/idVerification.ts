@@ -2,7 +2,7 @@ import { JOB_QUEUES } from '@/lib/constants/jobs';
 import { createActionNeededEmailTemplate } from '@/lib/emailTemplates/adminActionNeeded';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { ID_STATUS } from '@lactalink/enums/identities';
-import { Identity } from '@lactalink/types';
+import { Identity } from '@lactalink/types/payload-generated-types';
 import { WorkflowConfig } from 'payload';
 
 const DEFAULT_RETRIES = 2;

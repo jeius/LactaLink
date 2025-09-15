@@ -1,4 +1,4 @@
-import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/errors';
+import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 import { Image, loadImage } from 'canvas';
 import { createCanvas, type NetInput, toNetInput } from 'face-api.js';
 import status from 'http-status';

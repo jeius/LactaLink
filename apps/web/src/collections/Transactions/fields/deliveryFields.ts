@@ -1,5 +1,5 @@
-import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@/lib/constants';
-import { Transaction } from '@lactalink/types';
+import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { Field } from 'payload';
 
 export const proposedField: Field = {

@@ -2,7 +2,7 @@
 
 import { googleSignIn } from '@/auth/actions';
 import { Button } from '@/components/ui/button';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner';
 
 export default function GoogleSignIn() {

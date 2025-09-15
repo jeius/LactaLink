@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema, SignUpSchema } from '@lactalink/types/forms';
+import { signUpSchema, type SignUpSchema } from '@lactalink/form-schemas';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,9 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { signUp } from '@/auth/actions';
-import { User, VerifyOtp } from '@lactalink/types';
-import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { User } from '@lactalink/types/payload-generated-types';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities/extractors';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 

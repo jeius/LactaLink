@@ -1,5 +1,5 @@
 import { MILK_EXPIRY_DAYS } from '@/lib/constants';
-import { MilkBag } from '@lactalink/types';
+import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { randomBytes } from 'crypto';
 import { CollectionBeforeChangeHook } from 'payload';
 

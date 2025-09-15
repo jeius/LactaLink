@@ -2,8 +2,10 @@
 
 import { getServerApi } from '@/lib/api/getServerApi';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { SignInSchema, SignUpSchema, User, VerifyOtp } from '@lactalink/types';
-import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities';
+import { SignInSchema, SignUpSchema } from '@lactalink/form-schemas';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { User } from '@lactalink/types/payload-generated-types';
+import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities/extractors';
 import { ResendParams, VerifyOtpParams } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 

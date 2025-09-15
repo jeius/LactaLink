@@ -9,7 +9,6 @@ export const recipientOrAdmin: Access = ({ req }) => {
 
   if (isAdmin(user)) return true;
 
-  // If the collection has an owner, check if the user is the owner
   return {
     recipient: { equals: user.id },
   };

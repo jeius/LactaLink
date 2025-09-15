@@ -1,7 +1,7 @@
 import { NotificationService } from '@/lib/services/notification';
 import { AfterChangeHookParams } from '@/lib/types';
-import { Donation, Notification } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities';
+import { Donation, Notification } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const createDonationNotification: CollectionAfterChangeHook<Donation> = async ({

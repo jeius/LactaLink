@@ -1,5 +1,5 @@
 import { NOTIFICATION_CHANNEL_TYPE_OPTIONS } from '@lactalink/enums';
-import { NotificationChannel } from '@lactalink/types';
+import { NotificationChannel } from '@lactalink/types/payload-generated-types';
 
 export const CHANNEL_KEYS = {
   IN_APP: NOTIFICATION_CHANNEL_TYPE_OPTIONS.IN_APP.value,

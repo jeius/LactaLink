@@ -1,4 +1,4 @@
-import { PSGCResponse } from '@lactalink/types';
+import { PSGCResponse } from '@lactalink/types/psgc';
 
 /**
  * Fetches PSGC (Philippine Standard Geographic Code) data from the server.

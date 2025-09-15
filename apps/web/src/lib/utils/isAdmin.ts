@@ -1,4 +1,4 @@
-import { User } from '@lactalink/types';
+import { User } from '@lactalink/types/payload-generated-types';
 
 export function isAdmin(user: User | null): boolean {
   if (!user) {

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, type SignInSchema } from '@lactalink/types/forms';
+import { signInSchema, type SignInSchema } from '@lactalink/form-schemas';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,8 @@ import { useState } from 'react';
 
 import { signIn } from '@/auth/actions';
 import { SEARCH_PARAMS_KEYS } from '@/lib/constants/routes';
-import { VerifyOtp } from '@lactalink/types';
-import { extractName } from '@lactalink/utilities';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { extractErrorMessage, extractName } from '@lactalink/utilities/extractors';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 

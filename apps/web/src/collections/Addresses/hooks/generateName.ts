@@ -1,4 +1,4 @@
-import { Address } from '@lactalink/types';
+import { Address } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateName: CollectionBeforeChangeHook<Address> = async ({

@@ -4,7 +4,8 @@ import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
-import { COLLECTION_GROUP, ORGANIZATION_TYPES } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { ORGANIZATION_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 

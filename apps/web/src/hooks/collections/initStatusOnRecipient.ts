@@ -1,5 +1,5 @@
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import { Donation, Request } from '@lactalink/types';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 const pendingStatus = DONATION_REQUEST_STATUS.PENDING.value;

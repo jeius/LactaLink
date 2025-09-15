@@ -1,4 +1,4 @@
-import { CollectionPSGC, ExistingDocs, RawPSGCData } from '@lactalink/types';
+import { CollectionPSGC, ExistingDocs, RawPSGCData } from '@lactalink/types/psgc';
 import { status } from 'http-status';
 import { APIError } from 'payload';
 

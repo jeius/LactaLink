@@ -4,10 +4,11 @@ import { ownerField } from '@/fields/ownerField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 
-import { COLLECTION_GROUP, DAYS, DELIVERY_OPTIONS } from '@/lib/constants';
+import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 
 import { CollectionConfig } from 'payload';
 
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { addressFilterOptions } from './filterOptions';
 import { generateName } from './hooks/generateName';

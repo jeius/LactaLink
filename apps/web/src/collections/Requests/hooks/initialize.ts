@@ -1,4 +1,4 @@
-import { Request } from '@lactalink/types';
+import { Request } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeValidateHook } from 'payload';
 import { updateVolumeFields } from '../utils/updateVolumeFields';
 

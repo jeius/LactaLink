@@ -1,5 +1,5 @@
-import { Request } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Request } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 /**

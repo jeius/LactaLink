@@ -1,5 +1,5 @@
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import status from 'http-status';
 import { APIError } from 'payload';
 import { seedNotificationSystem } from './seeder';

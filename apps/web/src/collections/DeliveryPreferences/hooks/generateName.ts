@@ -1,4 +1,4 @@
-import { DeliveryPreference } from '@lactalink/types';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateName: CollectionBeforeChangeHook<DeliveryPreference> = async ({

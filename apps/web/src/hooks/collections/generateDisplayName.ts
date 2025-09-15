@@ -1,5 +1,5 @@
-import { Hospital, Individual, MilkBank } from '@lactalink/types';
-import { capitalizeAll } from '@lactalink/utilities';
+import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
+import { capitalizeAll } from '@lactalink/utilities/formatters';
 import { CollectionBeforeChangeHook } from 'payload';
 
 function sanitizeName(name: string) {

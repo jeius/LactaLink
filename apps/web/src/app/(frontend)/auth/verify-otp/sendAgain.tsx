@@ -3,8 +3,8 @@
 import { sendOtp } from '@/auth/actions';
 import { Button } from '@/components/ui/button';
 import { RESEND_OTP } from '@/lib/constants';
-import { VerifyOtp } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { formatTime } from '@lactalink/utilities/formatters';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

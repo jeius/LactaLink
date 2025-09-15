@@ -1,11 +1,8 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
-import {
-  COLLECTION_GROUP,
-  MILK_BAG_OWNERSHIP_TRANSFER_REASONS,
-  MILK_BAG_STATUS,
-} from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { MILK_BAG_OWNERSHIP_TRANSFER_REASONS, MILK_BAG_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { generateCode, generateExpiry, generateTitle } from './hooks/generate';

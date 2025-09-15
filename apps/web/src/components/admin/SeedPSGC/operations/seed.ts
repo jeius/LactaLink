@@ -3,7 +3,8 @@
  */
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { ApiFetchResponse, CollectionSlugPSGC, ExistingDocs, IncomingData } from '@lactalink/types';
+import { ApiFetchResponse } from '@lactalink/types/api';
+import { CollectionSlugPSGC, ExistingDocs, IncomingData } from '@lactalink/types/psgc';
 import { getChunks } from '@lactalink/utilities';
 import { formatCamelCase, formatCamelCaseCaps, toKebabCase } from '@lactalink/utilities/formatters';
 

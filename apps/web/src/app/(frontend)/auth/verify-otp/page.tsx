@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import Image from '@/components/ui/image';
 import { encodedRedirect } from '@/lib/utils/encodedRedirect';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types';
+import { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types/auth';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

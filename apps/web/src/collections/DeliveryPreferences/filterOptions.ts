@@ -1,5 +1,5 @@
-import { DeliveryPreference } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { FilterOptions } from 'payload';
 
 export const addressFilterOptions: FilterOptions<DeliveryPreference> = async ({ data }) => {

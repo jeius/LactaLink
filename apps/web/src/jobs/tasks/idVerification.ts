@@ -1,7 +1,8 @@
 import { getServerApi } from '@/lib/api/getServerApi';
 import { ID_VERIFICATION_URL } from '@/lib/constants/routes';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { ApiFetchResponse, IDVerficationTask } from '@lactalink/types';
+import { ApiFetchResponse } from '@lactalink/types/api';
+import { IDVerficationTask } from '@lactalink/types/payload-generated-types';
 import { APIError, TaskConfig } from 'payload';
 
 export const idVerificationTask: TaskConfig<'id-verification-task'> = {

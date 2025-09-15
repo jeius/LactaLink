@@ -20,8 +20,8 @@ import { cn } from '@/lib/utils';
 
 import { verifyOtp } from '@/auth/actions';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { VerifyOtp } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities';
+import { VerifyOtp } from '@lactalink/types/auth';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner';
 
 export default function OTPForm(props: VerifyOtp) {

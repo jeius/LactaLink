@@ -1,4 +1,5 @@
-import { Collection, NotificationTypeTrigger } from '@lactalink/types';
+import { Collection } from '@lactalink/types/collections';
+import { NotificationTypeTrigger } from '@lactalink/types/payload-generated-types';
 import _ from 'lodash';
 import { FlattenedField, Operator, PayloadRequest, Where, WhereField } from 'payload';
 import { validOperatorSet } from 'payload/shared';

@@ -11,7 +11,7 @@ import {
   RawPSGCDataMap,
   RegionPSGC,
   SlugPSGC,
-} from '@lactalink/types';
+} from '@lactalink/types/psgc';
 import { formatCamelCaseCaps, formatKebabToTitle } from '@lactalink/utilities/formatters';
 import { APIError, Payload } from 'payload';
 

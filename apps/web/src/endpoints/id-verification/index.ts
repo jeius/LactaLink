@@ -1,8 +1,9 @@
 import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getServerSideURL, validateUrl } from '@/lib/utils/getURL';
-import { IDVerficationTask } from '@lactalink/types';
-import { extractErrorMessage, extractErrorStatus, mergeHeaders } from '@lactalink/utilities';
+import { IDVerficationTask } from '@lactalink/types/payload-generated-types';
+import { mergeHeaders } from '@lactalink/utilities';
+import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 import { Canvas, Image, ImageData } from 'canvas';
 import {
   detectSingleFace,

@@ -5,12 +5,12 @@ import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import {
-  COLLECTION_GROUP,
   DONATION_REQUEST_STATUS,
   PREFERRED_STORAGE_TYPES,
   PRIORITY_LEVELS,
-} from '@/lib/constants';
+} from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { requestsEndpoints } from './endpoints';

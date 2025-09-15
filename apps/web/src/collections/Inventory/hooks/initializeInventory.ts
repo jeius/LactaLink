@@ -1,5 +1,5 @@
-import { Inventory } from '@lactalink/types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities';
+import { Inventory } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook } from 'payload';
 
 export const initializeInventory: CollectionBeforeValidateHook<Inventory> = async ({

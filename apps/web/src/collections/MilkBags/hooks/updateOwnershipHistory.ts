@@ -1,6 +1,6 @@
 import { MILK_BAG_OWNERSHIP_TRANSFER_REASONS } from '@lactalink/enums';
-import { MilkBag, MilkBagOwnershipHistory } from '@lactalink/types';
-import _ from 'lodash';
+import { MilkBag, MilkBagOwnershipHistory } from '@lactalink/types/payload-generated-types';
+import isEqual from 'lodash/isEqual';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const updateOwnershipHistory: CollectionBeforeChangeHook<MilkBag> = ({
@@ -11,7 +11,7 @@ export const updateOwnershipHistory: CollectionBeforeChangeHook<MilkBag> = ({
   if (operation !== 'update' || !originalDoc) return data;
 
   // If ownership is being updated
-  if (data.owner && !_.isEqual(originalDoc.owner, data.owner)) {
+  if (data.owner && !isEqual(originalDoc.owner, data.owner)) {
     const newOwnershipRecord: NonNullable<MilkBagOwnershipHistory>[number] = {
       previousOwner: originalDoc.owner,
       newOwner: data.owner,

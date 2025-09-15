@@ -1,4 +1,4 @@
-import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities';
+import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 import { APIError, TaskConfig } from 'payload';
 
 export const sendEmailTask: TaskConfig<'send-email'> = {

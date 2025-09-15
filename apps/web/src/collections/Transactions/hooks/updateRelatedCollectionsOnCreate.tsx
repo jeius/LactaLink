@@ -1,6 +1,6 @@
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
-import { Transaction } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Transaction } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook, PayloadRequest } from 'payload';
 
 const matchedStatus = DONATION_REQUEST_STATUS.MATCHED.value;

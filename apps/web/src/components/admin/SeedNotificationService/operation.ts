@@ -1,6 +1,6 @@
 'use client';
 
-import { ApiFetchResponse } from '@lactalink/types';
+import { ApiFetchResponse } from '@lactalink/types/api';
 
 export async function seedNotificationService() {
   const res = await fetch('/api/seed/notifications', {

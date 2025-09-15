@@ -1,5 +1,5 @@
-import { Donation, MilkBag } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook } from 'payload';
 
 export const initializeDonation: CollectionBeforeValidateHook<Donation> = async ({

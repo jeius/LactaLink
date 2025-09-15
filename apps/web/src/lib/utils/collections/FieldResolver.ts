@@ -1,5 +1,6 @@
-import { Collection, Notification, NotificationType } from '@lactalink/types';
-import _ from 'lodash';
+import { Collection } from '@lactalink/types/collections';
+import { Notification, NotificationType } from '@lactalink/types/payload-generated-types';
+import get from 'lodash/get';
 import { SanitizedCollectionConfig } from 'payload';
 
 export class FieldResolver {
@@ -45,7 +46,7 @@ export class FieldResolver {
       }
 
       // Resolve the value from the document using the path
-      const value = _.get(doc, path, undefined);
+      const value = get(doc, path, undefined);
 
       // Use the resolved value or default
       variables[key] = value !== undefined ? value : defaultValue;

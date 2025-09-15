@@ -1,6 +1,7 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type { CityMunicipality, ExistingDocs, IncomingData, ProvincePSGC } from '@lactalink/types';
+import { CityMunicipality } from '@lactalink/types/payload-generated-types';
+import type { ExistingDocs, IncomingData, ProvincePSGC } from '@lactalink/types/psgc';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';

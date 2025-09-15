@@ -8,7 +8,7 @@ import {
   SEED_REGIONS_BATCH_SIZE,
 } from '@/lib/constants';
 import { CustomError } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { fetchPSGCData } from './fetchPSGCData';
 import { seed } from './seed';
 

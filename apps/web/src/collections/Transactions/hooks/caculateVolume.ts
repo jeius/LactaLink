@@ -1,5 +1,5 @@
-import { Transaction } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Transaction } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeReadHook } from 'payload';
 
 /**

@@ -8,8 +8,8 @@
  * - Returning a standardized JSON response.
  */
 
-import { ApiFetchResponse } from '@lactalink/types';
-import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities';
+import { ApiFetchResponse } from '@lactalink/types/api';
+import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadHandler, PayloadRequest } from 'payload';
 

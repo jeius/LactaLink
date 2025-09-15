@@ -1,4 +1,4 @@
-import { Avatar } from '@lactalink/types';
+import { Avatar } from '@lactalink/types/payload-generated-types';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateAlt: CollectionBeforeChangeHook<Avatar> = ({ data, operation, req }) => {

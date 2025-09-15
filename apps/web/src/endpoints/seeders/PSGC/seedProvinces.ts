@@ -1,6 +1,6 @@
 import { BATCH_INDEX_KEY } from '@/lib/constants';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import type { ExistingDocs, IncomingData } from '@lactalink/types';
+import type { ExistingDocs, IncomingData } from '@lactalink/types/psgc';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadRequest } from 'payload';

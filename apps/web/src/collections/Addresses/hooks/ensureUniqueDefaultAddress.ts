@@ -1,5 +1,5 @@
-import { Address } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 export const ensureUniqueDefaultAddress: CollectionAfterChangeHook<Address> = async ({

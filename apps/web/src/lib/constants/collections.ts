@@ -9,5 +9,3 @@ export const COLLECTION_GROUP = {
 };
 
 export const MILK_EXPIRY_DAYS = 3;
-
-export * from '@lactalink/enums';

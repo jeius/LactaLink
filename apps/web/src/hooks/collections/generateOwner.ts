@@ -1,4 +1,4 @@
-import { CollectionWithOwner } from '@/lib/types';
+import { CollectionWithOwner } from '@lactalink/types/collections';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateOwner: CollectionBeforeChangeHook<CollectionWithOwner> = ({

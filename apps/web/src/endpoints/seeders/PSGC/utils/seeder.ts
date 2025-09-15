@@ -2,13 +2,13 @@
  * Imports various types and interfaces used in the seeder function.
  * These include types for PSGC inputs, outputs, and user roles.
  */
+import { User } from '@lactalink/types/payload-generated-types';
 import {
   CollectionPSGC,
   CollectionSlugPSGC,
   ExistingDocs,
   RawPSGCDataMap,
-  User,
-} from '@lactalink/types';
+} from '@lactalink/types/psgc';
 import { batchProcess } from '@lactalink/utilities';
 import { Payload } from 'payload';
 

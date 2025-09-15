@@ -1,4 +1,4 @@
-import { NotificationType } from '@lactalink/types';
+import { NotificationType } from '@lactalink/types/payload-generated-types';
 import { VariableValidationOptions } from '../types';
 
 /**
@@ -77,7 +77,8 @@ export class TemplateValidator {
     const unexpected = Array.from(providedKeys).filter((key) => !expectedKeys.has(key));
     if (unexpected.length > 0) {
       const message = `Unexpected variables: ${unexpected.join(', ')}`;
-      allowExtra ? warnings.push(message) : errors.push(message);
+      if (allowExtra) warnings.push(message);
+      else errors.push(message);
     }
   }
 

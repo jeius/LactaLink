@@ -1,5 +1,5 @@
-import { Hospital, MilkBank } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Hospital, MilkBank } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeReadHook } from 'payload';
 
 export const calculateVolumeInStock: CollectionBeforeReadHook<Hospital | MilkBank> = async ({

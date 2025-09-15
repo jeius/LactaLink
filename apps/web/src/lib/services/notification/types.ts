@@ -1,5 +1,6 @@
-import { NOTIFICATION_CATEGORY_KEYS } from '@/lib/constants';
-import { Collection, Notification, User } from '@lactalink/types';
+import { NOTIFICATION_CATEGORY_KEYS } from '@lactalink/enums';
+import { Collection } from '@lactalink/types/collections';
+import { Notification, User } from '@lactalink/types/payload-generated-types';
 import { Operation } from 'payload';
 
 export interface VariableValidationOptions {

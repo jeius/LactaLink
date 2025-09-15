@@ -1,6 +1,6 @@
-import { DONATION_REQUEST_STATUS } from '@/lib/constants';
-import { Donation } from '@lactalink/types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 const COMPLETED = DONATION_REQUEST_STATUS.COMPLETED.value;

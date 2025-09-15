@@ -1,6 +1,6 @@
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { Donation } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+import { Donation } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { FilterOptions, Where } from 'payload';
 
 export const filterMilkBagsOptions: FilterOptions<Donation> = async ({ data }) => {

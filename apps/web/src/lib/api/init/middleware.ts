@@ -17,7 +17,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     return { response, user };
-  } catch (e) {
+  } catch (_) {
     return {
       user: null,
       response: NextResponse.next({

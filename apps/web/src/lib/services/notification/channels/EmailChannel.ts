@@ -1,4 +1,10 @@
-import { Hospital, Individual, MilkBank, Notification, User } from '@lactalink/types';
+import {
+  Hospital,
+  Individual,
+  MilkBank,
+  Notification,
+  User,
+} from '@lactalink/types/payload-generated-types';
 import { TemplateProcessor } from '../processors';
 import { BaseChannel } from './BaseChannel';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { extractErrorMessage } from '@lactalink/utilities/errors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Button, ConfirmationModal, toast, useModal } from '@payloadcms/ui';
 import { useCallback, useState } from 'react';
 import { seedPSGC } from './operations';

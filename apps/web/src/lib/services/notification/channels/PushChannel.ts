@@ -1,4 +1,4 @@
-import { Notification } from '@lactalink/types';
+import { Notification } from '@lactalink/types/payload-generated-types';
 import { TemplateProcessor } from '../processors';
 import { BaseChannel } from './BaseChannel';
 

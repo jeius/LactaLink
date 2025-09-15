@@ -1,5 +1,6 @@
-import { Donation, Request } from '@lactalink/types';
-import { extractCollection, extractID, isString } from '@lactalink/utilities';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import isString from 'lodash/isString';
 import { FilterOptions, Where } from 'payload';
 
 export const filterDeliveryPreferences: FilterOptions<Donation | Request> = async ({

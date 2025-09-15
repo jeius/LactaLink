@@ -1,6 +1,7 @@
 import { signOut } from '@/auth/actions';
 import { SupabaseStrategy } from '@/auth/strategy';
-import { COLLECTION_GROUP, DOC_LOCK_DURATION, PROFILE_TYPES } from '@/lib/constants';
+import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
+import { PROFILE_TYPES } from '@lactalink/enums';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, authenticated, userOwnerOrAdmin } from '../_access-control';
 import { appendPermissions } from './hooks/afterMe';

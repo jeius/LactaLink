@@ -1,4 +1,4 @@
-import { Notification, User } from '@lactalink/types';
+import { Notification, User } from '@lactalink/types/payload-generated-types';
 import { BaseChannel } from './BaseChannel';
 
 export class InAppChannel extends BaseChannel {

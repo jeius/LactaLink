@@ -1,5 +1,5 @@
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { Request } from '@lactalink/types';
+import { Request } from '@lactalink/types/payload-generated-types';
 import { PayloadRequest } from 'payload';
 
 const expiredStatus = MILK_BAG_STATUS.EXPIRED.value;

@@ -1,6 +1,7 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { COLLECTION_GROUP, SYSTEM_COLORS } from '@/lib/constants';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { SYSTEM_COLORS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { text } from 'payload/shared';
 import { admin, authenticated } from '../_access-control';

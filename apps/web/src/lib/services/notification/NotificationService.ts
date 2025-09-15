@@ -1,13 +1,13 @@
 import { FieldResolver } from '@/lib/utils/collections/FieldResolver';
 import { NOTIFICATION_CHANNEL_TYPE_OPTIONS, PRIORITY_LEVELS } from '@lactalink/enums';
+import { Collection } from '@lactalink/types/collections';
 import {
-  Collection,
   Notification,
   NotificationChannel,
   NotificationChannelStats,
   NotificationType,
-} from '@lactalink/types';
-import { extractID } from '@lactalink/utilities';
+} from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { Operation, Payload, PayloadRequest, SanitizedCollectionConfig } from 'payload';
 import { ChannelFactory } from './channels';
 import { TemplateProcessor } from './processors';

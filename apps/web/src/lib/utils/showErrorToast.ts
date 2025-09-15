@@ -1,4 +1,4 @@
-import { extractErrorMessage } from '@lactalink/utilities';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner';
 
 export function showErrorToastWithId(error: unknown, id: string) {

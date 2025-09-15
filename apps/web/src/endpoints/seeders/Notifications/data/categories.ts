@@ -1,5 +1,5 @@
 import { NOTIFICATION_CATEGORY_KEYS, SYSTEM_COLORS } from '@lactalink/enums';
-import { NotificationCategory } from '@lactalink/types';
+import { NotificationCategory } from '@lactalink/types/payload-generated-types';
 import { RequiredDataFromCollection } from 'payload';
 
 export const CATEGORY_KEYS = NOTIFICATION_CATEGORY_KEYS;
