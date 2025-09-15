@@ -8,6 +8,7 @@
   "main": "base.js",
   "type": "module",
   "exports": {
+    ".": "./base.js",
     "./base": "./base.js",
     "./expo": "./expo.js",
     "./next": "./next.js"

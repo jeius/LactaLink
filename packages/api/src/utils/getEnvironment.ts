@@ -8,7 +8,7 @@ export function isServerEnvironment(env: ApiClientConfig['environment']) {
     }
     // Expo is always client-side
     return false;
-  } catch (error) {
+  } catch (_) {
     // If window check fails, assume server environment
     return true;
   }

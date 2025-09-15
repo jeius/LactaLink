@@ -1,14 +1,15 @@
 import tsEsLint from '@typescript-eslint/eslint-plugin';
 import parser from '@typescript-eslint/parser';
+import { Linter } from 'eslint';
 import prettier from 'eslint-plugin-prettier';
 import turbo from 'eslint-plugin-turbo';
+import { defineConfig } from 'eslint/config';
 
 /**
  * A shared ESLint configuration for the repository.
- *
- * @type {import("eslint").Linter.Config[]}
+ * @type {Linter.Config[]}
  */
-export default [
+export default defineConfig([
   {
     files: ['**/*.js', '**/*.ts', '**/*.jsx', '**/*.tsx', '**/*.cjs', '**/*.mjs'],
     languageOptions: {
@@ -27,7 +28,7 @@ export default [
       prettier: prettier,
       turbo: turbo,
     },
-    ignores: ['node_modules', 'build', 'dist', '.turbo'],
+    ignores: ['node_modules/**', 'build/**', 'dist/**', '.turbo/**'],
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/ban-ts-comment': 'warn',
@@ -66,4 +67,4 @@ export default [
       'no-undef': 'off',
     },
   },
-];
+]);

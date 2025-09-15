@@ -148,7 +148,7 @@ export class MatchingService implements IMatchingService {
 
     // Calculate if the request is fully fulfilled
     const totalFulfilled = (request.volumeFulfilled || 0) + matchedVolume;
-    const fullyFulfilled = totalFulfilled >= request.volumeNeeded;
+    const _fullyFulfilled = totalFulfilled >= request.volumeNeeded;
 
     return transaction;
   }
