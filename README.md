@@ -22,6 +22,11 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
 - 🛠️ [Next.js](https://nextjs.org/docs)
 - 🛠️ [Payload CMS](https://payloadcms.com/docs)
 
+### State Management
+
+- 🗂️ [TanStack React Query](https://tanstack.com/query/latest) (Server-side)
+- 🗂️ [Zustand](https://zustand.docs.pmnd.rs/) (Client-side)
+
 ### Database
 
 - 🗄️ [Supabase (PostgreSQL)](https://supabase.com)
@@ -40,6 +45,10 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
 - 📧 [Supabase SMTP](https://supabase.com)
 - 📧 [Resend API](https://resend.com/)
 
+### Cloud Storage
+
+- ☁️ [Supabase Storage](https://supabase.com)
+
 ### Hosting & Deployment
 
 - 🌐 [Vercel](https://vercel.com) (Web Hosting, Domain & SSL)
@@ -54,6 +63,11 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
 
 - 🏗️ [Turborepo](https://turborepo.com/docs) (Monorepo Management)
 - 📦 [pnpm](https://pnpm.io/motivation) (Package Manager)
+- 🧪 [ESLint](https://eslint.org/docs/latest/) (Linting)
+- 🛠️ [TypeScript](https://www.typescriptlang.org/) (Static Typing)
+- 🎨 [Prettier](https://prettier.io/) (Code Formatting)
+
+> More details in the [Technical Architecture](./docs/technical-architecture/INDEX.md) documentation.
 
 ## Installation & Setup ⚙️📦
 
