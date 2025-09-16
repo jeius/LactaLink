@@ -1,87 +1,125 @@
-# LactaLink 🍼💙👶
+<picture>
+<img src="https://www.lactalink.com/images/logo_dark.png" alt="LactaLink Logo" width="480" />
+</picture>
+
+# LactaLink
+
+A Tech-driven Solution for Breastmilk Donation and Distribution
 
 ## Overview
 
-LactaLink, built with **React Native (Expo)**, facilitates the donation and distribution of breast milk. The app provides a platform for **donors** and **recipients** to connect while ensuring medical approval, safety, and convenience.
-
-## Features 📲
-
-### Donor Features 📩
-
-- **Create an Account**
-  - 📝 Register with personal details.
-  - 🆔 Provide donor-specific information (e.g., ID, contact number, address, age, birthdate, gender, marital status, number of dependents, and donor type).
-  - 🏥 Answer medical history (lifestyle) questions.
-  - ⏳ Pending approval from healthcare providers.
-- **Approval Process**
-  - ✅ Healthcare providers (hospitals, professionals) approve or reject donor applications.
-- **Milk Donation Process**
-  - 📅 Enter details about milk collection (date, type of storage, mode of collection, ML amount, delivery mode).
-  - 🎯 Select a recipient based on urgency and proximity.
-  - 🎁 Confirm donation.
-- **Donor Profile Management**
-  - 🔔 View notifications.
-  - 💬 Send and receive messages.
-  - 📜 View donation and receiving history.
-  - 🏅 Earn badges for contributions.
-  - ⚖️ Manage donation requests (accept or reject with reason).
-- **List of Donors**
-  - 📍 Display donor names and addresses.
-  - 🚫 Remove availability if milk exceeds the storage time limit.
-
-### Recipient Features 🤱
-
-- **Requesting Milk**
-  - 🍼 Browse a list of available donors with milk details (name, ML available, location, and donor information).
-  - 🔎 Search for specific donors based on name, location, or badge.
-  - 📩 Request milk from a donor.
-- **Recipient Profile Management**
-  - 🏠 View personal profile and notifications.
-  - 📅 Track approved requests and scheduled meet-ups.
-  - 📜 View transaction history.
-  - 💬 Send and receive messages.
-- **GIS Integration**
-  - 🗺️ Clickable maps for locating nearby donors.
-
-### General Features 📢
-
-- **Forums & Announcements**
-  - 🗣️ A community space for discussions and updates.
+LactaLink, built with **React Native (Expo)**, facilitates the donation and distribution of breast milk. The app provides a platform for individuals(donors/recipients) and organizations(hospitals/milkbanks) to connect while ensuring medical approval, safety, and convenience.
 
 ## Tech Stack 🛠️
 
-- **Frontend:** ⚛️ React Native (Expo)
-- **Backend:** 🛠️ Payload CMS / Supabase
-- **Monorepo:** 🏗️ Turborepo
-- **Database:** 🗄️ Supabase (PostgreSQL)
-- **Authentication:** 🔐 Supabase Auth / OAuth
-- **Maps & Location:** 🗺️ Google Maps API / OpenStreetMap (GIS integration)
-- **Package Manager:** 📦 pnpm
+### Frontend
+
+- ⚛️ [React Native (Expo)](https://docs.expo.dev) (Mobile App: Android & iOS)
+- ⚛️ [React (Next.js)](https://nextjs.org/docs) (Admin Panel: Web)
+
+### Backend
+
+- 🛠️ [Next.js](https://nextjs.org/docs)
+- 🛠️ [Payload CMS](https://payloadcms.com/docs)
+
+### Database
+
+- 🗄️ [Supabase (PostgreSQL)](https://supabase.com)
+
+### Authentication
+
+- 🔐 [Supabase Auth](https://supabase.com)
+- 🔐 [Google OAuth](https://console.cloud.google.com)
+
+### GIS (Geographic Information System)
+
+- 🗺️ [Google Maps API](https://console.cloud.google.com)
+
+### Email Services
+
+- 📧 [Supabase SMTP](https://supabase.com)
+- 📧 [Resend API](https://resend.com/)
+
+### Hosting & Deployment
+
+- 🌐 [Vercel](https://vercel.com) (Web Hosting, Domain & SSL)
+- 📱 [Expo Application Services (EAS)](https://expo.dev) (Mobile App Distribution)
+
+### Domain Management
+
+- 🌍 [Vercel](https://vercel.com) (Domain & SSL)
+- 🏷️ [Namecheap](https://www.namecheap.com) (Domain Registrar)
+
+### Development Tools
+
+- 🏗️ [Turborepo](https://turborepo.com/docs) (Monorepo Management)
+- 📦 [pnpm](https://pnpm.io/motivation) (Package Manager)
 
 ## Installation & Setup ⚙️📦
 
 ### Prerequisites
 
-- 🖥️ Node.js & pnpm installed
-- 📲 Expo CLI installed globally (`npm install -g expo-cli`)
-- 🏛️ Supabase project setup (if using Supabase backend)
+- 🖥️ Node.js & pnpm installed - **Required**
+- 🏛️ [Supabase Project](https://supabase.com/dashboard/new) - **Required**
+- 🌐 [Google Cloud Project](https://console.cloud.google.com) with Maps API and OAuth credentials - **Required**
+- 📲 [Expo Project](https://expo.dev/accounts) (for building dev client) and Expo CLI installed globally (`npm install -g expo-cli`) - **Required**
+- 🌐 [Vercel Account](https://vercel.com/signup) (for hosting the web app) - **Optional**
 
 ### Steps to Run
 
 1. 📂 Clone the repository:
+
    ```sh
    git clone https://github.com/Jeius/LactaLink.git
    cd lactalink
    ```
+
 2. 📦 Install dependencies:
+
    ```sh
    pnpm install
    ```
-3. ▶️ Start the Expo app:
+
+3. 🏗️ Build the packages:
+
    ```sh
+   pnpm build:packages
+   ```
+
+4. 🛠️ Setup environment variables:
+   - Create a `.env` file in the `apps/mobile` and `apps/web` directory.
+   - Add necessary environment variables (e.g., Supabase URL, Supabase Anon Key, Google Maps API Key, Api URL).
+   - Refer to `.env.example` for guidance.
+
+5. 🗄️ Create database triggers for Supabase Auth:
+   - Go to Supabase Dashboard -> SQL Editor
+   - Copy and paste into the SQL Editor all of the SQL commands from `database/sql/triggers` directory and run them.
+
+6. ▶️ Build the Mobile app dev client:
+   - Log in to your Expo account using the command:
+     ```sh
+     eas login
+     ```
+   - Build the dev client for your platform:
+     ```sh
+     cd apps/mobile
+     ```
+     ```sh
+     pnpm build:android-dev # For Android
+     ```
+     ```sh
+     pnpm build:ios-dev     # For iOS
+     ```
+
+7. 📲 Install the dev client on your device:
+   - For Android, download the APK from the Expo dashboard and install it.
+   - For iOS, follow this tutorial: [Installing custom iOS apps](https://docs.expo.dev/development/introduction/#installing-custom-ios-apps).
+
+8. 🚀 Start the development servers:
+   ```sh
+   // In the root directory
    pnpm dev
    ```
-4. 📲 Scan the QR code using the Expo Go app or run on an emulator.
 
 ## Contributing 🤝💡📈
 
@@ -92,4 +130,4 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
 
 ## License 📜⚖️🔓
 
-MIT License
+[MIT License](./LICENSE.md)

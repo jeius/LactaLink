@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 
-Copyright (c) 2025-present Julius Pahama <www.linkedin.com/in/julius-pahama>
+Copyright (c) 2025 [Julius Pahama](https://www.linkedin.com/in/julius-pahama)
 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
