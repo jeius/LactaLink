@@ -120,7 +120,4 @@ This diagram highlights the core components and their interactions, including ex
 ## Performance Considerations
 
 - **Caching**: Implement caching mechanisms for frequently accessed data to reduce database load and improve response times.
-- **Load Balancing**: Use load balancers to distribute traffic evenly across backend servers, ensuring high availability and reliability.
 - **Database Optimization**: Optimize database queries and use indexing to enhance performance for large datasets.
-- **Monitoring and Alerts**: Set up monitoring tools to track system performance and configure alerts for potential bottlenecks or failures.
-- **Scalability**: Design the system to handle increased traffic by scaling horizontally (adding more servers) or vertically (upgrading server capacity).

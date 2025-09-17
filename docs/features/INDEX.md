@@ -1,103 +1,211 @@
 # LactaLink Features Documentation
 
-This document provides a detailed overview of the features available in the LactaLink platform, categorized by user roles and functionalities. It serves as a guide for users to understand how to navigate and utilize the platform effectively.
+This document provides a comprehensive overview of the features available in the LactaLink platform. It serves as a reference guide for understanding the platform's capabilities and functionality.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [User Roles](#user-roles)
+- [Profile Types](#profile-types)
+- [User Features](#user-features)
+  - [Account Management](#account-management)
+  - [Identity Verification](#identity-verification)
+  - [Donation Management](#donation-management)
+  - [Request Management](#request-management)
+  - [Messaging and Notifications](#messaging-and-notifications)
+  - [Geographic Services](#geographic-services)
+- [Administrative Features](#administrative-features)
+  - [User Management](#user-management)
+  - [Content Management](#content-management)
+  - [Verification Management](#verification-management)
+- [Organization Features](#organization-features)
+- [Future Features](#future-features)
+
+## Introduction
+
+LactaLink is a tech-driven solution for breastmilk donation and distribution. The platform connects donors, recipients, and organizations while ensuring medical approval, safety, and convenience. This documentation outlines the features available to different user types and explains the core functionality of the system.
 
 ## User Roles
 
-- **Admin**:
-  - Manages users, donations, requests, and other system features.
-  - Handles confirmation of failed automated user identity verification.
-  - Handles platform settings and monitors activity.
-
-- **Authenticated**:
-  - Submit and track donation or request activities.
-  - View and manage their own profile.
-  - Send and receive messages.
-  - View and participate in community posts and discussions.
+- **Authenticated User**: Registered users who can access personalized features based on their profile type.
+- **Administrator**: System administrators with access to management tools and monitoring capabilities.
 
 ## Profile Types
 
-- **Individual**: A person who can donate breast milk to those in need or request milk for personal use. This profile is tailored for parents or caregivers seeking to contribute or receive support within the community.
-
-- **Hospital**: A healthcare organization that facilitates the collection and distribution of breast milk from donors to recipients. Hospitals play a key role in ensuring the safety and proper handling of milk donations.
-
-- **Milkbank**: A specialized organization dedicated to the storage, processing, and distribution of breast milk. Milkbanks often work closely with hospitals and donors to meet the needs of recipients, with additional features planned for future updates.
+- **Individual**: Users who can donate breast milk or request milk for personal use. This profile type supports both donor and recipient roles.
+- **Hospital**: Healthcare organizations that facilitate the collection, storage, and distribution of breast milk.
+- **Milk Bank**: Specialized organizations dedicated to processing, storing, and distributing donated breast milk.
 
 ## User Features
 
-### Account Creation
-
-All users must create an account to access the platform's features. The account creation process includes:
-
-- **Sign up**
-  1. Create an account using a secure email and password or sign up quickly via Google.
-  2. Verify email address through a One-Time Password (OTP) for added security (required for email and password sign-up only).
-
-- **Profile Setup**
-  1. The user choose a profile type that best represents their role (e.g., Individual, Hospital, or Milkbank).
-  2. Complete the required fields with accurate personal or organizational details.
-  3. Optionally, upload a profile picture to personalize their account.
-
-Detailed documentation of this feature can be found in [Account Creation](./ACCOUNT_CREATION.md).
-
-### Identity Verification (Optional)
-
-This feature is optional but recommended for enhanced trust and security within the community. Verified users will be able to access additional features, such as donor screening and milk donation.
-
-- **Identity Verification Process:**
-  1. Choose the type of government-issued ID (e.g., passport, driver's license, national ID).
-  2. Fill out personal information that exists in the ID (full name, date of birth, address).
-  3. Upload a picture of the ID and a picture of the user's face.
-  4. The system will automatically verify the ID using [face-api.js](https://www.npmjs.com/package/face-api.js) library.
-  5. If automatic verification fails, the system notifies the admins via email to manually review and approve or reject the verification.
-
-Detailed documentation of this feature can be found in [ID Verification](./ID_VERIFICATION.md).
-
 ### Account Management
 
-- View notifications.
-- Send and receive messages.
-- Add addresses and delivery preferences.
-- View donations and receiving history.
-- Earn badges for contributions.
-- Manage incoming milk donations/requests (accept or reject with reason).
+See [Account Creation Documentation](./ACCOUNT_CREATION.md) for detailed workflows and technical implementation.
 
-- **Feed**
-  - 🗣️ A community space for discussions and postings.
+- **Registration and Authentication**
+  - Create an account using email/password or Google authentication
+  - Verify email address through a secure one-time password (OTP)
+  - Select profile type (Individual, Hospital, or Milk Bank)
+  - Complete profile with personal or organizational information
 
-### Donor Features 📩
+- **Profile Management (In Progress)**
+  - Update personal information and contact details
+  - Upload and manage profile pictures
+  - Add and manage addresses with geographic information
+  - Set delivery preferences for donations or requests (Individuals only)
+  - View activity history including donations, requests, and transactions
 
-This section is for **Individual** profile type only. Before an individual can donate milk, they must be a **verified user** and complete the online donor screening.
+- **Settings (In Progress)**
+  - Manage notification preferences
+  - Update account security settings
+  - Control privacy settings and information sharing
 
-> Note: Only donor screening from hospitals/milkbanks can mark the user as "Verified Donor".
+### Identity Verification
 
-- **Online Donor Screening**
-  - 🏥 Answer medical history (lifestyle) questions.
-  - 📄 Upload necessary documents (ID, medical reports).
+Identity verification enhances trust and security within the community. This optional but recommended feature enables users to verify their identity using government-issued identification. See [Identity Verification Documentation](./ID_VERIFICATION.md) for detailed steps and technical implementation.
 
-- **List of Donors**
-  - 📍 Display donor names and addresses.
-  - 🚫 Remove availability if milk exceeds the storage time limit.
+- **Verification Process**
+  - Select government-issued ID type (passport, driver's license, national ID)
+  - Upload ID image and selfie for verification
+  - System automatically verifies identity using **face-api.js**
+  - Manual review by administrators for failed automatic verifications
 
-### Recipient Features 🤱
+- **Verification Benefits**
+  - Access to advanced features like donor screening and milk donation
+  - Enhanced trust indicator for other users
+  - Higher visibility in search results
 
-- **Requesting Milk**
-  - 🍼 Browse a list of available donors with milk details (name, ML available, location, and donor information).
-  - 🔎 Search for specific donors based on name, location, or badge.
-  - 📩 Request milk from a donor.
+### Donation Management
 
-- **Recipient Profile Management**
-  - 🏠 View personal profile and notifications.
-  - 📅 Track approved requests and scheduled meet-ups.
-  - 📜 View transaction history.
-  - 💬 Send and receive messages.
+The donation process enables individuals to safely donate breast milk to recipients or organizations. See [Donation Management Documentation](./DONATION_MANAGEMENT.md) for detailed workflows and technical implementation.
 
-- **GIS Integration**
-  - 🗺️ Clickable maps for locating nearby donors.
+- **Milk Bag Management**
+  - Record milk collection details (volume, date, storage type)
+  - Generate unique codes for tracking milk bags
+  - Verify code application with photo upload
+  - Track milk bag status through the donation lifecycle
 
-### Donation Process
+- **Donation Creation**
+  - Create donations with detailed information
+  - Include multiple milk bags in a single donation
+  - Select specific recipients or make general donations
+  - Set delivery preferences and additional notes
 
-- **Milk Donation Process**
-  - 📅 Enter details about milk collection (date, type of storage, mode of collection, ML amount, delivery mode).
-  - 🎯 Select a recipient based on urgency and proximity.
-  - 🎁 Confirm donation.
+- **Donation Tracking**
+  - Monitor donation status and recipient responses
+  - Track partial and complete allocations
+  - View donation history and impact statistics
+  - Receive notifications about donation updates
+
+### Request Management
+
+The request system allows individuals to seek breast milk donations based on their specific needs.
+
+- **Request Creation**
+  - Specify volume needed and urgency level
+  - Set needed-by date and storage preferences
+  - Include optional reason for request
+  - Select specific donors or make general requests
+
+- **Request Tracking**
+  - Monitor request status and fulfillment percentage
+  - Track responses from potential donors
+  - View partial and complete fulfillments
+  - Receive notifications about request updates
+
+- **Fulfillment Management**
+  - Accept or decline donation offers
+  - Track multiple transactions for partially fulfilled requests
+  - Complete receipt confirmation
+  - Provide feedback on received donations
+
+### Messaging and Notifications
+
+- **In-App Messaging (In Progress)**
+  - Communicate directly with donors, recipients, or organizations
+  - Discuss donation details and arrangements
+  - Receive system-generated updates about transactions
+
+- **Notification System**
+  - Receive alerts for donation matches, requests, and system updates
+  - Customize notification preferences by category and channel
+  - Access notification history and action items
+
+### Geographic Services
+
+- **Location-Based Features**
+  - Search for nearby donors or recipients (In Progress)
+  - View interactive maps showing available donations or requests
+  - Calculate distances and estimated travel times
+
+- **Address Management**
+  - Store multiple addresses with PSGC (Philippine Standard Geographic Code) information
+  - Set default address for donations or requests
+  - Update geographic information as needed
+
+## Administrative Features
+
+### User Management
+
+- **User Administration**
+  - View and manage user accounts
+  - Reset passwords and manage account access
+  - Handle account suspension or deactivation
+
+- **Role Management**
+  - Assign administrative roles and permissions
+
+### Content Management
+
+- **System Content**
+  - Manage static content and help documentation
+  - Update system announcements and notifications
+  - Control featured content and promotions
+
+- **Data Management**
+  - Perform database maintenance operations
+
+### Verification Management
+
+- **Identity Verification**
+  - Review and approve manual identity verification requests
+  - Audit verification records and documentation
+
+## Organization Features (In Progress)
+
+- **Donation Reception**
+  - Receive and process direct donations
+  - Manage donor relationships and communication
+  - Track donation volumes and statistics
+
+- **Distribution Management**
+  - Fulfill milk requests from individuals
+  - Track distribution activities and recipients
+  - Manage consent and documentation
+
+- **Milk Inventory**
+  - Track available milk volume and storage locations
+  - Monitor expiration dates and quality status
+  - Generate inventory reports and forecasts
+  - Monitor milk storage conditions and capacity
+  - Manage storage facilities and equipment
+
+## Future Features
+
+These features are planned for future releases:
+
+- **Advanced Analytics Dashboard**: Comprehensive data visualization and reporting tools for tracking donations, requests, and impact metrics.
+
+- **Community Forums**: Discussion spaces for users to share experiences, advice, and support related to breastfeeding and milk donation.
+
+- **Mobile Scanning**: Barcode/QR code scanning functionality for easier milk bag tracking and verification.
+
+- **Donor Incentive Program**: Recognition and reward system for active donors to encourage continued participation.
+
+- **Supply Chain Integration**: Enhanced logistics management features for hospitals and milk banks to optimize milk collection and distribution.
+
+- **Delivery Scheduling and Negotiation**: Allow users to schedule delivery times and negotiate pickup/drop-off arrangements.
+
+- **Delivery Tracking**: Real-time tracking of milk deliveries with status updates and estimated arrival times.
+
+_Note: This document will be updated as new features are developed and implemented._
