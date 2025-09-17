@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
@@ -11,10 +10,11 @@ import { MMKV_KEYS } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 
 import { useRouter } from 'expo-router';
-import { Dimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingItem } from './OnboardingItem';
 import { OnboardingData, onboardingData } from './data';
 
@@ -24,7 +24,11 @@ export function Welcome() {
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  const { height, width } = Dimensions.get('window');
+  const insets = useSafeAreaInsets();
+  const screen = useWindowDimensions();
+  const [buttonHeight, setButtonHeight] = useState(80);
+  const carouselHeight = screen.height - insets.top - insets.bottom - buttonHeight - 20;
+
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
 
@@ -60,13 +64,17 @@ export function Welcome() {
 
   useEffect(() => {
     setTheme('light');
-  }, [setTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <SafeArea className="justify-between">
+    <Box className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <GradientBackground colors={gradientColors} end={{ x: 0, y: 1 }} locations={[0, 0.8, 1]} />
 
-      <VStack className="relative w-full items-end justify-start gap-0 py-4">
+      <VStack
+        className="relative w-full items-stretch justify-start gap-0 py-4"
+        style={{ maxHeight: screen.height }}
+      >
         <Button
           variant="link"
           size="sm"
@@ -84,8 +92,8 @@ export function Welcome() {
         <Carousel
           ref={ref}
           loop={false}
-          width={width}
-          height={height * 0.85}
+          width={screen.width}
+          height={carouselHeight}
           onProgressChange={progress}
           onSnapToItem={setCurrentPage}
           onScrollEnd={handleScrollEnd}
@@ -122,7 +130,10 @@ export function Welcome() {
           onPress={onPressPagination}
         />
 
-        <Box className="w-full p-5 pt-2">
+        <Box
+          onLayout={({ nativeEvent }) => setButtonHeight(nativeEvent.layout.height)}
+          className="w-full p-5 pt-2"
+        >
           <Button
             size="xl"
             className="shadow-primary-800 w-full rounded-2xl shadow-md"
@@ -134,6 +145,6 @@ export function Welcome() {
           </Button>
         </Box>
       </VStack>
-    </SafeArea>
+    </Box>
   );
 }
