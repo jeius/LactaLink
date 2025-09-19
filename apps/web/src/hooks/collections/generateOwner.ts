@@ -1,4 +1,5 @@
 import { CollectionWithOwner } from '@lactalink/types/collections';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateOwner: CollectionBeforeChangeHook<CollectionWithOwner> = ({
@@ -7,6 +8,6 @@ export const generateOwner: CollectionBeforeChangeHook<CollectionWithOwner> = ({
   data,
 }) => {
   if (operation !== 'create' || data.owner || !req.user) return data;
-  data.owner = req.user;
+  data.owner = extractID(req.user);
   return data;
 };

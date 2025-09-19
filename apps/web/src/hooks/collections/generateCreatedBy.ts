@@ -1,4 +1,5 @@
 import { CollectionWithCreatedBy } from '@lactalink/types/collections';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateCreatedBy: CollectionBeforeChangeHook<CollectionWithCreatedBy> = ({
@@ -7,6 +8,6 @@ export const generateCreatedBy: CollectionBeforeChangeHook<CollectionWithCreated
   data,
 }) => {
   if (operation !== 'create' || data.createdBy || !req.user) return data;
-  data.createdBy = req.user;
+  data.createdBy = extractID(req.user);
   return data;
 };
