@@ -10,7 +10,7 @@ export default function Layout() {
   const hasProfile = Boolean(profile);
 
   return (
-    <Stack initialRouteName="(drawer)" screenOptions={screenOptions}>
+    <Stack screenOptions={screenOptions}>
       <Stack.Protected guard={hasProfile}>
         <Stack.Screen name="(drawer)" />
 
