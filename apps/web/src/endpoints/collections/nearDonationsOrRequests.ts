@@ -197,6 +197,11 @@ function parseNearOptions(input: unknown): NearOptions {
     });
   }
 
+  // Convert to number the stringified coordinates
+  if (typeof input === 'object' && 'location' in input && Array.isArray(input.location)) {
+    input.location = input.location.map((coord) => Number(coord));
+  }
+
   const parsed = nearDonationRequestSchema.safeParse(input);
 
   if (parsed.data) {
