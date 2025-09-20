@@ -6,18 +6,20 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { User } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';
 import { Link } from 'expo-router';
+import { isString } from 'lodash';
 import { MailIcon, PhoneIcon } from 'lucide-react-native';
 import React, { ComponentProps, ReactNode } from 'react';
 import { Box } from '../ui/box';
 import { Skeleton } from '../ui/skeleton';
 
 interface ProfileCardProps extends ComponentProps<typeof Card> {
-  profile: User['profile'];
+  profile: NonNullable<User['profile']>;
   isLoading?: boolean;
   action?: ReactNode;
 }
@@ -31,7 +33,13 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const { themeColors } = useTheme();
 
-  const profile = extractCollection(profileProp?.value) || null;
+  const profileSlug = profileProp.relationTo;
+  const query = useFetchById(isString(profileProp.value), {
+    collection: profileSlug,
+    id: extractID(profileProp.value) || '',
+  });
+
+  const profile = extractCollection(profileProp?.value) || query.data;
   const user = extractCollection(profile?.owner) || null;
 
   const name = (profile && ('name' in profile ? profile.name : profile.displayName)) || 'No name';
@@ -57,28 +65,33 @@ export default function ProfileCard({
           </Box>
 
           <VStack space="sm" className="flex-1 items-start">
-            <Link href={`/profile`} push asChild>
+            <Link href={`/profile/${profileSlug}/${profile!.id}`} push asChild>
               <Button
                 animateOnPress={false}
                 variant="link"
                 action="default"
                 className="h-fit w-fit p-0"
               >
-                <ButtonText underlineOnPress ellipsizeMode="tail" numberOfLines={1}>
+                <ButtonText
+                  underlineOnPress
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  className="flex-1"
+                >
                   {name}
                 </ButtonText>
               </Button>
             </Link>
             <HStack space="sm" className="items-center">
               <Icon as={MailIcon} size="sm" />
-              <Text size="sm" ellipsizeMode="tail" numberOfLines={1}>
+              <Text size="sm" ellipsizeMode="tail" numberOfLines={1} className="flex-1">
                 {email}
               </Text>
             </HStack>
 
             <HStack space="sm" className="items-center">
               <Icon as={PhoneIcon} size="sm" />
-              <Text size="sm" ellipsizeMode="tail" numberOfLines={1}>
+              <Text size="sm" ellipsizeMode="tail" numberOfLines={1} className="flex-1">
                 {phone}
               </Text>
             </HStack>

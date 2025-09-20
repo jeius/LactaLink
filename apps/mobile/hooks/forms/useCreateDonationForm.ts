@@ -63,9 +63,13 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   const getValues = form.getValues;
   const reset = form.reset;
 
-  const debouncedSave = debounce((value: DeepPartial<DonationSchema>) => {
-    donationStorage.set(storageKey, JSON.stringify(value));
-  }, 500);
+  const debouncedSave = useMemo(
+    () =>
+      debounce((value: DeepPartial<DonationSchema>) => {
+        donationStorage.set(storageKey, JSON.stringify(value));
+      }, 500),
+    [storageKey]
+  );
   // #endregion
 
   // #region Use Effects
@@ -87,14 +91,15 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
   useEffect(() => {
     const data = getValues();
 
-    if (!data.deliveryPreferences?.length && preferences?.length) {
+    if (!matchedRequest) {
+      data.matchedRequest = undefined;
+    }
+
+    if (preferences?.length && !data.deliveryPreferences?.length) {
       data.deliveryPreferences = extractID(preferences);
     }
 
-    // Only set recipient if there is no matched request.
-    if (recipient && !matchedRequest) {
-      data.recipient = recipient;
-    }
+    data.recipient = recipient;
 
     if (!isEqual(data, getValues())) {
       reset(data);
@@ -126,14 +131,13 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
           collectionMode: data.details.collectionMode,
           storageType: data.details.storageType,
         },
-        deliveryPreferences: data.deliveryPreferences,
+        deliveryPreferences: matchedRequest ? [] : data.deliveryPreferences,
       };
 
       // Save the preffered values to local storage
-      donationStorage.delete(storageKey);
-      donationStorage.set(storageKey, JSON.stringify(preferredValues));
+      debouncedSave(preferredValues);
     }
-  }, [isSubmitSuccessful, getValues, storageKey]);
+  }, [isSubmitSuccessful, getValues, storageKey, debouncedSave, matchedRequest]);
   // #endregion
 
   // #region Form Methods
@@ -175,7 +179,6 @@ function getData(user: User | null, storageKey: string): DonationSchema | undefi
   const storedData = getStoredData(user, storageKey);
   const donor = profile?.id;
   return {
-    ...storedData,
     milkBags: storedData?.milkBags || {},
     donor: storedData?.donor || donor,
     deliveryPreferences: storedData?.deliveryPreferences || [],

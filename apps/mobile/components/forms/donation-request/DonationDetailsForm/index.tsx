@@ -1,4 +1,5 @@
 import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
+import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
@@ -33,6 +34,7 @@ export function DonationDetailsForm({
 
   const form = useForm<DonationSchema>();
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
+  const recipient = form.watch('recipient');
 
   const selectedPref = useMemo(() => {
     const deliveryPreferences = matchedRequestDoc?.deliveryPreferences || [];
@@ -51,6 +53,12 @@ export function DonationDetailsForm({
     const data = getValues();
     const updatedData = updateDataOnMatchedRequest(data, matchedRequestDoc);
     reset(updatedData);
+
+    return () => {
+      if (matchedRequestDoc) {
+        reset({ ...getValues(), deliveryPreferences: [] });
+      }
+    };
   }, [matchedRequestDoc, getValues, reset]);
 
   function handleDPChange(preference?: DeliveryPreference | null) {
@@ -69,6 +77,13 @@ export function DonationDetailsForm({
             selected={selectedPref}
             onSelect={handleDPChange}
           />
+        </Box>
+      )}
+
+      {recipient && (
+        <Box className="mx-5 mb-4">
+          <Text className="font-JakartaSemiBold mb-1">Selected Recipient</Text>
+          <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
 

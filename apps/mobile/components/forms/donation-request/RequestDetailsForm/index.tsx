@@ -11,6 +11,7 @@ import { RequestSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference, Donation } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
+import ProfileCard from '@/components/cards/ProfileCard';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
@@ -31,6 +32,7 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
 
   const form = useForm<RequestSchema>();
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
+  const recipient = form.watch('recipient');
 
   const selectedPref = useMemo(() => {
     const deliveryPreferences = matchedDonationDoc?.deliveryPreferences || [];
@@ -49,6 +51,12 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
     const data = getValues();
     const updatedData = updateDataOnMatchedDonation(data, matchedDonationDoc);
     reset(updatedData);
+
+    return () => {
+      if (matchedDonationDoc) {
+        reset({ ...getValues(), deliveryPreferences: [] });
+      }
+    };
   }, [getValues, matchedDonationDoc, reset]);
 
   function handleDPChange(preference?: DeliveryPreference | null) {
@@ -67,6 +75,13 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
             onSelect={handleDPChange}
             selected={selectedPref}
           />
+        </Box>
+      )}
+
+      {recipient && (
+        <Box className="mx-5 mb-4">
+          <Text className="font-JakartaSemiBold mb-1">Selected Donor</Text>
+          <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
 

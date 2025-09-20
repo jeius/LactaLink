@@ -45,13 +45,15 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
   useEffect(() => {
     const data = getValues();
 
+    if (!matchedDonation) {
+      data.matchedDonation = undefined;
+    }
+
     if (preferences?.length && !data.deliveryPreferences?.length) {
       data.deliveryPreferences = extractID(preferences);
     }
 
-    if (recipient && !matchedDonation) {
-      data.recipient = recipient;
-    }
+    data.recipient = recipient;
 
     if (!isEqual(data, getValues())) {
       reset(data);
@@ -83,7 +85,7 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
 
         const data = getValues();
 
-        const values: DeepPartial<RequestSchema> = {
+        const preferredValues: DeepPartial<RequestSchema> = {
           details: {
             notes: data.details.notes,
             reason: data.details.reason,
@@ -93,12 +95,12 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
         };
 
         // Save the preffered values to local storage
-        requestStorage.set(storageKey, JSON.stringify(values));
+        debouncedSave(preferredValues);
       }
     }
 
     saveUserPreference();
-  }, [isSubmitSuccessful, getValues, storageKey]);
+  }, [isSubmitSuccessful, getValues, storageKey, debouncedSave]);
 
   return { form };
 };

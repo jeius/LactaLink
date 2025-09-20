@@ -68,7 +68,9 @@ export default function ProfilePage() {
         contentContainerClassName="grow flex-col items-stretch bg-background-50"
       >
         <VStack className="items-stretch">
-          <ProfileCard className="p-5 pb-0" profile={user?.profile} isLoading={isLoading} />
+          {user?.profile && (
+            <ProfileCard className="p-5 pb-0" profile={user.profile} isLoading={isLoading} />
+          )}
 
           <Link href={`/profile`} push asChild>
             <Button
