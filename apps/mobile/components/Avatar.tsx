@@ -1,4 +1,5 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { isMeUser } from '@/lib/utils/isMeUser';
 import {
   Avatar as AvatarType,
   Hospital,
@@ -93,6 +94,13 @@ export function ProfileAvatar({
     profileProp && 'value' in profileProp ? profileProp?.value : profileProp
   );
   const avatar: AvatarType | null = extractCollection(profile?.avatar);
+
+  const user = extractCollection(profile?.owner);
+  const isOwner = !!(user && isMeUser(user));
+
+  const profileSlug = user?.profile?.relationTo;
+  const profileID = profile?.id;
+
   const [isPressed, setIsPressed] = useState(false);
 
   const fallbackName = profile?.displayName || 'User';
@@ -153,15 +161,17 @@ export function ProfileAvatar({
   ]);
 
   return enablePress ? (
-    <Link href={`/account`} push asChild>
-      <AnimatedPressable
-        className="overflow-hidden rounded-full"
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-      >
-        <AvatarComponent />
-      </AnimatedPressable>
-    </Link>
+    profileSlug && profileID && (
+      <Link href={isOwner ? '/account' : `/profile/${profileSlug}/${profileID}`} push asChild>
+        <AnimatedPressable
+          className="overflow-hidden rounded-full"
+          onPressIn={() => setIsPressed(true)}
+          onPressOut={() => setIsPressed(false)}
+        >
+          <AvatarComponent />
+        </AnimatedPressable>
+      </Link>
+    )
   ) : (
     <AvatarComponent />
   );
