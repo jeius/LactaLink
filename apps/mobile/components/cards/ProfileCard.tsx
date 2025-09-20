@@ -7,15 +7,13 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
-import { Hospital, Individual, MilkBank, User } from '@lactalink/types/payload-generated-types';
+import { User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';
-import { isIndividual } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { MailIcon, PhoneIcon } from 'lucide-react-native';
-import React, { ComponentProps, ReactNode, useMemo } from 'react';
+import React, { ComponentProps, ReactNode } from 'react';
 import { Box } from '../ui/box';
-import { Divider } from '../ui/divider';
 import { Skeleton } from '../ui/skeleton';
 
 interface ProfileCardProps extends ComponentProps<typeof Card> {
@@ -104,121 +102,5 @@ function ProfileCardSkeleton() {
         <Skeleton className="h-5 w-32" variant="circular" />
       </VStack>
     </HStack>
-  );
-}
-
-interface IndividualDetailsProps extends ComponentProps<typeof Card> {
-  profile: Individual;
-}
-export function IndividualDetails({ profile, ...props }: IndividualDetailsProps) {
-  const individualDetails = useMemo(() => {
-    if (!profile || !isIndividual(profile)) {
-      return null;
-    }
-
-    const birthDate = new Date(profile.birth);
-    const age = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-    const babies = profile.dependents || 0;
-    const maritalStatus = capitalizeFirst(profile.maritalStatus.toLowerCase());
-    return { age, babies, maritalStatus };
-  }, [profile]);
-
-  return (
-    individualDetails && (
-      <Card {...props}>
-        <HStack space="sm" className="w-full items-stretch">
-          <VStack space="sm" className="flex-1 items-center">
-            <Text size="lg" bold>
-              {individualDetails.babies}
-            </Text>
-            <Text size="sm">Dependents</Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text size="lg" bold>
-              {individualDetails.age}
-            </Text>
-            <Text size="sm">Age</Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center justify-stretch">
-            <Text size="sm" bold className="flex-1 text-center align-middle">
-              {individualDetails.maritalStatus}
-            </Text>
-            <Text size="sm">Status</Text>
-          </VStack>
-        </HStack>
-      </Card>
-    )
-  );
-}
-
-interface OrganizationDetailsProps extends ComponentProps<typeof Card> {
-  profile: Hospital | MilkBank;
-}
-
-export function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
-  const orgDetails = useMemo(() => {
-    if (!profile || isIndividual(profile)) {
-      return null;
-    }
-
-    const inStock = profile.totalVolume || 0;
-    const sentTransactions = profile.sentTransactions?.docs?.length || 0;
-    const receivedTransactions = profile.receivedTransactions?.docs?.length || 0;
-    return { inStock, sentTransactions, receivedTransactions };
-  }, [profile]);
-
-  return (
-    orgDetails && (
-      <Card {...props}>
-        <HStack space="sm" className="w-full items-stretch">
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.inStock.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Current Stock (mL)
-            </Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.receivedTransactions.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Received Donations
-            </Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.sentTransactions.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Fulfilled Requests
-            </Text>
-          </VStack>
-        </HStack>
-      </Card>
-    )
   );
 }

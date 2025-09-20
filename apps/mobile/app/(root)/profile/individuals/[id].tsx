@@ -1,5 +1,7 @@
+import { VerificationAlert } from '@/components/alerts/VerificationAlert';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
+import { BasicBadge } from '@/components/badges';
 import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
@@ -21,22 +23,14 @@ import { Shade } from '@/lib/types/colors';
 import { RecipientSearchParams } from '@/lib/types/donationRequest';
 import { isMeUser } from '@/lib/utils/isMeUser';
 import { shadow } from '@/lib/utils/shadows';
-import { Hospital, MilkBank } from '@lactalink/types/payload-generated-types';
-import { CollectionSlug } from '@lactalink/types/payload-types';
+import { Individual } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractDefaultAddress } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';
-import { isHospital, isIndividual } from '@lactalink/utilities/type-guards';
+import { isIndividual } from '@lactalink/utilities/type-guards';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import {
-  Edit2Icon,
-  HashIcon,
-  MailIcon,
-  MapPinIcon,
-  PhoneIcon,
-  StethoscopeIcon,
-} from 'lucide-react-native';
-import React, { ComponentProps, useMemo } from 'react';
+import { BadgeCheckIcon, Edit2Icon, MailIcon, MapPinIcon, PhoneIcon } from 'lucide-react-native';
+import { ComponentProps, useMemo } from 'react';
 
 type Post = {
   id: string;
@@ -65,18 +59,16 @@ const samplePosts: Post[] = [
   },
 ];
 
-type ProfileSlug = Extract<CollectionSlug, 'hospitals' | 'milkBanks'>;
-
-export default function OrganizationProfilePage() {
-  const { id, slug } = useLocalSearchParams<{ slug: ProfileSlug; id: string }>();
+export default function IndividualProfilePage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data: user, ...meUserQuery } = useMeUser();
   const meUserProfile = extractCollection(user?.profile?.value);
 
-  const isMeUser = meUserProfile?.id === id && user?.profile?.relationTo === slug;
+  const isMeUser = meUserProfile?.id === id;
 
   const { data: fetchedProfile, ...profileQuery } = useFetchById(!isMeUser, {
-    collection: slug,
+    collection: 'individuals',
     id,
   });
 
@@ -93,9 +85,9 @@ export default function OrganizationProfilePage() {
     );
   }
 
-  if (!profile || isIndividual(profile)) return null;
+  if (!profile || !isIndividual(profile)) return null;
 
-  const name = profile.name;
+  const name = profile.givenName;
   const headerTitle = isMeUser ? 'My Profile' : (name && `${name}'s Profile`) || 'Profile';
 
   const renderItem: ListRenderItem<Post> = ({ item }) => {
@@ -120,7 +112,7 @@ export default function OrganizationProfilePage() {
   }
 
   function HeaderComponent() {
-    if (!profile || isIndividual(profile)) return null;
+    if (!profile || !isIndividual(profile)) return null;
 
     if (isMeUser) {
       profile.owner = user;
@@ -128,7 +120,7 @@ export default function OrganizationProfilePage() {
 
     return (
       <>
-        <OrganizationProfile profile={profile} />
+        <IndividualProfile profile={profile} />
         <Text size="lg" bold className="bg-background-50 px-5">
           Posts
         </Text>
@@ -152,40 +144,45 @@ export default function OrganizationProfilePage() {
 
 //#region Components
 
-interface OrganizationProfileProps {
-  profile: Hospital | MilkBank;
+interface IndividualProfileProps {
+  profile: Individual;
 }
-function OrganizationProfile({ profile }: OrganizationProfileProps) {
+function IndividualProfile({ profile }: IndividualProfileProps) {
   const { themeColors } = useTheme();
 
   const user = extractCollection(profile.owner);
 
   const isOwner = user && isMeUser(user);
+  const isVerified = !!(profile && 'isVerified' in profile && profile.isVerified);
+  const isVerifiedDonor = false; //Mocked for now
 
-  const name = profile?.displayName || profile.name || 'No name';
+  const name = profile?.displayName || profile.givenName || 'Unknown User';
   const email = user?.email || 'No email';
   const phone = profile?.phone || 'No phone number';
   const fullAddress = extractDefaultAddress(user)?.displayName || 'No address';
 
-  const hospitalHead = profile && isHospital(profile) ? profile.head : null;
-  const hospitalID = profile && isHospital(profile) ? profile.hospitalID : null;
-
-  const profileType = user?.profileType && capitalizeFirst(user.profileType.toLowerCase());
-  const profileIcon =
-    (user?.profileType && PROFILE_TYPE_ICONS[user.profileType]) || PROFILE_TYPE_ICONS.INDIVIDUAL;
+  const profileType = 'Individual';
+  const profileIcon = PROFILE_TYPE_ICONS['INDIVIDUAL'] || PROFILE_TYPE_ICONS.INDIVIDUAL;
 
   const params: RecipientSearchParams = {
     recipientID: profile.id,
     recipientSlug: user?.profile?.relationTo,
   };
 
-  const avatarRingColor = getAccentColor('300');
+  const avatarRingColor = getAccentColor(isVerified || isVerifiedDonor ? '500' : '0');
+  const badgeIconFill = getAccentColor('500');
+  const badgeIconStroke = themeColors.background[0];
   const bgGradientColors = [getAccentColor('50')!, getAccentColor('200')!] as const;
   const backgroundColor = getAccentColor('200');
   const sheetShadowColor = getAccentColor('900');
 
   function getAccentColor(shade: Shade) {
-    return themeColors.secondary[shade];
+    if (isVerifiedDonor) {
+      return themeColors.primary[shade];
+    } else if (isVerified) {
+      return themeColors.info[shade];
+    }
+    return themeColors.background[shade];
   }
 
   return (
@@ -203,15 +200,36 @@ function OrganizationProfile({ profile }: OrganizationProfileProps) {
         className="bg-background-50 relative grow items-stretch rounded-t-2xl p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
-          <ProfileAvatar
-            profile={profile}
-            size="xl"
-            style={{ borderColor: avatarRingColor, borderWidth: 3 }}
-          />
+          <Box className="relative">
+            <ProfileAvatar
+              profile={profile}
+              size="xl"
+              style={{ borderColor: avatarRingColor, borderWidth: 3 }}
+            />
+            {(isVerified || isVerifiedDonor) && (
+              <Box className="absolute bottom-0 right-0">
+                <Icon
+                  size="2xl"
+                  as={BadgeCheckIcon}
+                  fill={badgeIconFill}
+                  stroke={badgeIconStroke}
+                />
+              </Box>
+            )}
+          </Box>
 
           <Text size="lg" className="font-JakartaSemiBold">
             {name}
           </Text>
+
+          {(isVerified || isVerifiedDonor) && (
+            <BasicBadge
+              size="sm"
+              text={isVerifiedDonor ? 'Verified Donor' : 'Verified User'}
+              action={isVerifiedDonor ? 'primary' : 'info'}
+              className="mt-1 py-0.5"
+            />
+          )}
 
           <HStack space="xs" className="mt-1 items-center">
             <Icon as={profileIcon} size="xs" />
@@ -228,6 +246,8 @@ function OrganizationProfile({ profile }: OrganizationProfileProps) {
             </Button>
           </Box>
         )}
+
+        {isOwner && !isVerified && <VerificationAlert />}
 
         {!isOwner && (
           <HStack space="lg" className="w-full items-stretch justify-center">
@@ -247,23 +267,6 @@ function OrganizationProfile({ profile }: OrganizationProfileProps) {
         )}
 
         <VStack space="sm" className="mt-1 items-stretch">
-          {hospitalID && (
-            <HStack space="sm" className="items-center">
-              <Icon as={HashIcon} size="sm" />
-              <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-                Hospital ID: {hospitalID}
-              </Text>
-            </HStack>
-          )}
-          {hospitalHead && (
-            <HStack space="sm" className="items-center">
-              <Icon as={StethoscopeIcon} size="sm" />
-              <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-                Hospital Head: {hospitalHead}
-              </Text>
-            </HStack>
-          )}
-
           <HStack space="sm" className="items-center">
             <Icon as={MailIcon} size="sm" />
             <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
@@ -286,75 +289,51 @@ function OrganizationProfile({ profile }: OrganizationProfileProps) {
           </HStack>
         </VStack>
 
-        <OrganizationDetails profile={profile} className="mt-2 p-2" />
+        <IndividualDetails profile={profile} className="mt-2 p-2" />
       </VStack>
     </VStack>
   );
 }
 
-interface OrganizationDetailsProps extends ComponentProps<typeof Card> {
-  profile: Hospital | MilkBank;
+interface IndividualDetailsProps extends ComponentProps<typeof Card> {
+  profile: Individual;
 }
-
-function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
-  const orgDetails = useMemo(() => {
-    if (!profile || isIndividual(profile)) {
+function IndividualDetails({ profile, ...props }: IndividualDetailsProps) {
+  const individualDetails = useMemo(() => {
+    if (!profile || !isIndividual(profile)) {
       return null;
     }
 
-    const inStock = profile.totalVolume || 0;
-    const sentTransactions = profile.sentTransactions?.docs?.length || 0;
-    const receivedTransactions = profile.receivedTransactions?.docs?.length || 0;
-    return { inStock, sentTransactions, receivedTransactions };
+    const birthDate = new Date(profile.birth);
+    const age = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    const babies = profile.dependents || 0;
+    const maritalStatus = capitalizeFirst(profile.maritalStatus.toLowerCase());
+    return { age, babies, maritalStatus };
   }, [profile]);
 
   return (
-    orgDetails && (
+    individualDetails && (
       <Card {...props}>
         <HStack space="sm" className="w-full items-stretch">
           <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.inStock.toLocaleString()}
+            <Text size="lg" bold>
+              {individualDetails.babies}
             </Text>
-            <Text size="sm" className="shrink text-center">
-              Current Stock (mL)
-            </Text>
+            <Text size="sm">Dependents</Text>
           </VStack>
           <Divider orientation="vertical" />
           <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.receivedTransactions.toLocaleString()}
+            <Text size="lg" bold>
+              {individualDetails.age}
             </Text>
-            <Text size="sm" className="shrink text-center">
-              Received Donations
-            </Text>
+            <Text size="sm">Age</Text>
           </VStack>
           <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.sentTransactions.toLocaleString()}
+          <VStack space="sm" className="flex-1 items-center justify-stretch">
+            <Text size="sm" bold className="flex-1 text-center align-middle">
+              {individualDetails.maritalStatus}
             </Text>
-            <Text size="sm" className="shrink text-center">
-              Fulfilled Requests
-            </Text>
+            <Text size="sm">Status</Text>
           </VStack>
         </HStack>
       </Card>
