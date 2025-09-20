@@ -1,4 +1,5 @@
 import { QUERY_KEYS } from '@/lib/constants';
+import { setMeUser } from '@/lib/stores/meUserStore';
 import { useApiClient } from '@lactalink/api';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -10,7 +11,11 @@ export function useMeUser() {
   return useQuery({
     initialData: null,
     queryKey: QUERY_KEYS.AUTH.USER,
-    queryFn: () => apiClient.auth.getMeUser(),
+    queryFn: async () => {
+      const user = await apiClient.auth.getMeUser();
+      setMeUser(user);
+      return user;
+    },
     staleTime: Infinity,
     retry: false,
   });
@@ -32,7 +37,9 @@ export function useAuth() {
   const profileCollection = user?.profile?.relationTo || null;
 
   useEffect(() => {
-    queryClient.setQueryData(QUERY_KEYS.AUTH.USER, session?.user || null);
+    const user = session?.user || null;
+    queryClient.setQueryData(QUERY_KEYS.AUTH.USER, user);
+    setMeUser(user);
   }, [session, queryClient]);
 
   return {
