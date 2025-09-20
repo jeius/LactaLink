@@ -13,8 +13,7 @@ export function extractDefaultAddress<T extends Pick<User, 'addresses'> | null |
     return null as T extends Pick<User, 'addresses'> ? Address | null : T;
   }
 
-  const defaultAddress = user.addresses.docs.find((addr) => extractCollection(addr)?.isDefault);
-  return extractCollection(defaultAddress) as T extends Pick<User, 'addresses'>
-    ? Address | null
-    : T;
+  const addresses = extractCollection(user.addresses.docs);
+  const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+  return defaultAddress as T extends Pick<User, 'addresses'> ? Address | null : T;
 }
