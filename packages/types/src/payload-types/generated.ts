@@ -199,6 +199,7 @@ export interface Config {
     requests: Request;
     users: User;
     transactions: Transaction;
+    search: Search;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -265,6 +266,7 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    search: SearchSelect<false> | SearchSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1770,6 +1772,32 @@ export interface NotificationTypeTemplate {
     | null;
 }
 /**
+ * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search".
+ */
+export interface Search {
+  id: string;
+  title?: string | null;
+  priority?: number | null;
+  doc:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
@@ -1968,6 +1996,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'search';
+        value: string | Search;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -2802,6 +2834,17 @@ export interface ConfirmedDeliverySelect<T extends boolean = true> {
   datetime?: T;
   address?: T;
   confirmedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search_select".
+ */
+export interface SearchSelect<T extends boolean = true> {
+  title?: T;
+  priority?: T;
+  doc?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

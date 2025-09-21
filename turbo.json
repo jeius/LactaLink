@@ -56,6 +56,7 @@
         "src/hooks/collections/**/*",
         "src/fields/**/*",
         "src/lib/constants/**/*",
+        "src/lib/plugins/**/*",
         "src/payload.config.ts"
       ],
       "outputs": [
