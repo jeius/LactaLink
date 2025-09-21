@@ -14,7 +14,7 @@ export default function Layout() {
       screenOptions={{
         ...screenOptions,
         headerShown: true,
-        headerLeft: () => <HeaderBackButton />,
+        headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
       <Stack.Protected guard={isOrganization}>

@@ -12,8 +12,8 @@ export default function FormPreventBack() {
 
   const isDirty = form.formState.isDirty;
 
-  function headerLeft() {
-    return <FormBackButton preventBack={isDirty} />;
+  function headerLeft({ tintColor }: { tintColor?: string }) {
+    return <FormBackButton preventBack={isDirty} tintColor={tintColor} />;
   }
 
   return <Stack.Screen options={{ headerLeft, headerBackVisible: false }} />;

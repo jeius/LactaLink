@@ -20,4 +20,5 @@ export const MMKV_KEYS = {
   TRANSACTIONS: {
     LAST_DATA: 'transactions-last-data',
   },
+  SEARCH_HISTORY: 'search-history',
 };

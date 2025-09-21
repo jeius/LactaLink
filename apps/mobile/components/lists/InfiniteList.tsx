@@ -50,6 +50,7 @@ export interface InfiniteListProps<
   isFetching?: boolean;
   gap?: number;
   ItemSeparatorComponent?: FC;
+  ListEmptyComponent?: FC;
   ItemComponent: FC<InfiniteListItemProps<TSlug, TSelect>>;
   emptyListLabel?: string;
 }
@@ -68,6 +69,7 @@ export function InfiniteList<
   ItemSeparatorComponent,
   ItemComponent,
   emptyListLabel,
+  ListEmptyComponent,
   ...props
 }: InfiniteListProps<TSlug, TSelect>) {
   const {
@@ -114,6 +116,9 @@ export function InfiniteList<
   );
 
   function EmptyComponent() {
+    if (ListEmptyComponent) {
+      return <ListEmptyComponent />;
+    }
     return !isLoading && <NoData title={emptyListLabel || `No ${formatKebab(slug)} found`} />;
   }
 

@@ -11,7 +11,7 @@ export default function Layout() {
       screenOptions={{
         ...screenOptions,
         headerShown: true,
-        headerLeft: () => <HeaderBackButton />,
+        headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
       <Stack.Screen name="create" options={{ headerTitle: 'Create Delivery Preference' }} />

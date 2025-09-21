@@ -26,6 +26,7 @@ export function HeaderBackButton({
   toastID = BACK_TOAST_ID,
   canGoBack: canGoBackProp,
   onPress,
+  tintColor,
   ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
@@ -62,7 +63,7 @@ export function HeaderBackButton({
       onPress={handleOnPress}
       style={StyleSheet.flatten([{ padding: 8, marginRight: 5 }, props.style])}
     >
-      <Icon className="text-primary-0 h-6 w-6" as={ArrowLeftIcon} />
+      <Icon className="h-6 w-6" as={ArrowLeftIcon} color={tintColor} />
     </AnimatedPressable>
   );
 }
