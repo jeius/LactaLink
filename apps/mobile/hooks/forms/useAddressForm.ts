@@ -4,6 +4,7 @@ import { extractID } from '@lactalink/utilities/extractors';
 
 import { useForm } from 'react-hook-form';
 
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useEffect } from 'react';
 import { useFetchById } from '../collections/useFetchById';
 
@@ -30,24 +31,26 @@ export function useAddressForm(id?: string) {
     },
   });
 
+  const reset = form.reset;
+
   useEffect(() => {
     if (isSuccess && address) {
       const data = address;
-      const [longitude, latitude] = data.coordinates || [undefined, undefined];
+      const coordinates = data.coordinates && pointToLatLng(data.coordinates);
 
-      form.reset({
+      reset({
         id: data.id,
         name: data.name || '',
         zipCode: data.zipCode || '',
         street: data.street || '',
         province: extractID(data.province),
-        barangay: data.barangay && extractID(data.barangay),
+        barangay: (data.barangay && extractID(data.barangay)) || undefined,
         cityMunicipality: extractID(data.cityMunicipality),
         isDefault: data.isDefault || false,
-        coordinates: (latitude && longitude && { latitude, longitude }) || undefined,
+        coordinates: coordinates || undefined,
       });
     }
-  }, [form, isSuccess, address]);
+  }, [reset, isSuccess, address]);
 
   return { form, isLoading, isFetching, isSuccess, data: address, error };
 }

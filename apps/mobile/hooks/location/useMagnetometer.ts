@@ -1,4 +1,4 @@
-import { lerpAngle } from '@lactalink/utilities';
+import { lerpAngle } from '@lactalink/utilities/geo-utils';
 import { Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
 import { useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';

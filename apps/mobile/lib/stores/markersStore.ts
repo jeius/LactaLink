@@ -84,7 +84,7 @@ export function setSelectedMarker(identifier: string | null) {
     return;
   }
 
-  const markerData = markerMap.get(identifier) || null;
+  const markerData = markerMap.get(identifier);
   if (markerData) {
     useMarkersStore.setState({ selectedMarker: markerData });
   }
@@ -150,7 +150,6 @@ export async function createDataMarkers<TSlug extends MarkerDataSlug>(slug: TSlu
 function createMarkersFromDonationOrRequest<
   TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>,
 >(slug: TSlug, data: Collection<TSlug>) {
-  const { markerMap } = useMarkersStore.getState();
   const markers: MapMarkerProps[] = [];
 
   let volume = 0;
@@ -192,7 +191,10 @@ function createMarkersFromDonationOrRequest<
       marker,
     };
 
-    markerMap.set(id, dataMarker);
+    useMarkersStore.setState((prev) => ({
+      markerMap: new Map(prev.markerMap).set(id, dataMarker),
+    }));
+
     markers.push(marker);
   }
 
@@ -202,8 +204,6 @@ function createMarkersFromDonationOrRequest<
 function createMarkerFromOrganization<
   TSlug extends Extract<CollectionSlug, 'hospitals' | 'milkBanks'>,
 >(slug: TSlug, data: Collection<TSlug>): MapMarkerProps | null {
-  const { markerMap } = useMarkersStore.getState();
-
   const availableVolume = data.totalVolume || 0;
   const owner = extractCollection(data.owner);
   const addresses = extractCollection(owner?.addresses?.docs) || [];
@@ -225,7 +225,9 @@ function createMarkerFromOrganization<
     description: `${availableVolume} mL of milk available.`,
   };
 
-  markerMap.set(id, { slug, data, marker, deliveryPreference: null });
+  useMarkersStore.setState((prev) => ({
+    markerMap: new Map(prev.markerMap).set(id, { slug, data, marker, deliveryPreference: null }),
+  }));
 
   return marker;
 }

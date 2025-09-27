@@ -8,7 +8,7 @@ import { useMapStore } from '@/lib/stores/mapStore';
 import { LocationObjectCoords } from 'expo-location';
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Camera, LatLng } from 'react-native-maps';
+import { LatLng } from 'react-native-maps';
 import { SharedValue } from 'react-native-reanimated';
 
 const headingStyle = StyleSheet.create({
@@ -39,8 +39,6 @@ export interface UserMarkerRef {
 
 interface UserMarkerProps {
   hideHeading?: boolean;
-  showAvatar?: boolean;
-  camera?: Camera;
   onChangePosition?: (position: LocationObjectCoords) => void;
 }
 
