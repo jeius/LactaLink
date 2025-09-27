@@ -40,6 +40,30 @@ export function regionToBoundary(region: MapRegion): Boundary {
   };
 }
 
-export function latLngToPoint({ latitude, longitude }: Coordinates): Point {
+/**
+ * Converts a Coordinates object to a GeoJSON Point. If the coordinates are invalid, returns [0, 0].
+ * @param coordinates An object with latitude and longitude properties
+ * @returns A GeoJSON Point represented as [longitude, latitude]
+ */
+export function latLngToPoint<T extends Coordinates | undefined | null>(coordinates: T): Point {
+  if (!coordinates) {
+    return [0, 0];
+  }
+
+  const { latitude, longitude } = coordinates;
   return [longitude, latitude];
+}
+
+/**
+ * Converts a GeoJSON Point to a Coordinates object. If the point is undefined or null, returns { latitude: 0, longitude: 0 }.
+ * @param point A GeoJSON Point represented as [longitude, latitude]
+ * @returns An object with latitude and longitude properties
+ */
+export function pointToLatLng<T extends Point | undefined | null>(point: T): Coordinates {
+  if (!point) {
+    return { latitude: 0, longitude: 0 };
+  }
+
+  const [longitude, latitude] = point;
+  return { latitude, longitude };
 }
