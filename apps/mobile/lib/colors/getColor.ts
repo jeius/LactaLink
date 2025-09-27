@@ -1,4 +1,6 @@
-import { ColorsConfig } from '@/lib/types/colors';
+import { ColorCategory, ColorsConfig } from '@/lib/types/colors';
+import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
+import { Theme } from '@lactalink/types';
 import { ColorValue } from 'react-native';
 import { colorsConfig } from './config';
 
@@ -33,3 +35,38 @@ export const getRgbColor = (
 
   return `rgb(${formatted})`;
 };
+
+export function getMilkBagStatusColor(
+  theme: Theme,
+  status?: keyof typeof MILK_BAG_STATUS,
+  shade: number = 400
+): ColorValue {
+  const colors: Record<keyof typeof MILK_BAG_STATUS, ColorCategory> = {
+    AVAILABLE: 'primary',
+    ALLOCATED: 'success',
+    CONSUMED: 'success',
+    EXPIRED: 'background',
+    DISCARDED: 'error',
+    DRAFT: 'warning',
+  };
+
+  return (status && getHexColor(theme, colors[status], shade)) || '#a2a3a3';
+}
+
+export function getDonationRequestStatusColor(
+  theme: Theme,
+  status?: keyof typeof DONATION_REQUEST_STATUS,
+  shade: number = 400
+): ColorValue {
+  const colors: Record<keyof typeof DONATION_REQUEST_STATUS, ColorCategory> = {
+    PENDING: 'warning',
+    AVAILABLE: 'primary',
+    COMPLETED: 'success',
+    MATCHED: 'info',
+    REJECTED: 'error',
+    EXPIRED: 'background',
+    CANCELLED: 'background',
+  };
+
+  return (status && getHexColor(theme, colors[status], shade)) || '#a2a3a3';
+}
