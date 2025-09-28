@@ -14,9 +14,9 @@ export default function Layout() {
         headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
-      <Stack.Screen name="create" options={{ headerTitle: 'Create Address' }} />
+      <Stack.Screen name="index" options={{ headerTitle: 'Address' }} />
 
-      <Stack.Screen name="edit/[id]" options={{ headerTitle: 'Edit Address' }} />
+      <Stack.Screen name="edit" options={{ headerTitle: 'Edit Address' }} />
     </Stack>
   );
 }

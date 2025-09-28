@@ -47,6 +47,16 @@ export const DAYS = {
   SUNDAY: { label: 'Sunday', value: 'SUNDAY' },
 } as const;
 
+export enum ShortDays {
+  SUNDAY = 'Sun',
+  MONDAY = 'Mon',
+  TUESDAY = 'Tue',
+  WEDNESDAY = 'Wed',
+  THURSDAY = 'Thu',
+  FRIDAY = 'Fri',
+  SATURDAY = 'Sat',
+}
+
 export const URGENCY_LEVELS = {
   LOW: { label: 'Standard', value: 'LOW' },
   MEDIUM: { label: 'Urgent', value: 'MEDIUM' },

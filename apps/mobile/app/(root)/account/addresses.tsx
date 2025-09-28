@@ -11,7 +11,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function ListPage() {
+export default function AddressListPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -66,7 +66,7 @@ export default function ListPage() {
             showMap
             itemVariant="card"
             gap={16}
-            refreshing={!isLoading && isRefreshing}
+            refreshing={isRefreshing}
             onRefresh={handleRefresh}
           />
 

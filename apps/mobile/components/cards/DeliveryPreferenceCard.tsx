@@ -10,8 +10,10 @@ import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { isString } from '@lactalink/utilities/type-guards';
+import { Link } from 'expo-router';
 import { ComponentProps, ReactNode } from 'react';
 import { Image } from '../Image';
+import { Button, ButtonText } from '../ui/button';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Skeleton } from '../ui/skeleton';
@@ -57,6 +59,7 @@ export function DeliveryPreferenceCard({
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays || []);
 
+  const prefID = deliveryPreference?.id || '';
   const address = extractCollection(deliveryPreference?.address) || addressQuery.data;
   const addressName = address?.name || 'Address';
   const fullAddress = address?.displayName || 'Unknown Address';
@@ -74,9 +77,16 @@ export function DeliveryPreferenceCard({
       <HStack space="sm">
         <VStack space="sm" className="flex-1">
           <HStack space="sm" className="w-full">
-            <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold shrink">
-              {preferenceName}
-            </Text>
+            <Link asChild href={`/delivery-preferences/${prefID}`}>
+              <Button
+                animateOnPress={false}
+                variant="link"
+                action="default"
+                className="h-fit w-fit p-0"
+              >
+                <ButtonText underlineOnPress>{preferenceName}</ButtonText>
+              </Button>
+            </Link>
             {action}
           </HStack>
 
@@ -85,20 +95,23 @@ export function DeliveryPreferenceCard({
               {preferredMode?.map((mode, index) => {
                 const iconAsset = getDeliveryPreferenceIcon(mode);
                 return (
-                  <HStack
+                  <Card
                     key={index}
-                    space="xs"
-                    className="border-primary-400 bg-primary-0 items-center rounded-md border px-2 py-1"
+                    variant="elevated"
+                    className="bg-primary-0 rounded-full border-0 px-3 py-2"
                   >
-                    <Image
-                      source={iconAsset}
-                      alt={`${mode}-icon`}
-                      style={{ width: 16, height: 16 }}
-                    />
-                    <Text size="sm" className="text-primary-500 font-JakartaMedium">
-                      {DELIVERY_OPTIONS[mode].label}
-                    </Text>
-                  </HStack>
+                    <HStack space="sm" className="items-center">
+                      <Image
+                        source={iconAsset}
+                        alt={`${mode}-icon`}
+                        style={{ width: 16, height: 16 }}
+                      />
+
+                      <Text size="sm" className="font-JakartaMedium">
+                        {DELIVERY_OPTIONS[mode].label}
+                      </Text>
+                    </HStack>
+                  </Card>
                 );
               })}
             </HStack>
@@ -118,14 +131,11 @@ export function DeliveryPreferenceCard({
             <HStack space="xs" className="items-start">
               <Icon size="sm" as={MapPinIcon} style={{ marginTop: 2 }} />
               <VStack className="flex-1">
-                <Text size="sm" className="font-JakartaMedium">
-                  {addressName}
-                </Text>
                 <Text
-                  size="xs"
+                  size="sm"
                   ellipsizeMode="tail"
                   numberOfLines={2}
-                  className="font-JakartaMedium text-typography-700"
+                  className="font-JakartaMedium"
                 >
                   {fullAddress}
                 </Text>

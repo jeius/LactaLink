@@ -1,5 +1,8 @@
 import React, { useRef } from 'react';
 import { FormProvider } from 'react-hook-form';
+import { TouchableWithoutFeedback } from 'react-native';
+import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
+import MapView, { Region } from 'react-native-maps';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import FormPreventBack from '@/components/forms/FormPreventBack';
@@ -12,10 +15,7 @@ import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
 import { ErrorSearchParams } from '@lactalink/types';
 import { AddressSchema } from '@lactalink/types/forms';
-import { Redirect, useRouter } from 'expo-router';
-import { TouchableWithoutFeedback } from 'react-native';
-import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
-import MapView, { Region } from 'react-native-maps';
+import { Redirect, Stack, useRouter } from 'expo-router';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -58,13 +58,16 @@ export default function CreatePage() {
   return (
     <FormProvider {...form}>
       <FormPreventBack />
+      <Stack.Screen options={{ headerShown: true, headerTitle: 'New Address' }} />
 
-      <SafeArea safeTop={false} mode="margin">
+      <SafeArea safeTop={false} mode="margin" className="items-stretch">
         <TouchableWithoutFeedback onPress={blurInput} touchSoundDisabled>
-          <AddressMapView mapRef={mapRef} onRegionChangeComplete={handleRegionChange} />
+          <Box className="flex-1">
+            <AddressMapView onRegionChangeComplete={handleRegionChange} />
+          </Box>
         </TouchableWithoutFeedback>
 
-        <Box className="absolute inset-x-0 p-4">
+        <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
           <GooglePlacesInput
             inputRef={googlePlacesInputRef}
             rounded="full"
@@ -72,7 +75,11 @@ export default function CreatePage() {
           />
         </Box>
 
-        <AddressMapBottomSheet onSavePress={form.handleSubmit(onSubmit)} isLoading={isLoading} />
+        <AddressMapBottomSheet
+          editing
+          onSavePress={form.handleSubmit(onSubmit)}
+          isLoading={isLoading}
+        />
       </SafeArea>
     </FormProvider>
   );

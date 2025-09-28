@@ -63,8 +63,8 @@ export default function ListPage() {
         <VStack className="h-full w-full">
           <DeliveryPreferenceList
             data={data}
-            allowDelete={isAuthenticatedUser || !userID}
-            allowEdit={isAuthenticatedUser || !userID}
+            allowDelete={false}
+            allowEdit={false}
             isLoading={isLoading}
             isFetching={isFetching}
             itemVariant="card"

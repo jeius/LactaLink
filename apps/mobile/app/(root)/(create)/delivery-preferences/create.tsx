@@ -23,7 +23,7 @@ import { ErrorSearchParams } from '@lactalink/types';
 import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, Stack, useRouter } from 'expo-router';
 import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
 
 export default function CreatePage() {
@@ -74,6 +74,7 @@ export default function CreatePage() {
   return (
     <FormProvider {...form}>
       <FormPreventBack />
+      <Stack.Screen options={{ headerShown: true, headerTitle: 'New Delivery Preference' }} />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
         <KeyboardAvoidingWrapper>

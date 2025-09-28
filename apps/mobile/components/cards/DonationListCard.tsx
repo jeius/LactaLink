@@ -13,10 +13,9 @@ import { useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from '../animated/pressable';
 import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { ProfileAvatar } from '../Avatar';
 import { SingleImageViewer } from '../ImageViewer';
+import { ProfileTag } from '../ProfileTag';
 import { Box } from '../ui/box';
-import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
@@ -122,9 +121,11 @@ function CardContent({
         <VStack space="xs" className="min-w-0 flex-1 items-start">
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
-              {volume} mL
-            </Text>
+            <Link asChild push href={`/donations/${data.id}`}>
+              <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
+                {volume} mL
+              </Text>
+            </Link>
           </HStack>
 
           <HStack space="xs" className="items-center">
@@ -167,29 +168,11 @@ function CardContent({
             </HStack>
           ) : (
             <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
-              {showAvatar && donor && (
-                <HStack space="sm" className="items-center">
-                  <ProfileAvatar size="sm" profile={donor} enablePress />
-                  <VStack>
-                    <Link asChild push href={`/profile/individuals/${donor.id}`}>
-                      <Button
-                        animateOnPress={false}
-                        size="xs"
-                        variant="link"
-                        action="default"
-                        className="h-fit w-fit p-0"
-                        hitSlop={8}
-                      >
-                        <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
-                          {donor.displayName}
-                        </ButtonText>
-                      </Button>
-                    </Link>
-                    <Text size="xs" className="text-typography-700">
-                      Donor
-                    </Text>
-                  </VStack>
-                </HStack>
+              {showAvatar && (
+                <ProfileTag
+                  profile={donor && { value: donor, relationTo: 'individuals' }}
+                  label="Donor"
+                />
               )}
               {footerAction}
               {showMinDistance && minDistance && (

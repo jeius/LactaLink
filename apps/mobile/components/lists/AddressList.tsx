@@ -5,10 +5,9 @@ import { Box } from '@/components/ui/box';
 import { Motion } from '@legendapp/motion';
 import { useRouter } from 'expo-router';
 import { GestureResponderEvent } from 'react-native';
-import { DeleteActionButton, EditActionButton } from '../buttons';
+import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards/AddressCard';
 import { Divider } from '../ui/divider';
-import { HStack } from '../ui/hstack';
 import { BasicList, BasicListItemProps, BasicListProps } from './BasicList';
 
 interface AddressListProps extends Omit<BasicListProps<'addresses'>, 'slug' | 'ItemComponent'> {
@@ -36,27 +35,13 @@ export function AddressList({
   const ItemComponent: FC<BasicListItemProps<'addresses'>> = ({ item, isLoading }) => {
     function handleEdit(e: GestureResponderEvent) {
       e.stopPropagation();
-      router.push(`/addresses/edit/${item.id}`);
+      router.push(`/addresses/${item.id}/edit`);
     }
 
     function Action() {
       return (
-        (allowEdit || allowDelete) && (
-          <HStack space="lg" className={`grow justify-end`}>
-            {allowEdit && (
-              <EditActionButton isDisabled={disableRemove} href={`/addresses/edit/${item.id}`} />
-            )}
-
-            {allowDelete && (
-              <DeleteActionButton
-                id={item.id}
-                slug="addresses"
-                itemName={item.name}
-                isDisabled={disableRemove}
-                title="Delete Address"
-              />
-            )}
-          </HStack>
+        allowEdit && (
+          <EditActionButton isDisabled={disableRemove} href={`/addresses/${item.id}/edit`} />
         )
       );
     }

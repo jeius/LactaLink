@@ -14,9 +14,9 @@ export default function Layout() {
         headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
-      <Stack.Screen name="create" options={{ headerTitle: 'Create Delivery Preference' }} />
+      <Stack.Screen name="index" options={{ headerTitle: 'Delivery Preference' }} />
 
-      <Stack.Screen name="edit/[id]" options={{ headerTitle: 'Edit Delivery Preference' }} />
+      <Stack.Screen name="edit" options={{ headerTitle: 'Edit Delivery Preference' }} />
     </Stack>
   );
 }

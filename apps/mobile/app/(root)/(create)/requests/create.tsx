@@ -112,7 +112,7 @@ export default function CreateRequest() {
       onRefresh={onRefresh}
       fetchError={error}
     >
-      <Stack.Screen options={{ headerShown: true, title: 'Create Request' }} />
+      <Stack.Screen options={{ headerShown: true, title: 'New Request' }} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>

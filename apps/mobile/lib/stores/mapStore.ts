@@ -7,16 +7,12 @@ export interface MapStoreState {
   followUser: boolean;
   isUserLocated: boolean;
   locateUser: boolean;
-  isMapLoaded: boolean;
-  isMapReady: boolean;
   map: MapView | null;
   userMarker: UserMarkerRef | null;
   setMapRef: (ref: MapView | Animated.LegacyRef<MapView> | null) => void;
   setUserMarkerRef: (marker: UserMarkerRef | null) => void;
   setFollowUser: (follow: boolean) => void;
   setUserLocated: (isLocated: boolean) => void;
-  setMapLoaded: (isLoaded: boolean) => void;
-  setMapReady: (isReady: boolean) => void;
   setLocateUser: (locate: boolean) => void;
   reset: () => void;
 }
@@ -37,16 +33,12 @@ export const useMapStore = create<MapStoreState>((set) => ({
   setUserMarkerRef: (marker) => set({ userMarker: marker }),
   setFollowUser: (follow) => set({ followUser: follow }),
   setUserLocated: (isLocated) => set({ isUserLocated: isLocated }),
-  setMapLoaded: (isLoaded) => set({ isMapLoaded: isLoaded }),
-  setMapReady: (isReady) => set({ isMapReady: isReady }),
   setLocateUser: (locate) => set({ locateUser: locate }),
   reset: () =>
     set({
       followUser: false,
       isUserLocated: false,
       locateUser: false,
-      isMapLoaded: false,
-      isMapReady: false,
       map: null,
     }),
 }));

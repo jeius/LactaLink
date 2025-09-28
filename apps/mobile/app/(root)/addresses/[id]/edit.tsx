@@ -12,12 +12,13 @@ import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
 import { ErrorSearchParams } from '@lactalink/types';
 import { AddressSchema } from '@lactalink/types/forms';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableWithoutFeedback } from 'react-native';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import MapView, { Region } from 'react-native-maps';
 
-export default function EditPage() {
+export default function EditAddressPage() {
   const router = useRouter();
 
   const revalidateQueries = useRevalidateCollectionQueries();
@@ -29,9 +30,9 @@ export default function EditPage() {
   const mapRef = useRef<MapView | null>(null);
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
-  const { form, isLoading, error } = useAddressForm(id);
+  const { form, isLoading, error, data } = useAddressForm(id);
 
-  const { coordinates } = form.watch();
+  const coordinates = (data?.coordinates && pointToLatLng(data.coordinates)) || undefined;
 
   async function onSubmit(formData: AddressSchema) {
     if (selectedRegion) {
@@ -73,17 +74,18 @@ export default function EditPage() {
     <FormProvider {...form}>
       <FormPreventBack />
 
-      <SafeArea safeTop={false} mode="margin">
+      <SafeArea safeTop={false} mode="margin" className="items-stretch">
         <TouchableWithoutFeedback onPress={blurInput} touchSoundDisabled>
-          <AddressMapView
-            mapRef={mapRef}
-            isLoading={isLoading}
-            onRegionChangeComplete={handleRegionChange}
-            coordinates={coordinates}
-          />
+          <Box className="flex-1">
+            <AddressMapView
+              onRegionChangeComplete={handleRegionChange}
+              isLoading={isLoading}
+              coordinates={coordinates}
+            />
+          </Box>
         </TouchableWithoutFeedback>
 
-        <Box className="absolute inset-x-0 p-4">
+        <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
           <GooglePlacesInput
             inputRef={googlePlacesInputRef}
             rounded="full"
@@ -91,7 +93,11 @@ export default function EditPage() {
           />
         </Box>
 
-        <AddressMapBottomSheet onSavePress={form.handleSubmit(onSubmit)} isLoading={isLoading} />
+        <AddressMapBottomSheet
+          editing
+          onSavePress={form.handleSubmit(onSubmit)}
+          isLoading={isLoading}
+        />
       </SafeArea>
     </FormProvider>
   );

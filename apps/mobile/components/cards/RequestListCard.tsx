@@ -7,17 +7,15 @@ import { Request } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate } from '@lactalink/utilities/formatters';
-import { Link } from 'expo-router';
 import { MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
 import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { ProfileAvatar } from '../Avatar';
 import FastTimerIcon from '../icons/FastTimerIcon';
 import { SingleImageViewer } from '../ImageViewer';
+import { ProfileTag } from '../ProfileTag';
 import { Box } from '../ui/box';
-import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
@@ -169,29 +167,11 @@ function CardContent({
             </HStack>
           ) : (
             <HStack space="sm" className="w-full items-stretch justify-between p-3">
-              {showAvatar && requester && (
-                <HStack space="sm" className="items-center">
-                  <ProfileAvatar size="sm" profile={requester} enablePress />
-                  <VStack className="shrink">
-                    <Link asChild push href={`/profile/individuals/${requester.id}`}>
-                      <Button
-                        animateOnPress={false}
-                        size="xs"
-                        variant="link"
-                        action="default"
-                        className="h-fit w-fit p-0"
-                        hitSlop={8}
-                      >
-                        <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
-                          {requester.displayName}
-                        </ButtonText>
-                      </Button>
-                    </Link>
-                    <Text size="xs" className="text-typography-700">
-                      Requester
-                    </Text>
-                  </VStack>
-                </HStack>
+              {showAvatar && (
+                <ProfileTag
+                  profile={requester && { value: requester, relationTo: 'individuals' }}
+                  label="Requester"
+                />
               )}
               {footerAction}
               {showMinDistance && minDistance && (

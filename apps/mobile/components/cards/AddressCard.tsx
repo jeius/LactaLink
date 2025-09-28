@@ -1,6 +1,5 @@
 import { BasicBadge } from '@/components/badges';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
-import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -12,13 +11,16 @@ import { Address } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { isString } from '@lactalink/utilities/type-guards';
 
-import { ComponentProps, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { ComponentProps, ReactNode, useMemo } from 'react';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { MapPageSearchParams } from '@/lib/types';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { GestureResponderEvent, StyleSheet } from 'react-native';
-import MapView, { LatLng, MapMarker, Marker } from 'react-native-maps';
-import { Pressable } from '../ui/pressable';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
+import { useRouter } from 'expo-router';
+import { GestureResponderEvent } from 'react-native';
+import { ThumbnailMap } from '../map/ThumbnailMap';
+import { Button, ButtonText } from '../ui/button';
 
 const cardStyle = tva({
   base: '',
@@ -46,12 +48,7 @@ export function AddressCard({
   disableTapOnMap = false,
   ...props
 }: AddressCardProps) {
-  const mapRef = useRef<MapView>(null);
-  const markerRef = useRef<MapMarker>(null);
-
-  const [isMapLoading, setIsMapLoading] = useState(true);
-  const [isMapReady, setIsMapReady] = useState(false);
-
+  const router = useRouter();
   const shouldFetch = isString(dataProp);
 
   const { data: fetchedData, isLoading: isDataLoading } = useFetchById(shouldFetch, {
@@ -66,19 +63,19 @@ export function AddressCard({
   const data = shouldFetch ? fetchedData : extractCollection(dataProp);
   const { name, displayName, isDefault } = data || {};
 
-  const [longitude, latitude] = data?.coordinates || [0, 0];
-  const center: LatLng = useMemo(() => ({ latitude, longitude }), [latitude, longitude]);
+  const center = useMemo(() => pointToLatLng(data?.coordinates), [data?.coordinates]);
 
-  useEffect(() => {
-    if (mapRef.current && isMapReady && !isMapLoading) {
-      mapRef.current.animateCamera({ center });
-      markerRef.current?.setCoordinates(center);
-    }
-  }, [center, isMapLoading, isMapReady]);
-
-  function handleMapPress(e: GestureResponderEvent) {
+  function navigateToMap(e: GestureResponderEvent) {
     e.stopPropagation();
-    // Navigate to map view or show map details
+    if (!data || !center) return;
+
+    const params: MapPageSearchParams = {
+      adr: extractID(data),
+      lat: String(center.latitude),
+      lng: String(center.longitude),
+    };
+
+    router.push({ pathname: '/map/explore', params });
   }
 
   if (isLoading) {
@@ -103,37 +100,34 @@ export function AddressCard({
     <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
       <VStack className="w-full">
         {showMap && (
-          <Box className="relative h-40 w-full">
-            {isMapLoading && !isMapReady && (
-              <Skeleton variant="sharp" className="absolute inset-0 z-50" />
-            )}
-            <MapView
-              liteMode
-              cacheEnabled
-              style={StyleSheet.absoluteFill}
-              pointerEvents="none"
-              toolbarEnabled={false}
-              onMapLoaded={() => setIsMapLoading(false)}
-              onMapReady={() => setIsMapReady(true)}
-              initialCamera={{
-                zoom: 16,
-                center,
-                heading: 0,
-                pitch: 0,
-              }}
-            >
-              <Marker ref={markerRef} coordinate={center} pointerEvents="none" />
-            </MapView>
-            {!disableTapOnMap && <Pressable className="flex-1" onPress={handleMapPress} />}
-          </Box>
+          <ThumbnailMap
+            isLoading={isLoading}
+            center={center}
+            zoom={16}
+            onPress={navigateToMap}
+            className="h-40"
+          />
         )}
         <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
           <Icon as={BasicLocationPin} />
-          <Box className="flex-1">
-            <HStack space="sm" className="w-full items-center">
-              <Text ellipsizeMode="tail" numberOfLines={1} className="font-JakartaSemiBold shrink">
-                {name}
-              </Text>
+          <VStack className="flex-1 items-stretch">
+            <HStack space="sm" className="w-full items-center justify-between">
+              <Button
+                variant="link"
+                action="default"
+                className="h-auto w-auto p-0"
+                animateOnPress={false}
+                onPress={navigateToMap}
+              >
+                <ButtonText
+                  underlineOnPress
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  className="font-JakartaSemiBold"
+                >
+                  {name}
+                </ButtonText>
+              </Button>
               {action}
             </HStack>
             <HStack space="sm" className="mt-1 w-full items-center">
@@ -142,7 +136,7 @@ export function AddressCard({
               </Text>
               {isDefault && <BasicBadge size="sm" action="info" text="Default" />}
             </HStack>
-          </Box>
+          </VStack>
         </HStack>
       </VStack>
     </Card>

@@ -27,7 +27,7 @@ import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';
 
-export default function EditPage() {
+export default function EditDeliveryPreferencePage() {
   //#region Hooks
   const router = useRouter();
   const revalidateQueries = useRevalidateCollectionQueries();

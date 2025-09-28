@@ -166,7 +166,7 @@ export default function CreateDonation() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: DONATION_CREATE_STEPS[step]?.label || 'Create Donation',
+          title: DONATION_CREATE_STEPS[step]?.label || 'New Donation',
         }}
       />
 

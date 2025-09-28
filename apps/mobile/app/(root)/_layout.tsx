@@ -10,21 +10,13 @@ export default function Layout() {
   const hasProfile = Boolean(profile);
 
   return (
-    <Stack screenOptions={screenOptions}>
-      <Stack.Protected guard={hasProfile}>
-        <Stack.Screen name="(drawer)" />
-
-        <Stack.Screen name="(create)/donations/create" />
-        <Stack.Screen name="(create)/requests/create" />
-
-        <Stack.Screen name="map" />
-        <Stack.Screen name="addresses" />
-        <Stack.Screen name="delivery-preferences" />
-        <Stack.Screen name="transactions" />
-        <Stack.Screen name="account" />
+    <Stack
+      initialRouteName={hasProfile ? '(drawer)' : '(profile-setup)/profile'}
+      screenOptions={screenOptions}
+    >
+      <Stack.Protected guard={!hasProfile}>
+        <Stack.Screen name="(profile-setup)/profile" />
       </Stack.Protected>
-
-      <Stack.Screen name="profile" />
     </Stack>
   );
 }

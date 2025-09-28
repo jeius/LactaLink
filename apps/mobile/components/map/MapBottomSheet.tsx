@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef } from 'react';
+import React, { useRef } from 'react';
 
 import GorhomBottomSheet, {
   BottomSheetFooter,
@@ -8,12 +8,12 @@ import GorhomBottomSheet, {
 } from '@gorhom/bottom-sheet';
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { useMapStore } from '@/lib/stores/mapStore';
 import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { BottomSheetVariables } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { Motion } from '@legendapp/motion';
-import { ChevronLeftIcon, CompassIcon, LocateFixedIcon, LocateIcon } from 'lucide-react-native';
+import { ChevronLeftIcon } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
+import { LocateButton } from '../buttons/LocateButton';
 import { DonateRequestModal } from '../modals';
 import { MapBottomSheetTabs } from '../tabs/MapBottomSheetTabs';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
@@ -45,17 +45,6 @@ export function MapBottomSheet() {
   function unselectMarker() {
     setSelectedMarker(null);
   }
-
-  const HandleComponent = useCallback((props: BottomSheetVariables) => {
-    return (
-      <Box className="relative">
-        <BottomSheetHandle {...props} />
-        <Box className="absolute right-0 top-0 px-4" style={{ transform: [{ translateY: -64 }] }}>
-          <LocateButton />
-        </Box>
-      </Box>
-    );
-  }, []);
 
   return (
     <BottomSheet sheetRef={sheetRef} disableClose={true} snapToIndex={1}>
@@ -108,36 +97,13 @@ function FooterComponent(props: BottomSheetFooterProps) {
   );
 }
 
-function LocateButton() {
-  const userMarker = useMapStore((s) => s.userMarker);
-  const followUser = useMapStore((s) => s.followUser);
-  const isUserLocated = useMapStore((s) => s.isUserLocated);
-
-  function handleLocatePress() {
-    if (isUserLocated && !followUser) {
-      userMarker?.followUser();
-    } else if (followUser) {
-      userMarker?.unFollowUser();
-    } else {
-      userMarker?.moveToCurrentPosition();
-    }
-  }
-
+function HandleComponent(props: BottomSheetVariables) {
   return (
-    <Button
-      action="info"
-      className={`h-14 w-14 rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
-      onPress={handleLocatePress}
-      accessibilityLabel="Follow user location"
-      accessibilityHint="Toggles following the user's current location"
-      accessibilityRole="button"
-      accessibilityState={{ selected: followUser }}
-    >
-      <ButtonIcon
-        as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
-        height={22}
-        width={22}
-      />
-    </Button>
+    <Box className="relative">
+      <BottomSheetHandle {...props} />
+      <Box className="absolute right-0 top-0 px-4" style={{ transform: [{ translateY: -64 }] }}>
+        <LocateButton />
+      </Box>
+    </Box>
   );
 }

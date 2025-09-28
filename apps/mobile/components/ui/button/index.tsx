@@ -47,6 +47,8 @@ const buttonStyle = tva({
       negative:
         'bg-error-500 border-error-500 data-[hover=true]:bg-error-400 data-[hover=true]:border-error-400 data-[active=true]:bg-error-600 data-[active=true]:border-error-600 data-[focus-visible=true]:web:ring-indicator-info',
       info: 'bg-info-500 border-info-500 data-[hover=true]:bg-info-400 data-[hover=true]:border-info-400 data-[active=true]:bg-info-600 data-[active=true]:border-info-600 data-[focus-visible=true]:web:ring-indicator-info',
+      muted:
+        'bg-background-0 border-outline-400 data-[hover=true]:bg-background-100 data-[hover=true]:border-outline-300 data-[active=true]:bg-background-100 data-[active=true]:border-outline-300',
       default:
         'border-typography-900 data-[hover=true]:border-typography-300 data-[active=true]:border-typography-600 data-[hover=true]:bg-typography-300 data-[active=true]:bg-typography-600',
     },
@@ -141,6 +143,8 @@ const buttonTextStyle = tva({
       positive:
         'text-success-500 data-[hover=true]:text-success-600 data-[active=true]:text-success-700',
       negative: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-700',
+      muted:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
     },
     variant: {
       link: 'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
@@ -185,6 +189,12 @@ const buttonTextStyle = tva({
       class: 'text-error-0 data-[hover=true]:text-error-0 data-[active=true]:text-error-0',
     },
     {
+      variant: 'solid',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
+    },
+    {
       variant: 'outline',
       action: 'primary',
       class:
@@ -213,6 +223,12 @@ const buttonTextStyle = tva({
       class: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-600',
     },
     {
+      variant: 'outline',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
+    },
+    {
       variant: 'link',
       action: 'primary',
       class:
@@ -239,6 +255,12 @@ const buttonTextStyle = tva({
       variant: 'link',
       action: 'negative',
       class: 'text-error-500 data-[hover=true]:text-error-300 data-[active=true]:text-error-300',
+    },
+    {
+      variant: 'link',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
     },
   ],
 });
@@ -301,6 +323,12 @@ const buttonIconStyle = tva({
       class: 'text-error-0 data-[hover=true]:text-error-0 data-[active=true]:text-error-0',
     },
     {
+      variant: 'solid',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
+    },
+    {
       variant: 'outline',
       action: 'primary',
       class:
@@ -329,6 +357,12 @@ const buttonIconStyle = tva({
       class: 'text-error-500 data-[hover=true]:text-error-600 data-[active=true]:text-error-600',
     },
     {
+      variant: 'outline',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
+    },
+    {
       variant: 'link',
       action: 'primary',
       class:
@@ -355,6 +389,12 @@ const buttonIconStyle = tva({
       variant: 'link',
       action: 'negative',
       class: 'text-error-500 data-[hover=true]:text-error-800 data-[active=true]:text-error-800',
+    },
+    {
+      variant: 'link',
+      action: 'muted',
+      class:
+        'text-typography-900 data-[hover=true]:text-typography-800 data-[active=true]:text-typography-700',
     },
   ],
 });

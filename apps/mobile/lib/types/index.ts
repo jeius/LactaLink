@@ -12,4 +12,4 @@ export type NativeFile = {
 
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
 
-export type MapPageSearchParams = { markerID?: string };
+export type MapPageSearchParams = { mrk?: string; adr?: string; lat?: string; lng?: string };
