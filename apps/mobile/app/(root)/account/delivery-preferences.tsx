@@ -6,7 +6,6 @@ import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { extractName } from '@lactalink/utilities/extractors';
-import { Motion } from '@legendapp/motion';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -63,8 +62,7 @@ export default function ListPage() {
         <VStack className="h-full w-full">
           <DeliveryPreferenceList
             data={data}
-            allowDelete={false}
-            allowEdit={false}
+            allowEdit={true}
             isLoading={isLoading}
             isFetching={isFetching}
             itemVariant="card"
@@ -73,22 +71,15 @@ export default function ListPage() {
             onRefresh={handleRefresh}
           />
 
-          <Motion.View
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'tween', duration: 100 }}
-            style={{ width: '100%' }}
+          <Box
+            className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
+            style={{ paddingBottom: insets.bottom }}
           >
-            <Box
-              className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
-              style={{ paddingBottom: insets.bottom }}
-            >
-              <Button onPress={handleAddAddress}>
-                <ButtonIcon as={PlusIcon} />
-                <ButtonText>Add New Delivery Preference</ButtonText>
-              </Button>
-            </Box>
-          </Motion.View>
+            <Button onPress={handleAddAddress}>
+              <ButtonIcon as={PlusIcon} />
+              <ButtonText>New Delivery Preference</ButtonText>
+            </Button>
+          </Box>
         </VStack>
       </SafeArea>
     </>

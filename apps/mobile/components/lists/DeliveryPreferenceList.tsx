@@ -1,9 +1,7 @@
 import React, { FC } from 'react';
 
-import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
 import { Motion } from '@legendapp/motion';
-import { useRouter } from 'expo-router';
 import { DeleteActionButton, EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards';
 import { Divider } from '../ui/divider';
@@ -26,16 +24,10 @@ export function DeliveryPreferenceList({
   gap,
   ...props
 }: DeliveryPreferencesListProps) {
-  const router = useRouter();
-
   const data = props.data;
   const isEmpty = data.length === 0;
 
   const ItemComponent: FC<BasicListItemProps<'delivery-preferences'>> = ({ item, isLoading }) => {
-    function handleEdit() {
-      router.push(`/delivery-preferences/edit/${item.id}`);
-    }
-
     function Action() {
       return (
         (allowEdit || allowDelete) && (
@@ -43,7 +35,7 @@ export function DeliveryPreferenceList({
             {allowEdit && (
               <EditActionButton
                 isDisabled={disableRemove}
-                href={`/delivery-preferences/edit/${item.id}`}
+                href={`/delivery-preferences/${item.id}/edit`}
               />
             )}
 
@@ -68,6 +60,7 @@ export function DeliveryPreferenceList({
           variant={itemVariant === 'card' ? 'filled' : 'ghost'}
           preference={item}
           action={<Action />}
+          appearance="list-item"
         />
       );
     }
@@ -76,14 +69,7 @@ export function DeliveryPreferenceList({
       case 'card':
         return (
           <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <AnimatedPressable
-              className="overflow-hidden rounded-2xl"
-              disableRipple={!allowEdit}
-              disableAnimation={!allowEdit}
-              onPress={allowEdit ? handleEdit : undefined}
-            >
-              <Card />
-            </AnimatedPressable>
+            <Card />
           </Motion.View>
         );
 

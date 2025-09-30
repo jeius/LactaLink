@@ -28,6 +28,8 @@ import { GestureResponderEvent } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DeleteActionButton } from '@/components/buttons';
+
 export default function DeliveryPreferencePage() {
   //#region Hooks
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -78,9 +80,18 @@ export default function DeliveryPreferencePage() {
           <>
             <ThumbnailMap isLoading={isLoading} center={center} zoom={16} className="h-64 w-full" />
 
-            <Text size="lg" className="font-JakartaSemiBold p-5">
-              {name}
-            </Text>
+            <HStack space="lg" className="items-center p-5">
+              <Text size="lg" className="font-JakartaSemiBold flex-1">
+                {name}
+              </Text>
+              <DeleteActionButton
+                slug="delivery-preferences"
+                id={id}
+                iconOnly
+                itemName={name}
+                title="Confirm Delete"
+              />
+            </HStack>
 
             {preferredMode && (
               <HStack space="sm" className="mb-10 flex-wrap items-center justify-start px-5">
