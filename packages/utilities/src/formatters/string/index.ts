@@ -1,4 +1,4 @@
-import { DAYS } from '@lactalink/enums';
+import { DAYS, ShortDays } from '@lactalink/enums';
 
 export * from './formatCamelCase';
 export * from './formatKebabCase';
@@ -110,9 +110,14 @@ export function isStartsWith<T extends string | string[] | Record<string, string
   return baseList.some((base) => value.startsWith(base));
 }
 
-export function formatDaysToText(days: (keyof typeof DAYS)[]): string {
+export function formatDaysToText(
+  days: (keyof typeof DAYS)[],
+  options: { short: boolean } = { short: false }
+): string {
   if (days.length === 0) return 'No days specified';
   if (days.length === 7) return 'Any day';
 
-  return days.map((day) => DAYS[day].label).join(', ');
+  const { short } = options;
+
+  return days.map((day) => (short ? ShortDays[day] : DAYS[day].label)).join(', ');
 }

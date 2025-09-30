@@ -19,7 +19,7 @@ interface MilkBagCardProps extends MarkOptional<CardContentProps, 'data'> {
 
 export function MilkBagCard({ data, isLoading, ...props }: MilkBagCardProps) {
   return (
-    <Card className="w-40 p-0">
+    <Card variant="filled" className="w-40 p-0">
       {isLoading ? <CardSkeleton /> : data && <CardContent {...props} data={data} />}
     </Card>
   );
