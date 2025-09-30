@@ -1945,6 +1945,68 @@ export const transactions_rels = pgTable(
   })
 );
 
+export const search = pgTable(
+  'search',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title'),
+    priority: numeric('priority'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => ({
+    search_updated_at_idx: index('search_updated_at_idx').on(columns.updatedAt),
+    search_created_at_idx: index('search_created_at_idx').on(columns.createdAt),
+  })
+);
+
+export const search_rels = pgTable(
+  'search_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => ({
+    order: index('search_rels_order_idx').on(columns.order),
+    parentIdx: index('search_rels_parent_idx').on(columns.parent),
+    pathIdx: index('search_rels_path_idx').on(columns.path),
+    search_rels_individuals_id_idx: index('search_rels_individuals_id_idx').on(
+      columns.individualsID
+    ),
+    search_rels_hospitals_id_idx: index('search_rels_hospitals_id_idx').on(columns.hospitalsID),
+    search_rels_milk_banks_id_idx: index('search_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    parentFk: foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [search.id],
+      name: 'search_rels_parent_fk',
+    }).onDelete('cascade'),
+    individualsIdFk: foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'search_rels_individuals_fk',
+    }).onDelete('cascade'),
+    hospitalsIdFk: foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'search_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    milkBanksIdFk: foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'search_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const payload_jobs_log = pgTable(
   'payload_jobs_log',
   {
@@ -2073,6 +2135,7 @@ export const payload_locked_documents_rels = pgTable(
     requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
     transactionsID: uuid('transactions_id'),
+    searchID: uuid('search_id'),
     'payload-jobsID': uuid('payload_jobs_id'),
   },
   (columns) => ({
@@ -2154,6 +2217,9 @@ export const payload_locked_documents_rels = pgTable(
     payload_locked_documents_rels_transactions_id_idx: index(
       'payload_locked_documents_rels_transactions_id_idx'
     ).on(columns.transactionsID),
+    payload_locked_documents_rels_search_id_idx: index(
+      'payload_locked_documents_rels_search_id_idx'
+    ).on(columns.searchID),
     payload_locked_documents_rels_payload_jobs_id_idx: index(
       'payload_locked_documents_rels_payload_jobs_id_idx'
     ).on(columns['payload-jobsID']),
@@ -2286,6 +2352,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['transactionsID']],
       foreignColumns: [transactions.id],
       name: 'payload_locked_documents_rels_transactions_fk',
+    }).onDelete('cascade'),
+    searchIdFk: foreignKey({
+      columns: [columns['searchID']],
+      foreignColumns: [search.id],
+      name: 'payload_locked_documents_rels_search_fk',
     }).onDelete('cascade'),
     'payload-jobsIdFk': foreignKey({
       columns: [columns['payload-jobsID']],
@@ -3049,6 +3120,33 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     relationName: '_rels',
   }),
 }));
+export const relations_search_rels = relations(search_rels, ({ one }) => ({
+  parent: one(search, {
+    fields: [search_rels.parent],
+    references: [search.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [search_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [search_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [search_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations_search = relations(search, ({ many }) => ({
+  _rels: many(search_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_payload_jobs_log = relations(payload_jobs_log, ({ one }) => ({
   _parentID: one(payload_jobs, {
     fields: [payload_jobs_log._parentID],
@@ -3194,6 +3292,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [transactions.id],
       relationName: 'transactions',
     }),
+    searchID: one(search, {
+      fields: [payload_locked_documents_rels.searchID],
+      references: [search.id],
+      relationName: 'search',
+    }),
     'payload-jobsID': one(payload_jobs, {
       fields: [payload_locked_documents_rels['payload-jobsID']],
       references: [payload_jobs.id],
@@ -3304,6 +3407,8 @@ type DatabaseSchema = {
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
+  search: typeof search;
+  search_rels: typeof search_rels;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
   payload_locked_documents: typeof payload_locked_documents;
@@ -3352,6 +3457,8 @@ type DatabaseSchema = {
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;
+  relations_search_rels: typeof relations_search_rels;
+  relations_search: typeof relations_search;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;

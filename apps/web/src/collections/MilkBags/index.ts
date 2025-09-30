@@ -1,4 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
+import { afterDeleteMilkBags } from '@/hooks/collections/afterDelete';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
@@ -39,6 +40,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       updateStatus,
     ],
     afterChange: [deleteRemovedImage],
+    afterDelete: [afterDeleteMilkBags],
   },
   indexes: [{ fields: ['status', 'expiresAt'] }],
   fields: [

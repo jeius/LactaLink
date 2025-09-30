@@ -2,6 +2,7 @@ import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
 import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
+import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
@@ -46,6 +47,7 @@ export const Requests: CollectionConfig<'requests'> = {
       updateSeenTracking,
     ],
     afterChange: [createRequestNotification, processOrganizationRequest],
+    afterDelete: [afterDeleteDonationOrRequest],
   },
   endpoints: requestsEndpoints,
   fields: [

@@ -3,6 +3,7 @@ import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
 import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
+import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
@@ -36,6 +37,7 @@ export const Donations: CollectionConfig<'donations'> = {
     beforeValidate: [initializeDonation, ({ data, req }) => calculateVolumes(data, req)],
     beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateSeenTracking],
     afterChange: [createDonationNotification, processDonationToOrganization],
+    afterDelete: [afterDeleteDonationOrRequest],
   },
   endpoints: donationsEndpoints,
   fields: [
