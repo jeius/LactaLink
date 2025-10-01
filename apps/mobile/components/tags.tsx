@@ -1,8 +1,9 @@
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
+import { formatDate } from '@lactalink/utilities/formatters';
 import { isDonation } from '@lactalink/utilities/type-guards';
-import { DropletIcon, PackageIcon } from 'lucide-react-native';
+import { CalendarCheck2Icon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { useTheme } from './AppProvider/ThemeProvider';
 import FastTimerIcon from './icons/FastTimerIcon';
@@ -49,13 +50,18 @@ export function StorageTypeTag({ data, isLoading }: StorageTypeTagProps) {
 
   return (
     <HStack space="sm" className="items-center">
-      <Card className="rounded-full border-0 p-2">
-        <Icon as={PackageIcon} size="sm" fill={fillColor} stroke={strokeColor} />
-      </Card>
       {isLoading ? (
-        <Skeleton variant="rounded" className="h-5 w-28" />
+        <>
+          <Skeleton variant="circular" className="h-6 w-6" />
+          <Skeleton variant="rounded" className="h-5 w-28" />
+        </>
       ) : (
-        <Text size="sm">{storage}</Text>
+        <>
+          <Card className="rounded-full border-0 p-2">
+            <Icon as={PackageIcon} size="sm" fill={fillColor} stroke={strokeColor} />
+          </Card>
+          <Text size="sm">{storage}</Text>
+        </>
       )}
     </HStack>
   );
@@ -74,13 +80,18 @@ export function CollectionMethodTag({ data, isLoading }: CollectionMethodTagProp
 
   return (
     <HStack space="sm" className="items-center">
-      <Card className="rounded-full border-0 p-2">
-        <Icon as={DropletIcon} size="sm" fill={fillColor} stroke={strokeColor} />
-      </Card>
       {isLoading ? (
-        <Skeleton variant="rounded" className="h-5 w-28" />
+        <>
+          <Skeleton variant="circular" className="h-6 w-6" />
+          <Skeleton variant="rounded" className="h-5 w-28" />
+        </>
       ) : (
-        <Text size="sm">{method}</Text>
+        <>
+          <Card className="rounded-full border-0 p-2">
+            <Icon as={DropletIcon} size="sm" fill={fillColor} stroke={strokeColor} />
+          </Card>
+          <Text size="sm">{method}</Text>
+        </>
       )}
     </HStack>
   );
@@ -113,6 +124,41 @@ export function UrgencyTag({ data, isLoading }: UrgencyTagProps) {
           </Card>
           <Text size="sm" style={{ color: fillColor }}>
             {urgencyLabel}
+          </Text>
+        </>
+      )}
+    </HStack>
+  );
+}
+
+interface DueDateTagProps extends BaseProps {
+  data?: Pick<Request, 'details'>;
+}
+
+export function DueDateTag({ data, isLoading }: DueDateTagProps) {
+  const { theme } = useTheme();
+
+  const urgency = data?.details?.urgency || URGENCY_LEVELS.LOW.value;
+  const neededAt =
+    data?.details?.neededAt && formatDate(data.details.neededAt, { shortMonth: true });
+
+  const fillColor = getPriorityColor(theme, urgency, 50).toString();
+  const strokeColor = getPriorityColor(theme, urgency, 700).toString();
+
+  return (
+    <HStack space="sm" className="items-center">
+      {isLoading ? (
+        <>
+          <Skeleton variant="circular" className="h-6 w-6" />
+          <Skeleton variant="rounded" className="h-5 w-28" />
+        </>
+      ) : (
+        <>
+          <Card className="rounded-full border-0 p-2">
+            <Icon as={CalendarCheck2Icon} size="sm" fill={fillColor} stroke={strokeColor} />
+          </Card>
+          <Text size="sm" style={{ color: strokeColor }}>
+            {neededAt}
           </Text>
         </>
       )}

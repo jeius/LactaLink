@@ -1,4 +1,6 @@
 import { AnimatedProgress } from '@/components/animated/progress';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { BasicBadge } from '@/components/badges/BasicBadge';
 import {
   DonationRequestBottomCTA,
   DonationRequestCTA,
@@ -7,7 +9,7 @@ import { SingleImageViewer } from '@/components/ImageViewer';
 import { DPList, MilkBagList } from '@/components/lists/horizontal-flatlists';
 import { ProfileTag } from '@/components/ProfileTag';
 import SafeArea from '@/components/SafeArea';
-import { CollectionMethodTag, StorageTypeTag } from '@/components/tags';
+import { DueDateTag, StorageTypeTag } from '@/components/tags';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
@@ -19,7 +21,8 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
-import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
+import { DONATION_REQUEST_STATUS, URGENCY_LEVELS } from '@lactalink/enums';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useLocalSearchParams } from 'expo-router';
@@ -27,29 +30,32 @@ import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-export default function DonationDetailsPage() {
+export default function RequestDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { themeColors } = useTheme();
 
   const screen = useWindowDimensions();
   const isMobile = screen.width <= DEVICE_BREAKPOINTS.phone;
 
   const { data, ...query } = useFetchById(!!id, {
-    collection: 'donations',
+    collection: 'requests',
     id,
   });
   const isLoading = query.isLoading;
-  const volume = data?.volume || 0;
-  const remainingVolume = data?.remainingVolume || 0;
-  const percentage = Math.round((remainingVolume / volume) * 100);
+  const volume = data?.initialVolumeNeeded || 0;
+  const fulfilledVolume = data?.volumeFulfilled || 0;
+  const percentage = Math.round((fulfilledVolume / volume) * 100);
 
-  const donor = extractCollection(data?.donor);
+  const requester = extractCollection(data?.requester);
 
   const status = data?.status;
-  const notes = data?.details?.notes;
+  const notes = data?.details?.notes || '';
+  const reason = data?.details?.reason || '';
+  const urgency = data?.details?.urgency || URGENCY_LEVELS.LOW.value;
 
   const { image, bags } = useMemo(() => {
-    const milkSample = extractCollection(data?.details?.milkSample);
-    const image = extractOneImageData(milkSample, isMobile ? 'sm' : 'lg');
+    const requestImg = extractCollection(data?.details?.image);
+    const image = extractOneImageData(requestImg, isMobile ? 'sm' : 'lg');
     const bags = extractCollection(data?.details?.bags);
     return { image, bags };
   }, [data, isMobile]);
@@ -63,8 +69,8 @@ export default function DonationDetailsPage() {
         <HStack className="items-center justify-between p-5">
           <ProfileTag
             isLoading={isLoading}
-            profile={donor && { value: donor, relationTo: 'individuals' }}
-            label="Donor"
+            profile={requester && { value: requester, relationTo: 'individuals' }}
+            label="Requester"
           />
 
           <VStack className="items-end">
@@ -88,7 +94,15 @@ export default function DonationDetailsPage() {
           {isLoading ? (
             <Skeleton variant="sharp" />
           ) : (
-            <SingleImageViewer image={image} className="grow" />
+            <>
+              <SingleImageViewer image={image} className="grow" />
+              <BasicBadge
+                size="lg"
+                text={URGENCY_LEVELS[urgency].label}
+                action={getUrgencyAction(urgency)}
+                className="absolute left-3 top-3"
+              />
+            </>
           )}
 
           <GradientBackground
@@ -117,11 +131,11 @@ export default function DonationDetailsPage() {
                 <Text bold size="lg">
                   {volume.toLocaleString()} mL
                 </Text>
-                <Text size="sm">Total Volume</Text>
+                <Text size="sm">Total Volume Needed</Text>
               </VStack>
               {status && (
-                <Card className="bg-primary-100 rounded-full border-0 px-4 py-2">
-                  <Text className="font-JakartaSemiBold text-primary-900 text-center">
+                <Card className="bg-tertiary-100 rounded-full border-0 px-4 py-2">
+                  <Text className="font-JakartaSemiBold text-tertiary-900">
                     {DONATION_REQUEST_STATUS[status].label}
                   </Text>
                 </Card>
@@ -135,9 +149,14 @@ export default function DonationDetailsPage() {
             <Skeleton variant="circular" className="mb-1 h-3 w-full" />
           ) : (
             <>
-              <AnimatedProgress size="sm" orientation="horizontal" value={percentage} />
+              <AnimatedProgress
+                size="sm"
+                orientation="horizontal"
+                value={percentage}
+                trackColor={themeColors.tertiary[500]}
+              />
               <Text size="xs" className="text-typography-700 text-center">
-                {remainingVolume} mL available
+                {fulfilledVolume} mL fulfilled
               </Text>
             </>
           )}
@@ -147,8 +166,24 @@ export default function DonationDetailsPage() {
 
         <HStack space="2xl" className="flex-wrap items-center p-5">
           <StorageTypeTag isLoading={isLoading} data={data} />
-          <CollectionMethodTag isLoading={isLoading} data={data} />
+          <DueDateTag isLoading={isLoading} data={data} />
         </HStack>
+
+        <VStack className="mb-5 px-5">
+          <Text className="font-JakartaSemiBold mb-1">Reason</Text>
+          {isLoading ? (
+            <Skeleton className="h-20" />
+          ) : (
+            <Textarea size="sm" pointerEvents="none">
+              <TextareaInput
+                defaultValue={reason}
+                placeholder="No reason provided."
+                editable={false}
+                style={{ textAlignVertical: 'top' }}
+              />
+            </Textarea>
+          )}
+        </VStack>
 
         <VStack className="mb-5 px-5">
           <Text className="font-JakartaSemiBold mb-1">Notes</Text>
@@ -157,7 +192,7 @@ export default function DonationDetailsPage() {
           ) : (
             <Textarea size="sm" pointerEvents="none">
               <TextareaInput
-                defaultValue={notes || ''}
+                defaultValue={notes}
                 placeholder="No notes provided."
                 editable={false}
                 style={{ textAlignVertical: 'top' }}
@@ -174,7 +209,6 @@ export default function DonationDetailsPage() {
           className="mb-5"
         />
       </ScrollView>
-
       <DonationRequestBottomCTA isLoading={isLoading} data={data} />
     </SafeArea>
   );

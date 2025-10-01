@@ -6,8 +6,8 @@ import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
-import { Link } from 'expo-router';
-import { DropletIcon, MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { DropletIcon, MapPinIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from '../animated/pressable';
@@ -15,12 +15,12 @@ import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
-import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
@@ -84,6 +84,7 @@ function CardContent({
   canViewThumbnail = true,
   showProgressBar,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
+  const router = useRouter();
   const { themeColors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const locationCoords = useLocationStore((s) => s.coordinates);
@@ -109,31 +110,34 @@ function CardContent({
     return getMinDistance(preferences, locationCoords);
   }, [locationCoords, data.deliveryPreferences]);
 
+  function viewMore() {
+    router.push(`/donations/${data.id}`);
+  }
+
   return (
     <VStack className="items-start justify-start">
       <HStack space="sm" className="w-full items-stretch p-3">
-        <Box
+        <Pressable
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
+          onPress={viewMore}
         >
-          <SingleImageViewer disabled={!canViewThumbnail} image={image} />
-        </Box>
+          <SingleImageViewer disabled image={image} />
+        </Pressable>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
           <HStack space="xs" className="items-center">
-            <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Link asChild push href={`/donations/${data.id}`}>
-              <Button
-                animateOnPress={false}
-                variant="link"
-                action="default"
-                className="h-fit w-fit p-0"
-              >
-                <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
-                  {volume} mL
-                </ButtonText>
-              </Button>
-            </Link>
+            <Button
+              animateOnPress={false}
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-0"
+              onPress={viewMore}
+            >
+              <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
+                {volume} mL
+              </ButtonText>
+            </Button>
           </HStack>
 
           <HStack space="xs" className="items-center">

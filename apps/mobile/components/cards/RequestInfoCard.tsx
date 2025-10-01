@@ -3,16 +3,17 @@ import React from 'react';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
+import { URGENCY_LEVELS } from '@lactalink/enums';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
-import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { Link, useRouter } from 'expo-router';
 import { HandHelpingIcon, MilkIcon } from 'lucide-react-native';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
 import { AnimatedProgress } from '../animated/progress';
-import { StorageTypeTag, UrgencyTag } from '../tags';
+import { BasicBadge } from '../badges/BasicBadge';
+import { DueDateTag, StorageTypeTag } from '../tags';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
@@ -21,18 +22,6 @@ import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
-
-const urgencyStyle = tva({
-  base: 'font-JakartaSemiBold rounded-md px-2 py-0.5 text-white',
-  variants: {
-    urgency: {
-      LOW: 'bg-success-400',
-      MEDIUM: 'bg-info-400',
-      HIGH: 'bg-warning-400',
-      CRITICAL: 'bg-error-400',
-    },
-  },
-});
 
 interface RequestInfoCardProps {
   data: Request;
@@ -48,7 +37,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
   const router = useRouter();
 
   const {
-    details: { neededAt },
+    details: { urgency },
     initialVolumeNeeded,
     volumeFulfilled,
   } = data;
@@ -66,8 +55,14 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
 
   return (
     <Card className="w-full flex-col p-0">
-      <Box className="h-40 w-full overflow-hidden">
+      <Box className="relative h-40 w-full">
         <SingleImageViewer image={image} />
+
+        <BasicBadge
+          text={URGENCY_LEVELS[urgency].label}
+          action={getUrgencyAction(urgency)}
+          className="absolute left-3 top-3"
+        />
       </Box>
 
       <HStack className="items-center justify-between p-4">
@@ -90,15 +85,8 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
       <VStack space="lg" className="p-4">
         <HStack space="2xl" className="flex-wrap items-center">
           <StorageTypeTag data={data} />
-          <UrgencyTag data={data} />
+          <DueDateTag data={data} />
         </HStack>
-
-        <Text size="sm">
-          Needed at:{' '}
-          <Text size="sm" className="font-JakartaMedium">
-            {formatLocaleTime(neededAt)}, {formatDate(neededAt, { shortMonth: true })}
-          </Text>
-        </Text>
 
         <VStack>
           <HStack space="sm" className="items-center justify-between">

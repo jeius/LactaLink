@@ -5,7 +5,7 @@ import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import Avatar from '../Avatar';
+import { ProfileAvatar } from '../Avatar';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
 import FastTimerIcon from '../icons/FastTimerIcon';
 import { Box } from '../ui/box';
@@ -36,7 +36,6 @@ export default function MatchedRequestCard({
   const [selectedPreference, setSelectedPreference] = useState(selected);
 
   const requester = extractCollection(data?.requester);
-  const requesterAvatar = extractCollection(requester?.avatar);
   const { details: { urgency, storagePreference } = {} } = data || {};
 
   const deliveryPreferences = useMemo(
@@ -72,10 +71,7 @@ export default function MatchedRequestCard({
           className="items-start p-4"
           style={{ backgroundColor: getPriorityColor(theme, urgency, 50) }}
         >
-          <Avatar
-            size="lg"
-            details={{ avatar: requesterAvatar, name: requester?.displayName || 'Unknown User' }}
-          />
+          <ProfileAvatar size="lg" profile={requester} />
           <VStack className="flex-1">
             <Text
               numberOfLines={1}
@@ -106,13 +102,9 @@ export default function MatchedRequestCard({
               <Icon
                 size="sm"
                 as={FastTimerIcon}
-                fill={getPriorityColor(theme, urgency)?.toString()}
+                fill={getPriorityColor(theme, urgency, 800)?.toString()}
               />
-              <Text
-                size="sm"
-                className="font-JakartaMedium"
-                style={{ color: getPriorityColor(theme, urgency) }}
-              >
+              <Text size="sm" style={{ color: getPriorityColor(theme, urgency, 800) }}>
                 {URGENCY_LEVELS[urgency || 'LOW'].label}
               </Text>
             </HStack>
@@ -131,9 +123,9 @@ export default function MatchedRequestCard({
         <VStack space="lg" className="p-4">
           {selectedPreference && (
             <DeliveryPreferenceCard
-              variant="ghost"
-              className="p-0"
+              className="w-full rounded-xl"
               preference={selectedPreference}
+              appearance="compact"
             />
           )}
           <DeliveryPreferencesBottomSheet

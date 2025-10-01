@@ -1,25 +1,26 @@
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
-import { getPriorityColor } from '@/lib/utils/getPriorityColor';
+import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
+import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Request } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
-import { formatDate } from '@lactalink/utilities/formatters';
-import { MapPinIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { MapPinIcon, PackageIcon } from 'lucide-react-native';
 import React, { ReactNode, useMemo } from 'react';
 import { AnimatedPressable } from '../animated/pressable';
 import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import FastTimerIcon from '../icons/FastTimerIcon';
+import { BasicBadge } from '../badges';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
-import { Box } from '../ui/box';
+import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
@@ -83,14 +84,15 @@ function CardContent({
   isImageViewable = true,
   showProgressBar,
 }: MarkKeyRequired<RequestListCardProps, 'data'>) {
-  const { themeColors, theme } = useTheme();
+  const router = useRouter();
+  const { themeColors } = useTheme();
   const locationCoords = useLocationStore((s) => s.coordinates);
 
   const fillColor = themeColors.tertiary[50];
   const strokeColor = themeColors.tertiary[700];
 
   const { details } = data;
-  const { urgency, storagePreference, neededAt } = details;
+  const { urgency, storagePreference } = details;
   const requester = extractCollection(data.requester);
 
   const image = extractImageData(extractCollection(details.image));
@@ -100,44 +102,47 @@ function CardContent({
     return getMinDistance(preferences, locationCoords);
   }, [locationCoords, data.deliveryPreferences]);
 
-  const neededAtDate = formatDate(neededAt, { shortMonth: true });
-
   const volume = data.initialVolumeNeeded;
   const percentage = data.fulfillmentPercentage || 0;
+
+  function viewMore() {
+    router.push(`/requests/${data.id}`);
+  }
 
   return (
     <VStack className="items-start justify-start">
       <HStack space="sm" className="w-full items-stretch p-3">
-        <Box
+        <Pressable
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
+          onPress={viewMore}
         >
-          <SingleImageViewer disabled={!isImageViewable} image={image} />
-        </Box>
+          <SingleImageViewer disabled image={image} />
+        </Pressable>
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
-          <HStack space="xs" className="items-center">
-            <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
-            <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
+          <Button
+            animateOnPress={false}
+            variant="link"
+            action="default"
+            className="h-fit w-fit p-0"
+            onPress={viewMore}
+          >
+            <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
               {volume} mL
-            </Text>
-          </HStack>
+            </ButtonText>
+          </Button>
+
+          <BasicBadge
+            size="sm"
+            text={URGENCY_LEVELS[urgency].label}
+            action={getUrgencyAction(urgency)}
+          />
 
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
             <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
               {PREFERRED_STORAGE_TYPES[storagePreference || 'EITHER'].label}
-            </Text>
-          </HStack>
-
-          <HStack space="xs" className="items-center">
-            <Icon
-              size="sm"
-              as={FastTimerIcon}
-              fill={getPriorityColor(theme, urgency)?.toString()}
-            />
-            <Text size="sm" className="shrink" style={{ color: getPriorityColor(theme, urgency) }}>
-              {neededAtDate}
             </Text>
           </HStack>
         </VStack>
