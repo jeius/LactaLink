@@ -10,6 +10,7 @@ import React from 'react';
 import { DeliveryPreferenceCard, DonationInfoCard, RequestInfoCard } from '../cards';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
+import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 interface MapMarkerInfoProps {
@@ -53,10 +54,10 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
 
       return (
         <Card key={i} className="w-full">
-          <VStack space="lg">
+          <VStack space="lg" className="items-end">
             <DeliveryPreferenceCard preference={preference} variant="ghost" className="p-0" />
 
-            <Button size="md" onPress={handleViewOnMap}>
+            <Button size="sm" variant="outline" onPress={handleViewOnMap}>
               <ButtonIcon as={MapIcon} />
               <ButtonText>View on Map</ButtonText>
             </Button>
@@ -69,8 +70,10 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
   if (isDonation(data)) {
     const preferences = extractCollection(data.deliveryPreferences) || [];
     return (
-      <VStack space="lg" className="w-full items-center">
+      <VStack space="sm" className="mb-10 w-full items-stretch">
+        <Text className="font-JakartaSemiBold">Donation Details</Text>
         <DonationInfoCard data={data} />
+        <Text className="font-JakartaSemiBold mt-4">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="donations" data={preferences} />
       </VStack>
     );
@@ -79,8 +82,10 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
   if (isRequest(data)) {
     const preferences = extractCollection(data.deliveryPreferences) || [];
     return (
-      <VStack space="lg" className="w-full items-center">
+      <VStack space="sm" className="mb-10 w-full items-stretch">
+        <Text className="font-JakartaSemiBold">Request Details</Text>
         <RequestInfoCard data={data} />
+        <Text className="font-JakartaSemiBold mt-4">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="requests" data={preferences} />
       </VStack>
     );

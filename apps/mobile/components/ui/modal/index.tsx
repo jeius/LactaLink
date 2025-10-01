@@ -58,7 +58,7 @@ const modalBackdropStyle = tva({
 });
 
 const modalContentStyle = tva({
-  base: 'bg-background-0 border-outline-100 shadow-hard-2 overflow-hidden rounded-2xl border p-6',
+  base: 'bg-background-0 border-outline-100 shadow-hard-2 m-5 overflow-hidden rounded-2xl border p-6',
   parentVariants: {
     size: {
       xs: 'w-[60%] max-w-[360px]',

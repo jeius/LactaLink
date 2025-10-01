@@ -199,11 +199,16 @@ export default function CreateDonation() {
                   onConfirm={submit}
                   isDisabled={isSubmitting}
                   title="Review Donation"
+                  modalSize="lg"
                   description={
                     <ScrollView
                       showsVerticalScrollIndicator={false}
                       className="border-outline-200"
-                      style={{ maxHeight: 380, borderTopWidth: 1, borderBottomWidth: 1 }}
+                      style={{
+                        maxHeight: 380,
+                        borderTopWidth: 1,
+                        borderBottomWidth: 1,
+                      }}
                     >
                       <DonationReviewCard data={formData} variant="ghost" className="p-2" />
                     </ScrollView>

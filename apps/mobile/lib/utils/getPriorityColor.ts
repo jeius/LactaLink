@@ -11,7 +11,7 @@ export function getPriorityColor(
 ): ColorValue {
   const priorityColors: Record<keyof typeof URGENCY_LEVELS, ColorCategory> = {
     LOW: 'success',
-    MEDIUM: 'secondary',
+    MEDIUM: 'info',
     HIGH: 'warning',
     CRITICAL: 'error',
   };

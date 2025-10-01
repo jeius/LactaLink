@@ -36,7 +36,7 @@ export function BottomSheetActionButton({
       ]}
     >
       <Box
-        className="bg-background-0 border-outline-200 rounded-2xl border p-4"
+        className="bg-background-0 border-outline-300 rounded-2xl border p-4"
         style={{ paddingBottom: insets.bottom }}
       >
         <Button {...props}>

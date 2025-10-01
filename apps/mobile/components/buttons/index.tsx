@@ -55,9 +55,9 @@ export function DeleteActionButton({ itemName, slug, id, ...props }: DeleteActio
   return (
     <ActionModal
       hitSlop={8}
-      {...props}
       action="negative"
       variant="link"
+      {...props}
       className="h-fit w-fit"
       triggerIcon={Trash2Icon}
       onTriggerPress={(e) => {

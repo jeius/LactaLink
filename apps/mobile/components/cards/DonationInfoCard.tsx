@@ -1,31 +1,24 @@
-import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
-import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
+import { Donation, Image as ImageType } from '@lactalink/types/payload-generated-types';
 
-import {
-  Avatar as AvatarType,
-  Donation,
-  Image as ImageType,
-  Individual,
-  MilkBag,
-} from '@lactalink/types/payload-generated-types';
-
-import { EditIcon, MilkIcon, PackagePlusIcon } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import { MilkIcon, PackagePlusIcon } from 'lucide-react-native';
+import React from 'react';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { RequestSearchParams } from '@/lib/types/donationRequest';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { useRouter } from 'expo-router';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
+import { Link, useRouter } from 'expo-router';
 import { AnimatedProgress } from '../animated/progress';
-import Avatar from '../Avatar';
-import { ImageViewer } from '../ImageViewer';
+import { useTheme } from '../AppProvider/ThemeProvider';
+import { SingleImageViewer } from '../ImageViewer';
+import { ProfileTag } from '../ProfileTag';
+import { CollectionMethodTag, StorageTypeTag } from '../tags';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
+import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
-import { Textarea, TextareaInput } from '../ui/textarea';
 import { VStack } from '../ui/vstack';
 
 interface DonationInfoCardProps {
@@ -33,136 +26,93 @@ interface DonationInfoCardProps {
 }
 
 export function DonationInfoCard({ data }: DonationInfoCardProps) {
+  const { themeColors } = useTheme();
+  const iconFillColor = themeColors.primary[50];
+  const iconStrokeColor = themeColors.primary[700];
+
   const router = useRouter();
   const { data: user } = useMeUser();
   const profile = extractCollection(user?.profile?.value);
 
   const {
-    details: { bags, collectionMode, storageType, milkSample, notes },
+    details: { milkSample },
     remainingVolume,
     volume,
   } = data;
 
-  const progressValue = remainingVolume && volume ? (remainingVolume / volume) * 100 : 0;
+  const volumePercentage = Math.round((remainingVolume / volume) * 100);
 
-  const availableBags = useMemo(
-    () => (bags as MilkBag[]).filter((bag) => bag.status === 'AVAILABLE'),
-    [bags]
-  );
-  const segregatedBags = useMemo(() => segregateMilkBags(availableBags), [availableBags]);
-
-  const donor = data.donor as Individual;
-  const donorName = donor.displayName;
-  const donorAvatar = donor.avatar as AvatarType | null | undefined;
+  const donor = extractCollection(data.donor);
 
   const milkImages = milkSample as ImageType[] | undefined | null;
-  const images =
-    milkImages
-      ?.map((image) => {
-        const imageUrl = image.sizes?.large?.url || image.url;
-        if (!imageUrl) return null;
-        return {
-          uri: imageUrl,
-          blurHash: image.blurHash || undefined,
-        };
-      })
-      .filter((v) => v !== null) || [];
+  const image = extractOneImageData(milkImages);
 
-  const isOwner = profile && profile.id === donor.id;
+  const isOwner = profile && profile.id === donor?.id;
 
   function handleRequestPress() {
     const params: RequestSearchParams = { matchedDonation: data.id };
-    if (isOwner) {
-      router.push(`/donations/edit/${data.id}`);
-    } else {
-      router.push({ pathname: '/requests/create', params });
-    }
+    router.push({ pathname: '/requests/create', params });
   }
 
   return (
-    <Card className="w-full">
-      <VStack space="md">
-        {images.length > 0 && (
-          <Box className="h-44 w-full overflow-hidden rounded-lg">
-            <ImageViewer images={images} />
-          </Box>
-        )}
+    <Card className="w-full flex-col p-0">
+      <Box className="h-40 w-full overflow-hidden">
+        <SingleImageViewer image={image} />
+      </Box>
 
-        <Text className="font-JakartaMedium mt-1">Donation Details</Text>
+      <HStack className="items-center justify-between p-4">
+        <VStack>
+          <Text bold size="lg">
+            {volume.toLocaleString()} mL
+          </Text>
+          <Text size="sm">Total Volume</Text>
+        </VStack>
+
+        <ProfileTag
+          direction="rtl"
+          label="Donor"
+          profile={donor && { value: donor, relationTo: 'individuals' }}
+        />
+      </HStack>
+
+      <Divider />
+
+      <VStack space="lg" className="p-4">
+        <HStack space="2xl" className="flex-wrap items-center">
+          <StorageTypeTag data={data} />
+          <CollectionMethodTag data={data} />
+        </HStack>
 
         <VStack>
           <HStack space="sm" className="items-center justify-between">
             <Text size="sm" className="mb-1">
               Available Volume
             </Text>
-            <Icon as={MilkIcon} size="sm" className="text-primary-500" />
+            <Icon as={MilkIcon} size="sm" fill={iconFillColor} stroke={iconStrokeColor} />
           </HStack>
-          <AnimatedProgress value={progressValue} size="sm" />
-          {remainingVolume && volume && (
-            <Text size="xs" className="text-typography-600 mt-1 text-center">
-              {remainingVolume} / {volume} mL
-            </Text>
+          <AnimatedProgress value={volumePercentage} size="sm" />
+          <Text size="xs" className="text-typography-700 mt-1 text-center">
+            {remainingVolume.toLocaleString()} mL ({volumePercentage}%)
+          </Text>
+        </VStack>
+
+        <HStack space="md" className="w-full justify-stretch">
+          {!isOwner && (
+            <Box className="flex-1">
+              <Button onPress={handleRequestPress}>
+                <ButtonIcon as={PackagePlusIcon} />
+                <ButtonText>Request</ButtonText>
+              </Button>
+            </Box>
           )}
-        </VStack>
-
-        <VStack className="mb-1">
-          <Text size="sm" className="mb-1">
-            Available Milk Bags
-          </Text>
-          <HStack space="sm" className="flex-wrap">
-            {Object.entries(segregatedBags).map(([key, bags]) => (
-              <Box key={key} className={`bg-primary-200 mb-2 mr-2 rounded-md px-2 py-1`}>
-                <Text size="xs" className="text-primary-900">
-                  {bags.length} x {key.split('-')[0] || 20} mL
-                </Text>
-              </Box>
-            ))}
-          </HStack>
-        </VStack>
-
-        <Text size="sm">
-          Storage type:{' '}
-          <Text size="sm" className="text-primary-500 font-JakartaSemiBold">
-            {PREFERRED_STORAGE_TYPES[storageType].label}
-          </Text>
-        </Text>
-
-        <Text size="sm">
-          Collection method:{' '}
-          <Text size="sm" className="text-primary-500 font-JakartaSemiBold">
-            {COLLECTION_MODES[collectionMode].label}
-          </Text>
-        </Text>
-
-        {donorName && (
-          <VStack space="xs" className="items-start">
-            <Text size="sm">Donated by:</Text>
-            <Button size="sm" variant="link" className="h-fit">
-              {donorAvatar && (
-                <Avatar size="sm" details={{ avatar: donorAvatar, name: donorName }} />
-              )}
-              <ButtonText className="underline">{donorName}</ButtonText>
-            </Button>
-          </VStack>
-        )}
-
-        {
-          <VStack space="sm">
-            <Textarea size="sm" pointerEvents="none">
-              <TextareaInput
-                defaultValue={notes || ''}
-                placeholder="No note provided."
-                editable={false}
-                style={{ textAlignVertical: 'top' }}
-              />
-            </Textarea>
-          </VStack>
-        }
-
-        <Button onPress={handleRequestPress}>
-          <ButtonIcon as={isOwner ? EditIcon : PackagePlusIcon} />
-          <ButtonText>{isOwner ? 'Edit Donation' : 'Request This Donation'}</ButtonText>
-        </Button>
+          <Box className="flex-1">
+            <Link asChild push href={`/donations/${data.id}`}>
+              <Button variant="outline">
+                <ButtonText>View More</ButtonText>
+              </Button>
+            </Link>
+          </Box>
+        </HStack>
       </VStack>
     </Card>
   );

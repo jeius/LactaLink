@@ -26,7 +26,7 @@ export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: Ta
   const scale = useSharedValue(!isFocused ? 0.7 : 1);
   const { themeColors } = useTheme();
 
-  const iconColor = themeColors.typography[950];
+  const iconColor = isFocused ? themeColors.primary[0] : themeColors.typography[950];
 
   useEffect(() => {
     opacity.value = withSpring(!isFocused ? 1 : 0, { damping: 20, stiffness: 120 });
@@ -54,7 +54,7 @@ export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: Ta
         </Animated.View>
 
         <Animated.View style={[animateText]}>
-          <Text size="xs" className="font-JakartaMedium capitalize">
+          <Text size="xs" className="font-JakartaMedium">
             {label}
           </Text>
         </Animated.View>

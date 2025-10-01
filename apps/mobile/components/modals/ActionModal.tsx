@@ -26,6 +26,7 @@ interface ActionModalProps extends ButtonProps {
   cancelLabel?: string;
   title?: string;
   description?: string | ReactNode;
+  modalSize?: ComponentProps<typeof Modal>['size'];
 }
 
 export function ActionModal({
@@ -40,6 +41,7 @@ export function ActionModal({
   description = 'Are you sure you want to proceed with this action? This action cannot be undone.',
   confirmAction,
   onTriggerPress,
+  modalSize = 'md',
   ...props
 }: ActionModalProps) {
   const [open, setOpen] = useState(false);
@@ -75,7 +77,7 @@ export function ActionModal({
         {triggerIcon && <ButtonIcon as={triggerIcon} />}
         {!iconOnly && <ButtonText>{triggerLabel}</ButtonText>}
       </Button>
-      <Modal isOpen={open} onClose={toggleModal}>
+      <Modal size={modalSize} isOpen={open} onClose={toggleModal}>
         <ModalBackdrop />
         <ModalContent>
           <ModalHeader>

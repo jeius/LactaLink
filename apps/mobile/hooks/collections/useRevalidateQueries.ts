@@ -41,7 +41,7 @@ export function useRevalidateCollectionQueries<T extends CollectionSlug>() {
       queryClient.invalidateQueries({
         predicate: (query) => {
           const slugs = Array.isArray(collection) ? collection : [collection];
-          return slugs.some((slug) => query.queryKey.includes(slug));
+          return [...slugs, ...QUERY_KEYS.MARKERS].some((key) => query.queryKey.includes(key));
         },
       });
     },

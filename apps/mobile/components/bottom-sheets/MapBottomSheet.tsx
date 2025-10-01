@@ -14,6 +14,7 @@ import { Motion } from '@legendapp/motion';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { LocateButton } from '../buttons/LocateButton';
+import { MapMarkerInfo } from '../map/MapMarkerInfo';
 import { DonateRequestModal } from '../modals';
 import { MapBottomSheetTabs } from '../tabs/MapBottomSheetTabs';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
@@ -21,7 +22,6 @@ import { BottomSheetHandle } from '../ui/BottomSheetHandle';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { VStack } from '../ui/vstack';
-import { MapMarkerInfo } from './MapMarkerInfo';
 
 const DEFAULT_SNAP_POINT = 30;
 const snapPoints = [DEFAULT_SNAP_POINT, '40%', '60%', '80%'];

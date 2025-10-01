@@ -16,6 +16,7 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
 import { Box } from '../ui/box';
+import { Button, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
@@ -122,9 +123,16 @@ function CardContent({
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={MilkIcon} fill={fillColor} stroke={strokeColor} />
             <Link asChild push href={`/donations/${data.id}`}>
-              <Text className="font-JakartaSemiBold shrink" numberOfLines={1} ellipsizeMode="tail">
-                {volume} mL
-              </Text>
+              <Button
+                animateOnPress={false}
+                variant="link"
+                action="default"
+                className="h-fit w-fit p-0"
+              >
+                <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
+                  {volume} mL
+                </ButtonText>
+              </Button>
             </Link>
           </HStack>
 
@@ -160,7 +168,7 @@ function CardContent({
                   className="w-48"
                 />
                 <Text size="xs" className="text-typography-700 text-center">
-                  {data.remainingVolume} mL remaining
+                  {data.remainingVolume} mL available
                 </Text>
               </VStack>
 

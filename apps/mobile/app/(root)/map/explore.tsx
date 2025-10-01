@@ -1,5 +1,5 @@
+import { MapBottomSheet } from '@/components/bottom-sheets/MapBottomSheet';
 import BasicLocationPin from '@/components/icons/BasicLocationPin';
-import { MapBottomSheet } from '@/components/map/MapBottomSheet';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

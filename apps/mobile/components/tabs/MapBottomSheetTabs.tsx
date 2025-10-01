@@ -38,7 +38,7 @@ function createRoutesAndScenes() {
   const scenes: Record<string, React.FC<SceneProps>> = {};
 
   const sceneRoutes: Route[] = routes.map(({ label, value }) => {
-    scenes[value] = DonReqScene;
+    scenes[value] = Scene;
 
     return {
       key: value,
@@ -54,7 +54,7 @@ function createRoutesAndScenes() {
 
 // #endregion
 
-function DonReqScene(props: SceneProps) {
+function Scene(props: SceneProps) {
   function handlePress(data: Donation | Request) {
     const deliveryPreference = extractCollection(data.deliveryPreferences)?.[0];
     const address = extractCollection(deliveryPreference?.address);

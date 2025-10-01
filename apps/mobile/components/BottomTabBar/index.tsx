@@ -80,8 +80,8 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
         containerAnimatedStyle,
       ]}
     >
-      <Card className="relative overflow-visible rounded-full p-1">
-        <HStack onLayout={onItemLayout} className="relative w-full rounded-full">
+      <Card className="relative rounded-full p-1">
+        <HStack onLayout={onItemLayout} className="relative w-full overflow-hidden rounded-full">
           <Box className="absolute inset-0">
             <Animated.View style={[circleStyle, { width: itemWidth, height: '100%' }]}>
               <Box

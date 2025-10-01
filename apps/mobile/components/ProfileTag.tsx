@@ -11,14 +11,21 @@ import { Skeleton } from './ui/skeleton';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-interface ProfileTagProps extends Pick<ContentProps, 'label'> {
+interface ProfileTagProps extends Pick<ContentProps, 'label' | 'direction'> {
   profile: User['profile'];
   isLoading?: boolean;
 }
 export function ProfileTag({ profile, isLoading, ...props }: ProfileTagProps) {
   return (
-    <HStack space="sm" className="items-center">
-      {isLoading ? <TagSkeleton /> : profile && <Content {...props} profile={profile} />}
+    <HStack
+      space="sm"
+      className={`items-center ${props.direction === 'rtl' ? 'flex-row-reverse' : ''}`}
+    >
+      {isLoading ? (
+        <TagSkeleton direction={props.direction} />
+      ) : (
+        profile && <Content {...props} profile={profile} />
+      )}
     </HStack>
   );
 }
@@ -26,9 +33,10 @@ export function ProfileTag({ profile, isLoading, ...props }: ProfileTagProps) {
 interface ContentProps {
   profile: NonNullable<User['profile']>;
   label: string;
+  direction?: 'ltr' | 'rtl';
 }
 
-function Content({ profile, label }: ContentProps) {
+function Content({ profile, direction = 'ltr', label }: ContentProps) {
   // Fetch profile data if it's a reference
   const { data: fetchedProfile, isLoading } = useFetchById(isString(profile.value), {
     collection: profile.relationTo,
@@ -38,12 +46,12 @@ function Content({ profile, label }: ContentProps) {
   const data = extractCollection(profile.value) || fetchedProfile;
 
   return isLoading ? (
-    <TagSkeleton />
+    <TagSkeleton direction={direction} />
   ) : (
     data && (
       <>
         <ProfileAvatar size="sm" profile={data} enablePress />
-        <VStack>
+        <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
           <Link asChild push href={`/profile/${profile.relationTo}/${data.id}`}>
             <Button
               animateOnPress={false}
@@ -67,11 +75,11 @@ function Content({ profile, label }: ContentProps) {
   );
 }
 
-function TagSkeleton() {
+function TagSkeleton({ direction = 'ltr' }: { direction?: ContentProps['direction'] }) {
   return (
     <>
       <Skeleton className="h-8 w-8" variant="circular" />
-      <VStack>
+      <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
         <Skeleton className="mb-1 h-3 w-32" variant="circular" />
         <Skeleton className="h-3 w-16" variant="circular" />
       </VStack>

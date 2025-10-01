@@ -32,13 +32,14 @@ export function useFetchById<
   enabled: boolean = true,
   apiOptions: FetchByIDOptions<TSlug, TSelect>,
   queryOptions?: FetchByIDQueryOptions<TSlug, TSelect>
-): UseQueryResult<FindOneResult<TSlug, TSelect>> {
+): UseQueryResult<FindOneResult<TSlug, TSelect>> & { queryKey: unknown[] } {
   const apiClient = useApiClient();
   const { id, collection, depth = 3, ...rest } = apiOptions;
+  const queryKey = [...COLLECTION_QUERY_KEY, collection, id, apiOptions];
 
-  return useQuery({
+  const query = useQuery({
     enabled,
-    queryKey: [...COLLECTION_QUERY_KEY, collection, id, apiOptions],
+    queryKey,
     queryFn: () => {
       if (!collection) throw new Error('Collection is required');
       if (!id) throw new Error('ID is required');
@@ -53,4 +54,6 @@ export function useFetchById<
     staleTime: 1000 * 60 * 5, // 5 minutes
     ...queryOptions,
   });
+
+  return { ...query, queryKey };
 }

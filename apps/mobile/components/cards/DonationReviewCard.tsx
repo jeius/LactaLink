@@ -1,7 +1,6 @@
-import { getHexColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { DonationSchema } from '@lactalink/form-schemas';
-import { formatDate } from '@lactalink/utilities/formatters';
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { DotIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -21,10 +20,10 @@ export function DonationReviewCard({
   variant = 'filled',
   ...props
 }: DonationReviewCardProps) {
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
 
-  const fillColor = getHexColor(theme, 'primary', 50)?.toString();
-  const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
+  const fillColor = themeColors.primary[50];
+  const strokeColor = themeColors.primary[700];
 
   const {
     deliveryPreferences,
@@ -57,11 +56,9 @@ export function DonationReviewCard({
               <HStack key={index} className="items-center">
                 <Icon as={DotIcon} />
                 <Text size="sm" className="font-JakartaMedium">
-                  {bag.quantity} x {bag.volume}mL @ {formatDate(bag.collectedAt)}-{' '}
-                  {new Date(bag.collectedAt).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {bag.quantity} x {bag.volume}mL -{' '}
+                  {formatDate(bag.collectedAt, { shortMonth: true })},{' '}
+                  {formatLocaleTime(bag.collectedAt)}
                 </Text>
               </HStack>
             ))}
@@ -80,18 +77,20 @@ export function DonationReviewCard({
           </Textarea>
         </VStack>
 
-        <VStack space="xs" className="w-full">
-          <Text size="sm">Delivery Preferences:</Text>
-          {deliveryPreferences?.map((preference, index) => (
-            <DeliveryPreferenceCard
-              key={index}
-              variant="outline"
-              size="md"
-              className="rounded-lg"
-              preference={preference}
-            />
-          ))}
-        </VStack>
+        {deliveryPreferences.length > 0 && (
+          <VStack space="xs" className="w-full">
+            <Text size="sm">Delivery Preferences:</Text>
+            {deliveryPreferences.map((preference, index) => (
+              <DeliveryPreferenceCard
+                key={index}
+                variant="outline"
+                className="rounded-lg px-3 py-2"
+                preference={preference}
+                appearance="list-item"
+              />
+            ))}
+          </VStack>
+        )}
       </VStack>
     </Card>
   );
