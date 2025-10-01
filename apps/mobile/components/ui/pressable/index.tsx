@@ -15,6 +15,8 @@ const pressableStyle = tva({
   base: 'data-[focus-visible=true]:ring-indicator-info data-[disabled=true]:opacity-40 data-[focus-visible=true]:outline-none data-[focus-visible=true]:ring-2',
 });
 
+const rippleColor = 'rgba(128,128,128,0.10)';
+
 type IPressableProps = Omit<React.ComponentProps<typeof UIPressable>, 'context'> &
   VariantProps<typeof pressableStyle>;
 const Pressable = React.forwardRef<React.ComponentRef<typeof UIPressable>, IPressableProps>(
@@ -26,6 +28,10 @@ const Pressable = React.forwardRef<React.ComponentRef<typeof UIPressable>, IPres
         className={pressableStyle({
           class: className,
         })}
+        android_ripple={{
+          color: rippleColor,
+          foreground: true,
+        }}
       />
     );
   }
