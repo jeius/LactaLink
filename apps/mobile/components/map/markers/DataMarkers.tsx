@@ -1,9 +1,9 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { Image } from '@/components/Image';
-import { getHexColor } from '@/lib/colors';
 
-import { ProfileAvatar } from '@/components/Avatar';
+import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
+import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Box } from '@/components/ui/box';
+import { Icon } from '@/components/ui/icon';
 import {
   assignMarkerRef,
   MapMarkerProps,
@@ -14,12 +14,9 @@ import {
 } from '@/lib/stores/markersStore';
 import { ColorsConfig } from '@/lib/types/colors';
 import { MarkerPressEvent } from '@/lib/types/markers';
-import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { Collection } from '@lactalink/types/collections';
-import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
-import { useEffect, useMemo, useState } from 'react';
+import { isDonation, isHospital, isMilkBank, isRequest } from '@lactalink/utilities/type-guards';
+import { Building2Icon, BuildingIcon } from 'lucide-react-native';
+import { useEffect, useMemo } from 'react';
 import { Animated } from 'react-native';
 import {
   MapMarker,
@@ -38,43 +35,41 @@ interface DataMarkersProps<TSlug extends MarkerDataSlug = MarkerDataSlug> {
 export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
   markerProps,
   onPress,
-  showAvatar: showAvatarProp,
   colorTheme = 'primary',
   markerData,
 }: DataMarkersProps<TSlug>) {
-  const { theme } = useTheme();
-  const pinColor = getHexColor(theme, colorTheme, 600);
-  const iconBgColor = getHexColor(theme, colorTheme, 100);
   const selectedmarker = useMarkersStore((s) => s.selectedMarker)?.marker;
+  const isSelected = selectedmarker?.identifier === markerProps.identifier;
 
-  const [showAvatar, setShowAvatar] = useState(showAvatarProp || false);
+  const { themeColors } = useTheme();
+  const pinColor = themeColors[colorTheme][isSelected ? 400 : 600];
+  const iconBgColor = themeColors[colorTheme][50];
 
-  const profile = profileExtractor(markerData?.data);
-
-  const icon = useMemo(() => {
-    const iconName = markerData?.deliveryPreference?.preferredMode[0];
-    return iconName && getDeliveryPreferenceIcon(iconName);
-  }, [markerData?.deliveryPreference?.preferredMode]);
-
-  useEffect(() => {
-    if (showAvatarProp !== undefined) {
-      setShowAvatar(showAvatarProp);
+  const donationRequestIcon = useMemo(() => {
+    if (isDonation(markerData.data)) {
+      return DonateMilkIcon;
+    } else if (isRequest(markerData.data)) {
+      return MilkBottlePlusIcon;
     }
-    redrawMarker();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAvatarProp]);
+    return null;
+  }, [markerData?.data]);
+
+  const orgIcon = useMemo(() => {
+    if (isHospital(markerData.data)) {
+      return Building2Icon;
+    } else if (isMilkBank(markerData.data)) {
+      return BuildingIcon;
+    }
+    return null;
+  }, [markerData?.data]);
 
   useEffect(() => {
-    if (selectedmarker?.identifier === markerProps.identifier) {
+    if (isSelected) {
       markerData.markerRef?.showCallout();
-      setShowAvatar(true);
     } else {
       markerData.markerRef?.hideCallout();
-      setShowAvatar(false);
     }
-    redrawMarker();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markerData.markerRef, selectedmarker?.identifier, markerProps.identifier]);
+  }, [isSelected, markerData]);
 
   function createRef(ref: MapMarker | Animated.LegacyRef<MapMarker> | null) {
     if (ref) {
@@ -86,15 +81,9 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
     }
   }
 
-  function redrawMarker() {
-    markerData?.markerRef?.redraw();
-  }
-
   function handleMarkerPress(event: RNMarkerPressEvent) {
     onPress?.({ ...event, identifier: markerProps.identifier || event.nativeEvent.id });
     markerProps.onPress?.(event);
-    setShowAvatar(true);
-    redrawMarker();
     setSelectedMarker(markerProps.identifier);
   }
 
@@ -103,52 +92,19 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
       {...markerProps}
       ref={createRef}
       onPress={handleMarkerPress}
-      tracksViewChanges={false}
+      tracksViewChanges={true}
     >
       <DefaultMarker
-        size="sm"
+        size="md"
         color={pinColor}
         circleColor={iconBgColor}
         circleIcon={
-          !showAvatar ? (
-            <Box className="flex-1 p-0.5">
-              <Image
-                source={icon}
-                style={{ flex: 1 }}
-                transition={{ duration: 0 }}
-                onLoad={redrawMarker}
-              />
-            </Box>
-          ) : (
-            profile && (
-              <ProfileAvatar
-                size="xs"
-                className="h-full w-full"
-                profile={profile}
-                onLayout={redrawMarker}
-                onLoad={redrawMarker}
-                fadeDuration={0}
-              />
-            )
-          )
+          <Box className="flex-1 flex-col items-center justify-center">
+            {donationRequestIcon && <Icon size="xs" as={donationRequestIcon} fill={pinColor} />}
+            {orgIcon && <Icon size="xs" as={orgIcon} color={pinColor} />}
+          </Box>
         }
       />
     </MarkerAnimated>
   );
-}
-
-function profileExtractor(data: Collection<MarkerDataSlug> | null = null) {
-  let profile: Individual | Hospital | MilkBank | null;
-
-  if (!data) return null;
-
-  if (isDonation(data)) {
-    profile = extractCollection(data.donor);
-  } else if (isRequest(data)) {
-    profile = extractCollection(data.requester);
-  } else {
-    profile = data;
-  }
-
-  return profile;
 }

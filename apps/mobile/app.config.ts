@@ -36,9 +36,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: { googleMaps: { apiKey: process.env.ANDROID_MAPS_API_KEY } },
     permissions: ['SCHEDULE_EXACT_ALARM'],
   },
-  androidStatusBar: {
-    translucent: true,
-  },
+  androidNavigationBar: { enforceContrast: true },
+  androidStatusBar: { translucent: true },
   plugins: [
     'expo-router',
     'expo-image-picker',
@@ -101,15 +100,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#FFE6E8',
         defaultChannel: 'default',
         enableBackgroundRemoteNotifications: false,
-      },
-    ],
-    [
-      'react-native-edge-to-edge',
-      {
-        android: {
-          parentTheme: 'Default',
-          enforceNavigationBarContrast: false,
-        },
       },
     ],
     [

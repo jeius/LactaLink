@@ -1,5 +1,5 @@
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { File } from 'expo-file-system/next';
+import { File } from 'expo-file-system';
 
 export function deleteLocalFiles(uris: string[]) {
   uris.forEach(async (uri) => {

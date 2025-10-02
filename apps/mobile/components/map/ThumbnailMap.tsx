@@ -2,9 +2,9 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
-import MapMarker from 'react-native-maps/lib/MapMarker';
-import MapView from 'react-native-maps/lib/MapView';
+import MapView, { MapMarker } from 'react-native-maps';
 import { AnimatedPressable } from '../animated/pressable';
+import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 import { Skeleton } from '../ui/skeleton';
 import { Spinner } from '../ui/spinner';
@@ -33,6 +33,7 @@ export function ThumbnailMap({
 }: ThumbnailMapProps) {
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { theme } = useTheme();
 
   const mapRef = useRef<MapView | null>(null);
 
@@ -61,6 +62,7 @@ export function ThumbnailMap({
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
             toolbarEnabled={false}
+            userInterfaceStyle={theme}
             onMapLoaded={() => setMapLoaded(true)}
             onMapReady={() => setIsMapReady(true)}
             camera={{ zoom, center, heading, pitch }}

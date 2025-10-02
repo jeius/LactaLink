@@ -21,7 +21,7 @@ import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
 import { transformImage } from '@/lib/utils/imageProcessors';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { sanitizeStringForFilename } from '@lactalink/utilities/formatters';
-import { Directory, File, Paths } from 'expo-file-system/next';
+import { Directory, File, Paths } from 'expo-file-system';
 import { toast } from 'sonner-native';
 
 const containerStyle = tva({

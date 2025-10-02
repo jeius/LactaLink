@@ -1,3 +1,7 @@
+import { DeliveryMode } from '@lactalink/types';
+import { FC } from 'react';
+import { SvgProps } from 'react-native-svg';
+
 export const ICON_ASSETS = {
   meetUp: require('../../assets/icons/2x/meet_up.png'),
   locationPin: require('../../assets/icons/2x/location_pin.png'),
@@ -63,4 +67,10 @@ export const LOGO_ASSETS = {
 export const SVG_ASSETS = {
   milkBasket: require('../../assets/svgs/milk_basket.svg'),
   donateMilk: require('../../assets/svgs/hand_with_basket.svg'),
+};
+
+export const DP_METHOD_ICONS: Record<DeliveryMode, FC<SvgProps>> = {
+  PICKUP: require('../../assets/svgs/pick_up.svg'),
+  MEETUP: require('../../assets/svgs/meet_up.svg'),
+  DELIVERY: require('../../assets/svgs/scooter_with_basket.svg'),
 };

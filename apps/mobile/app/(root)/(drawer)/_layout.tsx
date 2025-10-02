@@ -65,8 +65,8 @@ export default function Layout() {
       <Drawer.Screen
         name="listings"
         options={{
-          title: 'Donations & Requests',
-          drawerLabel: 'Donations & Requests',
+          title: 'Available Listings',
+          drawerLabel: 'Available Listings',
           drawerIcon: ({ color }) => <Icon as={MilkIcon} size="md" color={color} />,
           headerShadowVisible: false,
         }}

@@ -70,15 +70,15 @@
     "@supabase/supabase-js": "^2.49.4",
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.5.4",
-    "@types/react": "^19.0.14",
+    "@types/react": "^19.1.17",
     "lodash": "^4.17.21",
-    "react": "19.0.0"
+    "react": "19.1.0"
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
-    "@types/react": "^19.0.14",
+    "@types/react": "^19.1.17",
     "lodash": "^4.17.21",
-    "react": "19.0.0"
+    "react": "19.1.0"
   }
 }

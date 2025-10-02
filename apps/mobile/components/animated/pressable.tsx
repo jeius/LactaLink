@@ -32,8 +32,8 @@ export function AnimatedPressable({
   const scale = useSharedValue(1);
 
   const springConfig: WithSpringConfig = {
-    damping: 15,
-    stiffness: 200,
+    damping: 60,
+    stiffness: 600,
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
