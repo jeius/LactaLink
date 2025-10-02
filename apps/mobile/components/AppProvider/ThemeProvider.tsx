@@ -1,17 +1,18 @@
 'use client';
 
-import { getTheme, updateTheme } from '@/lib/api/payload-preferences';
+import { getTheme, updateTheme as updateServerTheme } from '@/lib/api/payload-preferences';
 import { MMKV_KEYS, QUERY_KEYS, THEME_OVERRIDE } from '@/lib/constants';
 import Storage from '@/lib/localStorage';
 import { Theme } from '@lactalink/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, FC, PropsWithChildren, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
 
 import { colorsConfig } from '@/lib/colors';
+import { useThemeStore } from '@/lib/stores/themeStore';
 import { ThemeColors } from '@/lib/types/colors';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SystemUI from 'expo-system-ui';
@@ -26,67 +27,90 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const deviceColorScheme = useColorScheme().colorScheme;
+export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
+  const storedTheme = Storage.getString(MMKV_KEYS.THEME) as Theme | undefined;
 
-  const {
-    colorScheme,
-    setColorScheme: setTheme,
-    toggleColorScheme: toggleTheme,
-  } = useColorScheme();
+  const { colorScheme: theme = 'light', setColorScheme } = useColorScheme();
+  const themeColors = colorsConfig[theme];
+
+  const setThemeStore = useThemeStore((s) => s.setTheme);
 
   const { isLoading } = useQuery({
-    enabled: !Storage.contains(MMKV_KEYS.THEME),
+    enabled: !storedTheme, // Only fetch from server if no stored theme
     queryKey: QUERY_KEYS.USER_THEME,
     queryFn: async () => {
       const serverTheme = await getTheme();
-      const fallback = serverTheme || deviceColorScheme || 'light';
-      setTheme(fallback);
-      return fallback;
+
+      if (serverTheme) {
+        updateTheme(serverTheme);
+      }
+
+      return serverTheme;
     },
     staleTime: Infinity,
     gcTime: Infinity,
     retry: 3,
   });
 
-  const { mutate: saveThemeToServer } = useMutation({
-    mutationFn: async (newTheme: Theme) => {
-      await updateTheme(newTheme);
+  const { mutateAsync: setTheme } = useMutation({
+    mutationFn: updateServerTheme,
+    onMutate: (newTheme) => {
+      // Optimistic update
+      updateTheme(newTheme);
+      return { previousTheme: theme };
+    },
+    onError: (err, _newTheme, context) => {
+      // Revert to previous theme on error
+      if (context?.previousTheme) {
+        updateTheme(context.previousTheme);
+      }
+      console.error('Failed to save theme to server:', err);
     },
   });
 
-  const theme: Theme = THEME_OVERRIDE || colorScheme;
-  const themeColors = colorsConfig[theme];
-
-  // Apply stored theme once during startup
+  // On mount, initialize theme from storage if available
   useEffect(() => {
-    const storedTheme = Storage.getString(MMKV_KEYS.THEME) as Theme | undefined;
-    if (storedTheme) {
-      setTheme(storedTheme);
+    if (THEME_OVERRIDE) {
+      updateTheme(THEME_OVERRIDE);
+    } else if (storedTheme) {
+      updateTheme(storedTheme);
+    } else {
+      // No stored theme, use system preference
+      updateTheme(theme);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist theme and update nav bar whenever it changes
+  // Sync system UI and navigation bar with theme
   useEffect(() => {
-    if (theme) {
-      Storage.set(MMKV_KEYS.THEME, theme);
-      saveThemeToServer(theme);
+    const bgColor = themeColors.background[50];
+    SystemUI.setBackgroundColorAsync(bgColor || null);
 
-      const bgColor = themeColors.background[50];
-      SystemUI.setBackgroundColorAsync(bgColor || null);
-
-      if (Platform.OS === 'android') {
-        NavigationBar.setStyle(theme);
-      }
+    if (Platform.OS === 'android') {
+      NavigationBar.setStyle(theme);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [theme, themeColors]);
+
+  function updateTheme(newTheme: Theme) {
+    // Update color scheme for nativewind
+    setColorScheme(newTheme);
+
+    // Persist to storage
+    Storage.set(MMKV_KEYS.THEME, newTheme);
+
+    // Update zustand store
+    setThemeStore(newTheme);
+  }
+
+  function toggleTheme() {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+  }
 
   return (
     <ThemeContext.Provider
       value={{
-        theme: theme || 'light',
+        theme,
         setTheme,
         toggleTheme,
         isLoading,
