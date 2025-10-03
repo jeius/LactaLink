@@ -6,9 +6,18 @@ import { useMagnetometer } from '@/hooks/location/useMagnetometer';
 import { getHexColor } from '@/lib/colors';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { LocationObjectCoords } from 'expo-location';
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StyleSheet } from 'react-native';
-import { LatLng } from 'react-native-maps';
+import { LatLng, MapMarker } from 'react-native-maps';
 import { SharedValue } from 'react-native-reanimated';
 
 const headingStyle = StyleSheet.create({
@@ -47,13 +56,16 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     const { heading, animatedHeading, filteredHeading } = useMagnetometer({
       updateInterval: 'fast',
     });
+
     const { location } = useLocationUpdates();
+
+    const [showHeading, setShowHeading] = useState(!hideHeading);
+
+    const markerRef = useRef<MapMarker>(null);
 
     const mapRef = useMapStore((s) => s.map);
     const followUser = useMapStore((s) => s.followUser);
     const setFollowUser = useMapStore((s) => s.setFollowUser);
-
-    const [childrenLoaded, setChildrenLoaded] = useState(false);
 
     const latlng = useMemo<LatLng>(
       () => ({
@@ -77,10 +89,22 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     }, [animatedRegion, latlng]);
 
     useEffect(() => {
-      if (location) {
-        onChangePosition?.(location.coords);
-      }
-    }, [location, onChangePosition]);
+      setShowHeading(!hideHeading);
+    }, [hideHeading]);
+
+    useEffect(() => {
+      redraw();
+      setShowHeading(!followUser);
+    }, [followUser]);
+
+    useFocusEffect(
+      useCallback(() => {
+        if (location?.coords) {
+          onChangePosition?.(location.coords);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [location?.coords])
+    );
 
     useImperativeHandle(ref, () => ({
       getHeading: () => heading,
@@ -117,41 +141,49 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     }));
 
     function redraw() {
-      setChildrenLoaded(true);
+      markerRef.current?.redraw();
     }
 
     return (
       <AnimatedMarker
-        flat={true}
+        flat
+        ref={markerRef}
         identifier="user-marker-current-location"
         tappable={false}
         animatedProps={animatedRegion.props}
-        tracksViewChanges={!childrenLoaded}
+        tracksViewChanges={false}
         anchor={{ x: 0.5, y: 0.5 }}
         rotation={animatedHeading as SharedValue<number | undefined>}
       >
-        <Box style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          <Box style={{ position: 'relative', padding: 4 }}>
-            {!hideHeading && (
-              <Box
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    flex: 1,
-                    borderRadius: 17,
-                    overflow: 'hidden',
-                    transform: [{ rotate: '-45deg' }],
-                  },
-                ]}
-              >
-                <Box style={[headingStyle.arrow]} />
-              </Box>
-            )}
+        <Box
+          style={{
+            width: 36,
+            height: 36,
+            position: 'relative',
+            padding: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {showHeading && (
             <Box
-              className="bg-primary-400 border-primary-0 h-5 w-5 rounded-full border-2"
-              onLayout={redraw}
-            />
-          </Box>
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  flex: 1,
+                  borderRadius: 17,
+                  overflow: 'hidden',
+                  transform: [{ rotate: '-45deg' }],
+                },
+              ]}
+            >
+              <Box style={[headingStyle.arrow]} />
+            </Box>
+          )}
+          <Box
+            className="bg-primary-400 border-primary-0 h-5 w-5 rounded-full border-2"
+            onLayout={redraw}
+          />
         </Box>
       </AnimatedMarker>
     );

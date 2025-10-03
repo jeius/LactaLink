@@ -57,7 +57,7 @@
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-google-signin/google-signin": "^14.0.1",
     "@react-native/metro-config": "^0.80.0",
-    "@react-navigation/bottom-tabs": "^7.3.10",
+    "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/drawer": "^7.5.0",
     "@react-navigation/elements": "^2.4.3",
     "@react-navigation/native": "^7.1.17",

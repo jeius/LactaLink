@@ -69,6 +69,7 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
     } else {
       markerData.markerRef?.hideCallout();
     }
+    markerData.markerRef?.redraw();
   }, [isSelected, markerData]);
 
   function createRef(ref: MapMarker | Animated.LegacyRef<MapMarker> | null) {
@@ -92,7 +93,7 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
       {...markerProps}
       ref={createRef}
       onPress={handleMarkerPress}
-      tracksViewChanges={true}
+      tracksViewChanges={false}
     >
       <DefaultMarker
         size="md"

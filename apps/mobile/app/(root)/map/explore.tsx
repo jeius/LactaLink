@@ -32,8 +32,7 @@ export default function Explore() {
 
   return (
     <Box
-      style={[{ flex: 1, marginTop: insets.top }]}
-      pointerEvents={isFocused ? 'box-none' : 'none'}
+      style={[{ flex: 1, marginTop: insets.top, pointerEvents: isFocused ? 'box-none' : 'none' }]}
     >
       <Box pointerEvents="box-none" className="absolute inset-x-0 top-0 px-5 py-2">
         <Input variant="rounded" className="bg-background-0 shadow-md">

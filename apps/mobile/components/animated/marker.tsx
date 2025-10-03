@@ -1,4 +1,5 @@
-import { MapRegion, MarkOptional } from '@lactalink/types';
+import { MapRegion } from '@lactalink/types';
+import { MarkOptional } from '@lactalink/types/utils';
 import { useCallback } from 'react';
 import { MapMarker, MapMarkerProps } from 'react-native-maps';
 import Animated, {

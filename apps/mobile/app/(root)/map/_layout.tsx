@@ -4,7 +4,6 @@ import { DataMarkers } from '@/components/map/markers/DataMarkers';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
-import { getHexColor } from '@/lib/colors/getColor';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { MapMarkerProps, MapPageSearchParams } from '@/lib/types';
@@ -12,10 +11,10 @@ import { ColorsConfig } from '@/lib/types/colors';
 import { MapRegion } from '@lactalink/types';
 import { regionToBoundary } from '@lactalink/utilities/geo-utils';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
-import { Tabs, useLocalSearchParams } from 'expo-router';
+import { Tabs, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import isEqual from 'lodash/isEqual';
 import { CompassIcon, MapIcon } from 'lucide-react-native';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, ViewProps } from 'react-native';
 import { MapMarker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,10 +75,10 @@ function Map({ style }: MapProps) {
     if (markerID) {
       setSelectedMarker(markerID);
     }
-    return () => {
-      resetMap();
-    };
-  }, [markerID, resetMap]);
+  }, [markerID]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useFocusEffect(useCallback(() => resetMap(), []));
 
   function handleRegionChange(data: MapRegion) {
     const newMarkers = markersIndex.searchByBoundary(regionToBoundary(data));
@@ -93,7 +92,7 @@ function Map({ style }: MapProps) {
   }
 
   return (
-    <Box style={[style, { marginBottom: insets.bottom }]} pointerEvents="box-none">
+    <Box style={[style, { marginBottom: insets.bottom }]}>
       <MemoizedMapView
         safeInsets={insets}
         initialCamera={
@@ -109,10 +108,10 @@ function Map({ style }: MapProps) {
         onRegionChangeComplete={handleRegionChange}
         onPress={unSelectMarker}
       >
-        {markers}
-
-        {markerCoords && (
+        {markerCoords ? (
           <MapMarker identifier={`marker-${lat}-${lng}`} coordinate={markerCoords} />
+        ) : (
+          markers
         )}
       </MemoizedMapView>
     </Box>
@@ -120,12 +119,11 @@ function Map({ style }: MapProps) {
 }
 
 export default function Layout() {
-  const { theme } = useTheme();
-  const tabBarActiveTintColor = getHexColor(theme, 'primary', 500)?.toString();
-  const tabBarInactiveTintColor = getHexColor(theme, 'typography', 900)?.toString();
-  const tabBarBackgroundColor = getHexColor(theme, 'background', 0)?.toString();
-  const rippleColor = getHexColor(theme, 'background', 100)?.toString();
-  const borderColor = getHexColor(theme, 'outline', 600)?.toString();
+  const { themeColors } = useTheme();
+  const tabBarActiveTintColor = themeColors.primary[500];
+  const tabBarInactiveTintColor = themeColors.typography[900];
+  const tabBarBackgroundColor = themeColors.background[0];
+  const borderColor = themeColors.outline[600];
 
   return (
     <Box className="relative flex-1">
@@ -142,9 +140,8 @@ export default function Layout() {
           tabBarStyle: { backgroundColor: tabBarBackgroundColor, elevation: 0, borderColor },
           tabBarLabelStyle: { fontSize: 12, fontFamily: 'Jakarta-SemiBold' },
           tabBarLabelPosition: 'beside-icon',
-          tabBarButton: (props) => (
-            <Pressable {...props} android_ripple={{ radius: 100, color: rippleColor }} />
-          ),
+          //@ts-expect-error props.ref type mismatch
+          tabBarButton: (props) => <Pressable {...props} ref={props.ref} />,
         }}
       >
         <Tabs.Screen
