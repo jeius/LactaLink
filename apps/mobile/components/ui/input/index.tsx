@@ -63,7 +63,7 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'text-typography-600 items-center justify-center fill-none',
+  base: 'text-typography-600 items-center justify-center',
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',

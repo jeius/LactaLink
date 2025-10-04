@@ -2,10 +2,11 @@ import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { FC, useEffect } from 'react';
 import { LayoutChangeEvent, PressableProps } from 'react-native';
 import Animated, {
+  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { SvgProps } from 'react-native-svg';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -22,34 +23,36 @@ interface TabButtonProps extends PressableProps {
 }
 
 export const TabButton = ({ isFocused, label, icon, onIconLayout, ...props }: TabButtonProps) => {
-  const opacity = useSharedValue(!isFocused ? 1 : 0);
-  const scale = useSharedValue(!isFocused ? 0.7 : 1);
   const { themeColors } = useTheme();
-
   const iconColor = isFocused ? themeColors.primary[0] : themeColors.typography[950];
 
-  useEffect(() => {
-    opacity.value = withSpring(!isFocused ? 1 : 0, { damping: 20, stiffness: 120 });
-    scale.value = withSpring(!isFocused ? 0.7 : 1, { damping: 20, stiffness: 160 });
-  }, [isFocused, opacity, scale]);
+  const animationProgress = useSharedValue(isFocused ? 1 : 0);
 
   const animateText = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-    };
+    const opacity = interpolate(animationProgress.value, [0, 1], [1, 0]);
+    return { opacity };
   });
 
-  const animateIcon = useAnimatedStyle(() => {
-    const top = interpolate(scale.value, [1, 0.7], [9, 0]);
-    return {
-      transform: [{ scale: scale.value }, { translateY: top }],
-    };
+  const animateIconContainer = useAnimatedStyle(() => {
+    const translateY = interpolate(animationProgress.value, [0, 1], [0, 9]);
+    const scale = interpolate(animationProgress.value, [0, 1], [0.7, 1]);
+    return { transform: [{ scale }, { translateY }] };
   });
+
+  useEffect(() => {
+    animationProgress.value = withTiming(isFocused ? 1 : 0, {
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+    });
+  }, [animationProgress, isFocused]);
 
   return (
     <Pressable {...props} className="flex-1 py-2" hitSlop={{ top: 6, bottom: 6 }}>
       <VStack space="xs" className="items-center">
-        <Animated.View onLayout={isFocused ? onIconLayout : undefined} style={[animateIcon]}>
+        <Animated.View
+          onLayout={isFocused ? onIconLayout : undefined}
+          style={[animateIconContainer]}
+        >
           <Icon as={icon} size="xl" color={iconColor} />
         </Animated.View>
 

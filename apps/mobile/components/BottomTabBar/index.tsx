@@ -61,8 +61,8 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
 
   useEffect(() => {
     translateX.value = withSpring(itemWidth * state.index, {
-      damping: 20,
-      stiffness: 300,
+      damping: 70,
+      stiffness: 700,
     });
   }, [state.index, itemWidth, translateX]);
 

@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
@@ -34,7 +35,6 @@ import {
   LucideIcon,
   LucideProps,
   MessageSquareIcon,
-  PackagePlusIcon,
   TruckIcon,
   UserRoundCheckIcon,
 } from 'lucide-react-native';
@@ -225,7 +225,7 @@ function createIncomingLinks(user: User | null): ActionProps[] {
       badge: <IncomingDonationsBadge />,
     },
     {
-      icon: PackagePlusIcon,
+      icon: MilkBottlePlus2Icon,
       href: '/account/requests/incoming',
       label: 'Incoming Requests',
       badge: <IncomingRequestsBadge />,

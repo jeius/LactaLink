@@ -1,7 +1,6 @@
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
-import { debounce } from 'lodash';
 import React, { ComponentProps, useEffect, useMemo, useState } from 'react';
 
 import { ErrorSearchParams, Point } from '@lactalink/types';
@@ -9,7 +8,6 @@ import { ErrorSearchParams, Point } from '@lactalink/types';
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
-import { AnimatePresence, Motion } from '@legendapp/motion';
 import { LocationObjectCoords } from 'expo-location';
 import { Redirect } from 'expo-router';
 import { Insets, StyleSheet } from 'react-native';
@@ -98,14 +96,17 @@ export function MapView({
     setUserLocated(areEqual);
   }
 
-  const updateMapHeading = debounce(async () => {
-    const newCamera = await map?.getCamera();
-    if (newCamera) {
-      mapHeading.value = newCamera.heading || 0;
+  async function updateMapHeading() {
+    if (!map) return;
+    try {
+      const { heading } = await map.getCamera();
+      mapHeading.value = heading;
+    } catch (error) {
+      console.error('Failed to update map heading:', error);
     }
-  });
+  }
 
-  async function handleRegionChange(region: Region, details: Details) {
+  function handleRegionChange(region: Region, details: Details) {
     props.onRegionChange?.(region, details);
 
     if (details?.isGesture) {
@@ -132,7 +133,7 @@ export function MapView({
   }
 
   return (
-    <>
+    <Box className="relative flex-1" pointerEvents="box-none">
       <RNMapView.Animated
         {...props}
         ref={setMapRef}
@@ -167,22 +168,14 @@ export function MapView({
         )}
       </RNMapView.Animated>
 
-      <AnimatePresence>
-        {mapHeading.value !== 0 && (
-          <Motion.View
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ position: 'absolute', right: 16, top: (insets?.top || 0) + 80 }}
-          >
-            <AnimatedPressable onPress={handleCompassPress}>
-              <Box className="bg-background-0 rounded-full p-3">
-                <Compass heading={mapHeading} />
-              </Box>
-            </AnimatedPressable>
-          </Motion.View>
-        )}
-      </AnimatePresence>
+      <AnimatedPressable
+        onPress={handleCompassPress}
+        containerStyle={{ position: 'absolute', right: 16, top: (insets?.top || 0) + 80 }}
+      >
+        <Box className="bg-background-0 rounded-full p-3">
+          <Compass heading={mapHeading} />
+        </Box>
+      </AnimatedPressable>
 
       {!isMapReady && (
         <SafeArea className="absolute inset-0 z-50 items-center justify-center">
@@ -190,6 +183,6 @@ export function MapView({
           <Text size="md">Loading google maps...</Text>
         </SafeArea>
       )}
-    </>
+    </Box>
   );
 }

@@ -13,7 +13,9 @@ export type MagnetometerOptions = {
 
 export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions = {}) {
   const animatedHeading = useSharedValue(0);
+
   const prevReadingRef = useRef(0);
+  const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
   const [{ x, y, z }, setData] = useState<MagnetometerMeasurement>({
     x: 0,
@@ -22,10 +24,8 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     timestamp: Date.now(),
   });
 
-  const rawHeading = getHeadingFromMagnetometer(x, y);
-  const filteredHeading = Math.round(lerpAngle(prevReadingRef.current, rawHeading, 0.2));
-
-  const subscriptionRef = useRef<{ remove: () => void } | null>(null);
+  const rawHeading = calculateHeading(x, y);
+  const filteredHeading = filterHeading(rawHeading);
 
   const _slow = () => Magnetometer.setUpdateInterval(1000);
   const _fast = () => Magnetometer.setUpdateInterval(20);
@@ -44,8 +44,8 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     const setupSubscription = async () => {
       const subscription = await createSubscription((res) => {
         setData(res);
-        const raw = getHeadingFromMagnetometer(res.x, res.y);
-        const filtered = Math.round(lerpAngle(prevReadingRef.current, raw, 0.2));
+        const raw = calculateHeading(res.x, res.y);
+        const filtered = filterHeading(raw);
         prevReadingRef.current = filtered;
         animatedHeading.value = filtered;
       });
@@ -71,6 +71,10 @@ export function useMagnetometer({ updateInterval = 'slow' }: MagnetometerOptions
     filteredHeading,
     animatedHeading,
   };
+
+  function filterHeading(heading: number) {
+    return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
+  }
 }
 
 async function createSubscription(callback: (result: MagnetometerMeasurement) => void) {
@@ -87,10 +91,11 @@ async function createSubscription(callback: (result: MagnetometerMeasurement) =>
   return { remove: () => {} }; // Return a no-op remove function
 }
 
-function getHeadingFromMagnetometer(x: number, y: number): number {
+function calculateHeading(x: number, y: number): number {
   if (x === 0 && y === 0) {
     return 0; // Return 0 if both x and y are zero to avoid undefined behavior
   }
-  const heading = Math.atan2(y, x) * (180 / Math.PI);
-  return heading >= 0 ? Math.round(heading) : Math.round(heading + 360);
+  const heading = Math.atan2(y, x) * (180 / Math.PI) - 85; // Adjusted by -85 degrees for alignment
+  const rounded = heading >= 0 ? Math.round(heading) : Math.round(heading + 360);
+  return rounded;
 }

@@ -20,14 +20,14 @@ interface AnimateOptions extends Region {
 }
 
 export const useAnimatedRegion = (location: Partial<Region> = {}) => {
-  const latitute = useSharedValue(location.latitude);
+  const latitude = useSharedValue(location.latitude);
   const longitude = useSharedValue(location.longitude);
   const latitudeDelta = useSharedValue(location.latitudeDelta);
   const longitudeDelta = useSharedValue(location.longitudeDelta);
 
   const animatedProps = useAnimatedProps(() => ({
     coordinate: {
-      latitude: latitute.value ?? 0,
+      latitude: latitude.value ?? 0,
       longitude: longitude.value ?? 0,
       latitudeDelta: latitudeDelta.value ?? 0,
       longitudeDelta: longitudeDelta.value ?? 0,
@@ -49,12 +49,12 @@ export const useAnimatedRegion = (location: Partial<Region> = {}) => {
         });
       };
 
-      animateValue(latitute, options.latitude);
+      animateValue(latitude, options.latitude);
       animateValue(longitude, options.longitude);
       animateValue(latitudeDelta, options.latitudeDelta);
       animateValue(longitudeDelta, options.longitudeDelta);
     },
-    [latitute, longitude, latitudeDelta, longitudeDelta]
+    [latitude, longitude, latitudeDelta, longitudeDelta]
   );
 
   return {

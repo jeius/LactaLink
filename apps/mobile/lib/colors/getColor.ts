@@ -1,7 +1,8 @@
-import { ColorCategory, ColorsConfig } from '@/lib/types/colors';
+import { ColorCategory, ColorsConfig, Shade } from '@/lib/types/colors';
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 import { Theme } from '@lactalink/types';
 import { ColorValue } from 'react-native';
+import { getTheme } from '../stores/themeStore';
 import { colorsConfig } from './config';
 
 export const getHexColor = (
@@ -69,4 +70,14 @@ export function getDonationRequestStatusColor(
   };
 
   return (status && getHexColor(theme, colors[status], shade)) || '#a2a3a3';
+}
+
+export function getPrimaryColor(shade: Shade = '500') {
+  const theme = getTheme();
+  return getHexColor(theme, 'primary', shade)?.toString();
+}
+
+export function getTypographyColor(shade: Shade = '950') {
+  const theme = getTheme();
+  return getHexColor(theme, 'typography', shade)?.toString();
 }
