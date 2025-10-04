@@ -315,7 +315,7 @@ async function createDonation(data: DonationSchema) {
           bags: extractID(milkBagDocs),
           milkSample: milkImageDoc && [extractID(milkImageDoc)],
         },
-        deliveryPreferences,
+        deliveryPreferences: extractID(deliveryPreferences),
         recipient,
       },
     })

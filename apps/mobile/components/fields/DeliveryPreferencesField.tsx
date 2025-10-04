@@ -2,28 +2,20 @@ import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-r
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { DonationSchema, RequestSchema } from '@lactalink/types/forms';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { useRef } from 'react';
-import {
-  ControllerProps,
-  FieldPath,
-  FieldPathValue,
-  FieldValues,
-  useFieldArray,
-  useFormContext,
-} from 'react-hook-form';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { useMemo } from 'react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
+import Animated, { FadeIn, LinearTransition, SlideOutRight } from 'react-native-reanimated';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
 import { EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
-import { DraggableWrapper, DraggableWrapperRef } from '../DraggableWrapper';
 import {
   FormControl,
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
 } from '../ui/form-control';
@@ -31,107 +23,106 @@ import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { VStack } from '../ui/vstack';
 
-interface DeliveryPreferencesFieldProps<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> extends Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> {
+const AnimatedDPCard = Animated.createAnimatedComponent(DeliveryPreferenceCard);
+
+interface DeliveryPreferencesFieldProps {
   isLoading?: boolean;
-  label?: string;
-  helperText?: string;
   isDisabled?: boolean;
 }
 
-export function DeliveryPreferencesField<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({
-  name,
-  isLoading,
-  label,
-  helperText,
-  isDisabled,
-}: DeliveryPreferencesFieldProps<TFieldValues, TName>) {
+export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPreferencesFieldProps) {
   const { data: user } = useMeUser();
   const selections = extractCollection(user?.deliveryPreferences?.docs || []);
 
-  const { fields, remove } = useFieldArray({ name });
+  const form = useFormContext<DonationSchema | RequestSchema>();
 
-  const form = useFormContext<TFieldValues>();
-  const { error } = form.getFieldState(name);
+  const { fields: selectedPrefs, remove } = useFieldArray({
+    name: 'deliveryPreferences',
+    keyName: 'fieldID',
+    control: form.control,
+  });
+
+  const disableRemove = selectedPrefs.length <= 1;
+  const hasPreferences = selectedPrefs.length > 0;
+
+  const selectionsMap = useMemo(() => {
+    const map = new Map<string, (typeof selections)[number]>();
+    for (const pref of selections) {
+      map.set(pref.id, pref);
+    }
+    return map;
+  }, [selections]);
+
+  const selected = useMemo(() => {
+    const selected: DeliveryPreference[] = [];
+
+    for (const { id } of selectedPrefs) {
+      const pref = selectionsMap.get(id);
+      if (pref) selected.push(pref);
+    }
+
+    return selected;
+  }, [selectedPrefs, selectionsMap]);
+
+  const { error } = form.getFieldState('deliveryPreferences');
   const isSubmitting = form.formState.isSubmitting;
 
-  const disableRemove = fields.length <= 1;
-  const preferenceIDs: string[] = form.watch(name) || [];
-  const hasPreferences = preferenceIDs?.length > 0;
-  const preferences = selections.filter((pref) => preferenceIDs.includes(pref.id));
-
-  const draggableRefs = useRef<Record<string, DraggableWrapperRef | null>>({});
-
-  function handleChange(newPreferences: string[]) {
-    form.setValue(name, newPreferences as FieldPathValue<TFieldValues, TName>);
+  function handleChange(newPreferences: DeliveryPreference[]) {
+    const preferences = newPreferences.map((pref) => ({
+      ...pref,
+      address: extractID(pref.address),
+    }));
+    form.setValue('deliveryPreferences', preferences);
   }
 
-  function handleDismiss(id: string) {
-    draggableRefs.current[id]?.dismiss();
-  }
+  function ListItem(pref: (typeof selectedPrefs)[number], index: number) {
+    const item = selectionsMap.get(pref.id);
 
-  function ListItem(item: DeliveryPreference, index: number) {
-    const itemID = item.id;
+    if (!item) return null;
+
+    const itemID = extractID(item);
+
+    function handleRemove() {
+      remove(index);
+    }
 
     return (
-      <DraggableWrapper
-        disabled
-        key={fields[index]?.id || `${itemID}-${index}`}
-        ref={(ref) => {
-          if (ref) {
-            draggableRefs.current[itemID] = ref;
-          } else {
-            delete draggableRefs.current[itemID];
-          }
-        }}
-        onDismiss={() => remove(index)}
-      >
-        <DeliveryPreferenceCard
-          isLoading={isLoading}
-          isDisabled={isDisabled || isSubmitting}
-          preference={item}
-          action={
-            <HStack space="lg" className="grow justify-end">
-              <EditActionButton href={`/delivery-preferences/edit/${itemID}`} />
-              <Button
-                action="negative"
-                variant="link"
-                className="h-fit w-fit p-0"
-                isDisabled={disableRemove}
-                onPress={() => handleDismiss(itemID)}
-                hitSlop={8}
-              >
-                <ButtonIcon as={XIcon} />
-              </Button>
-            </HStack>
-          }
-        />
-      </DraggableWrapper>
+      <AnimatedDPCard
+        key={pref.fieldID}
+        layout={LinearTransition.springify()}
+        entering={FadeIn}
+        exiting={SlideOutRight}
+        isLoading={isLoading}
+        isDisabled={isDisabled || isSubmitting}
+        preference={item}
+        action={
+          <HStack space="lg" className="grow justify-end">
+            <EditActionButton href={`/delivery-preferences/edit/${itemID}`} />
+            <Button
+              action="negative"
+              variant="link"
+              className="h-fit w-fit p-0"
+              isDisabled={disableRemove}
+              onPress={handleRemove}
+              hitSlop={8}
+            >
+              <ButtonIcon as={XIcon} />
+            </Button>
+          </HStack>
+        }
+      />
     );
   }
 
   return (
     <FormControl isInvalid={!!error} isDisabled={isDisabled || isSubmitting} className="px-5">
-      {label && (
-        <FormControlLabel className="justify-between">
-          <FormControlLabelText>{label}</FormControlLabelText>
-          <Icon as={TruckIcon} />
-        </FormControlLabel>
-      )}
+      <FormControlLabel className="justify-between">
+        <FormControlLabelText>Delivery Preferences</FormControlLabelText>
+        <Icon as={TruckIcon} />
+      </FormControlLabel>
 
-      {helperText && (
-        <FormControlHelper>
-          <FormControlHelperText>{helperText}</FormControlHelperText>
-        </FormControlHelper>
-      )}
-
-      <VStack space="md" className="mt-1">
-        {preferences.map(ListItem)}
+      <VStack space="sm" className="mt-1">
+        {selectedPrefs.map(ListItem)}
       </VStack>
 
       <FormControlError>
@@ -146,7 +137,7 @@ export function DeliveryPreferencesField<
         allowEdit={true}
         collections={selections}
         allowMultipleSelection={true}
-        selected={preferenceIDs}
+        selected={selected}
         onChange={handleChange}
         isDisabled={isDisabled}
         triggerComponent={(props) => (

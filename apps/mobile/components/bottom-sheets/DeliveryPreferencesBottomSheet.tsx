@@ -1,27 +1,34 @@
-import { Motion } from '@legendapp/motion';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import React from 'react';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
 import { SelectBottomSheet, SelectBottomSheetProps, SelectItemProps } from './SelectBottomSheet';
 
-type DeliveryPreferencesBottomSheetProps<TMultiple extends boolean = false> = Omit<
-  SelectBottomSheetProps<TMultiple, 'delivery-preferences'>,
+type DeliveryPreferencesBottomSheetProps<
+  TMultiple extends boolean,
+  TValue extends string | DeliveryPreference,
+> = Omit<
+  SelectBottomSheetProps<TMultiple, 'delivery-preferences', TValue>,
   'slug' | 'ItemComponent' | 'estimatedItemSize'
 >;
 
-export function DeliveryPreferencesBottomSheet<TMultiple extends boolean = false>(
-  props: DeliveryPreferencesBottomSheetProps<TMultiple>
-) {
+const AnimatedDPCard = Animated.createAnimatedComponent(DeliveryPreferenceCard);
+
+export function DeliveryPreferencesBottomSheet<
+  TValue extends string | DeliveryPreference,
+  TMultiple extends boolean = false,
+>(props: DeliveryPreferencesBottomSheetProps<TMultiple, TValue>) {
   function Item({ item, isLoading, canEdit }: SelectItemProps<'delivery-preferences'>) {
     return (
-      <Motion.View initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-        <DeliveryPreferenceCard
-          preference={item}
-          variant="ghost"
-          isLoading={isLoading}
-          action={canEdit && <EditActionButton href={`/delivery-preferences/edit/${item.id}`} />}
-        />
-      </Motion.View>
+      <AnimatedDPCard
+        entering={FadeIn}
+        exiting={FadeOut}
+        preference={item}
+        variant="ghost"
+        isLoading={isLoading}
+        action={canEdit && <EditActionButton href={`/delivery-preferences/${item.id}/edit`} />}
+      />
     );
   }
 

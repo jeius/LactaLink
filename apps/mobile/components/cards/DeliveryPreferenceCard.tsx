@@ -141,7 +141,7 @@ function ListCard({
           <HStack space="sm" className="w-full">
             <Link asChild href={`/delivery-preferences/${prefID}`}>
               <Button
-                animateOnPress={false}
+                disablePressAnimation
                 variant="link"
                 action="default"
                 className="h-fit w-fit p-0"

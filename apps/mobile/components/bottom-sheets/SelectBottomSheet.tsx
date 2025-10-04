@@ -1,17 +1,21 @@
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
 import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';
 import {
   CollectionSlug,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
-  Where,
 } from '@lactalink/types/payload-types';
+import { generatePlaceHoldersWithID } from '@lactalink/utilities';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { formatKebabToTitle } from '@lactalink/utilities/formatters';
-import { useIsFocused } from '@react-navigation/native';
-import { ListRenderItem } from '@shopify/flash-list';
+import { areStrings } from '@lactalink/utilities/type-guards';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Href, useRouter } from 'expo-router';
+import isString from 'lodash/isString';
 import { Edit2Icon, PlusIcon } from 'lucide-react-native';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PressableProps } from 'react-native';
@@ -26,7 +30,6 @@ import {
   BottomSheet,
   BottomSheetBackdrop,
   BottomSheetDragIndicator,
-  BottomSheetFlashList,
   BottomSheetModalPortal,
   BottomSheetTrigger,
 } from '../ui/bottom-sheet';
@@ -36,7 +39,7 @@ import { Card } from '../ui/card';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-type TValue<T extends boolean = false> = T extends true ? string[] : string;
+type TValue<T extends boolean, V = unknown> = T extends true ? V[] : V | null | undefined;
 
 export interface SelectItemProps<TSlug extends CollectionSlug = CollectionSlug> {
   item: TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>;
@@ -47,13 +50,16 @@ export interface SelectItemProps<TSlug extends CollectionSlug = CollectionSlug> 
 export interface SelectBottomSheetProps<
   T extends boolean = false,
   TSlug extends CollectionSlug = CollectionSlug,
+  V extends string | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>> =
+    | string
+    | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>,
 > {
-  selected?: TValue<T> | null;
-  onChange?: (selected: TValue<T>) => void;
+  selected: TValue<T, V>;
+  onChange?: (selected: TValue<T, V>) => void;
   triggerComponent?: (props: PressableProps) => React.ReactNode;
   allowMultipleSelection?: T;
   slug: TSlug;
-  collections?: (string | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>)[];
+  collections?: V[];
   ItemComponent: FC<SelectItemProps<TSlug>>;
   title?: string;
   createLabel?: string;
@@ -65,11 +71,14 @@ export interface SelectBottomSheetProps<
 export function SelectBottomSheet<
   T extends boolean = false,
   TSlug extends CollectionSlug = CollectionSlug,
+  V extends string | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>> =
+    | string
+    | TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>,
 >({
   selected: selectedProps,
   onChange,
   triggerComponent,
-  allowMultipleSelection,
+  allowMultipleSelection = false as T,
   slug,
   collections = [],
   ItemComponent,
@@ -78,47 +87,47 @@ export function SelectBottomSheet<
   allowEdit = false,
   allowCreate = false,
   isDisabled,
-}: SelectBottomSheetProps<T, TSlug>) {
+}: SelectBottomSheetProps<T, TSlug, V>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { theme } = useTheme();
   const isFocused = useIsFocused();
 
-  const defaultSelectedIDs = useRef<TValue<T> | undefined | null>(selectedProps);
-  const [selected, setSelected] = useState<TValue<T> | undefined | null>(selectedProps);
+  const defaultSelected = (allowMultipleSelection ? [] : null) as TValue<T, V>;
+  const defaultSelectedRef = useRef(selectedProps || defaultSelected);
+  const [selected, setSelected] = useState(selectedProps || defaultSelected);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const shouldFetch = !extractCollection(collections);
-  const where: Where = { id: { in: extractID(collections) } };
+  const BottomSheetScrollable = useBottomSheetScrollableCreator({ focusHook: useFocusEffect });
 
-  const { data: fetchedData, ...fetchQuery } = useFetchBySlug(shouldFetch, {
+  const willFetch = areStrings(collections);
+
+  const {
+    data: fetchedData,
+    isLoading,
+    isFetching,
+    isRefetching,
+    refetch,
+  } = useFetchBySlug(willFetch, {
     collection: slug,
-    where,
+    where: { id: { in: extractID(collections) } },
     populate: {
       users: { email: true },
     },
     sort: 'createdAt',
   });
 
-  const isLoading = fetchQuery.isLoading;
-  const isFetching = fetchQuery.isFetching;
-  const isRefetching = fetchQuery.isRefetching;
-  const error = fetchQuery.error;
-
   const data = useMemo(() => {
-    const placeholderItems = Array.from({ length: 10 }, (_, i) => ({
-      id: `placeholder-${i}`,
-    }));
-
+    const placeholderItems = generatePlaceHoldersWithID(10, {});
     return (
-      isLoading ? placeholderItems : extractCollection(collections) || fetchedData || []
+      isLoading ? placeholderItems : willFetch ? fetchedData || [] : extractCollection(collections)
     ) as TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>[];
-  }, [isLoading, fetchedData, collections]);
+  }, [isLoading, willFetch, fetchedData, collections]);
 
   useEffect(() => {
     setSelected(selectedProps);
-    defaultSelectedIDs.current = selectedProps;
+    defaultSelectedRef.current = selectedProps;
     setIsDirty(false);
   }, [selectedProps]);
 
@@ -129,15 +138,13 @@ export function SelectBottomSheet<
   }, [isFocused]);
 
   function handleSave() {
-    if (!selected || (Array.isArray(selected) && selected.length === 0)) {
-      return;
-    }
     onChange?.(selected);
     setIsDirty(false);
+    handleClose();
   }
 
   function handleCancel() {
-    setSelected(defaultSelectedIDs.current);
+    setSelected(defaultSelectedRef.current);
     setIsDirty(false);
   }
 
@@ -145,44 +152,35 @@ export function SelectBottomSheet<
     setOpen(false);
   }
 
-  function refetch() {
-    if (shouldFetch) {
-      fetchQuery.refetch();
-    }
-  }
-
   const renderItem = useCallback<
     ListRenderItem<TransformCollectionWithSelect<TSlug, SelectFromCollectionSlug<TSlug>>>
   >(
-    ({ item, extraData: { selected, allowMultipleSelection, allowEdit, _allowCreate } }) => {
-      const selection: TValue<T> = selected;
+    ({ item, extraData: { selected, allowMultipleSelection, allowEdit } }) => {
+      const selection: TValue<T, V> = selected;
 
-      const isLoading = item.id.includes('placeholder');
+      const isLoading = isPlaceHolderData(item);
       let isSelected = false;
 
       if (Array.isArray(selection)) {
-        isSelected = selection.some((s) => s === item.id);
+        isSelected = selection.some((s) => extractID(s) === item.id);
       } else {
-        isSelected = selection === item.id;
+        isSelected = extractID(selection) === item.id;
       }
 
       function handlePress() {
         if (isSelected) {
           setSelected((prev) => {
             if (allowMultipleSelection && Array.isArray(prev)) {
-              return prev.filter((s) => s !== item.id) as TValue<T>;
-            } else {
-              return undefined;
+              return prev.filter((s) => extractID(s) !== item.id) as TValue<T, V>;
             }
+            return null as TValue<T, V>;
           });
         } else {
-          const newItem = item.id as TValue<T>;
           setSelected((prev) => {
             if (allowMultipleSelection && Array.isArray(prev)) {
-              return [...prev, newItem] as TValue<T>;
-            } else {
-              return newItem;
+              return (isString(prev) ? [...prev, item.id] : [...prev, item]) as TValue<T, V>;
             }
+            return (isString(prev) ? item.id : item) as TValue<T, V>;
           });
         }
         setIsDirty(true);
@@ -284,9 +282,10 @@ export function SelectBottomSheet<
         bottomInset={insets.bottom}
       >
         <Box className="relative flex-1">
-          <BottomSheetFlashList
+          <FlashList
             data={data}
             renderItem={renderItem}
+            renderScrollComponent={BottomSheetScrollable}
             automaticallyAdjustKeyboardInsets
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}

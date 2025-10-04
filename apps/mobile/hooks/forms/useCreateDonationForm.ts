@@ -96,7 +96,13 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
     }
 
     if (preferences?.length && !data.deliveryPreferences?.length) {
-      data.deliveryPreferences = extractID(preferences);
+      data.deliveryPreferences = preferences
+        .map((pref) => {
+          const preference = extractCollection(pref);
+          if (!preference) return null;
+          return { ...preference, address: extractID(preference.address) };
+        })
+        .filter((v) => v !== null);
     }
 
     data.recipient = recipient;

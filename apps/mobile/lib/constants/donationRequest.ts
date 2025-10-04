@@ -8,7 +8,7 @@ export const VOLUME_PRESET = {
 };
 
 export const DONATION_CREATE_STEPS = {
-  details: { label: 'Create Donation', value: 'details' },
+  details: { label: 'New Donation', value: 'details' },
   'milkbag-tutorial': { label: 'Milkbag Verification', value: 'milkbag-tutorial' },
   'milkbag-verification': { label: 'Milkbag Verification', value: 'milkbag-verification' },
 } as const;

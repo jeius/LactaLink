@@ -30,18 +30,17 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
     populate: { users: { profile: true, profileType: true, role: true } },
   });
 
-  const form = useForm<RequestSchema>();
+  const { getValues, reset, setValue, ...form } = useForm<RequestSchema>();
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
   const recipient = form.watch('recipient');
 
   const selectedPref = useMemo(() => {
     const deliveryPreferences = matchedDonationDoc?.deliveryPreferences || [];
-    const selectedPref = deliveryPreferences?.find((dp) => extractID(dp) === selectedDPID);
+    const selectedPref = deliveryPreferences?.find(
+      (dp) => extractID(dp) === extractID(selectedDPID)
+    );
     return extractCollection(selectedPref);
   }, [matchedDonationDoc, selectedDPID]);
-
-  const getValues = form.getValues;
-  const reset = form.reset;
 
   const isLoading = restOfQuery.isLoading;
   const isSubmitting = form.formState.isSubmitting;
@@ -60,8 +59,11 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
   }, [getValues, matchedDonationDoc, reset]);
 
   function handleDPChange(preference?: DeliveryPreference | null) {
-    const preferenceID = extractID(preference);
-    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
+    if (!preference) {
+      setValue('deliveryPreferences', []);
+    } else {
+      setValue('deliveryPreferences', [{ ...preference, address: extractID(preference.address) }]);
+    }
   }
 
   return (
@@ -185,12 +187,7 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
       </Box>
 
       {!matchedDonation && (
-        <DeliveryPreferencesField
-          control={form.control}
-          name="deliveryPreferences"
-          label="Delivery Preferences"
-          isDisabled={isSubmitting}
-        />
+        <DeliveryPreferencesField isLoading={isLoading} isDisabled={isSubmitting} />
       )}
     </VStack>
   );
@@ -214,9 +211,17 @@ function updateDataOnMatchedDonation(data: RequestSchema, matchedDonationDoc?: D
   };
 
   if (preferences?.length) {
-    const nearestPref = getNearestDeliveryPreference(extractCollection(preferences));
-    const prefID = extractID(nearestPref?.deliveryPreference);
-    data.deliveryPreferences = prefID ? [prefID] : data.deliveryPreferences;
+    const { deliveryPreference: nearestPref } = getNearestDeliveryPreference(
+      extractCollection(preferences)
+    );
+    data.deliveryPreferences = nearestPref
+      ? [
+          {
+            ...nearestPref,
+            address: extractID(nearestPref.address),
+          },
+        ]
+      : [];
   }
 
   data.details.storagePreference = storagePreference;

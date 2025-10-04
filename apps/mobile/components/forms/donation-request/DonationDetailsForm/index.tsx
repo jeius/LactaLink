@@ -32,18 +32,17 @@ export function DonationDetailsForm({
     populate: { users: { profile: true, profileType: true, role: true } },
   });
 
-  const form = useForm<DonationSchema>();
+  const { getValues, reset, setValue, ...form } = useForm<DonationSchema>();
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
   const recipient = form.watch('recipient');
 
   const selectedPref = useMemo(() => {
     const deliveryPreferences = matchedRequestDoc?.deliveryPreferences || [];
-    const selectedPref = deliveryPreferences?.find((dp) => extractID(dp) === selectedDPID);
+    const selectedPref = deliveryPreferences?.find(
+      (dp) => extractID(dp) === extractID(selectedDPID)
+    );
     return extractCollection(selectedPref);
   }, [matchedRequestDoc, selectedDPID]);
-
-  const getValues = form.getValues;
-  const reset = form.reset;
 
   const isLoading = restQuery.isLoading;
   const disableFields = disableProp || form.formState.isSubmitting;
@@ -62,8 +61,11 @@ export function DonationDetailsForm({
   }, [matchedRequestDoc, getValues, reset]);
 
   function handleDPChange(preference?: DeliveryPreference | null) {
-    const preferenceID = extractID(preference);
-    form.setValue('deliveryPreferences', preferenceID ? [preferenceID] : []);
+    if (!preference) {
+      setValue('deliveryPreferences', []);
+    } else {
+      setValue('deliveryPreferences', [{ ...preference, address: extractID(preference.address) }]);
+    }
   }
 
   return (
@@ -138,13 +140,7 @@ export function DonationDetailsForm({
       </Box>
 
       {!hasMatchedRequest && (
-        <DeliveryPreferencesField
-          control={form.control}
-          name="deliveryPreferences"
-          isLoading={isLoading}
-          label="Delivery Preferences"
-          isDisabled={disableFields}
-        />
+        <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
       )}
     </VStack>
   );
@@ -186,7 +182,14 @@ function updateDataOnMatchedRequest(
     },
   ];
 
-  data.deliveryPreferences = nearestPref ? [extractID(nearestPref)] : [];
+  data.deliveryPreferences = nearestPref
+    ? [
+        {
+          ...nearestPref,
+          address: extractID(nearestPref.address),
+        },
+      ]
+    : [];
 
   return data;
 }
