@@ -1,19 +1,17 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { DraggableWrapper, DraggableWrapperRef } from '@/components/DraggableWrapper';
-import { Image } from '@/components/Image';
 import { ImageUpload, ImageUploadProps, ImageUploadRef } from '@/components/ImageUpload';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { ImageSchema } from '@lactalink/form-schemas';
-import { Motion } from '@legendapp/motion';
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { FieldPath, FieldValues, useFieldArray, useFormState } from 'react-hook-form';
 import { ViewProps } from 'react-native';
+import Animated, { FadeIn, FadeOutUp, LinearTransition } from 'react-native-reanimated';
+import { SingleImageViewer } from '../ImageViewer';
 import { Skeleton } from '../ui/skeleton';
 
 const DEFAULT_LIMIT = 5;
@@ -49,7 +47,6 @@ export function ImageUploadField({
   isDisabled,
   ...props
 }: ImageUploadFieldProps) {
-  const draggableRef = useRef<DraggableWrapperRef>(null);
   const uploadRef = useRef<ImageUploadRef>(null);
 
   const { isSubmitSuccessful } = useFormState({ name });
@@ -98,46 +95,9 @@ export function ImageUploadField({
         render?.(data) || props.isLoading ? (
           <Skeleton speed={4} variant="rounded" className="h-24 w-20" />
         ) : (
-          <DraggableWrapper
-            disabled
-            key={value?.filename}
-            ref={draggableRef}
-            onDismiss={handleSingleRemove}
-            dismissAnimationType="fade"
-          >
-            <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Card
-                isDisabled={isDisabled}
-                variant="filled"
-                size="lg"
-                className="relative h-24 w-20 p-0"
-              >
-                {data.length > 0 && data[0]?.url && (
-                  <Image
-                    alt={data[0].alt || 'Image'}
-                    source={{ uri: data[0].url }}
-                    contentFit="cover"
-                    contentPosition={'center'}
-                    style={{ width: '100%', height: '100%' }}
-                    recyclingKey={`image-upload-${data[0].filename}`}
-                  />
-                )}
-                <Box className="absolute right-0 top-0">
-                  <Button
-                    size="xs"
-                    action="negative"
-                    className="rounded-md opacity-90"
-                    animateOnPress={false}
-                    onPress={() => {
-                      draggableRef.current?.dismiss();
-                    }}
-                  >
-                    <ButtonIcon as={Trash2Icon} />
-                  </Button>
-                </Box>
-              </Card>
-            </Motion.View>
-          </DraggableWrapper>
+          data[0] && (
+            <ImageCard onRemove={handleSingleRemove} data={data[0]} isDisabled={isDisabled} />
+          )
         )
       }
     />
@@ -155,11 +115,11 @@ function ImageArray({
   isDisabled,
   ...props
 }: ImageUploadFieldProps) {
-  const draggableRefs = useRef<Record<string, DraggableWrapperRef | null>>({});
   const uploadRef = useRef<ImageUploadRef>(null);
 
-  const { append, remove, fields } = useFieldArray({ name });
+  const { append, remove, ...fieldArray } = useFieldArray({ name, keyName: 'fieldID' });
 
+  const fields = fieldArray.fields as (ImageSchema & { fieldID: string })[];
   const limitReached = fields.length >= limit;
   const isEmpty = !fields || fields.length === 0;
 
@@ -174,10 +134,6 @@ function ImageArray({
     uploadRef.current?.remove(index);
   }
 
-  function handleDismiss(id: string) {
-    draggableRefs.current[id]?.dismiss();
-  }
-
   return (
     <ImageUpload
       {...props}
@@ -190,50 +146,16 @@ function ImageArray({
       render={(values) =>
         render?.(values) || allowMultiple ? (
           <HStack space="sm" className="flex-wrap">
-            {fields.map((field, i) => {
+            {fields.map(({ fieldID, ...field }, i) => {
               return isLoading ? (
-                <Skeleton key={field.id} speed={4} variant="rounded" className="h-24 w-20" />
+                <Skeleton key={fieldID} speed={4} variant="rounded" className="h-24 w-20" />
               ) : (
-                <DraggableWrapper
-                  disabled
-                  key={field.id}
-                  ref={(ref) => {
-                    draggableRefs.current[field.id] = ref!;
-                  }}
-                  onDismiss={() => handleRemove(i)}
-                  dismissAnimationType="fade"
-                >
-                  <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <Card
-                      isDisabled={isDisabled}
-                      variant="filled"
-                      size="lg"
-                      className="relative h-24 w-20 p-0"
-                    >
-                      {values[i]?.url && (
-                        <Image
-                          alt={values[i].alt || 'Image'}
-                          source={{ uri: values[i].url }}
-                          contentFit="cover"
-                          contentPosition={'center'}
-                          style={{ width: '100%', height: '100%' }}
-                          recyclingKey={`image-upload-${field.id}`}
-                        />
-                      )}
-                      <Box className="absolute right-0 top-0">
-                        <Button
-                          size="xs"
-                          action="negative"
-                          className="rounded-md opacity-90"
-                          animateOnPress={false}
-                          onPress={() => handleDismiss(field.id)}
-                        >
-                          <ButtonIcon as={Trash2Icon} />
-                        </Button>
-                      </Box>
-                    </Card>
-                  </Motion.View>
-                </DraggableWrapper>
+                <ImageCard
+                  key={fieldID}
+                  onRemove={() => handleRemove(i)}
+                  data={field}
+                  isDisabled={isDisabled}
+                />
               );
             })}
             {!isEmpty && !limitReached && !isLoading && (
@@ -251,51 +173,48 @@ function ImageArray({
           </HStack>
         ) : (
           !isEmpty && (
-            <DraggableWrapper
-              disabled
-              key={fields[0]!.id}
-              ref={(ref) => {
-                draggableRefs.current[0] = ref!;
-              }}
-              onDismiss={() => handleRemove(0)}
-              dismissAnimationType="fade"
-            >
-              <Motion.View initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Card
-                  isDisabled={isDisabled}
-                  variant="filled"
-                  size="lg"
-                  className="relative h-24 w-20 p-0"
-                >
-                  {values[0]?.url && (
-                    <Image
-                      alt={values[0].alt || 'Image'}
-                      source={{ uri: values[0].url }}
-                      contentFit="cover"
-                      contentPosition={'center'}
-                      style={{ width: '100%', height: '100%' }}
-                      recyclingKey={`image-upload-${fields[0]!.id}`}
-                    />
-                  )}
-                  <Box className="absolute right-0 top-0">
-                    <Button
-                      size="xs"
-                      action="negative"
-                      className="rounded-md opacity-90"
-                      animateOnPress={false}
-                      onPress={() => {
-                        draggableRefs.current[0]?.dismiss();
-                      }}
-                    >
-                      <ButtonIcon as={Trash2Icon} />
-                    </Button>
-                  </Box>
-                </Card>
-              </Motion.View>
-            </DraggableWrapper>
+            <ImageCard
+              key={fields[0]!.fieldID}
+              data={fields[0]!}
+              isDisabled={isDisabled}
+              onRemove={() => handleRemove(0)}
+            />
           )
         )
       }
     />
+  );
+}
+
+const AnimatedCard = Animated.createAnimatedComponent(Card);
+
+interface ImageCardProps {
+  data: Pick<ImageSchema, 'url' | 'alt' | 'blurhash'>;
+  isDisabled?: boolean;
+  onRemove?: () => void;
+}
+
+function ImageCard({ isDisabled, data, onRemove }: ImageCardProps) {
+  return (
+    <AnimatedCard
+      layout={LinearTransition}
+      entering={FadeIn}
+      exiting={FadeOutUp}
+      isDisabled={isDisabled}
+      variant="filled"
+      size="lg"
+      className="relative h-24 w-20 p-0"
+    >
+      <SingleImageViewer image={{ uri: data.url, alt: data.alt, blurHash: data.blurhash }} />
+      <Button
+        size="xs"
+        action="negative"
+        className="absolute right-0 top-0 rounded-md opacity-90"
+        disablePressAnimation
+        onPress={onRemove}
+      >
+        <ButtonIcon as={Trash2Icon} />
+      </Button>
+    </AnimatedCard>
   );
 }

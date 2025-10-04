@@ -4,3 +4,8 @@ export type * from './preferences';
 export type * from './views';
 
 export type Theme = 'light' | 'dark';
+export type ImageData = {
+  uri: string | null;
+  alt: string;
+  blurHash: string;
+};

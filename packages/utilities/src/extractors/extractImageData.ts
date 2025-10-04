@@ -1,3 +1,4 @@
+import { ImageData } from '@lactalink/types';
 import { CollectionWithBlurHash } from '@lactalink/types/collections';
 
 const BLUR_HASH =
@@ -8,12 +9,6 @@ type Size = 'sm' | 'lg' | 'original';
 type Image = CollectionWithBlurHash;
 
 type TImage = Image | null | undefined;
-
-type ImageData = {
-  uri: string | null;
-  alt: string;
-  blurHash: string;
-};
 
 type ExtractImageData<T> = T extends TImage[] ? ImageData[] : T extends Image ? ImageData : null;
 

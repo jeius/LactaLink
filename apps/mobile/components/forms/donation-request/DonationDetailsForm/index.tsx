@@ -124,6 +124,7 @@ export function DonationDetailsForm({
           fieldType="image"
           helperText="Upload a cover image to feature your donation."
           isDisabled={isLoading || disableFields}
+          allowsMultipleSelection={false}
         />
       </Box>
 

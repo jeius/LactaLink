@@ -454,7 +454,7 @@ const springConfig: WithSpringConfig = {
 };
 
 const Button: React.ForwardRefExoticComponent<
-  IButtonProps & React.RefAttributes<React.ComponentRef<typeof UIButton>>
+  ButtonProps & React.RefAttributes<React.ComponentRef<typeof UIButton>>
 > = React.forwardRef<React.ComponentRef<typeof UIButton>, ButtonProps>(function Button(
   {
     className,

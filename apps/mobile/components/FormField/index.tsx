@@ -33,7 +33,7 @@ import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { CollectionSlug } from '@lactalink/types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 
 import {
   BottomSheetInput,

@@ -121,7 +121,7 @@ export default function MilkBagsField({ isLoading, isDisabled }: MilkBagsFieldPr
       />
 
       <Button
-        animateOnPress={false}
+        disablePressAnimation
         isDisabled={isDisabled}
         size="sm"
         action="positive"
