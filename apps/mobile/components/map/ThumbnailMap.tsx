@@ -73,7 +73,7 @@ export function ThumbnailMap({
           {onPress && (
             <AnimatedPressable
               disabled={disabled}
-              disableAnimation
+              disablePressAnimation
               className="grow"
               onPress={onPress}
             />

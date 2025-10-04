@@ -72,7 +72,6 @@ export default function ProfilePage() {
 
           <Link href={`/profile`} push asChild>
             <Button
-              animateOnPress={false}
               variant="link"
               action="default"
               className="mx-2 mt-2 h-fit w-fit self-start px-5"
@@ -156,7 +155,7 @@ function ActionLink({ icon, href, label, badge }: ActionProps) {
 
   return (
     <Link href={href} push asChild>
-      <AnimatedPressable disableAnimation>
+      <AnimatedPressable disablePressAnimation>
         <HStack space="sm" className="w-full items-center justify-start px-5 py-4">
           <Icon as={icon} color={iconFillColor} />
           <Text className="font-JakartaMedium grow">{label}</Text>

@@ -89,7 +89,7 @@ export function SingleImageViewer({
     <AnimatedPressable
       {...props}
       pointerEvents={disabled ? 'none' : 'auto'}
-      disableAnimation={props.disableAnimation || true}
+      disablePressAnimation={props.disablePressAnimation || true}
       onPress={handlePress}
       android_disableSound
     >

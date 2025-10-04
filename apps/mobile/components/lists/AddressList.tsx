@@ -66,7 +66,7 @@ export function AddressList({
             <AnimatedPressable
               className="overflow-hidden rounded-2xl"
               disableRipple={!allowEdit || showMap}
-              disableAnimation={!allowEdit || showMap}
+              disablePressAnimation={!allowEdit || showMap}
               onPress={allowEdit && !showMap ? handleEdit : undefined}
             >
               <Card />

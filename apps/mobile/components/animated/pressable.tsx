@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  GestureResponderEvent,
-  Pressable,
-  PressableProps,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   AnimatedStyle,
   useAnimatedStyle,
@@ -13,32 +7,36 @@ import Animated, {
   withSpring,
   WithSpringConfig,
 } from 'react-native-reanimated';
-
-const rippleColor = 'rgba(128,128,128,0.10)';
+import { Pressable, PressableProps } from '../ui/pressable';
 
 export interface AnimatedPressableProps extends PressableProps {
   containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
-  disableAnimation?: boolean;
+  disablePressAnimation?: boolean;
   disableRipple?: boolean;
 }
+
+const rippleColor = 'rgba(128,128,128,0.10)';
+
+const AnimatedUIPressable = Animated.createAnimatedComponent(Pressable);
+
+const springConfig: WithSpringConfig = {
+  damping: 60,
+  stiffness: 600,
+};
 
 export function AnimatedPressable({
   children,
   containerStyle,
-  disableAnimation,
+  disablePressAnimation = false,
   disableRipple = false,
   ...props
 }: AnimatedPressableProps) {
   const scale = useSharedValue(1);
 
-  const springConfig: WithSpringConfig = {
-    damping: 60,
-    stiffness: 600,
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    if (disablePressAnimation) return {};
+    return { transform: [{ scale: scale.value }] };
+  });
 
   function handlePressIn(event: GestureResponderEvent) {
     // Scale down when the gesture begins
@@ -52,11 +50,12 @@ export function AnimatedPressable({
     props.onPressOut?.(event);
   }
 
-  return disableAnimation ? (
-    <Pressable
+  return (
+    <AnimatedUIPressable
       {...props}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      style={[animatedStyle, containerStyle, props.style]}
       android_ripple={
         disableRipple
           ? undefined
@@ -67,24 +66,6 @@ export function AnimatedPressable({
       }
     >
       {children}
-    </Pressable>
-  ) : (
-    <Animated.View style={[animatedStyle, containerStyle]}>
-      <Pressable
-        {...props}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        android_ripple={
-          disableRipple
-            ? undefined
-            : {
-                color: rippleColor,
-                foreground: true,
-              }
-        }
-      >
-        {children}
-      </Pressable>
-    </Animated.View>
+    </AnimatedUIPressable>
   );
 }

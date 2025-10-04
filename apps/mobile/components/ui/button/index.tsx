@@ -7,7 +7,12 @@ import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-util
 import { cssInterop } from 'nativewind';
 import React, { ComponentProps, FC } from 'react';
 import { ActivityIndicator, GestureResponderEvent, Pressable, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  WithSpringConfig,
+} from 'react-native-reanimated';
 
 const SCOPE = 'BUTTON';
 
@@ -425,17 +430,39 @@ const buttonGroupStyle = tva({
 });
 
 type IButtonProps = Omit<React.ComponentPropsWithoutRef<typeof UIButton>, 'context'> &
-  VariantProps<typeof buttonStyle> & { className?: string; animateOnPress?: boolean };
+  VariantProps<typeof buttonStyle>;
+
+interface ButtonProps extends IButtonProps {
+  /**
+   * Whether to apply press animation on button press. Default is true.
+   * @default true
+   * @deprecated Use `disablePressAnimation` instead.
+   */
+  animateOnPress?: boolean;
+  /**
+   * Whether to disable press animation on button press. Default is false.
+   * @default false
+   */
+  disablePressAnimation?: boolean;
+}
+
+const AnimatedUIButton = Animated.createAnimatedComponent(UIButton);
+
+const springConfig: WithSpringConfig = {
+  damping: 60,
+  stiffness: 600,
+};
 
 const Button: React.ForwardRefExoticComponent<
   IButtonProps & React.RefAttributes<React.ComponentRef<typeof UIButton>>
-> = React.forwardRef<React.ComponentRef<typeof UIButton>, IButtonProps>(function Button(
+> = React.forwardRef<React.ComponentRef<typeof UIButton>, ButtonProps>(function Button(
   {
     className,
     variant = 'solid',
     size = 'md',
     action = 'primary',
     animateOnPress = true,
+    disablePressAnimation = false,
     onPressIn,
     onPressOut,
     ...props
@@ -445,48 +472,29 @@ const Button: React.ForwardRefExoticComponent<
   const scale = useSharedValue(1);
 
   const handlePressIn = (e: GestureResponderEvent) => {
-    scale.value = withSpring(0.95, {
-      damping: 15,
-      stiffness: 200,
-    });
-    if (onPressIn) {
-      onPressIn(e);
-    }
+    scale.value = withSpring(0.95, springConfig);
+    onPressIn?.(e);
   };
 
   const handlePressOut = (e: GestureResponderEvent) => {
-    scale.value = withSpring(1, {
-      damping: 15,
-      stiffness: 200,
-    });
-    if (onPressOut) {
-      onPressOut(e);
-    }
+    scale.value = withSpring(1, springConfig);
+    onPressOut?.(e);
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    if (disablePressAnimation || !animateOnPress) return {};
+    return { transform: [{ scale: scale.value }] };
+  });
 
-  return animateOnPress ? (
-    <Animated.View style={animatedStyle}>
-      <UIButton
-        ref={ref}
-        {...props}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        className={buttonStyle({ variant, size, action, class: className })}
-        context={{ variant, size, action }}
-      />
-    </Animated.View>
-  ) : (
-    <UIButton
+  return (
+    <AnimatedUIButton
       ref={ref}
       {...props}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       className={buttonStyle({ variant, size, action, class: className })}
       context={{ variant, size, action }}
+      style={[animatedStyle, props.style]}
     />
   );
 });
@@ -626,3 +634,9 @@ ButtonIcon.displayName = 'ButtonIcon';
 ButtonGroup.displayName = 'ButtonGroup';
 
 export { Button, ButtonGroup, ButtonIcon, ButtonSpinner, ButtonText };
+export type {
+  IButtonGroupProps as ButtonGroupProps,
+  IButtonIcon as ButtonIconProps,
+  ButtonProps,
+  IButtonTextProps as ButtonTextProps,
+};

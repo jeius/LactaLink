@@ -39,3 +39,4 @@ const Pressable = React.forwardRef<React.ComponentRef<typeof UIPressable>, IPres
 
 Pressable.displayName = 'Pressable';
 export { Pressable };
+export type { IPressableProps as PressableProps };

@@ -144,7 +144,7 @@ export function OrganizationList({ collection }: OrganizationListProps) {
 
       return (
         <AnimatedPressable
-          disableAnimation={isLoading}
+          disablePressAnimation={isLoading}
           onPress={handlePress}
           className="overflow-hidden rounded-xl"
         >

@@ -85,7 +85,7 @@ function DrawerFooter() {
     >
       <HStack className="w-full items-start justify-between">
         <Link href={'/account'} asChild>
-          <AnimatedPressable disableAnimation className="flex-1 shrink p-4">
+          <AnimatedPressable disablePressAnimation className="flex-1 shrink p-4">
             <HStack space="sm" className="items-center">
               <ProfileAvatar size="md" profile={profile} />
               <VStack className="min-w-0 flex-1">

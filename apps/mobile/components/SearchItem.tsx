@@ -29,7 +29,7 @@ export const SearchItem = memo(function SearchItem({
 
   return (
     <AnimatedPressable
-      disableAnimation
+      disablePressAnimation
       className="flex-row items-center px-5 py-3"
       onPress={handlePress}
     >
