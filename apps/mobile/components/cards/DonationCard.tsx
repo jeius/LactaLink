@@ -1,5 +1,4 @@
 import { AnimatedPressable, AnimatedPressableProps } from '@/components/animated/pressable';
-import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Image } from '@/components/Image';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
@@ -20,6 +19,7 @@ import { extractCollection, extractOneImageData } from '@lactalink/utilities/ext
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Avatar from '../Avatar';
+import { BasicLocationPin } from '../ui/icon/custom';
 
 interface DonationCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data?: Donation;

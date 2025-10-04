@@ -2,11 +2,12 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
 import { Icon } from '@/components/ui/icon';
+import { MilkBottleIcon } from '@/components/ui/icon/custom';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
-import { Building2Icon, BuildingIcon, HomeIcon, MilkIcon } from 'lucide-react-native';
+import { Building2Icon, BuildingIcon, HomeIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 
 export default function Layout() {
@@ -67,7 +68,7 @@ export default function Layout() {
         options={{
           title: 'Available Listings',
           drawerLabel: 'Available Listings',
-          drawerIcon: ({ color }) => <Icon as={MilkIcon} size="md" color={color} />,
+          drawerIcon: ({ color }) => <Icon as={MilkBottleIcon} size="md" color={color} />,
           headerShadowVisible: false,
         }}
       />

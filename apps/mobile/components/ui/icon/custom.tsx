@@ -1,37 +1,57 @@
-import { createIcon, Svg } from '@gluestack-ui/icon';
 import { randomUUID } from 'expo-crypto';
 import React, { FC } from 'react';
-import { Circle, Defs, LinearGradient, Path, Svg as RNSvg, Stop, SvgProps } from 'react-native-svg';
+import { Circle, Defs, LinearGradient, Path, Stop, Svg, SvgProps } from 'react-native-svg';
 
-export const DonateMilkIcon = createIcon({
-  Root: Svg,
-  viewBox: '0 0 58.71 55.11',
-  displayName: 'DonateMilkIcon',
-  path: (
-    <>
-      <Path
-        d="M25.59,44.75c5.04,3.2,10.5,3.15,15.15-.27,4.03-2.96,8.35-5.41,12.7-7.84,1.25-.7,2.56-.61,3.76.2,1.06.71,1.62,1.71,1.49,3.03-.08.75-.45,1.35-.98,1.87-4.12,4.08-8.79,7.37-14.04,9.82-3.51,1.64-7.17,2.76-10.99,3.37-3.06.49-5.96-.06-8.81-1.11-2.1-.77-4.13-1.7-6.1-2.75-1-.53-2-.75-3.06-.23-.37.18-.43-.12-.54-.33-1.2-2.22-2.39-4.45-3.59-6.67-1.08-2-2.15-4.01-3.24-6-.18-.33-.22-.52.13-.8,2.93-2.23,6.13-3.84,9.84-4.24,3.25-.35,6.27.31,8.95,2.27.11.08.23.16.31.27,1.41,1.79,3.45,2.27,5.54,2.67,1.95.38,3.94.45,5.91.7.64.08,1.26.26,1.82.6.82.49,1.04,1.23.61,2.1-.25.52-.63.93-1.07,1.3-1.75,1.47-3.83,2.19-6.05,2.56-2.4.4-4.77.24-7.11-.43-.15-.04-.3-.04-.62-.08Z"
-        strokeWidth={0}
-        stroke="none"
-      />
-      <Path
-        d="M12.97,51.47c.03.21-.15.25-.27.33-1.62,1.01-3.24,2-4.85,3.03-.37.23-.49.14-.67-.21-1.63-3.07-3.27-6.14-4.91-9.21-.72-1.35-1.44-2.71-2.18-4.06-.15-.28-.15-.41.17-.56,1.67-.83,3.33-1.69,4.98-2.55.29-.15.44-.17.62.17,2.31,4.27,4.64,8.54,6.97,12.8.05.09.09.17.14.26Z"
-        strokeWidth={0}
-        stroke="none"
-      />
-      <Path
-        d="M35.1,34.92c-2.03,0-4.05,0-6.08,0-1.33,0-2.21-1.03-2.02-2.34.03-.19.13-.16.24-.16.32,0,.65,0,.97,0,.4-.01.66-.26.66-.62,0-.35-.26-.61-.65-.63-.06,0-.13,0-.19,0-.33-.02-.79.15-.96-.07-.17-.2-.06-.64-.06-.98,0-.83,0-.83.81-.83.53,0,1.07,0,1.6,0,.43,0,.7-.25.71-.61,0-.38-.27-.63-.72-.63-.7,0-1.4-.01-2.1,0-.25,0-.3-.07-.29-.3.02-.44.02-.88,0-1.32,0-.21.07-.26.26-.25.31.01.62.01.93,0,.42-.01.69-.28.68-.64-.01-.35-.28-.59-.68-.6-.32,0-.65,0-.97,0-.17,0-.22-.04-.22-.22.01-.48.02-.96,0-1.44,0-.21.09-.22.26-.22.7,0,1.4,0,2.1,0,.46,0,.74-.24.75-.61.01-.39-.28-.63-.76-.64-.69,0-1.38,0-2.06,0-.21,0-.29-.04-.29-.27.01-2.1-.01-4.21.02-6.31.02-1.23.39-2.37,1.02-3.43.11-.19.12-.28-.06-.44-.62-.54-.8-1.31-.52-2.05.28-.75.92-1.21,1.77-1.22.21,0,.3-.05.28-.28-.02-.34-.01-.68,0-1.01.02-1,.81-1.8,1.81-1.83.3-.01.6,0,.9,0,.5-.03.72-.26.65-.75-.06-.41-.2-.8-.26-1.21-.17-1.08.21-1.95,1.11-2.56.9-.61,1.86-.62,2.79-.04.91.57,1.29,1.42,1.15,2.49-.05.4-.15.79-.25,1.18-.15.56.1.88.68.9.29.01.57,0,.86,0,.98.04,1.76.82,1.8,1.8.01.36,0,.73,0,1.09,0,.17.04.22.22.21.87-.01,1.5.39,1.82,1.2.32.83.1,1.55-.56,2.14-.13.11-.13.18-.05.31.81,1.32,1.09,2.77,1.08,4.31-.02,5.57,0,11.14,0,16.71,0,1.42-.73,2.14-2.16,2.15-1.99,0-3.97,0-5.96,0ZM35.12,18.71c2.18,0,4.36,0,6.54,0,.24,0,.33-.05.33-.31-.02-.9.02-1.79-.02-2.69-.05-1.27-.27-2.5-1.02-3.58-.13-.19-.27-.3-.53-.29-3.53.01-7.06.01-10.59,0-.26,0-.4.1-.54.29-.46.67-.73,1.42-.87,2.22-.24,1.33-.13,2.67-.16,4,0,.29.07.36.36.36,2.17-.01,4.34,0,6.5,0Z"
-        strokeWidth={0}
-        stroke="none"
-      />
-    </>
-  ),
-});
+const HandBottleIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={rest.stroke || color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path id="frame" stroke="none" d="M0 0h24v24H0z" />
+      <Path d="M10.37 9.81h2.03c.52 0 1.03-.12 1.5-.35h0c.46-.23.98-.35 1.5-.35h2.03" />
+      <Path d="M10.37 11.93V8.38c0-1.55 1.26-2.8 2.8-2.8h1.46c1.55 0 2.8 1.25 2.8 2.8V11" />
+      <Path d="M10.37 5.58h7.06c-.88.29-1.77-.05-2.12-.71-.34-.63-.04-1.31 0-1.41 0-.77-.64-1.41-1.41-1.41s-1.41.64-1.41 1.41c.04.1.34.78 0 1.41-.35.66-1.24.99-2.12.71" />
+      <Path d="M10.79 15.72h1.85c1.02 0 1.85-.83 1.85-1.85s-.83-1.85-1.85-1.85H9.86c-.56 0-1.02.19-1.3.56l-5.19 5" />
+      <Path d="m7.08 21.28 1.48-1.3c.28-.37.74-.56 1.3-.56h3.7c1.02 0 1.94-.37 2.59-1.11l4.26-4.07c.74-.7.78-1.88.07-2.62s-1.88-.78-2.62-.07l-3.89 3.61M2.45 16.65l5.56 5.56" />
+    </Svg>
+  );
+};
+
+HandBottleIcon.displayName = 'HandBottleIcon';
+export { HandBottleIcon };
+
+const MilkBottleIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={rest.stroke || color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M14.2 7A2.795 2.795 0 0 1 17 9.8V20a2 2 0 0 1-2 2H8.99a2 2 0 0 1-2-2V9.8A2.795 2.795 0 0 1 9.79 7" />
+      <Path d="M17 7c-1.24.4-2.5-.07-3-1-.48-.89-.06-1.86 0-2a2 2 0 0 0-4 0c.06.14.48 1.11 0 2-.5.93-1.76 1.4-3 1z" />
+      <Path d="M7 13h2.88a4.7 4.7 0 0 0 2.12-.5 4.7 4.7 0 0 1 2.12-.5H17" />
+      <Path d="M7 16h4" />
+      <Path d="M7 19h5" />
+    </Svg>
+  );
+};
 
 const MilkBottlePlus2Icon: FC<SvgProps> = (props) => {
   const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
   return (
-    <RNSvg
+    <Svg
       {...rest}
       viewBox="0 0 24 24"
       fill="none"
@@ -48,12 +68,13 @@ const MilkBottlePlus2Icon: FC<SvgProps> = (props) => {
       <Path d="M7 13h2.88a4.7 4.7 0 0 0 2.12-.5 4.7 4.7 0 0 1 2.12-.5H15" />
       <Path d="M7 16h4" />
       <Path d="M7 19h5" />
-    </RNSvg>
+    </Svg>
   );
 };
 
+MilkBottleIcon.displayName = 'MilkBottleIcon';
 MilkBottlePlus2Icon.displayName = 'MilkBottlePlus2Icon';
-export { MilkBottlePlus2Icon };
+export { MilkBottleIcon, MilkBottlePlus2Icon };
 
 const UserLocationIcon: FC<SvgProps> = (props) => {
   const { color = 'currentColor', strokeWidth = 1, ...rest } = props;
@@ -61,7 +82,7 @@ const UserLocationIcon: FC<SvgProps> = (props) => {
   const gradientId = `gradient-${randomUUID()}`;
 
   return (
-    <RNSvg {...rest} viewBox="0 0 24 24">
+    <Svg {...rest} viewBox="0 0 24 24">
       <Defs>
         <LinearGradient
           id={gradientId}
@@ -91,9 +112,26 @@ const UserLocationIcon: FC<SvgProps> = (props) => {
         strokeWidth={strokeWidth}
         stroke-miterlimit="10"
       />
-    </RNSvg>
+    </Svg>
   );
 };
 
 UserLocationIcon.displayName = 'UserLocationIcon';
 export { UserLocationIcon };
+
+const BasicLocationPin: FC<SvgProps> = ({ strokeWidth = 0, color = 'currentColor', ...props }) => {
+  return (
+    <Svg
+      {...props}
+      viewBox="0 0 43.33 58.75"
+      strokeWidth={strokeWidth}
+      fill={props.fill || color}
+      stroke={props.stroke || color}
+    >
+      <Path d="M36.56,6.17C32.44,2.06,27.06,0,21.67,0S10.89,2.06,6.77,6.17C-1.45,14.4-2.53,26.01,5.45,37.8c4.05,5.99,16.22,20.95,16.22,20.95,0,0,12.17-14.96,16.22-20.95,7.98-11.79,6.9-23.4-1.33-31.63ZM21.67,31.78c-5.59,0-10.11-4.53-10.11-10.11s4.52-10.11,10.11-10.11,10.1,4.53,10.1,10.11-4.52,10.11-10.1,10.11Z" />
+    </Svg>
+  );
+};
+
+BasicLocationPin.displayName = 'BasicLocationPin';
+export { BasicLocationPin };

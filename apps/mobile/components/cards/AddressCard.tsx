@@ -1,5 +1,4 @@
 import { BasicBadge } from '@/components/badges';
-import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -21,6 +20,7 @@ import { useRouter } from 'expo-router';
 import { GestureResponderEvent } from 'react-native';
 import { ThumbnailMap } from '../map/ThumbnailMap';
 import { Button, ButtonText } from '../ui/button';
+import { BasicLocationPin } from '../ui/icon/custom';
 
 const cardStyle = tva({
   base: '',
@@ -109,7 +109,7 @@ export function AddressCard({
           />
         )}
         <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
-          <Icon as={BasicLocationPin} />
+          <Icon as={BasicLocationPin} className="fill-primary-500" />
           <VStack className="flex-1 items-stretch">
             <HStack space="sm" className="w-full items-center justify-between">
               <Button

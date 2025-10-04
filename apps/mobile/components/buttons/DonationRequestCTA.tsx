@@ -14,16 +14,17 @@ import { useRouter } from 'expo-router';
 import {
   EditIcon,
   HandHeartIcon,
+  LucideProps,
   MessageCircleIcon,
-  PackagePlusIcon,
   ShareIcon,
   Trash2Icon,
   XCircleIcon,
 } from 'lucide-react-native';
-import React from 'react';
+import React, { FC } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '../ui/box';
+import { MilkBottlePlus2Icon } from '../ui/icon/custom';
 
 interface DonationRequestCTAProps {
   data?: Donation | Request;
@@ -115,7 +116,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
   const isOwner = meUserProfile?.id === profile?.id;
 
   let label = 'Make a Donation';
-  let icon = HandHeartIcon;
+  let icon: FC<LucideProps> = HandHeartIcon;
 
   if (data && isRequest(data)) {
     if (isOwner) {
@@ -128,7 +129,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
       icon = EditIcon;
     } else {
       label = 'Request';
-      icon = PackagePlusIcon;
+      icon = MilkBottlePlus2Icon;
     }
   }
 

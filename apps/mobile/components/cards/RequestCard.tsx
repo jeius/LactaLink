@@ -18,9 +18,9 @@ import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import Avatar from '../Avatar';
-import BasicLocationPin from '../icons/BasicLocationPin';
 import FastTimerIcon from '../icons/FastTimerIcon';
 import { Icon } from '../ui/icon';
+import { BasicLocationPin } from '../ui/icon/custom';
 
 interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
   data: Request;

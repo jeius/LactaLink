@@ -3,7 +3,6 @@ import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import NumberBadge from '@/components/badges/NumberBadge';
 import ProfileCard from '@/components/cards/ProfileCard';
-import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
 import InTransitIcon from '@/components/icons/InTransitIcon';
 import InventoryIcon from '@/components/icons/InventoryIcon';
@@ -15,7 +14,7 @@ import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
+import { BasicLocationPin, HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
@@ -30,7 +29,6 @@ import {
   BellIcon,
   ChevronRightIcon,
   ClipboardListIcon,
-  HandHeartIcon,
   LogOutIcon,
   LucideIcon,
   LucideProps,
@@ -219,7 +217,7 @@ function createIncomingLinks(user: User | null): ActionProps[] {
 
   const baseLinks: ActionProps[] = [
     {
-      icon: HandHeartIcon,
+      icon: HandBottleIcon,
       href: '/account/donations/incoming',
       label: 'Incoming Donations',
       badge: <IncomingDonationsBadge />,

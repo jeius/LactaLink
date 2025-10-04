@@ -1,10 +1,10 @@
 import { MapBottomSheet } from '@/components/bottom-sheets/MapBottomSheet';
-import BasicLocationPin from '@/components/icons/BasicLocationPin';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { BasicLocationPin } from '@/components/ui/icon/custom';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';

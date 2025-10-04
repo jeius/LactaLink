@@ -3,9 +3,9 @@ import { StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 
 import { Coordinates } from '@lactalink/types';
-import BasicLocationPin from '../icons/BasicLocationPin';
 import { Box } from '../ui/box';
 import { Icon } from '../ui/icon';
+import { BasicLocationPin } from '../ui/icon/custom';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { MapView, MapViewProps } from './MapView';

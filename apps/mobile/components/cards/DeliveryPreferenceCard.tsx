@@ -14,7 +14,6 @@ import { isString } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { ComponentProps, ReactNode } from 'react';
 import { BasicBadge } from '../badges/BasicBadge';
-import BasicLocationPin from '../icons/BasicLocationPin';
 import { Image } from '../Image';
 import { ThumbnailMap } from '../map/ThumbnailMap';
 import { Box } from '../ui/box';
@@ -22,6 +21,7 @@ import { Button, ButtonText } from '../ui/button';
 import GradientBackground from '../ui/gradient-bg';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
+import { BasicLocationPin } from '../ui/icon/custom';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 
@@ -279,7 +279,7 @@ function CompactCard({
           </Box>
 
           <HStack space="xs" className="items-start p-2">
-            <Icon size="sm" as={BasicLocationPin} />
+            <Icon size="sm" as={BasicLocationPin} className="fill-primary-500" />
             <Text size="xs" className="flex-1" numberOfLines={3} ellipsizeMode="tail">
               {fullAddress}
             </Text>
