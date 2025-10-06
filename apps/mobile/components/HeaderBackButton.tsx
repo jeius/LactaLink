@@ -57,9 +57,10 @@ export function HeaderBackButton({
 
   return (
     <AnimatedPressable
-      className="h-fit w-fit"
+      className="h-fit w-fit overflow-hidden rounded-full"
       {...props}
       hitSlop={10}
+      disablePressAnimation
       onPress={handleOnPress}
       style={StyleSheet.flatten([{ padding: 8, marginRight: 5 }, props.style])}
     >

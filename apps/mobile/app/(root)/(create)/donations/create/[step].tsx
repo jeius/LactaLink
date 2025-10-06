@@ -30,7 +30,7 @@ import { extractCollection, extractErrorMessage, extractID } from '@lactalink/ut
 
 import { CreateMilkBagSchema, DonationSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import isEqualWith from 'lodash/isEqualWith';
 import { ReactNode, useCallback, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -163,12 +163,12 @@ export default function CreateDonation() {
     <>
       <FormPreventBack />
 
-      <Stack.Screen
+      {/* <Stack.Screen
         options={{
           headerShown: true,
           title: DONATION_CREATE_STEPS[step]?.label || 'New Donation',
         }}
-      />
+      /> */}
 
       <SafeArea safeTop={false}>
         <ScrollView

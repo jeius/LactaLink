@@ -24,7 +24,7 @@ import { extractCollection, extractErrorMessage, extractID } from '@lactalink/ut
 
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toast } from 'sonner-native';
 
@@ -112,7 +112,6 @@ export default function CreateRequest() {
       onRefresh={onRefresh}
       fetchError={error}
     >
-      <Stack.Screen options={{ headerShown: true, title: 'New Request' }} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
