@@ -18,6 +18,11 @@ export type FetchByIDQueryOptions<
   'queryFn' | 'queryKey' | 'enabled'
 >;
 
+export type UseFetchByIdResult<
+  TSlug extends CollectionSlug = CollectionSlug,
+  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+> = UseQueryResult<FindOneResult<TSlug, TSelect>> & { queryKey: unknown[] };
+
 /**
  * Fetch data from a collection by its id and slug using react-query.
  * @param enabled Set to false to disable the query from automatically running
@@ -32,7 +37,7 @@ export function useFetchById<
   enabled: boolean = true,
   apiOptions: FetchByIDOptions<TSlug, TSelect>,
   queryOptions?: FetchByIDQueryOptions<TSlug, TSelect>
-): UseQueryResult<FindOneResult<TSlug, TSelect>> & { queryKey: unknown[] } {
+): UseFetchByIdResult<TSlug, TSelect> {
   const apiClient = useApiClient();
   const { id, collection, depth = 3, ...rest } = apiOptions;
   const queryKey = [...COLLECTION_QUERY_KEY, collection, id, apiOptions];

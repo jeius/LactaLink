@@ -1,13 +1,12 @@
 import React from 'react';
-import { FormProvider } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
 import { DeliveryPreferenceCard } from '@/components/cards/DeliveryPreferenceCard';
+import { Form } from '@/components/contexts/FormProvider';
 import { AddressField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
@@ -16,11 +15,11 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { useDeliveryPreferenceForm } from '@/hooks/forms';
+import { useDeliveryPreferenceForm } from '@/hooks/forms/useDeliveryPreferenceForm';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
+import { CreateDeliveryPreferenceSchema } from '@lactalink/form-schemas/delivery-preference';
 import { ErrorSearchParams } from '@lactalink/types';
-import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, Stack, useRouter } from 'expo-router';
@@ -30,15 +29,17 @@ export default function CreatePage() {
   const router = useRouter();
   const revalidateQueries = useRevalidateCollectionQueries();
 
-  const { form, isLoading, isFetching, error } = useDeliveryPreferenceForm();
+  const form = useDeliveryPreferenceForm(null);
 
   const isSubmitting = form.formState.isSubmitting;
+  const isLoading = form.isLoading;
+  const error = form.fetchError;
 
   const formData = form.watch();
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(formData: DeliveryPreferenceSchema) {
+  async function onSubmit(formData: CreateDeliveryPreferenceSchema) {
     const promise = upsertDeliveryPreference(formData);
 
     toast.promise(promise, {
@@ -72,12 +73,12 @@ export default function CreatePage() {
   }
 
   return (
-    <FormProvider {...form}>
+    <Form {...form}>
       <FormPreventBack />
       <Stack.Screen options={{ headerShown: true, headerTitle: 'New Delivery Preference' }} />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <KeyboardAvoidingWrapper>
+        <KeyboardAvoidingWrapper refreshing={form.refreshing} onRefresh={form.onRefresh}>
           <VStack space="2xl" className="p-5">
             <FormField
               control={form.control}
@@ -149,7 +150,6 @@ export default function CreatePage() {
           </VStack>
         </KeyboardAvoidingWrapper>
       </SafeArea>
-      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
-    </FormProvider>
+    </Form>
   );
 }

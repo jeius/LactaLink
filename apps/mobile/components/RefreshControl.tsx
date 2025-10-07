@@ -4,7 +4,7 @@ import { RefreshControlProps } from 'react-native';
 import { RefreshControl as RNRefreshControl } from 'react-native-gesture-handler';
 import { useTheme } from './AppProvider/ThemeProvider';
 
-export const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, ...props }) => {
+const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, ...props }) => {
   const { themeColors } = useTheme();
   const revalidateQueries = useRevalidateAllQueries();
 
@@ -28,3 +28,6 @@ export const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, ...props })
     />
   );
 };
+
+RefreshControl.displayName = 'RefreshControl';
+export { RefreshControl };

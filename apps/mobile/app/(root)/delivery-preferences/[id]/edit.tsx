@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FormProvider } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
 import { FloatingActionButton } from '@/components/buttons';
@@ -7,7 +6,6 @@ import { AddressField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
@@ -16,14 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { useDeliveryPreferenceForm } from '@/hooks/forms';
+import { useDeliveryPreferenceForm } from '@/hooks/forms/useDeliveryPreferenceForm';
 import { deleteCollection } from '@/lib/api/delete';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
+import { DeliveryPreferenceSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
-import { DeliveryPreferenceSchema } from '@lactalink/types/forms';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
+import { Form } from '@/components/contexts/FormProvider';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';
 
@@ -35,13 +34,15 @@ export default function EditDeliveryPreferencePage() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { form, isFetching, error, isLoading } = useDeliveryPreferenceForm(id);
+  const form = useDeliveryPreferenceForm(id);
   //#endregion
 
   //#region Form State
   const isSubmitting = form.formState.isSubmitting;
   const isDirty = form.formState.isDirty;
   const showFloatingButton = isDirty;
+  const isLoading = form.isLoading;
+  const error = form.fetchError;
 
   const name = form.getValues('name');
 
@@ -88,11 +89,11 @@ export default function EditDeliveryPreferencePage() {
 
   //#region Render
   return (
-    <FormProvider {...form}>
+    <Form {...form}>
       <FormPreventBack />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <KeyboardAvoidingWrapper>
+        <KeyboardAvoidingWrapper refreshing={form.refreshing} onRefresh={form.onRefresh}>
           {isLoading ? (
             <PageSkeleton />
           ) : (
@@ -179,8 +180,7 @@ export default function EditDeliveryPreferencePage() {
           }}
         />
       </SafeArea>
-      {!isLoading && <FetchingSpinner isFetching={isFetching} />}
-    </FormProvider>
+    </Form>
   );
   //#endregion
 }

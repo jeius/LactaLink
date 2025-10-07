@@ -18,6 +18,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { RefreshControl } from './RefreshControl';
 import { VStack } from './ui/vstack';
 
 const OFFSET = Platform.select({ android: 42, ios: 64, default: 0 });
@@ -37,6 +38,8 @@ interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
   keyboardVerticalOffset?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
   contentContainerClassName?: ScrollViewProps['contentContainerClassName'];
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
 const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
@@ -44,6 +47,8 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
   keyboardVerticalOffset = 0,
   contentContainerClassName,
   contentContainerStyle,
+  refreshing,
+  onRefresh,
   ...props
 }) => {
   const { height, isKeyboardShown } = useKeyboardSharedHeight(keyboardVerticalOffset + OFFSET);
@@ -110,6 +115,11 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
           keyboardShouldPersistTaps="handled"
           contentContainerClassName={contentContainerClassName}
           contentContainerStyle={contentContainerStyle}
+          refreshControl={
+            refreshing || onRefresh ? (
+              <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
+            ) : undefined
+          }
         >
           {children}
         </ScrollView>

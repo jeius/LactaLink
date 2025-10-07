@@ -1,58 +1,77 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
-import { deliveryPreferenceSchema } from '@lactalink/form-schemas';
+import {
+  CreateDeliveryPreferenceSchema,
+  createDeliveryPreferenceSchema,
+  deliveryPreferenceSchema,
+  DeliveryPreferenceSchema,
+} from '@lactalink/form-schemas';
 
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { FormProps } from '@/components/contexts/FormProvider';
+import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { useMeUser } from '../auth/useAuth';
 import { useFetchById } from '../collections/useFetchById';
 
-export function useDeliveryPreferenceForm(id?: string) {
+type InputType = string | undefined | null;
+
+type FormReturnType<T extends InputType> = T extends string
+  ? FormProps<DeliveryPreferenceSchema>
+  : FormProps<CreateDeliveryPreferenceSchema>;
+
+export function useDeliveryPreferenceForm<T extends InputType = undefined>(
+  id: T
+): FormReturnType<T> {
   const { data: user, ...meUser } = useMeUser();
+
   const {
     data: preference,
     isLoading: isDPLoading,
     isFetching: isDPFetching,
-    isSuccess,
     error: dpError,
-  } = useFetchById(Boolean(id), {
+    ...fetchQuery
+  } = useFetchById(!!id, {
     collection: 'delivery-preferences',
     id: id || '',
-    select: { name: true, address: true, availableDays: true, preferredMode: true, owner: true },
-    depth: 0,
   });
 
-  const userAddresses = extractCollection(user?.addresses?.docs) || [];
-  const defaultAddress = userAddresses.find((address) => address.isDefault) || undefined;
+  const defaultAddress = useMemo(() => {
+    const userAddresses = extractCollection(user?.addresses?.docs) || [];
+    return userAddresses.find((address) => address.isDefault) || undefined;
+  }, [user?.addresses?.docs]);
 
   const isLoading = meUser.isLoading || isDPLoading;
   const isFetching = meUser.isFetching || isDPFetching;
   const error = dpError || meUser.error;
 
   const form = useForm({
-    resolver: zodResolver(deliveryPreferenceSchema),
+    resolver: zodResolver(id ? deliveryPreferenceSchema : createDeliveryPreferenceSchema),
     defaultValues: {
       address: defaultAddress?.id,
-      availableDays: Object.values(DAYS).map((item) => item.value),
-      preferredMode: Object.values(DELIVERY_OPTIONS).map((item) => item.value),
+      availableDays: [],
+      preferredMode: [],
     },
   });
 
   useEffect(() => {
-    if (isSuccess && preference) {
-      const data = preference;
-      form.reset({
-        id: data.id,
-        name: data.name || '',
-        address: extractID(data.address),
-        availableDays: data.availableDays,
-        preferredMode: data.preferredMode,
-      });
+    if (id && preference) {
+      const data = transformToDeliveryPreferenceSchema(preference);
+      form.reset(data);
     }
-  }, [form, isSuccess, preference]);
+  }, [form, id, preference]);
 
-  return { form, isLoading, isFetching, isSuccess, data: preference, error };
+  return {
+    ...form,
+    isLoading,
+    isFetching,
+    fetchError: error,
+    refreshing: fetchQuery.isRefetching,
+    extraData: preference,
+    onRefresh() {
+      fetchQuery.refetch();
+    },
+  } as FormReturnType<T>;
 }
