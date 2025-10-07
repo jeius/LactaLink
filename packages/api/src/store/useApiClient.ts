@@ -1,7 +1,7 @@
-import { ApiClientConfig } from '@lactalink/types/interfaces';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { ApiClient } from '../ApiClient';
+import { ApiClientConfig } from '../interfaces';
 import { isServerEnvironment } from '../utils/getEnvironment';
 
 function createApiClient(config: ApiClientConfig) {

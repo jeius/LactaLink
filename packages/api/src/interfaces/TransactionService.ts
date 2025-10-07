@@ -1,5 +1,4 @@
-import type { FindMany, FindManyResult } from '../api';
-import type { SelectFromCollectionSlug } from '../payload-types/config';
+import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
   Address,
   Donation,
@@ -8,7 +7,8 @@ import type {
   Request,
   Transaction,
   User,
-} from '../payload-types/generated';
+} from '@lactalink/types/payload-generated-types';
+import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 /**
  * Parameters for updating delivery details.

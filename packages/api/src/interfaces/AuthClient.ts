@@ -1,3 +1,5 @@
+import type { BackendSession } from '@lactalink/types/auth';
+import type { User } from '@lactalink/types/payload-generated-types';
 import type {
   OAuthResponse,
   ResendParams,
@@ -11,8 +13,6 @@ import type {
   VerifyOtpParams,
 } from '@supabase/supabase-js';
 import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
-import type { BackendSession } from '../auth';
-import type { User } from '../payload-types/generated';
 
 /**
  * Interface defining the contract for authentication client implementations.

@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
   ApiMethod,
   CreateOptions,
@@ -11,9 +10,10 @@ import type {
   UpdateByID,
   UpdateMany,
   UploadFile,
-} from '../api';
-import type { FileCollectionSlug } from '../collections';
-import type { CollectionSlug, SelectFromCollectionSlug } from '../payload-types/config';
+} from '@lactalink/types/api';
+import type { FileCollectionSlug } from '@lactalink/types/collections';
+import type { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IAuthClient } from './AuthClient';
 
 /**

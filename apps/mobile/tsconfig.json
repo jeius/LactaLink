@@ -7,8 +7,7 @@
     "paths": {
       "@/*": ["./*"],
       "tailwind.config": ["./tailwind.config.js"],
-      "@/assets/*": ["./assets/*"],
-      "@lactalink/form-schemas": ["./lib/types/formSchemas.ts"]
+      "@/assets/*": ["./assets/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]

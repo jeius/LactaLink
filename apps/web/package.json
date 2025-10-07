@@ -21,6 +21,7 @@
     "@hookform/resolvers": "^5.1.1",
     "@lactalink/api": "workspace:*",
     "@lactalink/enums": "workspace:*",
+    "@lactalink/form-schemas": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@payloadcms/db-postgres": "3.55.1",
     "@payloadcms/email-resend": "3.55.1",
@@ -63,7 +64,7 @@
     "tailwind-merge": "^3.1.0",
     "tailwindcss": "^4.1.4",
     "tw-animate-css": "^1.2.5",
-    "zod": "^4.1.3",
+    "zod": "^4.1.12",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

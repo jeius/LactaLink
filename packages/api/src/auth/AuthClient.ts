@@ -1,7 +1,6 @@
 import type { BaseApiFetchArgs } from '@lactalink/types/api';
 import type { BackendSession } from '@lactalink/types/auth';
 import type { ErrorCodes } from '@lactalink/types/errors';
-import type { ApiClientConfig, IAuthClient } from '@lactalink/types/interfaces';
 import type { User } from '@lactalink/types/payload-generated-types';
 import type { Database } from '@lactalink/types/supabase';
 import {
@@ -19,6 +18,7 @@ import {
 } from '@supabase/supabase-js';
 import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
 import status from 'http-status';
+import type { ApiClientConfig, IAuthClient } from '../interfaces';
 import { apiFetch } from '../utils/apiFetch';
 import { isServerEnvironment } from '../utils/getEnvironment';
 

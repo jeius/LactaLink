@@ -10,4 +10,4 @@ export const matchCriteriaSchema = z
   })
   .and(nearDonationRequestSchema.omit({ location: true }));
 
-export type MatchCriteriaSchema = z.infer<typeof matchCriteriaSchema>;
+export type MatchCriteria = z.infer<typeof matchCriteriaSchema>;

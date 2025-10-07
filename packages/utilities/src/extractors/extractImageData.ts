@@ -1,3 +1,4 @@
+import { ImageSchema } from '@lactalink/form-schemas';
 import { ImageData } from '@lactalink/types';
 import { CollectionWithBlurHash } from '@lactalink/types/collections';
 
@@ -6,7 +7,7 @@ const BLUR_HASH =
 
 type Size = 'sm' | 'lg' | 'original';
 
-type Image = CollectionWithBlurHash;
+type Image = CollectionWithBlurHash | ImageSchema;
 
 type TImage = Image | null | undefined;
 
@@ -41,10 +42,13 @@ function getImageData<T extends Image | null | undefined>(
   if (!image) return null as ExtractImageData<T>;
 
   let uri = image.url || null;
-  const blurHash = image?.blurHash || BLUR_HASH;
   const alt = image?.alt || 'Image';
+  const blurHash =
+    (image && 'blurhash' in image
+      ? image?.blurhash
+      : ('blurHash' in image && image.blurHash) || BLUR_HASH) || BLUR_HASH;
 
-  if (image.sizes) {
+  if ('sizes' in image && image.sizes) {
     switch (size) {
       case 'sm': {
         if ('small' in image.sizes) {

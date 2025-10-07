@@ -17,9 +17,9 @@
  * @version 1.0.0
  */
 
-import { ApiClientConfig } from '@lactalink/types/interfaces';
 import { ApiClient } from './ApiClient';
-import { MatchingService, TransactionService } from './services';
+import { ApiClientConfig } from './interfaces/ApiClientConfig';
+import { MatchingService, TransactionService } from './store/services';
 import { useStoreApiClient } from './store/useApiClient';
 
 // ============================================================================

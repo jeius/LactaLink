@@ -2,9 +2,11 @@ import { findNearestDonations, findNearestRequests } from '@/lib/db/drizzle/quer
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getEndpointSearchParams } from '@/lib/utils/getEndpointSearchParams';
 import { ValidationErrorNames } from '@lactalink/enums/error-names';
-import { NearOptions } from '@lactalink/types';
+import {
+  NearDonationOrRequestOptions,
+  nearDonationRequestSchema,
+} from '@lactalink/form-schemas/validators';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
-import { nearDonationRequestSchema } from '@lactalink/types/schemas';
 import { ValidationError } from '@lactalink/utilities/errors';
 import { and, asc, eq, lte, sql, SQLWrapper } from '@payloadcms/db-postgres/drizzle';
 import httpStatus from 'http-status';
@@ -110,7 +112,7 @@ async function handler(req: PayloadRequest) {
 async function find<T extends Extract<CollectionSlug, 'donations' | 'requests'>>(
   payload: Payload,
   collection: T,
-  nearOptions: NearOptions,
+  nearOptions: NearDonationOrRequestOptions,
   queryOptions: { limit: number; offset: number }
 ) {
   const { location, maxDistance, status } = nearOptions;
@@ -188,7 +190,7 @@ async function find<T extends Extract<CollectionSlug, 'donations' | 'requests'>>
   return { results: [], totalRows: 0 };
 }
 
-function parseNearOptions(input: unknown): NearOptions {
+function parseNearOptions(input: unknown): NearDonationOrRequestOptions {
   if (input === undefined || input === null) {
     throw new ValidationError(`Search param 'options' must be provided.`, {
       name: ValidationErrorNames.REQUIRED_FIELD_MISSING,

@@ -10,7 +10,7 @@ import {
 import { DotIcon } from 'lucide-react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { otpSchema, OtpSchema } from '@lactalink/types/forms';
+import { otpSchema, OtpSchema } from '@lactalink/form-schemas/auth';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 

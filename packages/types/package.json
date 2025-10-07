@@ -29,14 +29,6 @@
       "types": "./dist/errors.d.ts",
       "default": "./dist/errors.js"
     },
-    "./forms": {
-      "types": "./dist/forms/index.d.ts",
-      "default": "./dist/forms/index.js"
-    },
-    "./interfaces": {
-      "types": "./dist/interfaces/index.d.ts",
-      "default": "./dist/interfaces/index.js"
-    },
     "./supabase": {
       "types": "./dist/supabase-types.d.ts",
       "default": "./dist/supabase-types.js"

@@ -1,9 +1,8 @@
 import { PREFERRED_STORAGE_TYPES, STORAGE_TYPES } from '@lactalink/enums';
+import { MatchCriteria } from '@lactalink/form-schemas/validators';
 
-import type { FindManyResult, FindOptions } from '../api';
-
-import type { Point } from '../geo-types';
-import type { CollectionSlug, SelectFromCollectionSlug } from '../payload-types/config';
+import type { DonationRequestStatus, Point } from '@lactalink/types';
+import type { FindManyResult, FindOptions } from '@lactalink/types/api';
 import type {
   Address,
   Delivery,
@@ -12,8 +11,8 @@ import type {
   Request,
   Transaction,
   User,
-} from '../payload-types/generated';
-import type { DonationRequestStatus, MatchCriteria } from '../views';
+} from '@lactalink/types/payload-generated-types';
+import type { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 type Options<
   TSlug extends CollectionSlug,

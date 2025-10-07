@@ -1,5 +1,6 @@
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import { DeliveryDays, DeliveryMode, MatchCriteria } from '@lactalink/types';
+import { MatchCriteria } from '@lactalink/form-schemas/validators';
+import { DeliveryDays, DeliveryMode } from '@lactalink/types';
 import { and, asc, eq, isNotNull, lte, or, sql } from '@payloadcms/db-postgres/drizzle';
 import { PgSelectQueryBuilder, QueryBuilder } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { matched_donations_requests_view } from '../schema';

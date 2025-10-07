@@ -1,0 +1,62 @@
+{
+  "name": "@lactalink/form-schemas",
+  "version": "1.0.0",
+  "description": "Lactalink shared form schemas",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    },
+    "./address": {
+      "types": "./dist/address/index.d.ts",
+      "default": "./dist/address/index.js"
+    },
+    "./delivery-preference": {
+      "types": "./dist/delivery-preference.d.ts",
+      "default": "./dist/delivery-preference.js"
+    },
+    "./validators": {
+      "types": "./dist/validators/index.d.ts",
+      "default": "./dist/validators/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "build:init": "tsc",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
+  },
+  "devDependencies": {
+    "@lactalink/enums": "workspace:*",
+    "@lactalink/types": "workspace:*",
+    "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*",
+    "@supabase/supabase-js": "^2.49.4",
+    "@types/node": "^22.5.4",
+    "payload": "3.42.0",
+    "react-hook-form": "^7.63.0",
+    "zod": "^4.1.12"
+  },
+  "peerDependencies": {
+    "@lactalink/enums": "workspace:*",
+    "@lactalink/types": "workspace:*",
+    "@supabase/supabase-js": "^2.49.4",
+    "react-hook-form": "^7.63.0",
+    "zod": "^4.1.12"
+  }
+}

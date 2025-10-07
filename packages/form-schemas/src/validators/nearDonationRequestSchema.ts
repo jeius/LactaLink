@@ -15,4 +15,4 @@ export const nearDonationRequestSchema = z.object({
     .optional(),
 });
 
-export type NearDonationRequestSchema = z.infer<typeof nearDonationRequestSchema>;
+export type NearDonationOrRequestOptions = z.infer<typeof nearDonationRequestSchema>;

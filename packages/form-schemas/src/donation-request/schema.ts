@@ -8,7 +8,7 @@ import {
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
-import { User } from '../../payload-types/generated';
+import { User } from '@lactalink/types/payload-generated-types';
 import { deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
 import { textAreaSchema } from '../textarea';
@@ -38,6 +38,12 @@ export const createMilkBagSchema = z
   })
   .and(milkBagSchema.omit({ id: true, code: true, bagImage: true, status: true }));
 
+export const updateMilkBagSchema = milkBagSchema.omit({
+  donor: true,
+  status: true,
+  code: true,
+});
+
 export const donationDetailsSchema = z.object({
   storageType: z.enum(
     Object.values(STORAGE_TYPES).map((item) => item.value),
@@ -62,7 +68,10 @@ export const requestDetailsSchema = z.object({
     Object.values(URGENCY_LEVELS).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(z.uuid().nonempty('Required')).optional().nullable(),
+  bags: z
+    .array(milkBagSchema.pick({ id: true }))
+    .optional()
+    .nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
   reason: textAreaSchema,
@@ -86,6 +95,16 @@ export const matchedRequestSchema = z.object({
     Object.values(PREFERRED_STORAGE_TYPES).map((item) => item.value),
     'Required one option'
   ),
+});
+
+export const matchedDonationSchema = z.object({
+  id: z.uuid().nonempty('Required'),
+  donor: z.uuid().nonempty('Required'),
+  storageType: z.enum(
+    Object.values(STORAGE_TYPES).map((item) => item.value),
+    'Select one option'
+  ),
+  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
 });
 
 export const donationSchema = z
@@ -129,16 +148,6 @@ export const donationSchema = z
     }
   );
 
-export const matchedDonationSchema = z.object({
-  id: z.uuid().nonempty('Required'),
-  donor: z.uuid().nonempty('Required'),
-  storageType: z.enum(
-    Object.values(STORAGE_TYPES).map((item) => item.value),
-    'Select one option'
-  ),
-  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
-});
-
 export const requestSchema = z
   .object({
     id: z.uuid().optional(),
@@ -164,3 +173,24 @@ export const requestSchema = z
       path: ['details', 'bags'],
     }
   );
+
+export const donationUpdateSchema = z
+  .object({
+    id: z.uuid().nonempty('Required'),
+    matchedRequest: matchedRequestSchema.optional(),
+    details: donationDetailsSchema
+      .omit({ bags: true })
+      .and(z.object({ bags: z.array(updateMilkBagSchema) })),
+    recipient: recipientSchema.optional().nullable(),
+  })
+  .and(deliveryPreferencesSchema);
+
+export const requestUpdateSchema = z
+  .object({
+    id: z.uuid().nonempty('Required'),
+    matchedDonation: matchedDonationSchema.optional(),
+    volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
+    details: requestDetailsSchema,
+    recipient: recipientSchema.optional().nullable(),
+  })
+  .and(deliveryPreferencesSchema);

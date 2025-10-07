@@ -1,9 +1,9 @@
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
-import * as z from 'zod';
+import { z } from 'zod';
 import { nullTransform } from './transformers';
 
 export const deliveryPreferenceSchema = z.object({
-  id: z.uuid().optional(),
+  id: z.uuid('ID is required.').nonempty('ID is required.'),
   name: z.string().transform(nullTransform).optional().nullable(),
   address: z.uuid('Address is required.').nonempty('Address is required.'),
   preferredMode: z
@@ -19,4 +19,7 @@ export const deliveryPreferenceSchema = z.object({
     .min(1, 'Atleast one day is selected.'),
 });
 
+export const createDeliveryPreferenceSchema = deliveryPreferenceSchema.omit({ id: true });
+
 export type DeliveryPreferenceSchema = z.infer<typeof deliveryPreferenceSchema>;
+export type CreateDeliveryPreferenceSchema = z.infer<typeof createDeliveryPreferenceSchema>;

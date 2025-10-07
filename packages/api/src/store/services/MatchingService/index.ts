@@ -3,8 +3,11 @@ import { extractID } from '@lactalink/utilities/extractors';
 import { stringify } from 'qs';
 import { TransactionService } from '../TransactionService';
 
-import type { DonationRequestStatus, NearOptions, Point } from '@lactalink/types';
+import { NearDonationOrRequestOptions } from '@lactalink/form-schemas/validators';
+import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { ApiFetchResponse, FindManyResult } from '@lactalink/types/api';
+import type { Transaction, User } from '@lactalink/types/payload-generated-types';
+import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 import type {
   CreateMatchOptions,
   FindMatchOptions,
@@ -12,9 +15,7 @@ import type {
   IMatchingService,
   O2PMatchOptions,
   P2OMatchOptions,
-} from '@lactalink/types/interfaces';
-import type { Transaction, User } from '@lactalink/types/payload-generated-types';
-import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+} from '../../../interfaces';
 
 /**
  * Service for matching donations to requests and managing their lifecycle.
@@ -280,7 +281,7 @@ export class MatchingService implements IMatchingService {
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
-    const options: NearOptions = { location, status, maxDistance };
+    const options: NearDonationOrRequestOptions = { location, status, maxDistance };
     const paginationOpts = {
       page: paginationOptions?.page || 1,
       limit: paginationOptions?.limit || 10,
@@ -302,7 +303,7 @@ export class MatchingService implements IMatchingService {
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
-    const options: NearOptions = { location, status, maxDistance };
+    const options: NearDonationOrRequestOptions = { location, status, maxDistance };
     const paginationOpts = {
       page: paginationOptions?.page || 1,
       limit: paginationOptions?.limit || 10,

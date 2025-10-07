@@ -25,6 +25,10 @@
       "types": "./dist/ApiClient.d.ts",
       "default": "./dist/ApiClient.js"
     },
+    "./interfaces": {
+      "types": "./dist/interfaces/index.d.ts",
+      "default": "./dist/interfaces/index.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"
@@ -52,6 +56,7 @@
     "@babel/preset-env": "^7.28.0",
     "@lactalink/enums": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/form-schemas": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@lactalink/utilities": "workspace:*",
@@ -70,6 +75,7 @@
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
+    "@lactalink/form-schemas": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/react": "^19.1.17",

@@ -3,14 +3,6 @@ import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
-  CreateO2PTransactionParams,
-  CreateP2OTransactionParams,
-  CreateP2PTransactionParams,
-  DeliveryDetailsParams,
-  IApiClient,
-  ITransactionService,
-} from '@lactalink/types/interfaces';
-import type {
   DeliveryAgreements,
   Donation,
   MilkBag,
@@ -19,6 +11,14 @@ import type {
   User,
 } from '@lactalink/types/payload-generated-types';
 import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import type {
+  CreateO2PTransactionParams,
+  CreateP2OTransactionParams,
+  CreateP2PTransactionParams,
+  DeliveryDetailsParams,
+  IApiClient,
+  ITransactionService,
+} from '../../../interfaces';
 
 /**
  * Service for managing transactions throughout their lifecycle.

@@ -2,7 +2,7 @@
 
 import { getServerApi } from '@/lib/api/getServerApi';
 import { getServerSideURL } from '@/lib/utils/getURL';
-import { SignInSchema, SignUpSchema } from '@lactalink/form-schemas';
+import { SignInSchema, SignUpSchema } from '@lactalink/form-schemas/auth';
 import { VerifyOtp } from '@lactalink/types/auth';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities/extractors';

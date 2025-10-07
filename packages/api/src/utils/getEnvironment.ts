@@ -1,4 +1,4 @@
-import type { ApiClientConfig } from '@lactalink/types/interfaces';
+import type { ApiClientConfig } from '../interfaces';
 
 export function isServerEnvironment(env: ApiClientConfig['environment']) {
   try {

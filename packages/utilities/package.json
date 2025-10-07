@@ -64,6 +64,7 @@
   },
   "devDependencies": {
     "@lactalink/enums": "workspace:*",
+    "@lactalink/form-schemas": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
@@ -76,6 +77,7 @@
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
+    "@lactalink/form-schemas": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/react": "^19.1.17",
     "lodash": "^4.17.21",

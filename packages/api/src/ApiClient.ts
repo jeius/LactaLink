@@ -20,12 +20,12 @@ import type {
   UploadFile,
 } from '@lactalink/types/api';
 import type { FileCollectionSlug } from '@lactalink/types/collections';
-import type { ApiClientConfig, IApiClient } from '@lactalink/types/interfaces';
 import type {
   CollectionSlug,
   PaginatedDocs,
   SelectFromCollectionSlug,
 } from '@lactalink/types/payload-types';
+import type { ApiClientConfig, IApiClient } from './interfaces';
 
 import { mergeHeaders } from '@lactalink/utilities';
 
