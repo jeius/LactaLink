@@ -11,7 +11,6 @@ module.exports = function (api) {
           alias: {
             '@': './',
             'tailwind.config': './tailwind.config.js',
-            '@lactalink/form-schemas': './lib/types/formSchemas.ts',
           },
         },
       ],

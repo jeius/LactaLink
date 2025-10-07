@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Box } from '@/components/ui/box';
@@ -6,14 +6,12 @@ import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { VStack } from '@/components/ui/vstack';
 
-import { MMKV_KEYS } from '@/lib/constants';
-import Storage from '@/lib/localStorage';
-
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
+import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingItem } from './OnboardingItem';
 import { OnboardingData, onboardingData } from './data';
@@ -21,13 +19,17 @@ import { OnboardingData, onboardingData } from './data';
 const gradientColors = ['#FEB4BA', '#FFE6E8', '#FFF3F4'] as const;
 
 export function Welcome() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
+
+  const prevTheme = useRef(theme);
 
   const insets = useSafeAreaInsets();
   const screen = useWindowDimensions();
   const [buttonHeight, setButtonHeight] = useState(80);
   const carouselHeight = screen.height - insets.top - insets.bottom - buttonHeight - 20;
+
+  const setViewedOnboarding = useOnboardingStore((s) => s.setViewed);
 
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
@@ -45,27 +47,28 @@ export function Welcome() {
   }
 
   function handleNext() {
-    if (isLastSlide) {
-      router.replace('/auth/sign-up');
+    if (!isLastSlide) {
+      ref.current?.next();
+      return;
     }
-    ref.current?.next();
+    setViewedOnboarding(true);
+    router.replace('/auth/sign-up');
   }
 
   function handleSkip() {
-    Storage.set(MMKV_KEYS.ONBOARDING, true);
+    setViewedOnboarding(true);
     router.replace('/auth/sign-in');
   }
 
-  function handleScrollEnd(index: number) {
-    if (index === lastPage) {
-      Storage.set(MMKV_KEYS.ONBOARDING, true);
-    }
-  }
-
-  useEffect(() => {
-    setTheme('light');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setTheme('light');
+      return () => {
+        setTheme(prevTheme.current);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   return (
     <Box className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
@@ -78,7 +81,7 @@ export function Welcome() {
         <Button
           variant="link"
           size="sm"
-          animateOnPress={false}
+          disablePressAnimation
           className="absolute right-0 top-0 z-10 h-min w-min p-5"
           action="primary"
           style={{ opacity: isLastSlide ? 0 : 1 }}
@@ -96,7 +99,6 @@ export function Welcome() {
           height={carouselHeight}
           onProgressChange={progress}
           onSnapToItem={setCurrentPage}
-          onScrollEnd={handleScrollEnd}
           data={onboardingData}
           renderItem={OnboardingItem}
           pagingEnabled

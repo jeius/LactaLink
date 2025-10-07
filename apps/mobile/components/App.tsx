@@ -1,7 +1,6 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { MMKV_KEYS } from '@/lib/constants';
-import Storage from '@/lib/localStorage';
+import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { Stack, usePathname } from 'expo-router';
 import { HeaderBackButton } from './HeaderBackButton';
 import FetchingSpinner from './loaders/FetchingSpinner';
@@ -12,18 +11,27 @@ export function App() {
   const pathname = usePathname();
   const { user, session, isLoading, isFetching } = useAuth();
 
-  const isAuthenticated = !!(user && session);
-  const isResettingPassword = pathname.includes('/auth/reset-password');
-
-  const viewedOnboarding = Storage.getBoolean(MMKV_KEYS.ONBOARDING) || false;
+  const viewedOnboarding = useOnboardingStore((s) => s.viewed);
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
+  const isAuthenticated = !!(user && session);
+  const isResettingPassword = pathname.includes('/auth/reset-password');
+
+  let initialRoute: string = '(root)';
+
+  if (!viewedOnboarding) {
+    initialRoute = 'index';
+  } else if (!isAuthenticated) {
+    initialRoute = 'auth';
+  }
+
   return (
     <>
       <Stack
+        initialRouteName={initialRoute}
         screenOptions={{
           ...screenOptions,
           headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,

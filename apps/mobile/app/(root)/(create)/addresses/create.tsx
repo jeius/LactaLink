@@ -13,8 +13,8 @@ import { Box } from '@/components/ui/box';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
+import { AddressSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
-import { AddressSchema } from '@lactalink/types/forms';
 import { Redirect, Stack, useRouter } from 'expo-router';
 
 export default function CreatePage() {

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addressSchema } from '@lactalink/types/forms';
+import { addressSchema } from '@lactalink/form-schemas';
 import { extractID } from '@lactalink/utilities/extractors';
 
 import { useForm } from 'react-hook-form';

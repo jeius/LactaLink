@@ -1,5 +1,5 @@
 import { getApiClient } from '@lactalink/api';
-import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/types/forms';
+import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
