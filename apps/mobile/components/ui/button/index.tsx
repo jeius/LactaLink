@@ -248,7 +248,7 @@ const buttonTextStyle = tva({
     {
       variant: 'link',
       action: 'info',
-      class: 'text-info-500 data-[hover=true]:text-info-300 data-[active=true]:text-info-300',
+      class: 'text-info-800 data-[hover=true]:text-info-500 data-[active=true]:text-info-500',
     },
     {
       variant: 'link',
@@ -382,7 +382,7 @@ const buttonIconStyle = tva({
     {
       variant: 'link',
       action: 'info',
-      class: 'text-info-500 data-[hover=true]:text-info-800 data-[active=true]:text-info-800',
+      class: 'text-info-800 data-[hover=true]:text-info-500 data-[active=true]:text-info-500',
     },
     {
       variant: 'link',
