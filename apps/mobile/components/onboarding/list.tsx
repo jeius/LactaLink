@@ -6,7 +6,33 @@ import { VStack } from '@/components/ui/vstack';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { FC } from 'react';
 
-import { iconStyle, itemStyle } from './style';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+
+const itemStyle = tva({
+  base: 'flex-1 text-left text-sm',
+  variants: {
+    variant: {
+      primary: 'text-primary-600',
+      secondary: 'text-secondary-500',
+      tertiary: 'text-tertiary-600',
+      muted: 'text-typography-700',
+      destructive: 'text-error-500',
+    },
+  },
+});
+
+const iconStyle = tva({
+  base: '',
+  variants: {
+    variant: {
+      primary: 'text-primary-600',
+      secondary: 'text-secondary-500',
+      tertiary: 'text-tertiary-600',
+      muted: 'text-typography-600',
+      destructive: 'text-error-500',
+    },
+  },
+});
 
 export type ListProps = {
   items: {

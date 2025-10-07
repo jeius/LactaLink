@@ -79,11 +79,7 @@ export const requestDetailsSchema = z.object({
 
 export const deliveryPreferencesSchema = z.object({
   deliveryPreferences: z
-    .array(
-      deliveryPreferenceSchema
-        .omit({ id: true })
-        .and(z.object({ id: z.uuid().nonempty().nonoptional() }))
-    )
+    .array(deliveryPreferenceSchema)
     .min(1, 'Atleast one delivery preference is required.'),
 });
 

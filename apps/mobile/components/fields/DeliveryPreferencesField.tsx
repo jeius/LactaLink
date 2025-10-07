@@ -2,7 +2,7 @@ import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-r
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationSchema, RequestSchema } from '@lactalink/types/forms';
+import { DonationSchema, RequestSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useMemo } from 'react';

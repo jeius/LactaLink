@@ -53,7 +53,7 @@ export function ActionModal({
   async function handleTriggerPress(e: GestureResponderEvent) {
     try {
       await onTriggerPress?.(e);
-    } catch (_) {
+    } catch {
       // If onTriggerPress throws an error, we stop the modal from opening.
       // This is useful if the trigger is a form submit button that might fail validation.
       return;

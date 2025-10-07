@@ -6,8 +6,9 @@ import { CalendarDaysIcon, MapPinIcon } from 'lucide-react-native';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { DeliveryPreferenceSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection, extractID, extractObject } from '@lactalink/utilities/extractors';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isString } from '@lactalink/utilities/type-guards';
@@ -82,7 +83,7 @@ export function DeliveryPreferenceCardSkeleton({
 }
 
 interface CardProps extends ComponentProps<typeof Card> {
-  preference: string | DeliveryPreference;
+  preference: string | DeliveryPreference | DeliveryPreferenceSchema;
   isLoading?: boolean;
   action?: ReactNode;
 }
@@ -106,7 +107,7 @@ function ListCard({
     depth: 3,
   });
 
-  const data = extractCollection(preference) || dpQuery.data;
+  const data = extractObject(preference) || dpQuery.data;
 
   const { preferredMode, availableDays, name } = data || {};
 

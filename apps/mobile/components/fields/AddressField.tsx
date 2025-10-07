@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 
 import {
   FormControl,
@@ -11,6 +11,8 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { AlertCircleIcon, Edit2Icon, LucideIcon, LucideProps, PlusIcon } from 'lucide-react-native';
 import {
   ControllerProps,
@@ -50,16 +52,29 @@ export function AddressField<
   isDisabled,
 }: AddressFieldProps<TFieldValues, TName>) {
   const { data: user } = useMeUser();
-  const selections = user?.addresses?.docs || [];
+  const selections = useMemo(
+    () => extractCollection(user?.addresses?.docs) || [],
+    [user?.addresses]
+  );
+
+  const selectionsMap = useMemo(() => {
+    const map = new Map<string, (typeof selections)[number]>();
+    for (const addr of selections) {
+      map.set(addr.id, addr);
+    }
+    return map;
+  }, [selections]);
 
   const { getFieldState, formState, watch, setValue } = useFormContext<TFieldValues>();
 
   const { error: addressFieldError } = getFieldState(name);
   const isSubmitting = formState.isSubmitting;
-  const address: string = watch(name);
 
-  function handleAddressChange(id: string) {
-    setValue(name, id as FieldPathValue<TFieldValues, TName>);
+  const address: string = watch(name);
+  const addressData = address ? selectionsMap.get(address) : null;
+
+  function handleAddressChange(addr: Address | null | undefined) {
+    setValue(name, extractID(addr) as FieldPathValue<TFieldValues, TName>);
   }
 
   function Action({ id }: { id: string }) {
@@ -126,7 +141,7 @@ export function AddressField<
         allowEdit={true}
         collections={selections}
         allowMultipleSelection={false}
-        selected={address}
+        selected={addressData}
         onChange={handleAddressChange}
         ItemComponent={Item}
         isDisabled={isDisabled || isSubmitting}
