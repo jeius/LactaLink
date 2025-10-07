@@ -1,15 +1,16 @@
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
-import React, { ComponentProps, useEffect, useMemo, useState } from 'react';
+import React, { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ErrorSearchParams, Point } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
+import { randomUUID } from 'expo-crypto';
 import { LocationObjectCoords } from 'expo-location';
-import { Redirect } from 'expo-router';
+import { Redirect, useFocusEffect } from 'expo-router';
 import { Insets, StyleSheet } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { AnimatedPressable } from '../animated/pressable';
@@ -36,6 +37,8 @@ export function MapView({
 }: MapViewProps) {
   const { theme } = useTheme();
 
+  const [mapRenderID, setMapRenderID] = useState(randomUUID());
+
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
@@ -44,6 +47,7 @@ export function MapView({
   const setMapRef = useMapStore((s) => s.setMapRef);
   const setUserMarkerRef = useMapStore((s) => s.setUserMarkerRef);
   const setUserLocated = useMapStore((s) => s.setUserLocated);
+  const resetMap = useMapStore((s) => s.reset);
 
   const { location, error, ...locationQuery } = useCurrentLocation();
 
@@ -68,8 +72,14 @@ export function MapView({
       map?.setCamera({ zoom: 16, center });
       props.onMapReady?.();
     }
+
+    return () => {
+      resetMap();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMapReady]);
+
+  useFocusEffect(useCallback(() => setMapRenderID(randomUUID()), []));
 
   function handleCompassPress() {
     map?.animateCamera({ heading: 0 }, { duration: 400 });
@@ -136,6 +146,7 @@ export function MapView({
     <Box className="relative flex-1" pointerEvents="box-none">
       <RNMapView.Animated
         {...props}
+        id={mapRenderID}
         ref={setMapRef}
         initialCamera={
           props.initialCamera || {

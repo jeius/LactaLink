@@ -14,7 +14,8 @@ export default function CreateLayout() {
         headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
-      <Stack.Screen name="requests/create" options={{ headerShown: true, title: 'New Request' }} />
+      <Stack.Screen name="requests/create" options={{ title: 'New Request' }} />
+      <Stack.Screen name="donations/create" options={{ headerShown: false }} />
     </Stack>
   );
 }

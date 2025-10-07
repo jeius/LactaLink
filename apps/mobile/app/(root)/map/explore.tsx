@@ -94,7 +94,7 @@ function AddressCard({ id, onClose }: AddressCardProps) {
       ) : (
         <HStack space="sm" className="w-full">
           <Box className="p-2">
-            <Icon as={BasicLocationPin} style={{ width: 32, height: 32 }} />
+            <Icon as={BasicLocationPin} className="fill-primary-500 h-8 w-8" />
           </Box>
           <VStack className="flex-1 items-start">
             <HStack space="sm" className="items-start">

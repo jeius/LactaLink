@@ -57,8 +57,10 @@ export function ThumbnailMap({
           )}
 
           <MapView
+            id="thumbnail-map"
             ref={mapRef}
             cacheEnabled
+            liteMode
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
             toolbarEnabled={false}
