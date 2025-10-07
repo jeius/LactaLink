@@ -10,7 +10,6 @@ import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { useCreateRequestForm } from '@/hooks/forms';
 import { deleteCollection } from '@/lib/api/delete';
 
 import { uploadImage } from '@/lib/api/file';
@@ -22,6 +21,7 @@ import { getApiClient, getTransactionService } from '@lactalink/api';
 import { ErrorSearchParams } from '@lactalink/types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
+import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -170,6 +170,7 @@ async function createRequest(data: RequestSchema) {
         details: {
           ...restOfDetails,
           image: imageDoc && extractID(imageDoc),
+          bags: extractID(restOfDetails.bags),
         },
         deliveryPreferences: extractID(deliveryPreferences),
         initialVolumeNeeded: volumeNeeded,
@@ -190,7 +191,7 @@ async function createRequest(data: RequestSchema) {
     transaction = await transactionService.createP2PTransaction({
       donation: matchedDonation.id,
       request: requestDoc,
-      milkBags: restOfDetails.bags || [],
+      milkBags: extractID(restOfDetails.bags) || [],
     });
 
     const donation = extractCollection(transaction.donation);

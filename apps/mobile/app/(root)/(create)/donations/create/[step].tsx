@@ -22,12 +22,12 @@ import { MILK_BAG_STATUS } from '@lactalink/enums';
 
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
-import { extractImageSchema } from '@/lib/utils/extractImageSchema';
 
 import { getApiClient, getTransactionService } from '@lactalink/api';
 import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
+import { transformToImageSchema } from '@/lib/utils/transformData';
 import { CreateMilkBagSchema, DonationSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -265,7 +265,7 @@ async function createMilkBags(data: DonationSchema) {
       milkBags[groupID] = docs.map((bag) => ({
         ...bag,
         donor: extractID(bag.donor),
-        bagImage: extractImageSchema(extractCollection(bag.bagImage)),
+        bagImage: transformToImageSchema(bag.bagImage),
       }));
 
       return milkBags[groupID];

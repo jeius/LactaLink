@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { DonationSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
@@ -64,7 +65,7 @@ export function DonationDetailsForm({
     if (!preference) {
       setValue('deliveryPreferences', []);
     } else {
-      setValue('deliveryPreferences', [{ ...preference, address: extractID(preference.address) }]);
+      setValue('deliveryPreferences', [transformToDeliveryPreferenceSchema(preference)]);
     }
   }
 

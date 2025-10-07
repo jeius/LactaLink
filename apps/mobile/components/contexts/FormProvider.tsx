@@ -42,12 +42,12 @@ export function useForm<
   try {
     const formContext = useFormContext<TFieldValues, TContext, TTransformedValues>();
     return { ...formContext, additionalState: additionalContext };
-  } catch (_) {
+  } catch {
     throw new Error('useForm must be used within a FormProvider');
   }
 }
 
-type FormProps<
+export type FormProps<
   TFieldValues extends FieldValues = FieldValues,
   TContext = any,
   TTransformedValues = TFieldValues,

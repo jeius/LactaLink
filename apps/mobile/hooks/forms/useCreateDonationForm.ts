@@ -4,11 +4,11 @@ import { MilkBag, User } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
-import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
 import { DonationSchema, donationSchema } from '@lactalink/form-schemas';
 
+import { transformToMilkBagShema } from '@/lib/utils/transformData';
 import { randomUUID } from 'expo-crypto';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
@@ -175,7 +175,7 @@ function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
       groupID,
     });
 
-    newMilkBags[groupID] = bags.map((bag) => extractMilkBagSchema(bag));
+    newMilkBags[groupID] = bags.map((bag) => transformToMilkBagShema(bag));
   }
   return { newDetailsBags, newMilkBags };
 }

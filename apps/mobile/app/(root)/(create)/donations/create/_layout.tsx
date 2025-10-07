@@ -1,7 +1,7 @@
 import { Form } from '@/components/contexts/FormProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useCreateDonationForm } from '@/hooks/forms';
+import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';

@@ -13,8 +13,8 @@ import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { transformToMilkBagShema } from '@/lib/utils/transformData';
 import { ClockIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo } from 'react';
 import { VolumeField } from './VolumeField';
@@ -207,7 +207,7 @@ function updateDataOnMatchedDonation(data: RequestSchema, matchedDonationDoc?: D
     id: matchedDonationDoc.id,
     donor: extractID(matchedDonationDoc.donor),
     storageType: storagePreference,
-    bags: bags.map((bag) => extractMilkBagSchema(bag)),
+    bags: bags.map((bag) => transformToMilkBagShema(bag)),
   };
 
   if (preferences?.length) {

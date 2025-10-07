@@ -20,10 +20,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
-import { extractMilkBagSchema } from '@/lib/utils/extractMilkBagShema';
+import { transformToMilkBagShema } from '@/lib/utils/transformData';
 import { MilkBagSchema, RequestSchema } from '@lactalink/form-schemas';
 import { Donation } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection, extractID, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate } from '@lactalink/utilities/formatters';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
@@ -48,14 +48,14 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
     const bags = extractCollection(matchedDonation?.details.bags) || [];
 
     const map = new Map<string, MilkBagSchema>();
-    bags?.forEach((bag) => map.set(extractID(bag), extractMilkBagSchema(bag)));
+    bags?.forEach((bag) => map.set(extractID(bag), transformToMilkBagShema(bag)));
 
     return { bags: Array.from(map.values()), bagsMap: map };
   }, [matchedDonation]);
 
   useEffect(() => {
     if (Array.isArray(selectedBags) && selectedBags.length > 0) {
-      const totalVolume = selectedBags.reduce((acc, bagId) => {
+      const totalVolume = selectedBags.reduce((acc, { id: bagId }) => {
         const bag = bagsMap.get(bagId);
         return acc + (bag?.volume || 0);
       }, 0);
@@ -151,19 +151,17 @@ function MilkBagsField({ bags, isLoading, isDisabled }: MilkBagsFieldProps) {
               minute: '2-digit',
             });
 
-            const imageUrl = item.bagImage?.url;
-            const blurhash = item.bagImage?.blurhash;
-            const alt = item.bagImage?.alt || 'Milk Bag Image';
+            const imageData = extractImageData(item.bagImage);
 
             const code = item.code || 'No Code';
 
             const value = Array.isArray(field.value) ? field.value : [];
 
-            const isSelected = value.includes(item.id);
+            const isSelected = value.some(({ id }) => id === item.id);
 
             function handleSelectBag() {
               if (isSelected) {
-                field.onChange(value?.filter((id) => id !== item.id));
+                field.onChange(value?.filter(({ id }) => id !== item.id));
               } else {
                 field.onChange([...value, item.id]);
               }
@@ -179,16 +177,7 @@ function MilkBagsField({ bags, isLoading, isDisabled }: MilkBagsFieldProps) {
                 >
                   <VStack className="items-stretch">
                     <Box className="bg-primary-50 relative h-32 w-full flex-shrink-0 overflow-hidden">
-                      {imageUrl ? (
-                        <SingleImageViewer
-                          disabled
-                          image={{ uri: imageUrl, blurHash: blurhash, alt }}
-                        />
-                      ) : (
-                        <Text size="xs" className="my-auto text-center">
-                          No Image
-                        </Text>
-                      )}
+                      <SingleImageViewer disabled image={imageData} />
                       <Text
                         size="sm"
                         bold
