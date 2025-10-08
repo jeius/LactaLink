@@ -1,8 +1,12 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import SafeArea from '../SafeArea';
+import SafeArea, { SafeAreaProps } from '../SafeArea';
 
-export default function LoadingSpinner({ isLoading = true }: { isLoading?: boolean }) {
+interface LoadingSpinnerProps extends SafeAreaProps {
+  isLoading?: boolean;
+}
+
+export default function LoadingSpinner({ isLoading = true, ...props }: LoadingSpinnerProps) {
   const ref = useRef<LottieView>(null);
   const direction = useRef(1);
   const [frames, setFrames] = useState<[number, number]>([0, 62]);
@@ -16,7 +20,7 @@ export default function LoadingSpinner({ isLoading = true }: { isLoading?: boole
   }
 
   return (
-    <SafeArea className="bg-primary-50 items-center justify-center">
+    <SafeArea {...props} className={props.className || 'bg-primary-50'}>
       <LottieView
         ref={ref}
         autoPlay={false}

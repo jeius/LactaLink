@@ -36,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: { googleMaps: { apiKey: process.env.ANDROID_MAPS_API_KEY } },
     permissions: ['SCHEDULE_EXACT_ALARM'],
   },
-  androidNavigationBar: { enforceContrast: true },
+  androidNavigationBar: { enforceContrast: true, visible: 'sticky-immersive' },
   androidStatusBar: { translucent: true },
   plugins: [
     'expo-router',

@@ -71,7 +71,7 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
       style={[
         {
           position: 'absolute',
-          bottom: 0,
+          bottom: 12,
           left: 12,
           right: 12,
           zIndex: 1,

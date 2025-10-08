@@ -1,6 +1,6 @@
-import { AnimatePresence, Motion } from '@legendapp/motion';
 import { LucideIcon, LucideProps, SaveIcon } from 'lucide-react-native';
 import React, { FC } from 'react';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
@@ -24,36 +24,32 @@ export function FloatingActionButton({
   ...props
 }: FloatingActionButtonProps) {
   return (
-    <AnimatePresence>
-      {show && (
-        <Motion.View
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 8,
-            right: 8,
-          }}
-        >
-          <Card {...props} className="mx-auto max-w-sm p-4">
-            <HStack space="md" className="w-full">
-              <Box className="flex-1">
-                <Button onPress={onConfirm}>
-                  <ButtonIcon as={confirmIcon} />
-                  <ButtonText>{confirmLabel}</ButtonText>
-                </Button>
-              </Box>
-
-              <Button variant="outline" action="default" onPress={onCancel}>
-                <ButtonText>{cancelLabel}</ButtonText>
+    show && (
+      <Animated.View
+        entering={FadeInDown}
+        exiting={FadeOutDown}
+        style={{
+          position: 'absolute',
+          bottom: 12,
+          left: 12,
+          right: 12,
+        }}
+      >
+        <Card {...props} className="mx-auto max-w-sm p-4">
+          <HStack space="md" className="w-full">
+            <Box className="flex-1">
+              <Button onPress={onConfirm}>
+                <ButtonIcon as={confirmIcon} />
+                <ButtonText>{confirmLabel}</ButtonText>
               </Button>
-            </HStack>
-          </Card>
-        </Motion.View>
-      )}
-    </AnimatePresence>
+            </Box>
+
+            <Button variant="outline" action="default" onPress={onCancel}>
+              <ButtonText>{cancelLabel}</ButtonText>
+            </Button>
+          </HStack>
+        </Card>
+      </Animated.View>
+    )
   );
 }

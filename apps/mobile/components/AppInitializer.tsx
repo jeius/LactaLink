@@ -13,11 +13,16 @@ import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
 import { useInitializeMarkersIndex } from '@/lib/stores/markersStore';
 import { useInitializeTutorialStore } from '@/lib/stores/tutorialStore';
+import * as NavigationBar from 'expo-navigation-bar';
 import { RefreshCwIcon } from 'lucide-react-native';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Initial hide navigation bar
+NavigationBar.setVisibilityAsync('hidden');
+NavigationBar.setBehaviorAsync('overlay-swipe');
 
 type Props = {
   children: ReactNode;
@@ -28,6 +33,7 @@ export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   useOnlineManager();
 
+  const navBarVisibility = NavigationBar.useVisibility();
   const { isLoading: isThemeLoading } = useTheme();
   const auth = useAuth();
   const location = useCurrentLocation();
@@ -96,6 +102,14 @@ export function AppInitializer({ children }: Props) {
       SplashScreen.hideAsync();
     }
   }, [isAppReady]);
+
+  useEffect(() => {
+    if (navBarVisibility === 'visible') {
+      setTimeout(() => {
+        NavigationBar.setVisibilityAsync('hidden');
+      }, 5000);
+    }
+  }, [navBarVisibility]);
 
   if (error) {
     return (

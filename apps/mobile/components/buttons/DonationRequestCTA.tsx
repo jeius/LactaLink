@@ -155,7 +155,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
     <Box
       onLayout={onLayout}
       className="bg-background-0 border-outline-300 absolute inset-x-0 bottom-0 rounded-t-2xl border p-4"
-      style={{ paddingBottom: insets.bottom + 16 }}
+      style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
       <Button onPress={handlePress}>
         <ButtonIcon as={icon} />

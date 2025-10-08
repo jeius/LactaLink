@@ -15,7 +15,6 @@ import { colorsConfig } from '@/lib/colors';
 import { useThemeStore } from '@/lib/stores/themeStore';
 import { ThemeColors } from '@/lib/types/colors';
 import * as NavigationBar from 'expo-navigation-bar';
-import * as SystemUI from 'expo-system-ui';
 
 interface ThemeContextType {
   theme: Theme;
@@ -83,13 +82,10 @@ export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
 
   // Sync system UI and navigation bar with theme
   useEffect(() => {
-    const bgColor = themeColors.background[50];
-    SystemUI.setBackgroundColorAsync(bgColor || null);
-
     if (Platform.OS === 'android') {
       NavigationBar.setStyle(theme);
     }
-  }, [theme, themeColors]);
+  }, [theme]);
 
   function updateTheme(newTheme: Theme) {
     // Update color scheme for nativewind

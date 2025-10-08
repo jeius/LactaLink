@@ -37,7 +37,7 @@ export function BottomSheetActionButton({
     >
       <Box
         className="bg-background-0 border-outline-300 rounded-2xl border p-4"
-        style={{ paddingBottom: insets.bottom }}
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <Button {...props}>
           {icon && <ButtonIcon as={icon} />}

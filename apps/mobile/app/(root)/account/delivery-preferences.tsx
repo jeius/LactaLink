@@ -73,7 +73,7 @@ export default function ListPage() {
 
           <Box
             className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
-            style={{ paddingBottom: insets.bottom }}
+            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
           >
             <Button onPress={handleAddAddress}>
               <ButtonIcon as={PlusIcon} />
