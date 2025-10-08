@@ -2,7 +2,10 @@ import { useAuth, useAuthListener } from '@/hooks/auth/useAuth';
 import { useGoogleSignInConfig } from '@/hooks/auth/useGoogleSignInConfig';
 
 import * as SplashScreen from 'expo-splash-screen';
+
+import { RefreshCwIcon } from 'lucide-react-native';
 import { ReactNode, useEffect } from 'react';
+import { SystemBars } from 'react-native-edge-to-edge';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SafeArea from '@/components/SafeArea';
@@ -13,16 +16,11 @@ import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
 import { useInitializeMarkersIndex } from '@/lib/stores/markersStore';
 import { useInitializeTutorialStore } from '@/lib/stores/tutorialStore';
-import * as NavigationBar from 'expo-navigation-bar';
-import { RefreshCwIcon } from 'lucide-react-native';
+
 import LoadingSpinner from './loaders/LoadingSpinner';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-// Initial hide navigation bar
-NavigationBar.setVisibilityAsync('hidden');
-NavigationBar.setBehaviorAsync('overlay-swipe');
 
 type Props = {
   children: ReactNode;
@@ -33,7 +31,6 @@ export function AppInitializer({ children }: Props) {
   useGoogleSignInConfig();
   useOnlineManager();
 
-  const navBarVisibility = NavigationBar.useVisibility();
   const { isLoading: isThemeLoading } = useTheme();
   const auth = useAuth();
   const location = useCurrentLocation();
@@ -103,14 +100,6 @@ export function AppInitializer({ children }: Props) {
     }
   }, [isAppReady]);
 
-  useEffect(() => {
-    if (navBarVisibility === 'visible') {
-      setTimeout(() => {
-        NavigationBar.setVisibilityAsync('hidden');
-      }, 5000);
-    }
-  }, [navBarVisibility]);
-
   if (error) {
     return (
       <SafeArea className="items-center justify-center">
@@ -130,8 +119,18 @@ export function AppInitializer({ children }: Props) {
   }
 
   if (!isAppReady) {
-    return <LoadingSpinner />;
+    return (
+      <>
+        <SystemBars hidden={{ navigationBar: true, statusBar: true }} />
+        <LoadingSpinner />
+      </>
+    );
   }
 
-  return children;
+  return (
+    <>
+      <SystemBars hidden={{ navigationBar: false, statusBar: false }} />
+      {children}
+    </>
+  );
 }

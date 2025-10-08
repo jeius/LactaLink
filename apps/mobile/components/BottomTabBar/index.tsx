@@ -71,11 +71,10 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
       style={[
         {
           position: 'absolute',
-          bottom: 12,
+          bottom: Math.max(insets.bottom, 12),
           left: 12,
           right: 12,
           zIndex: 1,
-          marginBottom: insets.bottom,
         },
         containerAnimatedStyle,
       ]}
