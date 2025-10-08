@@ -9,11 +9,16 @@ import {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+type ScrollDirection = 'up' | 'down';
+
+type ScrollEvent = { nativeEvent: NativeScrollEvent };
+
 type ScrollContextType = {
   scrollValue: SharedValue<number>;
-  onScrollBeginDrag: (event: NativeScrollEvent) => void;
-  onScrollEndDrag: (event: NativeScrollEvent) => void;
-  onScroll: (event: NativeScrollEvent) => void;
+  scrollDirection: SharedValue<ScrollDirection | null>;
+  onScrollBeginDrag: (event: ScrollEvent) => void;
+  onScrollEndDrag: (event: ScrollEvent) => void;
+  onScroll: (event: ScrollEvent) => void;
 };
 
 const ScrollContext = createContext<ScrollContextType | undefined>(undefined);
@@ -25,6 +30,16 @@ export function useScroll() {
   }
 
   return context;
+}
+
+export function useScrollHandlers() {
+  const context = useContext(ScrollContext);
+  if (!context) {
+    throw new Error('useScrollHandlers must be used within a ScrollProvider');
+  }
+
+  const { onScrollBeginDrag, onScrollEndDrag, onScroll } = context;
+  return { onScrollBeginDrag, onScrollEndDrag, onScroll };
 }
 
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
@@ -136,27 +151,29 @@ export function useHideOnScrollAnimation(
 
 export function useScrollAnimationMethods() {
   const previousEvent = useRef<NativeScrollEvent>(null);
-  const previousDirection = useRef<'up' | 'down' | null>(null);
+  const previousDirection = useRef<ScrollDirection | null>(null);
   const accumulatedDelta = useRef(0);
 
   const scrollValue = useSharedValue(0);
+  const scrollDirection = useSharedValue<ScrollDirection | null>(null);
 
-  const onScrollBeginDrag = useCallback((event: NativeScrollEvent) => {
-    previousEvent.current = event;
+  const onScrollBeginDrag = useCallback((event: ScrollEvent) => {
+    previousEvent.current = event.nativeEvent;
   }, []);
 
-  const onScrollEndDrag = useCallback((event: NativeScrollEvent) => {
-    previousEvent.current = event;
+  const onScrollEndDrag = useCallback((event: ScrollEvent) => {
+    previousEvent.current = event.nativeEvent;
   }, []);
 
   const onScroll = useCallback(
-    (event: NativeScrollEvent) => {
+    ({ nativeEvent: event }: ScrollEvent) => {
       const currentOffset = event.contentOffset.y;
       const previousOffset = previousEvent.current?.contentOffset.y || 0;
       const delta = currentOffset - previousOffset;
 
       // Determine direction
       const direction = delta > 0 ? 'down' : delta < 0 ? 'up' : previousDirection.current;
+      scrollDirection.value = direction;
 
       // If direction changes, reset accumulated delta
       if (direction !== previousDirection.current) {
@@ -168,15 +185,15 @@ export function useScrollAnimationMethods() {
 
       // Only update scrollValue if abs(accumulatedDelta) >= 100
       if (Math.abs(accumulatedDelta.current) >= 100) {
-        scrollValue.set(accumulatedDelta.current);
+        scrollValue.value = accumulatedDelta.current;
       } else {
-        scrollValue.set(0);
+        scrollValue.value = 0;
       }
 
       previousEvent.current = event;
     },
-    [scrollValue]
+    [scrollDirection, scrollValue]
   );
 
-  return { scrollValue, onScrollBeginDrag, onScrollEndDrag, onScroll };
+  return { scrollValue, scrollDirection, onScrollBeginDrag, onScrollEndDrag, onScroll };
 }

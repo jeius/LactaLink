@@ -1,6 +1,6 @@
 import { EditActionButton } from '@/components/buttons';
 import { DonationListCard, RequestListCard } from '@/components/cards';
-import { useScroll } from '@/components/contexts/ScrollProvider';
+import { useScrollHandlers } from '@/components/contexts/ScrollProvider';
 import { InfiniteList } from '@/components/lists/InfiniteList';
 import { ActionModal } from '@/components/modals';
 import { Box } from '@/components/ui/box';
@@ -42,7 +42,7 @@ export function UserDonationsOrRequestsScene({
   const meUser = useMeUser();
 
   const insets = useSafeAreaInsets();
-  const { onScrollBeginDrag, onScrollEndDrag, onScroll } = useScroll();
+  const scrollHandlers = useScrollHandlers();
 
   const user = meUser.data;
   const profile = user?.profile;
@@ -71,12 +71,10 @@ export function UserDonationsOrRequestsScene({
     <Box className="flex-1" style={{ marginBottom: insets.bottom }}>
       <Stack.Screen options={{ headerTitle }} />
       <InfiniteList
+        {...scrollHandlers}
         slug={collection}
         fetchOptions={{ where }}
         contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
-        onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
-        onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
-        onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
         ItemComponent={({ item, isLoading }) => {
           if (isLoading) {
             return <DonationListCard isLoading />;

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
-import { useScroll } from '@/components/contexts/ScrollProvider';
+import { useScrollHandlers } from '@/components/contexts/ScrollProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -20,7 +20,7 @@ import { useFocusEffect } from 'expo-router';
 export default function NotificationsTab() {
   useLiveNotifications();
 
-  const { onScroll, onScrollBeginDrag, onScrollEndDrag } = useScroll();
+  const scrollHandlers = useScrollHandlers();
 
   const meUser = useMeUser();
 
@@ -67,6 +67,7 @@ export default function NotificationsTab() {
   return (
     <SafeArea safeTop={false} className="items-stretch">
       <FlashList
+        {...scrollHandlers}
         data={data}
         renderItem={renderItem}
         ListEmptyComponent={EmptyComponent}
@@ -77,9 +78,6 @@ export default function NotificationsTab() {
         }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
-        onScroll={({ nativeEvent }) => onScroll(nativeEvent)}
-        onScrollBeginDrag={({ nativeEvent }) => onScrollBeginDrag(nativeEvent)}
-        onScrollEndDrag={({ nativeEvent }) => onScrollEndDrag(nativeEvent)}
         ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
         ListFooterComponentStyle={{ marginTop: 8 }}
         onEndReachedThreshold={0.25}
