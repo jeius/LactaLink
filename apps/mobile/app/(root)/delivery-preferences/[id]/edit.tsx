@@ -5,7 +5,6 @@ import { FloatingActionButton } from '@/components/buttons';
 import { AddressField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import { ActionModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
@@ -23,8 +22,10 @@ import { ErrorSearchParams } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { Form } from '@/components/contexts/FormProvider';
+import { RefreshControl } from '@/components/RefreshControl';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { CalendarDaysIcon, TrashIcon, TruckIcon } from 'lucide-react-native';
+import { CalendarDaysIcon, TagIcon, Trash2Icon, TruckIcon } from 'lucide-react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 export default function EditDeliveryPreferencePage() {
   //#region Hooks
@@ -93,7 +94,11 @@ export default function EditDeliveryPreferencePage() {
       <FormPreventBack />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <KeyboardAvoidingWrapper refreshing={form.refreshing} onRefresh={form.onRefresh}>
+        <KeyboardAwareScrollView
+          refreshControl={
+            <RefreshControl refreshing={form.refreshing || false} onRefresh={form.onRefresh} />
+          }
+        >
           {isLoading ? (
             <PageSkeleton />
           ) : (
@@ -140,6 +145,7 @@ export default function EditDeliveryPreferencePage() {
                     control={form.control}
                     name="name"
                     fieldType="text"
+                    labelIcon={TagIcon}
                     variant="underlined"
                     placeholder="e.g. Home Delivery, Office Delivery"
                     helperText="Give a name to your delivery preference."
@@ -159,14 +165,14 @@ export default function EditDeliveryPreferencePage() {
                   </Text>
                 }
                 confirmLabel="Delete"
-                triggerIcon={TrashIcon}
+                triggerIcon={Trash2Icon}
                 triggerLabel="Delete Delivery Preference"
                 onConfirm={handleDelete}
                 isDisabled={isSubmitting}
               />
             </VStack>
           )}
-        </KeyboardAvoidingWrapper>
+        </KeyboardAwareScrollView>
 
         <FloatingActionButton
           onConfirm={submit}

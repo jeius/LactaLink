@@ -1,6 +1,7 @@
 import { getApiClient } from '@lactalink/api';
 import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { MarkOptional } from '@lactalink/types/utils';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
@@ -24,7 +25,7 @@ export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPrefere
   );
 }
 
-export async function upsertDeliveryPreference(data: DeliveryPreferenceSchema) {
+export async function upsertDeliveryPreference(data: MarkOptional<DeliveryPreferenceSchema, 'id'>) {
   let message: string;
   let preference: DeliveryPreference;
 

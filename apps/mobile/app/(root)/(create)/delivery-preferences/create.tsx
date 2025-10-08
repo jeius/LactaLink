@@ -6,8 +6,8 @@ import { Form } from '@/components/contexts/FormProvider';
 import { AddressField } from '@/components/fields';
 import { FormField } from '@/components/FormField';
 import FormPreventBack from '@/components/forms/FormPreventBack';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
 import { ActionModal } from '@/components/modals';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
@@ -24,6 +24,7 @@ import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -78,7 +79,11 @@ export default function CreatePage() {
       <Stack.Screen options={{ headerShown: true, headerTitle: 'New Delivery Preference' }} />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
-        <KeyboardAvoidingWrapper refreshing={form.refreshing} onRefresh={form.onRefresh}>
+        <KeyboardAwareScrollView
+          refreshControl={
+            <RefreshControl refreshing={form.refreshing || false} onRefresh={form.onRefresh} />
+          }
+        >
           <VStack space="2xl" className="p-5">
             <FormField
               control={form.control}
@@ -148,7 +153,7 @@ export default function CreatePage() {
               isDisabled={isSubmitting}
             />
           </VStack>
-        </KeyboardAvoidingWrapper>
+        </KeyboardAwareScrollView>
       </SafeArea>
     </Form>
   );

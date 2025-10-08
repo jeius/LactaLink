@@ -34,6 +34,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import isEqualWith from 'lodash/isEqualWith';
 import { ReactNode, useCallback, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { toast } from 'sonner-native';
 
 const routes = createDynamicRoute('/donations/create', Object.keys(DONATION_CREATE_STEPS));
@@ -163,15 +164,8 @@ export default function CreateDonation() {
     <>
       <FormPreventBack />
 
-      {/* <Stack.Screen
-        options={{
-          headerShown: true,
-          title: DONATION_CREATE_STEPS[step]?.label || 'New Donation',
-        }}
-      /> */}
-
       <SafeArea safeTop={false}>
-        <ScrollView
+        <KeyboardAwareScrollView
           className="flex-1"
           contentContainerClassName="grow pb-4"
           showsVerticalScrollIndicator={false}
@@ -217,7 +211,7 @@ export default function CreateDonation() {
               )}
             </Box>
           </VStack>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeArea>
     </>
   );

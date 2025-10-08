@@ -8,13 +8,7 @@ import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-util
 import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  NativeSyntheticEvent,
-  Pressable,
-  TextInput,
-  TextInputFocusEventData,
-  View,
-} from 'react-native';
+import { FocusEvent, NativeSyntheticEvent, Pressable, TextInput, View } from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -203,7 +197,7 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    function handleFocus(event: NativeSyntheticEvent<TextInputFocusEventData>) {
+    function handleFocus(event: NativeSyntheticEvent<FocusEvent>) {
       props.onFocus?.(event);
       onFocus?.(inputID);
     }

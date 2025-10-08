@@ -17,7 +17,8 @@ import {
 
 import { ScrollView } from 'react-native-gesture-handler';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { RefreshControl } from './RefreshControl';
 import { VStack } from './ui/vstack';
 
@@ -42,6 +43,12 @@ interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
   onRefresh?: () => void;
 }
 
+/**
+ * A wrapper component that adjusts its position when the keyboard is shown, ensuring that input fields are not obscured.
+ * It uses a ScrollView to allow scrolling of content when the keyboard is active.
+ *
+ * @deprecated Use `KeyboardAwareScrollView` from `react-native-keyboard-controller` instead.
+ */
 const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
   children,
   keyboardVerticalOffset = 0,
@@ -143,7 +150,7 @@ export function useKeyboardSharedHeight(offset: number = OFFSET) {
       },
       onEnd: (e) => {
         'worklet';
-        runOnJS(setIsKeyboardShown)(e.progress === 1);
+        scheduleOnRN(setIsKeyboardShown, e.progress === 1);
       },
     },
     [offset]
