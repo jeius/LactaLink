@@ -1,11 +1,10 @@
 import { StyleSheet } from 'react-native';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Coordinates } from '@lactalink/types';
+import LottieView from 'lottie-react-native';
 import { Box } from '../ui/box';
-import { Icon } from '../ui/icon';
-import { BasicLocationPin } from '../ui/icon/custom';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 import { MapView, MapViewProps } from './MapView';
@@ -16,6 +15,7 @@ interface AddressMapViewProps extends MapViewProps {
 
 export function AddressMapView({ coordinates, ...props }: AddressMapViewProps) {
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
 
   return (
     <>
@@ -33,23 +33,55 @@ export function AddressMapView({ coordinates, ...props }: AddressMapViewProps) {
         }
         style={StyleSheet.flatten([StyleSheet.absoluteFillObject, props.style])}
         onMapReady={() => setIsMapReady(true)}
+        onRegionChange={(_, { isGesture }) => {
+          if (isGesture) {
+            setIsPanning(true);
+          }
+        }}
+        onRegionChangeComplete={(_, { isGesture }) => {
+          if (isGesture) {
+            setIsPanning(false);
+          }
+        }}
         hideUserLocationHeading
       />
 
       {isMapReady && (
         <VStack className="absolute inset-0 items-center justify-center">
-          <Text bold size="lg" className="absolute inset-x-5 text-center" style={{ top: '35%' }}>
+          <Text bold size="lg" className="absolute inset-x-5 text-center" style={{ top: '30%' }}>
             Pan the map to pin location
           </Text>
 
-          <Box style={{ transform: [{ translateY: -20 }], position: 'relative' }}>
-            <Box className="absolute inset-x-0" style={{ top: 6 }}>
-              <Box className="bg-error-500 m-auto rounded-full" style={{ height: 18, width: 18 }} />
-            </Box>
-            <Icon as={BasicLocationPin} style={{ width: 40, height: 40 }} fill="red" />
+          <Box style={{ transform: [{ translateY: -32 }], width: 125, height: 125 }}>
+            <LottieMarker isPanning={isPanning} />
           </Box>
         </VStack>
       )}
     </>
+  );
+}
+
+interface LottieMarkerProps {
+  isPanning: boolean;
+}
+
+function LottieMarker({ isPanning }: LottieMarkerProps) {
+  const ref = useRef<LottieView>(null);
+
+  useEffect(() => {
+    if (isPanning) {
+      ref.current?.play(3, 20);
+    } else {
+      ref.current?.play(56, 82);
+    }
+  });
+
+  return (
+    <LottieView
+      ref={ref}
+      loop={false}
+      source={require('@/assets/lottie/map_pin.json')}
+      style={{ width: '100%', height: '100%' }}
+    />
   );
 }
