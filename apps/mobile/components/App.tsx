@@ -37,11 +37,11 @@ export function App() {
           headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
         }}
       >
-        <Stack.Protected guard={isAuthenticated && !isResettingPassword}>
-          <Stack.Protected guard={!viewedOnboarding}>
-            <Stack.Screen name="index" />
-          </Stack.Protected>
+        <Stack.Protected guard={!viewedOnboarding}>
+          <Stack.Screen name="index" />
+        </Stack.Protected>
 
+        <Stack.Protected guard={isAuthenticated && !isResettingPassword}>
           <Stack.Screen name="(root)" />
         </Stack.Protected>
 

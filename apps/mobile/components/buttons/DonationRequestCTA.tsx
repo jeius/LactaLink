@@ -61,7 +61,7 @@ export function DonationRequestCTA({ data, isLoading }: DonationRequestCTAProps)
         <ButtonIcon as={ShareIcon} />
       </Button>
 
-      {isOwner && (
+      {isOwner && (isEditable || isDeletable) && (
         <Popover
           placement="top left"
           offset={8}

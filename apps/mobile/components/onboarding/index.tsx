@@ -12,7 +12,7 @@ import { useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
 import { useOnboardingStore } from '@/lib/stores/onboardingStore';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { OnboardingItem } from './OnboardingItem';
 import { OnboardingData, onboardingData } from './data';
 
@@ -24,10 +24,8 @@ export function Welcome() {
 
   const prevTheme = useRef(theme);
 
-  const insets = useSafeAreaInsets();
   const screen = useWindowDimensions();
-  const [buttonHeight, setButtonHeight] = useState(80);
-  const carouselHeight = screen.height - insets.top - insets.bottom - buttonHeight - 20;
+  const [carouselHeight, setCarouselHeight] = useState(0);
 
   const setViewedOnboarding = useOnboardingStore((s) => s.setViewed);
 
@@ -71,13 +69,10 @@ export function Welcome() {
   );
 
   return (
-    <Box className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+    <SafeAreaView className="flex-1">
       <GradientBackground colors={gradientColors} end={{ x: 0, y: 1 }} locations={[0, 0.8, 1]} />
 
-      <VStack
-        className="relative w-full items-stretch justify-start gap-0 py-4"
-        style={{ maxHeight: screen.height }}
-      >
+      <VStack className="relative flex-1 items-stretch justify-start gap-0 py-4">
         <Button
           variant="link"
           size="sm"
@@ -92,50 +87,52 @@ export function Welcome() {
           </ButtonText>
         </Button>
 
-        <Carousel
-          ref={ref}
-          loop={false}
-          width={screen.width}
-          height={carouselHeight}
-          onProgressChange={progress}
-          onSnapToItem={setCurrentPage}
-          data={onboardingData}
-          renderItem={OnboardingItem}
-          pagingEnabled
-          scrollAnimationDuration={400}
-          mode="parallax"
-          modeConfig={{
-            parallaxScrollingScale: 1,
-            parallaxScrollingOffset: 30,
-            parallaxAdjacentItemScale: 0.7,
-          }}
-        />
-
-        <Pagination.Basic<OnboardingData>
-          progress={progress}
-          data={onboardingData}
-          dotStyle={{
-            width: 25,
-            height: 4,
-            backgroundColor: '#FEB4BA',
-            borderRadius: 4,
-          }}
-          activeDotStyle={{
-            overflow: 'hidden',
-            backgroundColor: '#CB6870',
-          }}
-          containerStyle={{
-            gap: 10,
-            marginBottom: 16,
-          }}
-          horizontal
-          onPress={onPressPagination}
-        />
-
         <Box
-          onLayout={({ nativeEvent }) => setButtonHeight(nativeEvent.layout.height)}
-          className="w-full p-5 pt-2"
+          className="flex-1"
+          onLayout={({ nativeEvent }) => setCarouselHeight(nativeEvent.layout.height)}
         >
+          <Carousel
+            ref={ref}
+            loop={false}
+            width={screen.width}
+            height={carouselHeight}
+            onProgressChange={progress}
+            onSnapToItem={setCurrentPage}
+            data={onboardingData}
+            renderItem={OnboardingItem}
+            pagingEnabled
+            scrollAnimationDuration={400}
+            mode="parallax"
+            modeConfig={{
+              parallaxScrollingScale: 1,
+              parallaxScrollingOffset: 30,
+              parallaxAdjacentItemScale: 0.7,
+            }}
+          />
+
+          <Pagination.Basic<OnboardingData>
+            progress={progress}
+            data={onboardingData}
+            dotStyle={{
+              width: 25,
+              height: 4,
+              backgroundColor: '#FEB4BA',
+              borderRadius: 4,
+            }}
+            activeDotStyle={{
+              overflow: 'hidden',
+              backgroundColor: '#CB6870',
+            }}
+            containerStyle={{
+              gap: 10,
+              marginBottom: 16,
+            }}
+            horizontal
+            onPress={onPressPagination}
+          />
+        </Box>
+
+        <Box className="w-full p-5">
           <Button
             size="xl"
             className="shadow-primary-800 w-full rounded-2xl shadow-md"
@@ -147,6 +144,6 @@ export function Welcome() {
           </Button>
         </Box>
       </VStack>
-    </Box>
+    </SafeAreaView>
   );
 }
