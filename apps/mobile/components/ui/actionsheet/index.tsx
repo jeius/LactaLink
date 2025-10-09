@@ -152,7 +152,7 @@ const actionsheetDragIndicatorWrapperStyle = tva({
 });
 
 const actionsheetBackdropStyle = tva({
-  base: 'bg-background-50 web:cursor-default web:pointer-events-auto absolute bottom-0 left-0 right-0 top-0',
+  base: 'bg-background-600 web:cursor-default web:pointer-events-auto absolute bottom-0 left-0 right-0 top-0',
 });
 
 const actionsheetScrollViewStyle = tva({

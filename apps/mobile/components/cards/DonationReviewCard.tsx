@@ -56,8 +56,7 @@ export function DonationReviewCard({
               <HStack key={index} className="items-center">
                 <Icon as={DotIcon} />
                 <Text size="sm" className="font-JakartaMedium">
-                  {bag.quantity} x {bag.volume}mL -{' '}
-                  {formatDate(bag.collectedAt, { shortMonth: true })},{' '}
+                  {bag.volume}mL - {formatDate(bag.collectedAt, { shortMonth: true })},{' '}
                   {formatLocaleTime(bag.collectedAt)}
                 </Text>
               </HStack>

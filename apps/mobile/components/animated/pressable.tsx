@@ -1,23 +1,24 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   AnimatedStyle,
+  isSharedValue,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   WithSpringConfig,
 } from 'react-native-reanimated';
-import { Pressable, PressableProps } from '../ui/pressable';
+import { Pressable } from '../ui/pressable';
 
-export interface AnimatedPressableProps extends PressableProps {
+const AnimatedUIPressable = Animated.createAnimatedComponent(Pressable);
+
+export interface AnimatedPressableProps extends ComponentProps<typeof AnimatedUIPressable> {
   containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
   disablePressAnimation?: boolean;
   disableRipple?: boolean;
 }
 
 const rippleColor = 'rgba(128,128,128,0.10)';
-
-const AnimatedUIPressable = Animated.createAnimatedComponent(Pressable);
 
 const springConfig: WithSpringConfig = {
   damping: 60,
@@ -41,18 +42,31 @@ export function AnimatedPressable({
   function handlePressIn(event: GestureResponderEvent) {
     // Scale down when the gesture begins
     scale.value = withSpring(0.95, springConfig);
-    props.onPressIn?.(event);
+    if (typeof props.onPressIn === 'function') {
+      props.onPressIn?.(event);
+    } else if (props.onPressIn) {
+      props.onPressIn.value?.(event);
+    }
   }
 
   function handlePressOut(event: GestureResponderEvent) {
     // Scale back up when the gesture ends
     scale.value = withSpring(1, springConfig);
-    props.onPressOut?.(event);
+    if (typeof props.onPressOut === 'function') {
+      props.onPressOut?.(event);
+    } else if (props.onPressOut) {
+      props.onPressOut.value?.(event);
+    }
   }
 
   return (
     <AnimatedUIPressable
       {...props}
+      key={
+        isSharedValue(props.key)
+          ? (props.key.value as React.Key | undefined)
+          : (props.key as React.Key | undefined)
+      }
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[animatedStyle, containerStyle, props.style]}

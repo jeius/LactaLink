@@ -48,7 +48,6 @@ function Map({ style }: MapProps) {
       if (!markerData) return null;
 
       let colorTheme: keyof ColorsConfig['light'] | undefined;
-      let showAvatar = false;
 
       if (isDonation(markerData.data)) {
         colorTheme = 'primary';
@@ -56,7 +55,6 @@ function Map({ style }: MapProps) {
         colorTheme = 'tertiary';
       } else {
         colorTheme = 'secondary';
-        showAvatar = true;
       }
 
       return (
@@ -64,7 +62,6 @@ function Map({ style }: MapProps) {
           key={`${markerProps.id}-${i}`}
           markerData={markerData}
           markerProps={markerProps}
-          showAvatar={showAvatar}
           colorTheme={colorTheme}
         />
       );

@@ -2,7 +2,6 @@ import * as z from 'zod';
 
 import {
   COLLECTION_MODES,
-  MILK_BAG_STATUS,
   PREFERRED_STORAGE_TYPES,
   STORAGE_TYPES,
   URGENCY_LEVELS,
@@ -11,37 +10,12 @@ import {
 import { User } from '@lactalink/types/payload-generated-types';
 import { deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
+import { createMilkBagSchema, milkBagSchema } from '../milk-bag';
 import { textAreaSchema } from '../textarea';
 
 const recipientSchema = z.object({
   relationTo: z.custom<NonNullable<User['profile']>['relationTo']>(),
   value: z.uuid().nonempty('Required'),
-});
-
-export const milkBagSchema = z.object({
-  id: z.uuid().nonempty('Required'),
-  donor: z.uuid().nonempty('Required'),
-  volume: z.number('Required').min(20, 'Atleast 20mL').positive(),
-  status: z.enum(
-    Object.values(MILK_BAG_STATUS).map((item) => item.value),
-    'Required'
-  ),
-  code: z.string().optional().nullable(),
-  collectedAt: z.iso.datetime('Required'),
-  bagImage: imageSchema.optional().nullable(),
-});
-
-export const createMilkBagSchema = z
-  .object({
-    quantity: z.number('Required').min(1, 'Atleast 1 bag').positive(),
-    groupID: z.uuid(),
-  })
-  .and(milkBagSchema.omit({ id: true, code: true, bagImage: true, status: true }));
-
-export const updateMilkBagSchema = milkBagSchema.omit({
-  donor: true,
-  status: true,
-  code: true,
 });
 
 export const donationDetailsSchema = z.object({
@@ -110,7 +84,7 @@ export const donationSchema = z
     matchedRequest: matchedRequestSchema.optional(),
     details: donationDetailsSchema,
     recipient: recipientSchema.optional().nullable(),
-    milkBags: z.record(z.uuid(), z.array(milkBagSchema)),
+    milkBags: z.array(milkBagSchema),
   })
   .and(deliveryPreferencesSchema)
   .refine(
@@ -130,10 +104,8 @@ export const donationSchema = z
   )
   .refine(
     (data) => {
-      for (const bags of Object.values(data.milkBags)) {
-        if (bags.some((bag) => !bag.bagImage)) {
-          return false;
-        }
+      if (data.milkBags.some((bag) => !bag.bagImage)) {
+        return false;
       }
 
       return true;
@@ -173,10 +145,7 @@ export const requestSchema = z
 export const donationUpdateSchema = z
   .object({
     id: z.uuid().nonempty('Required'),
-    matchedRequest: matchedRequestSchema.optional(),
-    details: donationDetailsSchema
-      .omit({ bags: true })
-      .and(z.object({ bags: z.array(updateMilkBagSchema) })),
+    details: donationDetailsSchema.omit({ bags: true }),
     recipient: recipientSchema.optional().nullable(),
   })
   .and(deliveryPreferencesSchema);
@@ -184,7 +153,6 @@ export const donationUpdateSchema = z
 export const requestUpdateSchema = z
   .object({
     id: z.uuid().nonempty('Required'),
-    matchedDonation: matchedDonationSchema.optional(),
     volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
     details: requestDetailsSchema,
     recipient: recipientSchema.optional().nullable(),

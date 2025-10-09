@@ -29,7 +29,6 @@ interface DataMarkersProps<TSlug extends MarkerDataSlug = MarkerDataSlug> {
   markerData: MarkerData<TSlug>;
   markerProps: MapMarkerProps;
   onPress?: (event: MarkerPressEvent) => void;
-  showAvatar?: boolean;
   colorTheme?: keyof ColorsConfig['light'];
 }
 export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
@@ -86,6 +85,7 @@ export function DataMarkers<TSlug extends MarkerDataSlug = MarkerDataSlug>({
     onPress?.({ ...event, identifier: markerProps.identifier || event.nativeEvent.id });
     markerProps.onPress?.(event);
     setSelectedMarker(markerProps.identifier);
+    console.log('Marker pressed:', markerProps.identifier);
   }
 
   return (

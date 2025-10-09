@@ -16,6 +16,8 @@ import {
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
+  FormControlHelper,
+  FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
 } from '../ui/form-control';
@@ -121,7 +123,11 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
         <Icon as={TruckIcon} />
       </FormControlLabel>
 
-      <VStack space="sm" className="mt-1">
+      <FormControlHelper>
+        <FormControlHelperText>You can add multiple delivery preferences.</FormControlHelperText>
+      </FormControlHelper>
+
+      <VStack space="sm" className="mt-2">
         {selectedPrefs.map(ListItem)}
       </VStack>
 
@@ -141,17 +147,19 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
         onChange={handleChange}
         isDisabled={isDisabled}
         triggerComponent={(props) => (
-          <Button
-            {...props}
-            isDisabled={isDisabled}
-            size="sm"
-            variant="outline"
-            action="positive"
-            className="mt-4"
-          >
-            <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
-            <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
-          </Button>
+          <Animated.View layout={LinearTransition}>
+            <Button
+              {...props}
+              isDisabled={isDisabled}
+              size="sm"
+              variant="outline"
+              action="positive"
+              className="mt-4"
+            >
+              <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
+              <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
+            </Button>
+          </Animated.View>
         )}
       />
     </FormControl>

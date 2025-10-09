@@ -2,6 +2,7 @@ import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
+import CreateMilkBagsField from '@/components/fields/CreateMilkBagsField';
 import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
@@ -13,9 +14,7 @@ import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { DonationSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { randomUUID } from 'expo-crypto';
 import React, { useEffect, useMemo } from 'react';
-import MilkBagsField from './milkbags';
 
 interface DonationDetailsFormProps {
   matchedRequest?: string;
@@ -33,7 +32,7 @@ export function DonationDetailsForm({
     populate: { users: { profile: true, profileType: true, role: true } },
   });
 
-  const { getValues, reset, setValue, ...form } = useForm<DonationSchema>();
+  const { getValues, reset, setValue, additionalState, ...form } = useForm<DonationSchema>();
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
   const recipient = form.watch('recipient');
 
@@ -45,7 +44,7 @@ export function DonationDetailsForm({
     return extractCollection(selectedPref);
   }, [matchedRequestDoc, selectedDPID]);
 
-  const isLoading = restQuery.isLoading;
+  const isLoading = restQuery.isLoading || additionalState.isLoading;
   const disableFields = disableProp || form.formState.isSubmitting;
 
   // When matched request data is fetched, update the form values.
@@ -70,7 +69,7 @@ export function DonationDetailsForm({
   }
 
   return (
-    <VStack space="xl" className="py-5">
+    <VStack space="2xl" className="py-5">
       {matchedRequest && (
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
@@ -115,20 +114,6 @@ export function DonationDetailsForm({
         />
       </VStack>
 
-      <MilkBagsField isLoading={isLoading} isDisabled={disableFields} />
-
-      <Box className="mx-5">
-        <FormField
-          control={form.control}
-          name="details.image"
-          label="Cover Image"
-          fieldType="image"
-          helperText="Upload a cover image to feature your donation."
-          isDisabled={isLoading || disableFields}
-          allowsMultipleSelection={false}
-        />
-      </Box>
-
       <Box className="mx-5">
         <FormField
           control={form.control}
@@ -141,9 +126,27 @@ export function DonationDetailsForm({
         />
       </Box>
 
+      <CreateMilkBagsField
+        isLoading={isLoading}
+        isDisabled={isLoading || disableFields}
+        className="mx-5"
+      />
+
       {!hasMatchedRequest && (
         <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
       )}
+
+      <Box className="mx-5">
+        <FormField
+          control={form.control}
+          name="details.image"
+          label="Cover Image"
+          fieldType="image"
+          helperText="Upload a cover image to feature your donation."
+          isDisabled={isLoading || disableFields}
+          allowsMultipleSelection={false}
+        />
+      </Box>
     </VStack>
   );
 }
@@ -178,9 +181,7 @@ function updateDataOnMatchedRequest(
     {
       collectedAt: new Date().toISOString(),
       volume: volumeNeeded,
-      quantity: 1,
       donor: data.donor,
-      groupID: randomUUID(),
     },
   ];
 

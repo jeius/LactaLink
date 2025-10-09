@@ -4,12 +4,10 @@ import { MilkBag, User } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
-import { segregateMilkBags } from '@/lib/utils/segregateMilkBags';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { DonationSchema, donationSchema } from '@lactalink/form-schemas';
+import { CreateMilkBagSchema, DonationSchema, donationSchema } from '@lactalink/form-schemas';
 
 import { transformToMilkBagShema } from '@/lib/utils/transformData';
-import { randomUUID } from 'expo-crypto';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
@@ -65,9 +63,13 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
 
   const debouncedSave = useMemo(
     () =>
-      debounce((value: DeepPartial<DonationSchema>) => {
-        donationStorage.set(storageKey, JSON.stringify(value));
-      }, 500),
+      debounce(
+        (value: DeepPartial<DonationSchema>) => {
+          donationStorage.set(storageKey, JSON.stringify(value));
+        },
+        500,
+        { leading: true }
+      ),
     [storageKey]
   );
   // #endregion
@@ -85,7 +87,7 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
     data.details.bags = newDetailsBags;
     data.milkBags = newMilkBags;
     reset(data);
-  }, [bagsQuery.isSuccess, draftMilkBags, getValues, matchedRequest, reset]);
+  }, [bagsQuery.isSuccess, draftMilkBags, getValues, matchedRequest, reset, isRefetching]);
 
   // When user preferences or recipient prop changes, update the form values.
   useEffect(() => {
@@ -157,47 +159,39 @@ export const useCreateDonationForm = ({ matchedRequest, user, recipient }: Param
 
 // #region Helper Functions
 function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
-  const segregatedBags = segregateMilkBags(draftMilkBags);
+  const newDetailsBags: CreateMilkBagSchema[] = [];
 
-  const newDetailsBags: DonationSchema['details']['bags'] = [];
-  const newMilkBags: DonationSchema['milkBags'] = {};
+  const newMilkBags: DonationSchema['milkBags'] = [];
 
-  for (const bags of Object.values(segregatedBags)) {
-    if (bags.length === 0) continue;
-
-    const groupID = randomUUID();
-
+  for (const bag of draftMilkBags) {
+    newMilkBags.push(transformToMilkBagShema(bag));
     newDetailsBags.push({
-      donor: extractID(bags[0]!.donor),
-      volume: bags[0]!.volume,
-      quantity: bags.length,
-      collectedAt: bags[0]!.collectedAt,
-      groupID,
+      id: bag.id,
+      donor: extractID(bag.donor),
+      volume: bag.volume,
+      collectedAt: bag.collectedAt,
     });
-
-    newMilkBags[groupID] = bags.map((bag) => transformToMilkBagShema(bag));
   }
+
   return { newDetailsBags, newMilkBags };
 }
 
 function getData(user: User | null, storageKey: string): DonationSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
+  const donorID = extractID(profile);
   const storedData = getStoredData(user, storageKey);
-  const donor = profile?.id;
   return {
     milkBags: storedData?.milkBags || {},
-    donor: storedData?.donor || donor,
+    donor: storedData?.donor || donorID,
     deliveryPreferences: storedData?.deliveryPreferences || [],
     details: {
       ...storedData?.details,
       notes: storedData?.details?.notes || '',
       bags: storedData?.details?.bags || [
         {
-          donor,
+          donor: donorID,
           volume: 20,
-          quantity: 1,
           collectedAt: new Date().toISOString(),
-          groupID: randomUUID(),
         },
       ],
     },

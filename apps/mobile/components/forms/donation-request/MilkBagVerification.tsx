@@ -2,15 +2,6 @@ import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { useForm } from '@/components/contexts/FormProvider';
 import { HintAlert } from '@/components/HintAlert';
 import { Image } from '@/components/Image';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionHeader,
-  AccordionIcon,
-  AccordionItem,
-  AccordionTitleText,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -21,81 +12,39 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { MMKV_KEYS } from '@/lib/constants';
-
 import localStorage from '@/lib/localStorage';
 
 import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 
-import { File } from 'expo-file-system/next';
+import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
-import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
-import { CameraIcon, ChevronDownIcon, ChevronUpIcon, ImageIcon } from 'lucide-react-native';
+import { CameraIcon, ImageIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
+import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
 export default function MilkBagVerification() {
   const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION);
   const [showHint, setShowHint] = React.useState(!hasViewedHint);
 
-  const form = useForm<DonationSchema>();
+  const { setValue, control } = useForm<DonationSchema>();
 
-  const milkBags = form.watch('milkBags');
-
-  const bags = Object.entries(milkBags);
+  const milkBags = useWatch({ control, name: 'milkBags' }) || [];
 
   function handleHintClose() {
     localStorage.set(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION, true);
     setShowHint(true);
   }
 
-  function renderCard([groupID, bags]: [string, MilkBagSchema[]]) {
-    const quantity = bags.length;
-    const volume = bags[0]?.volume || 0;
-    const collectedAt = bags[0]?.collectedAt || new Date().toISOString();
-    const date = formatDate(collectedAt, { shortMonth: true });
-    const time = formatLocaleTime(collectedAt);
-
-    function handleOnCapture(index: number) {
-      return (image: ImageSchema) => {
-        form.setValue(`milkBags.${groupID}.${index}.bagImage`, image);
-      };
+  function renderCard(bag: MilkBagSchema, idx: number) {
+    function handleOnCapture(image: ImageSchema) {
+      setValue(`milkBags.${idx}.bagImage`, image);
     }
 
-    return (
-      <AccordionItem value={groupID} key={groupID}>
-        <AccordionHeader>
-          <AccordionTrigger className="px-0">
-            {({ isExpanded }: { isExpanded: boolean }) => {
-              return (
-                <>
-                  <AccordionTitleText className="font-JakartaSemiBold">
-                    {volume} mL, {time}, {date} {`(${quantity})`}
-                  </AccordionTitleText>
-                  {isExpanded ? (
-                    <AccordionIcon as={ChevronUpIcon} className="ml-3" />
-                  ) : (
-                    <AccordionIcon as={ChevronDownIcon} className="ml-3" />
-                  )}
-                </>
-              );
-            }}
-          </AccordionTrigger>
-        </AccordionHeader>
-        <AccordionContent>
-          <HStack space="md" className="flex-wrap items-center justify-center">
-            {bags.map((bag, bagIdx) => (
-              <MilkBagCard
-                key={`${bag.id}-${groupID}`}
-                data={bag}
-                onImageCapture={handleOnCapture(bagIdx)}
-              />
-            ))}
-          </HStack>
-        </AccordionContent>
-      </AccordionItem>
-    );
+    return <MilkBagCard key={`${bag.id}-${idx}`} data={bag} onImageCapture={handleOnCapture} />;
   }
 
   return (
@@ -105,9 +54,7 @@ export default function MilkBagVerification() {
         message="Ensure that you affix/write the code to the exact milk bag."
         onClose={handleHintClose}
       />
-      <Accordion variant="unfilled" type="multiple" defaultValue={Object.keys(bags)}>
-        {bags.map(renderCard)}
-      </Accordion>
+      {milkBags.map(renderCard)}
     </VStack>
   );
 }
@@ -116,6 +63,7 @@ interface MilkBagCardProps extends React.ComponentProps<typeof Card> {
   data: MilkBagSchema;
   onImageCapture?: (image: ImageSchema) => void;
 }
+
 function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const { themeColors } = useTheme();
 
@@ -211,15 +159,15 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
             className="absolute inset-x-0 bottom-0 items-start justify-between px-4 py-2"
           >
             <VStack className="items-start">
-              <Text className="text-typography-800 font-JakartaMedium">
+              <Text className="text-typography-800 font-JakartaSemiBold">
                 {formatLocaleTime(collectedAt)}
               </Text>
-              <Text className="text-typography-800 font-JakartaMedium">
+              <Text className="text-typography-800 font-JakartaSemiBold">
                 {formatDate(collectedAt, { shortMonth: true })}
               </Text>
             </VStack>
 
-            <Text className="text-typography-800 font-JakartaMedium">{volume} mL</Text>
+            <Text className="text-typography-800 font-JakartaSemiBold">{volume} mL</Text>
           </HStack>
         </Box>
 

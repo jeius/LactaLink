@@ -1,4 +1,5 @@
 import { getApiClient } from '@lactalink/api';
+import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
@@ -39,4 +40,11 @@ export async function deleteCollection(
   const { message } = await executePromise.catch(() => ({ message: null }));
 
   return Boolean(message);
+}
+
+export async function deleteMilkBag(id: string): Promise<MilkBag> {
+  return apiClient.deleteByID({
+    collection: 'milkBags',
+    id,
+  });
 }
