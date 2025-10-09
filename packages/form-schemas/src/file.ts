@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 export const imageSchema = z.object({
+  id: z.uuid().nonempty('Required').optional(),
   alt: z.string().nonempty('Required').optional(),
   url: z.url('Invalid URL').nonempty('Required'),
   filename: z.string().nonempty('Required'),

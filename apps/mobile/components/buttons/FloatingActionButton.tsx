@@ -6,6 +6,8 @@ import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 
+const AnimatedCard = Animated.createAnimatedComponent(Card);
+
 interface FloatingActionButtonProps extends React.ComponentProps<typeof Card> {
   show: boolean;
   onConfirm: () => void;
@@ -25,31 +27,25 @@ export function FloatingActionButton({
 }: FloatingActionButtonProps) {
   return (
     show && (
-      <Animated.View
+      <AnimatedCard
+        {...props}
         entering={FadeInDown}
         exiting={FadeOutDown}
-        style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 12,
-          right: 12,
-        }}
+        className="absolute inset-x-3 bottom-3 max-w-sm p-4"
       >
-        <Card {...props} className="mx-auto max-w-sm p-4">
-          <HStack space="md" className="w-full">
-            <Box className="flex-1">
-              <Button onPress={onConfirm}>
-                <ButtonIcon as={confirmIcon} />
-                <ButtonText>{confirmLabel}</ButtonText>
-              </Button>
-            </Box>
-
-            <Button variant="outline" action="default" onPress={onCancel}>
-              <ButtonText>{cancelLabel}</ButtonText>
+        <HStack space="md" className="w-full">
+          <Box className="flex-1">
+            <Button onPress={onConfirm}>
+              <ButtonIcon as={confirmIcon} />
+              <ButtonText>{confirmLabel}</ButtonText>
             </Button>
-          </HStack>
-        </Card>
-      </Animated.View>
+          </Box>
+
+          <Button variant="outline" action="default" onPress={onCancel}>
+            <ButtonText>{cancelLabel}</ButtonText>
+          </Button>
+        </HStack>
+      </AnimatedCard>
     )
   );
 }

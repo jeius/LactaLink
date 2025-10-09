@@ -9,7 +9,7 @@ interface LoadingSpinnerProps extends SafeAreaProps {
 export default function LoadingSpinner({ isLoading = true, ...props }: LoadingSpinnerProps) {
   const ref = useRef<LottieView>(null);
   const direction = useRef(1);
-  const [frames, setFrames] = useState<[number, number]>([0, 62]);
+  const [frames, setFrames] = useState<[number, number]>([0, 43]);
 
   useEffect(() => {
     ref.current?.play(frames[0], frames[1]);
@@ -31,9 +31,9 @@ export default function LoadingSpinner({ isLoading = true, ...props }: LoadingSp
           const newDirection = direction.current * -1;
           direction.current = newDirection;
           if (newDirection > 0) {
-            setFrames([8, 62]);
+            setFrames([33, 43]);
           } else {
-            setFrames([62, 8]);
+            setFrames([43, 33]);
           }
         }}
       />

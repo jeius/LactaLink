@@ -56,6 +56,7 @@ export function transformToImageSchema<T extends FileCollection | BaseInput>(
   if (typeof image === 'string') return null as TransformedImageSchema<T>;
 
   return {
+    id: image.id,
     filename: image.filename || 'image.jpg',
     mimeType: image.mimeType || 'image/jpeg',
     url: image.url,
