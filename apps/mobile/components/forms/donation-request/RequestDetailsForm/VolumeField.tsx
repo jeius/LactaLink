@@ -1,7 +1,6 @@
 import { FormField } from '@/components/FormField';
-import { SingleImageViewer } from '@/components/ImageViewer';
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { useForm } from '@/components/contexts/FormProvider';
+import { MilkBagCard } from '@/components/cards/MilkBagCard';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,16 +19,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
-import { transformToMilkBagShema } from '@/lib/utils/transformData';
-import { MilkBagSchema, RequestSchema } from '@lactalink/form-schemas';
-import { Donation } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID, extractImageData } from '@lactalink/utilities/extractors';
-import { formatDate } from '@lactalink/utilities/formatters';
+import { RequestSchema } from '@lactalink/form-schemas';
+import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
+import { generatePlaceHoldersWithID } from '@lactalink/utilities';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { randomUUID } from 'expo-crypto';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 
 interface VolumeFieldProps {
   matchedDonation?: Donation;
@@ -39,43 +37,24 @@ interface VolumeFieldProps {
 
 export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFieldProps) {
   const [isCustomVolume, setIsCustomVolume] = useState(false);
-  const form = useFormContext<RequestSchema>();
-
-  const selectedBags = form.watch('details.bags');
-  const setValue = form.setValue;
-
-  const { bags, bagsMap } = useMemo(() => {
-    const bags = extractCollection(matchedDonation?.details.bags) || [];
-
-    const map = new Map<string, MilkBagSchema>();
-    bags?.forEach((bag) => map.set(extractID(bag), transformToMilkBagShema(bag)));
-
-    return { bags: Array.from(map.values()), bagsMap: map };
-  }, [matchedDonation]);
-
-  useEffect(() => {
-    if (Array.isArray(selectedBags) && selectedBags.length > 0) {
-      const totalVolume = selectedBags.reduce((acc, { id: bagId }) => {
-        const bag = bagsMap.get(bagId);
-        return acc + (bag?.volume || 0);
-      }, 0);
-
-      setValue('volumeNeeded', totalVolume);
-    }
-  }, [selectedBags, bags, setValue, bagsMap]);
+  const { control } = useFormContext<RequestSchema>();
 
   function handleToggleCustomVolume() {
     setIsCustomVolume((prev) => !prev);
   }
 
   return matchedDonation ? (
-    <MilkBagsField bags={bags} isLoading={isLoading} isDisabled={isDisabled} />
+    <MilkBagsField
+      matchedDonation={matchedDonation}
+      isLoading={isLoading}
+      isDisabled={isDisabled}
+    />
   ) : (
     <VStack space="sm" className="mx-5">
       <Text className="font-JakartaMedium">How much milk do you need?</Text>
       <Card variant="filled" className="flex-col gap-5" isDisabled={isDisabled}>
         <FormField
-          control={form.control}
+          control={control}
           name="volumeNeeded"
           fieldType="button-group"
           options={Object.values(VOLUME_PRESET)}
@@ -94,7 +73,7 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
 
           {isCustomVolume && (
             <FormField
-              control={form.control}
+              control={control}
               name="volumeNeeded"
               fieldType="number"
               placeholder="Enter volume in mL"
@@ -109,27 +88,78 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
   );
 }
 
+const placeholder = generatePlaceHoldersWithID(6, {}) as MilkBag[];
+
 interface MilkBagsFieldProps {
-  bags: MilkBagSchema[];
+  matchedDonation: Donation;
   isLoading?: boolean;
   isDisabled?: boolean;
 }
 
-function MilkBagsField({ bags, isLoading, isDisabled }: MilkBagsFieldProps) {
-  const form = useForm<RequestSchema>();
-  const { error } = form.getFieldState('details.bags');
+function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsFieldProps) {
+  const { control, getFieldState, setValue } = useFormContext<RequestSchema>();
+  const { error } = getFieldState('details.bags');
+  const selectedBags = useWatch({ control, name: 'details.bags' });
 
-  const placeholder = useMemo(
-    () =>
-      Array.from(
-        { length: 6 },
-        (_, index) =>
-          ({
-            id: `placeholder-${index}-${randomUUID()}`,
-          }) as MilkBagSchema
-      ),
-    []
-  );
+  const { bags, bagsMap } = useMemo(() => {
+    const bags = extractCollection(matchedDonation.details.bags);
+
+    const map = new Map<string, MilkBag>();
+    bags.forEach((bag) => map.set(extractID(bag), bag));
+
+    return { bags: Array.from(map.values()), bagsMap: map };
+  }, [matchedDonation]);
+
+  useEffect(() => {
+    // Update the total volume needed based on selected bags
+    if (Array.isArray(selectedBags) && selectedBags.length > 0) {
+      const totalVolume = selectedBags.reduce((acc, { id: bagId }) => {
+        const bag = bagsMap.get(bagId);
+        return acc + (bag?.volume || 0);
+      }, 0);
+
+      setValue('volumeNeeded', totalVolume);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBags, bagsMap]);
+
+  const renderItem: ListRenderItem<MilkBag> = ({ item, index }) => {
+    const isPlaceholder = isPlaceHolderData(item);
+    const isSelected = selectedBags?.some(({ id }) => id === item.id);
+
+    function handleSelectBag() {
+      if (isSelected) {
+        setValue(
+          'details.bags',
+          selectedBags?.filter(({ id }) => id !== item.id),
+          { shouldValidate: true, shouldDirty: true, shouldTouch: true }
+        );
+      } else {
+        setValue(
+          'details.bags',
+          selectedBags ? [...selectedBags, { id: item.id }] : [{ id: item.id }],
+          { shouldValidate: true, shouldDirty: true, shouldTouch: true }
+        );
+      }
+    }
+
+    return isPlaceholder ? (
+      <CardSkeleton />
+    ) : (
+      <AnimatedPressable
+        // entering={FadeIn.duration(300).delay(index * 200)}
+        disabled={isDisabled}
+        onPress={handleSelectBag}
+        className="overflow-hidden rounded-2xl"
+      >
+        <MilkBagCard
+          disableViewThumbnail
+          data={item}
+          className={isSelected ? 'border-primary-500 border-2' : undefined}
+        />
+      </AnimatedPressable>
+    );
+  };
 
   return (
     <FormControl isInvalid={!!error} isDisabled={isDisabled}>
@@ -137,89 +167,29 @@ function MilkBagsField({ bags, isLoading, isDisabled }: MilkBagsFieldProps) {
         <FormControlLabelText>Available Milk Bags</FormControlLabelText>
       </FormControlLabel>
 
-      <Controller
-        control={form.control}
-        name="details.bags"
-        render={({ field }) => {
-          const renderItem: ListRenderItem<MilkBagSchema> = ({ item }) => {
-            const isPlaceholder = item.id.startsWith('placeholder-');
-
-            const title = `${item.volume || 0} mL`;
-            const date = formatDate(item.collectedAt);
-            const time = new Date(item.collectedAt).toLocaleTimeString('en', {
-              hour: '2-digit',
-              minute: '2-digit',
-            });
-
-            const imageData = extractImageData(item.bagImage);
-
-            const code = item.code || 'No Code';
-
-            const value = Array.isArray(field.value) ? field.value : [];
-
-            const isSelected = value.some(({ id }) => id === item.id);
-
-            function handleSelectBag() {
-              if (isSelected) {
-                field.onChange(value?.filter(({ id }) => id !== item.id));
-              } else {
-                field.onChange([...value, item.id]);
-              }
-            }
-
-            return isPlaceholder ? (
-              <CardSkeleton />
-            ) : (
-              <AnimatedPressable disabled={isDisabled} onPress={handleSelectBag} className="mr-4">
-                <Card
-                  isDisabled={isDisabled}
-                  className={`w-40 p-0 ${isSelected ? 'border-primary-500 border-2' : ''}`}
-                >
-                  <VStack className="items-stretch">
-                    <Box className="bg-primary-50 relative h-32 w-full flex-shrink-0 overflow-hidden">
-                      <SingleImageViewer disabled image={imageData} />
-                      <Text
-                        size="sm"
-                        bold
-                        className="bg-primary-500 text-primary-0 absolute left-0 top-0 px-2 py-1 text-center"
-                        style={{ borderBottomRightRadius: 8 }}
-                      >
-                        {code}
-                      </Text>
-                    </Box>
-                    <VStack space="xs" className="px-3 py-2">
-                      <Text className="font-JakartaSemiBold text-center">{title}</Text>
-                      <Text size="xs" className="text-typography-800 text-center">
-                        {date}, {time}
-                      </Text>
-                    </VStack>
-                  </VStack>
-                </Card>
-              </AnimatedPressable>
-            );
-          };
-
-          return (
-            <FlashList
-              horizontal
-              data={isLoading ? placeholder : bags}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
-              ItemSeparatorComponent={() => <Box style={{ width: 14 }} />}
-            />
-          );
-        }}
-      />
-
-      <FormControlError className="mx-5">
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>{error?.message}</FormControlErrorText>
-      </FormControlError>
-
       <FormControlHelper className="mx-5">
         <FormControlHelperText>Select the milk bags you want to request.</FormControlHelperText>
       </FormControlHelper>
+
+      <Box className="mt-2">
+        <FlashList
+          horizontal
+          data={isLoading ? placeholder : bags}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
+          ItemSeparatorComponent={() => <Box className="w-4" />}
+        />
+      </Box>
+
+      {error && (
+        <FormControlError className="mx-5">
+          <FormControlErrorIcon as={AlertCircleIcon} />
+          <FormControlErrorText numberOfLines={2} ellipsizeMode="tail" className="shrink">
+            {extractErrorMessage(error)}
+          </FormControlErrorText>
+        </FormControlError>
+      )}
     </FormControl>
   );
 }

@@ -1,5 +1,5 @@
 import { DeliveryPreference, Donation } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { getHexColor } from '@/lib/colors';
@@ -46,9 +46,7 @@ export function MatchedDonationCard({
     setSelectedPreference(selected);
   }, [selected]);
 
-  function handlePreferenceChange(preferenceID: string) {
-    const selectedPref = deliveryPreferences.find((dp) => extractID(dp) === preferenceID);
-    const preference = extractCollection(selectedPref);
+  function handlePreferenceChange(preference: DeliveryPreference | null | undefined) {
     setSelectedPreference(preference);
     onSelect?.(preference);
   }
@@ -105,23 +103,18 @@ export function MatchedDonationCard({
         <VStack space="lg" className="p-4">
           {selectedPreference && (
             <DeliveryPreferenceCard
-              variant="ghost"
-              className="p-0"
+              className="w-full rounded-lg"
+              variant="filled"
               preference={selectedPreference}
+              appearance="compact"
             />
           )}
           <DeliveryPreferencesBottomSheet
-            selected={extractID(selectedPreference)}
+            selected={selectedPreference}
             collections={deliveryPreferences}
             onChange={handlePreferenceChange}
             triggerComponent={(props) => (
-              <Button
-                {...props}
-                animateOnPress={false}
-                size="sm"
-                variant="outline"
-                action="default"
-              >
+              <Button {...props} disablePressAnimation size="sm" variant="outline" action="default">
                 <ButtonText>Choose a Delivery Preference</ButtonText>
               </Button>
             )}

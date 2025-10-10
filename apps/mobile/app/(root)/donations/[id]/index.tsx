@@ -1,4 +1,5 @@
 import { AnimatedProgress } from '@/components/animated/progress';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import {
   DonationRequestBottomCTA,
   DonationRequestCTA,
@@ -19,7 +20,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
-import { getColor, getTypographyColor } from '@/lib/colors/getColor';
+import { getTypographyColor } from '@/lib/colors/getColor';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { displayVolume } from '@lactalink/utilities';
@@ -32,13 +33,15 @@ import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const IMAGE_HEIGHT = 180;
-const ACCENT_COLOR = getColor('primary', '100');
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export default function DonationDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { themeColors } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const accent_color = themeColors.primary[100]!;
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useScrollOffset(scrollRef);
@@ -50,7 +53,7 @@ export default function DonationDetailsPage() {
   } = useParallaxAnimationStyles(scrollY, {
     insets,
     imageHeight: IMAGE_HEIGHT,
-    accentColor: ACCENT_COLOR,
+    accentColor: accent_color,
   });
 
   const screen = useWindowDimensions();
@@ -111,7 +114,7 @@ export default function DonationDetailsPage() {
           <SingleImageViewer contentFit="cover" image={image} className="grow" />
         )}
         <GradientBackground
-          colors={['transparent', 'transparent', ACCENT_COLOR]}
+          colors={['transparent', 'transparent', accent_color]}
           pointerEvents="none"
           style={{ opacity: 0.85 }}
         />

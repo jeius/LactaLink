@@ -28,3 +28,4 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ICardProps>(funct
 Card.displayName = 'Card';
 
 export { Card };
+export type { ICardProps as CardProps };

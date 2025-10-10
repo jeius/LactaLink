@@ -21,7 +21,7 @@ import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
-import { getColor, getTypographyColor } from '@/lib/colors';
+import { getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { DONATION_REQUEST_STATUS, URGENCY_LEVELS } from '@lactalink/enums';
@@ -35,7 +35,6 @@ import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const IMAGE_HEIGHT = 180;
-const ACCENT_COLOR = getColor('tertiary', '100');
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -43,6 +42,9 @@ export default function RequestDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { themeColors } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const accent_color = themeColors.tertiary[100];
+  const progressTrackColor = themeColors.tertiary[500];
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useScrollOffset(scrollRef);
@@ -54,7 +56,7 @@ export default function RequestDetailsPage() {
   } = useParallaxAnimationStyles(scrollY, {
     insets,
     imageHeight: IMAGE_HEIGHT,
-    accentColor: ACCENT_COLOR,
+    accentColor: accent_color,
   });
 
   const screen = useWindowDimensions();
@@ -119,7 +121,7 @@ export default function RequestDetailsPage() {
           <SingleImageViewer contentFit="cover" image={image} className="grow" />
         )}
         <GradientBackground
-          colors={['transparent', 'transparent', ACCENT_COLOR]}
+          colors={['transparent', 'transparent', accent_color!]}
           pointerEvents="none"
           style={{ opacity: 0.85 }}
         />
@@ -205,7 +207,7 @@ export default function RequestDetailsPage() {
                       size="sm"
                       orientation="horizontal"
                       value={percentage}
-                      trackColor={themeColors.tertiary[500]}
+                      trackColor={progressTrackColor}
                     />
                     <Text size="xs" className="text-typography-700 text-center">
                       {fulfilledVolume} mL fulfilled

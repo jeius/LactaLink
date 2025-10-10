@@ -137,7 +137,7 @@ export const requestSchema = z
       return true;
     },
     {
-      error: 'Atleast one milk bag must be selected.',
+      error: 'You must select at least one milk bag.',
       path: ['details', 'bags'],
     }
   );

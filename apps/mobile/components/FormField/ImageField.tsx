@@ -10,7 +10,7 @@ import { PlusCircleIcon, Trash2Icon } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { FieldPath, FieldValues, useFieldArray, useFormState } from 'react-hook-form';
 import { ViewProps } from 'react-native';
-import Animated, { FadeIn, FadeOutUp, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { SingleImageViewer } from '../ImageViewer';
 import { Skeleton } from '../ui/skeleton';
 
@@ -199,11 +199,11 @@ function ImageCard({ isDisabled, data, onRemove }: ImageCardProps) {
     <AnimatedCard
       layout={LinearTransition}
       entering={FadeIn}
-      exiting={FadeOutUp}
+      exiting={FadeOut}
       isDisabled={isDisabled}
       variant="filled"
       size="lg"
-      className="relative h-24 w-20 p-0"
+      className="relative h-40 w-32 p-0"
     >
       <SingleImageViewer image={{ uri: data.url, alt: data.alt, blurHash: data.blurhash }} />
       <Button

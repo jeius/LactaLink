@@ -1,7 +1,7 @@
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { PackageIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -47,9 +47,7 @@ export default function MatchedRequestCard({
     setSelectedPreference(selected);
   }, [selected]);
 
-  function handlePreferenceChange(preferenceID: string) {
-    const selectedPref = deliveryPreferences.find((dp) => extractID(dp) === preferenceID);
-    const preference = extractCollection(selectedPref);
+  function handlePreferenceChange(preference: DeliveryPreference | null | undefined) {
     setSelectedPreference(preference);
     onSelect?.(preference);
   }
@@ -123,24 +121,19 @@ export default function MatchedRequestCard({
         <VStack space="lg" className="p-4">
           {selectedPreference && (
             <DeliveryPreferenceCard
-              className="w-full rounded-xl"
+              variant="filled"
+              className="w-full rounded-lg"
               preference={selectedPreference}
               appearance="compact"
             />
           )}
           <DeliveryPreferencesBottomSheet
-            selected={extractID(selectedPreference)}
+            selected={selectedPreference}
             collections={deliveryPreferences}
             onChange={handlePreferenceChange}
             allowMultipleSelection={false}
             triggerComponent={(props) => (
-              <Button
-                {...props}
-                animateOnPress={false}
-                size="sm"
-                variant="outline"
-                action="default"
-              >
+              <Button {...props} disablePressAnimation size="sm" variant="outline" action="default">
                 <ButtonText>Choose a Delivery Preference</ButtonText>
               </Button>
             )}

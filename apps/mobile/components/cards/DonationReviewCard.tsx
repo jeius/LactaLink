@@ -1,9 +1,9 @@
+import { getColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { DonationSchema } from '@lactalink/form-schemas';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { DotIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import { Card } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -20,10 +20,8 @@ export function DonationReviewCard({
   variant = 'filled',
   ...props
 }: DonationReviewCardProps) {
-  const { themeColors } = useTheme();
-
-  const fillColor = themeColors.primary[50];
-  const strokeColor = themeColors.primary[700];
+  const fillColor = getColor('primary', '50');
+  const strokeColor = getColor('primary', '700');
 
   const {
     deliveryPreferences,

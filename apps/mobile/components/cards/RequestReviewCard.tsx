@@ -1,8 +1,8 @@
-import { getHexColor } from '@/lib/colors';
+import { getColor } from '@/lib/colors';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { RequestSchema } from '@lactalink/form-schemas';
-import { formatDate } from '@lactalink/utilities/formatters';
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { CalendarDaysIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -21,8 +21,8 @@ interface RequestReviewCardProps extends ComponentProps<typeof Card> {
 export function RequestReviewCard({ data, variant = 'filled', ...props }: RequestReviewCardProps) {
   const { theme } = useTheme();
 
-  const fillColor = getHexColor(theme, 'primary', 50)?.toString();
-  const strokeColor = getHexColor(theme, 'primary', 700)?.toString();
+  const fillColor = getColor('tertiary', '50');
+  const strokeColor = getColor('tertiary', '700');
 
   const {
     volumeNeeded,
@@ -57,8 +57,7 @@ export function RequestReviewCard({ data, variant = 'filled', ...props }: Reques
           <Text size="sm">Needed At:</Text>
           <Icon as={CalendarDaysIcon} fill={fillColor} stroke={strokeColor} />
           <Text size="sm" className="font-JakartaMedium">
-            {formatDate(neededAt)},{' '}
-            {new Date(neededAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {formatDate(neededAt, { shortMonth: true })}, {formatLocaleTime(neededAt)}
           </Text>
         </HStack>
 
@@ -94,18 +93,20 @@ export function RequestReviewCard({ data, variant = 'filled', ...props }: Reques
           </Textarea>
         </VStack>
 
-        <VStack space="xs" className="w-full">
-          <Text size="sm">Delivery Preferences:</Text>
-          {deliveryPreferences?.map((preference, index) => (
-            <DeliveryPreferenceCard
-              key={index}
-              variant="outline"
-              size="md"
-              className="rounded-lg"
-              preference={preference}
-            />
-          ))}
-        </VStack>
+        {deliveryPreferences.length > 0 && (
+          <VStack space="xs" className="w-full">
+            <Text size="sm">Delivery Preferences:</Text>
+            {deliveryPreferences.map((preference, index) => (
+              <DeliveryPreferenceCard
+                key={index}
+                variant="outline"
+                className="rounded-lg px-3 py-2"
+                preference={preference}
+                appearance="list-item"
+              />
+            ))}
+          </VStack>
+        )}
       </VStack>
     </Card>
   );

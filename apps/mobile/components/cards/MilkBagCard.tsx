@@ -1,26 +1,43 @@
 import { getMilkBagStatusColor } from '@/lib/colors';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { MarkOptional } from '@lactalink/types/utils';
+import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import React, { useMemo } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
-import { Card } from '../ui/card';
+import { Card, CardProps } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
-interface MilkBagCardProps extends MarkOptional<CardContentProps, 'data'> {
+const baseStyle = tva({
+  base: 'w-40 p-0',
+});
+
+interface MilkBagCardProps extends MarkOptional<CardContentProps, 'data'>, CardProps {
   isLoading?: boolean;
 }
 
-export function MilkBagCard({ data, isLoading, ...props }: MilkBagCardProps) {
+export function MilkBagCard({
+  data,
+  isLoading,
+  variant = 'filled',
+  className,
+  disableViewThumbnail,
+  ...props
+}: MilkBagCardProps) {
   return (
-    <Card variant="filled" className="w-40 p-0">
-      {isLoading ? <CardSkeleton /> : data && <CardContent {...props} data={data} />}
+    <Card {...props} variant={variant} className={baseStyle({ class: className })}>
+      {isLoading ? (
+        <CardSkeleton />
+      ) : (
+        data && <CardContent disableViewThumbnail={disableViewThumbnail} data={data} />
+      )}
     </Card>
   );
 }
@@ -47,7 +64,7 @@ function CardContent({ data, disableViewThumbnail = false }: CardContentProps) {
 
   const { image, volume, date, time, code, status, statusColor } = useMemo(() => {
     const image = extractImageData(extractCollection(data.bagImage));
-    const volume = `${data.volume.toLocaleString()} mL`;
+    const volume = displayVolume(data.volume);
     const date = formatDate(data.collectedAt, { shortMonth: true });
     const time = formatLocaleTime(data.collectedAt);
     const code = data.code || 'No Code';

@@ -26,6 +26,7 @@ import { Transaction } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { toast } from 'sonner-native';
 
 export default function CreateRequest() {
@@ -115,7 +116,7 @@ export default function CreateRequest() {
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
-        <ScrollView
+        <KeyboardAwareScrollView
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
         >
@@ -130,6 +131,7 @@ export default function CreateRequest() {
                   onTriggerPress={handleValidation}
                   onConfirm={form.handleSubmit(onSubmit)}
                   isDisabled={isSubmitting}
+                  modalSize="lg"
                   title="Review Request"
                   description={
                     <ScrollView
@@ -144,7 +146,7 @@ export default function CreateRequest() {
               </Box>
             )}
           </VStack>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <FetchingSpinner isFetching={isLoading} />
       </SafeArea>

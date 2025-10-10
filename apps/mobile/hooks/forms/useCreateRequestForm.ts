@@ -47,6 +47,8 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
 
     if (!matchedDonation) {
       data.matchedDonation = undefined;
+    } else {
+      data.volumeNeeded = 20;
     }
 
     if (preferences?.length && !data.deliveryPreferences?.length) {
