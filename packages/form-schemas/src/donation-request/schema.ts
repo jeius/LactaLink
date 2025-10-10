@@ -85,8 +85,8 @@ export const donationSchema = z
     details: donationDetailsSchema,
     recipient: recipientSchema.optional().nullable(),
     milkBags: z.array(milkBagSchema),
+    ...deliveryPreferencesSchema.shape,
   })
-  .and(deliveryPreferencesSchema)
   .refine(
     (data) => {
       if (!data.matchedRequest) {
@@ -124,8 +124,8 @@ export const requestSchema = z
     volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
     details: requestDetailsSchema,
     matchedDonation: matchedDonationSchema.optional(),
+    ...deliveryPreferencesSchema.shape,
   })
-  .and(deliveryPreferencesSchema)
   .refine(
     (data) => {
       if (data.matchedDonation) {
@@ -142,19 +142,18 @@ export const requestSchema = z
     }
   );
 
-export const donationUpdateSchema = z
-  .object({
-    id: z.uuid().nonempty('Required'),
-    details: donationDetailsSchema.omit({ bags: true }),
-    recipient: recipientSchema.optional().nullable(),
-  })
-  .and(deliveryPreferencesSchema);
+export const donationUpdateSchema = z.object({
+  id: z.uuid().nonempty('Required'),
+  details: donationDetailsSchema.omit({ bags: true }),
+  ...donationSchema.pick({ recipient: true, deliveryPreferences: true }).shape,
+});
 
-export const requestUpdateSchema = z
-  .object({
-    id: z.uuid().nonempty('Required'),
-    volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
-    details: requestDetailsSchema,
-    recipient: recipientSchema.optional().nullable(),
-  })
-  .and(deliveryPreferencesSchema);
+export const requestUpdateSchema = z.object({
+  id: z.uuid().nonempty('Required'),
+  ...requestSchema.pick({
+    details: true,
+    recipient: true,
+    volumeNeeded: true,
+    deliveryPreferences: true,
+  }).shape,
+});

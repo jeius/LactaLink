@@ -15,6 +15,7 @@ export default function Layout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerTitle: 'Request Details' }} />
+      <Stack.Screen name="edit" options={{ headerTitle: 'Edit Request' }} />
     </Stack>
   );
 }

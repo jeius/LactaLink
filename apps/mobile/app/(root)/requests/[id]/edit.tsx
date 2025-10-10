@@ -9,45 +9,46 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { useEditDonationForm } from '@/hooks/forms/useEditDonationForm';
+import { useEditRequestForm } from '@/hooks/forms/useEditRequestForm';
 import { uploadImage } from '@/lib/api/file';
 import { getApiClient } from '@lactalink/api';
-import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
-import { UpdateDonationSchema } from '@lactalink/form-schemas';
+import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
+import { UpdateRequestSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useLocalSearchParams } from 'expo-router';
+import { ClockIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { toast } from 'sonner-native';
 
-export default function DonationEditPage() {
+export default function RequestEditPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [floatingButtonHeight, setFloatingButtonHeight] = useState(0);
   const revalidate = useRevalidateCollectionQueries();
 
-  const form = useEditDonationForm(id);
+  const form = useEditRequestForm(id);
 
   const { watch, isLoading, formState, reset, onRefresh, refreshing = false } = form;
   const recipient = watch('recipient');
 
-  const disableFields = formState.isSubmitting;
+  const isSubmitting = formState.isSubmitting;
   const isDirty = formState.isDirty;
   const showFloatingButton = isDirty;
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(data: UpdateDonationSchema) {
+  async function onSubmit(data: UpdateRequestSchema) {
     const promise = update(data);
 
     toast.promise(promise, {
-      loading: 'Updating donation...',
+      loading: 'Updating request...',
       success: (res) => res.message,
       error: (err) => extractErrorMessage(err),
     });
 
     await promise;
     reset(data);
-    revalidate(['donations']);
+    revalidate(['requests']);
   }
 
   function handleReset() {
@@ -64,63 +65,102 @@ export default function DonationEditPage() {
         >
           {recipient && (
             <Box className="mx-5 mb-4">
-              <Text className="font-JakartaSemiBold mb-1">Selected Recipient</Text>
-              <ProfileCard isLoading={isLoading} profile={recipient} variant="elevated" />
+              <Text className="font-JakartaSemiBold mb-1">Selected Donor</Text>
+              <ProfileCard profile={recipient} variant="elevated" />
             </Box>
           )}
 
-          <VStack space="lg" className="mx-5">
+          <VStack space="xl" className="mx-5">
             <Text size="lg" className="font-JakartaSemiBold">
               Milk Details
             </Text>
+
             <FormField
               control={form.control}
-              key={'details.storageType'}
-              name="details.storageType"
-              label="How are you storing/preserving the milk?"
+              name="details.storagePreference"
+              label="Select how you would like the milk to be stored/preserved."
               fieldType="button-group"
-              options={Object.values(STORAGE_TYPES)}
+              options={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
               isLoading={isLoading}
-              isDisabled={isLoading || disableFields}
+              isDisabled={isLoading || isSubmitting}
             />
 
             <FormField
               control={form.control}
-              key={'details.collectionMode'}
-              name="details.collectionMode"
-              label="How did you collect the milk?"
+              name="details.urgency"
+              label="How urgently do you need the milk?"
               fieldType="button-group"
-              options={Object.values(COLLECTION_MODES)}
-              isLoading={isLoading}
-              isDisabled={isLoading || disableFields}
+              options={Object.values(URGENCY_LEVELS)}
+              isDisabled={isLoading || isSubmitting}
             />
+          </VStack>
+
+          <VStack space="sm" className="mx-5">
+            <Text className="font-JakartaMedium">When do you need the milk?</Text>
+            <VStack className="flex-col gap-4">
+              <FormField
+                control={form.control}
+                name="details.neededAt"
+                fieldType="date"
+                mode="date"
+                helperText="Select a date when you need the milk."
+                datePickerOptions={{ minimumDate: new Date() }}
+                placeholder="Select date..."
+                style={{ maxWidth: 200 }}
+                isDisabled={isLoading || isSubmitting}
+              />
+
+              <FormField
+                control={form.control}
+                name="details.neededAt"
+                fieldType="date"
+                mode="time"
+                helperText="Specify the time when you need the milk."
+                placeholder="Select time..."
+                inputIcon={ClockIcon}
+                style={{ maxWidth: 200 }}
+                showSetNowButton
+                datePickerOptions={{ minimumDate: new Date() }}
+                isDisabled={isLoading || isSubmitting}
+              />
+            </VStack>
           </VStack>
 
           <Box className="mx-5">
             <FormField
               control={form.control}
-              name="details.notes"
-              label="Additional Notes"
+              name="details.reason"
+              label="Reason for Request"
               fieldType="textarea"
-              placeholder="Any additional information about the milk, such as health conditions, medications, etc."
-              helperText="This information will be shared with the recipient."
-              isLoading={isLoading}
-              isDisabled={isLoading || disableFields}
+              placeholder="Please provide a brief reason for your request."
+              helperText="Optional, but helps the donor understand your needs."
+              isDisabled={isLoading || isSubmitting}
             />
           </Box>
 
-          <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
+          <Box className="mx-5">
+            <FormField
+              control={form.control}
+              name="details.notes"
+              label="Additional Notes (If any)"
+              fieldType="textarea"
+              placeholder="Any additional information about the milk, such as health conditions, medications, etc."
+              helperText="This information will be shared with the recipient."
+              isDisabled={isLoading || isSubmitting}
+            />
+          </Box>
+
+          <DeliveryPreferencesField isLoading={isLoading} isDisabled={isSubmitting} />
 
           <Box className="mx-5">
             <FormField
               control={form.control}
               name="details.image"
-              label="Cover Image"
+              label="Image of Recipient"
               fieldType="image"
-              helperText="Upload a cover image to feature your donation."
-              isLoading={isLoading}
-              isDisabled={isLoading || disableFields}
               allowsMultipleSelection={false}
+              helperText="Optional, but may encourage donors to fulfill your request."
+              isDisabled={isLoading || isSubmitting}
             />
           </Box>
         </KeyboardAwareScrollView>
@@ -141,22 +181,22 @@ export default function DonationEditPage() {
   );
 }
 
-async function update({ id, details, ...data }: UpdateDonationSchema) {
+async function update({ id, details, deliveryPreferences, ...data }: UpdateRequestSchema) {
   const apiClient = getApiClient();
 
   const image = details.image;
 
   const imageID = image ? image.id || (await uploadImage('images', image)).id : undefined;
 
-  const updatedDonation = await apiClient.updateByID({
-    collection: 'donations',
+  const updatedRequest = await apiClient.updateByID({
+    collection: 'requests',
     id: id,
     data: {
       ...data,
-      details: { ...details, milkSample: imageID ? [imageID] : undefined },
-      deliveryPreferences: extractID(data.deliveryPreferences),
+      details: { ...details, bags: extractID(details.bags), image: imageID },
+      deliveryPreferences: extractID(deliveryPreferences),
     },
   });
 
-  return { message: 'Donation updated successfully!', donation: updatedDonation };
+  return { message: 'Request updated successfully!', donation: updatedRequest };
 }

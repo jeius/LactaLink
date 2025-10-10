@@ -3,7 +3,7 @@ import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lact
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { formatDate } from '@lactalink/utilities/formatters';
 import { isDonation } from '@lactalink/utilities/type-guards';
-import { CalendarCheck2Icon, DropletIcon, PackageIcon } from 'lucide-react-native';
+import { ClipboardClockIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { useTheme } from './AppProvider/ThemeProvider';
 import FastTimerIcon from './icons/FastTimerIcon';
@@ -24,7 +24,7 @@ interface StorageTypeTagProps extends BaseProps {
 export function StorageTypeTag({ data, isLoading }: StorageTypeTagProps) {
   const { themeColors } = useTheme();
 
-  const { storage, fillColor, strokeColor } = useMemo(() => {
+  const { storage, strokeColor } = useMemo(() => {
     if (!data) return { storage: 'N/A' };
 
     const storageTypes = PREFERRED_STORAGE_TYPES;
@@ -58,9 +58,11 @@ export function StorageTypeTag({ data, isLoading }: StorageTypeTagProps) {
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={PackageIcon} size="sm" fill={fillColor} stroke={strokeColor} />
+            <Icon as={PackageIcon} size="sm" stroke={strokeColor} />
           </Card>
-          <Text size="sm">{storage}</Text>
+          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
+            {storage}
+          </Text>
         </>
       )}
     </HStack>
@@ -73,7 +75,6 @@ interface CollectionMethodTagProps extends BaseProps {
 
 export function CollectionMethodTag({ data, isLoading }: CollectionMethodTagProps) {
   const { themeColors } = useTheme();
-  const fillColor = themeColors.primary[50];
   const strokeColor = themeColors.primary[700];
 
   const method = COLLECTION_MODES[data?.details.collectionMode || 'MANUAL'].label;
@@ -88,9 +89,11 @@ export function CollectionMethodTag({ data, isLoading }: CollectionMethodTagProp
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={DropletIcon} size="sm" fill={fillColor} stroke={strokeColor} />
+            <Icon as={DropletIcon} size="sm" stroke={strokeColor} />
           </Card>
-          <Text size="sm">{method}</Text>
+          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
+            {method}
+          </Text>
         </>
       )}
     </HStack>
@@ -122,7 +125,7 @@ export function UrgencyTag({ data, isLoading }: UrgencyTagProps) {
           <Card className="rounded-full border-0 p-2">
             <Icon as={FastTimerIcon} size="sm" fill={fillColor} />
           </Card>
-          <Text size="sm" style={{ color: fillColor }}>
+          <Text size="sm" className="font-JakartaMedium" style={{ color: fillColor }}>
             {urgencyLabel}
           </Text>
         </>
@@ -136,14 +139,12 @@ interface DueDateTagProps extends BaseProps {
 }
 
 export function DueDateTag({ data, isLoading }: DueDateTagProps) {
-  const { theme } = useTheme();
+  const { themeColors } = useTheme();
 
-  const urgency = data?.details?.urgency || URGENCY_LEVELS.LOW.value;
   const neededAt =
     data?.details?.neededAt && formatDate(data.details.neededAt, { shortMonth: true });
 
-  const fillColor = getPriorityColor(theme, urgency, 50).toString();
-  const strokeColor = getPriorityColor(theme, urgency, 700).toString();
+  const strokeColor = themeColors.tertiary[700];
 
   return (
     <HStack space="sm" className="items-center">
@@ -155,9 +156,9 @@ export function DueDateTag({ data, isLoading }: DueDateTagProps) {
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={CalendarCheck2Icon} size="sm" fill={fillColor} stroke={strokeColor} />
+            <Icon as={ClipboardClockIcon} size="sm" stroke={strokeColor} />
           </Card>
-          <Text size="sm" style={{ color: strokeColor }}>
+          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
             {neededAt}
           </Text>
         </>

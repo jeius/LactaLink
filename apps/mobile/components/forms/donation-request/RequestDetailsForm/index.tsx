@@ -144,24 +144,6 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
         </VStack>
       </VStack>
 
-      <VolumeField
-        matchedDonation={matchedDonationDoc}
-        isLoading={isLoading}
-        isDisabled={isLoading || isSubmitting}
-      />
-
-      <Box className="mx-5">
-        <FormField
-          control={form.control}
-          name="details.image"
-          label="Image of Recipient"
-          fieldType="image"
-          allowsMultipleSelection={false}
-          helperText="Optional, but may encourage donors to fulfill your request."
-          isDisabled={isLoading || isSubmitting}
-        />
-      </Box>
-
       <Box className="mx-5">
         <FormField
           control={form.control}
@@ -186,9 +168,27 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
         />
       </Box>
 
+      <VolumeField
+        matchedDonation={matchedDonationDoc}
+        isLoading={isLoading}
+        isDisabled={isLoading || isSubmitting}
+      />
+
       {!matchedDonation && (
         <DeliveryPreferencesField isLoading={isLoading} isDisabled={isSubmitting} />
       )}
+
+      <Box className="mx-5">
+        <FormField
+          control={form.control}
+          name="details.image"
+          label="Image of Recipient"
+          fieldType="image"
+          allowsMultipleSelection={false}
+          helperText="Optional, but may encourage donors to fulfill your request."
+          isDisabled={isLoading || isSubmitting}
+        />
+      </Box>
     </VStack>
   );
 }
