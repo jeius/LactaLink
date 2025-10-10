@@ -81,3 +81,8 @@ export function getTypographyColor(shade: Shade = '950') {
   const theme = getTheme();
   return getHexColor(theme, 'typography', shade)?.toString();
 }
+
+export function getColor(category: ColorCategory, shade: Shade) {
+  const theme = getTheme();
+  return colorsConfig[theme][category][shade] || 'transparent';
+}

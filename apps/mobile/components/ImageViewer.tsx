@@ -7,6 +7,7 @@ import { GestureResponderEvent, useWindowDimensions } from 'react-native';
 import { AnimatedPressable } from './animated/pressable';
 import { Image } from './Image';
 import { Box } from './ui/box';
+import { PressableProps } from './ui/pressable';
 import { Text } from './ui/text';
 
 interface ImageViewerProps extends Pick<ComponentProps<typeof Image>, 'contentFit'> {
@@ -68,7 +69,7 @@ export function ImageViewer({ images, initialIndex = 0, contentFit = 'cover' }: 
 
 interface SingleImageViewerProps
   extends Omit<ImageViewerProps, 'initialIndex' | 'images'>,
-    ComponentProps<typeof AnimatedPressable> {
+    PressableProps {
   disabled?: boolean;
   image?: { uri: string | null; blurHash?: string | null; alt?: string | null } | null;
 }
@@ -89,7 +90,7 @@ export function SingleImageViewer({
     <AnimatedPressable
       {...props}
       pointerEvents={disabled ? 'none' : 'auto'}
-      disablePressAnimation={props.disablePressAnimation || true}
+      disablePressAnimation={true}
       onPress={handlePress}
       android_disableSound
     >
