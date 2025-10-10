@@ -10,12 +10,10 @@ export default function Layout() {
       initialRouteName="index"
       screenOptions={{
         ...screenOptions,
-        headerShown: true,
         headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
-      <Stack.Screen name="index" options={{ headerTitle: 'Request Details' }} />
-      <Stack.Screen name="edit" options={{ headerTitle: 'Edit Request' }} />
+      <Stack.Screen name="edit" options={{ headerShown: true, headerTitle: 'Edit Request' }} />
     </Stack>
   );
 }

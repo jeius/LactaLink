@@ -1,4 +1,4 @@
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonProps, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon, ThreeDotsIcon } from '@/components/ui/icon';
 import { Popover, PopoverBackdrop, PopoverContent } from '@/components/ui/popover';
@@ -30,8 +30,13 @@ interface DonationRequestCTAProps {
   data?: Donation | Request;
   isLoading?: boolean;
   onLayout?: (event: LayoutChangeEvent) => void;
+  variant?: ButtonProps['variant'];
 }
-export function DonationRequestCTA({ data, isLoading }: DonationRequestCTAProps) {
+export function DonationRequestCTA({
+  data,
+  isLoading,
+  variant = 'solid',
+}: DonationRequestCTAProps) {
   const { data: meUser } = useMeUser();
   const meUserProfile = extractCollection(meUser?.profile?.value);
 
@@ -53,11 +58,11 @@ export function DonationRequestCTA({ data, isLoading }: DonationRequestCTAProps)
 
   return isLoading ? null : (
     <HStack space="md" className="items-center justify-end">
-      <Button action="muted" className="h-fit w-fit rounded-full p-3">
+      <Button action="muted" variant={variant} className="h-fit w-fit rounded-full p-3">
         <ButtonIcon as={MessageCircleIcon} />
       </Button>
 
-      <Button action="muted" className="h-fit w-fit rounded-full p-3">
+      <Button action="muted" variant={variant} className="h-fit w-fit rounded-full p-3">
         <ButtonIcon as={ShareIcon} />
       </Button>
 
@@ -68,7 +73,12 @@ export function DonationRequestCTA({ data, isLoading }: DonationRequestCTAProps)
           useRNModal
           shouldOverlapWithTrigger
           trigger={(props) => (
-            <Button {...props} action="muted" className="h-fit w-fit rounded-full p-3">
+            <Button
+              {...props}
+              variant={variant}
+              action="muted"
+              className="h-fit w-fit rounded-full p-3"
+            >
               <ButtonIcon as={ThreeDotsIcon} />
             </Button>
           )}

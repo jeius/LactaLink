@@ -5,7 +5,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 
 export default function GradientBackground(props: LinearGradientProps) {
-  return <LinearGradient {...props} style={[props.style, StyleSheet.absoluteFill]} />;
+  return <LinearGradient {...props} style={[props.style, StyleSheet.absoluteFillObject]} />;
 }
 
 export function ImageGradientOverlay(props: Partial<LinearGradientProps>) {
