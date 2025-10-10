@@ -3,10 +3,10 @@ import {
   DonationRequestBottomCTA,
   DonationRequestCTA,
 } from '@/components/buttons/DonationRequestCTA';
+import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { DPList, MilkBagList } from '@/components/lists/horizontal-flatlists';
 import { ProfileTag } from '@/components/ProfileTag';
-import SafeArea from '@/components/SafeArea';
 import { CollectionMethodTag, StorageTypeTag } from '@/components/tags';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
@@ -18,20 +18,44 @@ import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
+import { getColor, getTypographyColor } from '@/lib/colors/getColor';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import React, { useMemo, useState } from 'react';
+import { useWindowDimensions, View } from 'react-native';
+import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const IMAGE_HEIGHT = 180;
+const ACCENT_COLOR = getColor('primary', '100');
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export default function DonationDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
+
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollY = useScrollOffset(scrollRef);
+  const {
+    scrollAnimatedStyles,
+    headerViewAnimatedStyles,
+    titleAnimatedStyles,
+    animatedImageStyles,
+  } = useParallaxAnimationStyles(scrollY, {
+    insets,
+    imageHeight: IMAGE_HEIGHT,
+    accentColor: ACCENT_COLOR,
+  });
 
   const screen = useWindowDimensions();
   const isMobile = screen.width <= DEVICE_BREAKPOINTS.phone;
+  const [ctaHeight, setCTAHeight] = useState(0);
 
   const { data, ...query } = useFetchById(!!id, {
     collection: 'donations',
@@ -45,7 +69,7 @@ export default function DonationDetailsPage() {
   const donor = extractCollection(data?.donor);
 
   const status = data?.status;
-  const notes = data?.details?.notes;
+  const notes = data?.details?.notes || '';
 
   const { image, bags } = useMemo(() => {
     const milkSample = extractCollection(data?.details?.milkSample);
@@ -55,127 +79,161 @@ export default function DonationDetailsPage() {
   }, [data, isMobile]);
 
   return (
-    <SafeArea safeTop={false} className="items-stretch">
-      <ScrollView
-        contentContainerClassName="grow flex-col items-stretch justify-start"
-        contentContainerStyle={{ paddingBottom: 64 }}
+    <View style={{ flex: 1, paddingBottom: insets.bottom }} className="bg-background-50">
+      {/* Header Section */}
+      <HStack
+        space="md"
+        className="absolute z-10 items-center"
+        style={{ top: insets.top + 12, left: 16 }}
       >
-        <HStack className="items-center justify-between p-5">
-          <ProfileTag
-            isLoading={isLoading}
-            profile={donor && { value: donor, relationTo: 'individuals' }}
-            label="Donor"
+        <Box className="relative">
+          <Animated.View
+            className="bg-background-0 absolute inset-0 rounded-full"
+            style={titleAnimatedStyles(false)}
           />
-
-          <VStack className="items-end">
-            {isLoading ? (
-              <>
-                <Skeleton variant="circular" className="mb-1 h-3 w-20" />
-                <Skeleton variant="circular" className="h-3 w-14" />
-              </>
-            ) : (
-              data?.createdAt && (
-                <>
-                  <Text size="xs">{formatDate(data.createdAt, { shortMonth: true })}</Text>
-                  <Text size="xs">{formatLocaleTime(data.createdAt)}</Text>
-                </>
-              )
-            )}
-          </VStack>
-        </HStack>
-
-        <Box className="bg-background-200 relative h-64 w-full">
-          {isLoading ? (
-            <Skeleton variant="sharp" />
-          ) : (
-            <SingleImageViewer image={image} className="grow" />
-          )}
-
-          <GradientBackground
-            colors={['transparent', 'transparent', 'black']}
-            pointerEvents="none"
-            style={{ opacity: 0.6 }}
-          />
-
-          <Box className="absolute inset-x-0 bottom-0 -mb-5 px-5">
-            <DonationRequestCTA isLoading={isLoading} data={data} />
-          </Box>
+          <HeaderBackButton style={{ marginRight: 0 }} tintColor={getTypographyColor('900')} />
         </Box>
+        <AnimatedText
+          style={titleAnimatedStyles(true)}
+          bold
+          size="xl"
+          ellipsizeMode="tail"
+          numberOfLines={1}
+        >
+          {displayVolume(volume)}
+        </AnimatedText>
+      </HStack>
 
-        <HStack className="mt-4 items-center justify-between p-5">
-          {isLoading ? (
-            <>
-              <VStack>
-                <Skeleton variant="rounded" className="mb-1 h-6 w-32" />
-                <Skeleton variant="rounded" className="h-4 w-24" />
-              </VStack>
-              <Skeleton variant="circular" className="h-10 w-32" />
-            </>
-          ) : (
-            <>
-              <VStack>
-                <Text bold size="lg">
-                  {volume.toLocaleString()} mL
-                </Text>
-                <Text size="sm">Total Volume</Text>
-              </VStack>
-              {status && (
-                <Card className="bg-primary-100 rounded-full border-0 px-4 py-2">
-                  <Text className="font-JakartaSemiBold text-primary-900 text-center">
-                    {DONATION_REQUEST_STATUS[status].label}
-                  </Text>
-                </Card>
-              )}
-            </>
-          )}
-        </HStack>
-
-        <VStack className="mb-5 items-stretch px-5">
-          {isLoading ? (
-            <Skeleton variant="circular" className="mb-1 h-3 w-full" />
-          ) : (
-            <>
-              <AnimatedProgress size="sm" orientation="horizontal" value={percentage} />
-              <Text size="xs" className="text-typography-700 text-center">
-                {remainingVolume} mL available
-              </Text>
-            </>
-          )}
-        </VStack>
-
-        <Divider />
-
-        <HStack space="2xl" className="flex-wrap items-center p-5">
-          <StorageTypeTag isLoading={isLoading} data={data} />
-          <CollectionMethodTag isLoading={isLoading} data={data} />
-        </HStack>
-
-        <VStack className="mb-5 px-5">
-          <Text className="font-JakartaSemiBold mb-1">Notes</Text>
-          {isLoading ? (
-            <Skeleton className="h-20" />
-          ) : (
-            <Textarea size="sm" pointerEvents="none">
-              <TextareaInput
-                defaultValue={notes || ''}
-                placeholder="No notes provided."
-                editable={false}
-                style={{ textAlignVertical: 'top' }}
-              />
-            </Textarea>
-          )}
-        </VStack>
-
-        <MilkBagList isLoading={isLoading} data={extractCollection(bags) || []} className="mb-5" />
-
-        <DPList
-          isLoading={isLoading}
-          data={extractCollection(data?.deliveryPreferences) || []}
-          className="mb-5"
+      <Animated.View className="w-full" style={[{ height: IMAGE_HEIGHT }, animatedImageStyles]}>
+        {isLoading ? (
+          <Skeleton variant="sharp" />
+        ) : (
+          <SingleImageViewer contentFit="cover" image={image} className="grow" />
+        )}
+        <GradientBackground
+          colors={['transparent', 'transparent', ACCENT_COLOR]}
+          pointerEvents="none"
+          style={{ opacity: 0.85 }}
         />
-      </ScrollView>
+      </Animated.View>
 
-      <DonationRequestBottomCTA isLoading={isLoading} data={data} />
-    </SafeArea>
+      <Animated.View style={[scrollAnimatedStyles]}>
+        <Animated.View className="relative w-full px-5 py-3" style={[headerViewAnimatedStyles]}>
+          <Animated.View style={titleAnimatedStyles(false)}>
+            <HStack space="xl" className="relative items-center justify-between">
+              <ProfileTag
+                isLoading={isLoading}
+                profile={donor && { value: donor, relationTo: 'individuals' }}
+                label="Donor"
+              />
+              <DonationRequestCTA isLoading={isLoading} data={data} />
+            </HStack>
+          </Animated.View>
+
+          <Animated.View className="absolute bottom-3 right-5" style={titleAnimatedStyles(true)}>
+            <DonationRequestCTA variant="link" isLoading={isLoading} data={data} />
+          </Animated.View>
+        </Animated.View>
+
+        <Animated.ScrollView
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + ctaHeight + 120 }}
+          contentContainerClassName="bg-background-50 flex-col items-stretch justify-start py-5 gap-8"
+          style={{ zIndex: 99 }}
+        >
+          <>
+            <VStack space="2xl" className="px-5">
+              <HStack className="items-stretch justify-between">
+                {isLoading ? (
+                  <>
+                    <VStack>
+                      <Skeleton variant="rounded" className="mb-1 h-6 w-32" />
+                      <Skeleton variant="rounded" className="h-4 w-24" />
+                    </VStack>
+                    <Skeleton variant="circular" className="h-10 w-32" />
+                  </>
+                ) : (
+                  <>
+                    <VStack className="items-start">
+                      <Text bold size="2xl" ellipsizeMode="tail" numberOfLines={1}>
+                        {displayVolume(volume)}
+                      </Text>
+                      <Text size="sm">Total Volume</Text>
+                    </VStack>
+                    <VStack space="xs" className="items-end">
+                      <Box className="flex-1 justify-center">
+                        {status && (
+                          <Card className="bg-primary-100 rounded-full border-0 px-4 py-2">
+                            <Text className="font-JakartaSemiBold text-primary-900">
+                              {DONATION_REQUEST_STATUS[status].label}
+                            </Text>
+                          </Card>
+                        )}
+                      </Box>
+                      {data && (
+                        <Text size="xs">
+                          {formatDate(data.createdAt, { shortMonth: true })},{' '}
+                          {formatLocaleTime(data.createdAt)}
+                        </Text>
+                      )}
+                    </VStack>
+                  </>
+                )}
+              </HStack>
+
+              <VStack className="items-stretch">
+                {isLoading ? (
+                  <Skeleton variant="circular" className="mb-1 h-3 w-full" />
+                ) : (
+                  <>
+                    <AnimatedProgress size="sm" orientation="horizontal" value={percentage} />
+                    <Text size="xs" className="text-typography-700 text-center">
+                      {remainingVolume} mL available
+                    </Text>
+                  </>
+                )}
+              </VStack>
+            </VStack>
+
+            <Divider />
+
+            <HStack space="2xl" className="flex-wrap items-center px-5">
+              <StorageTypeTag isLoading={isLoading} data={data} />
+              <CollectionMethodTag isLoading={isLoading} data={data} />
+            </HStack>
+
+            <VStack className="px-5">
+              <Text className="font-JakartaSemiBold mb-1">Notes</Text>
+              {isLoading ? (
+                <Skeleton className="h-32" />
+              ) : (
+                <Textarea className="h-32" pointerEvents="none">
+                  <TextareaInput
+                    defaultValue={notes}
+                    placeholder="No notes provided."
+                    editable={false}
+                    style={{ textAlignVertical: 'top' }}
+                  />
+                </Textarea>
+              )}
+            </VStack>
+
+            <MilkBagList isLoading={isLoading} data={extractCollection(bags) || []} />
+
+            <DPList
+              isLoading={isLoading}
+              data={extractCollection(data?.deliveryPreferences) || []}
+            />
+          </>
+        </Animated.ScrollView>
+      </Animated.View>
+
+      <DonationRequestBottomCTA
+        onLayout={({ nativeEvent }) => setCTAHeight(nativeEvent.layout.height)}
+        isLoading={isLoading}
+        data={data}
+      />
+    </View>
   );
 }

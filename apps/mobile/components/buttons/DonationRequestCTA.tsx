@@ -138,7 +138,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
       label = 'Edit Donation';
       icon = EditIcon;
     } else {
-      label = 'Request';
+      label = 'Make a Request';
       icon = MilkBottlePlus2Icon;
     }
   }

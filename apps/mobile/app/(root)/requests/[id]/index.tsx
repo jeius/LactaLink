@@ -20,6 +20,7 @@ import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
 import { getColor, getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
@@ -29,72 +30,14 @@ import { extractCollection, extractOneImageData } from '@lactalink/utilities/ext
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Insets, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  interpolateColor,
-  SharedValue,
-  useAnimatedRef,
-  useAnimatedStyle,
-  useScrollOffset,
-} from 'react-native-reanimated';
+import { useWindowDimensions, View } from 'react-native';
+import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const IMAGE_HEIGHT = 240;
-const MAX_SCROLL = 240;
+const IMAGE_HEIGHT = 180;
 const ACCENT_COLOR = getColor('tertiary', '100');
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
-
-function useAnimStyles(scrollY: SharedValue<number>, insets?: Insets) {
-  const scrollAnimatedStyles = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [0, MAX_SCROLL],
-      [0, -IMAGE_HEIGHT],
-      Extrapolation.CLAMP
-    );
-    return { transform: [{ translateY }] };
-  });
-
-  const headerViewAnimatedStyles = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      scrollY.value,
-      [MAX_SCROLL / 3, MAX_SCROLL],
-      ['transparent', ACCENT_COLOR]
-    );
-    const paddingTop = interpolate(
-      scrollY.value,
-      [MAX_SCROLL / 2, MAX_SCROLL],
-      [12, (insets?.top || 0) + 12],
-      Extrapolation.CLAMP
-    );
-    return { backgroundColor, paddingTop };
-  });
-
-  const titleAnimatedStyles = (fadeIn: boolean) =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useAnimatedStyle(() => {
-      const outputRange = fadeIn ? [0, 1] : [1, 0];
-      const opacity = interpolate(scrollY.value, [0, MAX_SCROLL * 0.75], outputRange);
-      return { opacity };
-    });
-
-  const animatedImageStyles = useAnimatedStyle(() => {
-    const scale = interpolate(scrollY.value, [0, MAX_SCROLL], [1.27, 1], {
-      extrapolateRight: Extrapolation.CLAMP,
-    });
-    return { transform: [{ scale }] };
-  });
-
-  return {
-    scrollAnimatedStyles,
-    headerViewAnimatedStyles,
-    titleAnimatedStyles,
-    animatedImageStyles,
-  };
-}
 
 export default function RequestDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -108,7 +51,11 @@ export default function RequestDetailsPage() {
     headerViewAnimatedStyles,
     titleAnimatedStyles,
     animatedImageStyles,
-  } = useAnimStyles(scrollY, insets);
+  } = useParallaxAnimationStyles(scrollY, {
+    insets,
+    imageHeight: IMAGE_HEIGHT,
+    accentColor: ACCENT_COLOR,
+  });
 
   const screen = useWindowDimensions();
   const isMobile = screen.width <= DEVICE_BREAKPOINTS.phone;
@@ -166,7 +113,11 @@ export default function RequestDetailsPage() {
       </HStack>
 
       <Animated.View className="w-full" style={[{ height: IMAGE_HEIGHT }, animatedImageStyles]}>
-        <SingleImageViewer contentFit="cover" image={image} className="grow" />
+        {isLoading ? (
+          <Skeleton variant="sharp" />
+        ) : (
+          <SingleImageViewer contentFit="cover" image={image} className="grow" />
+        )}
         <GradientBackground
           colors={['transparent', 'transparent', ACCENT_COLOR]}
           pointerEvents="none"
@@ -290,7 +241,7 @@ export default function RequestDetailsPage() {
             <VStack className="px-5">
               <Text className="font-JakartaSemiBold mb-1">Notes</Text>
               {isLoading ? (
-                <Skeleton className="h-20" />
+                <Skeleton className="h-32" />
               ) : (
                 <Textarea className="h-32" pointerEvents="none">
                   <TextareaInput
