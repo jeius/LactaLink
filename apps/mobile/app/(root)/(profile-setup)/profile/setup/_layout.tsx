@@ -1,15 +1,13 @@
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSetupForm } from '@/hooks/forms/useSetupForm';
+import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
-import { Platform } from 'react-native';
-import { StackAnimationTypes } from 'react-native-screens';
 
 export default function Layout() {
-  const isIOS = Platform.OS === 'ios';
-  const animation: StackAnimationTypes = isIOS ? 'ios_from_right' : 'slide_from_right';
+  const screenOptions = useScreenOptions();
 
   const { isLoading, user } = useAuth();
 
@@ -21,7 +19,7 @@ export default function Layout() {
 
   return (
     <FormProvider {...form}>
-      <Stack screenOptions={{ headerShown: false, animation }} />
+      <Stack screenOptions={screenOptions} />
     </FormProvider>
   );
 }
