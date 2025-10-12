@@ -22,7 +22,7 @@ import {
   SETUP_PROFILE_STEPS,
   TYPE_FIELDS,
 } from '@/lib/constants/profile';
-import { setupProfileStorage } from '@/lib/localStorage';
+import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { getIconAsset } from '@/lib/stores';
 import { ProfileType, SetupProfileFields, SetupProfileSteps } from '@/lib/types/profile';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
@@ -65,8 +65,6 @@ export default function Step() {
 
   const RenderBlock = block[step];
 
-  const cleanUpForm = () => setupProfileStorage.clearAll();
-
   async function onSubmit(formData: SetupProfileSchema) {
     const createPromise = async () => {
       if (!user) throw new Error('User not found.');
@@ -85,7 +83,7 @@ export default function Step() {
 
       const name = createdProfile.displayName;
 
-      cleanUpForm();
+      deleteSavedFormData('profile-create');
       await refetchSession({ throwOnError: true });
       router.replace('/feed');
 

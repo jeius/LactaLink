@@ -1,46 +1,40 @@
-import { requestStorage } from '@/lib/localStorage';
 import { requestSchema, RequestSchema } from '@lactalink/form-schemas';
 
 import { User } from '@lactalink/types/payload-generated-types';
-import { createStorageKeyByUser } from '@lactalink/utilities';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 
+import { FormProps } from '@/components/contexts/FormProvider';
+import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
+import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { zodResolver } from '@hookform/resolvers/zod';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
+import { useMeUser } from '../auth/useAuth';
 
-const BASE_STORAGE_KEY = 'create-request-form';
+const debouncedSave = debounce((value) => saveFormData('request-create', value), 200);
 
 type Params = {
   recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
   matchedDonation?: string;
-  user: User | null;
 };
 
-export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Params) => {
+export function useCreateRequestForm({
+  matchedDonation,
+  recipient,
+}: Params): Omit<FormProps<RequestSchema>, 'children'> {
+  const { data: user, ...userQuery } = useMeUser();
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
-
-  const storageKey = useMemo(() => createStorageKeyByUser(user, BASE_STORAGE_KEY), [user]);
 
   const form = useForm({
     resolver: zodResolver(requestSchema),
     mode: 'onTouched',
-    defaultValues: getStoredData(user, storageKey),
+    defaultValues: createDefaultValues(user),
   });
 
-  const isSubmitSuccessful = form.formState.isSubmitSuccessful;
-  const getValues = form.getValues;
-  const reset = form.reset;
-
-  const debouncedSave = useMemo(
-    () =>
-      debounce((value: DeepPartial<RequestSchema>) => {
-        requestStorage.set(storageKey, JSON.stringify(value));
-      }, 200),
-    [storageKey]
-  );
+  const { reset, getValues, watch, formState } = form;
+  const isSubmitSuccessful = formState.isSubmitSuccessful;
 
   useEffect(() => {
     const data = getValues();
@@ -48,15 +42,15 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
     if (!matchedDonation) {
       data.matchedDonation = undefined;
     } else {
-      data.volumeNeeded = 20;
+      data.volumeNeeded = 0;
     }
 
     if (preferences?.length && !data.deliveryPreferences?.length) {
       data.deliveryPreferences = preferences
-        .map((pref) => {
-          const preference = extractCollection(pref);
-          if (!preference) return null;
-          return { ...preference, address: extractID(preference.address) };
+        .map((doc) => {
+          const pref = extractCollection(doc);
+          if (!pref) return null;
+          return transformToDeliveryPreferenceSchema(pref);
         })
         .filter((v) => v !== null);
     }
@@ -66,11 +60,11 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
     if (!isEqual(data, getValues())) {
       reset(data);
     }
-  }, [preferences, reset, recipient, getValues, matchedDonation]);
+  }, [getValues, matchedDonation, preferences, recipient, reset]);
 
   // Watch form changes and save to local storage (debounced).
   useEffect(() => {
-    const subscription = form.watch((value) => {
+    const subscription = watch((value) => {
       debouncedSave(value);
     });
 
@@ -78,19 +72,15 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
       subscription.unsubscribe();
       debouncedSave.cancel();
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [watch]);
 
   /**
-   * When the form is successfully submitted, clear the local storage
-   * and save the user preference to local storage.
+   * When the form is successfully submitted
+   * save the user preference to local storage.
    */
   useEffect(() => {
     async function saveUserPreference() {
       if (isSubmitSuccessful) {
-        requestStorage.delete(storageKey);
-
         const data = getValues();
 
         const preferredValues: DeepPartial<RequestSchema> = {
@@ -108,30 +98,36 @@ export const useCreateRequestForm = ({ user, matchedDonation, recipient }: Param
     }
 
     saveUserPreference();
-  }, [isSubmitSuccessful, getValues, storageKey, debouncedSave]);
-
-  return { form };
-};
-
-function getStoredData(user: User | null, storageKey: string): RequestSchema | undefined {
-  if (!user) return undefined;
-  const profile = extractCollection(user.profile?.value);
-
-  const raw = requestStorage.getString(storageKey);
-
-  const storedData: DeepPartial<RequestSchema> | undefined = raw && JSON.parse(raw);
-  const requester = profile?.id;
+  }, [getValues, isSubmitSuccessful]);
 
   return {
-    requester: storedData?.requester || requester,
-    volumeNeeded: storedData?.volumeNeeded || 20,
-    deliveryPreferences: storedData?.deliveryPreferences || [],
+    ...form,
+    isLoading: userQuery.isLoading,
+    isFetching: userQuery.isFetching,
+    refreshing: userQuery.isRefetching,
+    onRefresh: userQuery.refetch,
+    fetchError: userQuery.error,
+  };
+}
+
+function createDefaultValues(user: User | null): RequestSchema | undefined {
+  const profile = extractCollection(user?.profile?.value);
+  const savedData = getSavedFormData('request-create');
+
+  if (savedData) return savedData as RequestSchema;
+
+  if (!profile) return;
+
+  const requester = profile.id;
+
+  return {
+    requester: requester,
+    volumeNeeded: 20,
+    deliveryPreferences: [],
     details: {
-      ...storedData?.details,
-      bags: storedData?.details?.bags || [],
-      reason: storedData?.details?.reason || '',
-      notes: storedData?.details?.notes || '',
-      storagePreference: storedData?.details?.storagePreference || 'EITHER',
-    },
-  } as RequestSchema;
+      bags: [] as RequestSchema['details']['bags'],
+      reason: '',
+      notes: '',
+    } as RequestSchema['details'],
+  };
 }

@@ -16,7 +16,6 @@ import { deleteCollection } from '@/lib/api/delete';
 
 import { uploadImage } from '@/lib/api/file';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
-import { donationStorage } from '@/lib/localStorage';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 
@@ -27,6 +26,7 @@ import { getApiClient, getTransactionService } from '@lactalink/api';
 import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
+import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { transformToMilkBagShema } from '@/lib/utils/transformData';
 import { CreateMilkBagSchema, DonationSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
@@ -89,10 +89,7 @@ export default function CreateDonation() {
 
       toast.promise(createPromise, {
         loading: `Submitting donation...`,
-        success: (res: { message: string }) => {
-          donationStorage.clearAll();
-          return res.message;
-        },
+        success: (res: { message: string }) => res.message,
         error: (error) => extractErrorMessage(error),
       });
 
@@ -107,6 +104,7 @@ export default function CreateDonation() {
       }
 
       revalidateDonations(slugsToRevalidate);
+      deleteSavedFormData('donation-create');
     },
     [revalidateDonations, router]
   );

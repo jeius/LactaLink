@@ -6,6 +6,7 @@ import {
 } from '@lactalink/form-schemas';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { DeepPartial } from 'react-hook-form';
 import { getMeUser } from '../stores/meUserStore';
 import { formDataStorage } from './mmkv-storages';
 
@@ -29,7 +30,7 @@ const BASE_STORAGE_KEYS: Record<SchemaName, string> = {
 
 export function getSavedFormData<TName extends SchemaName>(
   schemaName: TName
-): Schema<TName> | null {
+): DeepPartial<Schema<TName>> | null {
   const key = createKey(schemaName);
   if (!key) return null;
 
@@ -48,7 +49,7 @@ export function getSavedFormData<TName extends SchemaName>(
 
 export function saveFormData<TName extends SchemaName>(
   schemaName: TName,
-  data: Schema<TName>
+  data: DeepPartial<Schema<TName>>
 ): void {
   const key = createKey(schemaName);
   if (!key) return;
@@ -59,6 +60,12 @@ export function saveFormData<TName extends SchemaName>(
   } catch (e) {
     console.warn(`Failed to save ${schemaName} form data: `, extractErrorMessage(e));
   }
+}
+
+export function deleteSavedFormData(schemaName: SchemaName): void {
+  const key = createKey(schemaName);
+  if (!key) return;
+  formDataStorage.delete(key);
 }
 
 function createKey(schemaName: SchemaName): string | null {

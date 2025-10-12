@@ -1,6 +1,5 @@
 import { Form } from '@/components/contexts/FormProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
-import { useMeUser } from '@/hooks/auth/useAuth';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
@@ -23,31 +22,13 @@ export default function DonationCreateLayout() {
     step,
   } = useLocalSearchParams<SearchParams>();
 
-  const meUser = useMeUser();
-
-  const {
-    form,
-    isLoading: isFormLoading,
-    isFetching: isFormFetching,
-    error: formError,
-    isRefetching,
-    refetch,
-  } = useCreateDonationForm({
-    user: meUser.data,
+  const form = useCreateDonationForm({
     matchedRequest: matchedRequestID,
     recipient:
       recipientID && recipientSlug ? { value: recipientID, relationTo: recipientSlug } : undefined,
   });
 
-  const isLoading = meUser.isLoading || isFormLoading;
-  const isFetching = meUser.isFetching || isFormFetching;
-  const error = meUser.error || formError;
-  const isRefetchingData = meUser.isRefetching || isRefetching;
-
-  function handleRefresh() {
-    meUser.refetch();
-    refetch();
-  }
+  const { fetchError: error, isLoading } = form;
 
   if (!isLoading && error) {
     const params: ErrorSearchParams = { message: error.message };
@@ -55,14 +36,7 @@ export default function DonationCreateLayout() {
   }
 
   return (
-    <Form
-      {...form}
-      isFetching={isFetching}
-      isLoading={isLoading}
-      fetchError={error}
-      refreshing={isRefetchingData}
-      onRefresh={handleRefresh}
-    >
+    <Form {...form}>
       <Stack
         screenOptions={{
           ...screenOptions,

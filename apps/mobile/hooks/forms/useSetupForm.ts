@@ -1,59 +1,54 @@
-import { setupProfileStorage as storage } from '@/lib/localStorage';
+import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { GENDER_TYPES, MARITAL_STATUS } from '@lactalink/enums';
 import { SetupProfileSchema, setupProfileSchema } from '@lactalink/form-schemas';
-
-import { User } from '@lactalink/types/payload-generated-types';
-import { createStorageKeyByUser } from '@lactalink/utilities';
 
 import debounce from 'lodash/debounce';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 
-const storageKeyPrefix = 'setup-profile-form';
+const debouncedSave = debounce((value) => saveFormData('profile-create', value));
 
-export function useSetupForm(user: User) {
-  const storageKey = createStorageKeyByUser(user, storageKeyPrefix);
-
-  const initialData = useMemo<DeepPartial<SetupProfileSchema> | undefined>(() => {
-    const raw = storage.getString(storageKey);
-    return raw && JSON.parse(raw);
-  }, [storageKey]);
-
+export function useSetupForm() {
   const form = useForm<SetupProfileSchema>({
     resolver: zodResolver(setupProfileSchema),
     mode: 'onTouched',
-    defaultValues: initialData || {
-      familyName: '',
-      givenName: '',
-      middleName: '',
-      name: '',
-      description: '',
-      phone: '',
-      head: '',
-      hospitalID: '',
-      birth: '',
-      gender: 'FEMALE',
-      maritalStatus: 'MARRIED',
-    },
+    defaultValues: createDefaultValues(),
   });
 
-  const debouncedSave = debounce((value: DeepPartial<SetupProfileSchema>) => {
-    storage.set(storageKey, JSON.stringify(value));
-  });
+  const { watch } = form;
 
   useEffect(() => {
-    const subscription = form.watch((value) => {
-      debouncedSave(value);
-    });
+    const subscription = watch(debouncedSave);
 
     return () => {
       subscription.unsubscribe();
       debouncedSave.cancel();
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.watch, debouncedSave]);
+  }, [watch]);
 
   return form;
+}
+
+function createDefaultValues(): SetupProfileSchema {
+  const savedData = getSavedFormData('profile-create');
+
+  if (savedData) return savedData as SetupProfileSchema;
+
+  const defaultVal: DeepPartial<SetupProfileSchema> = {
+    familyName: '',
+    givenName: '',
+    middleName: '',
+    name: '',
+    description: '',
+    phone: '',
+    head: '',
+    hospitalID: '',
+    birth: '',
+    gender: GENDER_TYPES.FEMALE.value,
+    maritalStatus: MARITAL_STATUS.MARRIED.value,
+  };
+
+  return defaultVal as SetupProfileSchema;
 }

@@ -8,7 +8,6 @@ import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
-import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { deleteCollection } from '@/lib/api/delete';
 
@@ -35,12 +34,9 @@ export default function CreateRequest() {
     useLocalSearchParams<RequestSearchParams>();
   const revalidateQueries = useRevalidateCollectionQueries();
 
-  const meUser = useMeUser();
-
   const router = useRouter();
 
-  const { form } = useCreateRequestForm({
-    user: meUser?.data || null,
+  const form = useCreateRequestForm({
     matchedDonation,
     recipient:
       recipientID && recipientSlug
@@ -53,13 +49,7 @@ export default function CreateRequest() {
   //#endregion
 
   //#region Form State
-  const isLoading = meUser.isLoading;
-  const isFetching = meUser.isFetching;
-  const error = meUser.error;
-  const isRefetching = meUser.isRefetching;
-  const onRefresh = () => {
-    meUser.refetch();
-  };
+  const { isLoading, refreshing = false, onRefresh, fetchError } = form;
 
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
@@ -99,26 +89,19 @@ export default function CreateRequest() {
   }
   //#endregion
 
-  if (!isLoading && error) {
-    const params: ErrorSearchParams = { message: error.message };
+  if (!isLoading && fetchError) {
+    const params: ErrorSearchParams = { message: fetchError.message };
     return <Redirect href={{ pathname: '/error', params }} />;
   }
 
   return (
-    <Form
-      {...form}
-      isLoading={isLoading}
-      isFetching={isFetching}
-      refreshing={isRefetching}
-      onRefresh={onRefresh}
-      fetchError={error}
-    >
+    <Form {...form}>
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
         <KeyboardAwareScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <VStack space="lg">
             <RequestDetailsForm matchedDonation={matchedDonation} />
