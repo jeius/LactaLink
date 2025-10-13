@@ -1,4 +1,3 @@
-import { getServerApi } from '@/lib/api/getServerApi';
 import { ID_VERIFICATION_URL } from '@/lib/constants/routes';
 import { getServerSideURL } from '@/lib/utils/getURL';
 import { ApiFetchResponse } from '@lactalink/types/api';
@@ -22,19 +21,20 @@ export const idVerificationTask: TaskConfig<'id-verification-task'> = {
   ],
   handler: async ({ input: inputArg, req }) => {
     const { identityID } = inputArg;
-
-    const apiClient = await getServerApi();
-    const authToken = await apiClient.auth.getToken();
-
-    const headers = new Headers({ 'Content-Type': 'application/json' });
-    if (authToken) headers.set('Authorization', `Bearer ${authToken}`);
-
     req.payload.logger.info(`Starting ID verification for identity ${identityID}`);
+
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      headers.set('Authorization', authHeader);
+    }
 
     const url = new URL(ID_VERIFICATION_URL, getServerSideURL());
     const response = await fetch(url, {
       method: 'POST',
-      headers,
+      headers: headers,
       body: JSON.stringify(inputArg),
     });
 

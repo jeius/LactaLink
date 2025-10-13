@@ -1354,7 +1354,7 @@ export interface Identity {
   /**
    * The address of the user as it appears on the ID.
    */
-  address: string;
+  address?: string | null;
   /**
    * The identification number as it appears on the ID.
    */

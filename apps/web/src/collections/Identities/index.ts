@@ -145,7 +145,7 @@ export const Identities: CollectionConfig<'identities'> = {
       name: 'address',
       label: 'Address',
       type: 'textarea',
-      required: true,
+      required: false,
       admin: {
         description: 'The address of the user as it appears on the ID.',
         placeholder: 'Enter Address',

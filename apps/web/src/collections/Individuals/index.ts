@@ -45,7 +45,6 @@ export const Individuals: CollectionConfig<'individuals'> = {
       type: 'checkbox',
       admin: {
         position: 'sidebar',
-        readOnly: true,
       },
     },
     {

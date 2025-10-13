@@ -654,7 +654,7 @@ export const identities = pgTable(
     middleName: varchar('middle_name'),
     familyName: varchar('family_name').notNull(),
     suffix: varchar('suffix'),
-    address: varchar('address').notNull(),
+    address: varchar('address'),
     idNumber: varchar('id_number').notNull(),
     issueDate: timestamp('issue_date', { mode: 'string', withTimezone: true, precision: 3 }),
     expirationDate: timestamp('expiration_date', {
