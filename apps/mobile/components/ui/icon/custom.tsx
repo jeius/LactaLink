@@ -135,3 +135,24 @@ const BasicLocationPin: FC<SvgProps> = ({ strokeWidth = 0, color = 'currentColor
 
 BasicLocationPin.displayName = 'BasicLocationPin';
 export { BasicLocationPin };
+
+const FaceOutlineIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 63 63"
+      strokeWidth={strokeWidth}
+      fill="none"
+      stroke={props.stroke || color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path id="frame" stroke="none" fill="none" d="M0 0h63.72v63.72H0z" />
+      <Path d="M20.31,62.09v-11.19c-.85-.93-1.86-2.22-2.76-3.9-1.07-2-1.61-3.85-1.89-5.22-.16.03-.86.13-1.51-.33-.91-.64-.86-1.77-.85-1.84-.34-1.67-.68-3.34-1.02-5.01-.26-.54-.63-1.47-.68-2.66-.04-.97.08-3.14,1.07-3.41.15-.04.65-.13,1.49.66-.44-1.47-.82-3.31-.91-5.45-.2-4.73,1.17-8.47,2.15-10.6.75-1.45,2.05-3.56,4.21-5.61.99-.93,2.77-2.6,5.64-3.8.62-.26,3.39-1.39,7.22-1.38,2.88,0,5.21.66,6.74,1.22,1.61.64,4.35,1.99,6.83,4.7,1.63,1.78,2.62,3.58,3.22,4.9,1.18,2.44,2.84,6.88,2.17,12.28-.17,1.38-.47,2.63-.82,3.73.8-.71,1.25-.68,1.47-.61,1.27.44.76,4.59.72,4.93-.42,1.86-.83,3.72-1.25,5.58,0,.21-.05,1.14-.79,1.9-.58.59-1.26.74-1.51.79-.32,1.3-.85,2.94-1.77,4.72-1,1.94-2.14,3.42-3.08,4.46,0,3.48-.05,7.65-.05,11.13" />
+    </Svg>
+  );
+};
+
+FaceOutlineIcon.displayName = 'FaceOutlineIcon';
+export { FaceOutlineIcon };

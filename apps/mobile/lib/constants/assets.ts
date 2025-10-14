@@ -57,6 +57,10 @@ export const IMAGE_ASSETS = {
   'deliveryGuy_0.75x': require('../../assets/images/0.75x/delivery_guy.png'),
   pumpingMilk: require('../../assets/images/1x/pumping_milk.png'),
   'pumpingMilk_0.75x': require('../../assets/images/0.75x/pumping_milk.png'),
+  idVerification: require('../../assets/images/1x/verify_identity.png'),
+  'idVerification_0.75x': require('../../assets/images/0.75x/verify_identity.png'),
+  emailReceived: require('../../assets/images/1x/email_received.png'),
+  'emailReceived_0.75x': require('../../assets/images/0.75x/email_received.png'),
 };
 
 export const LOGO_ASSETS = {

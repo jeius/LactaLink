@@ -1303,8 +1303,11 @@ export interface Barangay {
  */
 export interface Identity {
   id: string;
+  /**
+   * The individual who submitted this identity for verification.
+   */
+  submittedBy: string | Individual;
   createdBy?: (string | null) | User;
-  owner?: (string | null) | User;
   /**
    * The admin user who last updated this record.
    */
@@ -1351,6 +1354,10 @@ export interface Identity {
    * The suffix of the user as it appears on the ID (if applicable).
    */
   suffix?: string | null;
+  /**
+   * The birth date of the user as it appears on the ID (if available).
+   */
+  birth?: string | null;
   /**
    * The address of the user as it appears on the ID.
    */
@@ -2221,8 +2228,8 @@ export interface HospitalsSelect<T extends boolean = true> {
  * via the `definition` "identities_select".
  */
 export interface IdentitiesSelect<T extends boolean = true> {
+  submittedBy?: T;
   createdBy?: T;
-  owner?: T;
   updatedBy?: T;
   idType?: T;
   status?: T;
@@ -2232,6 +2239,7 @@ export interface IdentitiesSelect<T extends boolean = true> {
   middleName?: T;
   familyName?: T;
   suffix?: T;
+  birth?: T;
   address?: T;
   idNumber?: T;
   issueDate?: T;

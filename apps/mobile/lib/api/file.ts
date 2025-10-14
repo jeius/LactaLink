@@ -19,6 +19,24 @@ export async function uploadImage<TSlug extends FileCollectionSlug = FileCollect
 
   const file = createNativeFile(data);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return await apiClient.uploadFile({ collection, file: file as any, data: { alt: data.alt } });
+  return await apiClient.uploadFile({
+    collection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    file: file as any,
+    // @ts-expect-error -- typing issue in api client
+    data: { alt: data.alt },
+  });
+}
+
+export async function upsertImage<TSlug extends FileCollectionSlug = FileCollectionSlug>(
+  collection: TSlug,
+  data: ImageSchema
+) {
+  const apiClient = getApiClient();
+  const id = data.id;
+
+  if (id) {
+    return await apiClient.findByID({ collection, id });
+  }
+  return await uploadImage(collection, data);
 }

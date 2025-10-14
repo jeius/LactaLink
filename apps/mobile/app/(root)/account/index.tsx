@@ -29,6 +29,7 @@ import {
   BellIcon,
   ChevronRightIcon,
   ClipboardListIcon,
+  IdCardIcon,
   LogOutIcon,
   LucideIcon,
   LucideProps,
@@ -55,7 +56,7 @@ export default function ProfilePage() {
 
   function handleRefetch() {
     refetch();
-    revalidate(['donations', 'requests', 'transactions', 'notifications']);
+    revalidate(['donations', 'requests', 'transactions', 'notifications', 'identities']);
   }
 
   return (
@@ -276,6 +277,11 @@ function createOtherLinks(user: User | null): ActionProps[] {
       icon: UserRoundCheckIcon,
       href: '/donor-screening',
       label: 'Donor Screening',
+    },
+    {
+      icon: IdCardIcon,
+      href: '/id-verification',
+      label: 'ID Verification',
     },
   ];
 

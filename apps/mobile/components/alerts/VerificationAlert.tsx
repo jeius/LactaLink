@@ -54,7 +54,7 @@ export function VerificationAlert() {
           Verified users enjoy more trust and credibility within the community.
         </Text>
 
-        <Link asChild push href="verify-identity">
+        <Link asChild push href="/id-verification">
           <Button size="sm" variant="solid" action="info" className="mt-1 self-start rounded-full">
             <ButtonIcon as={BadgeCheckIcon} />
             <ButtonText>Verify Now</ButtonText>

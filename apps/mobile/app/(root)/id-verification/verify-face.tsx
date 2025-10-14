@@ -1,0 +1,196 @@
+import { useForm } from '@/components/contexts/FormProvider';
+import { Image } from '@/components/Image';
+import LoadingSpinner from '@/components/loaders/LoadingSpinner';
+import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { FaceOutlineIcon } from '@/components/ui/icon/custom';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
+import { deleteCollection } from '@/lib/api/delete';
+import { upsertImage } from '@/lib/api/file';
+import { getMeUser } from '@/lib/stores/meUserStore';
+import { transformImage } from '@/lib/utils/imageProcessors';
+import { getApiClient } from '@lactalink/api';
+import { ID_STATUS } from '@lactalink/enums';
+import { IdentitySchema } from '@lactalink/form-schemas';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
+
+import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner-native';
+
+export default function FaceVerificationPage() {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraReady, setCameraReady] = useState(false);
+  const [start, setStart] = useState(false);
+  const [photo, setPhoto] = useState<CameraCapturedPicture | null>(null);
+  const camRef = useRef<CameraView>(null);
+
+  const router = useRouter();
+
+  const {
+    setValue,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<IdentitySchema>();
+
+  const revalidate = useRevalidateCollectionQueries();
+
+  useEffect(() => {
+    if (start) {
+      handleSubmit(onSubmit)();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [start]);
+
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <LoadingSpinner />;
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <SafeArea mode="margin" safeTop={false} className="gap-5 p-5">
+        <Text>We need your permission to show the camera</Text>
+        <Button onPress={requestPermission}>
+          <ButtonText>Grant Permission</ButtonText>
+        </Button>
+      </SafeArea>
+    );
+  }
+
+  async function handleCapture() {
+    if (camRef.current && cameraReady) {
+      try {
+        const photo = await camRef.current.takePictureAsync({ quality: 1 });
+        const fileName = photo.uri.split('/').pop() || 'face.jpg';
+        const image = await transformImage({ uri: photo.uri, fileName });
+        setValue('faceImage', image, { shouldValidate: true, shouldDirty: true });
+        setStart(true);
+        setPhoto(photo);
+      } catch (error) {
+        console.error('Error capturing photo:', extractErrorMessage(error));
+        toast.error('Failed to capture photo. Please try again.');
+      }
+    }
+  }
+
+  async function onSubmit(data: IdentitySchema) {
+    const promise = submitVerification(data);
+
+    toast.promise(promise, {
+      loading: 'Submitting verification...',
+      success: (res: { message: string }) => res.message,
+      error: (error) => extractErrorMessage(error),
+    });
+
+    await promise;
+
+    setStart(false);
+    setPhoto(null);
+    revalidate('identities');
+
+    router.dismissTo('/id-verification');
+  }
+
+  return (
+    <SafeArea mode="margin" safeTop={false} className="items-stretch p-5">
+      <VStack space="xl" className="flex-1 items-center">
+        <Text className="font-JakartaMedium text-center">
+          Align your face with the guide and press the button to capture and submit the
+          verification.
+        </Text>
+
+        <Box
+          className="relative overflow-hidden rounded-full"
+          style={{ width: '85%', aspectRatio: 1 }}
+        >
+          {!photo ? (
+            <>
+              <CameraView
+                ref={camRef}
+                style={{ width: '100%', height: '100%' }}
+                facing="front"
+                onCameraReady={() => setCameraReady(true)}
+                ratio="1:1"
+              />
+              <Box className="absolute inset-6 items-center justify-center">
+                <Icon as={FaceOutlineIcon} className="text-primary-400 h-full w-full stroke-1" />
+              </Box>
+            </>
+          ) : (
+            <Image
+              source={{ uri: photo.uri, width: photo.width, height: photo.height }}
+              alt="Face Image"
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+            />
+          )}
+        </Box>
+      </VStack>
+      <Button onPress={handleCapture} isDisabled={!cameraReady || isSubmitting}>
+        <ButtonText>Submit</ButtonText>
+      </Button>
+    </SafeArea>
+  );
+}
+
+async function submitVerification(data: IdentitySchema) {
+  const apiClient = getApiClient();
+  const meUser = getMeUser();
+  const profileID = extractID(meUser?.profile?.value);
+
+  if (!profileID) throw new Error('You must have a profile to submit the verification.');
+
+  const [idImageDoc, faceImageDoc] = await Promise.all([
+    upsertImage('identity-images', data.idImage),
+    upsertImage('identity-images', data.faceImage),
+  ]);
+
+  const { id, personalInfo, details } = data;
+
+  if (id) {
+    const updatedDoc = await apiClient.updateByID({
+      collection: 'identities',
+      id,
+      data: {
+        ...personalInfo,
+        ...details,
+        expirationDate: details.expiryDate,
+        idImage: extractID(idImageDoc),
+        refImage: extractID(faceImageDoc),
+        status: ID_STATUS.PENDING.value,
+      },
+    });
+
+    return { message: 'Identity updated successfully.', doc: updatedDoc };
+  }
+
+  const doc = await apiClient
+    .create({
+      collection: 'identities',
+      data: {
+        ...personalInfo,
+        ...details,
+        expirationDate: details.expiryDate,
+        idImage: extractID(idImageDoc),
+        refImage: extractID(faceImageDoc),
+        status: ID_STATUS.PENDING.value,
+        submittedBy: profileID,
+      },
+    })
+    .catch(async (err) => {
+      await Promise.all([
+        deleteCollection('identity-images', extractID(idImageDoc), { silent: true }),
+        deleteCollection('identity-images', extractID(faceImageDoc), { silent: true }),
+      ]);
+      throw err;
+    });
+
+  return { message: 'Verification submitted successfully.', doc };
+}

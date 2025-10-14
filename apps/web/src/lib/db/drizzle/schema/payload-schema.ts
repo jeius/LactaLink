@@ -629,10 +629,12 @@ export const identities = pgTable(
   'identities',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    submittedBy: uuid('submitted_by_id')
+      .notNull()
+      .references(() => individuals.id, {
+        onDelete: 'set null',
+      }),
     createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    owner: uuid('owner_id').references(() => users.id, {
       onDelete: 'set null',
     }),
     updatedBy: uuid('updated_by_id').references(() => users.id, {
@@ -654,6 +656,7 @@ export const identities = pgTable(
     middleName: varchar('middle_name'),
     familyName: varchar('family_name').notNull(),
     suffix: varchar('suffix'),
+    birth: timestamp('birth', { mode: 'string', withTimezone: true, precision: 3 }),
     address: varchar('address'),
     idNumber: varchar('id_number').notNull(),
     issueDate: timestamp('issue_date', { mode: 'string', withTimezone: true, precision: 3 }),
@@ -670,8 +673,8 @@ export const identities = pgTable(
       .notNull(),
   },
   (columns) => ({
+    identities_submitted_by_idx: index('identities_submitted_by_idx').on(columns.submittedBy),
     identities_created_by_idx: index('identities_created_by_idx').on(columns.createdBy),
-    identities_owner_idx: index('identities_owner_idx').on(columns.owner),
     identities_updated_by_idx: index('identities_updated_by_idx').on(columns.updatedBy),
     identities_id_image_idx: index('identities_id_image_idx').on(columns.idImage),
     identities_ref_image_idx: index('identities_ref_image_idx').on(columns.refImage),
@@ -2628,15 +2631,15 @@ export const relations_hospitals = relations(hospitals, ({ one }) => ({
   }),
 }));
 export const relations_identities = relations(identities, ({ one }) => ({
+  submittedBy: one(individuals, {
+    fields: [identities.submittedBy],
+    references: [individuals.id],
+    relationName: 'submittedBy',
+  }),
   createdBy: one(users, {
     fields: [identities.createdBy],
     references: [users.id],
     relationName: 'createdBy',
-  }),
-  owner: one(users, {
-    fields: [identities.owner],
-    references: [users.id],
-    relationName: 'owner',
   }),
   updatedBy: one(users, {
     fields: [identities.updatedBy],

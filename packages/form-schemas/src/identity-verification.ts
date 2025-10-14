@@ -30,13 +30,14 @@ export const idDocumentSchema = z.object({
 });
 
 export const identitySchema = z.object({
+  id: z.uuid().optional(),
   personalInfo: z.object({
     ...personalInfoSchema.omit({ gender: true }).shape,
     address: z.string().transform(nullTransform).optional().nullable(),
   }),
   details: idDocumentSchema,
-  idImage: imageSchema.nonoptional('Photo of the ID is required'),
-  faceImage: imageSchema.nonoptional('Selfie image is required'),
+  idImage: z.object(imageSchema.shape, 'Photo of ID is required'),
+  faceImage: z.object(imageSchema.shape, 'Photo of you is required'),
 });
 
 export type IdentitySchema = z.infer<typeof identitySchema>;

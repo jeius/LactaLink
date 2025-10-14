@@ -1,14 +1,13 @@
 import { createdByField } from '@/fields/createdByField';
-import { ownerField } from '@/fields/ownerField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ID_STATUS, ID_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { deleteImages } from './hooks/afterDelete';
 import { generateUpdatedBy } from './hooks/generateUpdatedBy';
-import { updateOwnerOnApprove } from './hooks/update';
-import { verifyAfterCreate } from './hooks/verifyAfterCreate';
+import { onImageChanged, onStatusChanged } from './hooks/update';
+import { verifyAfterChange } from './hooks/verifyAfterCreate';
 
 export const Identities: CollectionConfig<'identities'> = {
   slug: 'identities',
@@ -24,12 +23,25 @@ export const Identities: CollectionConfig<'identities'> = {
     delete: admin,
   },
   hooks: {
-    beforeChange: [generateCreatedBy, generateOwner, generateUpdatedBy],
-    afterChange: [verifyAfterCreate, updateOwnerOnApprove],
+    beforeChange: [generateCreatedBy, generateUpdatedBy],
+    afterChange: [verifyAfterChange, onStatusChanged, onImageChanged],
+    afterDelete: [deleteImages],
   },
   fields: [
+    {
+      name: 'submittedBy',
+      type: 'relationship',
+      relationTo: 'individuals',
+      required: true,
+      admin: {
+        description: 'The individual who submitted this identity for verification.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+
     createdByField,
-    ownerField,
+
     {
       name: 'updatedBy',
       type: 'relationship',
@@ -141,6 +153,18 @@ export const Identities: CollectionConfig<'identities'> = {
         },
       ],
     },
+
+    {
+      name: 'birth',
+      label: 'Date of Birth',
+      type: 'date',
+      required: false,
+      admin: {
+        description: 'The birth date of the user as it appears on the ID (if available).',
+        placeholder: 'Select Birth Date',
+      },
+    },
+
     {
       name: 'address',
       label: 'Address',

@@ -5,9 +5,8 @@ import { MarkOptional } from '@lactalink/types/utils';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
-const apiClient = getApiClient();
-
 export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPreferenceSchema[]) {
+  const apiClient = getApiClient();
   return await Promise.all(
     deliveryDetails.map((detail) => {
       const { id, ...rest } = detail;
@@ -26,6 +25,7 @@ export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPrefere
 }
 
 export async function upsertDeliveryPreference(data: MarkOptional<DeliveryPreferenceSchema, 'id'>) {
+  const apiClient = getApiClient();
   let message: string;
   let preference: DeliveryPreference;
 
@@ -52,6 +52,7 @@ export async function upsertDeliveryPreference(data: MarkOptional<DeliveryPrefer
 }
 
 export async function upsertAddress(data: AddressSchema) {
+  const apiClient = getApiClient();
   async function executeAddressSave() {
     let message: string;
     let address: Address;

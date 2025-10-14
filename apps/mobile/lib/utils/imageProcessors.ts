@@ -1,7 +1,6 @@
 import { ImageSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system';
-import { ImagePickerAsset } from 'expo-image-picker';
 import { Image, getImageMetaData } from 'react-native-compressor';
 import { IMAGE_COMPRESSION_SIZE, MAX_IMAGE_SIZE } from '../constants';
 
@@ -48,7 +47,7 @@ export async function compressImage(uri: string) {
 }
 
 export async function transformImage(
-  pickedImage: ImagePickerAsset,
+  pickedImage: { uri: string; fileName?: string | null },
   fileName?: string
 ): Promise<ImageSchema> {
   const compressedImage = await compressImage(pickedImage.uri).catch((err) => {

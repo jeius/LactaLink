@@ -2,12 +2,8 @@ import { Identity } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
-export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
-  req,
-  operation,
-  doc,
-}) => {
-  if (operation !== 'create' || !doc.owner) return doc;
+export const verifyAfterChange: CollectionAfterChangeHook<Identity> = async ({ req, doc }) => {
+  if (!doc.createdBy) return doc;
 
   const defaultQueryOptions = { req, depth: 0, overrideAccess: true };
 
@@ -33,10 +29,10 @@ export const verifyAfterCreate: CollectionAfterChangeHook<Identity> = async ({
   }
 
   const ownerDoc =
-    extractCollection(doc.owner) ||
+    extractCollection(doc.createdBy) ||
     (await req.payload.findByID({
       collection: 'users',
-      id: extractID(doc.owner),
+      id: extractID(doc.createdBy),
       select: { email: true },
       ...defaultQueryOptions,
     }));

@@ -4,6 +4,7 @@ export * from './auth/types';
 export * from './delivery-preference';
 export * from './donation-request';
 export * from './file';
+export * from './identity-verification';
 export * from './milk-bag';
 export * from './setup-profile';
 export * from './textarea';
