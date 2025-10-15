@@ -12,6 +12,7 @@ export function markSeen<T extends Slug>(collection: T, id: string | string[]) {
 
   return apiClient.update({
     collection,
+    // @ts-expect-error seen and seenAt exist on all collections used here
     data: { seenAt: now, seen: true },
     where: { id: { in: ids } },
     depth: 3,

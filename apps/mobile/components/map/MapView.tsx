@@ -26,6 +26,7 @@ export interface MapViewProps extends ComponentProps<typeof RNMapView> {
   safeInsets?: Insets;
   hideUserLocationHeading?: boolean;
   isLoading?: boolean;
+  containerStyle?: ComponentProps<typeof Box>['style'];
 }
 
 export function MapView({
@@ -33,6 +34,7 @@ export function MapView({
   safeInsets: insets,
   hideUserLocationHeading = false,
   isLoading: isLoadingProp,
+  containerStyle,
   ...props
 }: MapViewProps) {
   const { theme } = useTheme();
@@ -143,7 +145,7 @@ export function MapView({
   }
 
   return (
-    <Box className="relative flex-1" pointerEvents="box-none">
+    <Box className="relative flex-1" pointerEvents="box-none" style={containerStyle}>
       <RNMapView.Animated
         {...props}
         id={mapRenderID}

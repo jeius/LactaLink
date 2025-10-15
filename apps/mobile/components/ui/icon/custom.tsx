@@ -1,6 +1,16 @@
 import { randomUUID } from 'expo-crypto';
 import React, { FC } from 'react';
-import { Circle, Defs, LinearGradient, Path, Stop, Svg, SvgProps } from 'react-native-svg';
+import {
+  Circle,
+  Defs,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+  Svg,
+  SvgProps,
+} from 'react-native-svg';
 
 const HandBottleIcon: FC<SvgProps> = (props) => {
   const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
@@ -156,3 +166,61 @@ const FaceOutlineIcon: FC<SvgProps> = (props) => {
 
 FaceOutlineIcon.displayName = 'FaceOutlineIcon';
 export { FaceOutlineIcon };
+
+const UserUserIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      strokeWidth={strokeWidth}
+      fill="none"
+      stroke={props.stroke || color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M19,9c.02-.38.04-1.84-1-3-1.16-1.29-3.15-1.71-5-1l2-3-2,3" />
+      <Path d="M22,22c0-2.07-1.68-3.75-3.75-3.75s-3.75,1.68-3.75,3.75" />
+      <Path d="M4.64,15c-.02.38-.04,1.84,1,3,1.16,1.29,3.15,1.71,5,1l-2,3,2-3" />
+      <Path d="M9.52,10.44c0-2.07-1.68-3.75-3.75-3.75s-3.75,1.68-3.75,3.75" />
+      <Circle cx="18.25" cy="15.91" r="2.34" fill="none" />
+      <Circle cx="5.77" cy="4.34" r="2.34" fill="none" />
+      <Line x1="10.64" y1="19" x2="8.64" y2="17" />
+      <Line x1="13" y1="5" x2="15" y2="7" />
+      <Rect id="frame" fill="none" stroke="none" />
+    </Svg>
+  );
+};
+
+UserUserIcon.displayName = 'UserUserIcon';
+export { UserUserIcon };
+
+const UserBuildingIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      strokeWidth={strokeWidth}
+      fill="none"
+      stroke={props.stroke || color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M19,9c.02-.38.04-1.84-1-3-1.16-1.29-3.15-1.71-5-1l2-3-2,3" />
+      <Path d="M22,22c0-2.07-1.68-3.75-3.75-3.75s-3.75,1.68-3.75,3.75" />
+      <Path d="M4.64,15c-.02.38-.04,1.84,1,3,1.16,1.29,3.15,1.71,5,1l-2,3,2-3" />
+      <Path d="M7,11V3c0-.55-.37-1-.83-1h-3.33c-.46,0-.83.45-.83,1v8" />
+      <Path d="M7,6.5h2.2c.44,0,.8.4.8.9v2.7c0,.5-.36.9-.8.9H2v-2" />
+      <Circle cx="18.25" cy="15.91" r="2.34" fill="none" />
+      <Line x1="10.64" y1="19" x2="8.64" y2="17" />
+      <Line x1="13" y1="5" x2="15" y2="7" />
+      <Rect id="frame" fill="none" stroke="none" />
+    </Svg>
+  );
+};
+
+UserBuildingIcon.displayName = 'UserBuildingIcon';
+export { UserBuildingIcon };

@@ -1,3 +1,4 @@
+import { getLottieAsset } from '@/lib/stores';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import SafeArea, { SafeAreaProps } from '../SafeArea';
@@ -25,7 +26,7 @@ export default function LoadingSpinner({ isLoading = true, ...props }: LoadingSp
         ref={ref}
         autoPlay={false}
         loop={false}
-        source={require('@/assets/lottie/loader.json')}
+        source={getLottieAsset('babyLoader')}
         style={{ width: '80%', aspectRatio: 1 }}
         onAnimationFinish={() => {
           const newDirection = direction.current * -1;

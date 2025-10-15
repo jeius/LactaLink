@@ -1,4 +1,4 @@
-import { AnimatedPressable, AnimatedPressableProps } from '@/components/animated/pressable';
+import { AnimatedPressableProps } from '@/components/animated/pressable';
 import { Image } from '@/components/Image';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
@@ -17,7 +17,7 @@ import { STORAGE_TYPES } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import Avatar from '../Avatar';
 import { BasicLocationPin } from '../ui/icon/custom';
 
@@ -39,13 +39,13 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
     [coords, data?.deliveryPreferences]
   );
 
-  const { details: { storageType } = {}, remainingVolume } = data || {};
+  const { details: { storageType } = {}, remainingVolume, volume } = data || {};
 
   const donor = extractCollection(data?.donor);
   const donorName = donor?.displayName || donor?.givenName || 'Unknown Donor';
   const donorAvatar = extractCollection(donor?.avatar);
 
-  const { uri, blurHash, alt } = useMemo(() => {
+  const image = useMemo(() => {
     const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
     const milkSamples = extractCollection(data?.details?.milkSample);
     return extractOneImageData(milkSamples, imageSize);
@@ -58,81 +58,63 @@ export default function DonationCard({ data, isLoading, ...props }: DonationCard
   }
 
   return (
-    <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
-      <Card variant="filled" className="p-0">
-        <VStack>
-          <Box className="bg-primary-50 relative aspect-square h-48">
-            <Box className="h-full w-full overflow-hidden">
-              {uri ? (
-                <SingleImageViewer image={{ uri: uri, blurHash, alt }} />
-              ) : (
-                <Text className="m-auto">No Image</Text>
-              )}
-            </Box>
+    <Card variant="filled" className="p-0">
+      <VStack>
+        <Box className="bg-primary-50 relative aspect-square h-48">
+          <SingleImageViewer image={image} />
 
-            <VStack
-              className="justify-between"
-              style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
+          <VStack className="justify-between" style={StyleSheet.absoluteFillObject}>
+            <Text
+              size="xl"
+              className="font-JakartaSemiBold bg-primary-400 shrink px-3 py-1"
+              style={{ borderBottomRightRadius: 12 }}
             >
-              <HStack>
-                <VStack
-                  className="bg-primary-400 font-JakartaMedium px-3 py-1"
-                  style={{ borderBottomRightRadius: 12 }}
-                >
-                  <Text size="2xs">Available</Text>
-                  <Text size="xl" className="font-JakartaSemiBold">
-                    {remainingVolume || 0}{' '}
-                    <Text size="xs" className="font-JakartaMedium">
-                      mL
-                    </Text>
-                  </Text>
-                </VStack>
-              </HStack>
-
-              <Box className="relative px-2 py-1">
-                <Box className="bg-primary-400 absolute inset-0" style={{ opacity: 0.8 }} />
-                <Text size="xs" className="font-JakartaMedium text-white">
-                  {STORAGE_TYPES[storageType || 'OTHER'].label}
-                </Text>
-              </Box>
-            </VStack>
-          </Box>
-
-          <HStack space="sm" className="items-center p-2 pb-0">
-            {preferredMode && (
-              <>
-                <HStack space="xs">
-                  {preferredMode.map((mode, i) => (
-                    <Image
-                      key={i}
-                      source={getDeliveryPreferenceIcon(mode)}
-                      alt={`${mode} icon`}
-                      style={{ width: 14, height: 14 }}
-                    />
-                  ))}
-                </HStack>
-
-                <Box className="border-outline-700 h-4 flex-1 border-b border-dashed" />
-              </>
-            )}
-
-            {distance && (
-              <HStack>
-                <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
-                <Text size="xs">{distance.toFixed(2)} km</Text>
-              </HStack>
-            )}
-          </HStack>
-
-          <HStack space="sm" className="items-center p-2">
-            <Avatar size="sm" details={{ avatar: donorAvatar, name: donorName }} />
-            <Text size="xs" className="flex-1">
-              {donorName}
+              {volume || 0} mL
             </Text>
-          </HStack>
-        </VStack>
-      </Card>
-    </AnimatedPressable>
+
+            <Box className="relative px-2 py-1">
+              <Box className="bg-primary-400 absolute inset-0" style={{ opacity: 0.8 }} />
+              <Text size="xs" className="font-JakartaMedium text-white">
+                {STORAGE_TYPES[storageType || 'OTHER'].label}
+              </Text>
+            </Box>
+          </VStack>
+        </Box>
+
+        <HStack space="sm" className="items-center p-2 pb-0">
+          {preferredMode && (
+            <>
+              <HStack space="xs">
+                {preferredMode.map((mode, i) => (
+                  <Image
+                    key={i}
+                    source={getDeliveryPreferenceIcon(mode)}
+                    alt={`${mode} icon`}
+                    style={{ width: 14, height: 14 }}
+                  />
+                ))}
+              </HStack>
+
+              <Box className="border-outline-700 h-4 flex-1 border-b border-dashed" />
+            </>
+          )}
+
+          {distance && (
+            <HStack>
+              <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
+              <Text size="xs">{distance.toFixed(2)} km</Text>
+            </HStack>
+          )}
+        </HStack>
+
+        <HStack space="sm" className="items-center p-2">
+          <Avatar size="sm" details={{ avatar: donorAvatar, name: donorName }} />
+          <Text size="xs" className="flex-1">
+            {donorName}
+          </Text>
+        </HStack>
+      </VStack>
+    </Card>
   );
 }
 

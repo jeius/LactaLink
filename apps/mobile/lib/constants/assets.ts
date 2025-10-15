@@ -78,3 +78,13 @@ export const DP_METHOD_ICONS: Record<DeliveryMode, FC<SvgProps>> = {
   MEETUP: require('../../assets/svgs/meet_up.svg'),
   DELIVERY: require('../../assets/svgs/scooter_with_basket.svg'),
 };
+
+export const LOTTIE_ASSETS = {
+  babyLoader: require('@/assets/lottie/loader.zip'),
+  mapPin: require('@/assets/lottie/map_pin.zip'),
+  timeLoader: require('@/assets/lottie/loading.zip'),
+  orderPacked: require('@/assets/lottie/order_packed.zip'),
+  areaMap: require('@/assets/lottie/area_map.zip'),
+  success: require('@/assets/lottie/success.zip'),
+  receivePackage: require('@/assets/lottie/receive_order.zip'),
+};

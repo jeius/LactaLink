@@ -1,15 +1,16 @@
 import { create } from 'zustand';
-import { ICON_ASSETS, IMAGE_ASSETS } from '../constants';
-import { AssetObject } from '../types';
+import { ICON_ASSETS, IMAGE_ASSETS, LOTTIE_ASSETS } from '../constants';
+import { AssetObject, IconAsset, ImageAsset, LottieAsset } from '../types';
 
-interface AssetsState {
-  assets: AssetObject | null;
+interface AssetsState extends AssetObject {
   setAssets: (assets: AssetObject) => void;
 }
 
 export const useAssetsStore = create<AssetsState>((set) => ({
-  assets: { icons: ICON_ASSETS, images: IMAGE_ASSETS },
-  setAssets: (assets) => set({ assets }),
+  images: IMAGE_ASSETS,
+  icons: ICON_ASSETS,
+  lottie: LOTTIE_ASSETS,
+  setAssets: (assets) => set({ ...assets }),
 }));
 
 export function initializeAssets(assets: AssetObject) {
@@ -25,34 +26,17 @@ export function initializeAssets(assets: AssetObject) {
   return assets;
 }
 
-export function setAssets(assets: Partial<AssetObject>) {
-  const { assets: currentAssets, setAssets } = useAssetsStore.getState();
-
-  if (!currentAssets) {
-    console.warn('Assets not initialized. Please initialize assets first.');
-    return;
-  }
-
-  if (assets.icons || assets.images) {
-    setAssets({
-      images: { ...currentAssets.images, ...assets.images },
-      icons: { ...currentAssets.icons, ...assets.icons },
-    });
-  }
+export function getIconAsset(name: keyof IconAsset) {
+  const { icons } = useAssetsStore.getState();
+  return icons[name];
 }
 
-export function getIconAsset(name: keyof AssetObject['icons']) {
-  const { assets } = useAssetsStore.getState();
-  if (!assets) {
-    throw new Error('Assets not initialized. Please initialize assets first.');
-  }
-  return assets.icons[name];
+export function getImageAsset(name: keyof ImageAsset) {
+  const { images } = useAssetsStore.getState();
+  return images[name];
 }
 
-export function getImageAsset(name: keyof AssetObject['images']) {
-  const { assets } = useAssetsStore.getState();
-  if (!assets) {
-    throw new Error('Assets not initialized. Please initialize assets first.');
-  }
-  return assets.images[name]!;
+export function getLottieAsset(name: keyof LottieAsset) {
+  const { lottie } = useAssetsStore.getState();
+  return lottie[name];
 }

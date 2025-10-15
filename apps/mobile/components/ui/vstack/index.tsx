@@ -18,3 +18,4 @@ const VStack = React.forwardRef<React.ComponentRef<typeof View>, IVStackProps>(f
 VStack.displayName = 'VStack';
 
 export { VStack };
+export type { IVStackProps as VStackProps };

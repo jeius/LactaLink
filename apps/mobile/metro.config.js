@@ -31,7 +31,7 @@ const monorepoConfig = {
 /** @type {import('expo/metro-config').MetroConfig} */
 const svgConfig = {
   resolver: {
-    assetExts: defaultConfig.resolver.assetExts.filter((ext) => ext !== 'svg'),
+    assetExts: [...defaultConfig.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
     sourceExts: [...defaultConfig.resolver.sourceExts, 'svg'],
   },
   transformer: {

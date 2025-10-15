@@ -3,25 +3,38 @@ import { DeliveryPreferenceCard } from '@/components/cards/DeliveryPreferenceCar
 import { MilkBagCard } from '@/components/cards/MilkBagCard';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
+import { VStack, VStackProps } from '@/components/ui/vstack';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { Collections } from '@lactalink/types/collections';
 import { DeliveryPreference, MilkBag } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { Link } from 'expo-router';
-import React, { ComponentProps } from 'react';
+import React from 'react';
 import { FlatList } from 'react-native-gesture-handler';
 
 const PLACEHOLDER_DATA = generatePlaceHoldersWithID(4, {});
+const baseLabelStyle = tva({
+  base: 'font-JakartaSemiBold mx-5 mb-1',
+});
 
-interface DPListProps extends ComponentProps<typeof VStack> {
-  data: DeliveryPreference[];
+interface BaseProps<T extends Collections> extends VStackProps {
+  data: T[];
   isLoading?: boolean;
+  label?: string;
+  labelClassName?: string;
 }
 
-export function DPList({ data, isLoading, ...props }: DPListProps) {
+export function DPList({
+  data,
+  isLoading,
+  label = 'Delivery Preferences',
+  labelClassName,
+  ...props
+}: BaseProps<DeliveryPreference>) {
   return (
     <VStack {...props}>
-      <Text className="font-JakartaSemiBold mx-5 mb-1">Delivery Preferences</Text>
+      <Text className={baseLabelStyle({ class: labelClassName })}>{label}</Text>
       <FlatList
         data={isLoading ? (PLACEHOLDER_DATA as typeof data) : data}
         horizontal
@@ -48,19 +61,20 @@ export function DPList({ data, isLoading, ...props }: DPListProps) {
   );
 }
 
-interface MilkBagListProps extends ComponentProps<typeof VStack> {
-  data: MilkBag[];
-  isLoading?: boolean;
-}
-
-export function MilkBagList({ data, isLoading, ...props }: MilkBagListProps) {
+export function MilkBagList({
+  data,
+  isLoading,
+  label = 'Milk Bags',
+  labelClassName,
+  ...props
+}: BaseProps<MilkBag>) {
   if (!isLoading && data.length === 0) {
     return null;
   }
 
   return (
     <VStack {...props}>
-      <Text className="font-JakartaSemiBold mx-5 mb-1">Milk Bags</Text>
+      <Text className={baseLabelStyle({ class: labelClassName })}>{label}</Text>
       <FlatList
         data={isLoading ? (PLACEHOLDER_DATA as typeof data) : data}
         horizontal

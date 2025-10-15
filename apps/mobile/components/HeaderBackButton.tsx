@@ -1,7 +1,7 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
 import { useRouter } from 'expo-router';
-import { ArrowLeftIcon } from 'lucide-react-native';
-import { useEffect } from 'react';
+import { ArrowLeftIcon, ChevronLeftIcon } from 'lucide-react-native';
+import { useEffect, useMemo } from 'react';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
 import { LeaveToastAction } from './toasts/ToastAction';
@@ -17,6 +17,7 @@ interface HeaderBackButtonProps extends PressableProps {
   href?: string;
   label?: string;
   tintColor?: string;
+  iconType?: 'arrow' | 'chevron';
 }
 
 export function HeaderBackButton({
@@ -27,10 +28,21 @@ export function HeaderBackButton({
   canGoBack: canGoBackProp,
   onPress,
   tintColor,
+  iconType = 'chevron',
   ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
   const canGoBack = canGoBackProp || router.canGoBack();
+
+  const icon = useMemo(() => {
+    switch (iconType) {
+      case 'chevron':
+        return ChevronLeftIcon;
+      case 'arrow':
+      default:
+        return ArrowLeftIcon;
+    }
+  }, [iconType]);
 
   useEffect(() => {
     if (!disable) {
@@ -61,9 +73,9 @@ export function HeaderBackButton({
       {...props}
       hitSlop={10}
       onPress={handleOnPress}
-      style={StyleSheet.flatten([{ padding: 8, marginRight: 5 }, props.style])}
+      style={StyleSheet.flatten([{ padding: 8 }, props.style])}
     >
-      <Icon className="h-6 w-6" as={ArrowLeftIcon} color={tintColor} />
+      <Icon className="h-6 w-6" as={icon} color={tintColor} />
     </Pressable>
   );
 }

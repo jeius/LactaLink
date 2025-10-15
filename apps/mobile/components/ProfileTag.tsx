@@ -1,6 +1,7 @@
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { isHospital, isMilkBank } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import isString from 'lodash/isString';
 import React from 'react';
@@ -32,11 +33,11 @@ export function ProfileTag({ profile, isLoading, ...props }: ProfileTagProps) {
 
 interface ContentProps {
   profile: NonNullable<User['profile']>;
-  label: string;
+  label?: string;
   direction?: 'ltr' | 'rtl';
 }
 
-function Content({ profile, direction = 'ltr', label }: ContentProps) {
+function Content({ profile, direction = 'ltr', label: labelProp }: ContentProps) {
   // Fetch profile data if it's a reference
   const { data: fetchedProfile, isLoading } = useFetchById(isString(profile.value), {
     collection: profile.relationTo,
@@ -44,6 +45,9 @@ function Content({ profile, direction = 'ltr', label }: ContentProps) {
   });
 
   const data = extractCollection(profile.value) || fetchedProfile;
+  const label =
+    labelProp ||
+    (data && (isHospital(data) ? 'Hospital' : isMilkBank(data) ? 'Milk Bank' : 'Individual'));
 
   return isLoading ? (
     <TagSkeleton direction={direction} />

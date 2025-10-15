@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { getLottieAsset } from '@/lib/stores/assetsStore';
 import { Coordinates } from '@lactalink/types';
 import LottieView from 'lottie-react-native';
 import { Box } from '../ui/box';
@@ -80,7 +81,7 @@ function LottieMarker({ isPanning }: LottieMarkerProps) {
     <LottieView
       ref={ref}
       loop={false}
-      source={require('@/assets/lottie/map_pin.json')}
+      source={getLottieAsset('mapPin')}
       style={{ width: '100%', height: '100%' }}
     />
   );
