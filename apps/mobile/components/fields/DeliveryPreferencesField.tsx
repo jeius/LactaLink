@@ -2,7 +2,8 @@ import { AlertCircleIcon, Edit2Icon, PlusIcon, TruckIcon, XIcon } from 'lucide-r
 
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationSchema, RequestSchema } from '@lactalink/form-schemas';
+import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
+import { DonationCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useMemo } from 'react';
@@ -36,12 +37,14 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
   const { data: user } = useMeUser();
   const selections = extractCollection(user?.deliveryPreferences?.docs || []);
 
-  const form = useFormContext<DonationSchema | RequestSchema>();
+  const { control, getFieldState, formState, setValue } = useFormContext<
+    DonationCreateSchema | RequestCreateSchema
+  >();
 
   const { fields: selectedPrefs, remove } = useFieldArray({
     name: 'deliveryPreferences',
     keyName: 'fieldID',
-    control: form.control,
+    control: control,
   });
 
   const disableRemove = selectedPrefs.length <= 1;
@@ -66,15 +69,12 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
     return selected;
   }, [selectedPrefs, selectionsMap]);
 
-  const { error } = form.getFieldState('deliveryPreferences');
-  const isSubmitting = form.formState.isSubmitting;
+  const { error } = getFieldState('deliveryPreferences');
+  const isSubmitting = formState.isSubmitting;
 
   function handleChange(newPreferences: DeliveryPreference[]) {
-    const preferences = newPreferences.map((pref) => ({
-      ...pref,
-      address: extractID(pref.address),
-    }));
-    form.setValue('deliveryPreferences', preferences);
+    const preferences = newPreferences.map((pref) => transformToDeliveryPreferenceSchema(pref));
+    setValue('deliveryPreferences', preferences);
   }
 
   function ListItem(pref: (typeof selectedPrefs)[number], index: number) {
@@ -119,7 +119,9 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
   return (
     <FormControl isInvalid={!!error} isDisabled={isDisabled || isSubmitting} className="px-5">
       <FormControlLabel className="justify-between">
-        <FormControlLabelText>Delivery Preferences</FormControlLabelText>
+        <FormControlLabelText size="lg" className="font-JakartaSemiBold">
+          Delivery Preferences
+        </FormControlLabelText>
         <Icon as={TruckIcon} />
       </FormControlLabel>
 

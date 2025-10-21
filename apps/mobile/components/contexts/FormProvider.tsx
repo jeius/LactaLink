@@ -9,13 +9,13 @@ import {
   UseFormReturn,
 } from 'react-hook-form';
 
-type AdditionalContextType = {
+type AdditionalContextType<T = any> = {
   isLoading: boolean;
   isFetching: boolean;
   fetchError: Error | null;
   refreshing: boolean;
   onRefresh: () => void;
-  extraData?: any;
+  extraData?: T;
 };
 
 const AdditionalContext = createContext<AdditionalContextType | undefined>(undefined);
@@ -24,15 +24,17 @@ export type UseForm<
   TFieldValues extends FieldValues = FieldValues,
   TContext = any,
   TTransformedValues = TFieldValues,
+  TAdditionalContext = any,
 > = UseFormReturn<TFieldValues, TContext, TTransformedValues> & {
-  additionalState: AdditionalContextType;
+  additionalState: AdditionalContextType<TAdditionalContext>;
 };
 
 export function useForm<
   TFieldValues extends FieldValues = FieldValues,
   TContext = any,
   TTransformedValues = TFieldValues,
->(): UseForm<TFieldValues, TContext, TTransformedValues> {
+  TAdditionalContext = any,
+>(): UseForm<TFieldValues, TContext, TTransformedValues, TAdditionalContext> {
   const additionalContext = useContext(AdditionalContext);
 
   if (!additionalContext) {
@@ -67,13 +69,14 @@ export function Form<
   fetchError = null,
   refreshing = false,
   onRefresh = () => {},
+  extraData,
   children,
   ...props
 }: FormProps<TFieldValues, TContext, TTransformedValues>) {
   return (
     <FormProvider {...props}>
       <AdditionalContext.Provider
-        value={{ isLoading, isFetching, fetchError, refreshing, onRefresh }}
+        value={{ isLoading, isFetching, fetchError, refreshing, onRefresh, extraData }}
       >
         {children}
       </AdditionalContext.Provider>

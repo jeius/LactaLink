@@ -122,7 +122,7 @@ function CardContent({
 
         <VStack space="xs" className="min-w-0 flex-1 items-start">
           <Button
-            animateOnPress={false}
+            disablePressAnimation
             variant="link"
             action="default"
             className="h-fit w-fit p-0"
@@ -133,18 +133,18 @@ function CardContent({
             </ButtonText>
           </Button>
 
-          <BasicBadge
-            size="sm"
-            text={URGENCY_LEVELS[urgency].label}
-            action={getUrgencyAction(urgency)}
-          />
-
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
             <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
               {PREFERRED_STORAGE_TYPES[storagePreference || 'EITHER'].label}
             </Text>
           </HStack>
+
+          <BasicBadge
+            size="sm"
+            text={URGENCY_LEVELS[urgency].label}
+            action={getUrgencyAction(urgency)}
+          />
         </VStack>
 
         {action}

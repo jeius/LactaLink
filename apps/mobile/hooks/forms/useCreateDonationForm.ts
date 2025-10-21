@@ -1,14 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MilkBag, User } from '@lactalink/types/payload-generated-types';
+import { MilkBag, Request, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { CreateMilkBagSchema, DonationSchema, donationSchema } from '@lactalink/form-schemas';
+import {
+  DonationCreateSchema,
+  donationCreateSchema,
+  MilkBagCreateSchema,
+  MilkBagSchema,
+} from '@lactalink/form-schemas';
 
 import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
 import {
   transformToDeliveryPreferenceSchema,
-  transformToMilkBagShema,
+  transformToMilkBagCreateSchema,
+  transformToMilkBagSchema,
+  transformToRequestSchema,
 } from '@/lib/utils/transformData';
 
 import { FormProps } from '@/components/contexts/FormProvider';
@@ -17,26 +24,30 @@ import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 import { useMeUser } from '../auth/useAuth';
+import { useFetchById } from '../collections/useFetchById';
 import { useFetchBySlug } from '../collections/useFetchBySlug';
 
-const debouncedSave = debounce((value) => saveFormData('donation-create', value), 200);
+export type DonationCreateFormExtraData = {
+  milkBags: MilkBag[] | undefined;
+  matchedRequest: Request | undefined;
+};
 
 type Params = {
-  matchedRequest?: string;
+  matchedRequest: string | undefined;
   recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
 };
 
 export function useCreateDonationForm({
   matchedRequest,
   recipient,
-}: Params): Omit<FormProps<DonationSchema>, 'children'> {
+}: Params): Omit<FormProps<DonationCreateSchema>, 'children'> {
   const { data: user, ...userQuery } = useMeUser();
   const profile = extractCollection(user?.profile?.value);
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
   // #region Queries
-  const { data: draftMilkBags = [], ...bagsQuery } = useFetchBySlug(
-    Boolean(profile),
+  const { data: draftMilkBags, ...bagsQuery } = useFetchBySlug(
+    !!profile,
     {
       collection: 'milkBags',
       where: {
@@ -49,57 +60,86 @@ export function useCreateDonationForm({
     },
     { refetchOnMount: 'always', refetchOnReconnect: 'always' }
   );
+
+  const { data: matchedRequestDoc, ...requestQuery } = useFetchById(!!matchedRequest, {
+    collection: 'requests',
+    id: matchedRequest || '',
+  });
   // #endregion
+
+  const debouncedSave = useMemo(
+    () =>
+      debounce((value) => {
+        if (matchedRequest) return;
+        saveFormData('donation-create', value);
+      }, 200),
+    [matchedRequest]
+  );
+
   // #region Form Setup
-  const form = useForm({
-    resolver: zodResolver(donationSchema),
+  const form = useForm<DonationCreateSchema>({
+    resolver: zodResolver(donationCreateSchema),
     mode: 'onTouched',
-    defaultValues: createDefaultValues(user),
+    defaultValues: createDefaultValues(user, !!matchedRequest),
   });
 
   const { reset, getValues, watch, formState } = form;
   const isSubmitSuccessful = formState.isSubmitSuccessful;
-
   // #endregion
+
   // #region Use Effects
   // When draft milk bags exist, update the form values.
   useEffect(() => {
-    if (matchedRequest || !draftMilkBags.length || !bagsQuery.isSuccess) {
+    if (matchedRequest || !draftMilkBags?.length) {
       return;
     }
 
     const { newDetailsBags, newMilkBags } = updateDataOnDraftBagsExist(draftMilkBags);
 
-    const data = getValues();
-    data.details.bags = newDetailsBags;
-    data.milkBags = newMilkBags;
-    reset(data);
-  }, [bagsQuery.isSuccess, draftMilkBags, getValues, matchedRequest, reset]);
+    const newValues = getValues();
+    newValues.details.bags = newDetailsBags;
+    newValues.milkBags = newMilkBags;
 
-  // When user preferences or recipient prop changes, update the form values.
-  useEffect(() => {
-    const data = getValues();
-
-    if (!matchedRequest) {
-      data.matchedRequest = undefined;
+    if (!isEqual(newValues, getValues())) {
+      reset(newValues);
     }
+  }, [draftMilkBags, getValues, matchedRequest, reset]);
 
-    if (preferences?.length && !data.deliveryPreferences?.length) {
-      data.deliveryPreferences = preferences
-        .map((doc) => {
-          const pref = extractCollection(doc);
-          if (!pref) return null;
-          return transformToDeliveryPreferenceSchema(pref);
-        })
+  // When matched request prop changes, update the form values.
+  useEffect(() => {
+    const transformedRequest = transformToRequestSchema(matchedRequestDoc);
+    if (transformedRequest) {
+      reset({
+        ...getValues(),
+        type: 'MATCHED',
+        matchedRequest: transformedRequest,
+        delivery: undefined,
+        deliveryPreferences: [],
+      });
+    }
+  }, [getValues, matchedRequestDoc, reset]);
+
+  // When recipient prop changes, update the form values.
+  useEffect(() => {
+    if (recipient) {
+      reset({ ...getValues(), type: 'DIRECT', recipient });
+    }
+  }, [getValues, recipient, reset]);
+
+  // When user preferences, update the form values.
+  useEffect(() => {
+    const newValues = getValues();
+
+    if (!newValues.deliveryPreferences?.length && !matchedRequest) {
+      newValues.deliveryPreferences = preferences
+        .map((pref) => transformToDeliveryPreferenceSchema(pref))
         .filter((v) => v !== null);
     }
 
-    data.recipient = recipient;
-
-    if (!isEqual(data, getValues())) {
-      reset(data);
+    if (!isEqual(newValues, getValues())) {
+      reset(newValues);
     }
-  }, [preferences, getValues, reset, recipient, matchedRequest]);
+  }, [preferences, getValues, reset, matchedRequest]);
 
   // Watch form changes and save to local storage (debounced).
   useEffect(() => {
@@ -109,14 +149,14 @@ export function useCreateDonationForm({
       subscription.unsubscribe();
       debouncedSave.cancel();
     };
-  }, [watch]);
+  }, [debouncedSave, watch]);
 
   // When the form is successfully submitted, save preferred values to local storage and clear old data.
   useEffect(() => {
     if (isSubmitSuccessful) {
       const data = getValues();
 
-      const preferredValues: DeepPartial<DonationSchema> = {
+      const preferredValues: DeepPartial<typeof data> = {
         details: {
           notes: data.details.notes,
           collectionMode: data.details.collectionMode,
@@ -128,51 +168,56 @@ export function useCreateDonationForm({
       // Save the preffered values to local storage
       debouncedSave(preferredValues);
     }
-  }, [isSubmitSuccessful, getValues, matchedRequest]);
+  }, [isSubmitSuccessful, getValues, matchedRequest, debouncedSave]);
   // #endregion
+
   return {
     ...form,
-    isLoading: bagsQuery.isLoading || userQuery.isLoading,
-    isFetching: bagsQuery.isFetching || userQuery.isFetching,
-    fetchError: bagsQuery.error || userQuery.error,
-    refreshing: bagsQuery.isRefetching || userQuery.isRefetching,
+    isLoading: bagsQuery.isLoading || userQuery.isLoading || requestQuery.isLoading,
+    isFetching: bagsQuery.isFetching || userQuery.isFetching || requestQuery.isFetching,
+    fetchError: bagsQuery.error || userQuery.error || requestQuery.error,
+    refreshing: bagsQuery.isRefetching || userQuery.isRefetching || requestQuery.isRefetching,
     onRefresh: () => {
       bagsQuery.refetch();
       userQuery.refetch();
+      requestQuery.refetch();
     },
+    extraData: {
+      milkBags: draftMilkBags,
+      matchedRequest: matchedRequestDoc,
+    } as DonationCreateFormExtraData,
   };
 }
 
 // #region Helper Functions
 function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
-  const newDetailsBags: CreateMilkBagSchema[] = [];
+  const newDetailsBags: MilkBagCreateSchema[] = [];
 
-  const newMilkBags: DonationSchema['milkBags'] = [];
+  const newMilkBags: MilkBagSchema[] = [];
 
   for (const bag of draftMilkBags) {
-    newMilkBags.push(transformToMilkBagShema(bag));
-    newDetailsBags.push({
-      id: bag.id,
-      donor: extractID(bag.donor),
-      volume: bag.volume,
-      collectedAt: bag.collectedAt,
-    });
+    newMilkBags.push(transformToMilkBagSchema(bag));
+    newDetailsBags.push(transformToMilkBagCreateSchema(bag));
   }
 
   return { newDetailsBags, newMilkBags };
 }
 
-function createDefaultValues(user: User | null): DonationSchema | undefined {
+function createDefaultValues(
+  user: User | null,
+  isMatched: boolean
+): DonationCreateSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
   const savedData = getSavedFormData('donation-create');
 
-  if (savedData) return savedData as DonationSchema;
+  if (savedData && !isMatched) return savedData as DonationCreateSchema;
 
   if (!user || !profile) return;
 
   const donorID = extractID(profile);
 
   return {
+    type: 'OPEN',
     milkBags: [],
     deliveryPreferences: [],
     donor: donorID,
@@ -185,7 +230,7 @@ function createDefaultValues(user: User | null): DonationSchema | undefined {
           collectedAt: new Date().toISOString(),
         },
       ],
-    } as DonationSchema['details'],
+    } as DonationCreateSchema['details'],
   };
 }
 // #endregion

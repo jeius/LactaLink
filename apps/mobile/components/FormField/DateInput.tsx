@@ -50,7 +50,7 @@ export type DateInputType = TInput & {
    */
   placeholder?: string;
 
-  datePickerOptions?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate'>;
+  datePickerOptions?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate' | 'display'>;
   isLoading?: boolean;
 };
 
@@ -209,7 +209,7 @@ export function DateInput({
         <DateTimePicker
           {...datePickerOptions}
           mode={mode}
-          display="spinner"
+          display={datePickerOptions?.display || 'spinner'}
           value={date}
           onChange={onDateChange}
           themeVariant="light"

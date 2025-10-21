@@ -1,6 +1,6 @@
-import { Transaction } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
-import { CollectionBeforeReadHook } from 'payload';
+import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { CollectionBeforeChangeHook } from 'payload';
 
 /**
  * Hook to calculate the total volume of matched milk bags for a transaction.
@@ -13,26 +13,30 @@ import { CollectionBeforeReadHook } from 'payload';
  *
  * @returns The updated transaction document with the calculated `matchedVolume`.
  */
-export const calculateVolume: CollectionBeforeReadHook<Transaction> = async ({ req, doc }) => {
-  if (!doc.matchedBags) {
-    return doc;
+export const calculateMatchedVolume: CollectionBeforeChangeHook<Transaction> = async ({
+  req,
+  data,
+}) => {
+  if (!data.matchedBags) {
+    return data;
   }
 
-  const bagIds = extractID(doc.matchedBags);
+  let bags = extractCollection(data.matchedBags);
 
-  if (bagIds.length === 0) {
-    doc.matchedVolume = 0;
-    return doc;
+  if (bags.length === 0) {
+    const { docs } = await req.payload.find({
+      collection: 'milkBags',
+      depth: 0,
+      req,
+      select: { volume: true },
+      pagination: false,
+      where: { id: { in: extractID(data.matchedBags) } },
+    });
+
+    bags = docs as MilkBag[];
   }
 
-  const { docs: bags } = await req.payload.find({
-    collection: 'milkBags',
-    where: { id: { in: bagIds } },
-    depth: 0,
-    select: { volume: true },
-  });
+  data.matchedVolume = bags.reduce((total, bag) => total + (bag.volume || 0), 0);
 
-  doc.matchedVolume = bags.reduce((total, bag) => total + (bag.volume || 0), 0);
-
-  return doc;
+  return data;
 };

@@ -18,9 +18,8 @@ import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidat
 import { useDeliveryPreferenceForm } from '@/hooks/forms/useDeliveryPreferenceForm';
 import { upsertDeliveryPreference } from '@/lib/api/upsert';
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
-import { CreateDeliveryPreferenceSchema } from '@lactalink/form-schemas/delivery-preference';
+import { DeliveryPreferenceCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
-import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
@@ -40,7 +39,7 @@ export default function CreatePage() {
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(formData: CreateDeliveryPreferenceSchema) {
+  async function onSubmit(formData: DeliveryPreferenceCreateSchema) {
     const promise = upsertDeliveryPreference(formData);
 
     toast.promise(promise, {
@@ -141,11 +140,7 @@ export default function CreatePage() {
             <ActionModal
               title="Review Submit"
               description={
-                <DeliveryPreferenceCard
-                  preference={formData as DeliveryPreference}
-                  variant="ghost"
-                  className="p-0"
-                />
+                <DeliveryPreferenceCard preference={formData} variant="ghost" className="p-0" />
               }
               triggerLabel="Submit"
               onTriggerPress={handleValidation}

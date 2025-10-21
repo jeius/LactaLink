@@ -5,7 +5,7 @@ import {
   transformToImageSchema,
 } from '@/lib/utils/transformData';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { donationUpdateSchema, UpdateDonationSchema } from '@lactalink/form-schemas';
+import { donationUpdateSchema, DonationUpdateSchema } from '@lactalink/form-schemas';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useEffect } from 'react';
@@ -14,7 +14,7 @@ import { useMeUser } from '../auth/useAuth';
 
 export function useEditDonationForm(
   id: Donation['id']
-): Omit<FormProps<UpdateDonationSchema>, 'children'> {
+): Omit<FormProps<DonationUpdateSchema>, 'children'> {
   const { data: meUser } = useMeUser();
 
   const { data: donation, ...fetchQuery } = useFetchById(Boolean(meUser && id), {

@@ -3,6 +3,7 @@ import type { BackendSession } from '@lactalink/types/auth';
 import type { ErrorCodes } from '@lactalink/types/errors';
 import type { User } from '@lactalink/types/payload-generated-types';
 import type { Database } from '@lactalink/types/supabase';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import {
   AuthError,
   type ResendParams,
@@ -114,6 +115,18 @@ export class AuthClient implements IAuthClient {
     };
   };
 
+  private _sanitizeUser = (user: User): User => {
+    const prefs = extractCollection(user.deliveryPreferences?.docs || []);
+    const addresses = extractCollection(user.addresses?.docs || []);
+    const addrMap = new Map(addresses.map((addr) => [extractID(addr), addr]));
+    const updatedPrefs = prefs.map((pref) => ({
+      ...pref,
+      address: addrMap.get(extractID(pref.address)) || pref.address,
+    }));
+
+    return { ...user, deliveryPreferences: { ...user.deliveryPreferences, docs: updatedPrefs } };
+  };
+
   private _getBackendSession = async (): Promise<BackendSession> => {
     // Ensure we have latest token before making request
     await this._syncToken();
@@ -133,7 +146,12 @@ export class AuthClient implements IAuthClient {
       throw new AuthError(res.message, res.status, 'backend_session_error');
     }
 
-    return res.data;
+    let user = res.data.user;
+    if (user) {
+      user = this._sanitizeUser(user);
+    }
+
+    return { ...res.data, user };
   };
 
   // Auth flow helpers
@@ -341,7 +359,7 @@ export class AuthClient implements IAuthClient {
     if (!data.session) return null;
 
     const backendSession = await this._getBackendSession();
-    const { access_token: token, user: _, ...restOfSession } = data.session;
+    const { access_token: token, ...restOfSession } = data.session;
 
     return { ...restOfSession, ...backendSession, token };
   };

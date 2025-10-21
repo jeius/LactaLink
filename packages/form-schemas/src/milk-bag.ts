@@ -15,14 +15,15 @@ export const milkBagSchema = z.object({
   bagImage: imageSchema.optional().nullable(),
 });
 
-export const createMilkBagSchema = milkBagSchema
-  .omit({
+export const createMilkBagSchema = z.object({
+  id: z.uuid().optional(),
+  ...milkBagSchema.omit({
     id: true,
     code: true,
     bagImage: true,
     status: true,
-  })
-  .extend({ id: z.string().optional() });
+  }).shape,
+});
 
 export const updateMilkBagSchema = milkBagSchema.omit({
   donor: true,
@@ -31,5 +32,5 @@ export const updateMilkBagSchema = milkBagSchema.omit({
 });
 
 export type MilkBagSchema = z.infer<typeof milkBagSchema>;
-export type CreateMilkBagSchema = z.infer<typeof createMilkBagSchema>;
-export type UpdateMilkBagSchema = z.infer<typeof updateMilkBagSchema>;
+
+export type MilkBagCreateSchema = z.infer<typeof createMilkBagSchema>;

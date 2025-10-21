@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { FormProvider } from 'react-hook-form';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
+import { Form } from '@/components/contexts/FormProvider';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
 import { AddressMapView } from '@/components/map/AddressMapView';
@@ -23,14 +23,15 @@ export default function EditAddressPage() {
 
   const revalidateQueries = useRevalidateCollectionQueries();
 
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
   const [selectedRegion, setSelectedRegion] = useState<Region>();
 
   const mapRef = useRef<MapView | null>(null);
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
-  const { form, isLoading, error, data } = useAddressForm(id);
+  const form = useAddressForm(id);
+  const { isLoading, fetchError: error, extraData: data } = form;
 
   const coordinates = (data?.coordinates && pointToLatLng(data.coordinates)) || undefined;
 
@@ -71,7 +72,7 @@ export default function EditAddressPage() {
   }
 
   return (
-    <FormProvider {...form}>
+    <Form {...form}>
       <FormPreventBack />
 
       <SafeArea safeTop={false} mode="margin" className="items-stretch">
@@ -99,6 +100,6 @@ export default function EditAddressPage() {
           isLoading={isLoading}
         />
       </SafeArea>
-    </FormProvider>
+    </Form>
   );
 }

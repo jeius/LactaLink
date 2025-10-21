@@ -6,7 +6,7 @@ import {
 } from '@/lib/utils/transformData';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
-import { requestUpdateSchema, UpdateRequestSchema } from '@lactalink/form-schemas';
+import { requestUpdateSchema, RequestUpdateSchema } from '@lactalink/form-schemas';
 import { Request } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useEffect } from 'react';
@@ -15,7 +15,7 @@ import { useMeUser } from '../auth/useAuth';
 
 export function useEditRequestForm(
   id: Request['id']
-): Omit<FormProps<UpdateRequestSchema>, 'children'> {
+): Omit<FormProps<RequestUpdateSchema>, 'children'> {
   const { data: meUser } = useMeUser();
 
   const { data: request, ...fetchQuery } = useFetchById(Boolean(meUser && id), {

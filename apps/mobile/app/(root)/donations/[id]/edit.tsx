@@ -13,7 +13,7 @@ import { useEditDonationForm } from '@/hooks/forms/useEditDonationForm';
 import { uploadImage } from '@/lib/api/file';
 import { getApiClient } from '@lactalink/api';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
-import { UpdateDonationSchema } from '@lactalink/form-schemas';
+import { DonationUpdateSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
@@ -36,7 +36,7 @@ export default function DonationEditPage() {
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(data: UpdateDonationSchema) {
+  async function onSubmit(data: DonationUpdateSchema) {
     const promise = update(data);
 
     toast.promise(promise, {
@@ -141,7 +141,7 @@ export default function DonationEditPage() {
   );
 }
 
-async function update({ id, details, ...data }: UpdateDonationSchema) {
+async function update({ id, details, ...data }: DonationUpdateSchema) {
   const apiClient = getApiClient();
 
   const image = details.image;

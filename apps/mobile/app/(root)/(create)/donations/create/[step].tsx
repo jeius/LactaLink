@@ -27,12 +27,13 @@ import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
-import { transformToMilkBagShema } from '@/lib/utils/transformData';
-import { CreateMilkBagSchema, DonationSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import { transformToMilkBagSchema } from '@/lib/utils/transformData';
+import { DonationCreateSchema, MilkBagCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import isEqual from 'lodash/isEqual';
 import { ReactNode, useCallback, useState } from 'react';
+import { FieldPath } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { toast } from 'sonner-native';
@@ -64,7 +65,7 @@ export default function CreateDonation() {
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
 
-  const form = useForm<DonationSchema>();
+  const form = useForm<DonationCreateSchema>();
   const additionalFormState = form.additionalState;
   const [isValidatingDetails, setValidatingDetails] = useState(false);
   //#endregion
@@ -76,7 +77,10 @@ export default function CreateDonation() {
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
     [detailsStep]: (
-      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequest} />
+      <DonationDetailsForm
+        disableFields={isValidatingDetails}
+        hasMatchedRequest={!!matchedRequest}
+      />
     ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,
@@ -84,7 +88,7 @@ export default function CreateDonation() {
 
   //#region Handlers
   const onSubmit = useCallback(
-    async (data: DonationSchema) => {
+    async (data: DonationCreateSchema) => {
       const createPromise = createDonation(data);
 
       toast.promise(createPromise, {
@@ -114,31 +118,51 @@ export default function CreateDonation() {
   async function handleNext() {
     switch (step) {
       case detailsStep: {
-        setValidatingDetails(true);
+        try {
+          setValidatingDetails(true);
 
-        const detailsValid = await form.trigger('details');
-        const donorValid = await form.trigger('donor');
-        const deliveryPreferencesValid = await form.trigger('deliveryPreferences');
-        const isValid = detailsValid && donorValid && deliveryPreferencesValid;
+          const data = form.getValues();
 
-        if (!isValid) {
-          toast.error('Please fix the errors before proceeding.');
-          return;
+          console.log('Validating details step...', data);
+
+          const fieldsToValidate: FieldPath<DonationCreateSchema>[] = [
+            'details',
+            'donor',
+            'deliveryPreferences',
+          ];
+
+          if (data.type === 'MATCHED') {
+            fieldsToValidate.push('matchedRequest');
+            fieldsToValidate.push('delivery');
+          }
+
+          if (data.type === 'DIRECT') {
+            fieldsToValidate.push('recipient');
+          }
+
+          const isValid = await form.trigger(fieldsToValidate);
+
+          if (!isValid) {
+            throw new Error('Please fix the errors before proceeding.');
+          }
+
+          const bags = data.details.bags;
+          data.milkBags = await Promise.all(bags.map(upsertMilkBag));
+          revalidateDonations(['milkBags']);
+          form.reset(data);
+
+          if (tutorialDone) {
+            skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
+          } else {
+            nextPage();
+          }
+        } catch (error) {
+          toast.error(extractErrorMessage(error));
+          console.error('Error validating details:', error);
+        } finally {
+          setValidatingDetails(false);
         }
 
-        const data = form.getValues();
-        const bags = data.details.bags;
-        data.milkBags = await Promise.all(bags.map(upsertMilkBag));
-        revalidateDonations(['milkBags']);
-        form.reset(data);
-
-        if (tutorialDone) {
-          skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
-        } else {
-          nextPage();
-        }
-
-        setValidatingDetails(false);
         return;
       }
 
@@ -223,9 +247,9 @@ export default function CreateDonation() {
 }
 
 // #region API Functions
-async function createDonation(data: DonationSchema) {
+async function createDonation(data: DonationCreateSchema) {
   const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences, recipient, milkBags, matchedRequest } = data;
+  const { details, donor, deliveryPreferences, type, milkBags } = data;
 
   const { image, ...restOfDetails } = details;
 
@@ -262,7 +286,7 @@ async function createDonation(data: DonationSchema) {
           milkSample: milkImageDoc && [extractID(milkImageDoc)],
         },
         deliveryPreferences: extractID(deliveryPreferences),
-        recipient: recipient,
+        recipient: type === 'DIRECT' ? data.recipient : undefined,
       },
     })
     .catch(async (error) => {
@@ -282,11 +306,11 @@ async function createDonation(data: DonationSchema) {
   let transaction: Transaction | undefined;
   let message = 'Donation created successfully!';
 
-  if (matchedRequest) {
+  if ('matchedRequest' in data && data.matchedRequest) {
     const transactionService = getTransactionService();
     transaction = await transactionService.createP2PTransaction({
       donation: donationDoc,
-      request: matchedRequest.id,
+      request: extractID(data.matchedRequest),
       milkBags: extractID(milkBagDocs),
     });
 
@@ -299,7 +323,7 @@ async function createDonation(data: DonationSchema) {
   return { message, transaction: transaction };
 }
 
-async function upsertMilkBag(bag: CreateMilkBagSchema): Promise<MilkBagSchema> {
+async function upsertMilkBag(bag: MilkBagCreateSchema): Promise<MilkBagSchema> {
   const apiClient = getApiClient();
   let doc: MilkBag | undefined;
   const { id, ...rest } = bag;
@@ -311,7 +335,7 @@ async function upsertMilkBag(bag: CreateMilkBagSchema): Promise<MilkBagSchema> {
       depth: 3,
     });
 
-    const { donor, volume, collectedAt } = transformToMilkBagShema(currentBag);
+    const { donor, volume, collectedAt } = transformToMilkBagSchema(currentBag);
 
     const areEqual = isEqual(rest, { donor, volume, collectedAt });
 
@@ -337,6 +361,6 @@ async function upsertMilkBag(bag: CreateMilkBagSchema): Promise<MilkBagSchema> {
     });
   }
 
-  return transformToMilkBagShema(doc);
+  return transformToMilkBagSchema(doc);
 }
 // #endregion

@@ -1,19 +1,57 @@
-import { DeliveryPreferenceSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import {
+  AddressSchema,
+  DeliveryPreferenceSchema,
+  DonationSchema,
+  ImageSchema,
+  MilkBagCreateSchema,
+  MilkBagSchema,
+  RequestSchema,
+} from '@lactalink/form-schemas';
 import { FileCollection } from '@lactalink/types/collections';
-import { DeliveryPreference, MilkBag } from '@lactalink/types/payload-generated-types';
+import {
+  Address,
+  DeliveryPreference,
+  Donation,
+  MilkBag,
+  Request,
+} from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
+import { PHILIPPINES_COORDINATES } from '../constants';
 
 type BaseInput = string | null | undefined;
-type BaseReturn<T> = T extends string ? null : T;
+type BaseReturn<T, B extends boolean> = B extends true
+  ? Exclude<T, BaseInput>
+  : T extends string
+    ? null
+    : T;
+type BaseOptions<B extends boolean> = {
+  /**
+   * If true, will throw an error when a shallow collection (id only) is provided.
+   * If false, will return null for shallow collections.
+   * @default true
+   */
+  throwOnShallowCollection?: B;
+};
 
-type TransformedMilkBagShema<T> = T extends MilkBag ? MilkBagSchema : BaseReturn<T>;
+type TransformedMilkBag<T, B extends boolean> = T extends MilkBag
+  ? MilkBagSchema
+  : BaseReturn<T, B>;
 
-export function transformToMilkBagShema<T extends MilkBag | BaseInput>(
-  bag: T
-): TransformedMilkBagShema<T> {
-  if (!bag) return bag as TransformedMilkBagShema<T>;
+export function transformToMilkBagSchema<T extends MilkBag | BaseInput, B extends boolean = true>(
+  bag: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedMilkBag<T, B> {
+  if (!bag) return bag as TransformedMilkBag<T, B>;
 
-  if (typeof bag === 'string') return null as TransformedMilkBagShema<T>;
+  if (typeof bag === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform MilkBag into MilkBagSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedMilkBag<T, B>;
+  }
 
   return {
     id: bag.id,
@@ -23,37 +61,115 @@ export function transformToMilkBagShema<T extends MilkBag | BaseInput>(
     collectedAt: bag.collectedAt,
     donor: extractID(bag.donor),
     bagImage: transformToImageSchema(bag.bagImage),
-  } as TransformedMilkBagShema<T>;
+  } as TransformedMilkBag<T, B>;
 }
 
-type TransformedDeliverPreference<T> = T extends DeliveryPreference
+type TransformedMilkBagCreate<T, B extends boolean> = T extends MilkBag
+  ? MilkBagCreateSchema
+  : BaseReturn<T, B>;
+export function transformToMilkBagCreateSchema<T extends MilkBag | BaseInput, B extends boolean>(
+  bag: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedMilkBagCreate<T, B> {
+  if (!bag) return bag as TransformedMilkBagCreate<T, B>;
+
+  if (typeof bag === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform MilkBag into MilkBagCreateSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedMilkBag<T, B>;
+  }
+
+  return {
+    id: bag.id,
+    volume: bag.volume,
+    collectedAt: bag.collectedAt,
+    donor: extractID(bag.donor),
+  } as TransformedMilkBagCreate<T, B>;
+}
+
+type TransformedAddress<T, B extends boolean> = T extends Address
+  ? AddressSchema
+  : BaseReturn<T, B>;
+
+export function transformToAddressSchema<T extends Address | BaseInput, B extends boolean>(
+  address: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedAddress<T, B> {
+  if (!address) return address as TransformedAddress<T, B>;
+  if (typeof address === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform Address into AddressSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedAddress<T, B>;
+  }
+
+  const coordinates =
+    (address.coordinates && pointToLatLng(address.coordinates)) || PHILIPPINES_COORDINATES;
+
+  return {
+    id: address.id,
+    name: address.name || '',
+    zipCode: address.zipCode || '',
+    street: address.street || '',
+    province: extractID(address.province),
+    barangay: (address.barangay && extractID(address.barangay)) || undefined,
+    cityMunicipality: extractID(address.cityMunicipality),
+    isDefault: address.isDefault || false,
+    coordinates,
+  } as TransformedAddress<T, B>;
+}
+
+type TransformedDP<T, B extends boolean> = T extends DeliveryPreference
   ? DeliveryPreferenceSchema
-  : BaseReturn<T>;
+  : BaseReturn<T, B>;
 
-export function transformToDeliveryPreferenceSchema<T extends DeliveryPreference | BaseInput>(
-  deliveryPreference: T
-): TransformedDeliverPreference<T> {
-  if (!deliveryPreference) return deliveryPreference as TransformedDeliverPreference<T>;
-
-  if (typeof deliveryPreference === 'string') return null as TransformedDeliverPreference<T>;
+export function transformToDeliveryPreferenceSchema<
+  T extends DeliveryPreference | BaseInput,
+  B extends boolean,
+>(
+  deliveryPreference: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedDP<T, B> {
+  if (!deliveryPreference) return deliveryPreference as TransformedDP<T, B>;
+  if (typeof deliveryPreference === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform DeliveryPreference into DeliveryPreferenceSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedDP<T, B>;
+  }
 
   return {
     id: deliveryPreference.id,
-    address: extractID(deliveryPreference.address),
+    address: transformToAddressSchema(deliveryPreference.address, options),
     availableDays: deliveryPreference.availableDays,
     preferredMode: deliveryPreference.preferredMode,
     name: deliveryPreference.name,
-  } as TransformedDeliverPreference<T>;
+  } as TransformedDP<T, B>;
 }
 
-type TransformedImageSchema<T> = T extends FileCollection ? ImageSchema : BaseReturn<T>;
+type TransformedImageSchema<T, B extends boolean> = T extends FileCollection
+  ? ImageSchema
+  : BaseReturn<T, B>;
 
-export function transformToImageSchema<T extends FileCollection | BaseInput>(
-  image: T
-): TransformedImageSchema<T> {
-  if (!image) return image as TransformedImageSchema<T>;
+export function transformToImageSchema<T extends FileCollection | BaseInput, B extends boolean>(
+  image: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedImageSchema<T, B> {
+  if (!image) return image as TransformedImageSchema<T, B>;
 
-  if (typeof image === 'string') return null as TransformedImageSchema<T>;
+  if (typeof image === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error('Unable to transform Image into ImageSchema. Shallow collection provided.');
+    }
+    return null as TransformedImageSchema<T, B>;
+  }
 
   return {
     id: image.id,
@@ -65,5 +181,91 @@ export function transformToImageSchema<T extends FileCollection | BaseInput>(
     alt: image.alt || 'Image',
     filesize: image.filesize || 0,
     blurhash: image.blurHash || undefined,
-  } as TransformedImageSchema<T>;
+  } as TransformedImageSchema<T, B>;
+}
+
+type TransformedDonation<T, B extends boolean> = T extends Donation
+  ? DonationSchema
+  : BaseReturn<T, B>;
+
+export function transformToDonationSchema<T extends Donation | BaseInput, B extends boolean>(
+  donation: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedDonation<T, B> {
+  if (!donation) return donation as TransformedDonation<T, B>;
+  if (typeof donation === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform Donation into DonationSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedDonation<T, B>;
+  }
+
+  const image = donation.details.milkSample?.pop();
+
+  const bags = donation.details.bags
+    .map((bag) => transformToMilkBagCreateSchema(bag, options))
+    .filter(Boolean) as MilkBagCreateSchema[];
+
+  const milkBags = donation.details.bags
+    .map((bag) => transformToMilkBagSchema(bag, options))
+    .filter(Boolean) as MilkBagSchema[];
+
+  const deliveryPreferences = (donation.deliveryPreferences || [])
+    .map((pref) => transformToDeliveryPreferenceSchema(pref, options))
+    .filter(Boolean) as DeliveryPreferenceSchema[];
+
+  return {
+    id: donation.id,
+    donor: extractID(donation.donor),
+    recipient: donation.recipient,
+    deliveryPreferences,
+    milkBags,
+    details: {
+      ...donation.details,
+      bags: bags,
+      image: transformToImageSchema(image),
+    },
+  } as TransformedDonation<T, B>;
+}
+
+type TransformedRequest<T, B extends boolean> = T extends Request
+  ? RequestSchema
+  : BaseReturn<T, B>;
+
+export function transformToRequestSchema<T extends Request | BaseInput, B extends boolean>(
+  request: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedRequest<T, B> {
+  if (!request) return request as TransformedRequest<T, B>;
+  if (typeof request === 'string') {
+    if (options.throwOnShallowCollection) {
+      throw new Error(
+        'Unable to transform Request into RequestSchema. Shallow collection provided.'
+      );
+    }
+    return null as TransformedRequest<T, B>;
+  }
+
+  const milkBags = request.details.bags
+    ?.map((bag) => transformToMilkBagSchema(bag, options))
+    .filter(Boolean) as MilkBagSchema[] | undefined;
+
+  const deliveryPreferences = (request.deliveryPreferences || [])
+    .map((pref) => transformToDeliveryPreferenceSchema(pref, options))
+    .filter(Boolean) as DeliveryPreferenceSchema[];
+
+  return {
+    id: request.id,
+    requester: extractID(request.requester),
+    recipient: request.recipient,
+    volumeNeeded: request.volumeNeeded,
+    deliveryPreferences,
+    details: {
+      ...request.details,
+      bags: milkBags,
+      image: transformToImageSchema(request.details.image),
+    },
+  } as TransformedRequest<T, B>;
 }

@@ -190,6 +190,7 @@ export class MatchingService implements IMatchingService {
 
     // Create the transaction using the TransactionService
     return await this.transactionService.createP2OTransaction({
+      deliveryDate: options.deliveryDate,
       donation,
       organization,
       milkBags: extractID(matchedBags),
@@ -236,6 +237,7 @@ export class MatchingService implements IMatchingService {
 
     // Create the transaction using the TransactionService
     return await this.transactionService.createO2PTransaction({
+      deliveryDate: options.deliveryDate,
       organization,
       request,
       milkBags,

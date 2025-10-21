@@ -1,28 +1,33 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addressSchema } from '@lactalink/form-schemas';
-import { extractID } from '@lactalink/utilities/extractors';
+import {
+  AddressCreateSchema,
+  addressCreateSchema,
+  AddressSchema,
+  addressSchema,
+} from '@lactalink/form-schemas';
 
 import { useForm } from 'react-hook-form';
 
-import { pointToLatLng } from '@lactalink/utilities/geo-utils';
+import { FormProps } from '@/components/contexts/FormProvider';
+import { transformToAddressSchema } from '@/lib/utils/transformData';
 import { useEffect } from 'react';
 import { useFetchById } from '../collections/useFetchById';
 
-export function useAddressForm(id?: string) {
-  const {
-    data: address,
-    isLoading,
-    isFetching,
-    isSuccess,
-    error,
-  } = useFetchById(Boolean(id), {
+type InputType = string | undefined | null;
+
+type FormReturnType<T extends InputType> = T extends string
+  ? FormProps<AddressSchema>
+  : FormProps<AddressCreateSchema>;
+
+export function useAddressForm<T extends InputType = undefined>(id: T): FormReturnType<T> {
+  const { data: address, ...query } = useFetchById(!!id, {
     collection: 'addresses',
     id: id || '',
     depth: 0,
   });
 
   const form = useForm({
-    resolver: zodResolver(addressSchema),
+    resolver: zodResolver(id ? addressSchema : addressCreateSchema),
     defaultValues: {
       name: '',
       isDefault: false,
@@ -34,23 +39,21 @@ export function useAddressForm(id?: string) {
   const reset = form.reset;
 
   useEffect(() => {
-    if (isSuccess && address) {
-      const data = address;
-      const coordinates = data.coordinates && pointToLatLng(data.coordinates);
-
-      reset({
-        id: data.id,
-        name: data.name || '',
-        zipCode: data.zipCode || '',
-        street: data.street || '',
-        province: extractID(data.province),
-        barangay: (data.barangay && extractID(data.barangay)) || undefined,
-        cityMunicipality: extractID(data.cityMunicipality),
-        isDefault: data.isDefault || false,
-        coordinates: coordinates || undefined,
-      });
+    if (address) {
+      const transformed = transformToAddressSchema(address);
+      reset(transformed);
     }
-  }, [reset, isSuccess, address]);
+  }, [reset, address]);
 
-  return { form, isLoading, isFetching, isSuccess, data: address, error };
+  return {
+    ...form,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    refreshing: query.isRefetching,
+    fetchError: query.error,
+    extraData: address,
+    onRefresh() {
+      query.refetch();
+    },
+  } as FormReturnType<T>;
 }

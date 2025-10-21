@@ -40,7 +40,7 @@ export function useAuth() {
     const user = session?.user || null;
     queryClient.setQueryData(QUERY_KEYS.AUTH.USER, user);
     setMeUser(user);
-  }, [session, queryClient]);
+  }, [session?.user, queryClient]);
 
   return {
     // Session data
@@ -69,6 +69,8 @@ export function useAuthListener() {
     mutationFn: () => apiClient.auth.getSession(),
     onSuccess: (session) => {
       queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, session);
+      queryClient.setQueryData(QUERY_KEYS.AUTH.USER, session?.user || null);
+      setMeUser(session?.user || null);
     },
   });
 

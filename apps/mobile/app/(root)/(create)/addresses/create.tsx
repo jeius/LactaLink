@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
-import { FormProvider } from 'react-hook-form';
 import { TouchableWithoutFeedback } from 'react-native';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import MapView, { Region } from 'react-native-maps';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
+import { Form } from '@/components/contexts/FormProvider';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
 import { AddressMapView } from '@/components/map/AddressMapView';
@@ -13,7 +13,7 @@ import { Box } from '@/components/ui/box';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
-import { AddressSchema } from '@lactalink/form-schemas';
+import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { Redirect, Stack, useRouter } from 'expo-router';
 
@@ -24,9 +24,10 @@ export default function CreatePage() {
 
   const revalidateQueries = useRevalidateCollectionQueries();
 
-  const { form, isLoading, error } = useAddressForm();
+  const form = useAddressForm(undefined);
+  const { isLoading, fetchError: error } = form;
 
-  async function onSubmit(formData: AddressSchema) {
+  async function onSubmit(formData: AddressCreateSchema) {
     const success = await upsertAddress(formData);
 
     if (!success) return;
@@ -56,7 +57,7 @@ export default function CreatePage() {
   }
 
   return (
-    <FormProvider {...form}>
+    <Form {...form}>
       <FormPreventBack />
       <Stack.Screen options={{ headerShown: true, headerTitle: 'New Address' }} />
 
@@ -81,6 +82,6 @@ export default function CreatePage() {
           isLoading={isLoading}
         />
       </SafeArea>
-    </FormProvider>
+    </Form>
   );
 }

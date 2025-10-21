@@ -1,48 +1,34 @@
 import { getApiClient } from '@lactalink/api';
-import { AddressSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
+import {
+  AddressCreateSchema,
+  AddressSchema,
+  DeliveryPreferenceCreateSchema,
+  DeliveryPreferenceSchema,
+} from '@lactalink/form-schemas';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
-import { MarkOptional } from '@lactalink/types/utils';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
-export async function upsertDeliveryPreferences(deliveryDetails: DeliveryPreferenceSchema[]) {
-  const apiClient = getApiClient();
-  return await Promise.all(
-    deliveryDetails.map((detail) => {
-      const { id, ...rest } = detail;
-      if (id) {
-        return apiClient.updateByID({
-          id,
-          collection: 'delivery-preferences',
-          data: rest,
-          depth: 0,
-        });
-      }
-
-      return apiClient.create({ collection: 'delivery-preferences', data: rest, depth: 0 });
-    })
-  );
-}
-
-export async function upsertDeliveryPreference(data: MarkOptional<DeliveryPreferenceSchema, 'id'>) {
+export async function upsertDeliveryPreference(
+  data: DeliveryPreferenceSchema | DeliveryPreferenceCreateSchema
+) {
   const apiClient = getApiClient();
   let message: string;
   let preference: DeliveryPreference;
 
-  const { id, ...rest } = data;
-
-  if (id) {
+  if ('id' in data) {
+    const { id, ...rest } = data;
     preference = await apiClient.updateByID({
       collection: 'delivery-preferences',
-      id,
-      data: rest,
+      id: id,
+      data: { ...rest, address: extractID(rest.address) },
     });
 
     message = `"${data.name || 'Delivery Preference'}" updated successfully.`;
   } else {
     preference = await apiClient.create({
       collection: 'delivery-preferences',
-      data: rest,
+      data: { ...data, address: extractID(data.address) },
     });
 
     message = `"${data.name || 'Delivery Preference'}" created successfully.`;
@@ -51,7 +37,7 @@ export async function upsertDeliveryPreference(data: MarkOptional<DeliveryPrefer
   return { message, data: preference };
 }
 
-export async function upsertAddress(data: AddressSchema) {
+export async function upsertAddress(data: AddressSchema | AddressCreateSchema) {
   const apiClient = getApiClient();
   async function executeAddressSave() {
     let message: string;
@@ -61,7 +47,7 @@ export async function upsertAddress(data: AddressSchema) {
     const coordinates: [number, number] | undefined =
       latitude && longitude ? [longitude, latitude] : undefined;
 
-    if (data.id) {
+    if ('id' in data) {
       address = await apiClient.updateByID({
         collection: 'addresses',
         id: data.id,

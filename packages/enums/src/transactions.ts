@@ -1,5 +1,5 @@
 export const TRANSACTION_STATUS = {
-  MATCHED: { label: 'Matched', value: 'MATCHED' },
+  MATCHED: { label: 'Preparing', value: 'MATCHED' },
   PENDING_DELIVERY_CONFIRMATION: {
     label: 'Waiting Confirmation',
     value: 'PENDING_DELIVERY_CONFIRMATION',

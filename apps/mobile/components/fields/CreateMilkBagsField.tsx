@@ -2,7 +2,7 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { deleteMilkBag } from '@/lib/api/delete';
 import { getPrimaryColor } from '@/lib/colors';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createMilkBagSchema, CreateMilkBagSchema, DonationSchema } from '@lactalink/form-schemas';
+import { createMilkBagSchema, DonationSchema, MilkBagCreateSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useMutation } from '@tanstack/react-query';
@@ -97,7 +97,9 @@ export default function CreateMilkBagsField({
   return (
     <FormControl isInvalid={!!error} {...props}>
       <FormControlLabel>
-        <FormControlLabelText>Milk Bags</FormControlLabelText>
+        <FormControlLabelText size="lg" className="font-JakartaSemiBold">
+          Milk Bags
+        </FormControlLabelText>
       </FormControlLabel>
 
       <FormControlHelper>
@@ -149,7 +151,7 @@ interface ListItemProps {
   isLoading?: boolean;
   isDisabled?: boolean;
   onRemove?: (val: { index: number; id: string | undefined }) => void;
-  onDuplicate?: (data: CreateMilkBagSchema) => void;
+  onDuplicate?: (data: MilkBagCreateSchema) => void;
   disableRemove?: boolean;
 }
 
@@ -183,7 +185,7 @@ function ListItem({
     onDuplicate?.({ collectedAt, volume, donor: data.donor });
   }
 
-  function handleSave(updatedData: CreateMilkBagSchema) {
+  function handleSave(updatedData: MilkBagCreateSchema) {
     setValue(`details.bags.${index}`, updatedData, { shouldDirty: true, shouldTouch: true });
     setOpen(false);
   }
@@ -261,8 +263,8 @@ function ListItem({
 }
 
 interface FormActionSheetProps extends ComponentProps<typeof Actionsheet> {
-  values?: CreateMilkBagSchema;
-  onSave?: (data: CreateMilkBagSchema) => void;
+  values?: MilkBagCreateSchema;
+  onSave?: (data: MilkBagCreateSchema) => void;
 }
 
 function FormActionSheet({ values, ...props }: FormActionSheetProps) {

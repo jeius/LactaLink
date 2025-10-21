@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  CreateDeliveryPreferenceSchema,
   createDeliveryPreferenceSchema,
+  DeliveryPreferenceCreateSchema,
   deliveryPreferenceSchema,
   DeliveryPreferenceSchema,
 } from '@lactalink/form-schemas';
@@ -12,7 +12,10 @@ import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { FormProps } from '@/components/contexts/FormProvider';
-import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
+import {
+  transformToAddressSchema,
+  transformToDeliveryPreferenceSchema,
+} from '@/lib/utils/transformData';
 import { useMeUser } from '../auth/useAuth';
 import { useFetchById } from '../collections/useFetchById';
 
@@ -20,7 +23,7 @@ type InputType = string | undefined | null;
 
 type FormReturnType<T extends InputType> = T extends string
   ? FormProps<DeliveryPreferenceSchema>
-  : FormProps<CreateDeliveryPreferenceSchema>;
+  : FormProps<DeliveryPreferenceCreateSchema>;
 
 export function useDeliveryPreferenceForm<T extends InputType = undefined>(
   id: T
@@ -50,7 +53,7 @@ export function useDeliveryPreferenceForm<T extends InputType = undefined>(
   const form = useForm({
     resolver: zodResolver(id ? deliveryPreferenceSchema : createDeliveryPreferenceSchema),
     defaultValues: {
-      address: defaultAddress?.id,
+      address: transformToAddressSchema(defaultAddress),
       availableDays: [],
       preferredMode: [],
     },

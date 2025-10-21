@@ -9,7 +9,7 @@ import { admin, authenticated } from '../_access-control';
 import { confirmedField, proposedField } from './fields/deliveryFields';
 import { trackingField } from './fields/tracking';
 import { filterMilkBagsOptions } from './filterOptions';
-import { calculateVolume } from './hooks/caculateVolume';
+import { calculateMatchedVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
 import { processDeliveryAgreements } from './hooks/processDeliveryAgreements';
 import { updateRelatedCollectionsOnCreate } from './hooks/updateRelatedCollectionsOnCreate';
@@ -29,12 +29,12 @@ export const Transactions: CollectionConfig<'transactions'> = {
     defaultColumns: ['transactionNumber', 'donation', 'request', 'status', 'createdAt'],
   },
   hooks: {
-    beforeRead: [calculateVolume],
     beforeChange: [
       generateCreatedBy,
       generateTransactionNumber,
       processDeliveryAgreements,
       updateSeenTracking,
+      calculateMatchedVolume,
     ],
     afterChange: [updateRelatedCollectionsOnCreate],
   },
@@ -111,7 +111,6 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'matchedVolume',
           label: 'Matched Volume (mL)',
           type: 'number',
-          virtual: true,
           required: true,
           defaultValue: 0,
           min: 1,

@@ -76,7 +76,7 @@ export class TransactionService implements ITransactionService {
   }
 
   async createP2OTransaction(params: CreateP2OTransactionParams) {
-    const { organization, milkBags, address } = params;
+    const { organization, milkBags, address, deliveryDate } = params;
 
     const getDonation = async () => {
       const donation = extractCollection(params.donation);
@@ -98,6 +98,7 @@ export class TransactionService implements ITransactionService {
         matchedVolume: volume,
         delivery: {
           confirmedDelivery: {
+            datetime: deliveryDate,
             confirmedAt: new Date().toISOString(),
             mode: DELIVERY_OPTIONS.DELIVERY.value,
             address: extractID(address),
@@ -110,7 +111,7 @@ export class TransactionService implements ITransactionService {
   }
 
   async createO2PTransaction(params: CreateO2PTransactionParams) {
-    const { organization, milkBags, address } = params;
+    const { organization, milkBags, address, deliveryDate } = params;
 
     const getRequest = async () => {
       const request = extractCollection(params.request);
@@ -132,6 +133,7 @@ export class TransactionService implements ITransactionService {
         matchedVolume: volume,
         delivery: {
           confirmedDelivery: {
+            datetime: deliveryDate,
             mode: DELIVERY_OPTIONS.PICKUP.value,
             confirmedAt: new Date().toISOString(),
             address: extractID(address),

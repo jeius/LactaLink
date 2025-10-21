@@ -7,8 +7,9 @@ import {
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
+import { DeliveryDays } from '@lactalink/types';
 import { User } from '@lactalink/types/payload-generated-types';
-import { deliveryPreferenceSchema } from '../delivery-preference';
+import { deliveryCreateSchema, deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
 import { createMilkBagSchema, milkBagSchema } from '../milk-bag';
 import { textAreaSchema } from '../textarea';
@@ -42,10 +43,7 @@ export const requestDetailsSchema = z.object({
     Object.values(URGENCY_LEVELS).map((item) => item.value),
     'Select one option'
   ),
-  bags: z
-    .array(milkBagSchema.pick({ id: true }))
-    .optional()
-    .nullable(),
+  bags: z.array(milkBagSchema).optional().nullable(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
   reason: textAreaSchema,
@@ -77,23 +75,45 @@ export const matchedDonationSchema = z.object({
   bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
 });
 
-export const donationSchema = z
-  .object({
-    id: z.uuid().optional(),
-    donor: z.uuid().nonempty('Required'),
-    matchedRequest: matchedRequestSchema.optional(),
-    details: donationDetailsSchema,
-    recipient: recipientSchema.optional().nullable(),
-    milkBags: z.array(milkBagSchema),
-    ...deliveryPreferencesSchema.shape,
-  })
+export const donationSchema = z.object({
+  id: z.uuid('Invalid UUID').nonempty('Required'),
+  donor: z.uuid('Invalid UUID').nonempty('Required'),
+  details: donationDetailsSchema,
+  milkBags: z.array(milkBagSchema),
+  ...deliveryPreferencesSchema.shape,
+});
+
+export const requestSchema = z.object({
+  id: z.uuid('Invalid UUID').nonempty('Required'),
+  requester: z.uuid('Invalid UUID').nonempty('Required'),
+  recipient: recipientSchema.optional().nullable(),
+  volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
+  details: requestDetailsSchema,
+  ...deliveryPreferencesSchema.shape,
+});
+
+export const donationCreateSchema = z
+  .discriminatedUnion('type', [
+    z.object({
+      type: z.literal('MATCHED'),
+      matchedRequest: requestSchema,
+      delivery: deliveryCreateSchema,
+      ...donationSchema.omit({ id: true }).shape,
+    }),
+    z.object({
+      type: z.literal('OPEN'),
+      ...donationSchema.omit({ id: true }).shape,
+    }),
+    z.object({
+      type: z.literal('DIRECT'),
+      recipient: recipientSchema,
+      ...donationSchema.omit({ id: true }).shape,
+    }),
+  ])
   .refine(
     (data) => {
-      if (!data.matchedRequest) {
-        return true;
-      }
-      if (data.matchedRequest.storagePreference !== 'EITHER') {
-        return data.details.storageType === data.matchedRequest.storagePreference;
+      if (data.type === 'MATCHED' && data.matchedRequest.details.storagePreference !== 'EITHER') {
+        return data.details.storageType === data.matchedRequest.details.storagePreference;
       }
       return true;
     },
@@ -114,18 +134,42 @@ export const donationSchema = z
       error: 'Not all milk bags have been verified.',
       path: ['milkBags'],
     }
+  )
+  .refine(
+    (data) => {
+      if (data.type === 'MATCHED' && data.matchedRequest) {
+        const preference = data.deliveryPreferences[0];
+        if (!preference) return false;
+
+        const preferredDays = preference.availableDays;
+        const deliveryDate = new Date(data.delivery.dateTime);
+        const deliveryDay = deliveryDate
+          .toLocaleDateString('en-US', { weekday: 'long' })
+          .toUpperCase();
+        if (!preferredDays.includes(deliveryDay as DeliveryDays)) {
+          return false;
+        }
+      }
+      return true;
+    },
+    {
+      path: ['delivery', 'dateTime'],
+      error: 'Selected date does not match with the preferred days.',
+    }
   );
 
-export const requestSchema = z
-  .object({
-    id: z.uuid().optional(),
-    requester: z.uuid().nonempty('Required'),
-    recipient: recipientSchema.optional().nullable(),
-    volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
-    details: requestDetailsSchema,
-    matchedDonation: matchedDonationSchema.optional(),
-    ...deliveryPreferencesSchema.shape,
-  })
+export const requestCreateSchema = z
+  .discriminatedUnion('matchedDonation', [
+    z.object({
+      matchedDonation: donationSchema,
+      delivery: deliveryCreateSchema,
+      ...requestSchema.omit({ id: true }).shape,
+    }),
+    z.object({
+      matchedDonation: z.literal(null).optional(),
+      ...requestSchema.omit({ id: true }).shape,
+    }),
+  ])
   .refine(
     (data) => {
       if (data.matchedDonation) {
@@ -143,17 +187,14 @@ export const requestSchema = z
   );
 
 export const donationUpdateSchema = z.object({
-  id: z.uuid().nonempty('Required'),
   details: donationDetailsSchema.omit({ bags: true }),
-  ...donationSchema.pick({ recipient: true, deliveryPreferences: true }).shape,
+  ...donationSchema.pick({ id: true, deliveryPreferences: true }).shape,
 });
 
-export const requestUpdateSchema = z.object({
-  id: z.uuid().nonempty('Required'),
-  ...requestSchema.pick({
-    details: true,
-    recipient: true,
-    volumeNeeded: true,
-    deliveryPreferences: true,
-  }).shape,
+export const requestUpdateSchema = requestSchema.pick({
+  id: true,
+  details: true,
+  recipient: true,
+  volumeNeeded: true,
+  deliveryPreferences: true,
 });

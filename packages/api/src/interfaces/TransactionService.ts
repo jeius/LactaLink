@@ -41,6 +41,7 @@ export interface CreateP2OTransactionParams {
   milkBags: (string | MilkBag)[];
   organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
   address: string | Address;
+  deliveryDate: string;
 }
 
 /**
@@ -51,6 +52,7 @@ export interface CreateO2PTransactionParams {
   milkBags: (string | MilkBag)[];
   address: string | Address;
   organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
+  deliveryDate: string;
 }
 
 /**

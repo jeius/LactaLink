@@ -23,7 +23,7 @@ export function nullTransformObject(val: Record<string, any>) {
 }
 export function emptyTransform(val: string) {
   if (typeof val === 'string' && val.trim() === '') {
-    return;
+    return undefined;
   }
   return val;
 }

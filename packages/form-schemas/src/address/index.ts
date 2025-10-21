@@ -7,16 +7,19 @@ export const coordinatesSchema = z.object({
 });
 
 export const addressSchema = z.object({
-  id: z.uuid().optional(),
+  id: z.uuid().nonempty('Required'),
   name: z.string().transform(emptyTransform).optional(),
   street: z.string().transform(nullTransform).optional().nullable(),
   province: z.string().nonempty('Required.'),
   cityMunicipality: z.string().nonempty('Required.'),
   barangay: z.string().transform(nullTransform).optional().nullable(),
   zipCode: z.string().nonempty('Required.'),
-  coordinates: coordinatesSchema.optional(),
-  isDefault: z.boolean().optional(),
+  coordinates: coordinatesSchema,
+  isDefault: z.boolean(),
 });
 
+export const addressCreateSchema = addressSchema.omit({ id: true });
+
 export type AddressSchema = z.infer<typeof addressSchema>;
+export type AddressCreateSchema = z.infer<typeof addressCreateSchema>;
 export type CoordinatesSchema = z.infer<typeof coordinatesSchema>;

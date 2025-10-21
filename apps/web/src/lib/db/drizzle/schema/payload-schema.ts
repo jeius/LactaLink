@@ -1829,6 +1829,7 @@ export const transactions = pgTable(
       onDelete: 'set null',
     }),
     status: enum_transaction_status('status').notNull().default('MATCHED'),
+    matchedVolume: numeric('matched_volume').notNull().default('0'),
     transactionType: enum_transaction_type('transaction_type').notNull().default('P2P'),
     delivery_confirmedDelivery_mode: enum_delivery_modes('delivery_confirmed_delivery_mode'),
     delivery_confirmedDelivery_datetime: timestamp('delivery_confirmed_delivery_datetime', {

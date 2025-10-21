@@ -25,10 +25,7 @@ export const proposedField: Field = {
       name: 'datetime',
       label: 'Proposed Date and Time',
       type: 'date',
-      required: false,
-      admin: {
-        condition: (_, siblingData) => siblingData.mode === DELIVERY_OPTIONS.MEETUP.value,
-      },
+      required: true,
     },
     {
       name: 'address',
@@ -149,6 +146,7 @@ export const confirmedField: Field = {
   name: 'confirmedDelivery',
   label: 'Confirmed Delivery',
   interfaceName: 'ConfirmedDelivery',
+  required: false,
   type: 'group',
   fields: [
     {
@@ -162,10 +160,7 @@ export const confirmedField: Field = {
       name: 'datetime',
       label: 'Confirmed Date and Time',
       type: 'date',
-      required: false,
-      admin: {
-        condition: (_, siblingData) => siblingData.mode === DELIVERY_OPTIONS.MEETUP.value,
-      },
+      required: true,
     },
     {
       name: 'address',

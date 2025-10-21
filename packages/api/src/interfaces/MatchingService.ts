@@ -134,6 +134,7 @@ export interface P2OMatchOptions {
    */
   milkBagIDs?: string[];
   address: string | Address;
+  deliveryDate: string;
 }
 
 /**
@@ -161,6 +162,7 @@ export interface O2PMatchOptions {
   milkBagIds: string[];
 
   address: string | Address;
+  deliveryDate: string;
 }
 
 /**

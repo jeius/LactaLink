@@ -1,19 +1,25 @@
-import { requestSchema, RequestSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema, requestCreateSchema, RequestSchema } from '@lactalink/form-schemas';
 
-import { User } from '@lactalink/types/payload-generated-types';
+import { Donation, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 
 import { FormProps } from '@/components/contexts/FormProvider';
 import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
-import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
+import {
+  transformToDeliveryPreferenceSchema,
+  transformToDonationSchema,
+} from '@/lib/utils/transformData';
 import { zodResolver } from '@hookform/resolvers/zod';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
 import { useMeUser } from '../auth/useAuth';
+import { useFetchById } from '../collections/useFetchById';
 
-const debouncedSave = debounce((value) => saveFormData('request-create', value), 200);
+export type RequestCreateFormExtraData = {
+  matchedDonation: Donation | undefined;
+};
 
 type Params = {
   recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
@@ -23,12 +29,29 @@ type Params = {
 export function useCreateRequestForm({
   matchedDonation,
   recipient,
-}: Params): Omit<FormProps<RequestSchema>, 'children'> {
+}: Params): Omit<FormProps<RequestCreateSchema>, 'children'> {
   const { data: user, ...userQuery } = useMeUser();
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
-  const form = useForm({
-    resolver: zodResolver(requestSchema),
+  const { data: matchedDonationDoc, ...donationQuery } = useFetchById(!!matchedDonation, {
+    collection: 'donations',
+    id: matchedDonation || '',
+  });
+
+  const debouncedSave = useMemo(
+    () =>
+      debounce((value) => {
+        if (matchedDonation) {
+          saveFormData('request-create', { ...value, deliveryPreferences: [] });
+        } else {
+          saveFormData('request-create', value);
+        }
+      }, 200),
+    [matchedDonation]
+  );
+
+  const form = useForm<RequestCreateSchema>({
+    resolver: zodResolver(requestCreateSchema),
     mode: 'onTouched',
     defaultValues: createDefaultValues(user),
   });
@@ -37,30 +60,26 @@ export function useCreateRequestForm({
   const isSubmitSuccessful = formState.isSubmitSuccessful;
 
   useEffect(() => {
-    const data = getValues();
+    const transformedDonation = transformToDonationSchema(matchedDonationDoc);
+    reset({ ...getValues(), matchedDonation: transformedDonation });
+  }, [getValues, matchedDonationDoc, reset]);
 
-    if (!matchedDonation) {
-      data.matchedDonation = undefined;
-    } else {
-      data.volumeNeeded = 0;
-    }
+  // When user preferences or recipient prop changes, update the form values.
+  useEffect(() => {
+    const newValues = getValues();
 
-    if (preferences?.length && !data.deliveryPreferences?.length) {
-      data.deliveryPreferences = preferences
-        .map((doc) => {
-          const pref = extractCollection(doc);
-          if (!pref) return null;
-          return transformToDeliveryPreferenceSchema(pref);
-        })
+    if (!newValues.deliveryPreferences?.length) {
+      newValues.deliveryPreferences = preferences
+        .map((pref) => transformToDeliveryPreferenceSchema(pref))
         .filter((v) => v !== null);
     }
 
-    data.recipient = recipient;
+    newValues.recipient = recipient;
 
-    if (!isEqual(data, getValues())) {
-      reset(data);
+    if (!isEqual(newValues, getValues())) {
+      reset(newValues);
     }
-  }, [getValues, matchedDonation, preferences, recipient, reset]);
+  }, [preferences, getValues, reset, recipient]);
 
   // Watch form changes and save to local storage (debounced).
   useEffect(() => {
@@ -72,7 +91,7 @@ export function useCreateRequestForm({
       subscription.unsubscribe();
       debouncedSave.cancel();
     };
-  }, [watch]);
+  }, [debouncedSave, watch]);
 
   /**
    * When the form is successfully submitted
@@ -98,23 +117,27 @@ export function useCreateRequestForm({
     }
 
     saveUserPreference();
-  }, [getValues, isSubmitSuccessful]);
+  }, [debouncedSave, getValues, isSubmitSuccessful]);
 
   return {
     ...form,
-    isLoading: userQuery.isLoading,
-    isFetching: userQuery.isFetching,
-    refreshing: userQuery.isRefetching,
-    onRefresh: userQuery.refetch,
-    fetchError: userQuery.error,
+    isLoading: userQuery.isLoading || donationQuery.isLoading,
+    isFetching: userQuery.isFetching || donationQuery.isFetching,
+    refreshing: userQuery.isRefetching || donationQuery.isRefetching,
+    fetchError: userQuery.error || donationQuery.error,
+    extraData: { matchedDonation: matchedDonationDoc } as RequestCreateFormExtraData,
+    onRefresh() {
+      userQuery.refetch();
+      donationQuery.refetch();
+    },
   };
 }
 
-function createDefaultValues(user: User | null): RequestSchema | undefined {
+function createDefaultValues(user: User | null): RequestCreateSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
   const savedData = getSavedFormData('request-create');
 
-  if (savedData) return savedData as RequestSchema;
+  if (savedData) return savedData as RequestCreateSchema;
 
   if (!profile) return;
 
@@ -125,9 +148,9 @@ function createDefaultValues(user: User | null): RequestSchema | undefined {
     volumeNeeded: 20,
     deliveryPreferences: [],
     details: {
-      bags: [] as RequestSchema['details']['bags'],
+      bags: [] as RequestCreateSchema['details']['bags'],
       reason: '',
       notes: '',
-    } as RequestSchema['details'],
+    } as RequestCreateSchema['details'],
   };
 }

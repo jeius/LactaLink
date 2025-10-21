@@ -13,7 +13,7 @@ import { useEditRequestForm } from '@/hooks/forms/useEditRequestForm';
 import { uploadImage } from '@/lib/api/file';
 import { getApiClient } from '@lactalink/api';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { UpdateRequestSchema } from '@lactalink/form-schemas';
+import { RequestUpdateSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useLocalSearchParams } from 'expo-router';
 import { ClockIcon } from 'lucide-react-native';
@@ -37,7 +37,7 @@ export default function RequestEditPage() {
 
   const submit = form.handleSubmit(onSubmit);
 
-  async function onSubmit(data: UpdateRequestSchema) {
+  async function onSubmit(data: RequestUpdateSchema) {
     const promise = update(data);
 
     toast.promise(promise, {
@@ -181,7 +181,7 @@ export default function RequestEditPage() {
   );
 }
 
-async function update({ id, details, deliveryPreferences, ...data }: UpdateRequestSchema) {
+async function update({ id, details, deliveryPreferences, ...data }: RequestUpdateSchema) {
   const apiClient = getApiClient();
 
   const image = details.image;

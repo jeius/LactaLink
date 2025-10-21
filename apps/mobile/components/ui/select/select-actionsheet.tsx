@@ -104,7 +104,7 @@ const actionsheetContentStyle = tva({
 });
 
 const actionsheetItemStyle = tva({
-  base: 'data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 data-[checked=true]:bg-background-100 w-full flex-row items-center rounded-sm p-3 data-[disabled=true]:opacity-40',
+  base: 'data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-primary-50 active:bg-primary-100 data-[focus=true]:bg-primary-100 web:data-[focus-visible=true]:bg-primary-100 data-[checked=true]:bg-primary-100 w-full flex-row items-center rounded-xl p-3 data-[disabled=true]:opacity-40',
 });
 
 const actionsheetItemTextStyle = tva({
@@ -142,7 +142,7 @@ const actionsheetItemTextStyle = tva({
 });
 
 const actionsheetDragIndicatorStyle = tva({
-  base: 'bg-background-400 h-1 w-16 rounded-full',
+  base: 'bg-primary-500 h-1 w-16 rounded-full',
 });
 
 const actionsheetDragIndicatorWrapperStyle = tva({
@@ -150,7 +150,7 @@ const actionsheetDragIndicatorWrapperStyle = tva({
 });
 
 const actionsheetBackdropStyle = tva({
-  base: 'bg-background-0 web:cursor-default web:pointer-events-auto absolute bottom-0 left-0 right-0 top-0',
+  base: 'bg-background-500 web:cursor-default web:pointer-events-auto absolute bottom-0 left-0 right-0 top-0',
 });
 
 const actionsheetScrollViewStyle = tva({

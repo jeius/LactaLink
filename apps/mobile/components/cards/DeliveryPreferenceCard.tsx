@@ -4,16 +4,18 @@ import { DELIVERY_OPTIONS, ShortDays } from '@lactalink/enums';
 import { CalendarDaysIcon, MapPinIcon } from 'lucide-react-native';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { MapPageSearchParams } from '@/lib/types';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { DeliveryPreferenceSchema } from '@lactalink/form-schemas';
+import { DeliveryPreferenceCreateSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractObject } from '@lactalink/utilities/extractors';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isString } from '@lactalink/utilities/type-guards';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { ComponentProps, ReactNode } from 'react';
+import { GestureResponderEvent } from 'react-native';
 import { BasicBadge } from '../badges/BasicBadge';
 import { Image } from '../Image';
 import { ThumbnailMap } from '../map/ThumbnailMap';
@@ -83,7 +85,11 @@ export function DeliveryPreferenceCardSkeleton({
 }
 
 interface CardProps extends ComponentProps<typeof Card> {
-  preference: string | DeliveryPreference | DeliveryPreferenceSchema;
+  preference:
+    | string
+    | DeliveryPreference
+    | DeliveryPreferenceSchema
+    | DeliveryPreferenceCreateSchema;
   isLoading?: boolean;
   action?: ReactNode;
 }
@@ -99,9 +105,13 @@ function ListCard({
     base: 'relative w-full',
   });
 
+  const prefID = isString(preference)
+    ? preference
+    : ('id' in preference && extractID(preference)) || '';
+
   const dpQuery = useFetchById(isString(preference), {
     collection: 'delivery-preferences',
-    id: extractID(preference),
+    id: prefID,
     select: { name: true, address: true, availableDays: true, preferredMode: true },
     populate: { addresses: { name: true, displayName: true, coordinates: true, isDefault: true } },
     depth: 3,
@@ -123,7 +133,6 @@ function ListCard({
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays || [], { short: true });
 
-  const prefID = data?.id || '';
   const address = extractCollection(data?.address) || addressQuery.data;
   const fullAddress = address?.displayName || 'Unknown Address';
 
@@ -221,9 +230,15 @@ function CompactCard({
     base: 'w-40 flex-col items-stretch justify-start p-0',
   });
 
+  const router = useRouter();
+
+  const prefID = isString(preference)
+    ? preference
+    : ('id' in preference && extractID(preference)) || '';
+
   const dpQuery = useFetchById(isString(preference), {
     collection: 'delivery-preferences',
-    id: extractID(preference),
+    id: prefID,
     select: { name: true, address: true, availableDays: true, preferredMode: true },
     populate: { addresses: { name: true, displayName: true, coordinates: true, isDefault: true } },
     depth: 3,
@@ -246,6 +261,16 @@ function CompactCard({
 
   const { preferredMode, availableDays } = data || {};
 
+  function handlePress(e: GestureResponderEvent) {
+    e.stopPropagation();
+    const params: MapPageSearchParams = {
+      adr: extractID(address),
+      lat: String(center.latitude),
+      lng: String(center.longitude),
+    };
+    router.push({ pathname: '/map/explore', params });
+  }
+
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
       {isLoading ? (
@@ -253,8 +278,12 @@ function CompactCard({
       ) : (
         <>
           <Box className="relative">
-            <ThumbnailMap center={center} />
-            <GradientBackground colors={['transparent', 'black']} style={{ opacity: 0.35 }} />
+            <ThumbnailMap center={center} onPress={handlePress} />
+            <GradientBackground
+              pointerEvents="none"
+              colors={['transparent', 'black']}
+              style={{ opacity: 0.35 }}
+            />
 
             <HStack space="xs" className="absolute right-0 top-0 items-center p-1">
               {preferredMode?.map((mode, index) => {

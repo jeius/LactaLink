@@ -52,7 +52,7 @@ export type MilkBagOwnershipHistory =
 export type ProposedDelivery =
   | {
       mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-      datetime?: string | null;
+      datetime: string;
       address: string | Address;
       proposedBy:
         | {
@@ -1210,7 +1210,7 @@ export interface DeliveryAgreements {
  */
 export interface ConfirmedDelivery {
   mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-  datetime?: string | null;
+  datetime: string;
   address: string | Address;
   confirmedAt: string;
 }

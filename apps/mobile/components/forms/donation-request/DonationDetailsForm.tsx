@@ -1,83 +1,69 @@
-import MatchedRequestCard from '@/components/cards/MatchedRequestCard';
+import { RequestListCard } from '@/components/cards';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import CreateMilkBagsField from '@/components/fields/CreateMilkBagsField';
+import DeliveryField from '@/components/fields/DeliveryField';
 import { FormField } from '@/components/FormField';
+import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
+import { Divider } from '@/components/ui/divider';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
-import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
-import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
+import { useMeUser } from '@/hooks/auth/useAuth';
+import { DonationCreateFormExtraData } from '@/hooks/forms/useCreateDonationForm';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
-import { DonationSchema } from '@lactalink/form-schemas';
-import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import React, { useEffect, useMemo } from 'react';
+import { DonationCreateSchema } from '@lactalink/form-schemas';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import React, { useMemo } from 'react';
 
 interface DonationDetailsFormProps {
-  matchedRequest?: string;
+  hasMatchedRequest?: boolean;
   disableFields?: boolean;
 }
 
 export function DonationDetailsForm({
-  matchedRequest,
+  hasMatchedRequest,
   disableFields: disableProp,
 }: DonationDetailsFormProps) {
-  const hasMatchedRequest = Boolean(matchedRequest);
-  const { data: matchedRequestDoc, ...restQuery } = useFetchById(hasMatchedRequest, {
-    collection: 'requests',
-    id: matchedRequest || '',
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
+  const { data: meUser } = useMeUser();
+  const { getValues, reset, setValue, additionalState, watch, ...form } =
+    useForm<DonationCreateSchema>();
 
-  const { getValues, reset, setValue, additionalState, ...form } = useForm<DonationSchema>();
-  const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
-  const recipient = form.watch('recipient');
+  const { matchedRequest: matchedRequestDoc }: DonationCreateFormExtraData =
+    additionalState.extraData;
 
-  const selectedPref = useMemo(() => {
-    const deliveryPreferences = matchedRequestDoc?.deliveryPreferences || [];
-    const selectedPref = deliveryPreferences?.find(
-      (dp) => extractID(dp) === extractID(selectedDPID)
-    );
-    return extractCollection(selectedPref);
-  }, [matchedRequestDoc, selectedDPID]);
-
-  const isLoading = restQuery.isLoading || additionalState.isLoading;
-  const disableFields = disableProp || form.formState.isSubmitting;
-
-  // When matched request data is fetched, update the form values.
-  useEffect(() => {
-    const data = getValues();
-    const updatedData = updateDataOnMatchedRequest(data, matchedRequestDoc);
-    reset(updatedData);
-
-    return () => {
-      if (matchedRequestDoc) {
-        reset({ ...getValues(), deliveryPreferences: [] });
-      }
-    };
-  }, [matchedRequestDoc, getValues, reset]);
-
-  function handleDPChange(preference?: DeliveryPreference | null) {
-    if (!preference) {
-      setValue('deliveryPreferences', []);
-    } else {
-      setValue('deliveryPreferences', [transformToDeliveryPreferenceSchema(preference)]);
+  const recipient = useMemo(() => {
+    const values = getValues();
+    if (values.type === 'DIRECT') {
+      return values.recipient;
     }
-  }
+    return null;
+  }, [getValues]);
+
+  const donationType = watch('type');
+  const requesterDP = extractCollection(matchedRequestDoc?.deliveryPreferences) || [];
+  const meUserDP = extractCollection(meUser?.deliveryPreferences?.docs) || [];
+
+  const isLoading = additionalState.isLoading;
+  const disableFields = disableProp || form.formState.isSubmitting;
 
   return (
     <VStack space="2xl" className="py-5">
-      {matchedRequest && (
+      {donationType === 'MATCHED' && (
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
-          <MatchedRequestCard
-            request={matchedRequestDoc}
+          <RequestListCard
             isLoading={isLoading}
-            selected={selectedPref}
-            onSelect={handleDPChange}
+            data={matchedRequestDoc}
+            footerAction={
+              matchedRequestDoc && (
+                <ProfileTag
+                  label="Requester"
+                  profile={{ relationTo: 'individuals', value: matchedRequestDoc.requester }}
+                />
+              )
+            }
           />
         </Box>
       )}
@@ -89,10 +75,13 @@ export function DonationDetailsForm({
         </Box>
       )}
 
-      <Text size="lg" className="font-JakartaSemiBold mx-5">
-        Milk Details
-      </Text>
+      {donationType !== 'OPEN' && <Divider />}
+
       <VStack space="lg" className="mx-5">
+        <Text size="lg" className="font-JakartaSemiBold">
+          Milk Details
+        </Text>
+
         <FormField
           control={form.control}
           key={'details.storageType'}
@@ -126,16 +115,6 @@ export function DonationDetailsForm({
         />
       </Box>
 
-      <CreateMilkBagsField
-        isLoading={isLoading}
-        isDisabled={isLoading || disableFields}
-        className="mx-5"
-      />
-
-      {!hasMatchedRequest && (
-        <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
-      )}
-
       <Box className="mx-5">
         <FormField
           control={form.control}
@@ -147,52 +126,22 @@ export function DonationDetailsForm({
           allowsMultipleSelection={false}
         />
       </Box>
+
+      <Divider />
+
+      <CreateMilkBagsField
+        isLoading={isLoading}
+        isDisabled={isLoading || disableFields}
+        className="mx-5"
+      />
+
+      <Divider />
+
+      {donationType === 'MATCHED' ? (
+        <DeliveryField type="donation" deliveryPreferences={requesterDP.concat(meUserDP)} />
+      ) : (
+        <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
+      )}
     </VStack>
   );
-}
-
-function updateDataOnMatchedRequest(
-  data: DonationSchema,
-  matchedRequest?: Request
-): DonationSchema {
-  if (!matchedRequest) {
-    data.matchedRequest = undefined;
-    return data;
-  }
-
-  const storagePreference = matchedRequest.details.storagePreference || 'EITHER';
-  const volumeNeeded = matchedRequest.volumeNeeded;
-  const requesterID = extractID(matchedRequest.requester);
-  const deliveryPreferences = matchedRequest.deliveryPreferences || [];
-
-  const { deliveryPreference: nearestPref } = getNearestDeliveryPreference(
-    extractCollection(deliveryPreferences)
-  );
-
-  data.matchedRequest = {
-    id: matchedRequest.id,
-    requester: requesterID,
-    volumeNeeded,
-    storagePreference,
-  };
-
-  data.details.storageType = storagePreference === 'EITHER' ? 'FRESH' : storagePreference;
-  data.details.bags = [
-    {
-      collectedAt: new Date().toISOString(),
-      volume: volumeNeeded,
-      donor: data.donor,
-    },
-  ];
-
-  data.deliveryPreferences = nearestPref
-    ? [
-        {
-          ...nearestPref,
-          address: extractID(nearestPref.address),
-        },
-      ]
-    : [];
-
-  return data;
 }

@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
+import { transformToMilkBagSchema } from '@/lib/utils/transformData';
 import { RequestSchema } from '@lactalink/form-schemas';
 import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -135,9 +136,10 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
           { shouldValidate: true, shouldDirty: true, shouldTouch: true }
         );
       } else {
+        const transformedBag = transformToMilkBagSchema(item);
         setValue(
           'details.bags',
-          selectedBags ? [...selectedBags, { id: item.id }] : [{ id: item.id }],
+          selectedBags ? [...selectedBags, transformedBag] : [transformedBag],
           { shouldValidate: true, shouldDirty: true, shouldTouch: true }
         );
       }

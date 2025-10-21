@@ -8,15 +8,14 @@ import { VStack } from '@/components/ui/vstack';
 
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { RequestSchema } from '@lactalink/form-schemas';
-import { DeliveryPreference, Donation } from '@lactalink/types/payload-generated-types';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import ProfileCard from '@/components/cards/ProfileCard';
-import { useFetchById } from '@/hooks/collections/useFetchById';
-import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
-import { transformToMilkBagShema } from '@/lib/utils/transformData';
+import { RequestCreateFormExtraData } from '@/hooks/forms/useCreateRequestForm';
+import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { ClockIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
@@ -24,13 +23,9 @@ interface RequestDetailsFormProps {
 }
 
 export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps) {
-  const { data: matchedDonationDoc, ...restOfQuery } = useFetchById(Boolean(matchedDonation), {
-    collection: 'donations',
-    id: matchedDonation || '',
-    populate: { users: { profile: true, profileType: true, role: true } },
-  });
-
-  const { getValues, reset, setValue, ...form } = useForm<RequestSchema>();
+  const { getValues, reset, setValue, additionalState, ...form } = useForm<RequestSchema>();
+  const { matchedDonation: matchedDonationDoc }: RequestCreateFormExtraData =
+    additionalState.extraData;
   const selectedDPID = form.watch('deliveryPreferences')?.[0] || null;
   const recipient = form.watch('recipient');
 
@@ -42,27 +37,14 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
     return extractCollection(selectedPref);
   }, [matchedDonationDoc, selectedDPID]);
 
-  const isLoading = restOfQuery.isLoading;
+  const isLoading = additionalState.isLoading;
   const isSubmitting = form.formState.isSubmitting;
-
-  // When matched donation data is fetched, update the form values.
-  useEffect(() => {
-    const data = getValues();
-    const updatedData = updateDataOnMatchedDonation(data, matchedDonationDoc);
-    reset(updatedData);
-
-    return () => {
-      if (matchedDonationDoc) {
-        reset({ ...getValues(), deliveryPreferences: [] });
-      }
-    };
-  }, [getValues, matchedDonationDoc, reset]);
 
   function handleDPChange(preference?: DeliveryPreference | null) {
     if (!preference) {
       setValue('deliveryPreferences', []);
     } else {
-      setValue('deliveryPreferences', [{ ...preference, address: extractID(preference.address) }]);
+      setValue('deliveryPreferences', [transformToDeliveryPreferenceSchema(preference)]);
     }
   }
 
@@ -191,40 +173,4 @@ export function RequestDetailsForm({ matchedDonation }: RequestDetailsFormProps)
       </Box>
     </VStack>
   );
-}
-
-function updateDataOnMatchedDonation(data: RequestSchema, matchedDonationDoc?: Donation) {
-  if (!matchedDonationDoc) {
-    data.matchedDonation = undefined;
-    return data;
-  }
-
-  const storagePreference = matchedDonationDoc.details.storageType;
-  const bags = extractCollection(matchedDonationDoc.details.bags);
-  const preferences = matchedDonationDoc.deliveryPreferences || [];
-
-  data.matchedDonation = {
-    id: matchedDonationDoc.id,
-    donor: extractID(matchedDonationDoc.donor),
-    storageType: storagePreference,
-    bags: bags.map((bag) => transformToMilkBagShema(bag)),
-  };
-
-  if (preferences?.length) {
-    const { deliveryPreference: nearestPref } = getNearestDeliveryPreference(
-      extractCollection(preferences)
-    );
-    data.deliveryPreferences = nearestPref
-      ? [
-          {
-            ...nearestPref,
-            address: extractID(nearestPref.address),
-          },
-        ]
-      : [];
-  }
-
-  data.details.storagePreference = storagePreference;
-
-  return data;
 }
