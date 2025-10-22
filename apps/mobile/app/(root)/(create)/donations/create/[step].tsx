@@ -12,26 +12,21 @@ import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { usePagination } from '@/hooks/forms';
-import { deleteCollection } from '@/lib/api/delete';
 
-import { uploadImage } from '@/lib/api/file';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
-import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
 
 import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { getApiClient, getTransactionService } from '@lactalink/api';
-import { MilkBag, Transaction } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
+import { createDonation } from '@/lib/api/donation';
+import { upsertMilkBag } from '@/lib/api/upsert';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
-import { transformToMilkBagSchema } from '@/lib/utils/transformData';
-import { DonationCreateSchema, MilkBagCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import isEqual from 'lodash/isEqual';
 import { ReactNode, useCallback, useState } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -65,14 +60,15 @@ export default function CreateDonation() {
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
 
-  const form = useForm<DonationCreateSchema>();
-  const additionalFormState = form.additionalState;
+  const { getValues, additionalState, formState, getFieldState, trigger, handleSubmit, reset } =
+    useForm<DonationCreateSchema>();
+
   const [isValidatingDetails, setValidatingDetails] = useState(false);
   //#endregion
 
   //#region Form State
-  const formData = form.getValues();
-  const isSubmitting = form.formState.isSubmitting;
+  const formData = getValues();
+  const isSubmitting = formState.isSubmitting;
   // #endregion
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
@@ -94,7 +90,10 @@ export default function CreateDonation() {
       toast.promise(createPromise, {
         loading: `Submitting donation...`,
         success: (res: { message: string }) => res.message,
-        error: (error) => extractErrorMessage(error),
+        error: (error) => {
+          additionalState.onRefresh?.();
+          return extractErrorMessage(error);
+        },
       });
 
       const { transaction } = await createPromise;
@@ -110,10 +109,10 @@ export default function CreateDonation() {
       revalidateDonations(slugsToRevalidate);
       deleteSavedFormData('donation-create');
     },
-    [revalidateDonations, router]
+    [additionalState, revalidateDonations, router]
   );
 
-  const submit = form.handleSubmit(onSubmit);
+  const submit = handleSubmit(onSubmit);
 
   async function handleNext() {
     switch (step) {
@@ -121,9 +120,7 @@ export default function CreateDonation() {
         try {
           setValidatingDetails(true);
 
-          const data = form.getValues();
-
-          console.log('Validating details step...', data);
+          const data = getValues();
 
           const fieldsToValidate: FieldPath<DonationCreateSchema>[] = [
             'details',
@@ -140,7 +137,7 @@ export default function CreateDonation() {
             fieldsToValidate.push('recipient');
           }
 
-          const isValid = await form.trigger(fieldsToValidate);
+          const isValid = await trigger(fieldsToValidate);
 
           if (!isValid) {
             throw new Error('Please fix the errors before proceeding.');
@@ -149,7 +146,7 @@ export default function CreateDonation() {
           const bags = data.details.bags;
           data.milkBags = await Promise.all(bags.map(upsertMilkBag));
           revalidateDonations(['milkBags']);
-          form.reset(data);
+          reset(data);
 
           if (tutorialDone) {
             skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
@@ -177,10 +174,10 @@ export default function CreateDonation() {
   }
 
   async function handleValidation() {
-    const isValid = await form.trigger();
+    const isValid = await trigger();
 
     if (!isValid) {
-      const milkBagsError = form.getFieldState('milkBags').error;
+      const milkBagsError = getFieldState('milkBags').error;
       toast.error(extractErrorMessage(milkBagsError));
       throw new Error('Form validation failed');
     }
@@ -192,15 +189,15 @@ export default function CreateDonation() {
     <>
       <FormPreventBack />
 
-      <SafeArea safeTop={false}>
+      <SafeArea safeTop={false} className="items-stretch">
         <KeyboardAwareScrollView
           className="flex-1"
           contentContainerClassName="grow pb-4"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={additionalFormState.refreshing}
-              onRefresh={additionalFormState.onRefresh}
+              refreshing={additionalState.refreshing}
+              onRefresh={additionalState.onRefresh}
             />
           }
         >
@@ -247,120 +244,117 @@ export default function CreateDonation() {
 }
 
 // #region API Functions
-async function createDonation(data: DonationCreateSchema) {
-  const apiClient = getApiClient();
-  const { details, donor, deliveryPreferences, type, milkBags } = data;
+// async function createDonation(data: DonationCreateSchema) {
+//   const apiClient = getApiClient();
+//   const { details, donor, deliveryPreferences, type, milkBags } = data;
 
-  const { image, ...restOfDetails } = details;
+//   const { image, ...restOfDetails } = details;
 
-  const milkBagDocs = await Promise.all(
-    milkBags.map(async (bag) => {
-      const imageDoc = await uploadImage('milk-bag-images', bag.bagImage!);
-      return apiClient.updateByID({
-        collection: 'milkBags',
-        id: bag.id,
-        data: { bagImage: imageDoc.id },
-        depth: 0,
-        select: { volume: true, status: true },
-      });
-    })
-  ).catch((error) => {
-    console.error('Error verifying bags:', error);
-    throw error;
-  });
+//   const milkBagDocs = await Promise.all(
+//     milkBags.map(async (bag) => {
+//       const imageDoc = await uploadImage('milk-bag-images', bag.bagImage!);
+//       return apiClient.updateByID({
+//         collection: 'milkBags',
+//         id: bag.id,
+//         data: { bagImage: imageDoc.id },
+//         depth: 0,
+//         select: { volume: true, status: true },
+//       });
+//     })
+//   ).catch((error) => {
+//     console.error('Error verifying bags:', error);
+//     throw error;
+//   });
 
-  const milkImageDoc = image && (await uploadImage('images', image));
-  const volume = milkBagDocs.reduce((sum, bag) => sum + bag.volume, 0);
+//   const milkImageDoc = image && (await uploadImage('images', image));
+//   const volume = milkBagDocs.reduce((sum, bag) => sum + bag.volume, 0);
 
-  const donationDoc = await apiClient
-    .create({
-      collection: 'donations',
-      data: {
-        volume: volume,
-        remainingVolume: volume,
-        donor: donor,
-        status: DONATION_REQUEST_STATUS.AVAILABLE.value,
-        details: {
-          ...restOfDetails,
-          bags: extractID(milkBagDocs),
-          milkSample: milkImageDoc && [extractID(milkImageDoc)],
-        },
-        deliveryPreferences: extractID(deliveryPreferences),
-        recipient: type === 'DIRECT' ? data.recipient : undefined,
-      },
-    })
-    .catch(async (error) => {
-      await Promise.all([
-        deleteCollection('images', milkImageDoc?.id, { silent: true }),
-        apiClient.update({
-          collection: 'milkBags',
-          where: { id: { in: extractID(milkBagDocs) } },
-          data: { bagImage: null },
-          depth: 0,
-        }),
-      ]);
+//   const donationDoc = await apiClient
+//     .create({
+//       collection: 'donations',
+//       data: {
+//         volume: volume,
+//         remainingVolume: volume,
+//         donor: donor,
+//         status: DONATION_REQUEST_STATUS.AVAILABLE.value,
+//         details: {
+//           ...restOfDetails,
+//           bags: extractID(milkBagDocs),
+//           milkSample: milkImageDoc && [extractID(milkImageDoc)],
+//         },
+//         deliveryPreferences: extractID(deliveryPreferences),
+//         recipient: type === 'DIRECT' ? data.recipient : undefined,
+//       },
+//     })
+//     .catch(async (error) => {
+//       await Promise.all([
+//         deleteCollection('images', milkImageDoc?.id, { silent: true }),
+//         apiClient.update({
+//           collection: 'milkBags',
+//           where: { id: { in: extractID(milkBagDocs) } },
+//           data: { bagImage: null },
+//           depth: 0,
+//         }),
+//       ]);
 
-      throw error;
-    });
+//       throw error;
+//     });
 
-  let transaction: Transaction | undefined;
-  let message = 'Donation created successfully!';
+//   let transaction: Transaction | undefined;
+//   let message = 'Donation created successfully!';
 
-  if ('matchedRequest' in data && data.matchedRequest) {
-    const transactionService = getTransactionService();
-    transaction = await transactionService.createP2PTransaction({
-      donation: donationDoc,
-      request: extractID(data.matchedRequest),
-      milkBags: extractID(milkBagDocs),
-    });
+//   try {
+//     if (type === 'MATCHED') {
+//       const transactionService = getTransactionService();
 
-    const updatedRequest = extractCollection(transaction.request);
+//       const date = new Date(data.delivery.date);
+//       const time = new Date(data.delivery.time);
+//       date.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), 0);
 
-    const requesterName = extractCollection(updatedRequest?.requester)?.givenName || 'Requester';
-    message = `Thank you! ${requesterName} has been notified of your donation.`;
-  }
+//       transaction = await transactionService.createP2PTransaction({
+//         donation: donationDoc,
+//         request: extractID(data.matchedRequest),
+//         milkBags: extractID(milkBagDocs),
+//         delivery:
+//           data.delivery.type === 'CONFIRMED'
+//             ? {
+//                 confirmedAt: new Date().toISOString(),
+//                 address: extractID(data.delivery.address),
+//                 mode: data.delivery.mode,
+//                 datetime: date.toISOString(),
+//               }
+//             : undefined,
+//       });
 
-  return { message, transaction: transaction };
-}
+//       if (data.delivery.type === 'PROPOSED') {
+//         transaction = await transactionService.proposeDeliveryOption(transaction.id, {
+//           address: extractID(data.delivery.address),
+//           mode: data.delivery.mode,
+//           datetime: date.toISOString(),
+//           proposedBy: { relationTo: 'individuals', value: extractID(donor) },
+//         });
+//       }
 
-async function upsertMilkBag(bag: MilkBagCreateSchema): Promise<MilkBagSchema> {
-  const apiClient = getApiClient();
-  let doc: MilkBag | undefined;
-  const { id, ...rest } = bag;
+//       const updatedRequest = extractCollection(transaction.request);
 
-  if (id) {
-    const currentBag = await apiClient.findByID({
-      collection: 'milkBags',
-      id,
-      depth: 3,
-    });
+//       const requesterName = extractCollection(updatedRequest?.requester)?.givenName || 'Requester';
+//       message = `Thank you! ${requesterName} has been notified of your donation.`;
+//     }
+//   } catch (error) {
+//     await Promise.all([
+//       deleteCollection('donations', donationDoc.id, { silent: true }),
+//       deleteCollection('images', milkImageDoc?.id, { silent: true }),
+//       apiClient.update({
+//         collection: 'milkBags',
+//         where: { id: { in: extractID(milkBagDocs) } },
+//         data: { bagImage: null },
+//         depth: 0,
+//       }),
+//     ]);
+//     throw error;
+//   }
 
-    const { donor, volume, collectedAt } = transformToMilkBagSchema(currentBag);
+//   return { message, transaction: transaction };
+// }
 
-    const areEqual = isEqual(rest, { donor, volume, collectedAt });
-
-    if (!areEqual) {
-      doc = await apiClient.updateByID({
-        collection: 'milkBags',
-        id,
-        data: rest,
-        depth: 3,
-      });
-    } else {
-      doc = currentBag;
-    }
-  } else {
-    doc = await apiClient.create({
-      collection: 'milkBags',
-      depth: 3,
-      data: {
-        ...rest,
-        status: MILK_BAG_STATUS.DRAFT.value,
-        owner: { relationTo: 'individuals', value: bag.donor },
-      },
-    });
-  }
-
-  return transformToMilkBagSchema(doc);
-}
 // #endregion

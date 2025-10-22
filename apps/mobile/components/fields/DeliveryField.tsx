@@ -1,8 +1,10 @@
+import { getMeUser } from '@/lib/stores/meUserStore';
 import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DonationCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { checkIsOwner } from '@lactalink/utilities/checkers';
 import { extractID } from '@lactalink/utilities/extractors';
 import { AlertCircleIcon, ChevronDownIcon, TimerIcon, TruckIcon } from 'lucide-react-native';
 import React from 'react';
@@ -55,27 +57,37 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
   const selectedDP = useWatch({ control, name: 'deliveryPreferences' });
   const hasSelectedDP = selectedDP && selectedDP.length > 0;
 
-  function handleSelectPreference(pref: DeliveryPreference | null) {
+  function handleSelectPreference(pref: DeliveryPreference | null, isOwner: boolean) {
     const transformedPref = pref && transformToDeliveryPreferenceSchema(pref);
-    setValue('deliveryPreferences', transformedPref ? [transformedPref] : [], {
+
+    const setOptions = {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
-    });
+    };
+
+    setValue('deliveryPreferences', transformedPref ? [transformedPref] : [], setOptions);
+
+    if (pref) {
+      if (isOwner) {
+        setValue('delivery.type', 'PROPOSED', setOptions);
+      } else {
+        setValue('delivery.type', 'CONFIRMED', setOptions);
+      }
+    } else {
+      // @ts-expect-error - Expected type error, but works as intended
+      setValue('delivery.type', undefined, setOptions);
+    }
 
     const address = transformedPref?.address;
     const mode =
       transformedPref?.preferredMode?.length === 1 ? transformedPref.preferredMode[0] : '';
 
     // @ts-expect-error - Expected type error, but works as intended
-    setValue('delivery.address', address, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
+    setValue('delivery.address', address, setOptions);
 
     // @ts-expect-error - Expected type error, but works as intended
-    setValue('delivery.mode', mode, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    setValue('delivery.mode', mode, setOptions);
   }
 
   return (
@@ -92,7 +104,6 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
         control={control}
         onChange={handleSelectPreference}
         deliveryPreferences={deliveryPreferences}
-        helperText={`Choose one from the delivery preferences`}
       />
 
       {hasSelectedDP && (
@@ -116,11 +127,10 @@ type BaseFieldProps = {
 };
 
 interface DPListProps extends BaseFieldProps {
-  onChange: (pref: DeliveryPreference | null) => void;
+  onChange: (pref: DeliveryPreference | null, isOwner: boolean) => void;
   deliveryPreferences: DeliveryPreference[];
-  helperText: string;
 }
-function DPList({ control, onChange, deliveryPreferences, helperText, type }: DPListProps) {
+function DPList({ control, onChange, deliveryPreferences }: DPListProps) {
   const { errors } = useFormState({ control, name: 'deliveryPreferences' });
   const fieldError = errors.deliveryPreferences;
   const selectedDP = useWatch({ control, name: 'deliveryPreferences' })?.[0];
@@ -133,7 +143,7 @@ function DPList({ control, onChange, deliveryPreferences, helperText, type }: DP
   return (
     <FormControl isInvalid={!!fieldError}>
       <FormControlHelper className="mx-5">
-        <FormControlHelperText>{helperText}</FormControlHelperText>
+        <FormControlHelperText>Choose one from the delivery preferences</FormControlHelperText>
       </FormControlHelper>
 
       <FormControlError className="mx-5 mb-2">
@@ -151,9 +161,13 @@ function DPList({ control, onChange, deliveryPreferences, helperText, type }: DP
         data={deliveryPreferences}
         renderItem={({ item }) => {
           const isSelected = extractID(selectedDP) === item.id;
+
+          const meUser = getMeUser();
+          const isOwner = meUser ? checkIsOwner(meUser, [item]) : false;
+
           return (
             <AnimatedPressable
-              onPress={() => onChange(isSelected ? null : item)}
+              onPress={() => onChange(isSelected ? null : item, isOwner)}
               className="overflow-hidden rounded-2xl"
             >
               <DeliveryPreferenceCard
@@ -176,6 +190,8 @@ function ModeField({ control }: BaseFieldProps) {
   const insets = useSafeAreaInsets();
   const selectedDP = useWatch({ control, name: 'deliveryPreferences' })?.[0];
   const deliveryModes = selectedDP?.preferredMode || [];
+  const { errors } = useFormState({ control, name: 'delivery' });
+  console.log('delivery error:', errors);
 
   return (
     <Controller
@@ -243,10 +259,11 @@ function DateField({ control }: BaseFieldProps) {
     <>
       <FormField
         control={control}
-        name="delivery.dateTime"
+        name="delivery.date"
         label={`${modeLabel} Date`}
         fieldType="date"
         placeholder={`Choose ${modeLabel} Date`}
+        helperText="Make sure to choose a date that matches the delivery preference's available days."
         datePickerOptions={{
           display: 'calendar',
           minimumDate: new Date(),
@@ -255,7 +272,7 @@ function DateField({ control }: BaseFieldProps) {
 
       <FormField
         control={control}
-        name="delivery.dateTime"
+        name="delivery.time"
         label={`${modeLabel} Time`}
         fieldType="date"
         placeholder={`Choose ${modeLabel} Time`}
@@ -265,6 +282,14 @@ function DateField({ control }: BaseFieldProps) {
           display: 'spinner',
           minimumDate: new Date(),
         }}
+      />
+
+      <FormField
+        control={control}
+        name="delivery.note"
+        label={`${modeLabel} Notes (Optional)`}
+        fieldType="textarea"
+        placeholder={`Any additional notes for the ${modeLabel.toLowerCase()}.`}
       />
     </>
   );

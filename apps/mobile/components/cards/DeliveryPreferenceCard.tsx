@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card';
+import { Card, CardProps } from '@/components/ui/card';
 import { VStack } from '@/components/ui/vstack';
 import { DELIVERY_OPTIONS, ShortDays } from '@lactalink/enums';
 import { CalendarDaysIcon, MapPinIcon } from 'lucide-react-native';
@@ -8,13 +8,14 @@ import { MapPageSearchParams } from '@/lib/types';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DeliveryPreferenceCreateSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
+import { DeliveryMode } from '@lactalink/types';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractObject } from '@lactalink/utilities/extractors';
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isString } from '@lactalink/utilities/type-guards';
 import { Link, useRouter } from 'expo-router';
-import { ComponentProps, ReactNode, useMemo } from 'react';
+import { ReactNode } from 'react';
 import { GestureResponderEvent } from 'react-native';
 import { BasicBadge } from '../badges/BasicBadge';
 import { Image } from '../Image';
@@ -27,101 +28,29 @@ import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { BasicLocationPin } from '../ui/icon/custom';
 import { Skeleton } from '../ui/skeleton';
-import { Text } from '../ui/text';
+import { Text, TextProps } from '../ui/text';
 
-export interface DeliveryPreferenceCardProps extends CardProps {
-  appearance?: 'list-item' | 'compact';
-}
-export function DeliveryPreferenceCard({
-  appearance = 'list-item',
-  ...props
-}: DeliveryPreferenceCardProps) {
-  switch (appearance) {
-    case 'compact':
-      return <CompactCard {...props} />;
+// Define common types
+type PreferenceData =
+  | DeliveryPreference
+  | DeliveryPreferenceSchema
+  | DeliveryPreferenceCreateSchema;
+type PreferenceInput = string | PreferenceData;
 
-    default:
-      return <ListCard {...props} />;
-  }
-}
-
-export function DeliveryPreferenceCardSkeleton({
-  appearance = 'list-item',
-}: Pick<DeliveryPreferenceCardProps, 'appearance'>) {
-  switch (appearance) {
-    case 'compact':
-      return (
-        <>
-          <Skeleton variant="sharp" className="h-32 w-full" />
-          <HStack space="xs" className="w-full items-start p-2">
-            <Skeleton variant="circular" className="h-4 w-4" />
-            <VStack className="flex-1">
-              <Skeleton variant="circular" className="mb-1 h-2 w-full" />
-              <Skeleton variant="circular" className="mb-1 h-2 w-full" />
-              <Skeleton variant="circular" className="mb-1 h-2 w-2/3" />
-            </VStack>
-          </HStack>
-        </>
-      );
-
-    default:
-      return (
-        <VStack space="sm">
-          <Skeleton className="h-8 w-40" />
-
-          <VStack space="sm">
-            <HStack space="sm" className="flex-wrap">
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-8 w-20" />
-            </HStack>
-
-            <Skeleton className="h-4" />
-            <Skeleton className="h-4" />
-            <Skeleton className="h-4 w-1/3" />
-          </VStack>
-        </VStack>
-      );
-  }
-}
-
-interface CardProps extends ComponentProps<typeof Card> {
-  preference:
-    | string
-    | DeliveryPreference
-    | DeliveryPreferenceSchema
-    | DeliveryPreferenceCreateSchema;
+// Shared base props for card components
+interface BaseCardProps extends CardProps {
+  preference: PreferenceInput;
   isLoading?: boolean;
+}
+
+export interface DeliveryPreferenceCardProps extends BaseCardProps {
+  appearance?: 'list-item' | 'compact';
   action?: ReactNode;
   hideIconLabels?: boolean;
 }
 
-function ListCard({
-  preference,
-  isLoading: isLoadingProp,
-  action,
-  variant = 'filled',
-  size = 'md',
-  hideIconLabels = false,
-  ...props
-}: CardProps) {
-  const cardStyle = tva({
-    base: 'relative w-full',
-  });
-
-  const textSize = useMemo(() => {
-    switch (size) {
-      case 'sm':
-        return 'xs';
-      case 'md':
-        return 'sm';
-      case 'lg':
-        return 'md';
-      default:
-        return size || 'sm';
-    }
-  }, [size]);
-
+// Custom hook to fetch and process delivery preference data
+function useDeliveryPreferenceData(preference: PreferenceInput) {
   const prefID = isString(preference)
     ? preference
     : ('id' in preference && extractID(preference)) || '';
@@ -134,29 +63,160 @@ function ListCard({
     depth: 3,
   });
 
-  const data = extractObject(preference) || dpQuery.data;
+  const preferenceData = extractObject(preference) || dpQuery.data;
+  const addressId = extractID(preferenceData?.address) || '';
 
-  const { preferredMode, availableDays, name } = data || {};
-
-  const addressQuery = useFetchById(isString(data?.address), {
+  const addressQuery = useFetchById(isString(preferenceData?.address), {
     collection: 'addresses',
-    id: extractID(data?.address) || '',
+    id: addressId,
     select: { name: true, displayName: true, coordinates: true, isDefault: true },
     depth: 0,
   });
 
-  const isLoading = isLoadingProp || dpQuery.isLoading || addressQuery.isLoading;
+  const address = extractCollection(preferenceData?.address) || addressQuery.data;
+
+  return {
+    preferenceData,
+    address,
+    prefID,
+    isLoading: dpQuery.isLoading || addressQuery.isLoading,
+  };
+}
+
+// Helper to determine text size based on card size
+function getTextSizeFromCardSize(
+  size: NonNullable<CardProps['size']>
+): NonNullable<TextProps['size']> {
+  switch (size) {
+    case 'sm':
+      return 'xs';
+    case 'md':
+      return 'sm';
+    case 'lg':
+      return 'md';
+    default:
+      return size || 'sm';
+  }
+}
+
+export function DeliveryPreferenceCard({
+  appearance = 'list-item',
+  ...props
+}: DeliveryPreferenceCardProps) {
+  switch (appearance) {
+    case 'compact':
+      return <CompactCard {...props} />;
+    default:
+      return <ListCard {...props} />;
+  }
+}
+
+export function DeliveryPreferenceCardSkeleton({
+  appearance = 'list-item',
+}: Pick<DeliveryPreferenceCardProps, 'appearance'>) {
+  if (appearance === 'compact') {
+    return (
+      <>
+        <Skeleton variant="sharp" className="h-32 w-full" />
+        <HStack space="xs" className="w-full items-start p-2">
+          <Skeleton variant="circular" className="h-4 w-4" />
+          <VStack className="flex-1">
+            <Skeleton variant="circular" className="mb-1 h-2 w-full" />
+            <Skeleton variant="circular" className="mb-1 h-2 w-full" />
+            <Skeleton variant="circular" className="mb-1 h-2 w-2/3" />
+          </VStack>
+        </HStack>
+      </>
+    );
+  }
+
+  return (
+    <VStack space="sm">
+      <Skeleton className="h-8 w-40" />
+
+      <VStack space="sm">
+        <HStack space="sm" className="flex-wrap">
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-20" />
+        </HStack>
+
+        <Skeleton className="h-4" />
+        <Skeleton className="h-4" />
+        <Skeleton className="h-4 w-1/3" />
+      </VStack>
+    </VStack>
+  );
+}
+
+// Render delivery mode icons with optional labels
+function DeliveryModeIcons({
+  modes,
+  size = 'md',
+  hideLabels = false,
+}: {
+  modes?: DeliveryMode[];
+  size?: CardProps['size'];
+  hideLabels?: boolean;
+}) {
+  if (!modes?.length) return null;
+
+  const textSize = getTextSizeFromCardSize(size);
+
+  return (
+    <>
+      {modes.map((mode, index) => {
+        const iconAsset = getDeliveryPreferenceIcon(mode);
+        return (
+          <HStack key={index} space="xs" className="items-center">
+            <Box className="border-primary-500 rounded-full border p-1">
+              <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 16, height: 16 }} />
+            </Box>
+
+            {!hideLabels && (
+              <Text size={textSize} className="font-JakartaMedium">
+                {DELIVERY_OPTIONS[mode].label}
+              </Text>
+            )}
+          </HStack>
+        );
+      })}
+    </>
+  );
+}
+
+function ListCard({
+  preference,
+  isLoading: isLoadingProp,
+  action,
+  variant = 'filled',
+  size = 'md',
+  hideIconLabels = false,
+  ...props
+}: DeliveryPreferenceCardProps) {
+  const cardStyle = tva({
+    base: 'relative w-full',
+  });
+
+  const textSize = getTextSizeFromCardSize(size);
+  const {
+    preferenceData,
+    address,
+    prefID,
+    isLoading: dataLoading,
+  } = useDeliveryPreferenceData(preference);
+  const isLoading = isLoadingProp || dataLoading;
+
+  const { preferredMode, availableDays, name } = preferenceData || {};
 
   const preferenceName = name || `Delivery Preference`;
   const availableDaysText = formatDaysToText(availableDays || [], { short: true });
-
-  const address = extractCollection(data?.address) || addressQuery.data;
   const fullAddress = address?.displayName || 'Unknown Address';
 
   if (isLoading) {
     return (
       <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
-        <DeliveryPreferenceCardSkeleton appearance={'list-item'} />
+        <DeliveryPreferenceCardSkeleton appearance="list-item" />
       </Card>
     );
   }
@@ -217,26 +277,7 @@ function ListCard({
         <Divider />
 
         <HStack space="md" className="mt-1 flex-wrap items-center">
-          {preferredMode?.map((mode, index) => {
-            const iconAsset = getDeliveryPreferenceIcon(mode);
-            return (
-              <HStack key={index} space="xs" className="items-center">
-                <Box className="border-primary-500 rounded-full border p-1">
-                  <Image
-                    source={iconAsset}
-                    alt={`${mode}-icon`}
-                    style={{ width: 16, height: 16 }}
-                  />
-                </Box>
-
-                {!hideIconLabels && (
-                  <Text size={textSize} className="font-JakartaMedium">
-                    {DELIVERY_OPTIONS[mode].label}
-                  </Text>
-                )}
-              </HStack>
-            );
-          })}
+          <DeliveryModeIcons modes={preferredMode} size={size} hideLabels={hideIconLabels} />
         </HStack>
       </VStack>
     </Card>
@@ -248,41 +289,18 @@ function CompactCard({
   isLoading: isLoadingProp,
   variant = 'filled',
   ...props
-}: CardProps) {
+}: BaseCardProps) {
   const cardStyle = tva({
     base: 'w-40 flex-col items-stretch justify-start p-0',
   });
 
   const router = useRouter();
+  const { preferenceData, address, isLoading: dataLoading } = useDeliveryPreferenceData(preference);
+  const isLoading = isLoadingProp || dataLoading;
 
-  const prefID = isString(preference)
-    ? preference
-    : ('id' in preference && extractID(preference)) || '';
-
-  const dpQuery = useFetchById(isString(preference), {
-    collection: 'delivery-preferences',
-    id: prefID,
-    select: { name: true, address: true, availableDays: true, preferredMode: true },
-    populate: { addresses: { name: true, displayName: true, coordinates: true, isDefault: true } },
-    depth: 3,
-  });
-
-  const data = extractCollection(preference) || dpQuery.data;
-
-  const addressQuery = useFetchById(isString(data?.address), {
-    collection: 'addresses',
-    id: extractID(data?.address) || '',
-    select: { name: true, displayName: true, coordinates: true, isDefault: true },
-    depth: 0,
-  });
-
-  const isLoading = isLoadingProp || dpQuery.isLoading || addressQuery.isLoading;
-
-  const address = extractCollection(data?.address) || addressQuery.data;
   const fullAddress = address?.displayName || 'No address';
   const center = pointToLatLng(address?.coordinates);
-
-  const { preferredMode, availableDays } = data || {};
+  const { preferredMode, availableDays } = preferenceData || {};
 
   function handlePress(e: GestureResponderEvent) {
     e.stopPropagation();

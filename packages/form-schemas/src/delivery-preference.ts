@@ -31,7 +31,8 @@ export const deliverySchema = z.object(
       Object.values(DELIVERY_OPTIONS).map((item) => item.value),
       'Select one option'
     ),
-    dateTime: z.string('Date is required.').nonempty('Date is required.'),
+    date: z.string('Date is required.').nonempty('Date is required.'),
+    time: z.string('Time is required.').nonempty('Time is required.'),
     address: addressSchema,
     note: z.string().transform(nullTransform).optional().nullable(),
   },

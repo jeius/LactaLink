@@ -1,6 +1,7 @@
 import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
   Address,
+  ConfirmedDelivery,
   Donation,
   MilkBag,
   ProposedDelivery,
@@ -24,36 +25,36 @@ export interface DeliveryDetailsParams
   address: string;
 }
 
+type BaseTransactionParams = {
+  milkBags: (string | MilkBag)[];
+  donation: string | Donation;
+  request: string | Request;
+};
+
+type OrganizationTransactionParams = {
+  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
+  address: string | Address;
+  deliveryDate: string;
+};
+
 /**
  * Parameters for creating a P2P transaction.
  */
-export interface CreateP2PTransactionParams {
-  donation: string | Donation;
-  request: string | Request;
-  milkBags: (string | MilkBag)[];
-}
+export type CreateP2PTransactionParams = BaseTransactionParams & {
+  delivery?: Omit<ConfirmedDelivery, 'address'> & { address: string };
+};
 
 /**
  * Parameters for creating a P2O transaction.
  */
-export interface CreateP2OTransactionParams {
-  donation: string | Donation;
-  milkBags: (string | MilkBag)[];
-  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
-  address: string | Address;
-  deliveryDate: string;
-}
+export type CreateP2OTransactionParams = Omit<BaseTransactionParams, 'request'> &
+  OrganizationTransactionParams;
 
 /**
  * Parameters for creating an O2P transaction.
  */
-export interface CreateO2PTransactionParams {
-  request: string | Request;
-  milkBags: (string | MilkBag)[];
-  address: string | Address;
-  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
-  deliveryDate: string;
-}
+export type CreateO2PTransactionParams = Omit<BaseTransactionParams, 'donation'> &
+  OrganizationTransactionParams;
 
 /**
  * Service for managing transactions throughout their lifecycle.

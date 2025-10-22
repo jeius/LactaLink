@@ -112,48 +112,37 @@ export const donationCreateSchema = z
   ])
   .refine(
     (data) => {
-      if (data.type === 'MATCHED' && data.matchedRequest.details.storagePreference !== 'EITHER') {
-        return data.details.storageType === data.matchedRequest.details.storagePreference;
-      }
-      return true;
+      if (data.type !== 'MATCHED') return true;
+      const preferredStorage = data.matchedRequest.details.storagePreference;
+      const storageType = data.details.storageType;
+      if (preferredStorage === 'EITHER') return true;
+      return storageType === preferredStorage;
     },
     {
-      error: 'Does not match the requested type',
+      error: 'Does not match the requested storage.',
       path: ['details', 'storageType'],
     }
   )
+  .refine((data) => data.milkBags.every((bag) => !!bag.bagImage), {
+    error: 'Not all milk bags have been verified.',
+    path: ['milkBags'],
+  })
   .refine(
     (data) => {
-      if (data.milkBags.some((bag) => !bag.bagImage)) {
-        return false;
-      }
+      if (data.type !== 'MATCHED') return true;
+      const preference = data.deliveryPreferences[0];
+      if (!preference) return false;
 
-      return true;
+      const preferredDays = preference.availableDays;
+      const deliveryDate = new Date(data.delivery.date);
+      const deliveryDay = deliveryDate
+        .toLocaleDateString('en-US', { weekday: 'long' })
+        .toUpperCase();
+
+      return preferredDays.includes(deliveryDay as DeliveryDays);
     },
     {
-      error: 'Not all milk bags have been verified.',
-      path: ['milkBags'],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.type === 'MATCHED' && data.matchedRequest) {
-        const preference = data.deliveryPreferences[0];
-        if (!preference) return false;
-
-        const preferredDays = preference.availableDays;
-        const deliveryDate = new Date(data.delivery.dateTime);
-        const deliveryDay = deliveryDate
-          .toLocaleDateString('en-US', { weekday: 'long' })
-          .toUpperCase();
-        if (!preferredDays.includes(deliveryDay as DeliveryDays)) {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      path: ['delivery', 'dateTime'],
+      path: ['delivery', 'date'],
       error: 'Selected date does not match with the preferred days.',
     }
   );

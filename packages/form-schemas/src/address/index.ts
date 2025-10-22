@@ -16,9 +16,10 @@ export const addressSchema = z.object({
   zipCode: z.string().nonempty('Required.'),
   coordinates: coordinatesSchema,
   isDefault: z.boolean(),
+  displayName: z.string().transform(emptyTransform).optional().nullable(),
 });
 
-export const addressCreateSchema = addressSchema.omit({ id: true });
+export const addressCreateSchema = addressSchema.omit({ id: true, displayName: true });
 
 export type AddressSchema = z.infer<typeof addressSchema>;
 export type AddressCreateSchema = z.infer<typeof addressCreateSchema>;

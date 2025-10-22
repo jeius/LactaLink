@@ -21,6 +21,7 @@ import { ViewProps } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
+  FadeOutRight,
   LinearTransition,
   useAnimatedRef,
 } from 'react-native-reanimated';
@@ -54,6 +55,8 @@ import { MilkBottleIcon } from '../ui/icon/custom';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+
+const AnimatedButton = Animated.createAnimatedComponent(Button);
 
 interface CreateMilkBagsFieldProps extends Pick<ViewProps, 'style' | 'className'> {
   isLoading?: boolean;
@@ -126,7 +129,8 @@ export default function CreateMilkBagsField({
         ))}
       </VStack>
 
-      <Button
+      <AnimatedButton
+        layout={LinearTransition}
         isDisabled={isDisabled}
         size="sm"
         variant="outline"
@@ -136,7 +140,7 @@ export default function CreateMilkBagsField({
       >
         <ButtonIcon as={PlusIcon} />
         <ButtonText>Add Milk Bag</ButtonText>
-      </Button>
+      </AnimatedButton>
 
       <FormActionSheet isOpen={open} onClose={() => setOpen(false)} onSave={append} />
     </FormControl>
@@ -188,15 +192,6 @@ function ListItem({
     setOpen(false);
   }
 
-  // useEffect(() => {
-  //   return () => {
-  //     const component = containerRef.current;
-  //     if (component) {
-  //       component.componentWillUnmount?.();
-  //     }
-  //   };
-  // }, [containerRef]);
-
   return (
     <Animated.View
       ref={containerRef}
@@ -217,6 +212,7 @@ function ListItem({
 
       <AnimatedPressable
         entering={FadeInDown}
+        exiting={FadeOutRight}
         disablePressAnimation
         className="flex-1"
         onPress={handleOpen}

@@ -91,9 +91,7 @@ export function useCreateDonationForm({
   // #region Use Effects
   // When draft milk bags exist, update the form values.
   useEffect(() => {
-    if (matchedRequest || !draftMilkBags?.length) {
-      return;
-    }
+    if (!draftMilkBags) return;
 
     const { newDetailsBags, newMilkBags } = updateDataOnDraftBagsExist(draftMilkBags);
 
@@ -121,8 +119,6 @@ export function useCreateDonationForm({
           ...defaults.details,
           storageType: preferredStorage === 'EITHER' ? undefined : preferredStorage,
         },
-        delivery: undefined,
-        deliveryPreferences: [],
       });
     } else if (recipient) {
       reset({ ...defaults, type: 'DIRECT', recipient });

@@ -43,3 +43,4 @@ const Text = React.forwardRef<React.ComponentRef<typeof RNText>, ITextProps>(fun
 Text.displayName = 'Text';
 
 export { Text };
+export type { ITextProps as TextProps };

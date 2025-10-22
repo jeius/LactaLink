@@ -36,7 +36,7 @@ const formControlErrorIconStyle = tva({
 });
 
 const formControlErrorStyle = tva({
-  base: 'mt-1 flex flex-row items-center justify-start gap-1',
+  base: 'mt-1 flex flex-row items-start justify-start gap-1',
 });
 
 const formControlErrorTextStyle = tva({

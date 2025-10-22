@@ -8,7 +8,7 @@ import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import Animated, { FadeIn, LinearTransition, SlideOutRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutRight, LinearTransition } from 'react-native-reanimated';
 import { DeliveryPreferencesBottomSheet } from '../bottom-sheets/DeliveryPreferencesBottomSheet';
 import { EditActionButton } from '../buttons';
 import { DeliveryPreferenceCard } from '../cards/DeliveryPreferenceCard';
@@ -27,6 +27,7 @@ import { Icon } from '../ui/icon';
 import { VStack } from '../ui/vstack';
 
 const AnimatedDPCard = Animated.createAnimatedComponent(DeliveryPreferenceCard);
+const AnimatedButton = Animated.createAnimatedComponent(Button);
 
 interface DeliveryPreferencesFieldProps {
   isLoading?: boolean;
@@ -91,9 +92,9 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
     return (
       <AnimatedDPCard
         key={pref.fieldID}
-        layout={LinearTransition.springify()}
-        entering={FadeIn}
-        exiting={SlideOutRight}
+        layout={LinearTransition}
+        entering={FadeInDown}
+        exiting={FadeOutRight}
         isLoading={isLoading}
         isDisabled={isDisabled || isSubmitting}
         preference={item}
@@ -149,8 +150,9 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
         onChange={handleChange}
         isDisabled={isDisabled}
         triggerComponent={(props) => (
-          <Button
+          <AnimatedButton
             {...props}
+            layout={LinearTransition}
             isDisabled={isDisabled}
             size="sm"
             variant="outline"
@@ -159,7 +161,7 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
           >
             <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
             <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
-          </Button>
+          </AnimatedButton>
         )}
       />
     </FormControl>

@@ -145,6 +145,12 @@ export const Transactions: CollectionConfig<'transactions'> = {
       hasMany: true,
       required: true,
       filterOptions: filterMilkBagsOptions,
+      validate: (data) => {
+        if (data?.length === 0) {
+          return 'At least one milk bag must be selected for this transaction.';
+        }
+        return true;
+      },
       admin: {
         description: 'Milk bags included in this transaction',
       },

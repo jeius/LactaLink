@@ -6,7 +6,6 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import GradientBackground from '@/components/ui/gradient-bg';
-import { HStack } from '@/components/ui/hstack';
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -48,7 +47,7 @@ export default function MilkBagVerification() {
   }
 
   return (
-    <VStack space="xl" className="flex-1 items-stretch p-5">
+    <VStack space="xl" className="flex-1 items-center p-5">
       <HintAlert
         visible={showHint}
         message="Ensure that you affix/write the code to the exact milk bag."
@@ -75,6 +74,14 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const bagImage = data.bagImage || capturedImage;
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
+
+  useEffect(() => {
+    setCapturedImage(data.bagImage);
+    if (!data.bagImage) {
+      deletePrev();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.bagImage]);
 
   useEffect(() => {
     return () => {
@@ -135,11 +142,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   }
 
   return (
-    <Card {...props}>
+    <Card {...props} style={{ maxWidth: 320 }}>
       <VStack space="md" className="items-stretch">
         <Box
           className="bg-primary-0 relative w-full overflow-hidden rounded-xl"
-          style={{ maxWidth: 260, aspectRatio: 1.5 }}
+          style={{ aspectRatio: 1.5 }}
         >
           {imageUrl ? (
             <Image
@@ -154,24 +161,15 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 
           {bagImage && <GradientBackground colors={['transparent', themeColors.primary[0]!]} />}
 
-          <HStack
-            space="md"
-            className="absolute inset-x-0 bottom-0 items-start justify-between px-4 py-2"
-          >
-            <VStack className="items-start">
-              <Text className="text-typography-800 font-JakartaSemiBold">
-                {formatLocaleTime(collectedAt)}
-              </Text>
-              <Text className="text-typography-800 font-JakartaSemiBold">
-                {formatDate(collectedAt, { shortMonth: true })}
-              </Text>
-            </VStack>
-
-            <Text className="text-typography-800 font-JakartaSemiBold">{volume} mL</Text>
-          </HStack>
+          <VStack className="absolute inset-x-0 bottom-0 items-start justify-between px-4 py-2">
+            <Text className="font-JakartaSemiBold">{volume} mL</Text>
+            <Text size="sm" className="text-typography-800 font-JakartaMedium">
+              {formatDate(collectedAt, { shortMonth: true })}, {formatLocaleTime(collectedAt)}
+            </Text>
+          </VStack>
         </Box>
 
-        <Text size="lg" className="font-JakartaSemiBold text-center">
+        <Text size="lg" bold className="text-center">
           Code: {code}
         </Text>
 

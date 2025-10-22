@@ -39,7 +39,7 @@ export class TransactionService implements ITransactionService {
 
   // #region Transaction Creation Methods
   async createP2PTransaction(params: CreateP2PTransactionParams) {
-    const { milkBags } = params;
+    const { milkBags, delivery } = params;
 
     const getDonation = async () => {
       const donation = extractCollection(params.donation);
@@ -69,6 +69,7 @@ export class TransactionService implements ITransactionService {
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
         matchedBags: extractID(milkBags),
         matchedVolume: volume,
+        delivery: { confirmedDelivery: delivery },
       },
     });
 
