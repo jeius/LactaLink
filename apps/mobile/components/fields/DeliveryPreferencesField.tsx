@@ -149,19 +149,17 @@ export function DeliveryPreferencesField({ isLoading, isDisabled }: DeliveryPref
         onChange={handleChange}
         isDisabled={isDisabled}
         triggerComponent={(props) => (
-          <Animated.View layout={LinearTransition}>
-            <Button
-              {...props}
-              isDisabled={isDisabled}
-              size="sm"
-              variant="outline"
-              action="positive"
-              className="mt-4"
-            >
-              <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
-              <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
-            </Button>
-          </Animated.View>
+          <Button
+            {...props}
+            isDisabled={isDisabled}
+            size="sm"
+            variant="outline"
+            action="positive"
+            className="mt-4"
+          >
+            <ButtonIcon as={hasPreferences ? Edit2Icon : PlusIcon} />
+            <ButtonText>{hasPreferences ? 'Change' : 'Add'} Delivery Preferences</ButtonText>
+          </Button>
         )}
       />
     </FormControl>

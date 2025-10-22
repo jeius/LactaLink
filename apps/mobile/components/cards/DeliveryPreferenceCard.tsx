@@ -14,13 +14,14 @@ import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isString } from '@lactalink/utilities/type-guards';
 import { Link, useRouter } from 'expo-router';
-import { ComponentProps, ReactNode } from 'react';
+import { ComponentProps, ReactNode, useMemo } from 'react';
 import { GestureResponderEvent } from 'react-native';
 import { BasicBadge } from '../badges/BasicBadge';
 import { Image } from '../Image';
 import { ThumbnailMap } from '../map/ThumbnailMap';
 import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
+import { Divider } from '../ui/divider';
 import GradientBackground from '../ui/gradient-bg';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -92,6 +93,7 @@ interface CardProps extends ComponentProps<typeof Card> {
     | DeliveryPreferenceCreateSchema;
   isLoading?: boolean;
   action?: ReactNode;
+  hideIconLabels?: boolean;
 }
 
 function ListCard({
@@ -99,11 +101,26 @@ function ListCard({
   isLoading: isLoadingProp,
   action,
   variant = 'filled',
+  size = 'md',
+  hideIconLabels = false,
   ...props
 }: CardProps) {
   const cardStyle = tva({
     base: 'relative w-full',
   });
+
+  const textSize = useMemo(() => {
+    switch (size) {
+      case 'sm':
+        return 'xs';
+      case 'md':
+        return 'sm';
+      case 'lg':
+        return 'md';
+      default:
+        return size || 'sm';
+    }
+  }, [size]);
 
   const prefID = isString(preference)
     ? preference
@@ -146,76 +163,82 @@ function ListCard({
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
-      <HStack space="sm">
-        <VStack space="sm" className="flex-1">
-          <HStack space="sm" className="w-full">
-            <Link asChild href={`/delivery-preferences/${prefID}`}>
-              <Button
-                disablePressAnimation
-                variant="link"
-                action="default"
-                className="h-fit w-fit p-0"
-              >
-                <ButtonText underlineOnPress>{preferenceName}</ButtonText>
-              </Button>
-            </Link>
-            {action}
-          </HStack>
+      <VStack space="sm">
+        <HStack space="md">
+          <Link asChild href={`/delivery-preferences/${prefID}`}>
+            <Button
+              size={size}
+              disablePressAnimation
+              variant="link"
+              className="h-fit w-fit self-start p-0"
+            >
+              <ButtonText underlineOnPress>{preferenceName}</ButtonText>
+            </Button>
+          </Link>
+          {action}
+        </HStack>
 
-          <VStack space="md">
-            <HStack space="sm" className="flex-wrap items-center">
-              {preferredMode?.map((mode, index) => {
-                const iconAsset = getDeliveryPreferenceIcon(mode);
-                return (
-                  <Card
-                    key={index}
-                    variant="elevated"
-                    className="bg-primary-0 rounded-full border-0 px-3 py-2"
-                  >
-                    <HStack space="sm" className="items-center">
-                      <Image
-                        source={iconAsset}
-                        alt={`${mode}-icon`}
-                        style={{ width: 16, height: 16 }}
-                      />
+        <HStack space="xs" className="items-start">
+          <Icon
+            size="sm"
+            as={CalendarDaysIcon}
+            className="fill-primary-50 text-primary-500"
+            style={{ marginTop: 2 }}
+          />
+          <Text
+            size={textSize}
+            ellipsizeMode="tail"
+            numberOfLines={2}
+            className="font-JakartaMedium flex-1"
+          >
+            {availableDaysText}
+          </Text>
+        </HStack>
 
-                      <Text size="sm" className="font-JakartaMedium">
-                        {DELIVERY_OPTIONS[mode].label}
-                      </Text>
-                    </HStack>
-                  </Card>
-                );
-              })}
-            </HStack>
-
-            <HStack space="xs" className="items-start">
-              <Icon size="sm" as={CalendarDaysIcon} style={{ marginTop: 2 }} />
-              <Text
-                size="sm"
-                ellipsizeMode="tail"
-                numberOfLines={2}
-                className="font-JakartaMedium flex-1"
-              >
-                {availableDaysText}
-              </Text>
-            </HStack>
-
-            <HStack space="xs" className="items-start">
-              <Icon size="sm" as={MapPinIcon} style={{ marginTop: 2 }} />
-              <VStack className="flex-1">
-                <Text
-                  size="sm"
-                  ellipsizeMode="tail"
-                  numberOfLines={2}
-                  className="font-JakartaMedium"
-                >
-                  {fullAddress}
-                </Text>
-              </VStack>
-            </HStack>
+        <HStack space="xs" className="items-start">
+          <Icon
+            size="sm"
+            as={MapPinIcon}
+            className="fill-primary-50 text-primary-500"
+            style={{ marginTop: 2 }}
+          />
+          <VStack className="flex-1">
+            <Text
+              size={textSize}
+              ellipsizeMode="tail"
+              numberOfLines={2}
+              className="font-JakartaMedium"
+            >
+              {fullAddress}
+            </Text>
           </VStack>
-        </VStack>
-      </HStack>
+        </HStack>
+
+        <Divider />
+
+        <HStack space="md" className="mt-1 flex-wrap items-center">
+          {preferredMode?.map((mode, index) => {
+            const iconAsset = getDeliveryPreferenceIcon(mode);
+            return (
+              <HStack key={index} space="xs" className="items-center">
+                <Box className="border-primary-500 rounded-full border p-1">
+                  <Image
+                    source={iconAsset}
+                    alt={`${mode}-icon`}
+                    style={{ width: 16, height: 16 }}
+                  />
+                </Box>
+
+                {!hideIconLabels && (
+                  <Text size={textSize} className="font-JakartaMedium">
+                    {DELIVERY_OPTIONS[mode].label}
+                  </Text>
+                )}
+              </HStack>
+            );
+          })}
+        </HStack>
+      </VStack>
     </Card>
   );
 }
@@ -278,7 +301,7 @@ function CompactCard({
       ) : (
         <>
           <Box className="relative">
-            <ThumbnailMap center={center} onPress={handlePress} />
+            <ThumbnailMap center={center} />
             <GradientBackground
               pointerEvents="none"
               colors={['transparent', 'black']}

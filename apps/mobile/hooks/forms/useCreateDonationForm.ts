@@ -70,6 +70,7 @@ export function useCreateDonationForm({
   const debouncedSave = useMemo(
     () =>
       debounce((value) => {
+        // Don't save if there's a matched request
         if (matchedRequest) return;
         saveFormData('donation-create', value);
       }, 200),
@@ -105,41 +106,38 @@ export function useCreateDonationForm({
     }
   }, [draftMilkBags, getValues, matchedRequest, reset]);
 
-  // When matched request prop changes, update the form values.
+  // When matched request and recipient prop changes, update the form values.
   useEffect(() => {
-    const transformedRequest = transformToRequestSchema(matchedRequestDoc);
-    if (transformedRequest) {
+    const defaults = getValues();
+
+    if (matchedRequestDoc) {
+      const transformedRequest = transformToRequestSchema(matchedRequestDoc);
+      const preferredStorage = transformedRequest.details.storagePreference;
       reset({
-        ...getValues(),
+        ...defaults,
         type: 'MATCHED',
         matchedRequest: transformedRequest,
+        details: {
+          ...defaults.details,
+          storageType: preferredStorage === 'EITHER' ? undefined : preferredStorage,
+        },
         delivery: undefined,
         deliveryPreferences: [],
       });
-    }
-  }, [getValues, matchedRequestDoc, reset]);
+    } else if (recipient) {
+      reset({ ...defaults, type: 'DIRECT', recipient });
+    } else {
+      if (!defaults.deliveryPreferences?.length) {
+        defaults.deliveryPreferences = preferences
+          .map((pref) => transformToDeliveryPreferenceSchema(pref))
+          .filter((v) => v !== null);
+      }
 
-  // When recipient prop changes, update the form values.
-  useEffect(() => {
-    if (recipient) {
-      reset({ ...getValues(), type: 'DIRECT', recipient });
+      if (!isEqual(defaults, getValues())) {
+        reset({ ...defaults, type: 'OPEN' });
+      }
     }
-  }, [getValues, recipient, reset]);
-
-  // When user preferences, update the form values.
-  useEffect(() => {
-    const newValues = getValues();
-
-    if (!newValues.deliveryPreferences?.length && !matchedRequest) {
-      newValues.deliveryPreferences = preferences
-        .map((pref) => transformToDeliveryPreferenceSchema(pref))
-        .filter((v) => v !== null);
-    }
-
-    if (!isEqual(newValues, getValues())) {
-      reset(newValues);
-    }
-  }, [preferences, getValues, reset, matchedRequest]);
+  }, [getValues, matchedRequestDoc, preferences, recipient, reset]);
 
   // Watch form changes and save to local storage (debounced).
   useEffect(() => {
@@ -153,7 +151,7 @@ export function useCreateDonationForm({
 
   // When the form is successfully submitted, save preferred values to local storage and clear old data.
   useEffect(() => {
-    if (isSubmitSuccessful) {
+    if (isSubmitSuccessful && !matchedRequest) {
       const data = getValues();
 
       const preferredValues: DeepPartial<typeof data> = {
@@ -162,7 +160,7 @@ export function useCreateDonationForm({
           collectionMode: data.details.collectionMode,
           storageType: data.details.storageType,
         },
-        deliveryPreferences: matchedRequest ? [] : data.deliveryPreferences,
+        deliveryPreferences: data.deliveryPreferences,
       };
 
       // Save the preffered values to local storage
@@ -223,13 +221,7 @@ function createDefaultValues(
     donor: donorID,
     details: {
       notes: '',
-      bags: [
-        {
-          donor: donorID,
-          volume: 0,
-          collectedAt: new Date().toISOString(),
-        },
-      ],
+      bags: [] as MilkBagCreateSchema[],
     } as DonationCreateSchema['details'],
   };
 }

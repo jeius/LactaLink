@@ -1,4 +1,5 @@
 import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DonationCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
@@ -58,6 +59,8 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
     const transformedPref = pref && transformToDeliveryPreferenceSchema(pref);
     setValue('deliveryPreferences', transformedPref ? [transformedPref] : [], {
       shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
     });
 
     const address = transformedPref?.address;
@@ -65,10 +68,14 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
       transformedPref?.preferredMode?.length === 1 ? transformedPref.preferredMode[0] : '';
 
     // @ts-expect-error - Expected type error, but works as intended
-    setValue('delivery.address', address, { shouldDirty: true });
+    setValue('delivery.address', address, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
 
     // @ts-expect-error - Expected type error, but works as intended
-    setValue('delivery.mode', mode, { shouldDirty: true });
+    setValue('delivery.mode', mode, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
   }
 
   return (
@@ -81,6 +88,7 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
       </HStack>
 
       <DPList
+        type={type}
         control={control}
         onChange={handleSelectPreference}
         deliveryPreferences={deliveryPreferences}
@@ -94,8 +102,8 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
           variant="filled"
           className="mx-5 mt-2 gap-3"
         >
-          <ModeField control={control} />
-          <DateField control={control} />
+          <ModeField control={control} type={type} />
+          <DateField control={control} type={type} />
         </AnimatedCard>
       )}
     </VStack>
@@ -104,6 +112,7 @@ export default function DeliveryField({ type, deliveryPreferences, ...props }: D
 
 type BaseFieldProps = {
   control: Control<DonationCreateSchema | RequestCreateSchema>;
+  type: DeliveryFieldProps['type'];
 };
 
 interface DPListProps extends BaseFieldProps {
@@ -111,10 +120,15 @@ interface DPListProps extends BaseFieldProps {
   deliveryPreferences: DeliveryPreference[];
   helperText: string;
 }
-function DPList({ control, onChange, deliveryPreferences, helperText }: DPListProps) {
+function DPList({ control, onChange, deliveryPreferences, helperText, type }: DPListProps) {
   const { errors } = useFormState({ control, name: 'deliveryPreferences' });
   const fieldError = errors.deliveryPreferences;
   const selectedDP = useWatch({ control, name: 'deliveryPreferences' })?.[0];
+
+  const cardStyle = tva({
+    base: 'w-52 flex-1 p-4',
+    variants: { isSelected: { true: 'border-primary-500 border-2' } },
+  });
 
   return (
     <FormControl isInvalid={!!fieldError}>
@@ -144,9 +158,12 @@ function DPList({ control, onChange, deliveryPreferences, helperText }: DPListPr
             >
               <DeliveryPreferenceCard
                 preference={item}
-                appearance="compact"
-                className={isSelected ? 'border-primary-500 border-2' : ''}
-              />
+                size="sm"
+                appearance="list-item"
+                hideIconLabels
+                className={cardStyle({ isSelected })}
+                variant="filled"
+              ></DeliveryPreferenceCard>
             </AnimatedPressable>
           );
         }}

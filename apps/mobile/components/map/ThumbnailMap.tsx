@@ -1,11 +1,12 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
+import { randomUUID } from 'expo-crypto';
 import React, { useEffect, useRef, useState } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
 import MapView, { MapMarker } from 'react-native-maps';
-import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { Spinner } from '../ui/spinner';
 
@@ -57,7 +58,7 @@ export function ThumbnailMap({
           )}
 
           <MapView
-            id="thumbnail-map"
+            id={`thumbnail-map-${randomUUID()}`}
             ref={mapRef}
             cacheEnabled
             liteMode
@@ -72,14 +73,7 @@ export function ThumbnailMap({
             <MapMarker coordinate={center} pointerEvents="none" />
           </MapView>
 
-          {onPress && (
-            <AnimatedPressable
-              disabled={disabled}
-              disablePressAnimation
-              className="grow"
-              onPress={onPress}
-            />
-          )}
+          {onPress && <Pressable disabled={disabled} className="grow" onPress={onPress} />}
         </>
       )}
     </Box>

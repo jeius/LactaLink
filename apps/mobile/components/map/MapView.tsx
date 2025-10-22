@@ -12,10 +12,7 @@ import { randomUUID } from 'expo-crypto';
 import { LocationObjectCoords } from 'expo-location';
 import { Redirect, useFocusEffect } from 'expo-router';
 import { Insets, StyleSheet } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
-import { AnimatedPressable } from '../animated/pressable';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { Compass } from '../Compass';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
@@ -56,8 +53,6 @@ export function MapView({
   const isLoading = isLoadingProp || locationQuery.isLoading;
   const isMapReady = mapReady && mapLoaded && !isLoading;
 
-  const mapHeading = useSharedValue(0);
-
   const latlng = useMemo((): LatLng => {
     if (location) {
       return {
@@ -83,11 +78,6 @@ export function MapView({
 
   useFocusEffect(useCallback(() => setMapRenderID(randomUUID()), []));
 
-  function handleCompassPress() {
-    map?.animateCamera({ heading: 0 }, { duration: 400 });
-    setFollowUser(false);
-  }
-
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
 
@@ -108,24 +98,12 @@ export function MapView({
     setUserLocated(areEqual);
   }
 
-  async function updateMapHeading() {
-    if (!map) return;
-    try {
-      const { heading } = await map.getCamera();
-      mapHeading.value = heading;
-    } catch (error) {
-      console.error('Failed to update map heading:', error);
-    }
-  }
-
   function handleRegionChange(region: Region, details: Details) {
     props.onRegionChange?.(region, details);
 
     if (details?.isGesture) {
       setFollowUser(false);
     }
-
-    updateMapHeading();
   }
 
   async function onUserMarkerPositionChange(position: LocationObjectCoords) {
@@ -159,11 +137,14 @@ export function MapView({
           }
         }
         style={StyleSheet.flatten([{ flex: 1 }, props.style])}
+        mapPadding={
+          props.mapPadding || { top: (insets?.top || 0) + 80, right: 0, bottom: 0, left: 0 }
+        }
         provider={PROVIDER_GOOGLE}
         userInterfaceStyle={theme}
         showsMyLocationButton={false}
         showsUserLocation={false}
-        showsCompass={false}
+        showsCompass={true}
         toolbarEnabled={false}
         onRegionChangeComplete={handleRegionChangeEnd}
         onRegionChange={handleRegionChange}
@@ -180,15 +161,6 @@ export function MapView({
           />
         )}
       </RNMapView.Animated>
-
-      <AnimatedPressable
-        onPress={handleCompassPress}
-        containerStyle={{ position: 'absolute', right: 16, top: (insets?.top || 0) + 80 }}
-      >
-        <Box className="bg-background-0 rounded-full p-3">
-          <Compass heading={mapHeading} />
-        </Box>
-      </AnimatedPressable>
 
       {!isMapReady && (
         <SafeArea className="absolute inset-0 z-50 items-center justify-center">

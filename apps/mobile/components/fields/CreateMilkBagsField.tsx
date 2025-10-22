@@ -21,9 +21,8 @@ import { ViewProps } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
-  FadeOut,
   LinearTransition,
-  SlideOutRight,
+  useAnimatedRef,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
@@ -127,19 +126,17 @@ export default function CreateMilkBagsField({
         ))}
       </VStack>
 
-      <Animated.View layout={LinearTransition}>
-        <Button
-          isDisabled={isDisabled}
-          size="sm"
-          variant="outline"
-          action="positive"
-          className="mt-5"
-          onPress={() => setOpen(true)}
-        >
-          <ButtonIcon as={PlusIcon} />
-          <ButtonText>Add Milk Bag</ButtonText>
-        </Button>
-      </Animated.View>
+      <Button
+        isDisabled={isDisabled}
+        size="sm"
+        variant="outline"
+        action="positive"
+        className="mt-5"
+        onPress={() => setOpen(true)}
+      >
+        <ButtonIcon as={PlusIcon} />
+        <ButtonText>Add Milk Bag</ButtonText>
+      </Button>
 
       <FormActionSheet isOpen={open} onClose={() => setOpen(false)} onSave={append} />
     </FormControl>
@@ -164,6 +161,7 @@ function ListItem({
   isDisabled,
 }: ListItemProps) {
   const [open, setOpen] = useState(false);
+  const containerRef = useAnimatedRef<Animated.View>();
 
   const { setValue, control } = useFormContext<DonationSchema>();
   const data = useWatch({ control, name: `details.bags.${index}` });
@@ -190,9 +188,22 @@ function ListItem({
     setOpen(false);
   }
 
+  // useEffect(() => {
+  //   return () => {
+  //     const component = containerRef.current;
+  //     if (component) {
+  //       component.componentWillUnmount?.();
+  //     }
+  //   };
+  // }, [containerRef]);
+
   return (
-    <Animated.View layout={LinearTransition} className="flex-row items-center gap-2">
-      <Animated.View entering={FadeIn} exiting={FadeOut}>
+    <Animated.View
+      ref={containerRef}
+      layout={LinearTransition}
+      className="flex-row items-center gap-2"
+    >
+      <Animated.View entering={FadeIn}>
         <Button
           size="sm"
           action="negative"
@@ -206,7 +217,6 @@ function ListItem({
 
       <AnimatedPressable
         entering={FadeInDown}
-        exiting={SlideOutRight}
         disablePressAnimation
         className="flex-1"
         onPress={handleOpen}
