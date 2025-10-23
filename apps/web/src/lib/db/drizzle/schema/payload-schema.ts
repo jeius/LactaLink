@@ -1745,8 +1745,8 @@ export const users_rels = pgTable(
   })
 );
 
-export const transactions_delivery_proposed_delivery = pgTable(
-  'transactions_delivery_proposed_delivery',
+export const transactions_delivery_proposed = pgTable(
+  'transactions_delivery_proposed',
   {
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
@@ -1772,17 +1772,15 @@ export const transactions_delivery_proposed_delivery = pgTable(
     agreements_bothAgreed: boolean('agreements_both_agreed'),
   },
   (columns) => ({
-    _orderIdx: index('transactions_delivery_proposed_delivery_order_idx').on(columns._order),
-    _parentIDIdx: index('transactions_delivery_proposed_delivery_parent_id_idx').on(
-      columns._parentID
-    ),
-    transactions_delivery_proposed_delivery_address_idx: index(
-      'transactions_delivery_proposed_delivery_address_idx'
+    _orderIdx: index('transactions_delivery_proposed_order_idx').on(columns._order),
+    _parentIDIdx: index('transactions_delivery_proposed_parent_id_idx').on(columns._parentID),
+    transactions_delivery_proposed_address_idx: index(
+      'transactions_delivery_proposed_address_idx'
     ).on(columns.address),
     _parentIDFk: foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [transactions.id],
-      name: 'transactions_delivery_proposed_delivery_parent_id_fk',
+      name: 'transactions_delivery_proposed_parent_id_fk',
     }).onDelete('cascade'),
   })
 );
@@ -1831,19 +1829,19 @@ export const transactions = pgTable(
     status: enum_transaction_status('status').notNull().default('MATCHED'),
     matchedVolume: numeric('matched_volume').notNull().default('0'),
     transactionType: enum_transaction_type('transaction_type').notNull().default('P2P'),
-    delivery_confirmedDelivery_mode: enum_delivery_modes('delivery_confirmed_delivery_mode'),
-    delivery_confirmedDelivery_datetime: timestamp('delivery_confirmed_delivery_datetime', {
+    delivery_confirmed_mode: enum_delivery_modes('delivery_confirmed_mode'),
+    delivery_confirmed_datetime: timestamp('delivery_confirmed_datetime', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }),
-    delivery_confirmedDelivery_address: uuid('delivery_confirmed_delivery_address_id').references(
+    delivery_confirmed_address: uuid('delivery_confirmed_address_id').references(
       () => addresses.id,
       {
         onDelete: 'set null',
       }
     ),
-    delivery_confirmedDelivery_confirmedAt: timestamp('delivery_confirmed_delivery_confirmed_at', {
+    delivery_confirmed_confirmedAt: timestamp('delivery_confirmed_confirmed_at', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
@@ -1885,9 +1883,9 @@ export const transactions = pgTable(
     transactions_created_by_idx: index('transactions_created_by_idx').on(columns.createdBy),
     transactions_donation_idx: index('transactions_donation_idx').on(columns.donation),
     transactions_request_idx: index('transactions_request_idx').on(columns.request),
-    transactions_delivery_confirmed_delivery_delivery_confir_idx: index(
-      'transactions_delivery_confirmed_delivery_delivery_confir_idx'
-    ).on(columns.delivery_confirmedDelivery_address),
+    transactions_delivery_confirmed_delivery_confirmed_addre_idx: index(
+      'transactions_delivery_confirmed_delivery_confirmed_addre_idx'
+    ).on(columns.delivery_confirmed_address),
     transactions_updated_at_idx: index('transactions_updated_at_idx').on(columns.updatedAt),
     transactions_created_at_idx: index('transactions_created_at_idx').on(columns.createdAt),
   })
@@ -3041,16 +3039,16 @@ export const relations_users = relations(users, ({ many }) => ({
     relationName: '_rels',
   }),
 }));
-export const relations_transactions_delivery_proposed_delivery = relations(
-  transactions_delivery_proposed_delivery,
+export const relations_transactions_delivery_proposed = relations(
+  transactions_delivery_proposed,
   ({ one }) => ({
     _parentID: one(transactions, {
-      fields: [transactions_delivery_proposed_delivery._parentID],
+      fields: [transactions_delivery_proposed._parentID],
       references: [transactions.id],
-      relationName: 'delivery_proposedDelivery',
+      relationName: 'delivery_proposed',
     }),
     address: one(addresses, {
-      fields: [transactions_delivery_proposed_delivery.address],
+      fields: [transactions_delivery_proposed.address],
       references: [addresses.id],
       relationName: 'address',
     }),
@@ -3109,13 +3107,13 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     references: [requests.id],
     relationName: 'request',
   }),
-  delivery_proposedDelivery: many(transactions_delivery_proposed_delivery, {
-    relationName: 'delivery_proposedDelivery',
+  delivery_proposed: many(transactions_delivery_proposed, {
+    relationName: 'delivery_proposed',
   }),
-  delivery_confirmedDelivery_address: one(addresses, {
-    fields: [transactions.delivery_confirmedDelivery_address],
+  delivery_confirmed_address: one(addresses, {
+    fields: [transactions.delivery_confirmed_address],
     references: [addresses.id],
-    relationName: 'delivery_confirmedDelivery_address',
+    relationName: 'delivery_confirmed_address',
   }),
   tracking_statusHistory: many(transactions_tracking_status_history, {
     relationName: 'tracking_statusHistory',
@@ -3407,7 +3405,7 @@ type DatabaseSchema = {
   requests_rels: typeof requests_rels;
   users: typeof users;
   users_rels: typeof users_rels;
-  transactions_delivery_proposed_delivery: typeof transactions_delivery_proposed_delivery;
+  transactions_delivery_proposed: typeof transactions_delivery_proposed;
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
@@ -3457,7 +3455,7 @@ type DatabaseSchema = {
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
-  relations_transactions_delivery_proposed_delivery: typeof relations_transactions_delivery_proposed_delivery;
+  relations_transactions_delivery_proposed: typeof relations_transactions_delivery_proposed;
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;

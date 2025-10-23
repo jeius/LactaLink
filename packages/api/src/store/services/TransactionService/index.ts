@@ -69,7 +69,7 @@ export class TransactionService implements ITransactionService {
         recipient: { relationTo: 'individuals', value: extractID(request.requester) },
         matchedBags: extractID(milkBags),
         matchedVolume: volume,
-        delivery: { confirmedDelivery: delivery },
+        delivery: { confirmed: delivery },
       },
     });
 
@@ -98,7 +98,7 @@ export class TransactionService implements ITransactionService {
         matchedBags: extractID(milkBags),
         matchedVolume: volume,
         delivery: {
-          confirmedDelivery: {
+          confirmed: {
             datetime: deliveryDate,
             confirmedAt: new Date().toISOString(),
             mode: DELIVERY_OPTIONS.DELIVERY.value,
@@ -133,7 +133,7 @@ export class TransactionService implements ITransactionService {
         matchedBags: extractID(milkBags),
         matchedVolume: volume,
         delivery: {
-          confirmedDelivery: {
+          confirmed: {
             datetime: deliveryDate,
             mode: DELIVERY_OPTIONS.PICKUP.value,
             confirmedAt: new Date().toISOString(),
@@ -169,7 +169,7 @@ export class TransactionService implements ITransactionService {
       );
     }
 
-    const existingProposals = transaction.delivery?.proposedDelivery || [];
+    const existingProposals = transaction.delivery?.proposed || [];
     const proposal = details;
 
     const proposedByID = extractID(proposal.proposedBy.value);
@@ -196,7 +196,7 @@ export class TransactionService implements ITransactionService {
       data: {
         status: pendingDeliveryStatus,
         delivery: {
-          proposedDelivery: [
+          proposed: [
             ...existingProposals,
             {
               ...proposal,
@@ -209,16 +209,42 @@ export class TransactionService implements ITransactionService {
     });
   }
 
-  async acceptDeliveryOption(
+  updateProposalAgreements(
+    transaction: Transaction,
+    proposalID: string,
+    agreement: NonNullable<DeliveryAgreements['sender']>
+  ) {
+    const acceptedByID = extractID(agreement?.agreedBy?.value);
+    const senderID = extractID(transaction.sender.value);
+    const recipientID = extractID(transaction.recipient.value);
+    const isSender = acceptedByID === senderID;
+    const isRecipient = acceptedByID === recipientID;
+
+    const existingProposals = transaction.delivery?.proposed || [];
+
+    return existingProposals.map((proposal) => {
+      return proposal.id === proposalID
+        ? {
+            ...proposal,
+            agreements: {
+              sender: isSender ? agreement : proposal.agreements?.sender,
+              recipient: isRecipient ? agreement : proposal.agreements?.recipient,
+              bothAgreed: agreement?.agreed || false,
+            },
+          }
+        : proposal;
+    });
+  }
+
+  async acceptDeliveryProposal(
     transactionID: string,
     proposalID: string,
     acceptedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
+  ) {
     const transaction = await this.apiClient.findByID({
       collection: 'transactions',
       id: transactionID,
       depth: 0,
-      select: { status: true, delivery: true, sender: true, recipient: true },
     });
 
     // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
@@ -228,52 +254,49 @@ export class TransactionService implements ITransactionService {
       );
     }
 
-    const acceptedByID = extractID(acceptedBy.value);
-    const senderID = extractID(transaction.sender.value);
-    const recipientID = extractID(transaction.recipient.value);
-    const isSender = acceptedByID === senderID;
-    const isRecipient = acceptedByID === recipientID;
-
-    const existingProposals = transaction.delivery?.proposedDelivery || [];
-
-    const newProposals = existingProposals.map((proposal) => {
-      if (proposal.id === proposalID) {
-        const updatedAgreements = proposal.agreements || {};
-        const senderAgreed = updatedAgreements.sender?.agreed;
-        const recipientAgreed = updatedAgreements.recipient?.agreed;
-
-        if (isSender && !senderAgreed) {
-          updatedAgreements.sender = {
-            agreed: true,
-            agreedBy: acceptedBy,
-            agreedAt: new Date().toISOString(),
-          };
-        } else if (isRecipient && !recipientAgreed) {
-          updatedAgreements.recipient = {
-            agreed: true,
-            agreedBy: acceptedBy,
-            agreedAt: new Date().toISOString(),
-          };
-        }
-        return {
-          ...proposal,
-          agreements: updatedAgreements,
-        };
-      }
-
-      return proposal;
+    const newProposals = this.updateProposalAgreements(transaction, proposalID, {
+      agreed: true,
+      agreedBy: acceptedBy,
+      agreedAt: new Date().toISOString(),
     });
 
     // Update the transaction with confirmed details
     return this.apiClient.updateByID<'transactions'>({
       collection: 'transactions',
       id: transactionID,
-      data: {
-        delivery: {
-          ...transaction.delivery,
-          proposedDelivery: newProposals,
-        },
-      },
+      data: { delivery: { proposed: newProposals } },
+    });
+  }
+
+  async rejectDeliveryProposal(
+    transactionID: string,
+    proposalID: string,
+    rejectedBy: NonNullable<User['profile']>
+  ) {
+    const transaction = await this.apiClient.findByID({
+      collection: 'transactions',
+      id: transactionID,
+      depth: 0,
+    });
+
+    // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
+    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
+      throw new Error(
+        `Cannot accept delivery details for transaction in ${transaction.status} status`
+      );
+    }
+
+    const newProposals = this.updateProposalAgreements(transaction, proposalID, {
+      agreed: false,
+      agreedBy: rejectedBy,
+      agreedAt: new Date().toISOString(),
+    });
+
+    // Update the transaction with confirmed details
+    return this.apiClient.updateByID<'transactions'>({
+      collection: 'transactions',
+      id: transactionID,
+      data: { delivery: { proposed: newProposals } },
     });
   }
   // #endregion
@@ -297,7 +320,7 @@ export class TransactionService implements ITransactionService {
       );
     }
 
-    const deliveryMode = transaction.delivery?.confirmedDelivery?.mode;
+    const deliveryMode = transaction.delivery?.confirmed?.mode;
 
     if (deliveryMode !== DELIVERY_OPTIONS.PICKUP.value) {
       throw new Error(`Cannot mark as ready for pickup: transaction mode is ${deliveryMode}`);
@@ -334,7 +357,7 @@ export class TransactionService implements ITransactionService {
       throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
     }
 
-    const deliveryMode = transaction.delivery?.confirmedDelivery?.mode;
+    const deliveryMode = transaction.delivery?.confirmed?.mode;
     if (deliveryMode !== DELIVERY_OPTIONS.DELIVERY.value) {
       throw new Error(`Cannot start transit: transaction mode is ${deliveryMode}`);
     }

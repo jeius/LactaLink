@@ -5,7 +5,6 @@ import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { MarkOptional } from '@lactalink/types/utils';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
-import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import React, { useMemo } from 'react';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
@@ -62,15 +61,13 @@ interface CardContentProps {
 function CardContent({ data, disableViewThumbnail = false }: CardContentProps) {
   const { theme } = useTheme();
 
-  const { image, volume, date, time, code, status, statusColor } = useMemo(() => {
+  const { image, volume, code, status, statusColor } = useMemo(() => {
     const image = extractImageData(extractCollection(data.bagImage));
     const volume = displayVolume(data.volume);
-    const date = formatDate(data.collectedAt, { shortMonth: true });
-    const time = formatLocaleTime(data.collectedAt);
     const code = data.code || 'No Code';
     const status = data.status;
     const statusColor = getMilkBagStatusColor(theme, status);
-    return { image, volume, date, time, code, status, statusColor };
+    return { image, volume, code, status, statusColor };
   }, [data, theme]);
 
   return (
@@ -99,8 +96,8 @@ function CardContent({ data, disableViewThumbnail = false }: CardContentProps) {
       </VStack>
       <VStack space="xs" className="px-3 py-2">
         <Text className="font-JakartaSemiBold text-center">{volume}</Text>
-        <Text size="xs" className="text-center">
-          {date}, {time}
+        <Text size="xs" className="text-left">
+          Collected at: {new Date(data.collectedAt).toLocaleDateString()}
         </Text>
       </VStack>
     </VStack>

@@ -2,6 +2,7 @@ import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
   Address,
   ConfirmedDelivery,
+  DeliveryAgreements,
   Donation,
   MilkBag,
   ProposedDelivery,
@@ -96,13 +97,39 @@ export interface ITransactionService {
   ): Promise<Transaction>;
 
   /**
-   * Accepts proposed delivery option and schedules the delivery.
+   *
+   * @param transaction - Transaction document
+   * @param proposalID - ID of the proposal
+   * @param agreement - Agreement details
+   * @returns Updated proposed delivery
+   */
+  updateProposalAgreements(
+    transaction: Transaction,
+    proposalID: string,
+    agreement: DeliveryAgreements['sender']
+  ): NonNullable<ProposedDelivery>;
+
+  /**
+   * Accepts proposed delivery proposal and schedules the delivery.
    * @param transactionID - ID of the transaction
-   * @param proposalID - ID of the accepted proposal
+   * @param proposalID - ID of the proposal
    * @param acceptedBy - User profile accepting the proposal
    * @returns Updated transaction
    */
-  acceptDeliveryOption(
+  acceptDeliveryProposal(
+    transactionID: string,
+    proposalID: string,
+    acceptedBy: NonNullable<User['profile']>
+  ): Promise<Transaction>;
+
+  /**
+   * Rejects proposed delivery proposal.
+   * @param transactionID - ID of the transaction
+   * @param proposalID - ID of the proposal
+   * @param acceptedBy - User profile accepting the proposal
+   * @returns Updated transaction
+   */
+  rejectDeliveryProposal(
     transactionID: string,
     proposalID: string,
     acceptedBy: NonNullable<User['profile']>

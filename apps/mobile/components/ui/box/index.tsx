@@ -15,3 +15,4 @@ const Box = React.forwardRef<React.ComponentRef<typeof View>, IBoxProps>(functio
 
 Box.displayName = 'Box';
 export { Box };
+export type { IBoxProps as BoxProps };

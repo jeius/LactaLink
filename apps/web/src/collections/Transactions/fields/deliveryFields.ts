@@ -3,7 +3,7 @@ import { Transaction } from '@lactalink/types/payload-generated-types';
 import { Field } from 'payload';
 
 export const proposedField: Field = {
-  name: 'proposedDelivery',
+  name: 'proposed',
   label: 'Proposed Delivery',
   interfaceName: 'ProposedDelivery',
   labels: { singular: 'Proposed Delivery', plural: 'Proposed Deliveries' },
@@ -143,10 +143,9 @@ export const proposedField: Field = {
 };
 
 export const confirmedField: Field = {
-  name: 'confirmedDelivery',
+  name: 'confirmed',
   label: 'Confirmed Delivery',
   interfaceName: 'ConfirmedDelivery',
-  required: false,
   type: 'group',
   fields: [
     {
@@ -178,7 +177,6 @@ export const confirmedField: Field = {
     },
   ],
   admin: {
-    condition: (data: Partial<Transaction>) =>
-      data.status === TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
+    condition: () => true,
   },
 };

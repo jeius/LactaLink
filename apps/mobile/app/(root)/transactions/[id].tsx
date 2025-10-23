@@ -3,7 +3,7 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 
 import { DonationListCard, RequestListCard } from '@/components/cards';
-import DeliveryCard from '@/components/cards/DeliveryCard';
+import { TransactionDeliveryCard } from '@/components/cards/TransactionDeliveryCard';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { MilkBagList } from '@/components/lists/horizontal-flatlists';
 import { MapView } from '@/components/map/MapView';
@@ -37,6 +37,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const AnimatedCard = Animated.createAnimatedComponent(Card);
+
 function useAnimStyles(scrollY: SharedValue<number>) {
   const animatedBgStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, 200], [0.75, 0], Extrapolation.CLAMP);
@@ -47,14 +49,20 @@ function useAnimStyles(scrollY: SharedValue<number>) {
     return { transform: [{ translateY: scrollY.value }] };
   });
 
-  return { animatedBgStyle, animatedCardStyle };
+  const animatedBackButtonStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const scale = interpolate(scrollY.value, [0, 100], [0.5, 1], Extrapolation.CLAMP);
+    return { opacity, transform: [{ scale }] };
+  });
+
+  return { animatedBgStyle, animatedCardStyle, animatedBackButtonStyle };
 }
 
 export default function TransactionPage() {
   const insets = useSafeAreaInsets();
 
   const scrollY = useSharedValue(0);
-  const { animatedBgStyle, animatedCardStyle } = useAnimStyles(scrollY);
+  const { animatedBgStyle, animatedCardStyle, animatedBackButtonStyle } = useAnimStyles(scrollY);
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -85,19 +93,22 @@ export default function TransactionPage() {
   return (
     <Box className="flex-1 flex-col" style={{ marginBottom: insets.bottom }}>
       {/* absolute header */}
-      <HStack
-        space="md"
-        className="absolute inset-x-0 items-center p-5"
-        style={{ top: insets.top, zIndex: 10 }}
+      <Box
+        className="absolute inset-x-0 flex-row items-center gap-2 p-5 pt-2"
+        style={[{ top: insets.top, zIndex: 10 }]}
       >
-        <Card variant="filled" className="rounded-full bg-transparent p-0">
+        <AnimatedCard
+          variant="filled"
+          className="rounded-full bg-transparent p-0"
+          style={[animatedBackButtonStyle]}
+        >
           <Box
             className="bg-background-300"
             style={{ ...StyleSheet.absoluteFillObject, opacity: 0.75 }}
           />
           <HeaderBackButton style={{ marginRight: 0 }} />
-        </Card>
-      </HStack>
+        </AnimatedCard>
+      </Box>
 
       <MapView containerStyle={StyleSheet.absoluteFillObject} />
 
@@ -112,7 +123,7 @@ export default function TransactionPage() {
         className="relative p-5"
         style={[{ marginTop: insets.top }, animatedCardStyle]}
       >
-        <DeliveryCard transactionID={id} />
+        <TransactionDeliveryCard transactionID={id} />
       </Animated.View>
 
       <Box className="flex-1">
@@ -137,15 +148,13 @@ export default function TransactionPage() {
                     <Text bold size="xl">
                       {volumeLabel}
                     </Text>
-                    <Text>Transaction Volume</Text>
+                    <Text size="sm">{type}</Text>
                   </VStack>
-                </HStack>
 
-                <HStack space="sm" className="items-center">
-                  <Divider className="w-auto flex-1" />
-                  <Icon as={data?.transactionType === 'P2P' ? UserUserIcon : UserBuildingIcon} />
-                  <Text className="font-JakartaSemiBold">{type}</Text>
-                  <Divider className="w-auto flex-1" />
+                  <Icon
+                    size="2xl"
+                    as={data?.transactionType === 'P2P' ? UserUserIcon : UserBuildingIcon}
+                  />
                 </HStack>
 
                 <HStack space="md" className="items-center justify-between px-5">
@@ -158,6 +167,8 @@ export default function TransactionPage() {
                   />
                 </HStack>
               </VStack>
+
+              <Divider />
 
               {donation && (
                 <VStack space="xs" className="px-5">
@@ -183,7 +194,7 @@ export default function TransactionPage() {
                 </VStack>
               )}
 
-              {milkBags && <MilkBagList data={milkBags} label="Involved Milkbags" />}
+              {milkBags && <MilkBagList data={milkBags} label="Milk Bags" />}
             </BottomSheetScrollView>
           </BottomSheetPortal>
         </BottomSheet>

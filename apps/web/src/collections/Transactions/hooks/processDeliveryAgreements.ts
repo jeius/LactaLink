@@ -1,3 +1,4 @@
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
@@ -19,13 +20,13 @@ export const processDeliveryAgreements: CollectionBeforeChangeHook<Transaction> 
 
   try {
     // Check if we have delivery proposals
-    if (data.delivery?.proposedDelivery?.length) {
-      const proposals = data.delivery.proposedDelivery;
+    if (data.delivery?.proposed?.length) {
+      const proposals = data.delivery.proposed;
 
       // Check each proposal for agreement changes
       for (let i = 0; i < proposals.length; i++) {
         const proposal = proposals[i];
-        const originalProposal = originalDoc.delivery?.proposedDelivery?.[i];
+        const originalProposal = originalDoc.delivery?.proposed?.[i];
 
         // Check if both parties have newly agreed
         const nowBothAgreed = proposal?.agreements?.bothAgreed === true;
@@ -34,10 +35,10 @@ export const processDeliveryAgreements: CollectionBeforeChangeHook<Transaction> 
         // If agreement status changed to both agreed
         if (nowBothAgreed && !wasBothAgreed) {
           // Update transaction status to DELIVERY_SCHEDULED
-          data.status = 'DELIVERY_SCHEDULED';
+          data.status = TRANSACTION_STATUS.DELIVERY_SCHEDULED.value;
 
           // Set confirmed delivery details from this proposal
-          data.delivery.confirmedDelivery = {
+          data.delivery.confirmed = {
             mode: proposal.mode,
             datetime: proposal.datetime,
             address: proposal.address,

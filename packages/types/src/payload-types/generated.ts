@@ -1154,8 +1154,8 @@ export interface Transaction {
  * via the `definition` "Delivery".
  */
 export interface Delivery {
-  proposedDelivery?: ProposedDelivery;
-  confirmedDelivery?: ConfirmedDelivery;
+  proposed?: ProposedDelivery;
+  confirmed?: ConfirmedDelivery;
   instructions?: string | null;
 }
 /**
@@ -2795,8 +2795,8 @@ export interface TransactionsSelect<T extends boolean = true> {
  * via the `definition` "Delivery_select".
  */
 export interface DeliverySelect<T extends boolean = true> {
-  proposedDelivery?: T | ProposedDeliverySelect<T>;
-  confirmedDelivery?: T | ConfirmedDeliverySelect<T>;
+  proposed?: T | ProposedDeliverySelect<T>;
+  confirmed?: T | ConfirmedDeliverySelect<T>;
   instructions?: T;
 }
 /**
