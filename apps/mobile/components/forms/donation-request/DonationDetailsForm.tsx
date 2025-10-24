@@ -18,17 +18,16 @@ import { extractCollection } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
 
 interface DonationDetailsFormProps {
-  hasMatchedRequest?: boolean;
+  isMatched?: boolean;
   disableFields?: boolean;
 }
 
 export function DonationDetailsForm({
-  hasMatchedRequest,
+  isMatched,
   disableFields: disableProp,
 }: DonationDetailsFormProps) {
   const { data: meUser } = useMeUser();
-  const { getValues, reset, setValue, additionalState, watch, ...form } =
-    useForm<DonationCreateSchema>();
+  const { getValues, additionalState, watch, control, formState } = useForm<DonationCreateSchema>();
 
   const { matchedRequest: matchedRequestDoc }: DonationCreateFormExtraData =
     additionalState.extraData;
@@ -46,11 +45,11 @@ export function DonationDetailsForm({
   const meUserDP = extractCollection(meUser?.deliveryPreferences?.docs) || [];
 
   const isLoading = additionalState.isLoading;
-  const disableFields = disableProp || form.formState.isSubmitting;
+  const disableFields = disableProp || formState.isSubmitting;
 
   return (
     <VStack space="2xl" className="py-5">
-      {donationType === 'MATCHED' && (
+      {(donationType === 'MATCHED' || isMatched) && (
         <Box className="mx-5 mb-4">
           <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
           <RequestListCard
@@ -83,7 +82,7 @@ export function DonationDetailsForm({
         </Text>
 
         <FormField
-          control={form.control}
+          control={control}
           key={'details.storageType'}
           name="details.storageType"
           label="How are you storing/preserving the milk?"
@@ -93,7 +92,7 @@ export function DonationDetailsForm({
         />
 
         <FormField
-          control={form.control}
+          control={control}
           key={'details.collectionMode'}
           name="details.collectionMode"
           label="How did you collect the milk?"
@@ -105,7 +104,7 @@ export function DonationDetailsForm({
 
       <Box className="mx-5">
         <FormField
-          control={form.control}
+          control={control}
           name="details.notes"
           label="Additional Notes"
           fieldType="textarea"
@@ -117,7 +116,7 @@ export function DonationDetailsForm({
 
       <Box className="mx-5">
         <FormField
-          control={form.control}
+          control={control}
           name="details.image"
           label="Cover Image"
           fieldType="image"

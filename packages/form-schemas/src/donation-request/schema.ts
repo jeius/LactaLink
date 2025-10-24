@@ -43,7 +43,7 @@ export const requestDetailsSchema = z.object({
     Object.values(URGENCY_LEVELS).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(milkBagSchema).optional().nullable(),
+  bags: z.array(milkBagSchema).optional(),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
   reason: textAreaSchema,
@@ -86,7 +86,6 @@ export const donationSchema = z.object({
 export const requestSchema = z.object({
   id: z.uuid('Invalid UUID').nonempty('Required'),
   requester: z.uuid('Invalid UUID').nonempty('Required'),
-  recipient: recipientSchema.optional().nullable(),
   volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
   details: requestDetailsSchema,
   ...deliveryPreferencesSchema.shape,
@@ -148,30 +147,51 @@ export const donationCreateSchema = z
   );
 
 export const requestCreateSchema = z
-  .discriminatedUnion('matchedDonation', [
+  .discriminatedUnion('type', [
     z.object({
+      type: z.literal('MATCHED'),
       matchedDonation: donationSchema,
       delivery: deliveryCreateSchema,
+      ...requestSchema.omit({ id: true, details: true }).shape,
+      details: requestDetailsSchema.required({ bags: true }),
+    }),
+    z.object({
+      type: z.literal('OPEN'),
       ...requestSchema.omit({ id: true }).shape,
     }),
     z.object({
-      matchedDonation: z.literal(null).optional(),
+      type: z.literal('DIRECT'),
+      recipient: recipientSchema,
       ...requestSchema.omit({ id: true }).shape,
     }),
   ])
   .refine(
     (data) => {
-      if (data.matchedDonation) {
-        if (!data.details.bags || data.details.bags.length === 0) {
-          return false;
-        }
-      }
-
-      return true;
+      if (data.type !== 'MATCHED') return true;
+      return (data.details.bags?.length || 0) > 0;
     },
     {
       error: 'You must select at least one milk bag.',
       path: ['details', 'bags'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'MATCHED') return true;
+      const preference = data.deliveryPreferences[0];
+      if (!preference) return false;
+
+      const preferredDays = preference.availableDays;
+      const deliveryDate = new Date(data.delivery.date);
+      const deliveryDay = deliveryDate
+        .toLocaleDateString('en-US', { weekday: 'long' })
+        .toUpperCase();
+
+      return preferredDays.includes(deliveryDay as DeliveryDays);
+    },
+    {
+      path: ['delivery', 'date'],
+      error: 'Selected date does not match with the preferred days.',
     }
   );
 
@@ -183,7 +203,6 @@ export const donationUpdateSchema = z.object({
 export const requestUpdateSchema = requestSchema.pick({
   id: true,
   details: true,
-  recipient: true,
   volumeNeeded: true,
   deliveryPreferences: true,
 });

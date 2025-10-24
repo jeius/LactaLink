@@ -1,7 +1,7 @@
 import { getColor } from '@/lib/colors';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { RequestSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema } from '@lactalink/form-schemas';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { CalendarDaysIcon, MilkIcon, PackageIcon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
@@ -16,7 +16,7 @@ import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard } from './DeliveryPreferenceCard';
 
 interface RequestReviewCardProps extends ComponentProps<typeof Card> {
-  data: RequestSchema;
+  data: RequestCreateSchema;
 }
 export function RequestReviewCard({ data, variant = 'filled', ...props }: RequestReviewCardProps) {
   const { theme } = useTheme();

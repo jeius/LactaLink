@@ -73,10 +73,7 @@ export default function CreateDonation() {
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
     [detailsStep]: (
-      <DonationDetailsForm
-        disableFields={isValidatingDetails}
-        hasMatchedRequest={!!matchedRequest}
-      />
+      <DonationDetailsForm disableFields={isValidatingDetails} isMatched={!!matchedRequest} />
     ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,

@@ -9,19 +9,15 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { deleteCollection } from '@/lib/api/delete';
-
-import { uploadImage } from '@/lib/api/file';
 
 import { RequestSearchParams } from '@/lib/types/donationRequest';
-import { RequestSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema } from '@lactalink/form-schemas';
 
-import { getApiClient, getTransactionService } from '@lactalink/api';
 import { ErrorSearchParams } from '@lactalink/types';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
-import { Transaction } from '@lactalink/types/payload-generated-types';
+import { createRequest } from '@/lib/api/request';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -49,13 +45,13 @@ export default function CreateRequest() {
   //#endregion
 
   //#region Form State
-  const { isLoading, refreshing = false, onRefresh, fetchError } = form;
+  const { isLoading, refreshing = false, onRefresh, fetchError, handleSubmit, getValues } = form;
 
   const isSubmitting = form.formState.isSubmitting;
   // #endregion
 
   //#region Form Handlers
-  async function onSubmit(data: RequestSchema) {
+  async function onSubmit(data: RequestCreateSchema) {
     const createPromise = createRequest(data);
 
     toast.promise(createPromise, {
@@ -69,7 +65,7 @@ export default function CreateRequest() {
 
     const { transaction } = await createPromise;
 
-    const slugsToRevalidate: CollectionSlug[] = ['requests', 'notifications'];
+    const slugsToRevalidate: CollectionSlug[] = ['requests', 'notifications', 'milkBags'];
 
     if (transaction) {
       router.dismissTo(`/transactions/${transaction.id}`);
@@ -104,7 +100,7 @@ export default function CreateRequest() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <VStack space="lg">
-            <RequestDetailsForm matchedDonation={matchedDonation} />
+            <RequestDetailsForm isMatched={!!matchedDonation} />
 
             {!isLoading && (
               <Box className="mx-5">
@@ -112,7 +108,7 @@ export default function CreateRequest() {
                   triggerLabel="Submit"
                   action="primary"
                   onTriggerPress={handleValidation}
-                  onConfirm={form.handleSubmit(onSubmit)}
+                  onConfirm={handleSubmit(onSubmit)}
                   isDisabled={isSubmitting}
                   modalSize="lg"
                   title="Review Request"
@@ -122,7 +118,7 @@ export default function CreateRequest() {
                       className="border-outline-200"
                       style={{ maxHeight: 380, borderTopWidth: 1, borderBottomWidth: 1 }}
                     >
-                      <RequestReviewCard data={form.getValues()} variant="ghost" className="p-2" />
+                      <RequestReviewCard data={getValues()} variant="ghost" className="p-2" />
                     </ScrollView>
                   }
                 />
@@ -135,55 +131,4 @@ export default function CreateRequest() {
       </SafeArea>
     </Form>
   );
-}
-
-async function createRequest(data: RequestSchema) {
-  const apiClient = getApiClient();
-
-  const { deliveryPreferences, details, requester, volumeNeeded, matchedDonation } = data;
-
-  const { image, ...restOfDetails } = details;
-
-  const imageDoc = image && (await uploadImage('images', image));
-
-  const requestDoc = await apiClient
-    .create({
-      collection: 'requests',
-      data: {
-        requester,
-        status: 'AVAILABLE',
-        details: {
-          ...restOfDetails,
-          image: imageDoc && extractID(imageDoc),
-          bags: extractID(restOfDetails.bags),
-        },
-        deliveryPreferences: extractID(deliveryPreferences),
-        initialVolumeNeeded: volumeNeeded,
-        volumeNeeded,
-        volumeFulfilled: 0,
-      },
-    })
-    .catch(async (err) => {
-      await Promise.all([deleteCollection('images', imageDoc?.id, { silent: true })]);
-      throw err;
-    });
-
-  let transaction: Transaction | undefined;
-  let message = 'Request created successfully!';
-
-  if (matchedDonation) {
-    const transactionService = getTransactionService();
-    transaction = await transactionService.createP2PTransaction({
-      donation: matchedDonation.id,
-      request: requestDoc,
-      milkBags: extractID(restOfDetails.bags) || [],
-    });
-
-    const donation = extractCollection(transaction.donation);
-
-    const donorName = extractCollection(donation?.donor)?.givenName || 'Donor';
-    message = `Thank you! ${donorName} has been notified of your request.`;
-  }
-
-  return { transaction, message };
 }

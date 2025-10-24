@@ -41,6 +41,9 @@ export class TransactionService implements ITransactionService {
   async createP2PTransaction(params: CreateP2PTransactionParams) {
     const { milkBags, delivery } = params;
 
+    const matchedStatus = TRANSACTION_STATUS.MATCHED.value;
+    const scheduledStatus = TRANSACTION_STATUS.DELIVERY_SCHEDULED.value;
+
     const getDonation = async () => {
       const donation = extractCollection(params.donation);
       return donation || this.getDonation(extractID(params.donation));
@@ -62,7 +65,7 @@ export class TransactionService implements ITransactionService {
       collection: 'transactions',
       data: {
         transactionType: TRANSACTION_TYPE.P2P.value,
-        status: TRANSACTION_STATUS.MATCHED.value,
+        status: delivery ? scheduledStatus : matchedStatus,
         donation: extractID(donation),
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
         request: extractID(request),

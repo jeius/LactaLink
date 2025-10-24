@@ -20,7 +20,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
 import { transformToMilkBagSchema } from '@/lib/utils/transformData';
-import { RequestSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema, RequestSchema } from '@lactalink/form-schemas';
 import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
@@ -28,7 +28,8 @@ import { extractCollection, extractErrorMessage, extractID } from '@lactalink/ut
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext, useFormState, useWatch } from 'react-hook-form';
+import { FadeIn } from 'react-native-reanimated';
 
 interface VolumeFieldProps {
   matchedDonation?: Donation;
@@ -98,9 +99,10 @@ interface MilkBagsFieldProps {
 }
 
 function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsFieldProps) {
-  const { control, getFieldState, setValue } = useFormContext<RequestSchema>();
-  const { error } = getFieldState('details.bags');
+  const { control, setValue } = useFormContext<RequestCreateSchema>();
   const selectedBags = useWatch({ control, name: 'details.bags' });
+  const { errors } = useFormState({ control, name: 'details.bags' });
+  const error = errors?.details?.bags;
 
   const { bags, bagsMap } = useMemo(() => {
     const bags = extractCollection(matchedDonation.details.bags);
@@ -149,7 +151,7 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
       <CardSkeleton />
     ) : (
       <AnimatedPressable
-        // entering={FadeIn.duration(300).delay(index * 200)}
+        entering={FadeIn.duration(300).delay(index * 200)}
         disabled={isDisabled}
         onPress={handleSelectBag}
         className="overflow-hidden rounded-2xl"
@@ -173,6 +175,15 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
         <FormControlHelperText>Select the milk bags you want to request.</FormControlHelperText>
       </FormControlHelper>
 
+      {error && (
+        <FormControlError className="mx-5">
+          <FormControlErrorIcon as={AlertCircleIcon} />
+          <FormControlErrorText numberOfLines={2} ellipsizeMode="tail" className="shrink">
+            {extractErrorMessage(error)}
+          </FormControlErrorText>
+        </FormControlError>
+      )}
+
       <Box className="mt-2">
         <FlashList
           horizontal
@@ -183,15 +194,6 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
           ItemSeparatorComponent={() => <Box className="w-4" />}
         />
       </Box>
-
-      {error && (
-        <FormControlError className="mx-5">
-          <FormControlErrorIcon as={AlertCircleIcon} />
-          <FormControlErrorText numberOfLines={2} ellipsizeMode="tail" className="shrink">
-            {extractErrorMessage(error)}
-          </FormControlErrorText>
-        </FormControlError>
-      )}
     </FormControl>
   );
 }
