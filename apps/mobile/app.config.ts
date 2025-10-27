@@ -74,6 +74,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      'react-native-google-maps-plus',
+      {
+        googleMapsAndroidApiKey: process.env.ANDROID_MAPS_API_KEY,
+        googleMapsIosApiKey: process.env.IOS_MAPS_API_KEY,
+      },
+    ],
+    [
       'expo-font',
       {
         fonts: [
