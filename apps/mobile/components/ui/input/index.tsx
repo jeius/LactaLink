@@ -225,3 +225,9 @@ InputSlot.displayName = 'InputSlot';
 InputField.displayName = 'InputField';
 
 export { Input, InputField, InputIcon, InputSlot };
+export type {
+  IInputFieldProps as InputFieldProps,
+  IInputIconProps as InputIconProps,
+  IInputProps as InputProps,
+  IInputSlotProps as InputSlotProps,
+};

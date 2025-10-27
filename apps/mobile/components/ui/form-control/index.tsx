@@ -168,7 +168,7 @@ const formControlLabelTextStyle = tva({
 });
 
 const formControlLabelAstrickStyle = tva({
-  base: 'text-typography-900 font-JakartaMedium',
+  base: 'text-error-600 font-JakartaMedium',
   variants: {
     isTruncated: {
       true: 'web:truncate',
@@ -446,4 +446,16 @@ export {
   FormControlLabel,
   FormControlLabelAstrick,
   FormControlLabelText,
+};
+
+export type {
+  IFormControlErrorIconProps as FormControlErrorIconProps,
+  IFormControlErrorProps as FormControlErrorProps,
+  IFormControlErrorTextProps as FormControlErrorTextProps,
+  IFormControlHelperProps as FormControlHelperProps,
+  IFormControlHelperTextProps as FormControlHelperTextProps,
+  IFormControlLabelAstrickProps as FormControlLabelAstrickProps,
+  IFormControlLabelProps as FormControlLabelProps,
+  IFormControlLabelTextProps as FormControlLabelTextProps,
+  IFormControlProps as FormControlProps,
 };

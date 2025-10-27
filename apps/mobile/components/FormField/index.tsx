@@ -69,6 +69,11 @@ const labelStyle = tva({
   base: 'gap-2',
 });
 
+/**
+ * A versatile form field component that integrates with react-hook-form to render various types of input fields.
+ * Supports text, password, number, textarea, date, options-cards, button-group, combobox, and image upload fields.
+ * @deprecated Use specific field components instead (e.g., `TextInputField`, `TextAreaField`, etc.)
+ */
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,

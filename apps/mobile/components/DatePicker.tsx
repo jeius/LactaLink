@@ -1,31 +1,23 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { VStack } from '@/components/ui/vstack';
-import { getHexColor } from '@/lib/colors';
+import { Input, InputField, InputIcon, InputProps, InputSlot } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { formatDate } from '@lactalink/utilities/formatters';
+import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import DateTimePicker, {
   DatePickerOptions,
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { CalendarRangeIcon, LucideIcon, LucideProps } from 'lucide-react-native';
-import React, { ComponentPropsWithoutRef, FC, useState } from 'react';
+import { LucideIcon, LucideProps } from 'lucide-react-native';
+import React, { FC, useState } from 'react';
 import { Noop } from 'react-hook-form';
 import { Platform } from 'react-native';
-import { Skeleton } from '../ui/skeleton';
+import { Box } from './ui/box';
 
 const inputStyle = tva({
   base: '',
 });
 
-type TInput = Pick<ComponentPropsWithoutRef<typeof Input>, 'variant' | 'className' | 'style'>;
-
-export type DateInputType = TInput & {
-  /**
-   * Whether to hide the icon in the input field. Defaults to `false`.
-   */
-  hideIcon?: boolean;
+export type DatePickerInputProps = InputProps & {
   /**
    * Mode of the date input.
    * Defaults to 'date'.
@@ -50,22 +42,30 @@ export type DateInputType = TInput & {
    */
   placeholder?: string;
 
-  datePickerOptions?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate' | 'display'>;
-  isLoading?: boolean;
+  /**
+   * Icon to display in the input field.
+   * If not provided, a calendar icon will be used by default.
+   */
+  icon?: FC<LucideProps> | LucideIcon;
+
+  /**
+   * Date picker options to customize the behavior of the date picker.
+   */
+  options?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate' | 'display'>;
 };
 
-export type DateInputProps<T extends string = string> = DateInputType & {
+export type DatePickerProps = DatePickerInputProps & {
   /**
    * The current value of the date input.
    */
-  value?: T;
+  value?: string;
 
   /**
    * Callback function triggered when the date is changed.
    *
    * @param val - The new date value as a string.
    */
-  onChange?: (val: T) => void;
+  onChange?: (val: string) => void;
 
   /**
    * Callback function triggered when the input loses focus.
@@ -76,12 +76,6 @@ export type DateInputProps<T extends string = string> = DateInputType & {
    * Whether the input is disabled. Defaults to `false`.
    */
   isDisabled?: boolean;
-
-  /**
-   * Icon to display in the input field.
-   * If not provided, a calendar icon will be used by default.
-   */
-  icon?: FC<LucideProps> | LucideIcon;
 };
 
 /**
@@ -99,42 +93,37 @@ export type DateInputProps<T extends string = string> = DateInputType & {
  *   placeholder="Select a date"
  * />
  * ```
- * @deprecated Use `DatePicker` instead.
  */
-export function DateInput({
+export function DatePicker({
   value,
   onBlur,
   onChange: setDate,
-  hideIcon = false,
   isDisabled,
   className,
-  style,
   placeholder = 'Select date...',
   mode = 'date',
-  icon = CalendarRangeIcon,
+  icon,
   showSetNowButton = false,
   setNowLabel = 'Set Now',
-  variant: textInputVariant = 'outline',
-  datePickerOptions,
-  isLoading,
-}: DateInputProps) {
+  variant: inputVariant = 'outline',
+  size: inputSize = 'md',
+  options,
+  ...inputProps
+}: DatePickerProps) {
   const date = value ? new Date(value) : new Date(1999, 6, 6);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const { theme } = useTheme();
-  const accentColor = getHexColor(theme, 'primary', 300)?.toString();
+  const { themeColors, theme } = useTheme();
+  const accentColor = themeColors.primary[300];
 
   let inputValue: string = '';
 
   if (value) {
     switch (mode) {
       case 'datetime':
-        inputValue = date.toLocaleString('en-PH');
+        inputValue = `${formatDate(date, { shortMonth: true })}, ${formatLocaleTime(date)}`;
         break;
       case 'time':
-        inputValue = date.toLocaleTimeString('en-PH', {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
+        inputValue = formatLocaleTime(date);
         break;
       case 'countdown':
         inputValue = date.toISOString().slice(11, 19);
@@ -147,7 +136,12 @@ export function DateInput({
   }
 
   function togglePicker() {
-    setShowDatePicker((prev) => !prev);
+    setShowDatePicker((prev) => {
+      if (prev) {
+        onBlur?.();
+      }
+      return !prev;
+    });
   }
 
   function onDateChange({ type }: DateTimePickerEvent, selectedDate?: Date) {
@@ -167,58 +161,56 @@ export function DateInput({
   }
 
   return (
-    <VStack space="md">
-      {isLoading ? (
-        <Skeleton className="h-9" />
-      ) : (
-        <Input
-          isDisabled={isDisabled}
-          className={inputStyle({ className })}
-          style={[{ maxWidth: 340 }, style]}
-        >
-          {!hideIcon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
-          <InputSlot onPress={togglePicker} className="grow">
-            <InputField
-              onBlur={onBlur}
-              value={inputValue}
-              aria-disabled={isDisabled}
-              placeholder={placeholder}
-              textContentType="birthdate"
-              editable={false}
-              className="w-full"
-              variant={textInputVariant}
-            />
-          </InputSlot>
+    <Box>
+      <Input
+        {...inputProps}
+        size={inputSize}
+        variant={inputVariant}
+        isDisabled={isDisabled}
+        className={inputStyle({ className })}
+      >
+        {!icon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
 
-          {showSetNowButton && (
-            <InputSlot>
-              <Button
-                variant="link"
-                size="sm"
-                className="pr-3"
-                disabled={isDisabled}
-                onPress={handleSetNow}
-              >
-                <ButtonText>{setNowLabel}</ButtonText>
-              </Button>
-            </InputSlot>
-          )}
-        </Input>
-      )}
+        <InputSlot onPress={togglePicker} className="flex-1">
+          <InputField
+            value={inputValue}
+            aria-disabled={isDisabled}
+            placeholder={placeholder}
+            textContentType="dateTime"
+            editable={false}
+            pointerEvents="none"
+          />
+        </InputSlot>
+
+        {showSetNowButton && (
+          <InputSlot>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-fit w-fit pr-3"
+              isDisabled={isDisabled}
+              onPress={handleSetNow}
+              disablePressAnimation
+            >
+              <ButtonText>{setNowLabel}</ButtonText>
+            </Button>
+          </InputSlot>
+        )}
+      </Input>
 
       {showDatePicker && (
         <DateTimePicker
-          {...datePickerOptions}
+          {...options}
           mode={mode}
-          display={datePickerOptions?.display || 'spinner'}
+          display={options?.display || 'spinner'}
           value={date}
           onChange={onDateChange}
-          themeVariant="light"
+          themeVariant={theme}
           locale="en-PH"
           style={{ borderRadius: 20 }}
           accentColor={accentColor}
         />
       )}
-    </VStack>
+    </Box>
   );
 }

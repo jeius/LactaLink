@@ -69,7 +69,7 @@ const selectTriggerStyle = tva({
 });
 
 const selectInputStyle = tva({
-  base: 'placeholder:text-typography-600 web:w-full text-typography-900 web:outline-none ios:leading-[0px] pointer-events-none h-full px-3 py-0 font-sans',
+  base: 'placeholder:text-typography-600 web:w-full text-typography-900 web:outline-none ios:leading-[0px] pointer-events-none h-full flex-1 px-3 py-0 font-sans',
   parentVariants: {
     size: {
       xl: 'text-xl',
@@ -262,4 +262,10 @@ export {
   SelectSectionList,
   SelectTrigger,
   SelectVirtualizedList,
+};
+
+export type {
+  ISelectInputProps as SelectInputProps,
+  ISelectProps as SelectProps,
+  ISelectTriggerProps as SelectTriggerProps,
 };

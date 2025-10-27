@@ -95,3 +95,4 @@ Textarea.displayName = 'Textarea';
 TextareaInput.displayName = 'TextareaInput';
 
 export { Textarea, TextareaInput };
+export type { ITextareaInputProps as TextareaInputProps, ITextareaProps as TextareaProps };

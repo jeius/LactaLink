@@ -104,11 +104,11 @@ const actionsheetContentStyle = tva({
 });
 
 const actionsheetItemStyle = tva({
-  base: 'data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-primary-50 active:bg-primary-100 data-[focus=true]:bg-primary-100 web:data-[focus-visible=true]:bg-primary-100 data-[checked=true]:bg-primary-100 w-full flex-row items-center rounded-xl p-3 data-[disabled=true]:opacity-40',
+  base: 'data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 data-[checked=true]:bg-primary-100 w-full flex-row items-center rounded-xl p-3 data-[disabled=true]:opacity-40',
 });
 
 const actionsheetItemTextStyle = tva({
-  base: 'text-typography-700 font-body tracking-md mx-2 text-left font-normal',
+  base: 'text-typography-900 font-body tracking-md mx-2 text-left font-normal',
   variants: {
     isTruncated: {
       true: '',
