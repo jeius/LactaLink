@@ -169,7 +169,7 @@ export function DatePicker({
         isDisabled={isDisabled}
         className={inputStyle({ className })}
       >
-        {!icon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
+        {icon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
 
         <InputSlot onPress={togglePicker} className="flex-1">
           <InputField
@@ -179,6 +179,7 @@ export function DatePicker({
             textContentType="dateTime"
             editable={false}
             pointerEvents="none"
+            className="flex-1"
           />
         </InputSlot>
 

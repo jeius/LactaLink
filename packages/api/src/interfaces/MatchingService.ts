@@ -192,12 +192,12 @@ export interface CreateMatchOptions {
   /**
    * Preferred delivery mode
    */
-  delivery: NonNullable<Delivery['confirmedDelivery']>;
+  delivery: NonNullable<Delivery['confirmed']>;
 
   /**
    * Proposed delivery details
    */
-  proposedDelivery?: NonNullable<Delivery['proposedDelivery']>[number];
+  proposedDelivery?: NonNullable<Delivery['proposed']>[number];
 
   /**
    * Instructions for the match

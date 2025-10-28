@@ -1,4 +1,3 @@
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 
@@ -22,6 +21,7 @@ import { Icon } from '@/components/ui/icon';
 import { UserBuildingIcon, UserUserIcon } from '@/components/ui/icon/custom';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useTransactionQuery } from '@/hooks/transactions/fetcher';
 import { TRANSACTION_TYPE } from '@lactalink/enums';
 import { ErrorSearchParams } from '@lactalink/types';
 import { Transaction } from '@lactalink/types/payload-generated-types';
@@ -66,10 +66,7 @@ export default function TransactionPage() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { data, isLoading, error } = useFetchById(!!id, {
-    collection: 'transactions',
-    id: id,
-  });
+  const { data, isLoading, error } = useTransactionQuery(id);
 
   const { donation, request, type, volumeLabel, milkBags } = useMemo(
     () => extractData(data),

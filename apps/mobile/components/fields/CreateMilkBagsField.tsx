@@ -99,9 +99,10 @@ export default function CreateMilkBagsField({
   return (
     <FormControl isInvalid={!!error} {...props}>
       <FormControlLabel>
-        <FormControlLabelText size="lg" className="font-JakartaSemiBold">
+        <FormControlLabelText size="lg" className="font-JakartaSemiBold flex-1">
           Milk Bags
         </FormControlLabelText>
+        <Icon as={MilkIcon} />
       </FormControlLabel>
 
       <FormControlHelper>

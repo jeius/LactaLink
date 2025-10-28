@@ -3,18 +3,22 @@ import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import CreateMilkBagsField from '@/components/fields/CreateMilkBagsField';
-import DeliveryField from '@/components/fields/DeliveryField';
+import { DeliveryField } from '@/components/fields/DeliveryField';
+import { SelectInputField } from '@/components/form-fields/SelectInputField';
+import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { FormField } from '@/components/FormField';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useMeUser } from '@/hooks/auth/useAuth';
 import { DonationCreateFormExtraData } from '@/hooks/forms/useCreateDonationForm';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
-import { DonationCreateSchema } from '@lactalink/form-schemas';
+import { DeliveryCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas';
 import { extractCollection } from '@lactalink/utilities/extractors';
+import { ClipboardPenIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
 interface DonationDetailsFormProps {
@@ -26,8 +30,8 @@ export function DonationDetailsForm({
   isMatched,
   disableFields: disableProp,
 }: DonationDetailsFormProps) {
-  const { data: meUser } = useMeUser();
-  const { getValues, additionalState, watch, control, formState } = useForm<DonationCreateSchema>();
+  const { getValues, additionalState, watch, control, formState, setValue } =
+    useForm<DonationCreateSchema>();
 
   const { matchedRequest: matchedRequestDoc }: DonationCreateFormExtraData =
     additionalState.extraData;
@@ -41,11 +45,17 @@ export function DonationDetailsForm({
   }, [getValues]);
 
   const donationType = watch('type');
-  const requesterDP = extractCollection(matchedRequestDoc?.deliveryPreferences) || [];
-  const meUserDP = extractCollection(meUser?.deliveryPreferences?.docs) || [];
+  const requesterDP = extractCollection(matchedRequestDoc?.deliveryPreferences);
 
   const isLoading = additionalState.isLoading;
   const disableFields = disableProp || formState.isSubmitting;
+
+  function handleOnDeliveryChange(data: DeliveryCreateSchema) {
+    setValue('deliveryPreferences', data.deliveryPreference ? [data.deliveryPreference] : [], {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  }
 
   return (
     <VStack space="2xl" className="py-5">
@@ -77,40 +87,43 @@ export function DonationDetailsForm({
       {donationType !== 'OPEN' && <Divider />}
 
       <VStack space="lg" className="mx-5">
-        <Text size="lg" className="font-JakartaSemiBold">
-          Milk Details
-        </Text>
+        <HStack space="md" className="items-center">
+          <Text size="lg" className="font-JakartaSemiBold flex-1">
+            Milk Details
+          </Text>
+          <Icon as={ClipboardPenIcon} />
+        </HStack>
 
-        <FormField
+        <SelectInputField
           control={control}
-          key={'details.storageType'}
           name="details.storageType"
           label="How are you storing/preserving the milk?"
-          fieldType="button-group"
-          options={Object.values(STORAGE_TYPES)}
+          selectInputProps={{ placeholder: 'Select storage type' }}
+          items={Object.values(STORAGE_TYPES)}
           isDisabled={isLoading || disableFields}
         />
 
-        <FormField
+        <SelectInputField
           control={control}
-          key={'details.collectionMode'}
           name="details.collectionMode"
           label="How did you collect the milk?"
-          fieldType="button-group"
-          options={Object.values(COLLECTION_MODES)}
+          selectInputProps={{ placeholder: 'Select collection method' }}
+          items={Object.values(COLLECTION_MODES)}
           isDisabled={isLoading || disableFields}
         />
       </VStack>
 
       <Box className="mx-5">
-        <FormField
+        <TextAreaField
           control={control}
           name="details.notes"
           label="Additional Notes"
-          fieldType="textarea"
-          placeholder="Any additional information about the milk, such as health conditions, medications, etc."
           helperText="This information will be shared with the recipient."
           isDisabled={isLoading || disableFields}
+          textareaProps={{
+            placeholder:
+              'Any additional information about the milk, such as health conditions, medications, etc.',
+          }}
         />
       </Box>
 
@@ -137,7 +150,14 @@ export function DonationDetailsForm({
       <Divider />
 
       {donationType === 'MATCHED' ? (
-        <DeliveryField type="donation" deliveryPreferences={requesterDP.concat(meUserDP)} />
+        <DeliveryField
+          //@ts-expect-error typescript cant infer this properly
+          control={control}
+          isLoading={isLoading}
+          isDisabled={disableFields}
+          deliveryPreferences={requesterDP}
+          onChange={handleOnDeliveryChange}
+        />
       ) : (
         <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
       )}

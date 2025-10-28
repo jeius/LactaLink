@@ -1,6 +1,6 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useDeliveryMutations } from '@/hooks/mutations/useDeliveryMutations';
+import { useTransactionQuery } from '@/hooks/transactions/fetcher';
 import { getLottieAsset } from '@/lib/stores/assetsStore';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { getLatestDeliveryProposal } from '@/lib/utils/getLatestDeliveryProposal';
@@ -72,10 +72,7 @@ interface DeliveryCardProps {
 
 export function TransactionDeliveryCard({ transactionID }: DeliveryCardProps) {
   const { data: meUser } = useMeUser();
-  const { data: transaction, queryKey } = useFetchById(true, {
-    collection: 'transactions',
-    id: transactionID,
-  });
+  const { data: transaction, queryKey } = useTransactionQuery(transactionID);
 
   const isUserSender = isEqual(transaction?.sender, meUser?.profile);
   const isUserRecipient = isEqual(transaction?.recipient, meUser?.profile);

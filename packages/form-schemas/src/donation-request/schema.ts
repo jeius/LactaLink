@@ -7,7 +7,6 @@ import {
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
-import { DeliveryDays } from '@lactalink/types';
 import { User } from '@lactalink/types/payload-generated-types';
 import { deliveryCreateSchema, deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
@@ -125,26 +124,7 @@ export const donationCreateSchema = z
   .refine((data) => data.milkBags.every((bag) => !!bag.bagImage), {
     error: 'Not all milk bags have been verified.',
     path: ['milkBags'],
-  })
-  .refine(
-    (data) => {
-      if (data.type !== 'MATCHED') return true;
-      const preference = data.deliveryPreferences[0];
-      if (!preference) return false;
-
-      const preferredDays = preference.availableDays;
-      const deliveryDate = new Date(data.delivery.date);
-      const deliveryDay = deliveryDate
-        .toLocaleDateString('en-US', { weekday: 'long' })
-        .toUpperCase();
-
-      return preferredDays.includes(deliveryDay as DeliveryDays);
-    },
-    {
-      path: ['delivery', 'date'],
-      error: 'Selected date does not match with the preferred days.',
-    }
-  );
+  });
 
 export const requestCreateSchema = z
   .discriminatedUnion('type', [
@@ -173,25 +153,6 @@ export const requestCreateSchema = z
     {
       error: 'You must select at least one milk bag.',
       path: ['details', 'bags'],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.type !== 'MATCHED') return true;
-      const preference = data.deliveryPreferences[0];
-      if (!preference) return false;
-
-      const preferredDays = preference.availableDays;
-      const deliveryDate = new Date(data.delivery.date);
-      const deliveryDay = deliveryDate
-        .toLocaleDateString('en-US', { weekday: 'long' })
-        .toUpperCase();
-
-      return preferredDays.includes(deliveryDay as DeliveryDays);
-    },
-    {
-      path: ['delivery', 'date'],
-      error: 'Selected date does not match with the preferred days.',
     }
   );
 

@@ -29,7 +29,7 @@ export function TextInputField<
   ...props
 }: TextInputFieldProps<TFieldValues, TName>) {
   const {
-    field: { value, onBlur, onChange, disabled },
+    field: { ref, value, onBlur, onChange, disabled },
     fieldState: { error },
     formState: { isSubmitting },
   } = useController({ name, control });
@@ -45,6 +45,7 @@ export function TextInputField<
         <Skeleton variant="rounded" className="h-10" />
       ) : (
         <Input
+          ref={ref}
           className={containerClassName}
           style={containerStyle}
           size={size}

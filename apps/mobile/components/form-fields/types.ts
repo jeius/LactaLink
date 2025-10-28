@@ -5,7 +5,7 @@ export type BaseFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> &
-  Pick<FormControlProps, 'isDisabled' | 'isRequired'> & {
+  Pick<FormControlProps, 'isDisabled' | 'isRequired' | 'style' | 'className'> & {
     label?: string;
     error?: { message?: string } | null;
     helperText?: string;

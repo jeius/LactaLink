@@ -21,7 +21,7 @@ export function DateInputField<
   isDisabled,
   isLoading,
   datePickerProps,
-  contentPosition = 'first',
+  contentPosition = 'middle',
   ...props
 }: DateInputFieldProps<TFieldValues, TName>) {
   const {

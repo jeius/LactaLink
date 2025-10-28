@@ -1,5 +1,4 @@
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { createShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';
 import {
@@ -22,7 +21,6 @@ import { PressableProps } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedPressable } from '../animated/pressable';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import { FloatingActionButton } from '../buttons/FloatingActionButton';
 import FetchingSpinner from '../loaders/FetchingSpinner';
 import { NoData } from '../NoData';
@@ -90,7 +88,6 @@ export function SelectBottomSheet<
 }: SelectBottomSheetProps<T, TSlug, V>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { theme } = useTheme();
   const isFocused = useIsFocused();
 
   const defaultSelected = (allowMultipleSelection ? [] : null) as TValue<T, V>;
@@ -274,9 +271,7 @@ export function SelectBottomSheet<
       <BottomSheetModalPortal
         snapPoints={['60%']}
         enableDynamicSizing={false}
-        handleComponent={(props) => (
-          <BottomSheetDragIndicator {...props} className="py-4" style={createShadow(theme).xs} />
-        )}
+        handleComponent={(props) => <BottomSheetDragIndicator {...props} className="py-4" />}
         backdropComponent={BottomSheetBackdrop}
         enableContentPanningGesture={false}
         bottomInset={insets.bottom}

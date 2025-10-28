@@ -23,7 +23,7 @@ import { Button, ButtonText } from '../ui/button';
 import { BasicLocationPin } from '../ui/icon/custom';
 
 const cardStyle = tva({
-  base: '',
+  base: 'p-4',
   variants: {
     mapVisible: {
       true: 'p-0',
@@ -98,6 +98,15 @@ export function AddressCard({
 
   return (
     <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
+      {isDefault && (
+        <BasicBadge
+          size="md"
+          action="info"
+          text="Default"
+          className="absolute z-10"
+          style={{ top: 8, right: 8 }}
+        />
+      )}
       <VStack className="w-full">
         {showMap && (
           <ThumbnailMap
@@ -106,18 +115,19 @@ export function AddressCard({
             zoom={16}
             onPress={navigateToMap}
             className="h-40"
+            disabled={disableTapOnMap}
           />
         )}
         <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
-          <Icon as={BasicLocationPin} className="fill-primary-500" />
           <VStack className="flex-1 items-stretch">
             <HStack space="sm" className="w-full items-center justify-between">
               <Button
                 variant="link"
                 action="default"
                 className="h-auto w-auto p-0"
-                animateOnPress={false}
+                disablePressAnimation
                 onPress={navigateToMap}
+                hitSlop={8}
               >
                 <ButtonText
                   underlineOnPress
@@ -130,11 +140,11 @@ export function AddressCard({
               </Button>
               {action}
             </HStack>
-            <HStack space="sm" className="mt-1 w-full items-center">
+            <HStack space="xs" className="mt-1 w-full items-start">
+              <Icon as={BasicLocationPin} className="fill-primary-500" />
               <Text ellipsizeMode="tail" numberOfLines={2} size="sm" className="flex-1">
                 {displayName}
               </Text>
-              {isDefault && <BasicBadge size="sm" action="info" text="Default" />}
             </HStack>
           </VStack>
         </HStack>

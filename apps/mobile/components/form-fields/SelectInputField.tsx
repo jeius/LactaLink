@@ -49,7 +49,7 @@ export function SelectInputField<
   const screen = useWindowDimensions();
 
   const {
-    field: { value, onBlur, onChange, disabled },
+    field: { ref, value, onBlur, onChange, disabled },
     fieldState: { error },
     formState: { isSubmitting },
   } = useController({ name, control });
@@ -78,7 +78,7 @@ export function SelectInputField<
           onClose={handleBlur}
         >
           <SelectTrigger size={size}>
-            <SelectInput {...inputProps} size={size} value={itemMap.get(value) || ''} />
+            <SelectInput {...inputProps} ref={ref} value={itemMap.get(value) || ''} />
             <SelectIcon className="mr-3" as={ChevronDownIcon} />
           </SelectTrigger>
 

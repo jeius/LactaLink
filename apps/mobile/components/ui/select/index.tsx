@@ -49,7 +49,7 @@ const selectStyle = tva({
 });
 
 const selectTriggerStyle = tva({
-  base: 'border-background-300 data-[hover=true]:border-outline-400 data-[focus=true]:border-primary-700 data-[disabled=true]:data-[hover=true]:border-background-300 flex-row items-center overflow-hidden rounded-xl border data-[disabled=true]:opacity-40',
+  base: 'border-background-300 data-[hover=true]:border-outline-400 data-[focus=true]:border-primary-700 data-[disabled=true]:data-[hover=true]:border-background-300 bg-background-0 flex-row items-center overflow-hidden rounded-xl border data-[disabled=true]:opacity-40',
   variants: {
     size: {
       xl: 'h-12',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { BlurEvent } from 'react-native';
+import { BottomSheetTextInput } from '../ui/bottom-sheet';
 import { Skeleton } from '../ui/skeleton';
 import { Textarea, TextareaInput, TextareaInputProps, TextareaProps } from '../ui/textarea';
 import { FieldWrapper } from './FieldWrapper';
@@ -10,10 +11,11 @@ interface TextAreaFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
-  textareaProps?: Omit<TextareaInputProps, 'value' | 'onChangeText' | 'size'> &
+  textareaProps?: Omit<TextareaInputProps, 'value' | 'onChangeText' | 'size' | 'ref'> &
     Pick<TextareaProps, 'size'> & {
       containerStyle?: TextareaProps['style'];
       containerClassName?: TextareaProps['className'];
+      useBottomSheetInput?: boolean;
     };
 }
 
@@ -25,12 +27,18 @@ export function TextAreaField<
   name,
   isDisabled,
   isLoading,
-  textareaProps: { size = 'md', containerClassName, containerStyle, ...textareaProps } = {},
+  textareaProps: {
+    size = 'md',
+    containerClassName,
+    containerStyle,
+    useBottomSheetInput,
+    ...textareaProps
+  } = {},
   contentPosition = 'first',
   ...props
 }: TextAreaFieldProps<TFieldValues, TName>) {
   const {
-    field: { value, onBlur, onChange, disabled },
+    field: { ref, value, onBlur, onChange, disabled },
     fieldState: { error },
     formState: { isSubmitting },
   } = useController({ name, control });
@@ -51,19 +59,31 @@ export function TextAreaField<
         <Skeleton variant="rounded" className="h-28" />
       ) : (
         <Textarea
+          ref={ref}
           className={containerClassName}
           style={containerStyle}
           size={size}
           isDisabled={disabled}
           onBlur={handleBlur}
         >
-          <TextareaInput
-            {...textareaProps}
-            value={value || ''}
-            onChangeText={onChange}
-            style={[{ textAlignVertical: 'top' }, textareaProps.style]}
-            multiline
-          />
+          {useBottomSheetInput ? (
+            <BottomSheetTextInput
+              {...textareaProps}
+              value={value || ''}
+              onChangeText={onChange}
+              style={[{ textAlignVertical: 'top' }, textareaProps.style]}
+              className={textareaProps.className || 'h-24'}
+              multiline
+            />
+          ) : (
+            <TextareaInput
+              {...textareaProps}
+              value={value || ''}
+              onChangeText={onChange}
+              style={[{ textAlignVertical: 'top' }, textareaProps.style]}
+              multiline
+            />
+          )}
         </Textarea>
       )}
     </FieldWrapper>

@@ -56,7 +56,7 @@ const bottomSheetItemStyle = tva({
 });
 
 const bottomSheetTextInputStyle = tva({
-  base: 'text-typography-900 placeholder:text-typography-500 ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed h-full flex-1 px-3 py-0 font-sans',
+  base: 'text-typography-900 placeholder:text-typography-500 ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed h-full flex-1 p-2 text-justify align-text-top font-sans',
   variants: {
     variant: {
       underlined: 'web:outline-0 web:outline-none px-0',
@@ -205,7 +205,7 @@ export const BottomSheetPortal = ({
   const { theme } = useTheme();
   const [open, setOpen] = useState(visible);
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
-  const backgroundColor = getHexColor(theme, 'background', 50);
+  const backgroundColor = getHexColor(theme, 'background', 0);
 
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
@@ -258,7 +258,7 @@ export const BottomSheetModalPortal = ({
   const { bottomSheetModalRef, handleClose, visible, position } = useContext(BottomSheetContext);
   const { theme } = useTheme();
   const handleIndicatorColor = getHexColor(theme, 'primary', 500);
-  const backgroundColor = getHexColor(theme, 'background', 50);
+  const backgroundColor = getHexColor(theme, 'background', 0);
 
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
@@ -325,14 +325,14 @@ export const BottomSheetBackdrop = ({
   const { bottom } = useSafeAreaInsets();
   return (
     <GorhomBottomSheetBackdrop
+      {...props}
+      disappearsOnIndex={disappearsOnIndex}
+      appearsOnIndex={appearsOnIndex}
+      style={[{ marginBottom: bottom }, props.style]}
       // @ts-expect-error gluestack-issue
       className={bottomSheetBackdropStyle({
         className: className,
       })}
-      disappearsOnIndex={disappearsOnIndex}
-      appearsOnIndex={appearsOnIndex}
-      {...props}
-      style={[{ marginBottom: bottom }, props.style]}
     />
   );
 };

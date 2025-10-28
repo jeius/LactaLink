@@ -84,7 +84,7 @@ export function SelectListField<
         )}
         renderItem={({ item, index }) => {
           const isPlaceholder = isPlaceHolderData(item);
-          const isSelected = extractID(value) === item.id;
+          const isSelected = !isPlaceholder && extractID(value) === item.id;
           return (
             <AnimatedPressable
               onPress={!isPlaceholder ? () => onChange(isSelected ? null : item) : undefined}

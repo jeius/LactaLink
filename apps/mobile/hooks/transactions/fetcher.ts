@@ -9,6 +9,7 @@ import { Where } from '@lactalink/types/payload-types';
 import { createStorageKeyByUser, generatePlaceHolders } from '@lactalink/utilities';
 import { extractID } from '@lactalink/utilities/extractors';
 import { useEffect, useMemo } from 'react';
+import { useFetchById } from '../collections/useFetchById';
 import { depth, ListData, Overrides } from './utils';
 
 const { LAST_DATA } = MMKV_KEYS.TRANSACTIONS;
@@ -81,6 +82,10 @@ export function useFetchTransactions(overrides: Overrides = {}) {
   }, [lastDataKey, queryData]);
 
   return { ...aggregatedResults, queryKey, ...queryRes };
+}
+
+export function useTransactionQuery(id: string | undefined) {
+  return useFetchById(!!id, { collection: 'transactions', id: id || '', depth: depth });
 }
 
 // #region Helpers
