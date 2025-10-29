@@ -2,41 +2,29 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { useDeliveryMutations } from '@/hooks/mutations/useDeliveryMutations';
 import { useTransactionQuery } from '@/hooks/transactions/fetcher';
 import { getLottieAsset } from '@/lib/stores/assetsStore';
-import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { getLatestDeliveryProposal } from '@/lib/utils/getLatestDeliveryProposal';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS, TRANSACTION_STATUS } from '@lactalink/enums';
-import {
-  ConfirmedDelivery,
-  ProposedDelivery,
-  Transaction,
-  User,
-} from '@lactalink/types/payload-generated-types';
+import { ProposedDelivery, Transaction, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
+import { Link } from 'expo-router';
 import isEqual from 'lodash/isEqual';
 import LottieView, { AnimationObject } from 'lottie-react-native';
-import {
-  CalendarDaysIcon,
-  CheckIcon,
-  MapPinIcon,
-  MessageCircleIcon,
-  PlusIcon,
-  XIcon,
-} from 'lucide-react-native';
+import { CheckIcon, MessageCircleIcon, XIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { ProfileAvatar } from '../Avatar';
-import { Image } from '../Image';
+import { ActionModal } from '../modals';
 import { Box, BoxProps } from '../ui/box';
 import { Button, ButtonIcon, ButtonProps, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
-import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
-import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
+import { DeliveryCard } from './DeliveryCard';
 
 const MATCHED = TRANSACTION_STATUS.MATCHED.value;
+const PENDING = TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value;
+const SCHEDULED = TRANSACTION_STATUS.DELIVERY_SCHEDULED.value;
 const DELIVERY = DELIVERY_OPTIONS.DELIVERY.value;
 
 const ANIMATED_ICON: Record<Transaction['status'], { source: AnimationObject }> = {
@@ -87,30 +75,40 @@ export function TransactionDeliveryCard({ transactionID }: DeliveryCardProps) {
 
   const { latestProposal } = useMemo(() => extractData(transaction), [transaction]);
 
-  const hasConfirmedDelivery = confirmed && Object.values(confirmed).every(Boolean);
-
   return (
     <Card className="flex-col items-stretch gap-2 overflow-visible p-4">
-      <Text bold size="lg" className="text-primary-500">
+      <Text bold size="lg" className="text-primary-600 mb-2">
         {TRANSACTION_STATUS[status].label}...
       </Text>
 
-      <Divider />
-
-      {hasConfirmedDelivery ? (
-        <DeliveryInformation {...confirmed} />
-      ) : latestProposal ? (
-        <ProposalInformation {...latestProposal} />
+      {status === SCHEDULED && confirmed ? (
+        <>
+          <DeliveryCard data={confirmed} className="gap-1" size="lg" />
+          <MessageButton recipient={messageRecipient} className="mt-2" />
+        </>
+      ) : status === PENDING && latestProposal ? (
+        <>
+          <ProposalInformation {...latestProposal} />
+          {transaction && (
+            <ProposalCTA proposal={latestProposal} transaction={transaction} queryKey={queryKey} />
+          )}
+        </>
       ) : (
-        <Text>No delivery location and method proposed yet.</Text>
-      )}
-
-      {hasConfirmedDelivery ? (
-        <MessageButton recipient={messageRecipient} className="mt-2" />
-      ) : latestProposal && transaction ? (
-        <ProposalCTA proposal={latestProposal} transaction={transaction} queryKey={queryKey} />
-      ) : (
-        <MessageButton recipient={messageRecipient} />
+        <>
+          <Text>No delivery location and method proposed yet.</Text>
+          <HStack space="sm">
+            <Link
+              asChild
+              push
+              href={{ pathname: '/delivery-proposal', params: { id: transactionID } }}
+            >
+              <Button size="sm" className="flex-1">
+                <ButtonText numberOfLines={1}>Propose</ButtonText>
+              </Button>
+            </Link>
+            <MessageButton recipient={messageRecipient} />
+          </HStack>
+        </>
       )}
 
       <StatusBadge
@@ -140,67 +138,13 @@ function StatusBadge({
   );
 }
 
-function DeliveryInformation({
-  address,
-  datetime,
-  mode,
-}: Pick<ConfirmedDelivery, 'address' | 'datetime' | 'mode'>) {
-  const deliveryModeLabel = DELIVERY_OPTIONS[mode].label;
-  const deliveryModeIcon = getDeliveryPreferenceIcon(mode);
-  const deliveryDateLabel = `${formatDate(datetime)}, ${formatLocaleTime(datetime)}`;
-  const deliveryAddress = extractCollection(address)?.displayName || 'Address not available';
-
-  return (
-    <VStack space="sm" className="items-stretch">
-      <HStack space="sm" className="items-center">
-        <Box className="border-primary-500 rounded-full border p-1">
-          <Image source={deliveryModeIcon} style={{ width: 16, height: 16 }} />
-        </Box>
-        <Text size="sm" className="font-JakartaMedium">
-          {deliveryModeLabel}
-        </Text>
-      </HStack>
-
-      <HStack space="xs" className="items-start">
-        <Icon
-          size="sm"
-          as={CalendarDaysIcon}
-          className="fill-primary-50 text-primary-500"
-          style={{ marginTop: 2 }}
-        />
-        <Text
-          size="sm"
-          ellipsizeMode="tail"
-          numberOfLines={2}
-          className="font-JakartaMedium flex-1"
-        >
-          {deliveryDateLabel}
-        </Text>
-      </HStack>
-
-      <HStack space="xs" className="items-start">
-        <Icon
-          size="sm"
-          as={MapPinIcon}
-          className="fill-primary-50 text-primary-500"
-          style={{ marginTop: 2 }}
-        />
-        <VStack className="flex-1">
-          <Text size="sm" ellipsizeMode="tail" numberOfLines={2} className="font-JakartaMedium">
-            {deliveryAddress}
-          </Text>
-        </VStack>
-      </HStack>
-    </VStack>
-  );
-}
-
 function ProposalInformation({
   id,
   address,
   datetime,
   mode,
   agreements: { recipient, sender } = {},
+  instructions,
 }: NonNullable<ProposedDelivery>[number]) {
   const { data: meUser } = useMeUser();
   const isUserSender = isEqual(sender?.agreedBy, meUser?.profile);
@@ -216,7 +160,17 @@ function ProposalInformation({
 
   return (
     <>
-      <DeliveryInformation address={address} datetime={datetime} mode={mode} />
+      {/* <DeliveryInformation address={address} datetime={datetime} mode={mode} /> */}
+      <DeliveryCard
+        data={{
+          address: address,
+          datetime: datetime,
+          mode: mode,
+          instructions: instructions,
+        }}
+        className="gap-1"
+        size="lg"
+      />
 
       <HStack space="md" className="mt-2 items-end justify-between">
         <VStack space="xs">
@@ -281,16 +235,35 @@ function ProposalCTA({ proposal, transaction, queryKey }: ProposalCTAProps) {
 
   return (
     <HStack space="md" className="mt-4 items-stretch">
-      <Button isDisabled={!!disableAgreeButton} action="positive" onPress={handleAgree}>
-        <ButtonIcon as={CheckIcon} />
-      </Button>
-      <Button variant="outline" action="primary" className="flex-1" disablePressAnimation>
-        <ButtonIcon as={PlusIcon} />
-        <ButtonText numberOfLines={1}>Propose</ButtonText>
-      </Button>
-      <Button isDisabled={!!disableRejectButton} action="negative" onPress={handleReject}>
-        <ButtonIcon as={XIcon} />
-      </Button>
+      <ActionModal
+        variant="outline"
+        action="positive"
+        title="Confirm Agreement"
+        description="Are you sure you want to agree to this delivery option?"
+        triggerIcon={CheckIcon}
+        isDisabled={!!disableAgreeButton}
+        iconOnly
+        confirmLabel="Agree"
+        onConfirm={handleAgree}
+      />
+
+      <Link asChild push href={{ pathname: '/delivery-proposal', params: { id: transaction.id } }}>
+        <Button className="flex-1" disablePressAnimation>
+          <ButtonText numberOfLines={1}>Propose</ButtonText>
+        </Button>
+      </Link>
+
+      <ActionModal
+        variant="outline"
+        action="negative"
+        title="Confirm Disagreement"
+        description="Are you sure you want to disagree to this delivery option?"
+        triggerIcon={XIcon}
+        isDisabled={!!disableRejectButton}
+        iconOnly
+        confirmLabel="Disagree"
+        onConfirm={handleReject}
+      />
     </HStack>
   );
 }

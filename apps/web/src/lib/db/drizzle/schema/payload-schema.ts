@@ -1756,6 +1756,7 @@ export const transactions_delivery_proposed = pgTable(
     address: uuid('address_id').references(() => addresses.id, {
       onDelete: 'set null',
     }),
+    instructions: varchar('instructions'),
     proposedAt: timestamp('proposed_at', { mode: 'string', withTimezone: true, precision: 3 }),
     agreements_sender_agreed: boolean('agreements_sender_agreed').default(false),
     agreements_sender_agreedAt: timestamp('agreements_sender_agreed_at', {
@@ -1841,12 +1842,12 @@ export const transactions = pgTable(
         onDelete: 'set null',
       }
     ),
+    delivery_confirmed_instructions: varchar('delivery_confirmed_instructions'),
     delivery_confirmed_confirmedAt: timestamp('delivery_confirmed_confirmed_at', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }),
-    delivery_instructions: varchar('delivery_instructions'),
     tracking_deliveredAt: timestamp('tracking_delivered_at', {
       mode: 'string',
       withTimezone: true,

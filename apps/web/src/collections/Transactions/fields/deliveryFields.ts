@@ -8,6 +8,7 @@ export const proposedField: Field = {
   interfaceName: 'ProposedDelivery',
   labels: { singular: 'Proposed Delivery', plural: 'Proposed Deliveries' },
   type: 'array',
+  required: false,
   admin: {
     condition: (data: Partial<Transaction>) =>
       data.transactionType === TRANSACTION_TYPE.P2P.value &&
@@ -26,6 +27,12 @@ export const proposedField: Field = {
       label: 'Proposed Date and Time',
       type: 'date',
       required: true,
+      admin: {
+        date: {
+          displayFormat: 'd MMM yyy HH:mm a',
+          pickerAppearance: 'dayAndTime',
+        },
+      },
     },
     {
       name: 'address',
@@ -33,6 +40,12 @@ export const proposedField: Field = {
       type: 'relationship',
       relationTo: 'addresses',
       required: true,
+    },
+    {
+      name: 'instructions',
+      label: 'Delivery Instructions',
+      type: 'textarea',
+      required: false,
     },
     {
       name: 'proposedBy',
@@ -147,6 +160,11 @@ export const confirmedField: Field = {
   label: 'Confirmed Delivery',
   interfaceName: 'ConfirmedDelivery',
   type: 'group',
+  required: false,
+  admin: {
+    condition: (data: Partial<Transaction>) =>
+      data.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value,
+  },
   fields: [
     {
       name: 'mode',
@@ -160,6 +178,12 @@ export const confirmedField: Field = {
       label: 'Confirmed Date and Time',
       type: 'date',
       required: true,
+      admin: {
+        date: {
+          displayFormat: 'd MMM yyy HH:mm a',
+          pickerAppearance: 'dayAndTime',
+        },
+      },
     },
     {
       name: 'address',
@@ -169,6 +193,12 @@ export const confirmedField: Field = {
       required: true,
     },
     {
+      name: 'instructions',
+      label: 'Delivery Instructions',
+      type: 'textarea',
+      required: false,
+    },
+    {
       name: 'confirmedAt',
       label: 'Confirmed At',
       type: 'date',
@@ -176,7 +206,4 @@ export const confirmedField: Field = {
       admin: { readOnly: true },
     },
   ],
-  admin: {
-    condition: () => true,
-  },
 };

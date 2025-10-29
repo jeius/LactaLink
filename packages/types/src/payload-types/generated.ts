@@ -54,6 +54,7 @@ export type ProposedDelivery =
       mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
       datetime: string;
       address: string | Address;
+      instructions?: string | null;
       proposedBy:
         | {
             relationTo: 'individuals';
@@ -1156,7 +1157,6 @@ export interface Transaction {
 export interface Delivery {
   proposed?: ProposedDelivery;
   confirmed?: ConfirmedDelivery;
-  instructions?: string | null;
 }
 /**
  * Tracks delivery proposal agreement status from both parties
@@ -1212,6 +1212,7 @@ export interface ConfirmedDelivery {
   mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
   datetime: string;
   address: string | Address;
+  instructions?: string | null;
   confirmedAt: string;
 }
 /**
@@ -2797,7 +2798,6 @@ export interface TransactionsSelect<T extends boolean = true> {
 export interface DeliverySelect<T extends boolean = true> {
   proposed?: T | ProposedDeliverySelect<T>;
   confirmed?: T | ConfirmedDeliverySelect<T>;
-  instructions?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2807,6 +2807,7 @@ export interface ProposedDeliverySelect<T extends boolean = true> {
   mode?: T;
   datetime?: T;
   address?: T;
+  instructions?: T;
   proposedBy?: T;
   proposedAt?: T;
   agreements?: T | DeliveryAgreementsSelect<T>;
@@ -2841,6 +2842,7 @@ export interface ConfirmedDeliverySelect<T extends boolean = true> {
   mode?: T;
   datetime?: T;
   address?: T;
+  instructions?: T;
   confirmedAt?: T;
 }
 /**

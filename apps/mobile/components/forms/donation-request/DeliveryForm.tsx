@@ -43,7 +43,7 @@ const dpCardStyle = tva({
 
 export interface DeliveryFormProps extends VStackProps {
   values?: DeliverySchema;
-  onChange?: (data: DeliveryCreateSchema) => void;
+  onChange?: (data: DeliveryCreateSchema) => void | Promise<void>;
   deliveryPreferences?: DeliveryPreference[] | null;
   isLoading?: boolean;
   isDisabled?: boolean;
@@ -101,11 +101,11 @@ export function DeliveryForm({
     }
   }, [getValues, reset, selectedDP]);
 
-  function onSubmit(data: DeliverySchema) {
+  async function onSubmit(data: DeliverySchema) {
     if (data.deliveryPreference) {
-      onChange?.({ ...data, type: 'PROPOSED' });
+      await onChange?.({ ...data, type: 'PROPOSED' });
     } else {
-      onChange?.({ ...data, type: 'CONFIRMED' });
+      await onChange?.({ ...data, type: 'CONFIRMED' });
     }
   }
 

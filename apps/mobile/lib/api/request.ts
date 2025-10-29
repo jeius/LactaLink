@@ -4,6 +4,7 @@ import { getApiClient, getTransactionService } from '@lactalink/api';
 import { RequestCreateSchema } from '@lactalink/form-schemas';
 import { Request, Transaction } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { mergeDateTime } from '../utils/mergeDateTime';
 
 /**
  * Type for resources that need cleanup if an error occurs
@@ -47,9 +48,7 @@ async function createMatchedTransaction(
 
   const transactionService = getTransactionService();
 
-  const date = new Date(data.delivery.date);
-  const time = new Date(data.delivery.time);
-  date.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), 0);
+  const date = mergeDateTime(data.delivery.date, data.delivery.time);
 
   const matchedDonation = extractID(data.matchedDonation);
 
@@ -64,6 +63,7 @@ async function createMatchedTransaction(
             address: extractID(data.delivery.address),
             mode: data.delivery.mode,
             datetime: date.toISOString(),
+            instructions: data.delivery.note,
           }
         : undefined,
   });
@@ -75,6 +75,7 @@ async function createMatchedTransaction(
       mode: data.delivery.mode,
       datetime: date.toISOString(),
       proposedBy: { relationTo: 'individuals', value: extractID(data.requester) },
+      instructions: data.delivery.note,
     });
   }
 

@@ -1,6 +1,5 @@
 import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
-  Address,
   ConfirmedDelivery,
   DeliveryAgreements,
   Donation,
@@ -32,10 +31,11 @@ type BaseTransactionParams = {
   request: string | Request;
 };
 
-type OrganizationTransactionParams = {
+type OrganizationTransactionParams = Pick<
+  DeliveryDetailsParams,
+  'datetime' | 'address' | 'instructions'
+> & {
   organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
-  address: string | Address;
-  deliveryDate: string;
 };
 
 /**

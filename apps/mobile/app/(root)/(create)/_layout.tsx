@@ -16,6 +16,15 @@ export default function CreateLayout() {
     >
       <Stack.Screen name="requests/create" options={{ title: 'New Request' }} />
       <Stack.Screen name="donations/create" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="delivery-proposal"
+        options={{
+          headerShown: false,
+          presentation: 'pageSheet',
+          contentStyle: { backgroundColor: 'transparent' },
+          animation: 'slide_from_bottom',
+        }}
+      />
     </Stack>
   );
 }

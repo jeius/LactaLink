@@ -166,15 +166,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
               name: 'delivery',
               interfaceName: 'Delivery',
               type: 'group',
-              fields: [
-                proposedField,
-                confirmedField,
-                {
-                  name: 'instructions',
-                  label: 'Delivery Instructions',
-                  type: 'textarea',
-                },
-              ],
+              fields: [proposedField, confirmedField],
             },
           ],
         },

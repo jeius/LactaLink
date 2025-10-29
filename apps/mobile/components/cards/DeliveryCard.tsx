@@ -2,7 +2,7 @@ import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DeliverySchema } from '@lactalink/form-schemas';
-import { ConfirmedDelivery, Delivery } from '@lactalink/types/payload-generated-types';
+import { ConfirmedDelivery } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { CalendarDaysIcon, ClockIcon, MapPinIcon } from 'lucide-react-native';
@@ -17,11 +17,11 @@ import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 
 const cardStyle = tva({
-  base: 'flex-col gap-2 p-4',
+  base: 'flex-col items-stretch gap-2 p-4',
 });
 
 interface DeliveryCardProps extends CardProps {
-  data: DeliverySchema | (ConfirmedDelivery & Pick<Delivery, 'instructions'>) | undefined;
+  data: DeliverySchema | Omit<ConfirmedDelivery, 'confirmedAt'> | undefined;
   isLoading?: boolean;
 }
 
@@ -53,6 +53,7 @@ export function DeliveryCard({
   const address = data ? extractCollection(data.address)?.displayName || 'Unknown Address' : '-';
   const instructions = data && (isDeliverySchema(data) ? data.note : data.instructions);
 
+  console.log('Instructions:', instructions);
   return (
     <Card {...props} variant={variant} className={cardStyle({ className })}>
       <HStack space="sm" className="items-center">
@@ -91,7 +92,7 @@ export function DeliveryCard({
       {instructions && (
         <>
           <Divider />
-          <Text size="sm" className="flex-1" numberOfLines={3}>
+          <Text size="sm" className="shrink" numberOfLines={2}>
             {instructions}
           </Text>
         </>
