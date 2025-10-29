@@ -176,7 +176,7 @@ export function DeliveryForm({
 
       <AddressesField
         control={control}
-        isDisabled={!!address || isDisabled || isSubmitting}
+        isDisabled={isDisabled || isSubmitting}
         isLoading={isLoading}
         addresses={address ? [address] : undefined}
       />
@@ -270,11 +270,12 @@ function AddressesField({
               onPress={handleSelect}
               disabled={isDisabled}
               className="overflow-hidden rounded-2xl"
+              disableRipple
             >
               <AddressCard
                 data={item}
-                // showMap
-                // disableTapOnMap
+                showMap
+                disableTapOnMap
                 isLoading={isLoading}
                 isDisabled={isDisabled}
                 className={cardStyle({ isSelected })}

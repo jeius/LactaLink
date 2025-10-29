@@ -1,9 +1,9 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
-import { randomUUID } from 'expo-crypto';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
-import MapView, { MapMarker } from 'react-native-maps';
+import { GoogleMapsView, RNMarker } from 'react-native-google-maps-plus';
+import { callback } from 'react-native-nitro-modules';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 import { Pressable } from '../ui/pressable';
@@ -32,18 +32,16 @@ export function ThumbnailMap({
   pitch = 0,
   heading = 0,
 }: ThumbnailMapProps) {
-  const [isMapReady, setIsMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const { theme } = useTheme();
 
-  const mapRef = useRef<MapView | null>(null);
-
-  useEffect(() => {
-    if (isMapReady && mapLoaded) {
-      mapRef.current?.setCamera({ zoom, center, heading, pitch });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMapReady, mapLoaded]);
+  const locationMarker: RNMarker = useMemo(() => {
+    return {
+      id: `marker-${center.latitude}-${center.longitude}`,
+      zIndex: 1000,
+      coordinate: center,
+    };
+  }, [center]);
 
   return (
     <Box className={baseStyle({ className })}>
@@ -51,27 +49,21 @@ export function ThumbnailMap({
         <Skeleton variant="sharp" className="h-full w-full" />
       ) : (
         <>
-          {(!isMapReady || !mapLoaded) && (
+          {!mapLoaded && (
             <Box className="bg-background-200 absolute inset-0 z-50">
               <Spinner size={'small'} className="m-auto" />
             </Box>
           )}
 
-          <MapView
-            id={`thumbnail-map-${randomUUID()}`}
-            ref={mapRef}
-            cacheEnabled
-            liteMode
+          <GoogleMapsView
+            initialProps={{ camera: { zoom, center, bearing: heading, tilt: pitch } }}
             style={StyleSheet.absoluteFill}
-            pointerEvents="none"
-            toolbarEnabled={false}
+            myLocationEnabled={false}
             userInterfaceStyle={theme}
-            onMapLoaded={() => setMapLoaded(true)}
-            onMapReady={() => setIsMapReady(true)}
-            camera={{ zoom, center, heading, pitch }}
-          >
-            <MapMarker coordinate={center} pointerEvents="none" />
-          </MapView>
+            markers={[locationMarker]}
+            pointerEvents="none"
+            onMapReady={callback(() => setMapLoaded(true))}
+          />
 
           {onPress && <Pressable disabled={disabled} className="grow" onPress={onPress} />}
         </>
