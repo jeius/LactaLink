@@ -1,7 +1,8 @@
+import { AnimatedMarker, useAnimatedRegion } from '@/components/animated/marker';
 import { Box } from '@/components/ui/box';
 import { UserLocationIcon } from '@/components/ui/icon/custom';
 import { useLocationUpdates } from '@/hooks/location/useLocation';
-import { useMagnetometer } from '@/hooks/location/useMagnetometer';
+import { useAnimatedHeading } from '@/hooks/location/useMagnetometer';
 
 import { getPrimaryColor } from '@/lib/colors';
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
@@ -9,27 +10,16 @@ import { useMapStore } from '@/lib/stores/mapStore';
 import { LocationObjectCoords } from 'expo-location';
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { LatLng, MapMarker, MarkerAnimated } from 'react-native-maps';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
-
-function useAnimatedRegion({ latitude, longitude }: LatLng) {
-  const lat = useSharedValue(latitude);
-  const lng = useSharedValue(longitude);
-
-  useEffect(() => {
-    lat.value = withTiming(latitude, { duration: 300 });
-    lng.value = withTiming(longitude, { duration: 300 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latitude, longitude]);
-
-  return { latitude: lat.value, longitude: lng.value };
-}
+import { LatLng, MapMarker } from 'react-native-maps';
+import { useAnimatedReaction, type SharedValue } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 export interface UserMarkerRef {
   getHeading: () => number;
@@ -42,15 +32,27 @@ export interface UserMarkerRef {
 interface UserMarkerProps {
   hideHeading?: boolean;
   onChangePosition?: (position: LocationObjectCoords) => void;
+  mapHeading?: SharedValue<number>;
 }
 
 export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
-  ({ hideHeading = false, onChangePosition }: UserMarkerProps, ref) => {
-    const { heading, animatedHeading, filteredHeading } = useMagnetometer({
+  ({ hideHeading = false, onChangePosition, mapHeading }: UserMarkerProps, ref) => {
+    const animatedHeading = useAnimatedHeading({
       updateInterval: 'fast',
+      offset: mapHeading,
     });
 
     const { location } = useLocationUpdates();
+    const latlng = useMemo<LatLng>(
+      () =>
+        location?.coords
+          ? {
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }
+          : PHILIPPINES_COORDINATES,
+      [location?.coords]
+    );
 
     const [showHeading, setShowHeading] = useState(!hideHeading);
 
@@ -60,25 +62,33 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     const followUser = useMapStore((s) => s.followUser);
     const setFollowUser = useMapStore((s) => s.setFollowUser);
 
-    const latlng = useMemo<LatLng>(
-      () =>
-        location?.coords
-          ? {
-              latitude: location.coords.latitude || 0,
-              longitude: location.coords.longitude || 0,
-            }
-          : PHILIPPINES_COORDINATES,
-      [location?.coords]
+    const { animate, props: animatedProps } = useAnimatedRegion(latlng);
+
+    // Callback to update camera heading
+    const updateCameraHeading = useCallback(
+      (heading: number) => {
+        if (followUser && mapRef) {
+          mapRef.setCamera({ center: latlng, heading: heading - 90 });
+        }
+      },
+      [followUser, mapRef, latlng]
     );
 
-    const animatedRegion = useAnimatedRegion(latlng);
+    // Subscribe to animatedHeading changes
+    useAnimatedReaction(
+      () => animatedHeading.value,
+      (currentHeading, previousHeading) => {
+        if (currentHeading !== previousHeading) {
+          scheduleOnRN(updateCameraHeading, currentHeading);
+        }
+      },
+      [followUser, latlng]
+    );
 
     useEffect(() => {
-      if (followUser) {
-        const heading = filteredHeading - 90;
-        mapRef?.setCamera({ center: latlng, heading, altitude: location?.coords.altitude || 0 });
-      }
-    }, [filteredHeading, followUser, latlng, location?.coords.altitude, mapRef]);
+      animate({ ...latlng });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [latlng]);
 
     useEffect(() => {
       setShowHeading(!hideHeading);
@@ -97,7 +107,7 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     }, [location?.coords]);
 
     useImperativeHandle(ref, () => ({
-      getHeading: () => heading,
+      getHeading: () => animatedHeading.value,
       getPosition: () => location?.coords,
       moveToCurrentPosition: async () => {
         const camera = await mapRef?.getCamera();
@@ -111,7 +121,11 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
       followUser: async (pitch = 65) => {
         const camera = await mapRef?.getCamera();
         mapRef?.animateCamera(
-          { pitch: pitch, zoom: Math.max(camera?.zoom || 18, 18), heading: heading - 90 },
+          {
+            pitch: pitch,
+            zoom: Math.max(camera?.zoom || 18, 18),
+            heading: animatedHeading.value - 90,
+          },
           { duration: 500 }
         );
         setTimeout(() => {
@@ -135,10 +149,10 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
     }
 
     return (
-      <MarkerAnimated
+      <AnimatedMarker
         ref={markerRef}
-        coordinate={animatedRegion}
-        rotation={animatedHeading.value}
+        animatedProps={{ ...animatedProps }}
+        rotation={animatedHeading as SharedValue<number | undefined>}
         identifier="user-marker-current-location"
         anchor={{ x: 0.5, y: 0.5 }}
         flat={true}
@@ -158,7 +172,7 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
             onLayout={redraw}
           />
         )}
-      </MarkerAnimated>
+      </AnimatedMarker>
     );
   }
 );

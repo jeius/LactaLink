@@ -14,7 +14,9 @@ import Animated, {
 
 type Region = MarkOptional<MapRegion, 'latitudeDelta' | 'longitudeDelta'>;
 
-interface AnimateOptions extends Region {
+type MarkerProps = MarkOptional<MapMarkerProps, 'coordinate'>;
+
+interface AnimateOptions {
   duration?: number;
   easing?: EasingFunction | EasingFunctionFactory;
 }
@@ -35,7 +37,7 @@ export const useAnimatedRegion = (location: Partial<Region> = {}) => {
   }));
 
   const animate = useCallback(
-    (options: AnimateOptions) => {
+    (options: AnimateOptions & Region) => {
       const { duration = 500, easing = Easing.inOut(Easing.ease) } = options;
 
       const animateValue = (value: SharedValue<number | undefined>, toValue?: number) => {
@@ -62,8 +64,6 @@ export const useAnimatedRegion = (location: Partial<Region> = {}) => {
     animate,
   };
 };
-
-type MarkerProps = MarkOptional<MapMarkerProps, 'coordinate'>;
 
 export const AnimatedMarker = Animated.createAnimatedComponent(
   MapMarker as React.ComponentClass<MarkerProps>

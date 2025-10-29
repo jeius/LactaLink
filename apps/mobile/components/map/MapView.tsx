@@ -12,6 +12,7 @@ import { randomUUID } from 'expo-crypto';
 import { LocationObjectCoords } from 'expo-location';
 import { Redirect, useFocusEffect } from 'expo-router';
 import { Insets, StyleSheet } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import SafeArea from '../SafeArea';
 import { Box } from '../ui/box';
@@ -40,6 +41,7 @@ export function MapView({
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const cameraHeading = useSharedValue(0);
 
   const map = useMapStore((s) => s.map);
   const setFollowUser = useMapStore((s) => s.setFollowUser);
@@ -101,6 +103,10 @@ export function MapView({
   function handleRegionChange(region: Region, details: Details) {
     props.onRegionChange?.(region, details);
 
+    map?.getCamera().then((cam) => {
+      cameraHeading.value = cam.heading;
+    });
+
     if (details?.isGesture) {
       setFollowUser(false);
     }
@@ -158,6 +164,7 @@ export function MapView({
             ref={setUserMarkerRef}
             hideHeading={hideUserLocationHeading}
             onChangePosition={onUserMarkerPositionChange}
+            mapHeading={cameraHeading}
           />
         )}
       </RNMapView.Animated>
