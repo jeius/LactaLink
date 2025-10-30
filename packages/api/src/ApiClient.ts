@@ -258,6 +258,9 @@ export class ApiClient implements IApiClient {
     const result = await this._makeApiRequest<UpdateManyResult<TSlug, TSelect>>(
       endpoint,
       'PATCH',
+      // @ts-expect-error Expected error, since PayloadKv is a new feature. I haven't configured
+      // its typing yet. But I am about to implement a payload api sdk soon so this api client will
+      // undergo a major overhaul.
       data
     );
     return result.docs;
@@ -274,6 +277,9 @@ export class ApiClient implements IApiClient {
     const result = await this._makeApiRequest<UpdateByIDResult<TSlug, TSelect>>(
       endpoint,
       'PATCH',
+      // @ts-expect-error Expected error, since PayloadKv is a new feature. I haven't configured
+      // its typing yet. But I am about to implement a payload api sdk soon so this api client will
+      // undergo a major overhaul.
       data
     );
     return result.doc;

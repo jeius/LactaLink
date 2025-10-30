@@ -58,7 +58,6 @@ export default buildConfig({
     autoGenerate: true,
     declare: false,
   },
-  // @ts-expect-error PayloadLogger type is not up to date
   logger: logger,
   editor: lexicalEditor({
     features: ({ rootFeatures }) => {

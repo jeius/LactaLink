@@ -102,7 +102,7 @@ export class NotificationService {
 
       return notifications;
     } catch (error) {
-      this.payload.logger.error('Error auto creating notifications:', error);
+      this.payload.logger.error(error, 'Error auto creating notifications:');
       throw error;
     }
   }

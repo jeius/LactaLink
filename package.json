@@ -32,16 +32,16 @@
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.13",
+    "prettier-plugin-tailwindcss": "^0.7.1",
     "shx": "^0.4.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "turbo": "^2.5.4",
-    "typescript": "^5.9.2"
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@9.15.7",
+  "packageManager": "pnpm@10.5.2",
   "engines": {
-    "node": "^22.14.0",
-    "pnpm": "^9.15.7"
+    "node": "^22.21.0",
+    "pnpm": "^10.5.2"
   }
 }
