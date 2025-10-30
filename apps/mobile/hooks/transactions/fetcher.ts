@@ -65,14 +65,19 @@ export function useFetchTransactions(overrides: Overrides = {}) {
     queryData?.pages.forEach((page) => {
       page.docs.forEach((doc) => {
         data.push(doc);
-        if (!doc.seen) {
+
+        const meUserProfileID = extractID(meUser.data?.profile?.value);
+        const seenStatusForMe = doc.tracking?.seenStatus?.find(
+          (status) => extractID(status.seenBy?.value) === meUserProfileID
+        );
+        if (!seenStatusForMe?.seen) {
           unSeenData.push(doc);
         }
       });
     });
 
     return { data, unSeenData };
-  }, [queryRes.isLoading, queryData?.pages]);
+  }, [queryRes.isLoading, queryData?.pages, meUser.data?.profile]);
 
   // Persist last fetched data to storage
   useEffect(() => {

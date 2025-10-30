@@ -1054,14 +1054,6 @@ export interface Transaction {
    */
   transactionNumber?: string | null;
   createdBy?: (string | null) | User;
-  /**
-   * Indicates whether the collection has been seen by the user
-   */
-  seen?: boolean | null;
-  /**
-   * The timestamp when the collection was last seen by the user
-   */
-  seenAt?: string | null;
   donation?: (string | null) | Donation;
   request?: (string | null) | Request;
   sender:
@@ -1114,6 +1106,26 @@ export interface Transaction {
   matchedBags: (string | MilkBag)[];
   delivery?: Delivery;
   tracking?: {
+    seenStatus?:
+      | {
+          seen?: boolean | null;
+          seenAt?: string | null;
+          seenBy?:
+            | ({
+                relationTo: 'individuals';
+                value: string | Individual;
+              } | null)
+            | ({
+                relationTo: 'hospitals';
+                value: string | Hospital;
+              } | null)
+            | ({
+                relationTo: 'milkBanks';
+                value: string | MilkBank;
+              } | null);
+          id?: string | null;
+        }[]
+      | null;
     deliveredAt?: string | null;
     completedAt?: string | null;
     failedAt?: string | null;
@@ -2759,8 +2771,6 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TransactionsSelect<T extends boolean = true> {
   transactionNumber?: T;
   createdBy?: T;
-  seen?: T;
-  seenAt?: T;
   donation?: T;
   request?: T;
   sender?: T;
@@ -2773,6 +2783,14 @@ export interface TransactionsSelect<T extends boolean = true> {
   tracking?:
     | T
     | {
+        seenStatus?:
+          | T
+          | {
+              seen?: T;
+              seenAt?: T;
+              seenBy?: T;
+              id?: T;
+            };
         deliveredAt?: T;
         completedAt?: T;
         failedAt?: T;

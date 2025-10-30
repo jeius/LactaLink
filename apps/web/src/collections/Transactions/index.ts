@@ -1,7 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
-import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
@@ -12,6 +10,7 @@ import { filterMilkBagsOptions } from './filterOptions';
 import { calculateMatchedVolume } from './hooks/caculateVolume';
 import { generateTransactionNumber } from './hooks/generateTransactionNumber';
 import { processDeliveryAgreements } from './hooks/processDeliveryAgreements';
+import { initializeSeenTracking, updateSeenTracking } from './hooks/seenTracking';
 import { updateRelatedCollectionsOnCreate } from './hooks/updateRelatedCollectionsOnCreate';
 
 export const Transactions: CollectionConfig<'transactions'> = {
@@ -33,8 +32,9 @@ export const Transactions: CollectionConfig<'transactions'> = {
       generateCreatedBy,
       generateTransactionNumber,
       processDeliveryAgreements,
-      updateSeenTracking,
       calculateMatchedVolume,
+      initializeSeenTracking,
+      updateSeenTracking,
     ],
     afterChange: [updateRelatedCollectionsOnCreate],
   },
@@ -51,7 +51,6 @@ export const Transactions: CollectionConfig<'transactions'> = {
     },
 
     createdByField,
-    ...seenTrackingFields,
 
     {
       type: 'row',

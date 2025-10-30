@@ -1,14 +1,13 @@
-import { extractID } from '@lactalink/utilities/extractors';
-import { useMarkSeenMutation } from '../collections/useMarkSeenMutation';
+import { useMarkSeenTransactionMutation } from '../mutations/useMarkSeenTransactionMutation';
 import { useFetchTransactions } from './fetcher';
 
 export function useTransactions() {
   const { queryKey, data, unSeenData, ...queryMethods } = useFetchTransactions();
 
-  const markAsSeenMutation = useMarkSeenMutation('transactions', queryKey);
+  const markAsSeenMutation = useMarkSeenTransactionMutation(queryKey);
 
   function markAsSeen() {
-    markAsSeenMutation.mutateAsync(extractID(unSeenData));
+    markAsSeenMutation.mutateAsync(unSeenData);
   }
 
   return { transactions: data, markAsSeen, unSeenCount: unSeenData.length, queryMethods };

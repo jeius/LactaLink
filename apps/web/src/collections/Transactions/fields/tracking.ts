@@ -1,5 +1,6 @@
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { Field } from 'payload';
 
 const deliveredStatus = TRANSACTION_STATUS.DELIVERED.value;
@@ -12,6 +13,33 @@ export const trackingField: Field = {
   label: 'Tracking & Status',
   type: 'group',
   fields: [
+    {
+      name: 'seenStatus',
+      label: 'Seen Status',
+      type: 'array',
+      fields: [
+        {
+          name: 'seen',
+          label: 'Seen',
+          type: 'checkbox',
+        },
+        {
+          name: 'seenAt',
+          label: 'Seen At',
+          type: 'date',
+        },
+        {
+          name: 'seenBy',
+          label: 'Seen By',
+          type: 'relationship',
+          relationTo: ['individuals', 'hospitals', 'milkBanks'],
+          filterOptions: ({ data }: { data: Partial<Transaction> }) => {
+            if (!data.sender || !data.recipient) return true;
+            return { id: { in: [extractID(data.sender.value), extractID(data.recipient.value)] } };
+          },
+        },
+      ],
+    },
     {
       name: 'deliveredAt',
       label: 'Delivered At',

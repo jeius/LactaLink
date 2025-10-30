@@ -346,6 +346,34 @@ export class TransactionService implements ITransactionService {
     });
   }
 
+  async startPreparing(id: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.apiClient.findByID({
+      collection: 'transactions',
+      id: id,
+      depth: 0,
+      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
+    });
+
+    // Can only start transit if in DELIVERY_SCHEDULED status and mode is DELIVERY
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
+      throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
+    }
+
+    const preparingStatus = TRANSACTION_STATUS.MATCHED.value;
+
+    const updatedStatusHistory = this.updateStatusHistory(transaction, preparingStatus, markedBy);
+
+    // Update transaction status
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: preparingStatus,
+        tracking: { statusHistory: updatedStatusHistory },
+      },
+    });
+  }
+
   async startTransit(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
@@ -357,8 +385,8 @@ export class TransactionService implements ITransactionService {
       select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
     });
 
-    // Can only start transit if in DELIVERY_SCHEDULED status and mode is DELIVERY
-    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
+    // Can only start transit if in MATCHED status and mode is DELIVERY
+    if (transaction.status !== TRANSACTION_STATUS.MATCHED.value) {
       throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
     }
 

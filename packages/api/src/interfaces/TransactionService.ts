@@ -126,13 +126,13 @@ export interface ITransactionService {
    * Rejects proposed delivery proposal.
    * @param transactionID - ID of the transaction
    * @param proposalID - ID of the proposal
-   * @param acceptedBy - User profile accepting the proposal
+   * @param rejectedBy - User profile rejecting the proposal
    * @returns Updated transaction
    */
   rejectDeliveryProposal(
     transactionID: string,
     proposalID: string,
-    acceptedBy: NonNullable<User['profile']>
+    rejectedBy: NonNullable<User['profile']>
   ): Promise<Transaction>;
 
   /**
@@ -143,6 +143,17 @@ export interface ITransactionService {
    * @returns Updated transaction
    */
   readyForPickup(
+    transactionId: string,
+    markedBy: NonNullable<User['profile']>
+  ): Promise<Transaction>;
+
+  /**
+   * Updates the transaction status to PREPARING (sender starts preparing milk for transfer).
+   * @param transactionId ID of the transaction
+   * @param markedBy User marking the transaction as preparing
+   * @returns Updated transaction
+   */
+  startPreparing(
     transactionId: string,
     markedBy: NonNullable<User['profile']>
   ): Promise<Transaction>;

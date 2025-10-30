@@ -1,5 +1,8 @@
 import { getApiClient } from '@lactalink/api';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractID } from '@lactalink/utilities/extractors';
+import { getMeUser } from '../stores/meUserStore';
 
 type Slug = Extract<CollectionSlug, 'donations' | 'notifications' | 'requests' | 'transactions'>;
 
@@ -15,6 +18,51 @@ export function markSeen<T extends Slug>(collection: T, id: string | string[]) {
     // @ts-expect-error seen and seenAt exist on all collections used here
     data: { seenAt: now, seen: true },
     where: { id: { in: ids } },
-    depth: 3,
+    depth: 5,
   });
+}
+
+export function markSeenTransaction(transactions: Transaction | Transaction[]) {
+  const meUser = getMeUser();
+  const meProfile = meUser?.profile;
+
+  const inputTransactions = Array.isArray(transactions) ? transactions : [transactions];
+  const now = new Date().toISOString();
+
+  if (!inputTransactions.length || !meProfile) {
+    throw new Error('No transactions provided or user profile not found');
+  }
+
+  const updatedTransactions = inputTransactions.map((tx) => {
+    const existingSeenStatus = tx.tracking?.seenStatus || [];
+    const meProfileId = extractID(meProfile.value);
+
+    // Find existing status for current user
+    const existingStatusIndex = existingSeenStatus.findIndex(
+      (status) => extractID(status.seenBy?.value) === meProfileId
+    );
+
+    let updatedSeenStatus;
+
+    if (existingStatusIndex >= 0) {
+      // Update existing status
+      updatedSeenStatus = existingSeenStatus.map((status, index) =>
+        index === existingStatusIndex ? { ...status, seen: true, seenAt: now } : status
+      );
+    } else {
+      // Add new status for current user
+      updatedSeenStatus = [
+        ...existingSeenStatus,
+        {
+          seenBy: { relationTo: meProfile.relationTo, value: meProfileId },
+          seen: true,
+          seenAt: now,
+        },
+      ];
+    }
+
+    return { id: tx.id, seenStatus: updatedSeenStatus };
+  });
+
+  return updatedTransactions;
 }

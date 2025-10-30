@@ -1786,6 +1786,26 @@ export const transactions_delivery_proposed = pgTable(
   })
 );
 
+export const transactions_tracking_seen_status = pgTable(
+  'transactions_tracking_seen_status',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    seen: boolean('seen'),
+    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => ({
+    _orderIdx: index('transactions_tracking_seen_status_order_idx').on(columns._order),
+    _parentIDIdx: index('transactions_tracking_seen_status_parent_id_idx').on(columns._parentID),
+    _parentIDFk: foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [transactions.id],
+      name: 'transactions_tracking_seen_status_parent_id_fk',
+    }).onDelete('cascade'),
+  })
+);
+
 export const transactions_tracking_status_history = pgTable(
   'transactions_tracking_status_history',
   {
@@ -1819,8 +1839,6 @@ export const transactions = pgTable(
     createdBy: uuid('created_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
-    seen: boolean('seen').default(false),
-    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
     donation: uuid('donation_id').references(() => donations.id, {
       onDelete: 'set null',
     }),
@@ -3055,6 +3073,16 @@ export const relations_transactions_delivery_proposed = relations(
     }),
   })
 );
+export const relations_transactions_tracking_seen_status = relations(
+  transactions_tracking_seen_status,
+  ({ one }) => ({
+    _parentID: one(transactions, {
+      fields: [transactions_tracking_seen_status._parentID],
+      references: [transactions.id],
+      relationName: 'tracking_seenStatus',
+    }),
+  })
+);
 export const relations_transactions_tracking_status_history = relations(
   transactions_tracking_status_history,
   ({ one }) => ({
@@ -3115,6 +3143,9 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     fields: [transactions.delivery_confirmed_address],
     references: [addresses.id],
     relationName: 'delivery_confirmed_address',
+  }),
+  tracking_seenStatus: many(transactions_tracking_seen_status, {
+    relationName: 'tracking_seenStatus',
   }),
   tracking_statusHistory: many(transactions_tracking_status_history, {
     relationName: 'tracking_statusHistory',
@@ -3407,6 +3438,7 @@ type DatabaseSchema = {
   users: typeof users;
   users_rels: typeof users_rels;
   transactions_delivery_proposed: typeof transactions_delivery_proposed;
+  transactions_tracking_seen_status: typeof transactions_tracking_seen_status;
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
@@ -3457,6 +3489,7 @@ type DatabaseSchema = {
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
   relations_transactions_delivery_proposed: typeof relations_transactions_delivery_proposed;
+  relations_transactions_tracking_seen_status: typeof relations_transactions_tracking_seen_status;
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;
