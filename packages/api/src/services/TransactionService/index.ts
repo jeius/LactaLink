@@ -18,7 +18,7 @@ import type {
   DeliveryDetailsParams,
   IApiClient,
   ITransactionService,
-} from '../../../interfaces';
+} from '../../interfaces';
 
 /**
  * Service for managing transactions throughout their lifecycle.

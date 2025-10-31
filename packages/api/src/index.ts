@@ -19,7 +19,7 @@
 
 import { ApiClient } from './ApiClient';
 import { ApiClientConfig } from './interfaces/ApiClientConfig';
-import { MatchingService, TransactionService } from './store/services';
+import { MatchingService, TransactionService } from './services';
 import { useStoreApiClient } from './store/useApiClient';
 
 // ============================================================================

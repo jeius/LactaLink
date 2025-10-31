@@ -15,7 +15,7 @@ import type {
   IMatchingService,
   O2PMatchOptions,
   P2OMatchOptions,
-} from '../../../interfaces';
+} from '../../interfaces';
 
 /**
  * Service for matching donations to requests and managing their lifecycle.
