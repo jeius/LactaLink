@@ -51,7 +51,7 @@
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
     "@lactalink/utilities": "workspace:*",
-    "@legendapp/motion": "^2.4.0",
+    "@legendapp/motion": "^2.5.3",
     "@nandorojo/galeria": "^1.2.0",
     "@react-native-aria/focus": "^0.2.9",
     "@react-native-community/datetimepicker": "8.4.4",

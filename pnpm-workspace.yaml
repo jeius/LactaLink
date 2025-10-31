@@ -1,3 +1,12 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+onlyBuiltDependencies:
+  - canvas
+  - postinstall-postinstall
+  - sharp
+ignoredBuiltDependencies:
+  - '@shopify/react-native-skia'
+  - esbuild
+  - react-native-nitro-modules
+  - unrs-resolver
