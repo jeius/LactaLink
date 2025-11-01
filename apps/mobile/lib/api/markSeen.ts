@@ -29,8 +29,12 @@ export function markSeenTransaction(transactions: Transaction | Transaction[]) {
   const inputTransactions = Array.isArray(transactions) ? transactions : [transactions];
   const now = new Date().toISOString();
 
-  if (!inputTransactions.length || !meProfile) {
-    throw new Error('No transactions provided or user profile not found');
+  if (!inputTransactions.length) {
+    throw new Error('No transactions provided to mark as seen.');
+  }
+
+  if (!meProfile) {
+    throw new Error('No meUser profile found. Cannot mark transactions as seen.');
   }
 
   const updatedTransactions = inputTransactions.map((tx) => {
@@ -47,7 +51,9 @@ export function markSeenTransaction(transactions: Transaction | Transaction[]) {
     if (existingStatusIndex >= 0) {
       // Update existing status
       updatedSeenStatus = existingSeenStatus.map((status, index) =>
-        index === existingStatusIndex ? { ...status, seen: true, seenAt: now } : status
+        index === existingStatusIndex && !status.seen
+          ? { ...status, seen: true, seenAt: now }
+          : status
       );
     } else {
       // Add new status for current user

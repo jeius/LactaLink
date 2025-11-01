@@ -1,9 +1,11 @@
 import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
-import { TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
+import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
+import { Delivery } from '@lactalink/types/payload-generated-types';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../_access-control';
+import { involvedUsersOrAdmin } from './access';
 import { confirmedField, proposedField } from './fields/deliveryFields';
 import { trackingField } from './fields/tracking';
 import { filterMilkBagsOptions } from './filterOptions';
@@ -18,9 +20,9 @@ export const Transactions: CollectionConfig<'transactions'> = {
   access: {
     admin: admin,
     create: authenticated,
-    read: authenticated,
-    update: authenticated,
-    delete: admin,
+    read: involvedUsersOrAdmin,
+    update: involvedUsersOrAdmin,
+    delete: involvedUsersOrAdmin,
   },
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
@@ -165,7 +167,38 @@ export const Transactions: CollectionConfig<'transactions'> = {
               name: 'delivery',
               interfaceName: 'Delivery',
               type: 'group',
-              fields: [proposedField, confirmedField],
+              fields: [
+                proposedField,
+                confirmedField,
+                {
+                  name: 'arrival',
+                  label: 'Arrival Details',
+                  type: 'group',
+                  admin: {
+                    condition: (_, { confirmed }: Partial<Delivery>) =>
+                      confirmed?.mode === DELIVERY_OPTIONS.MEETUP.value,
+                  },
+                  fields: [
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'senderArrived',
+                          label: 'Sender Arrived',
+                          type: 'checkbox',
+                          admin: { width: '50%' },
+                        },
+                        {
+                          name: 'recipientArrived',
+                          label: 'Recipient Arrived',
+                          type: 'checkbox',
+                          admin: { width: '50%' },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

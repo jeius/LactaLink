@@ -84,6 +84,7 @@ export function useAuthListener() {
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
+          queryClient.invalidateQueries();
           queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, null);
           queryClient.setQueryData(QUERY_KEYS.AUTH.USER, null);
           if (GoogleSignin.hasPreviousSignIn()) {

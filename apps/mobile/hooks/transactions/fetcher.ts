@@ -23,7 +23,7 @@ export function useFetchTransactions(overrides: Overrides = {}) {
 
   const { fetchOptions, queryKey } = useMemo(() => {
     const where = createQueryFilter(meUser.data?.profile, overrides.where);
-    const fetchOptions = { where, sort: '-createdAt', depth };
+    const fetchOptions = { where, sort: '-updatedAt', depth };
     const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
     return { fetchOptions, queryKey };
   }, [meUser.data?.profile, overrides.where]);
@@ -104,26 +104,6 @@ function createQueryFilter(profile: User['profile'], override?: Where): Where | 
     TRANSACTION_STATUS.FAILED.value,
   ];
 
-  return {
-    and: [
-      override || { status: { not_in: doneStatuses } },
-      {
-        or: [
-          {
-            and: [
-              { 'sender.relationTo': { equals: profile.relationTo } },
-              { 'sender.value': { equals: extractID(profile.value) } },
-            ],
-          },
-          {
-            and: [
-              { 'recipient.relationTo': { equals: profile.relationTo } },
-              { 'recipient.value': { equals: extractID(profile.value) } },
-            ],
-          },
-        ],
-      },
-    ],
-  };
+  return override || { status: { not_in: doneStatuses } };
 }
 // #endregion

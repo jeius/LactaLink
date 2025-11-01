@@ -1,7 +1,6 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { Notification, User } from '@lactalink/types/payload-generated-types';
-import { Where } from '@lactalink/types/payload-types';
+import { Notification } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser, generatePlaceHolders } from '@lactalink/utilities';
 import { useEffect, useMemo } from 'react';
 import { MMKV_KEYS } from '../../lib/constants';
@@ -19,8 +18,7 @@ export function useFetchNotifications() {
   const meUser = useMeUser();
 
   const { fetchOptions, queryKey } = useMemo(() => {
-    const where = createQueryFilter(meUser.data);
-    const fetchOptions = { where, sort: '-createdAt', depth };
+    const fetchOptions = { sort: '-createdAt', depth };
     const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
     return { fetchOptions, queryKey };
   }, [meUser.data]);
@@ -82,11 +80,4 @@ export function useFetchNotifications() {
   }, [lastDataKey, queryData, queryRes.dataUpdatedAt]);
 
   return { ...aggregatedResults, queryKey, ...queryRes };
-}
-
-function createQueryFilter(user: User | null): Where | undefined {
-  if (!user) return undefined;
-  return {
-    recipient: { equals: user.id },
-  };
 }

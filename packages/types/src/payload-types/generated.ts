@@ -1171,6 +1171,10 @@ export interface Transaction {
 export interface Delivery {
   proposed?: ProposedDelivery;
   confirmed?: ConfirmedDelivery;
+  arrival?: {
+    senderArrived?: boolean | null;
+    recipientArrived?: boolean | null;
+  };
 }
 /**
  * Tracks delivery proposal agreement status from both parties
@@ -2839,6 +2843,12 @@ export interface TransactionsSelect<T extends boolean = true> {
 export interface DeliverySelect<T extends boolean = true> {
   proposed?: T | ProposedDeliverySelect<T>;
   confirmed?: T | ConfirmedDeliverySelect<T>;
+  arrival?:
+    | T
+    | {
+        senderArrived?: T;
+        recipientArrived?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

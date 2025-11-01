@@ -77,6 +77,8 @@ export default function NotificationsTab() {
           <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
         }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item, idx) => `${item.id}-${idx}`}
         contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
         ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
         ListFooterComponentStyle={{ marginTop: 8 }}

@@ -43,9 +43,9 @@ export function useMarkSeenTransactionMutation(queryKey: unknown[]) {
         oldData ? applyServerUpdate(oldData, updatedData) : oldData
       );
     },
-    onError: (err, vars, ctx) => {
+    onError: (err, _, ctx) => {
       const message = extractErrorMessage(err);
-      console.warn(`Failed to mark transaction(s) as seen: ${message}`, { transaction: vars });
+      console.warn(`Failed to mark transaction(s) as seen: ${message}`);
       queryClient.setQueryData(queryKey, ctx?.previousData);
     },
   });

@@ -1,8 +1,10 @@
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction, User } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
+import isEqual from 'lodash/isEqual';
 import { ChevronRight } from 'lucide-react-native';
-import { ComponentProps } from 'react';
+import { ComponentProps, useMemo } from 'react';
 import { BasicBadge } from '../badges';
 import { ProfileTag } from '../ProfileTag';
 import { Box } from '../ui/box';
@@ -31,7 +33,13 @@ export default function TransactionListCard({
 }: TransactionListCardProps) {
   const { matchedVolume, sender, recipient } = data || {};
 
-  const isNotSeen = !data?.seen;
+  const isSeen = useMemo(() => {
+    const seenState = data?.tracking?.seenStatus?.find((state) =>
+      isEqual(state.seenBy, user?.profile)
+    );
+    return !!seenState?.seen;
+  }, [data?.tracking?.seenStatus, user]);
+
   const isMeSender = extractID(user?.profile?.value) === extractID(sender?.value);
   const isMeRecipient = extractID(user?.profile?.value) === extractID(recipient?.value);
 
@@ -52,18 +60,23 @@ export default function TransactionListCard({
         <CardSkeleton />
       ) : (
         <VStack space="sm" className="items-stretch">
-          <HStack space="sm" className="flex-1 items-start">
-            <Text bold size="xl" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-              {title}
+          <HStack space="md" className="items-center">
+            <HStack space="sm" className="flex-1 items-start">
+              <Text bold size="xl" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
+                {title}
+              </Text>
+              {badgeText && (
+                <BasicBadge
+                  size="xs"
+                  text={badgeText}
+                  variant="solid"
+                  action={isMeSender ? 'primary' : isMeRecipient ? 'tertiary' : 'muted'}
+                />
+              )}
+            </HStack>
+            <Text size="xs" numberOfLines={1} className="shrink">
+              {TRANSACTION_STATUS[data?.status || 'PENDING_DELIVERY_CONFIRMATION'].label}
             </Text>
-            {badgeText && (
-              <BasicBadge
-                size="xs"
-                text={badgeText}
-                variant="solid"
-                action={isMeSender ? 'primary' : isMeRecipient ? 'tertiary' : 'muted'}
-              />
-            )}
           </HStack>
           <HStack space="sm" className="items-stretch">
             <VStack space="sm" className="flex-1 items-stretch justify-start">
@@ -83,9 +96,9 @@ export default function TransactionListCard({
             </Link>
           </HStack>
 
-          {showBadge && isNotSeen && (
+          {showBadge && !isSeen && (
             <Box
-              className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full"
+              className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary-500"
               style={{ transform: [{ translateY: -4 }, { translateX: 4 }] }}
             />
           )}
