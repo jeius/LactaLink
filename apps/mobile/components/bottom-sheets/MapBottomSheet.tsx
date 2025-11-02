@@ -18,13 +18,12 @@ import { MapMarkerInfo } from '../map/MapMarkerInfo';
 import { DonateRequestModal } from '../modals';
 import { MapBottomSheetTabs } from '../tabs/MapBottomSheetTabs';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
-import { BottomSheetHandle } from '../ui/BottomSheetHandle';
+import { BottomSheetHandle, HANDLEHEIGHT } from '../ui/BottomSheetHandle';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { VStack } from '../ui/vstack';
 
-const DEFAULT_SNAP_POINT = 30;
-const snapPoints = [DEFAULT_SNAP_POINT, '40%', '60%', '80%'];
+const snapPoints = [HANDLEHEIGHT, '60%', '80%'];
 
 export function MapBottomSheet() {
   const sheetRef = useRef<GorhomBottomSheet>(null);
@@ -57,10 +56,11 @@ export function MapBottomSheet() {
         animateOnMount={true}
         footerComponent={FooterComponent}
         backgroundStyle={{ backgroundColor: 'transparent' }}
+        enableOverDrag={false}
       >
         <Motion.View
           animate={{ x: selectedMarker ? -width : 0 }}
-          className="bg-background-50 flex-1 flex-row justify-start"
+          className="flex-1 flex-row justify-start bg-background-50"
           style={{ width: width * 2 }}
         >
           <Box className="flex-1">

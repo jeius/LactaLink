@@ -53,13 +53,12 @@ export function DeliveryCard({
   const address = data ? extractCollection(data.address)?.displayName || 'Unknown Address' : '-';
   const instructions = data && (isDeliverySchema(data) ? data.note : data.instructions);
 
-  console.log('Instructions:', instructions);
   return (
     <Card {...props} variant={variant} className={cardStyle({ className })}>
       <HStack space="sm" className="items-center">
-        <Text className="font-JakartaSemiBold text-primary-500 flex-1">{label}</Text>
+        <Text className="flex-1 font-JakartaSemiBold text-primary-500">{label}</Text>
 
-        <Box className="border-primary-500 rounded-full border p-1">
+        <Box className="rounded-full border border-primary-500 p-1">
           <Image
             source={iconSource}
             alt={`${data?.mode || 'Unknown'}-icon`}

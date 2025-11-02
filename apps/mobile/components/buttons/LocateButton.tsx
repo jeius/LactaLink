@@ -1,12 +1,23 @@
 import { useMapStore } from '@/lib/stores/mapStore';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CompassIcon, LocateFixedIcon, LocateIcon } from 'lucide-react-native';
-import { Button, ButtonIcon } from '../ui/button';
+import { Box } from '../ui/box';
+import { Button, ButtonIcon, ButtonProps } from '../ui/button';
 
-interface LocateButtonProps {
+const style = tva({
+  base: 'h-12 w-12 items-center justify-center overflow-hidden rounded-full',
+});
+
+interface LocateButtonProps extends ButtonProps {
   disableFollowUser?: boolean;
 }
 
-export function LocateButton({ disableFollowUser = false }: LocateButtonProps) {
+export function LocateButton({
+  disableFollowUser = false,
+  className,
+  action = 'info',
+  ...props
+}: LocateButtonProps) {
   const userMarker = useMapStore((s) => s.userMarker);
   const followUser = useMapStore((s) => s.followUser);
   const isUserLocated = useMapStore((s) => s.isUserLocated);
@@ -23,14 +34,21 @@ export function LocateButton({ disableFollowUser = false }: LocateButtonProps) {
 
   return (
     <Button
-      action="info"
-      className={`h-14 w-14 rounded-full p-3 ${followUser ? 'bg-info-600' : ''}`}
+      {...props}
+      action={action}
+      className={style({ className })}
       onPress={handleLocatePress}
       accessibilityLabel="Follow user location"
       accessibilityHint="Toggles following the user's current location"
       accessibilityRole="button"
       accessibilityState={{ selected: followUser }}
     >
+      {followUser && (
+        <Box
+          className="absolute inset-0 rounded-full"
+          style={{ opacity: 0.35, backgroundColor: 'black' }}
+        />
+      )}
       <ButtonIcon
         as={followUser ? CompassIcon : isUserLocated ? LocateFixedIcon : LocateIcon}
         height={22}

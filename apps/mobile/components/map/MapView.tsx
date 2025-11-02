@@ -1,16 +1,15 @@
 import { useCurrentLocation } from '@/hooks/location/useLocation';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
-import React, { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ComponentProps, useEffect, useMemo, useState } from 'react';
 
 import { ErrorSearchParams, Point } from '@lactalink/types';
 
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { useMapStore } from '@/lib/stores/mapStore';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
-import { randomUUID } from 'expo-crypto';
 import { LocationObjectCoords } from 'expo-location';
-import { Redirect, useFocusEffect } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { Insets, StyleSheet } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useTheme } from '../AppProvider/ThemeProvider';
@@ -33,11 +32,10 @@ export function MapView({
   hideUserLocationHeading = false,
   isLoading: isLoadingProp,
   containerStyle,
+  showsUserLocation = true,
   ...props
 }: MapViewProps) {
   const { theme } = useTheme();
-
-  const [mapRenderID, setMapRenderID] = useState(randomUUID());
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -71,14 +69,9 @@ export function MapView({
       map?.setCamera({ zoom: 16, center });
       props.onMapReady?.();
     }
-
-    return () => {
-      resetMap();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMapReady]);
 
-  useFocusEffect(useCallback(() => setMapRenderID(randomUUID()), []));
+  useEffect(() => resetMap, []);
 
   async function handleRegionChangeEnd(region: Region, details: Details) {
     props.onRegionChangeComplete?.(region, details);
@@ -106,10 +99,6 @@ export function MapView({
     map?.getCamera().then((cam) => {
       cameraHeading.value = cam.heading;
     });
-
-    if (details?.isGesture) {
-      setFollowUser(false);
-    }
   }
 
   async function onUserMarkerPositionChange(position: LocationObjectCoords) {
@@ -132,7 +121,6 @@ export function MapView({
     <Box className="relative flex-1" pointerEvents="box-none" style={containerStyle}>
       <RNMapView.Animated
         {...props}
-        id={mapRenderID}
         ref={setMapRef}
         initialCamera={
           props.initialCamera || {
@@ -159,7 +147,7 @@ export function MapView({
       >
         {children}
 
-        {location && (
+        {showsUserLocation && (
           <UserMarker
             ref={setUserMarkerRef}
             hideHeading={hideUserLocationHeading}
