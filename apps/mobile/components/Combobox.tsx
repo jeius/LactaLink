@@ -4,7 +4,6 @@ import {
   TransformCollectionWithSelect,
   Where,
 } from '@lactalink/types/payload-types';
-import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash/debounce';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -12,7 +11,6 @@ import {
   InfiniteFetchOptions,
   useInfiniteFetchBySlug,
 } from '@/hooks/collections/useInfiniteFetchBySlug';
-import { useApiClient } from '@lactalink/api';
 import { ChevronDownIcon, LucideIcon, LucideProps, SearchIcon, XIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from './ui/box';
@@ -24,6 +22,7 @@ import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
+import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
@@ -141,7 +140,6 @@ export default function ComboBox<
   iconPosition,
   isLoading: isLoadingProp,
 }: InfiniteScrollComboBoxProps<T, TSelect>) {
-  const apiClient = useApiClient();
   const inputRef = useRef<BottomSheetTextInputProps & TextInput>(null);
   const bottomSheetModalRef = useRef<BottomSheetModalType>(null);
 
@@ -151,25 +149,14 @@ export default function ComboBox<
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(selectedProps);
 
-  const { data: selectedLabel, isFetching: isFetchingLabel } = useQuery<string | null>({
-    enabled: Boolean(selected),
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60,
-    refetchOnMount: true,
-    queryKey: ['combobox', 'label', selected],
-    queryFn: async () => {
-      if (selected) {
-        const res = await apiClient.findByID({
-          id: selected,
-          collection,
-          depth: 0,
-        });
-
-        return String(res[labelPath as unknown as keyof typeof res]) || null;
-      }
-      return null;
-    },
+  const { data: selectedDoc, isFetching: isFetchingLabel } = useFetchById(!!selected, {
+    collection: collection,
+    id: selected || '',
+    depth: 0,
   });
+
+  // @ts-expect-error TS can't infer deeply
+  const selectedLabel = selectedDoc && String(selectedDoc[labelPath]);
 
   const [search, setSearch] = useState('');
   const debouncedSetSearch = useMemo(() => debounce(setSearch, 300), []);
@@ -270,7 +257,11 @@ export default function ComboBox<
     <Skeleton className="h-10" />
   ) : (
     <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
-      <BottomSheetTrigger disableAnimation className="w-full" disabled={disabled}>
+      <BottomSheetTrigger
+        disableAnimation
+        className="w-full overflow-hidden rounded-lg"
+        disabled={disabled}
+      >
         <Input pointerEvents="box-none" size="md" isDisabled={disabled}>
           <InputField
             value={isFetchingLabel ? 'Loading...' : selectedLabel || ''}
@@ -298,7 +289,7 @@ export default function ComboBox<
         </Input>
       </BottomSheetTrigger>
       <BottomSheetModalPortal
-        snapPoints={['45%']}
+        snapPoints={['50%']}
         enableDynamicSizing={false}
         handleComponent={BottomSheetDragIndicator}
         backdropComponent={BottomSheetBackdrop}
@@ -310,11 +301,11 @@ export default function ComboBox<
         bottomInset={insets.bottom}
       >
         <Box
-          className="bg-background-0 border-outline-100 w-full border-b p-5 pt-0"
-          style={shadow.xs}
+          className="w-full border-b border-outline-100 bg-background-0 p-5 pt-0"
+          style={shadow.sm}
         >
           <BottomSheetInput>
-            <BottomSheetInputIcon as={SearchIcon} className="text-primary-400 ml-3" />
+            <BottomSheetInputIcon as={SearchIcon} className="ml-3 text-primary-400" />
             <BottomSheetInputField
               ref={inputRef}
               defaultValue={searchDefault}
@@ -334,6 +325,7 @@ export default function ComboBox<
             data={items}
             renderItem={renderItem}
             automaticallyAdjustKeyboardInsets
+            showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="always"
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
@@ -367,14 +359,18 @@ function ComboBoxItem({
   icon,
   iconPosition = 'right',
 }: ComboBoxItemProps) {
+  const style = useMemo(
+    () =>
+      tva({
+        base: 'items-center px-4 py-3',
+        variants: {
+          isSelected: { true: 'bg-primary-200' },
+          isPressed: { true: 'bg-background-100' },
+        },
+      }),
+    []
+  );
   const [isPressed, setIsPressed] = useState(false);
-  const style = tva({
-    base: 'items-center px-4 py-3',
-    variants: {
-      isSelected: { true: 'bg-primary-200' },
-      isPressed: { true: 'bg-background-100' },
-    },
-  });
   const onPressIn = () => setIsPressed(true);
   const onPressOut = () => setIsPressed(false);
   return (

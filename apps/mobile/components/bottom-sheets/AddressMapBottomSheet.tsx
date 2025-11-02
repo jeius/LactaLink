@@ -8,13 +8,13 @@ import {
   SaveIcon,
 } from 'lucide-react-native';
 import React, { PropsWithChildren, useMemo } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { LocateButton } from '../buttons/LocateButton';
+import { TextInputField } from '../form-fields/TextInputField';
 import { FormField } from '../FormField';
 import { ActionModal } from '../modals';
 import { BottomSheet, BottomSheetPortal, BottomSheetScrollView } from '../ui/bottom-sheet';
-import { BottomSheetHandle } from '../ui/BottomSheetHandle';
+import { BottomSheetHandle, HANDLEHEIGHT } from '../ui/BottomSheetHandle';
 import { Box } from '../ui/box';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '../ui/checkbox';
 import { HStack } from '../ui/hstack';
@@ -37,24 +37,24 @@ export function AddressMapBottomSheet({
   children,
   ...props
 }: AddressMapBottomSheetProps) {
-  const insets = useSafeAreaInsets();
-  const snapPoints = useMemo(() => ['30%', '50%', '80%'], []);
+  const snapPoints = useMemo(() => [HANDLEHEIGHT, '50%', '100%'], []);
 
   return (
-    <BottomSheet disableClose snapToIndex={0}>
+    <BottomSheet disableClose snapToIndex={1}>
       <BottomSheetPortal
         snapPoints={snapPoints}
-        snapToIndex={0}
+        snapToIndex={1}
         enableDynamicSizing={false}
         handleComponent={HandleComponent}
         enableBlurKeyboardOnGesture={false}
-        keyboardBehavior="interactive"
+        keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustPan"
         enableContentPanningGesture={true}
       >
         <BottomSheetScrollView
-          style={{ paddingBottom: insets.bottom, backgroundColor: 'transparent' }}
+          showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets
         >
           {editing ? <FormSheetContent {...props} /> : children}
         </BottomSheetScrollView>
@@ -64,24 +64,27 @@ export function AddressMapBottomSheet({
 }
 
 function FormSheetContent({ onSavePress, isLoading }: AddressMapBottomSheetProps) {
-  const form = useFormContext<AddressSchema>();
+  const { control, formState, setValue, trigger } = useFormContext<AddressSchema>();
 
-  const { isDefault = false, cityMunicipality, province } = form.watch();
+  const isDefault = useWatch({ control, name: 'isDefault', defaultValue: false });
+  const cityID = useWatch({ control, name: 'cityMunicipality' });
+  const provinceID = useWatch({ control, name: 'province' });
 
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = formState.isSubmitting;
 
   function handleSetDefault(isSelected: boolean) {
-    form.setValue('isDefault', isSelected);
+    setValue('isDefault', isSelected);
   }
 
   async function handleValidation() {
-    const isValid = await form.trigger();
+    const isValid = await trigger();
     if (!isValid) {
       throw new Error('Form validation failed');
     }
   }
+
   return (
-    <VStack space="lg" className="p-4">
+    <VStack space="lg" className="p-4 pt-0">
       <FormField
         name={`province`}
         label="Province"
@@ -106,7 +109,7 @@ function FormSheetContent({ onSavePress, isLoading }: AddressMapBottomSheetProps
         searchPlaceholder="Search city or municipality here..."
         icon={LandmarkIcon}
         iconPosition="left"
-        where={province ? { province: { equals: province } } : undefined}
+        where={provinceID ? { province: { equals: provinceID } } : undefined}
         isLoading={isLoading}
         isDisabled={isSubmitting}
       />
@@ -125,52 +128,58 @@ function FormSheetContent({ onSavePress, isLoading }: AddressMapBottomSheetProps
         isLoading={isLoading}
         isDisabled={isSubmitting}
         where={
-          cityMunicipality
-            ? { cityMunicipality: { equals: cityMunicipality } }
-            : province
-              ? { province: { equals: province } }
+          cityID
+            ? { cityMunicipality: { equals: cityID } }
+            : provinceID
+              ? { province: { equals: provinceID } }
               : undefined
         }
       />
 
-      <FormField
-        name={`street`}
+      <TextInputField
+        control={control}
+        name="street"
         label="Street Address"
         helperText="Enter the street address of this location."
-        fieldType="text"
-        placeholder="e.g. Block 9, Sudlonon St."
-        autoCapitalize="words"
-        autoComplete="street-address"
-        textContentType="fullStreetAddress"
-        useBottomSheetInputs
         isLoading={isLoading}
         isDisabled={isSubmitting}
+        inputProps={{
+          useBottomSheetInput: true,
+          autoCapitalize: 'words',
+          placeholder: 'e.g. Block 9, Sudlonon St.',
+          autoComplete: 'street-address',
+          textContentType: 'fullStreetAddress',
+        }}
       />
 
-      <FormField
-        name={`zipCode`}
+      <TextInputField
+        control={control}
+        name="zipCode"
         label="Zip Code"
         helperText="Enter the zip/postal code of this address."
-        fieldType="text"
-        placeholder="e.g. 9200"
-        keyboardType="number-pad"
-        textContentType="postalCode"
-        className="max-w-32"
-        useBottomSheetInputs
         isLoading={isLoading}
         isDisabled={isSubmitting}
+        inputProps={{
+          useBottomSheetInput: true,
+          placeholder: 'e.g. 9200',
+          containerClassName: 'max-w-32',
+          keyboardType: 'number-pad',
+          textContentType: 'postalCode',
+        }}
       />
 
-      <FormField
-        name={`name`}
-        fieldType="text"
+      <TextInputField
+        control={control}
+        name="name"
         label="Address Label"
-        placeholder="e.g. Home, Workplace"
-        autoCapitalize="words"
         helperText="Set a label for this address to easily identify it."
-        useBottomSheetInputs
         isLoading={isLoading}
         isDisabled={isSubmitting}
+        inputProps={{
+          useBottomSheetInput: true,
+          autoCapitalize: 'words',
+          placeholder: 'e.g. Home, Workplace',
+        }}
       />
 
       <HStack space="xl" className="justify-between">

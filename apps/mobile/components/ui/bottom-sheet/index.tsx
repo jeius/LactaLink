@@ -1,13 +1,11 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { getHexColor } from '@/lib/colors';
+import { getColor, getPrimaryColor } from '@/lib/colors';
 import { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import GorhomBottomSheet, {
   BottomSheetHandle,
   BottomSheetBackdrop as GorhomBottomSheetBackdrop,
-  BottomSheetFlashList as GorhomBottomSheetFlashList,
   BottomSheetFlatList as GorhomBottomSheetFlatList,
   BottomSheetTextInput as GorhomBottomSheetInput,
   BottomSheetModal as GorhomBottomSheetModal,
@@ -16,8 +14,11 @@ import GorhomBottomSheet, {
   BottomSheetSectionList as GorhomBottomSheetSectionList,
   BottomSheetView as GorhomBottomSheetView,
   SNAP_POINT_TYPE,
+  useBottomSheetScrollableCreator,
 } from '@gorhom/bottom-sheet';
 import { FocusScope } from '@react-native-aria/focus';
+import { useFocusEffect } from '@react-navigation/native';
+import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
 import React, {
   createContext,
@@ -36,7 +37,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 
 const bottomSheetBackdropStyle = tva({
-  base: 'bg-background-600 absolute inset-0 flex-1 touch-none select-none opacity-0',
+  base: 'absolute inset-0 flex-1 touch-none select-none bg-background-600 opacity-0',
 });
 
 const bottomSheetContentStyle = tva({
@@ -48,20 +49,21 @@ const bottomSheetTriggerStyle = tva({
 });
 
 const bottomSheetIndicatorStyle = tva({
-  base: 'bg-background-0 w-full items-center pb-4 pt-2',
+  base: 'w-full items-center bg-background-0 pb-4 pt-2',
 });
 
 const bottomSheetItemStyle = tva({
-  base: 'disabled:opacity-0.4 web:pointer-events-auto hover:bg-background-50 active:bg-background-100 focus:bg-background-100 web:focus-visible:bg-background-100 w-full flex-row items-center rounded-sm p-3 disabled:cursor-not-allowed',
+  base: 'disabled:opacity-0.4 w-full flex-row items-center rounded-sm p-3 hover:bg-background-50 focus:bg-background-100 active:bg-background-100 disabled:cursor-not-allowed web:pointer-events-auto web:focus-visible:bg-background-100',
 });
 
 const bottomSheetTextInputStyle = tva({
-  base: 'text-typography-900 placeholder:text-typography-500 ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed h-full flex-1 p-2 text-justify align-text-top font-sans',
-  variants: {
+  base: 'ios:leading-[0px] h-full flex-1 px-3 py-0 font-sans text-typography-900 placeholder:text-typography-500 web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
+
+  parentVariants: {
     variant: {
-      underlined: 'web:outline-0 web:outline-none px-0',
-      outline: 'web:outline-0 web:outline-none',
-      rounded: 'web:outline-0 web:outline-none px-4',
+      underlined: 'px-0 web:outline-none web:outline-0',
+      outline: 'web:outline-none web:outline-0',
+      rounded: 'px-4 web:outline-none web:outline-0',
     },
 
     size: {
@@ -202,10 +204,7 @@ export const BottomSheetPortal = ({
 }) => {
   const { bottomSheetRef, handleClose, visible, disableClose, position } =
     useContext(BottomSheetContext);
-  const { theme } = useTheme();
   const [open, setOpen] = useState(visible);
-  const handleIndicatorColor = getHexColor(theme, 'primary', 500);
-  const backgroundColor = getHexColor(theme, 'background', 0);
 
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
@@ -234,8 +233,8 @@ export const BottomSheetPortal = ({
       backdropComponent={BackDrop}
       onChange={handleSheetChanges}
       handleComponent={DragIndicator}
-      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
-      backgroundStyle={[{ backgroundColor }, props.backgroundStyle]}
+      handleIndicatorStyle={{ backgroundColor: getPrimaryColor('500'), width: 40 }}
+      backgroundStyle={[{ backgroundColor: getColor('background', '0') }, props.backgroundStyle]}
       enablePanDownToClose={!disableClose}
     >
       {props.children}
@@ -256,9 +255,6 @@ export const BottomSheetModalPortal = ({
   snapToIndex?: number;
 }) => {
   const { bottomSheetModalRef, handleClose, visible, position } = useContext(BottomSheetContext);
-  const { theme } = useTheme();
-  const handleIndicatorColor = getHexColor(theme, 'primary', 500);
-  const backgroundColor = getHexColor(theme, 'background', 0);
 
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
@@ -283,8 +279,8 @@ export const BottomSheetModalPortal = ({
       backdropComponent={BackDrop}
       onChange={handleSheetChanges}
       handleComponent={DragIndicator}
-      handleIndicatorStyle={{ backgroundColor: handleIndicatorColor, width: 40 }}
-      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: getPrimaryColor('500'), width: 40 }}
+      backgroundStyle={[{ backgroundColor: getColor('background', '0') }, props.backgroundStyle]}
       enablePanDownToClose={enablePanDownToClose}
       {...props}
     >
@@ -305,7 +301,7 @@ export const BottomSheetTrigger = ({
         props.onPress && props.onPress(e);
         handleOpen();
       }}
-      disableRipple={props.disableAnimation}
+      disablePressAnimation={props.disableAnimation}
       className={bottomSheetTriggerStyle({
         className: className,
       })}
@@ -462,12 +458,18 @@ export const BottomSheetTextInput: FC<BottomSheetTextInputProps> = ({
   );
 };
 
+type IBottomSheetFlashListProps<TItem> = Omit<FlashListProps<TItem>, 'renderScrollComponent'>;
+
+export function BottomSheetFlashList<TItem>(props: IBottomSheetFlashListProps<TItem>) {
+  const BottomSheetScrollable = useBottomSheetScrollableCreator({ focusHook: useFocusEffect });
+  return <FlashList {...props} renderScrollComponent={BottomSheetScrollable} />;
+}
+
 export const BottomSheetScrollView = GorhomBottomSheetScrollView;
 export const BottomSheetFlatList = GorhomBottomSheetFlatList;
 export const BottomSheetSectionList = GorhomBottomSheetSectionList;
 export const BottomSheetModal = GorhomBottomSheetModal;
 export const BottomSheetModalProvider = GorhomBottomSheetModalProvider;
-export const BottomSheetFlashList = GorhomBottomSheetFlashList;
 
 cssInterop(GorhomBottomSheetInput, { className: 'style' });
 cssInterop(GorhomBottomSheetScrollView, { className: 'style' });

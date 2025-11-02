@@ -1,7 +1,6 @@
-import { getHexColor } from '@/lib/colors';
-import { shadow } from '@/lib/utils/shadows';
+import { getColor, getPrimaryColor } from '@/lib/colors';
+import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
-import { Theme } from '@lactalink/types';
 import React, { useMemo } from 'react';
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
@@ -11,7 +10,8 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import { toRad } from 'react-native-redash';
-import { useTheme } from '../AppProvider/ThemeProvider';
+
+export const HANDLEHEIGHT = 30;
 
 // @ts-expect-error Unknown type
 export const transformOrigin = ({ x, y }, ...transformations) => {
@@ -37,11 +37,10 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
   //#endregion
 
   //#region styles
-  const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const topShadow = useMemo(() => createDirectionalShadow('top', 'md', 0.08), []);
   const containerStyle = useMemo(() => [styles.header, style], [style, styles.header]);
   const containerAnimatedStyle = useAnimatedStyle(() => {
-    const borderTopRadius = interpolate(animatedIndex.value, [1, 5], [20, 0], Extrapolation.CLAMP);
+    const borderTopRadius = interpolate(animatedIndex.value, [1, 2], [20, 0], Extrapolation.CLAMP);
     return {
       borderTopLeftRadius: borderTopRadius,
       borderTopRightRadius: borderTopRadius,
@@ -103,44 +102,38 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
 
   // render
   return (
-    <Animated.View
-      style={[containerStyle, containerAnimatedStyle]}
-      className="bg-background-0"
-      renderToHardwareTextureAndroid={true}
-    >
-      <Animated.View style={[leftIndicatorStyle, leftIndicatorAnimatedStyle]} />
-      <Animated.View style={[rightIndicatorStyle, rightIndicatorAnimatedStyle]} />
+    <Animated.View style={[topShadow, { borderRadius: 20 }]}>
+      <Animated.View
+        style={[containerStyle, containerAnimatedStyle]}
+        renderToHardwareTextureAndroid={true}
+      >
+        <Animated.View style={[leftIndicatorStyle, leftIndicatorAnimatedStyle]} />
+        <Animated.View style={[rightIndicatorStyle, rightIndicatorAnimatedStyle]} />
+      </Animated.View>
     </Animated.View>
   );
 };
 
-function createStyles(theme: Theme) {
-  return StyleSheet.create({
-    header: {
-      alignContent: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 14,
-      height: 30,
-      ...shadow.lg,
-      shadowOffset: {
-        width: 0,
-        height: -3,
-      },
-    },
-    indicator: {
-      position: 'absolute',
-      width: 12,
-      height: 4,
-      backgroundColor: getHexColor(theme, 'primary', 500),
-    },
-    leftIndicator: {
-      borderTopStartRadius: 2,
-      borderBottomStartRadius: 2,
-    },
-    rightIndicator: {
-      borderTopEndRadius: 2,
-      borderBottomEndRadius: 2,
-    },
-  });
-}
+const styles = StyleSheet.create({
+  header: {
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: HANDLEHEIGHT,
+    backgroundColor: getColor('background', '0'),
+  },
+  indicator: {
+    position: 'absolute',
+    width: 12,
+    height: 4,
+    backgroundColor: getPrimaryColor('500'),
+  },
+  leftIndicator: {
+    borderTopStartRadius: 2,
+    borderBottomStartRadius: 2,
+  },
+  rightIndicator: {
+    borderTopEndRadius: 2,
+    borderBottomEndRadius: 2,
+  },
+});
