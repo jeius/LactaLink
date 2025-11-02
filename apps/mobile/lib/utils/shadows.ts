@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { getHexColor } from '../colors';
 
 export function createShadow(theme: Theme) {
-  const shadowColor = getHexColor(theme, 'background', 300);
+  const shadowColor = getHexColor(theme, 'background', 500);
 
   return StyleSheet.create({
     xs: {

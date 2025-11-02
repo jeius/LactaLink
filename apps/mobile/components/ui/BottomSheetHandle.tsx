@@ -1,5 +1,5 @@
 import { getHexColor } from '@/lib/colors';
-import { createShadow } from '@/lib/utils/shadows';
+import { shadow } from '@/lib/utils/shadows';
 import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 import { Theme } from '@lactalink/types';
 import React, { useMemo } from 'react';
@@ -68,7 +68,7 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
           rotate: `${leftIndicatorRotate}rad`,
         },
         {
-          translateX: -5,
+          translateX: -6,
         }
       ),
     };
@@ -94,7 +94,7 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
           rotate: `${rightIndicatorRotate}rad`,
         },
         {
-          translateX: 5,
+          translateX: 6,
         }
       ),
     };
@@ -105,6 +105,7 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
   return (
     <Animated.View
       style={[containerStyle, containerAnimatedStyle]}
+      className="bg-background-0"
       renderToHardwareTextureAndroid={true}
     >
       <Animated.View style={[leftIndicatorStyle, leftIndicatorAnimatedStyle]} />
@@ -119,15 +120,17 @@ function createStyles(theme: Theme) {
       alignContent: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: getHexColor(theme, 'background', 0),
       paddingVertical: 14,
-      borderBottomWidth: 1,
-      borderBottomColor: getHexColor(theme, 'outline', 200),
-      ...createShadow(theme).sm,
+      height: 30,
+      ...shadow.lg,
+      shadowOffset: {
+        width: 0,
+        height: -3,
+      },
     },
     indicator: {
       position: 'absolute',
-      width: 10,
+      width: 12,
       height: 4,
       backgroundColor: getHexColor(theme, 'primary', 500),
     },
