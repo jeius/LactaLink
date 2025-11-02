@@ -80,21 +80,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         googleMapsIosApiKey: process.env.IOS_MAPS_API_KEY,
       },
     ],
-    [
-      'expo-font',
-      {
-        fonts: [
-          './assets/fonts/Jakarta-ExtraBold.ttf',
-          './assets/fonts/Jakarta-Bold.ttf',
-          './assets/fonts/Jakarta-SemiBold.ttf',
-          './assets/fonts/Jakarta-Medium.ttf',
-          './assets/fonts/Jakarta-Regular.ttf',
-          './assets/fonts/Jakarta-Light.ttf',
-          './assets/fonts/Jakarta-ExtraLight.ttf',
-          './assets/fonts/Jakarta-Italic.ttf',
-        ],
-      },
-    ],
+    ['expo-font', { fonts: ['./assets/fonts'] }],
     [
       'expo-splash-screen',
       {
@@ -126,6 +112,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   experiments: {
     typedRoutes: true,
+    reactCompiler: true,
   },
   extra: {
     router: {
