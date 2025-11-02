@@ -27,7 +27,14 @@ export const Transactions: CollectionConfig<'transactions'> = {
   admin: {
     group: COLLECTION_GROUP.DONATIONS,
     useAsTitle: 'transactionNumber',
-    defaultColumns: ['transactionNumber', 'donation', 'request', 'status', 'createdAt'],
+    defaultColumns: [
+      'transactionNumber',
+      'matchedVolume',
+      'sender',
+      'recipient',
+      'status',
+      'createdAt',
+    ],
   },
   hooks: {
     beforeChange: [
@@ -147,7 +154,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
       required: true,
       filterOptions: filterMilkBagsOptions,
       validate: (data) => {
-        if (data?.length === 0) {
+        if (!data || data.length === 0) {
           return 'At least one milk bag must be selected for this transaction.';
         }
         return true;
@@ -183,16 +190,28 @@ export const Transactions: CollectionConfig<'transactions'> = {
                       type: 'row',
                       fields: [
                         {
-                          name: 'senderArrived',
-                          label: 'Sender Arrived',
-                          type: 'checkbox',
-                          admin: { width: '50%' },
+                          name: 'senderArrivedAt',
+                          label: 'Sender Arrived At',
+                          type: 'date',
+                          admin: {
+                            width: '50%',
+                            date: {
+                              displayFormat: 'd MMM yyy HH:mm a',
+                              pickerAppearance: 'dayAndTime',
+                            },
+                          },
                         },
                         {
-                          name: 'recipientArrived',
-                          label: 'Recipient Arrived',
-                          type: 'checkbox',
-                          admin: { width: '50%' },
+                          name: 'recipientArrivedAt',
+                          label: 'Recipient Arrived At',
+                          type: 'date',
+                          admin: {
+                            width: '50%',
+                            date: {
+                              displayFormat: 'd MMM yyy HH:mm a',
+                              pickerAppearance: 'dayAndTime',
+                            },
+                          },
                         },
                       ],
                     },

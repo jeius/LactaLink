@@ -1,3 +1,4 @@
+import { TransactionStatus } from '@lactalink/types';
 import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
   ConfirmedDelivery,
@@ -97,19 +98,6 @@ export interface ITransactionService {
   ): Promise<Transaction>;
 
   /**
-   *
-   * @param transaction - Transaction document
-   * @param proposalID - ID of the proposal
-   * @param agreement - Agreement details
-   * @returns Updated proposed delivery
-   */
-  updateProposalAgreements(
-    transaction: Transaction,
-    proposalID: string,
-    agreement: DeliveryAgreements['sender']
-  ): NonNullable<ProposedDelivery>;
-
-  /**
    * Accepts proposed delivery proposal and schedules the delivery.
    * @param transactionID - ID of the transaction
    * @param proposalID - ID of the proposal
@@ -168,6 +156,14 @@ export interface ITransactionService {
   startTransit(transactionId: string, markedBy: NonNullable<User['profile']>): Promise<Transaction>;
 
   /**
+   * Applicable for MEETUP mode transactions when involved parties arrive at meetup point.
+   * @param transactionId - ID of the transaction
+   * @param markedBy - User that arrived at the location.
+   * @returns Updated transaction
+   */
+  markArrived(transactionId: string, markedBy: NonNullable<User['profile']>): Promise<Transaction>;
+
+  /**
    * Marks the transaction as DELIVERED (milk physically transferred).
    * @param transactionId - ID of the transaction
    * @param markedBy - User marking the transaction as delivered
@@ -217,16 +213,8 @@ export interface ITransactionService {
   ): Promise<Transaction>;
 
   /**
-   * Gets a transaction by ID.
-   * @param transactionId - ID of the transaction
-   * @param depth - Depth of relations to retrieve (default: 3)
-   * @returns The transaction
-   */
-  getTransaction(transactionId: string, depth?: number): Promise<Transaction>;
-
-  /**
    * Gets all paginated transactions for a user (as donor or requester).
-   * @param profileID - ID of the user profile (Individual, Hospital, or Milk Bank)
+   * @param profile - User profile (Individual, Hospital, or Milk Bank)
    * @param options - Optional query parameters
    * @returns List of paginated transactions
    */
@@ -235,7 +223,34 @@ export interface ITransactionService {
       SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
     TPaginate extends boolean = boolean,
   >(
-    profileID: string,
     options?: FindMany<'transactions', TSelect, TPaginate>
   ): Promise<FindManyResult<'transactions', TSelect, TPaginate>>;
+
+  /**
+   *
+   * @param transaction - Transaction document
+   * @param proposalID - ID of the proposal
+   * @param agreement - Agreement details
+   * @returns Updated proposed delivery
+   */
+  optimisticAgreementsUpdate(
+    transaction: Transaction,
+    proposalID: string,
+    agreement: DeliveryAgreements['sender']
+  ): NonNullable<ProposedDelivery>;
+
+  /**
+   * Optimistically updates the transaction status in the local cache.
+   * @param transaction - Transaction document
+   * @param newStatus - New status to set
+   * @param markedBy - User profile marking the status change
+   * @param reason - Optional reason for status change
+   * @returns Updated transaction with new status and statusy history
+   */
+  optimisticStatusUpdate(
+    transaction: Transaction,
+    newStatus: TransactionStatus,
+    markedBy: NonNullable<User['profile']>,
+    reason?: string
+  ): Transaction;
 }

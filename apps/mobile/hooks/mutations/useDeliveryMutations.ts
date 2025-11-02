@@ -46,11 +46,15 @@ export function useDeliveryMutations(transaction: Transaction, queryKey: unknown
 
     await queryClient.cancelQueries({ queryKey });
 
-    const updatedProposals = transactionService.updateProposalAgreements(transaction, proposalId, {
-      agreed,
-      agreedAt: new Date().toISOString(),
-      agreedBy: userProfile,
-    });
+    const updatedProposals = transactionService.optimisticAgreementsUpdate(
+      transaction,
+      proposalId,
+      {
+        agreed,
+        agreedAt: new Date().toISOString(),
+        agreedBy: userProfile,
+      }
+    );
 
     queryClient.setQueryData<Transaction | undefined>(queryKey, (old) =>
       old ? { ...old, delivery: { ...old.delivery, proposedDelivery: updatedProposals } } : old

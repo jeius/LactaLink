@@ -1,6 +1,7 @@
 import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
+import { TransactionStatus } from '@lactalink/types';
 import type { FindMany, FindManyResult } from '@lactalink/types/api';
 import type {
   DeliveryAgreements,
@@ -153,17 +154,8 @@ export class TransactionService implements ITransactionService {
   // #endregion
 
   // #region Delivery Agreement Methods
-  async proposeDeliveryOption(
-    transactionId: string,
-    details: DeliveryDetailsParams
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, sender: true, recipient: true },
-    });
-
+  async proposeDeliveryOption(id: string, details: DeliveryDetailsParams): Promise<Transaction> {
+    const transaction = await this.getTransaction(id);
     const matchedStatus = TRANSACTION_STATUS.MATCHED.value;
     const pendingDeliveryStatus = TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value;
 
@@ -197,7 +189,7 @@ export class TransactionService implements ITransactionService {
     // Update the transaction with proposed details
     return this.apiClient.updateByID<'transactions'>({
       collection: 'transactions',
-      id: transactionId,
+      id: id,
       data: {
         status: pendingDeliveryStatus,
         delivery: {
@@ -214,7 +206,362 @@ export class TransactionService implements ITransactionService {
     });
   }
 
-  updateProposalAgreements(
+  async acceptDeliveryProposal(
+    id: string,
+    proposalID: string,
+    acceptedBy: NonNullable<User['profile']>
+  ) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
+    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
+      throw new Error(
+        `Cannot accept delivery details for transaction in ${transaction.status} status`
+      );
+    }
+
+    const newProposals = this.optimisticAgreementsUpdate(transaction, proposalID, {
+      agreed: true,
+      agreedBy: acceptedBy,
+      agreedAt: new Date().toISOString(),
+    });
+
+    // Update the transaction with confirmed details
+    return this.apiClient.updateByID<'transactions'>({
+      collection: 'transactions',
+      id: id,
+      data: { delivery: { proposed: newProposals } },
+    });
+  }
+
+  async rejectDeliveryProposal(
+    id: string,
+    proposalID: string,
+    rejectedBy: NonNullable<User['profile']>
+  ) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
+    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
+      throw new Error(
+        `Cannot accept delivery details for transaction in ${transaction.status} status`
+      );
+    }
+
+    const newProposals = this.optimisticAgreementsUpdate(transaction, proposalID, {
+      agreed: false,
+      agreedBy: rejectedBy,
+      agreedAt: new Date().toISOString(),
+    });
+
+    // Update the transaction with confirmed details
+    return this.apiClient.updateByID<'transactions'>({
+      collection: 'transactions',
+      id: id,
+      data: { delivery: { proposed: newProposals } },
+    });
+  }
+  // #endregion
+
+  // #region Delivery Execution Methods
+  async startPreparing(id: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only start transit if in DELIVERY_SCHEDULED status and mode is DELIVERY
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
+      throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
+    }
+
+    const status = TRANSACTION_STATUS.MATCHED.value;
+
+    const updated = this.optimisticStatusUpdate(transaction, status, markedBy);
+
+    // Update transaction status
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: status,
+        tracking: { statusHistory: updated.tracking?.statusHistory },
+      },
+    });
+  }
+
+  async startTransit(id: string, markedBy: NonNullable<User['profile']>): Promise<Transaction> {
+    const transaction = await this.getTransaction(id);
+
+    // Can only start transit if in MATCHED status and mode is DELIVERY
+    if (transaction.status !== TRANSACTION_STATUS.MATCHED.value) {
+      throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
+    }
+
+    const deliveryMode = transaction.delivery?.confirmed?.mode;
+    if (deliveryMode !== DELIVERY_OPTIONS.DELIVERY.value) {
+      throw new Error(`Cannot start transit: transaction mode is ${deliveryMode}`);
+    }
+
+    const status = TRANSACTION_STATUS.IN_TRANSIT.value;
+
+    const updated = this.optimisticStatusUpdate(transaction, status, markedBy);
+
+    // Update transaction status
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: status,
+        tracking: { statusHistory: updated.tracking?.statusHistory },
+      },
+    });
+  }
+
+  async readyForPickup(id: string, markedBy: NonNullable<User['profile']>): Promise<Transaction> {
+    const transaction = await this.getTransaction(id);
+
+    // Can only set as ready for pickup if in DELIVERY_SCHEDULED status and mode is PICKUP
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
+      throw new Error(
+        `Cannot mark as ready for pickup: transaction is in ${transaction.status} status`
+      );
+    }
+
+    const deliveryMode = transaction.delivery?.confirmed?.mode;
+
+    if (deliveryMode !== DELIVERY_OPTIONS.PICKUP.value) {
+      throw new Error(`Cannot mark as ready for pickup: transaction mode is ${deliveryMode}`);
+    }
+
+    const status = TRANSACTION_STATUS.READY_FOR_PICKUP.value;
+
+    const updated = this.optimisticStatusUpdate(transaction, status, markedBy);
+
+    // Update transaction status
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: status,
+        tracking: { statusHistory: updated.tracking?.statusHistory },
+      },
+    });
+  }
+
+  async markArrived(id: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only mark arrived from certain statuses
+    const validStatuses: TransactionStatus[] = [
+      TRANSACTION_STATUS.MATCHED.value,
+      TRANSACTION_STATUS.IN_TRANSIT.value,
+    ];
+
+    if (!validStatuses.includes(transaction.status)) {
+      throw new Error(`Cannot mark arrived: transaction is in ${transaction.status} status`);
+    }
+
+    const isUserSender = extractID(transaction.sender.value) === extractID(markedBy.value);
+    const isUserRecipient = extractID(transaction.recipient.value) === extractID(markedBy.value);
+
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        delivery: {
+          arrival: {
+            senderArrivedAt: isUserSender ? new Date().toISOString() : undefined,
+            recipientArrivedAt: isUserRecipient ? new Date().toISOString() : undefined,
+          },
+        },
+      },
+    });
+  }
+
+  async markDelivered(id: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only mark as delivered from certain statuses
+    const validStatuses: TransactionStatus[] = [
+      TRANSACTION_STATUS.MATCHED.value,
+      TRANSACTION_STATUS.READY_FOR_PICKUP.value,
+      TRANSACTION_STATUS.IN_TRANSIT.value,
+    ];
+
+    if (!validStatuses.includes(transaction.status)) {
+      throw new Error(`Cannot mark as delivered: transaction is in ${transaction.status} status`);
+    }
+
+    const status = TRANSACTION_STATUS.DELIVERED.value;
+    const updated = this.optimisticStatusUpdate(transaction, status, markedBy);
+
+    // Update transaction status
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: status,
+        tracking: {
+          statusHistory: updated.tracking?.statusHistory,
+          deliveredAt: new Date().toISOString(),
+        },
+      },
+    });
+  }
+  // #endregion
+
+  // #region Completion Methods
+  async completeTransaction(id: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Can only complete if in DELIVERED status
+    if (transaction.status !== TRANSACTION_STATUS.DELIVERED.value) {
+      throw new Error(
+        `Cannot complete transaction: transaction is in ${transaction.status} status`
+      );
+    }
+
+    const completedStatus = TRANSACTION_STATUS.COMPLETED.value;
+    const updatesStatusHistory = this.updateStatusHistory(transaction, completedStatus, markedBy);
+
+    // Mark the transaction as completed
+    const completedTransaction = await this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: completedStatus,
+        tracking: {
+          statusHistory: updatesStatusHistory,
+          completedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    // Update related entities
+    await this.finalizeTransaction(transaction);
+
+    return completedTransaction;
+  }
+  // #endregion
+
+  // #region Failure/Cancellation Methods
+  async failTransaction(id: string, reason: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Cannot fail if already completed
+    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
+      throw new Error('Cannot fail a completed transaction');
+    }
+
+    const failStatus = TRANSACTION_STATUS.FAILED.value;
+    const updatedStatusHistory = this.updateStatusHistory(transaction, failStatus, markedBy);
+
+    // Mark the transaction as failed
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: failStatus,
+        tracking: {
+          statusHistory: updatedStatusHistory,
+          failedAt: new Date().toISOString(),
+          failureReason: reason,
+        },
+      },
+    });
+  }
+
+  async cancelTransaction(id: string, reason: string, markedBy: NonNullable<User['profile']>) {
+    const transaction = await this.getTransaction(id);
+
+    // Cannot cancel if already completed
+    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
+      throw new Error('Cannot cancel a completed transaction');
+    }
+
+    const cancelStatus = TRANSACTION_STATUS.CANCELLED.value;
+    const updatedStatusHistory = this.updateStatusHistory(transaction, cancelStatus, markedBy);
+
+    // Mark the transaction as cancelled
+    return this.apiClient.updateByID({
+      collection: 'transactions',
+      id: id,
+      data: {
+        status: cancelStatus,
+        tracking: {
+          statusHistory: updatedStatusHistory,
+          cancelledAt: new Date().toISOString(),
+          cancelReason: reason,
+        },
+      },
+    });
+  }
+  // #endregion
+
+  // #region Query Methods
+
+  async getUserTransactions<
+    TSelect extends
+      SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
+    TPaginate extends boolean = boolean,
+  >(
+    options?: FindMany<'transactions', TSelect, TPaginate>
+  ): Promise<FindManyResult<'transactions', TSelect, TPaginate>> {
+    const result = await this.apiClient.find({
+      ...options,
+      collection: 'transactions',
+      sort: options?.sort || '-createdAt',
+    });
+
+    return result;
+  }
+  // #endregion
+
+  // #region Optimistic Update Methods
+  optimisticStatusUpdate(
+    transaction: Transaction,
+    newStatus: TransactionStatus,
+    markedBy: NonNullable<User['profile']>,
+    reason?: string
+  ): Transaction {
+    const updateStatusHistory = this.updateStatusHistory(transaction, newStatus, markedBy);
+    const failedStat = TRANSACTION_STATUS.FAILED.value;
+    const cancelledStat = TRANSACTION_STATUS.CANCELLED.value;
+    const completedStat = TRANSACTION_STATUS.COMPLETED.value;
+    const deliveredStat = TRANSACTION_STATUS.DELIVERED.value;
+
+    const seenStatus = transaction.tracking?.seenStatus?.map((s) => {
+      if (extractID(s.seenBy?.value) === extractID(markedBy.value)) {
+        return { ...s, seen: false, seenAt: null };
+      }
+      return s;
+    });
+
+    return {
+      ...transaction,
+      status: newStatus,
+      tracking: {
+        statusHistory: updateStatusHistory,
+        failedAt:
+          newStatus === failedStat ? new Date().toISOString() : transaction.tracking?.failedAt,
+        failureReason: newStatus === failedStat ? reason : transaction.tracking?.failureReason,
+        cancelledAt:
+          newStatus === cancelledStat
+            ? new Date().toISOString()
+            : transaction.tracking?.cancelledAt,
+        cancelReason: newStatus === cancelledStat ? reason : transaction.tracking?.cancelReason,
+        completedAt:
+          newStatus === completedStat
+            ? new Date().toISOString()
+            : transaction.tracking?.completedAt,
+        deliveredAt:
+          newStatus === deliveredStat
+            ? new Date().toISOString()
+            : transaction.tracking?.deliveredAt,
+        seenStatus: seenStatus || transaction.tracking?.seenStatus,
+      },
+    };
+  }
+
+  optimisticAgreementsUpdate(
     transaction: Transaction,
     proposalID: string,
     agreement: NonNullable<DeliveryAgreements['sender']>
@@ -240,332 +587,16 @@ export class TransactionService implements ITransactionService {
         : proposal;
     });
   }
+  // #endregion Optimistic Update Methods
 
-  async acceptDeliveryProposal(
-    transactionID: string,
-    proposalID: string,
-    acceptedBy: NonNullable<User['profile']>
-  ) {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: transactionID,
-      depth: 0,
-    });
-
-    // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
-    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
-      throw new Error(
-        `Cannot accept delivery details for transaction in ${transaction.status} status`
-      );
-    }
-
-    const newProposals = this.updateProposalAgreements(transaction, proposalID, {
-      agreed: true,
-      agreedBy: acceptedBy,
-      agreedAt: new Date().toISOString(),
-    });
-
-    // Update the transaction with confirmed details
-    return this.apiClient.updateByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionID,
-      data: { delivery: { proposed: newProposals } },
-    });
-  }
-
-  async rejectDeliveryProposal(
-    transactionID: string,
-    proposalID: string,
-    rejectedBy: NonNullable<User['profile']>
-  ) {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: transactionID,
-      depth: 0,
-    });
-
-    // Can only accept delivery details for transactions in PENDING_DELIVERY_CONFIRMATION status
-    if (transaction.status !== TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value) {
-      throw new Error(
-        `Cannot accept delivery details for transaction in ${transaction.status} status`
-      );
-    }
-
-    const newProposals = this.updateProposalAgreements(transaction, proposalID, {
-      agreed: false,
-      agreedBy: rejectedBy,
-      agreedAt: new Date().toISOString(),
-    });
-
-    // Update the transaction with confirmed details
-    return this.apiClient.updateByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionID,
-      data: { delivery: { proposed: newProposals } },
-    });
-  }
-  // #endregion
-
-  // #region Delivery Execution Methods
-  async readyForPickup(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Can only set as ready for pickup if in DELIVERY_SCHEDULED status and mode is PICKUP
-    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
-      throw new Error(
-        `Cannot mark as ready for pickup: transaction is in ${transaction.status} status`
-      );
-    }
-
-    const deliveryMode = transaction.delivery?.confirmed?.mode;
-
-    if (deliveryMode !== DELIVERY_OPTIONS.PICKUP.value) {
-      throw new Error(`Cannot mark as ready for pickup: transaction mode is ${deliveryMode}`);
-    }
-
-    const pickupStatus = TRANSACTION_STATUS.READY_FOR_PICKUP.value;
-
-    const updatedStatusHistory = this.updateStatusHistory(transaction, pickupStatus, markedBy);
-
-    // Update transaction status
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: pickupStatus,
-        tracking: { statusHistory: updatedStatusHistory },
-      },
-    });
-  }
-
-  async startPreparing(id: string, markedBy: NonNullable<User['profile']>) {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: id,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Can only start transit if in DELIVERY_SCHEDULED status and mode is DELIVERY
-    if (transaction.status !== TRANSACTION_STATUS.DELIVERY_SCHEDULED.value) {
-      throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
-    }
-
-    const preparingStatus = TRANSACTION_STATUS.MATCHED.value;
-
-    const updatedStatusHistory = this.updateStatusHistory(transaction, preparingStatus, markedBy);
-
-    // Update transaction status
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: id,
-      data: {
-        status: preparingStatus,
-        tracking: { statusHistory: updatedStatusHistory },
-      },
-    });
-  }
-
-  async startTransit(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Can only start transit if in MATCHED status and mode is DELIVERY
-    if (transaction.status !== TRANSACTION_STATUS.MATCHED.value) {
-      throw new Error(`Cannot start transit: transaction is in ${transaction.status} status`);
-    }
-
-    const deliveryMode = transaction.delivery?.confirmed?.mode;
-    if (deliveryMode !== DELIVERY_OPTIONS.DELIVERY.value) {
-      throw new Error(`Cannot start transit: transaction mode is ${deliveryMode}`);
-    }
-
-    const transitStatus = TRANSACTION_STATUS.IN_TRANSIT.value;
-
-    const updatedStatusHistory = this.updateStatusHistory(transaction, transitStatus, markedBy);
-
-    // Update transaction status
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: transitStatus,
-        tracking: { statusHistory: updatedStatusHistory },
-      },
-    });
-  }
-
-  async markDelivered(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Can only mark as delivered from certain statuses
-    const validStatuses: (keyof typeof TRANSACTION_STATUS)[] = [
-      TRANSACTION_STATUS.DELIVERY_SCHEDULED.value,
-      TRANSACTION_STATUS.READY_FOR_PICKUP.value,
-      TRANSACTION_STATUS.IN_TRANSIT.value,
-    ];
-
-    if (!validStatuses.includes(transaction.status)) {
-      throw new Error(`Cannot mark as delivered: transaction is in ${transaction.status} status`);
-    }
-
-    const deliveredStatus = TRANSACTION_STATUS.DELIVERED.value;
-    const updateStatusHistory = this.updateStatusHistory(transaction, deliveredStatus, markedBy);
-
-    // Update transaction status
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: deliveredStatus,
-        tracking: {
-          statusHistory: updateStatusHistory,
-          deliveredAt: new Date().toISOString(),
-        },
-      },
-    });
-  }
-  // #endregion
-
-  // #region Transaction Completion Methods
-  async completeTransaction(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Can only complete if in DELIVERED status
-    if (transaction.status !== TRANSACTION_STATUS.DELIVERED.value) {
-      throw new Error(
-        `Cannot complete transaction: transaction is in ${transaction.status} status`
-      );
-    }
-
-    const completedStatus = TRANSACTION_STATUS.COMPLETED.value;
-    const updatesStatusHistory = this.updateStatusHistory(transaction, completedStatus, markedBy);
-
-    // Mark the transaction as completed
-    const completedTransaction = await this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: completedStatus,
-        tracking: {
-          statusHistory: updatesStatusHistory,
-          completedAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    // Update related entities
-    await this.finalizeTransaction(transaction);
-
-    return completedTransaction;
-  }
-  // #endregion
-
-  // #region Transaction Failure/Cancellation Methods
-  async failTransaction(
-    transactionId: string,
-    reason: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Cannot fail if already completed
-    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
-      throw new Error('Cannot fail a completed transaction');
-    }
-
-    const failStatus = TRANSACTION_STATUS.FAILED.value;
-    const updatedStatusHistory = this.updateStatusHistory(transaction, failStatus, markedBy);
-
-    // Mark the transaction as failed
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: failStatus,
-        tracking: {
-          statusHistory: updatedStatusHistory,
-          failedAt: new Date().toISOString(),
-          failureReason: reason,
-        },
-      },
-    });
-  }
-
-  async cancelTransaction(
-    transactionId: string,
-    reason: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction> {
-    const transaction = await this.apiClient.findByID<'transactions'>({
-      collection: 'transactions',
-      id: transactionId,
-      depth: 0,
-      select: { status: true, delivery: true, tracking: true, sender: true, recipient: true },
-    });
-
-    // Cannot cancel if already completed
-    if (transaction.status === TRANSACTION_STATUS.COMPLETED.value) {
-      throw new Error('Cannot cancel a completed transaction');
-    }
-
-    const cancelStatus = TRANSACTION_STATUS.CANCELLED.value;
-    const updatedStatusHistory = this.updateStatusHistory(transaction, cancelStatus, markedBy);
-
-    // Mark the transaction as cancelled
-    return this.apiClient.updateByID({
-      collection: 'transactions',
-      id: transactionId,
-      data: {
-        status: cancelStatus,
-        tracking: {
-          statusHistory: updatedStatusHistory,
-          cancelledAt: new Date().toISOString(),
-          cancelReason: reason,
-        },
-      },
-    });
-  }
-  // #endregion
-
-  // #region Transaction Query Methods
-  async getTransaction(transactionId: string, depth: number = 3): Promise<Transaction> {
+  // #region Helper Methods
+  /**
+   * Gets a transaction by ID.
+   * @param transactionId - ID of the transaction
+   * @param depth - Depth of relations to retrieve (default: 0)
+   * @returns The transaction
+   */
+  private async getTransaction(transactionId: string, depth: number = 0): Promise<Transaction> {
     return this.apiClient.findByID({
       collection: 'transactions',
       id: transactionId,
@@ -573,36 +604,6 @@ export class TransactionService implements ITransactionService {
     });
   }
 
-  async getUserTransactions<
-    TSelect extends
-      SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
-    TPaginate extends boolean = boolean,
-  >(
-    profileID: string,
-    options?: FindMany<'transactions', TSelect, TPaginate>
-  ): Promise<FindManyResult<'transactions', TSelect, TPaginate>> {
-    const result = await this.apiClient.find({
-      ...options,
-      collection: 'transactions',
-      sort: options?.sort || '-createdAt',
-      where: {
-        and: [
-          {
-            or: [
-              { 'sender.value': { equals: profileID } },
-              { 'recipient.value': { equals: profileID } },
-            ],
-          },
-          options?.where || {},
-        ],
-      },
-    });
-
-    return result;
-  }
-  // #endregion
-
-  // #region Helper Methods
   /**
    * Calculates the total volume of milk bags by their IDs.
    * @param bags - milk bags
@@ -672,7 +673,7 @@ export class TransactionService implements ITransactionService {
    */
   private updateStatusHistory(
     transaction: Partial<Transaction>,
-    status: keyof typeof TRANSACTION_STATUS,
+    status: TransactionStatus,
     markedBy: NonNullable<User['profile']>
   ): NonNullable<Transaction['tracking']>['statusHistory'] {
     const existingStatusHistory = transaction.tracking?.statusHistory || [];

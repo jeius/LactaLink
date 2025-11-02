@@ -1172,8 +1172,8 @@ export interface Delivery {
   proposed?: ProposedDelivery;
   confirmed?: ConfirmedDelivery;
   arrival?: {
-    senderArrived?: boolean | null;
-    recipientArrived?: boolean | null;
+    senderArrivedAt?: string | null;
+    recipientArrivedAt?: string | null;
   };
 }
 /**
@@ -2846,8 +2846,8 @@ export interface DeliverySelect<T extends boolean = true> {
   arrival?:
     | T
     | {
-        senderArrived?: T;
-        recipientArrived?: T;
+        senderArrivedAt?: T;
+        recipientArrivedAt?: T;
       };
 }
 /**

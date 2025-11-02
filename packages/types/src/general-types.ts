@@ -1,11 +1,5 @@
-import {
-  DAYS,
-  DELIVERY_OPTIONS,
-  DONATION_REQUEST_STATUS,
-  GENDER_TYPES,
-  ID_STATUS,
-  ID_TYPES,
-} from '@lactalink/enums';
+import { DAYS, DELIVERY_OPTIONS, DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { Identity, Individual, Transaction } from './payload-types/generated';
 
 export type Theme = 'light' | 'dark';
 export type ImageData = {
@@ -15,9 +9,11 @@ export type ImageData = {
 };
 
 export type DonationRequestStatus = keyof typeof DONATION_REQUEST_STATUS;
-export type DeliveryMode = [keyof typeof DELIVERY_OPTIONS][number];
-export type DeliveryDays = [keyof typeof DAYS][number];
+export type DeliveryMode = keyof typeof DELIVERY_OPTIONS;
+export type DeliveryDays = keyof typeof DAYS;
 
-export type IDType = keyof typeof ID_TYPES;
-export type IDStatus = keyof typeof ID_STATUS;
-export type Gender = keyof typeof GENDER_TYPES;
+export type IDType = Identity['idType'];
+export type IDStatus = Identity['status'];
+export type Gender = NonNullable<Individual['gender']>;
+
+export type TransactionStatus = Transaction['status'];
