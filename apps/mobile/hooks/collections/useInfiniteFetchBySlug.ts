@@ -42,14 +42,18 @@ export function useInfiniteFetchBySlug<
   enabled: boolean,
   apiOptions: InfiniteFetchOptions<TSlug, TSelect>,
   queryOptions?: InfiniteQueryOptions<TSlug, TSelect>
-): UseInfiniteQueryResult<InfiniteData<FindManyResult<TSlug, TSelect, true>>> {
+): UseInfiniteQueryResult<InfiniteData<FindManyResult<TSlug, TSelect, true>>> & {
+  queryKey: unknown[];
+} {
   const apiClient = useApiClient();
   const { collection, page = 0, depth = 3, limit = 15, ...rest } = apiOptions;
 
-  return useInfiniteQuery({
+  const queryKey = [...INFINITE_QUERY_KEY, collection, apiOptions];
+
+  const query = useInfiniteQuery({
     enabled,
     initialPageParam: page,
-    queryKey: [...INFINITE_QUERY_KEY, collection, apiOptions],
+    queryKey: queryKey,
     queryFn: ({ pageParam }) => {
       if (!collection) throw new Error('Collection is required');
 
@@ -67,4 +71,6 @@ export function useInfiniteFetchBySlug<
     staleTime: 1000 * 60 * 5, // 5 minutes
     ...queryOptions,
   });
+
+  return { ...query, queryKey };
 }

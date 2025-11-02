@@ -1,10 +1,9 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
 import { MMKV_KEYS } from '@/lib/constants';
-import { INFINITE_QUERY_KEY } from '@/lib/constants/queryKeys';
 import localStorage from '@/lib/localStorage';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
-import { Transaction, User } from '@lactalink/types/payload-generated-types';
+import { Transaction } from '@lactalink/types/payload-generated-types';
 import { Where } from '@lactalink/types/payload-types';
 import { createStorageKeyByUser, generatePlaceHolders } from '@lactalink/utilities';
 import { extractID } from '@lactalink/utilities/extractors';
@@ -19,19 +18,18 @@ const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Transactio
 
 export function useFetchTransactions(overrides: Overrides = {}) {
   // Get current user to create query filter and storage keys
-  const meUser = useMeUser();
+  const { data: meUser } = useMeUser();
 
-  const { fetchOptions, queryKey } = useMemo(() => {
-    const where = createQueryFilter(meUser.data?.profile, overrides.where);
+  const { fetchOptions } = useMemo(() => {
+    const where = createQueryFilter(overrides.where);
     const fetchOptions = { where, sort: '-updatedAt', depth };
-    const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
-    return { fetchOptions, queryKey };
-  }, [meUser.data?.profile, overrides.where]);
+    return { fetchOptions };
+  }, [overrides.where]);
 
   // Load last fetched data from storage as placeholder data
   const { lastStoredData, lastDataKey } = useMemo(() => {
-    const baseKey = `${LAST_DATA}-${meUser.data?.id}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
-    const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
+    const baseKey = `${LAST_DATA}-${meUser?.id}`;
+    const lastDataKey = createStorageKeyByUser(meUser, baseKey);
     const lastFetchedData = localStorage.getString(lastDataKey);
 
     let parsedData: ListData | undefined = undefined;
@@ -44,13 +42,13 @@ export function useFetchTransactions(overrides: Overrides = {}) {
     }
 
     return { lastDataKey, lastStoredData: parsedData };
-  }, [meUser.data, queryKey]);
+  }, [meUser]);
 
   // Infinite query to fetch transactions
   const { data: queryData, ...queryRes } = useInfiniteFetchBySlug(
     true,
     { collection, ...fetchOptions },
-    { queryKey, placeholderData: lastStoredData }
+    { placeholderData: lastStoredData }
   );
 
   const aggregatedResults = useMemo(() => {
@@ -66,7 +64,7 @@ export function useFetchTransactions(overrides: Overrides = {}) {
       page.docs.forEach((doc) => {
         data.push(doc);
 
-        const meUserProfileID = extractID(meUser.data?.profile?.value);
+        const meUserProfileID = extractID(meUser?.profile?.value);
         const seenStatusForMe = doc.tracking?.seenStatus?.find(
           (status) => extractID(status.seenBy?.value) === meUserProfileID
         );
@@ -77,7 +75,7 @@ export function useFetchTransactions(overrides: Overrides = {}) {
     });
 
     return { data, unSeenData };
-  }, [queryRes.isLoading, queryData?.pages, meUser.data?.profile]);
+  }, [queryRes.isLoading, queryData?.pages, meUser?.profile]);
 
   // Persist last fetched data to storage
   useEffect(() => {
@@ -86,7 +84,7 @@ export function useFetchTransactions(overrides: Overrides = {}) {
     }
   }, [lastDataKey, queryData]);
 
-  return { ...aggregatedResults, queryKey, ...queryRes };
+  return { ...aggregatedResults, ...queryRes };
 }
 
 export function useTransactionQuery(id: string | undefined) {
@@ -94,9 +92,7 @@ export function useTransactionQuery(id: string | undefined) {
 }
 
 // #region Helpers
-function createQueryFilter(profile: User['profile'], override?: Where): Where | undefined {
-  if (!profile) return undefined;
-
+function createQueryFilter(override?: Where): Where | undefined {
   const doneStatuses = [
     TRANSACTION_STATUS.COMPLETED.value,
     TRANSACTION_STATUS.CANCELLED.value,
