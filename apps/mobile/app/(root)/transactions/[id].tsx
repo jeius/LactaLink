@@ -1,33 +1,23 @@
-import { Redirect, useLocalSearchParams } from 'expo-router';
-import React, { useMemo } from 'react';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 
-import { DonationListCard, RequestListCard } from '@/components/cards';
-import { TransactionDeliveryCard } from '@/components/cards/TransactionDeliveryCard';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { TransactionBottomSheet } from '@/components/bottom-sheets/TransactionBottomSheet';
+import { LocateButton } from '@/components/buttons/LocateButton';
+import { TransactionStatusCard } from '@/components/cards/TransactionDeliveryCard';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { MilkBagList } from '@/components/lists/horizontal-flatlists';
 import { MapView } from '@/components/map/MapView';
-import { ProfileTag } from '@/components/ProfileTag';
-import {
-  BottomSheet,
-  BottomSheetPortal,
-  BottomSheetScrollView,
-} from '@/components/ui/bottom-sheet';
-import { BottomSheetHandle } from '@/components/ui/BottomSheetHandle';
+import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
-import { Divider } from '@/components/ui/divider';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
-import { UserBuildingIcon, UserUserIcon } from '@/components/ui/icon/custom';
 import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
 import { useTransactionQuery } from '@/hooks/transactions/fetcher';
-import { TRANSACTION_TYPE } from '@lactalink/enums';
+import { shadow } from '@/lib/utils/shadows';
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { ErrorSearchParams } from '@lactalink/types';
-import { Transaction } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { Layout } from '@react-navigation/elements';
 import { StyleSheet } from 'react-native';
+import { useWindowDimensions } from 'react-native-keyboard-controller';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -37,46 +27,46 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const AnimatedCard = Animated.createAnimatedComponent(Card);
+function useAnimStyles(scrollY: SharedValue<number>, height: number) {
+  const middlePos = height * 0.45;
+  const snapPoints = useMemo(() => [HANDLEHEIGHT, middlePos, '100%'], [middlePos]);
 
-function useAnimStyles(scrollY: SharedValue<number>) {
-  const animatedBgStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, 200], [0.75, 0], Extrapolation.CLAMP);
+  const animatedHeaderInStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [middlePos, 0], [0, 1], Extrapolation.CLAMP);
+    return { opacity };
+  });
+
+  const animatedHeaderOutStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [middlePos, 0], [1, 0], Extrapolation.CLAMP);
     return { opacity };
   });
 
   const animatedCardStyle = useAnimatedStyle(() => {
-    return { transform: [{ translateY: scrollY.value }] };
+    const translateY = Math.max(scrollY.value - HANDLEHEIGHT - 20, middlePos + 20);
+    return { transform: [{ translateY }] };
   });
 
-  const animatedBackButtonStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
-    const scale = interpolate(scrollY.value, [0, 100], [0.5, 1], Extrapolation.CLAMP);
-    return { opacity, transform: [{ scale }] };
-  });
-
-  return { animatedBgStyle, animatedCardStyle, animatedBackButtonStyle };
+  return { animatedHeaderInStyle, animatedHeaderOutStyle, animatedCardStyle, snapPoints };
 }
 
 export default function TransactionPage() {
   const insets = useSafeAreaInsets();
+  const screen = useWindowDimensions();
+  const { themeColors } = useTheme();
+
+  const [headerSize, setHeaderSize] = useState<Layout>({ width: 0, height: 100 });
+  const [sheetSize, setSheetSize] = useState<Layout>({
+    width: 0,
+    height: screen.height - insets.top - insets.bottom,
+  });
 
   const scrollY = useSharedValue(0);
-  const { animatedBgStyle, animatedCardStyle, animatedBackButtonStyle } = useAnimStyles(scrollY);
+  const { animatedHeaderInStyle, animatedHeaderOutStyle, animatedCardStyle, snapPoints } =
+    useAnimStyles(scrollY, sheetSize.height);
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data, isLoading, error } = useTransactionQuery(id);
-
-  const { donation, request, type, volumeLabel, milkBags } = useMemo(
-    () => extractData(data),
-    [data]
-  );
-
-  const sender = data?.sender;
-  const recipient = data?.recipient;
-
-  const snapPoints = useMemo(() => [30, '60%', '100%'], []);
 
   if (!isLoading && error) {
     const params: ErrorSearchParams = {
@@ -88,126 +78,68 @@ export default function TransactionPage() {
   }
 
   return (
-    <Box className="flex-1 flex-col" style={{ marginBottom: insets.bottom }}>
-      {/* absolute header */}
-      <Box
-        className="absolute inset-x-0 flex-row items-center gap-2 p-5 pt-2"
-        style={[{ top: insets.top, zIndex: 10 }]}
-      >
-        <AnimatedCard
-          variant="filled"
-          className="rounded-full bg-transparent p-0"
-          style={[animatedBackButtonStyle]}
+    <>
+      <Stack.Screen options={{ contentStyle: { backgroundColor: themeColors.background[0] } }} />
+      <Box className="flex-1 flex-col" style={{ marginBottom: insets.bottom }}>
+        <MapView containerStyle={{ ...StyleSheet.absoluteFillObject, zIndex: -1 }} />
+
+        <Animated.View className="absolute inset-0" style={animatedCardStyle}>
+          <Box className="px-5">
+            <Box className="absolute right-4 top-0" style={{ transform: [{ translateY: -56 }] }}>
+              <LocateButton disableFollowUser />
+            </Box>
+            <TransactionStatusCard transactionID={id} />
+          </Box>
+        </Animated.View>
+
+        {/* Header */}
+        <Box
+          className="absolute inset-x-0 top-0 z-10"
+          onLayout={(e) => setHeaderSize(e.nativeEvent.layout)}
         >
           <Box
-            className="bg-background-300"
-            style={{ ...StyleSheet.absoluteFillObject, opacity: 0.75 }}
-          />
-          <HeaderBackButton style={{ marginRight: 0 }} />
-        </AnimatedCard>
-      </Box>
-
-      <MapView containerStyle={StyleSheet.absoluteFillObject} />
-
-      {/* animated background overlay */}
-      <Animated.View
-        pointerEvents="none"
-        className="bg-background-500"
-        style={[StyleSheet.absoluteFillObject, animatedBgStyle]}
-      />
-
-      <Animated.View
-        className="relative p-5"
-        style={[{ marginTop: insets.top }, animatedCardStyle]}
-      >
-        <TransactionDeliveryCard transactionID={id} />
-      </Animated.View>
-
-      <Box className="flex-1">
-        <BottomSheet snapToIndex={2} disableClose>
-          <BottomSheetPortal
-            snapPoints={snapPoints}
-            snapToIndex={2}
-            handleComponent={BottomSheetHandle}
-            enableContentPanningGesture={true}
-            enableDynamicSizing={false}
-            animateOnMount={true}
-            backgroundStyle={{ backgroundColor: 'transparent' }}
-            animatedPosition={scrollY}
+            className="flex-row items-center gap-2 px-4"
+            style={{ paddingTop: insets.top + 8, paddingBottom: 8 }}
           >
-            <BottomSheetScrollView
-              contentContainerClassName="flex-col gap-4 bg-background-0 pb-5"
-              showsVerticalScrollIndicator={false}
-            >
-              <VStack space="sm" className="items-stretch">
-                <HStack space="md" className="items-center justify-between p-5">
-                  <VStack>
-                    <Text bold size="xl">
-                      {volumeLabel}
-                    </Text>
-                    <Text size="sm">{type}</Text>
-                  </VStack>
+            {/* Header Background */}
+            <Animated.View
+              className="absolute inset-0 border-b border-outline-100 bg-background-0"
+              style={[shadow.md, animatedHeaderInStyle]}
+            />
 
-                  <Icon
-                    size="2xl"
-                    as={data?.transactionType === 'P2P' ? UserUserIcon : UserBuildingIcon}
-                  />
-                </HStack>
+            {/* Header Back Button */}
+            <Box className="overflow-hidden rounded-full p-0">
+              <Animated.View
+                className="rounded-full border border-outline-200 bg-background-100"
+                style={[StyleSheet.absoluteFillObject, animatedHeaderOutStyle]}
+              />
+              <HeaderBackButton />
+            </Box>
 
-                <HStack space="md" className="items-center justify-between px-5">
-                  <ProfileTag isLoading={isLoading} profile={sender} label="Sender" />
-                  <ProfileTag
-                    direction="rtl"
-                    isLoading={isLoading}
-                    profile={recipient}
-                    label="Recipient"
-                  />
-                </HStack>
-              </VStack>
+            {/* Header Title */}
+            <Animated.View className="flex-col" style={animatedHeaderInStyle}>
+              <Text bold size="lg">
+                {displayVolume(data?.matchedVolume || 0)}
+              </Text>
+              <Text size="xs" className="font-JakartaMedium">
+                {data && TRANSACTION_STATUS[data.status].label}
+              </Text>
+            </Animated.View>
+          </Box>
+        </Box>
 
-              <Divider />
-
-              {donation && (
-                <VStack space="xs" className="px-5">
-                  <Text className="font-JakartaSemiBold mb-1">Donation</Text>
-                  <DonationListCard
-                    className="border-primary-500"
-                    hideFooter
-                    data={donation}
-                    isLoading={isLoading}
-                  />
-                </VStack>
-              )}
-
-              {request && (
-                <VStack space="xs" className="px-5">
-                  <Text className="font-JakartaSemiBold mb-1">Request</Text>
-                  <RequestListCard
-                    className="border-tertiary-500"
-                    hideFooter
-                    data={request}
-                    isLoading={isLoading}
-                  />
-                </VStack>
-              )}
-
-              {milkBags && <MilkBagList data={milkBags} label="Milk Bags" />}
-            </BottomSheetScrollView>
-          </BottomSheetPortal>
-        </BottomSheet>
+        <Box
+          style={{ flex: 1, marginTop: headerSize.height - HANDLEHEIGHT }}
+          onLayout={(e) => setSheetSize(e.nativeEvent.layout)}
+        >
+          <TransactionBottomSheet
+            transactionID={id}
+            snapPoints={snapPoints}
+            snapToIndex={1}
+            animatedPosition={scrollY}
+          />
+        </Box>
       </Box>
-    </Box>
+    </>
   );
-}
-
-function extractData(data: Transaction | undefined) {
-  if (!data) return {};
-  return {
-    transactionNo: data.transactionNumber,
-    volumeLabel: displayVolume(data.matchedVolume),
-    donation: extractCollection(data.donation),
-    request: extractCollection(data.request),
-    milkBags: extractCollection(data.matchedBags),
-    type: TRANSACTION_TYPE[data.transactionType].label,
-  };
 }
