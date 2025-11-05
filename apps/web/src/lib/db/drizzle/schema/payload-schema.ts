@@ -1776,7 +1776,17 @@ export const transactions = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    delivery_arrival_senderDepartedAt: timestamp('delivery_arrival_sender_departed_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
     delivery_arrival_senderArrivedAt: timestamp('delivery_arrival_sender_arrived_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    delivery_arrival_recipientDepartedAt: timestamp('delivery_arrival_recipient_departed_at', {
       mode: 'string',
       withTimezone: true,
       precision: 3,

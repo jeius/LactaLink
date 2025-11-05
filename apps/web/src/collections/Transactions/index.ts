@@ -190,8 +190,37 @@ export const Transactions: CollectionConfig<'transactions'> = {
                       type: 'row',
                       fields: [
                         {
+                          name: 'senderDepartedAt',
+                          label: 'Sender Department At',
+                          type: 'date',
+                          admin: {
+                            width: '50%',
+                            date: {
+                              displayFormat: 'd MMM yyy HH:mm a',
+                              pickerAppearance: 'dayAndTime',
+                            },
+                          },
+                        },
+                        {
                           name: 'senderArrivedAt',
                           label: 'Sender Arrived At',
+                          type: 'date',
+                          admin: {
+                            width: '50%',
+                            date: {
+                              displayFormat: 'd MMM yyy HH:mm a',
+                              pickerAppearance: 'dayAndTime',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'recipientDepartedAt',
+                          label: 'Recipient Departed At',
                           type: 'date',
                           admin: {
                             width: '50%',
