@@ -14,6 +14,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      eslint:
+        specifier: ^9.38.0
+        version: 9.38.0(jiti@2.6.1)
       glob:
         specifier: ^11.0.3
         version: 11.0.3
@@ -689,9 +692,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.43.0
         version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint:
-        specifier: ^9.38.0
-        version: 9.38.0(jiti@2.6.1)
       eslint-config-expo:
         specifier: ^10.0.0
         version: 10.0.0(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
