@@ -49,21 +49,24 @@ export function ThumbnailMap({
         <Skeleton variant="sharp" className="h-full w-full" />
       ) : (
         <>
-          {!mapLoaded && (
-            <Box className="bg-background-200 absolute inset-0 z-50">
-              <Spinner size={'small'} className="m-auto" />
-            </Box>
-          )}
-
           <GoogleMapsView
-            initialProps={{ camera: { zoom, center, bearing: heading, tilt: pitch } }}
+            initialProps={{
+              camera: { zoom, center, bearing: heading, tilt: pitch },
+              liteMode: true,
+            }}
             style={StyleSheet.absoluteFill}
             myLocationEnabled={false}
             userInterfaceStyle={theme}
             markers={[locationMarker]}
             pointerEvents="none"
-            onMapReady={callback(() => setMapLoaded(true))}
+            onMapLoaded={callback(() => setMapLoaded(true))}
           />
+
+          {!mapLoaded && (
+            <Box className="absolute inset-0 z-50 items-center justify-center bg-background-200">
+              <Spinner size={'small'} />
+            </Box>
+          )}
 
           {onPress && <Pressable disabled={disabled} className="grow" onPress={onPress} />}
         </>

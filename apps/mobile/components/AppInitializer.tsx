@@ -12,7 +12,7 @@ import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useCurrentLocation } from '@/hooks/location/useLocation';
+import { useInitLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
 import { useInitializeMarkersIndex } from '@/lib/stores/markersStore';
 import { useInitializeTutorialStore } from '@/lib/stores/tutorialStore';
@@ -33,7 +33,7 @@ export function AppInitializer({ children }: Props) {
 
   const { isLoading: isThemeLoading } = useTheme();
   const auth = useAuth();
-  const location = useCurrentLocation();
+  const location = useInitLocation();
   const markers = useInitializeMarkersIndex(Boolean(auth.session));
   const tutorialState = useInitializeTutorialStore(auth.user);
 

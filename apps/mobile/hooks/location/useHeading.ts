@@ -1,28 +1,25 @@
+import { createSubscription } from '@/lib/magnetometer/createMagnetometerSubscription';
+import {
+  calculateHeading,
+  MagnetometerOptions,
+  roundHeading,
+  useSetUpdateInterval,
+} from '@/lib/magnetometer/utils';
 import { lerpAngle } from '@lactalink/utilities/geo-utils';
-import { Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
-import { useEffect, useRef, useState } from 'react';
-import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSharedValue } from 'react-native-reanimated';
 
-export type MagnetometerOptions = {
-  /**
-   * Update interval for the magnetometer.
-   * Can be 'slow' (1000ms), 'fast' (20ms), or a custom number in milliseconds.
-   */
-  updateInterval?: 'slow' | 'fast' | number;
-  /**
-   * Optional offset to adjust the heading readings.
-   */
-  offset?: SharedValue<number>;
-};
-
-export function useHeading({ updateInterval = 'slow', offset }: MagnetometerOptions = {}) {
+export function useHeading({ updateInterval = 'fast', offset }: MagnetometerOptions = {}) {
   const prevReadingRef = useRef(0);
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
-  const animatedHeading = useSharedValue(0);
   const [heading, setHeading] = useState(0);
 
   useSetUpdateInterval(updateInterval);
+
+  const filterHeading = useCallback((heading: number) => {
+    return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
+  }, []);
 
   useEffect(() => {
     const setupSubscription = async () => {
@@ -33,13 +30,16 @@ export function useHeading({ updateInterval = 'slow', offset }: MagnetometerOpti
         }
         const filtered = filterHeading(roundHeading(raw));
         prevReadingRef.current = filtered;
-        animatedHeading.value = filtered;
 
-        if (heading !== filtered) {
-          setHeading(filtered);
-        }
+        setHeading((prev) => (prev !== filtered ? filtered : prev));
       });
-      subscriptionRef.current = subscription;
+
+      if (subscriptionRef.current) {
+        subscriptionRef.current.remove();
+        subscriptionRef.current = subscription;
+      } else {
+        subscriptionRef.current = subscription;
+      }
     };
 
     setupSubscription();
@@ -48,14 +48,9 @@ export function useHeading({ updateInterval = 'slow', offset }: MagnetometerOpti
       // Clean up the subscription when the component unmounts
       subscriptionRef.current?.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [filterHeading, offset]);
 
   return heading;
-
-  function filterHeading(heading: number) {
-    return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
-  }
 }
 
 export function useAnimatedHeading({ updateInterval = 'slow', offset }: MagnetometerOptions = {}) {
@@ -66,6 +61,10 @@ export function useAnimatedHeading({ updateInterval = 'slow', offset }: Magnetom
 
   useSetUpdateInterval(updateInterval);
 
+  const filterHeading = useCallback((heading: number) => {
+    return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
+  }, []);
+
   useEffect(() => {
     const setupSubscription = async () => {
       const subscription = await createSubscription((res) => {
@@ -77,7 +76,13 @@ export function useAnimatedHeading({ updateInterval = 'slow', offset }: Magnetom
         prevReadingRef.current = filtered;
         animatedHeading.value = filtered;
       });
-      subscriptionRef.current = subscription;
+
+      if (subscriptionRef.current) {
+        subscriptionRef.current.remove();
+        subscriptionRef.current = subscription;
+      } else {
+        subscriptionRef.current = subscription;
+      }
     };
 
     setupSubscription();
@@ -86,58 +91,7 @@ export function useAnimatedHeading({ updateInterval = 'slow', offset }: Magnetom
       // Clean up the subscription when the component unmounts
       subscriptionRef.current?.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function filterHeading(heading: number) {
-    return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
-  }
+  }, [animatedHeading, filterHeading, offset]);
 
   return animatedHeading;
 }
-
-//#region Helpers
-function useSetUpdateInterval(interval: MagnetometerOptions['updateInterval'] = 'slow') {
-  useEffect(() => {
-    if (interval === 'slow') {
-      slow();
-    } else if (interval === 'fast') {
-      fast();
-    } else {
-      Magnetometer.setUpdateInterval(interval);
-    }
-  }, [interval]);
-}
-
-async function createSubscription(callback: (result: MagnetometerMeasurement) => void) {
-  const isAvailable = await Magnetometer.isAvailableAsync();
-  if (isAvailable) {
-    const permission = await Magnetometer.requestPermissionsAsync();
-
-    if (permission.granted) {
-      return Magnetometer.addListener(callback);
-    }
-  }
-
-  console.warn('Magnetometer is not available on this device.');
-  return { remove: () => {} }; // Return a no-op remove function
-}
-
-function calculateHeading(x: number, y: number): number {
-  if (x === 0 && y === 0) {
-    return 0; // Return 0 if both x and y are zero to avoid undefined behavior
-  }
-  return Math.atan2(y, x) * (180 / Math.PI) - 90;
-}
-
-function roundHeading(heading: number): number {
-  return heading >= 0 ? Math.round(heading) : Math.round(heading + 360);
-}
-
-function slow() {
-  return Magnetometer.setUpdateInterval(1000);
-}
-function fast() {
-  return Magnetometer.setUpdateInterval(20);
-}
-//#endregion

@@ -1,10 +1,10 @@
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
+import { useCurrentLocation } from '@/lib/stores/locationStore';
 import { useMatchingService } from '@lactalink/api';
 import { DonationRequestStatus, Point } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
 import { CollectionSlug, PaginatedDocs } from '@lactalink/types/payload-types';
 import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
-import { useCurrentLocation } from '../location/useLocation';
 
 export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>>(
   collection: TSlug,
@@ -12,7 +12,7 @@ export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations
   status: DonationRequestStatus = 'AVAILABLE',
   maxDistance?: number
 ): UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Collection<TSlug>> | null>> {
-  const { location } = useCurrentLocation();
+  const location = useCurrentLocation();
   const matchingService = useMatchingService();
 
   return useInfiniteQuery({

@@ -1,30 +1,39 @@
-import React, { PropsWithChildren, useMemo, useState } from 'react';
-import type { ViewProps } from 'react-native';
+import React, { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Insets, ViewProps } from 'react-native';
 import { StyleSheet } from 'react-native';
 import {
   GoogleMapsView,
   GoogleMapsViewRef,
   RNAndroidLocationPriority,
-  RNIOSLocationAccuracy,
-  RNMarker,
-  RNMarkerSvg,
+  type RNCamera,
   type RNGoogleMapsPlusViewProps,
   type RNInitialProps,
+  RNIOSLocationAccuracy,
   type RNLocation,
   type RNLocationConfig,
   type RNMapPadding,
   type RNMapUiSettings,
   type RNMapZoomConfig,
+  type RNMarker,
+  type RNMarkerSvg,
+  type RNRegion,
 } from 'react-native-google-maps-plus';
 
 import { useAnimatedLatLng } from '@/hooks/location/useAnimatedLatLng';
 import { useHeading } from '@/hooks/location/useHeading';
-import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
 import { USER_LOCATION_MARKER_SVG_STRING } from '@/lib/constants/markerSvgs';
+import { getCurrentLocation, setLocationStore } from '@/lib/stores';
+import {
+  transformExpoLocationToRN,
+  transformRNLocationToExpo,
+} from '@/lib/utils/transformLocationData';
+import { MarkOptional } from '@lactalink/types/utils';
+import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { callback } from 'react-native-nitro-modules';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
+import { MapProvider, useIsFollowingUser, useIsUserLocated } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
@@ -34,6 +43,7 @@ type Props = ViewProps &
   PropsWithChildren & {
     mapRef: React.RefObject<GoogleMapsViewRef | null>;
     hideUserLocationMarker?: boolean;
+    offset?: Insets;
   };
 
 const MAP_ZOOM_CONFIG: RNMapZoomConfig = { min: 0, max: 20 };
@@ -83,59 +93,38 @@ const ICON_SVG: RNMarkerSvg = {
   svgString: USER_LOCATION_MARKER_SVG_STRING,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapCallback<T extends (...args: any[]) => void>(
-  propCallback: T | undefined,
-  fallback?: (...args: Parameters<T>) => void
-) {
-  return callback({
-    f: ((...args: Parameters<T>) => {
-      propCallback?.(...args);
-      fallback?.(...args);
-    }) as T,
-  });
-}
-
-export default function MapWrapper(props: Props) {
-  const { children, hideUserLocationMarker = false, ...rest } = props;
+function MapView({ children, hideUserLocationMarker = false, offset, ...props }: Props) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const mapPadding: RNMapPadding = useMemo(() => {
-    return props.children
-      ? { top: insets.top + 20, left: 20, bottom: insets.bottom + 20, right: 20 }
-      : { top: insets.top + 20, left: 20, bottom: insets.bottom + 20, right: 20 };
-  }, [insets.bottom, insets.top, props.children]);
+  const mapPadding = useMemo<RNMapPadding>(() => {
+    return {
+      top: insets.top + 20 + (offset?.top ?? 0),
+      left: insets.left + 20 + (offset?.left ?? 0),
+      bottom: insets.bottom + 20 + (offset?.bottom ?? 0),
+      right: insets.right + 20 + (offset?.right ?? 0),
+    };
+  }, [insets, offset]);
+
+  const uiSettings = useMemo(() => createUISettings(props.uiSettings), [props.uiSettings]);
 
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { location: currentLoc } = useCurrentLocation();
-  const heading = useHeading({ updateInterval: 'fast' });
+
+  const [followingUser, setFollowUser] = useIsFollowingUser();
+  const setUserLocated = useIsUserLocated()[1];
 
   const initialLoc: RNLocation = useMemo(() => {
-    if (!currentLoc?.coords) return DEFAULT_LOCATION;
-    return {
-      center: {
-        latitude: currentLoc.coords.latitude,
-        longitude: currentLoc.coords.longitude,
-      },
-      altitude: currentLoc.coords.altitude || 0,
-      accuracy: currentLoc.coords.accuracy || 0,
-      bearing: currentLoc.coords.heading || 0,
-      speed: currentLoc.coords.speed || 0,
-      time: currentLoc.timestamp || 0,
-    };
-  }, [currentLoc]);
+    const currentLoc = getCurrentLocation();
+    if (!currentLoc) return DEFAULT_LOCATION;
+    return transformExpoLocationToRN(currentLoc);
+  }, []);
 
   const initialProps = useMemo<RNInitialProps>(
-    () => ({
-      camera: {
-        center: initialLoc.center,
-        zoom: 16,
-      },
-    }),
+    () => ({ camera: { center: initialLoc.center, zoom: 16 } }),
     [initialLoc.center]
   );
 
+  const heading = useHeading({ updateInterval: 'fast' });
   const { animateTo, animatedLatLng } = useAnimatedLatLng(initialLoc.center);
 
   const userLocationMarker = useMemo<RNMarker | null>(() => {
@@ -148,6 +137,7 @@ export default function MapWrapper(props: Props) {
       anchor: { x: 0.5, y: 0.5 },
       iconSvg: ICON_SVG,
       zIndex: -1,
+      draggable: false,
     };
   }, [hideUserLocationMarker, animatedLatLng, heading]);
 
@@ -155,14 +145,53 @@ export default function MapWrapper(props: Props) {
     return userLocationMarker ? [userLocationMarker, ...(props.markers || [])] : props.markers;
   }, [props.markers, userLocationMarker]);
 
+  const onLocationUpdate = useCallback(
+    (location: RNLocation) => {
+      const center = location.center;
+      animateTo(center);
+      setLocationStore(transformRNLocationToExpo(location));
+
+      if (followingUser) {
+        props.mapRef.current?.setCamera({ center, bearing: heading }, false);
+      }
+    },
+    [animateTo, followingUser, heading, props.mapRef]
+  );
+
+  const onCameraChangeComplete = useCallback(
+    (_: RNRegion, camera: RNCamera, _isGesture: boolean) => {
+      const areEqual = arePointsEqual(
+        latLngToPoint(camera.center),
+        latLngToPoint(userLocationMarker?.coordinate)
+      );
+      setUserLocated(areEqual);
+    },
+    [setUserLocated, userLocationMarker?.coordinate]
+  );
+
+  const onCameraChange = useCallback(
+    (_: RNRegion, __: RNCamera, isGesture: boolean) => {
+      if (followingUser && isGesture) {
+        setFollowUser(false);
+      }
+    },
+    [followingUser, setFollowUser]
+  );
+
+  useEffect(() => {
+    if (followingUser && props.mapRef) {
+      props.mapRef.current?.setCamera({ bearing: heading }, false);
+    }
+  }, [heading, followingUser, props.mapRef]);
+
   return (
     <Box className="flex-1">
       <GoogleMapsView
-        {...rest}
+        {...props}
         hybridRef={wrapCallback((ref) => (props.mapRef.current = ref))}
         initialProps={props.initialProps ?? initialProps}
         markers={markers}
-        uiSettings={props.uiSettings ?? UI_SETTINGS}
+        uiSettings={uiSettings}
         myLocationEnabled={props.myLocationEnabled ?? false}
         trafficEnabled={props.trafficEnabled ?? false}
         indoorEnabled={props.indoorEnabled ?? false}
@@ -190,12 +219,12 @@ export default function MapWrapper(props: Props) {
         onMyLocationPress={wrapCallback(props.onMyLocationPress)}
         onMyLocationButtonPress={wrapCallback(props.onMyLocationButtonPress)}
         onCameraChangeStart={wrapCallback(props.onCameraChangeStart)}
-        onCameraChange={wrapCallback(props.onCameraChange)}
-        onCameraChangeComplete={wrapCallback(props.onCameraChangeComplete)}
+        onCameraChange={wrapCallback(props.onCameraChange, onCameraChange)}
+        onCameraChangeComplete={wrapCallback(props.onCameraChangeComplete, onCameraChangeComplete)}
         onMapReady={wrapCallback(props.onMapReady)}
         onMapLoaded={wrapCallback(props.onMapLoaded, () => setMapLoaded(true))}
         onMapError={wrapCallback(props.onMapError, (e) => console.warn('Map error:', e))}
-        onLocationUpdate={wrapCallback(props.onLocationUpdate, ({ center }) => animateTo(center))}
+        onLocationUpdate={wrapCallback(props.onLocationUpdate, onLocationUpdate)}
         onLocationError={wrapCallback(props.onLocationError, (e) =>
           console.warn('Location error:', e)
         )}
@@ -212,3 +241,34 @@ export default function MapWrapper(props: Props) {
     </Box>
   );
 }
+
+export default function MapWrapper({
+  mapRef: mapRefProp,
+  ...props
+}: MarkOptional<Props, 'mapRef'>) {
+  const localMapRef = useRef<GoogleMapsViewRef | null>(null);
+  const mapRef = mapRefProp ?? localMapRef;
+
+  return (
+    <MapProvider mapRef={mapRef}>
+      <MapView {...props} mapRef={mapRef} />
+    </MapProvider>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function wrapCallback<T extends (...args: any[]) => void>(
+  propCallback: T | undefined,
+  fallback?: (...args: Parameters<T>) => void
+) {
+  return callback({
+    f: ((...args: Parameters<T>) => {
+      propCallback?.(...args);
+      fallback?.(...args);
+    }) as T,
+  });
+}
+
+const createUISettings = (overrides: RNMapUiSettings = {}) => {
+  return { ...UI_SETTINGS, ...overrides };
+};

@@ -1,27 +1,36 @@
 import { LocationObject } from 'expo-location';
-import { LatLng } from 'react-native-maps';
+import { RNLatLng as LatLng } from 'react-native-google-maps-plus';
 import { create } from 'zustand';
 
 interface LocationStoreState {
   location: LocationObject | null;
   coordinates: LatLng | null;
-  setLocation: (location: LocationObject | null) => void;
-  setCoordinates: (coordinates: LatLng | null) => void;
-  reset: () => void;
 }
 
-export const useLocationStore = create<LocationStoreState>((set) => ({
+export const useLocationStore = create<LocationStoreState>(() => ({
   location: null,
   coordinates: null,
-  setLocation: (location: LocationObject | null) => set({ location }),
-  setCoordinates: (coordinates: LatLng | null) => set({ coordinates }),
-  reset: () => set({ location: null, coordinates: null }),
 }));
 
-export function getLocationCoordinates(location: LocationObject | null): LatLng | null {
-  if (!location || !location.coords) return null;
-  return {
-    latitude: location.coords.latitude,
-    longitude: location.coords.longitude,
-  };
+export function resetLocationStore() {
+  useLocationStore.setState({ location: null, coordinates: null });
 }
+
+export function setLocationStore(location: LocationObject) {
+  useLocationStore.setState({
+    location,
+    coordinates: {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    },
+  });
+}
+
+export function setCoordinatesStore(coordinates: LatLng) {
+  useLocationStore.setState({ coordinates });
+}
+
+export const useCurrentLocation = () => useLocationStore((state) => state.location);
+export const useCurrentCoordinates = () => useLocationStore((state) => state.coordinates);
+export const getCurrentCoordinates = () => useLocationStore.getState().coordinates;
+export const getCurrentLocation = () => useLocationStore.getState().location;

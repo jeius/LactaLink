@@ -11,8 +11,8 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 import { Image } from '@/components/Image';
-import { useCurrentLocation } from '@/hooks/location/useLocation';
 import { BLUR_HASH } from '@/lib/constants';
+import { useCurrentLocation } from '@/lib/stores/locationStore';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { getPriorityColor } from '@/lib/utils/getPriorityColor';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -28,7 +28,7 @@ interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
 }
 
 export default function RequestCard({ data, isLoading, ...props }: RequestCardProps) {
-  const { location } = useCurrentLocation();
+  const location = useCurrentLocation();
   const { theme } = useTheme();
 
   if (isLoading) {
@@ -69,7 +69,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
     <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
       <Card variant="filled" className="p-0">
         <VStack>
-          <Box className="bg-tertiary-50 relative aspect-square h-48">
+          <Box className="relative aspect-square h-48 bg-tertiary-50">
             <Box className="h-full w-full overflow-hidden">
               {uri ? (
                 <Image
@@ -81,7 +81,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
                   alt={'Request Image'}
                 />
               ) : (
-                <Text className="text-tertiary-900 m-auto">No Image</Text>
+                <Text className="m-auto text-tertiary-900">No Image</Text>
               )}
             </Box>
 
@@ -152,7 +152,7 @@ export default function RequestCard({ data, isLoading, ...props }: RequestCardPr
                   ))}
                 </HStack>
 
-                <Box className="border-outline-700 h-4 flex-1 border-b border-dashed" />
+                <Box className="h-4 flex-1 border-b border-dashed border-outline-700" />
               </>
             )}
 
@@ -178,7 +178,7 @@ export function RequestSkeleton() {
   return (
     <Card variant="filled" className="p-0">
       <VStack>
-        <Box className="bg-background-muted relative aspect-square h-48">
+        <Box className="relative aspect-square h-48 bg-background-muted">
           <Box className="h-full w-full overflow-hidden">
             <Skeleton startColor="bg-background-300" speed={4} />
           </Box>

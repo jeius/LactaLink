@@ -1,4 +1,4 @@
-import { useCurrentLocation } from '@/hooks/location/useLocation';
+import { useInitLocation } from '@/hooks/location/useLocation';
 import RNMapView, { Details, LatLng, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
 import React, { ComponentProps, useEffect, useMemo, useState } from 'react';
@@ -48,7 +48,7 @@ export function MapView({
   const setUserLocated = useMapStore((s) => s.setUserLocated);
   const resetMap = useMapStore((s) => s.reset);
 
-  const { location, error, ...locationQuery } = useCurrentLocation();
+  const { location, error, ...locationQuery } = useInitLocation();
 
   const isLoading = isLoadingProp || locationQuery.isLoading;
   const isMapReady = mapReady && mapLoaded && !isLoading;
