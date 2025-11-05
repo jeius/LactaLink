@@ -15,28 +15,18 @@ export type MagnetometerOptions = {
   offset?: SharedValue<number>;
 };
 
-export function useMagnetometer({ updateInterval = 'slow', offset }: MagnetometerOptions = {}) {
-  const animatedHeading = useSharedValue(0);
-
+export function useHeading({ updateInterval = 'slow', offset }: MagnetometerOptions = {}) {
   const prevReadingRef = useRef(0);
   const subscriptionRef = useRef<{ remove: () => void } | null>(null);
 
-  const [{ x, y, z }, setData] = useState<MagnetometerMeasurement>({
-    x: 0,
-    y: 0,
-    z: 0,
-    timestamp: Date.now(),
-  });
-
-  const rawHeading = roundHeading(calculateHeading(x, y));
-  const filteredHeading = filterHeading(rawHeading);
+  const animatedHeading = useSharedValue(0);
+  const [heading, setHeading] = useState(0);
 
   useSetUpdateInterval(updateInterval);
 
   useEffect(() => {
     const setupSubscription = async () => {
       const subscription = await createSubscription((res) => {
-        setData(res);
         let raw = calculateHeading(res.x, res.y);
         if (offset) {
           raw = (raw - offset.value + 360) % 360;
@@ -44,6 +34,10 @@ export function useMagnetometer({ updateInterval = 'slow', offset }: Magnetomete
         const filtered = filterHeading(roundHeading(raw));
         prevReadingRef.current = filtered;
         animatedHeading.value = filtered;
+
+        if (heading !== filtered) {
+          setHeading(filtered);
+        }
       });
       subscriptionRef.current = subscription;
     };
@@ -57,16 +51,7 @@ export function useMagnetometer({ updateInterval = 'slow', offset }: Magnetomete
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return {
-    x,
-    y,
-    z,
-    setSlow: slow,
-    setFast: fast,
-    heading: rawHeading,
-    filteredHeading,
-    animatedHeading,
-  };
+  return heading;
 
   function filterHeading(heading: number) {
     return Math.round(lerpAngle(prevReadingRef.current, heading, 0.2));
@@ -142,7 +127,7 @@ function calculateHeading(x: number, y: number): number {
   if (x === 0 && y === 0) {
     return 0; // Return 0 if both x and y are zero to avoid undefined behavior
   }
-  return Math.atan2(y, x) * (180 / Math.PI) - 85; // Adjusted by -85 degrees for alignment
+  return Math.atan2(y, x) * (180 / Math.PI) - 90;
 }
 
 function roundHeading(heading: number): number {

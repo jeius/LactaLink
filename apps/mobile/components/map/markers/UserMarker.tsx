@@ -1,8 +1,8 @@
 import { AnimatedMarker, useAnimatedRegion } from '@/components/animated/marker';
 import { Box } from '@/components/ui/box';
 import { UserLocationIcon } from '@/components/ui/icon/custom';
+import { useAnimatedHeading } from '@/hooks/location/useHeading';
 import { useLocationUpdates } from '@/hooks/location/useLocation';
-import { useAnimatedHeading } from '@/hooks/location/useMagnetometer';
 
 import { getPrimaryColor } from '@/lib/colors';
 import { PHILIPPINES_COORDINATES } from '@/lib/constants';
@@ -168,7 +168,7 @@ export const UserMarker = forwardRef<UserMarkerRef, UserMarkerProps>(
           />
         ) : (
           <Box
-            className="bg-primary-500 border-primary-0 h-5 w-5 rounded-full border-2"
+            className="h-5 w-5 rounded-full border-2 border-primary-0 bg-primary-500"
             onLayout={redraw}
           />
         )}
