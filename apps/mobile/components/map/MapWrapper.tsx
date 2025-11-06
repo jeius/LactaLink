@@ -42,6 +42,8 @@ type Props = Pick<ViewProps, 'style'> &
   PropsWithChildren & {
     hideUserLocationMarker?: boolean;
     offset?: Insets;
+    containerStyle?: ViewProps['style'];
+    containerClassName?: ViewProps['className'];
   };
 
 const MAP_ZOOM_CONFIG: RNMapZoomConfig = { min: 0, max: 20 };
@@ -91,7 +93,14 @@ const ICON_SVG: RNMarkerSvg = {
   svgString: USER_LOCATION_MARKER_SVG_STRING,
 };
 
-function MapView({ children, hideUserLocationMarker = false, offset, ...props }: Props) {
+function MapView({
+  children,
+  hideUserLocationMarker = false,
+  offset,
+  containerClassName,
+  containerStyle,
+  ...props
+}: Props) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -164,7 +173,7 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
   }, [heading, followingUser, locationUpdates, map]);
 
   return (
-    <Box className="flex-1">
+    <Box style={containerStyle} className={containerClassName ?? 'flex-1'}>
       <GoogleMapsView
         {...props}
         hybridRef={wrapCallback(createRef)}

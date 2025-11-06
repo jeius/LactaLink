@@ -27,6 +27,7 @@
   "devDependencies": {
     "@babel/cli": "^7.28.3",
     "@types/jest": "^29.5.14",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.38.0",
     "glob": "^11.0.3",
     "jest": "^30.0.5",
