@@ -1,5 +1,3 @@
-import { useMapStore } from '@/lib/stores/mapStore';
-import { createMarkerID, setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -8,6 +6,8 @@ import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { MapIcon } from 'lucide-react-native';
 import React from 'react';
 import { DeliveryPreferenceCard, DonationInfoCard, RequestInfoCard } from '../cards';
+import { createMarkerID, useSelectedDataMarker } from '../contexts/DataMarkerProvider';
+import { useMap } from '../contexts/MapProvider';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Text } from '../ui/text';
@@ -18,8 +18,8 @@ interface MapMarkerInfoProps {
 }
 
 export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
-  const map = useMapStore((s) => s.map);
-  const selectedMarker = useMarkersStore((s) => s.selectedMarker);
+  const [map] = useMap();
+  const [selectedMarker, setSelectedMarker] = useSelectedDataMarker();
 
   if (!selectedMarker) return null;
 
@@ -42,14 +42,8 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
         const [longitude, latitude] = point;
         const markerID = createMarkerID(slug, data.id, point);
         setSelectedMarker(markerID);
-
-        if (map) {
-          const currentCamera = await map.getCamera();
-          map.animateCamera({
-            center: { latitude, longitude },
-            zoom: Math.max(currentCamera.zoom || 16, 16),
-          });
-        }
+        map?.setCamera({ center: { latitude, longitude }, zoom: 16 }, true, 300);
+        setTimeout(() => map?.showMarkerInfoWindow(markerID), 350);
       }
 
       return (
@@ -73,7 +67,7 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
       <VStack space="sm" className="mb-10 w-full items-stretch">
         <Text className="font-JakartaSemiBold">Donation Details</Text>
         <DonationInfoCard data={data} />
-        <Text className="font-JakartaSemiBold mt-4">Delivery Preferences</Text>
+        <Text className="mt-4 font-JakartaSemiBold">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="donations" data={preferences} />
       </VStack>
     );
@@ -85,7 +79,7 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
       <VStack space="sm" className="mb-10 w-full items-stretch">
         <Text className="font-JakartaSemiBold">Request Details</Text>
         <RequestInfoCard data={data} />
-        <Text className="font-JakartaSemiBold mt-4">Delivery Preferences</Text>
+        <Text className="mt-4 font-JakartaSemiBold">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="requests" data={preferences} />
       </VStack>
     );

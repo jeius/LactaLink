@@ -51,7 +51,7 @@ export default function Explore() {
         <Animated.View className="absolute inset-0 bg-background-0" style={animatedHeaderBGStyle} />
         <AnimatedInput
           variant="rounded"
-          className="my-2 bg-background-0 shadow-md"
+          className="my-4 bg-background-0 shadow-md"
           style={animatedInputStyle}
         >
           <InputIcon as={SearchIcon} className="ml-3 text-primary-500" />

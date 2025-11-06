@@ -1,87 +1,55 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { MapView } from '@/components/map/MapView';
-import { DataMarkers } from '@/components/map/markers/DataMarkers';
+import {
+  DataMarkerProvider,
+  useDataMarkersIndex,
+  useSelectedDataMarker,
+} from '@/components/contexts/DataMarkerProvider';
+import MapView from '@/components/map/MapView';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
-import { useMapStore } from '@/lib/stores/mapStore';
-import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
-import { MapMarkerProps, MapPageSearchParams } from '@/lib/types';
-import { ColorsConfig } from '@/lib/types/colors';
-import { MapRegion } from '@lactalink/types';
-import { regionToBoundary } from '@lactalink/utilities/geo-utils';
-import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
-import { Tabs, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import isEqual from 'lodash/isEqual';
+import { MapPageSearchParams } from '@/lib/types';
+import { Tabs, useLocalSearchParams } from 'expo-router';
 import { CompassIcon, MapIcon } from 'lucide-react-native';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, ViewProps } from 'react-native';
-import { MapMarker } from 'react-native-maps';
+import React, { PropsWithChildren, useMemo } from 'react';
+import { RNMarker } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const MemoizedMapView = memo(MapView, (prevProps, nextProps) => isEqual(prevProps, nextProps));
-const MemoizedDataMarkers = memo(DataMarkers, (prevProps, nextProps) =>
-  isEqual(prevProps, nextProps)
-);
+const EXTRA_MARKER_ID = 'info-marker';
 
-interface MapProps {
-  style?: ViewProps['style'];
-}
-
-function Map({ style }: MapProps) {
+function Map({ children }: PropsWithChildren) {
   const insets = useSafeAreaInsets();
-  const { mrk: markerID, lat, lng } = useLocalSearchParams<MapPageSearchParams>();
+  const { lat, lng, title } = useLocalSearchParams<MapPageSearchParams>();
 
-  const markerCoords = lat && lng ? { latitude: Number(lat), longitude: Number(lng) } : undefined;
-
-  const resetMap = useMapStore((s) => s.reset);
-
-  const markerMap = useMarkersStore((s) => s.markerMap);
-  const markersIndex = useMarkersStore((s) => s.markersIndex);
-
-  const [visibleMarkers, setVisibleMarkers] = useState<MapMarkerProps[]>([]);
-
-  const markers = useMemo(() => {
-    return visibleMarkers.map((markerProps, i) => {
-      const markerData = markerMap.get(markerProps.identifier);
-
-      if (!markerData) return null;
-
-      let colorTheme: keyof ColorsConfig['light'] | undefined;
-
-      if (isDonation(markerData.data)) {
-        colorTheme = 'primary';
-      } else if (isRequest(markerData.data)) {
-        colorTheme = 'tertiary';
-      } else {
-        colorTheme = 'secondary';
+  const infoMarkerCoords =
+    lat && lng ? { latitude: Number(lat), longitude: Number(lng) } : undefined;
+  const infoMarker: RNMarker | null = infoMarkerCoords
+    ? {
+        id: EXTRA_MARKER_ID,
+        coordinate: infoMarkerCoords,
+        title: title,
       }
+    : null;
 
-      return (
-        <MemoizedDataMarkers
-          key={`${markerProps.id}-${i}`}
-          markerData={markerData}
-          markerProps={markerProps}
-          colorTheme={colorTheme}
-        />
-      );
-    });
-  }, [visibleMarkers, markerMap]);
+  const markersIndex = useDataMarkersIndex();
+  const setSelectedMarker = useSelectedDataMarker()[1];
 
-  useEffect(() => {
-    if (markerID) {
-      setSelectedMarker(markerID);
-    }
-  }, [markerID]);
+  const markers = useMemo(() => markersIndex.getAllItems(), [markersIndex]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useFocusEffect(useCallback(() => resetMap(), []));
+  // const [visibleMarkers, setVisibleMarkers] = useState<RNMarker[]>([]);
+  // const updateVisibleMarkers = debounce(
+  //   (region: RNRegion) => {
+  //     const boundary = regionToBoundary(region);
+  //     const newMarkers = markersIndex.searchByBoundary(boundary);
+  //     setVisibleMarkers(newMarkers);
+  //   },
+  //   200,
+  //   { leading: true, maxWait: 300 }
+  // );
 
-  function handleRegionChange(data: MapRegion) {
-    const newMarkers = markersIndex.searchByBoundary(regionToBoundary(data));
-    if (newMarkers.length !== visibleMarkers.length) {
-      setVisibleMarkers(newMarkers);
-    }
+  function handleMarkerPress(markerID: string) {
+    if (markerID === EXTRA_MARKER_ID) return;
+    setSelectedMarker(markerID);
   }
 
   function unSelectMarker() {
@@ -89,75 +57,69 @@ function Map({ style }: MapProps) {
   }
 
   return (
-    <Box style={[style, { marginBottom: insets.bottom }]}>
-      <MemoizedMapView
-        safeInsets={insets}
-        initialCamera={
-          markerCoords
-            ? {
-                center: markerCoords,
-                zoom: 16,
-                pitch: 0,
-                heading: 0,
-              }
-            : undefined
-        }
-        onRegionChangeComplete={handleRegionChange}
-        onPress={unSelectMarker}
-      >
-        {markerCoords ? (
-          <MapMarker identifier={`marker-${lat}-${lng}`} coordinate={markerCoords} />
-        ) : (
-          markers
-        )}
-      </MemoizedMapView>
-    </Box>
+    <MapView
+      initialProps={
+        infoMarkerCoords ? { camera: { center: infoMarkerCoords, zoom: 16 } } : undefined
+      }
+      // onCameraChange={updateVisibleMarkers}
+      mapPadding={{ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 64 + 20 }}
+      markers={infoMarker ? [...markers, infoMarker] : markers}
+      onMarkerPress={handleMarkerPress}
+      onMapPress={unSelectMarker}
+    >
+      {children}
+    </MapView>
   );
 }
 
 export default function Layout() {
   const { themeColors } = useTheme();
+  const { mrk: markerID } = useLocalSearchParams<MapPageSearchParams>();
+
   const tabBarActiveTintColor = themeColors.primary[500];
   const tabBarInactiveTintColor = themeColors.typography[900];
   const tabBarBackgroundColor = themeColors.background[0];
   const borderColor = themeColors.outline[600];
 
   return (
-    <Box className="relative flex-1">
-      <Map style={StyleSheet.absoluteFill} />
-      <Tabs
-        initialRouteName="explore"
-        screenOptions={{
-          animation: 'shift',
-          headerShown: false,
-          sceneStyle: { backgroundColor: 'transparent', pointerEvents: 'box-none' },
-          tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor,
-          tabBarInactiveTintColor,
-          tabBarStyle: { backgroundColor: tabBarBackgroundColor, elevation: 0, borderColor },
-          tabBarLabelStyle: { fontSize: 12, fontFamily: 'Jakarta-SemiBold' },
-          tabBarLabelPosition: 'beside-icon',
-          //@ts-expect-error props.ref type mismatch
-          tabBarButton: (props) => <Pressable {...props} ref={props.ref} />,
-        }}
-      >
-        <Tabs.Screen
-          name="explore"
-          options={{
-            title: 'Explore',
-            tabBarIcon: ({ color }) => <Icon as={CompassIcon} color={color} size="xl" />,
-            tabBarLabel: 'Explore',
-          }}
-        />
-        <Tabs.Screen
-          name="directions"
-          options={{
-            title: 'Directions',
-            tabBarIcon: ({ color }) => <Icon as={MapIcon} color={color} size="xl" />,
-            tabBarLabel: 'Directions',
-          }}
-        />
-      </Tabs>
+    <Box className="relative flex-1" style={{ backgroundColor: tabBarBackgroundColor }}>
+      <DataMarkerProvider selectedMarkerId={markerID}>
+        <Map>
+          <Tabs
+            initialRouteName="explore"
+            screenOptions={{
+              animation: 'shift',
+              headerShown: false,
+              sceneStyle: { backgroundColor: 'transparent', pointerEvents: 'box-none' },
+              tabBarHideOnKeyboard: true,
+              tabBarActiveTintColor,
+              tabBarInactiveTintColor,
+              tabBarStyle: { backgroundColor: tabBarBackgroundColor, elevation: 0, borderColor },
+              tabBarLabelStyle: { fontSize: 12, fontFamily: 'Jakarta-SemiBold' },
+              tabBarLabelPosition: 'beside-icon',
+              //@ts-expect-error props.ref type mismatch
+              tabBarButton: (props) => <Pressable {...props} ref={props.ref} />,
+            }}
+          >
+            <Tabs.Screen
+              name="explore"
+              options={{
+                title: 'Explore',
+                tabBarIcon: ({ color }) => <Icon as={CompassIcon} color={color} size="xl" />,
+                tabBarLabel: 'Explore',
+              }}
+            />
+            <Tabs.Screen
+              name="directions"
+              options={{
+                title: 'Directions',
+                tabBarIcon: ({ color }) => <Icon as={MapIcon} color={color} size="xl" />,
+                tabBarLabel: 'Directions',
+              }}
+            />
+          </Tabs>
+        </Map>
+      </DataMarkerProvider>
     </Box>
   );
 }

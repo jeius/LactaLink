@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Insets, ViewProps } from 'react-native';
+import type { ViewProps } from 'react-native';
 import { StyleSheet } from 'react-native';
 import {
   GoogleMapsView,
@@ -30,7 +30,7 @@ import {
 } from '@/lib/utils/transformLocationData';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { callback } from 'react-native-nitro-modules';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { MapProvider, useIsFollowingUser, useIsUserLocated, useMap } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
@@ -41,7 +41,7 @@ type Props = Pick<ViewProps, 'style'> &
   RNGoogleMapsPlusViewProps &
   PropsWithChildren & {
     hideUserLocationMarker?: boolean;
-    offset?: Insets;
+    offset?: EdgeInsets;
     containerStyle?: ViewProps['style'];
     containerClassName?: ViewProps['className'];
   };

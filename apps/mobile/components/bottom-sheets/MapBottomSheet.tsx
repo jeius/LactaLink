@@ -7,7 +7,6 @@ import GorhomBottomSheet, {
 } from '@gorhom/bottom-sheet';
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { setSelectedMarker, useMarkersStore } from '@/lib/stores/markersStore';
 import { Motion } from '@legendapp/motion';
 import { Layout } from '@react-navigation/elements';
 import { ChevronLeftIcon } from 'lucide-react-native';
@@ -18,6 +17,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { LocateButton } from '../buttons/LocateButton';
+import { useSelectedDataMarker } from '../contexts/DataMarkerProvider';
 import { MapMarkerInfo } from '../map/MapMarkerInfo';
 import { DonateRequestModal } from '../modals';
 import { MapBottomSheetTabs } from '../tabs/MapBottomSheetTabs';
@@ -62,7 +62,7 @@ export function MapBottomSheet({
     return { transform: [{ translateY }] };
   });
 
-  const selectedMarker = useMarkersStore((s) => s.selectedMarker);
+  const [selectedMarker, setSelectedMarker] = useSelectedDataMarker();
 
   function handleMinimize() {
     sheetRef.current?.snapToIndex(1);
@@ -75,7 +75,7 @@ export function MapBottomSheet({
 
   return (
     <>
-      <PreventBack enabled={!!selectedMarker} />
+      <PreventBack enabled={!!selectedMarker} callBack={unselectMarker} />
 
       <Box className="flex-1" onLayout={(e) => setBoxSize(e.nativeEvent.layout)}>
         <Animated.View className="absolute right-4 top-0" style={animatedBtnStyle}>
@@ -107,8 +107,9 @@ export function MapBottomSheet({
 
               <BottomSheetScrollView
                 ref={sheetScrollRef}
-                contentContainerClassName="gap-2 py-3"
+                contentContainerClassName="gap-2 py-3 bg-background-0"
                 className="flex-1"
+                showsVerticalScrollIndicator={false}
               >
                 <VStack className="items-start px-5">
                   <Button variant="link" onPress={unselectMarker}>

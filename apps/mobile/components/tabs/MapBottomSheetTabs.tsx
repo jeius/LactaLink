@@ -1,13 +1,13 @@
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { Route, SceneMap } from 'react-native-tab-view';
 
-import { createMarkerID, setSelectedMarker } from '@/lib/stores/markersStore';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { validatePoint } from '@lactalink/utilities/geo-utils';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { createMarkerID, useSelectedDataMarker } from '../contexts/DataMarkerProvider';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
 import { SceneProps } from './scenes/types';
 import { Tab } from './Tab';
@@ -61,6 +61,8 @@ function createRoutesAndScenes() {
 // #endregion
 
 function Scene(props: SceneProps) {
+  const setSelectedMarker = useSelectedDataMarker()[1];
+
   function handlePress(data: Donation | Request) {
     const deliveryPreference = extractCollection(data.deliveryPreferences)?.[0];
     const address = extractCollection(deliveryPreference?.address);

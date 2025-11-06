@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, RefObject, useContext, useState } fro
 import { type GoogleMapsViewRef } from 'react-native-google-maps-plus';
 import { createStore, useStore, type StoreApi } from 'zustand';
 
-export interface MapStore {
+interface MapStore {
   mapRef: RefObject<GoogleMapsViewRef | null>;
   isFollowingUser: boolean;
   isUserLocated: boolean;

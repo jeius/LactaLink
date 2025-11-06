@@ -6,6 +6,7 @@ import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
+  interpolateColor,
   useAnimatedStyle,
   useDerivedValue,
 } from 'react-native-reanimated';
@@ -30,6 +31,9 @@ interface HandleProps extends BottomSheetHandleProps {
 }
 
 export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex }) => {
+  const outlineColor = useMemo(() => getColor('outline', '200'), []);
+  const bgColor = useMemo(() => getColor('background', '0'), []);
+
   //#region animations
   const indicatorTransformOriginY = useDerivedValue(() =>
     interpolate(animatedIndex.value, [0, 1, 2], [-1, 0, 1], Extrapolation.CLAMP)
@@ -38,21 +42,19 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
 
   //#region styles
   const topShadow = useMemo(() => createDirectionalShadow('top', 'md', 0.08), []);
-  const containerStyle = useMemo(() => [styles.header, style], [style, styles.header]);
+
+  const containerStyle = [styles.header, style];
   const containerAnimatedStyle = useAnimatedStyle(() => {
     const borderTopRadius = interpolate(animatedIndex.value, [1, 2], [20, 0], Extrapolation.CLAMP);
+    const borderColor = interpolateColor(animatedIndex.value, [1, 2], [bgColor, outlineColor]);
     return {
       borderTopLeftRadius: borderTopRadius,
       borderTopRightRadius: borderTopRadius,
+      borderColor,
     };
   });
-  const leftIndicatorStyle = useMemo(
-    () => ({
-      ...styles.indicator,
-      ...styles.leftIndicator,
-    }),
-    [styles.indicator, styles.leftIndicator]
-  );
+
+  const leftIndicatorStyle = { ...styles.indicator, ...styles.leftIndicator };
   const leftIndicatorAnimatedStyle = useAnimatedStyle(() => {
     const leftIndicatorRotate = interpolate(
       animatedIndex.value,
@@ -72,13 +74,8 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
       ),
     };
   });
-  const rightIndicatorStyle = useMemo(
-    () => ({
-      ...styles.indicator,
-      ...styles.rightIndicator,
-    }),
-    [styles.indicator, styles.rightIndicator]
-  );
+
+  const rightIndicatorStyle = { ...styles.indicator, ...styles.rightIndicator };
   const rightIndicatorAnimatedStyle = useAnimatedStyle(() => {
     const rightIndicatorRotate = interpolate(
       animatedIndex.value,
@@ -102,7 +99,16 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
 
   // render
   return (
-    <Animated.View style={[topShadow, { borderRadius: 20 }]}>
+    <Animated.View
+      style={[
+        topShadow,
+        {
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          backgroundColor: bgColor,
+        },
+      ]}
+    >
       <Animated.View
         style={[containerStyle, containerAnimatedStyle]}
         renderToHardwareTextureAndroid={true}
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: HANDLEHEIGHT,
     backgroundColor: getColor('background', '0'),
+    borderTopWidth: 1,
   },
   indicator: {
     position: 'absolute',

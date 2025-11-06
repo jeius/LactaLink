@@ -14,7 +14,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useInitLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
-import { useInitializeMarkersIndex } from '@/lib/stores/markersStore';
 import { useInitializeTutorialStore } from '@/lib/stores/tutorialStore';
 
 import LoadingSpinner from './loaders/LoadingSpinner';
@@ -34,15 +33,10 @@ export function AppInitializer({ children }: Props) {
   const { isLoading: isThemeLoading } = useTheme();
   const auth = useAuth();
   const location = useInitLocation();
-  const markers = useInitializeMarkersIndex(Boolean(auth.session));
   const tutorialState = useInitializeTutorialStore(auth.user);
 
   const isAppReady =
-    !isThemeLoading &&
-    !auth.isLoading &&
-    !location.isLoading &&
-    !markers.isLoading &&
-    !tutorialState.isLoading;
+    !isThemeLoading && !auth.isLoading && !location.isLoading && !tutorialState.isLoading;
 
   const error = auth.error || location.error;
 
@@ -50,7 +44,6 @@ export function AppInitializer({ children }: Props) {
     const queriesToRefetch = [
       { error: auth.error, action: auth.refetchSession },
       { error: location.error, action: location.refetch },
-      { error: markers.error, action: markers.refetch },
       { error: tutorialState.error, action: tutorialState.refetch },
     ].filter((q) => Boolean(q.error));
 
@@ -76,14 +69,6 @@ export function AppInitializer({ children }: Props) {
       console.error('❌  Error during authentication:', auth.error.message);
     }
   }, [auth.isLoading, auth.error]);
-
-  useEffect(() => {
-    if (markers.isSuccess) {
-      console.log('✔️  Markers index is initialized');
-    } else if (markers.isError) {
-      console.error('❌  Error initializing markers index:', markers.error.message);
-    }
-  }, [markers.isSuccess, markers.isError, markers.error]);
 
   useEffect(() => {
     if (tutorialState.isSuccess) {
