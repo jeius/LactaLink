@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import { Form } from '@/components/contexts/FormProvider';
@@ -14,9 +14,9 @@ import { AddressSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { TouchableWithoutFeedback } from 'react-native';
+import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
-import MapView, { Region } from 'react-native-maps';
+import MapView from 'react-native-maps';
 
 export default function EditAddressPage() {
   const router = useRouter();
@@ -25,22 +25,15 @@ export default function EditAddressPage() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [selectedRegion, setSelectedRegion] = useState<Region>();
-
   const mapRef = useRef<MapView | null>(null);
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
   const form = useAddressForm(id);
-  const { isLoading, fetchError: error, extraData: data } = form;
+  const { isLoading, fetchError: error, extraData: data, setValue } = form;
 
   const coordinates = (data?.coordinates && pointToLatLng(data.coordinates)) || undefined;
 
   async function onSubmit(formData: AddressSchema) {
-    if (selectedRegion) {
-      const { latitude, longitude } = selectedRegion;
-      formData.coordinates = { latitude, longitude };
-    }
-
     const success = await upsertAddress(formData);
 
     if (!success) return;
@@ -63,8 +56,10 @@ export default function EditAddressPage() {
     googlePlacesInputRef.current?.blur();
   }
 
-  function handleRegionChange(region: Region) {
-    setSelectedRegion(region);
+  function handleCameraChangeComplete(_: RNRegion, camera: RNCamera, isGesture: boolean) {
+    if (isGesture && camera?.center) {
+      setValue('coordinates', camera.center, { shouldDirty: true, shouldTouch: true });
+    }
   }
 
   if (!id) {
@@ -76,29 +71,27 @@ export default function EditAddressPage() {
       <FormPreventBack />
 
       <SafeArea safeTop={false} mode="margin" className="items-stretch">
-        <TouchableWithoutFeedback onPress={blurInput} touchSoundDisabled>
-          <Box className="flex-1">
-            <AddressMapView
-              onRegionChangeComplete={handleRegionChange}
-              isLoading={isLoading}
-              coordinates={coordinates}
+        <AddressMapView
+          mapPadding={{ left: 4, right: 4, top: 40 + 16, bottom: 32 }}
+          onCameraChangeComplete={handleCameraChangeComplete}
+          isLoading={isLoading}
+          coordinates={coordinates}
+          onMapPress={blurInput}
+        >
+          <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
+            <GooglePlacesInput
+              inputRef={googlePlacesInputRef}
+              rounded="full"
+              onSelected={handleSearchSelected}
             />
           </Box>
-        </TouchableWithoutFeedback>
 
-        <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
-          <GooglePlacesInput
-            inputRef={googlePlacesInputRef}
-            rounded="full"
-            onSelected={handleSearchSelected}
+          <AddressMapBottomSheet
+            editing
+            onSavePress={form.handleSubmit(onSubmit)}
+            isLoading={isLoading}
           />
-        </Box>
-
-        <AddressMapBottomSheet
-          editing
-          onSavePress={form.handleSubmit(onSubmit)}
-          isLoading={isLoading}
-        />
+        </AddressMapView>
       </SafeArea>
     </Form>
   );

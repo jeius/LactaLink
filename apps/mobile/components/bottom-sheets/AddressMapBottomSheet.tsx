@@ -1,5 +1,5 @@
-import { BottomSheetVariables } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { AddressSchema } from '@lactalink/form-schemas';
+import { Layout } from '@react-navigation/elements';
 import {
   CheckIcon,
   LandmarkIcon,
@@ -7,8 +7,9 @@ import {
   MountainIcon,
   SaveIcon,
 } from 'lucide-react-native';
-import React, { PropsWithChildren, useMemo } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
+import Animated, { SharedValue, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { LocateButton } from '../buttons/LocateButton';
 import { TextInputField } from '../form-fields/TextInputField';
 import { FormField } from '../FormField';
@@ -20,8 +21,18 @@ import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '../ui/
 import { HStack } from '../ui/hstack';
 import { VStack } from '../ui/vstack';
 
+const snapPoints = [HANDLEHEIGHT, '50%', '100%'];
+
 interface AddressMapBottomSheetProps extends PropsWithChildren {
+  /**
+   * Callback fired when the save button is pressed.
+   * @returns - `void`
+   */
   onSavePress?: () => void;
+
+  /**
+   * If true, shows a loading state on the form fields.
+   */
   isLoading?: boolean;
 
   /**
@@ -30,36 +41,62 @@ interface AddressMapBottomSheetProps extends PropsWithChildren {
    * @default false
    */
   editing?: boolean;
+
+  positionProgress?: SharedValue<number>;
+  snapPointProgress?: SharedValue<number>;
 }
 
 export function AddressMapBottomSheet({
   editing = false,
   children,
+  positionProgress: progressProp,
+  snapPointProgress,
   ...props
 }: AddressMapBottomSheetProps) {
-  const snapPoints = useMemo(() => [HANDLEHEIGHT, '50%', '100%'], []);
+  const localPosProgress = useSharedValue(0);
+  const positionProgress = progressProp ?? localPosProgress;
+
+  const [boxSize, setBoxSize] = useState<Layout>({ width: 0, height: 0 });
+  const [btnSize, setBtnSize] = useState<Layout>({ width: 40, height: 40 });
+
+  const animatedBtnStyle = useAnimatedStyle(() => {
+    const middlePos = boxSize.height * 0.5;
+    const translateY = Math.max(
+      positionProgress.value - HANDLEHEIGHT - btnSize.height,
+      middlePos - btnSize.height - 20
+    );
+    return { transform: [{ translateY }] };
+  });
 
   return (
-    <BottomSheet disableClose snapToIndex={1}>
-      <BottomSheetPortal
-        snapPoints={snapPoints}
-        snapToIndex={1}
-        enableDynamicSizing={false}
-        handleComponent={HandleComponent}
-        enableBlurKeyboardOnGesture={false}
-        keyboardBehavior="extend"
-        keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustPan"
-        enableContentPanningGesture={true}
-      >
-        <BottomSheetScrollView
-          showsVerticalScrollIndicator={false}
-          automaticallyAdjustKeyboardInsets
+    <Box className="flex-1" onLayout={(e) => setBoxSize(e.nativeEvent.layout)}>
+      <Animated.View className="absolute right-4 top-0" style={animatedBtnStyle}>
+        <LocateButton onLayout={(e) => setBtnSize(e.nativeEvent.layout)} disableFollowUser />
+      </Animated.View>
+
+      <BottomSheet disableClose snapToIndex={1}>
+        <BottomSheetPortal
+          snapPoints={snapPoints}
+          snapToIndex={1}
+          enableDynamicSizing={false}
+          handleComponent={BottomSheetHandle}
+          enableBlurKeyboardOnGesture={false}
+          keyboardBehavior="extend"
+          keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustPan"
+          enableContentPanningGesture={true}
+          animatedPosition={positionProgress}
+          animatedIndex={snapPointProgress}
         >
-          {editing ? <FormSheetContent {...props} /> : children}
-        </BottomSheetScrollView>
-      </BottomSheetPortal>
-    </BottomSheet>
+          <BottomSheetScrollView
+            showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets
+          >
+            {editing ? <FormSheetContent {...props} /> : children}
+          </BottomSheetScrollView>
+        </BottomSheetPortal>
+      </BottomSheet>
+    </Box>
   );
 }
 
@@ -208,16 +245,5 @@ function FormSheetContent({ onSavePress, isLoading }: AddressMapBottomSheetProps
         onConfirm={onSavePress}
       />
     </VStack>
-  );
-}
-
-function HandleComponent(props: BottomSheetVariables) {
-  return (
-    <Box className="relative">
-      <BottomSheetHandle {...props} />
-      <Box className="absolute right-0 top-0 px-4" style={{ transform: [{ translateY: -64 }] }}>
-        <LocateButton disableFollowUser />
-      </Box>
-    </Box>
   );
 }

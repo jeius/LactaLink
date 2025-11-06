@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
-import { TouchableWithoutFeedback } from 'react-native';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
-import MapView, { Region } from 'react-native-maps';
+import MapView from 'react-native-maps';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import { Form } from '@/components/contexts/FormProvider';
@@ -16,6 +15,7 @@ import { upsertAddress } from '@/lib/api/upsert';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { Redirect, Stack, useRouter } from 'expo-router';
+import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function CreatePage() {
   const revalidateQueries = useRevalidateCollectionQueries();
 
   const form = useAddressForm(undefined);
-  const { isLoading, fetchError: error } = form;
+  const { isLoading, fetchError: error, setValue } = form;
 
   async function onSubmit(formData: AddressCreateSchema) {
     const success = await upsertAddress(formData);
@@ -50,10 +50,10 @@ export default function CreatePage() {
     googlePlacesInputRef.current?.blur();
   }
 
-  function handleRegionChange(region: Region) {
-    const { latitude, longitude } = region;
-    form.setValue('coordinates.latitude', latitude);
-    form.setValue('coordinates.longitude', longitude);
+  function handleCameraChangeComplete(_: RNRegion, camera: RNCamera, isGesture: boolean) {
+    if (isGesture && camera?.center) {
+      setValue('coordinates', camera.center, { shouldDirty: true, shouldTouch: true });
+    }
   }
 
   return (
@@ -62,11 +62,11 @@ export default function CreatePage() {
       <Stack.Screen options={{ headerShown: true, headerTitle: 'New Address' }} />
 
       <SafeArea safeTop={false} mode="margin" className="items-stretch">
-        <TouchableWithoutFeedback onPress={blurInput} touchSoundDisabled>
-          <Box className="flex-1">
-            <AddressMapView onRegionChangeComplete={handleRegionChange} />
-          </Box>
-        </TouchableWithoutFeedback>
+        <AddressMapView
+          onCameraChangeComplete={handleCameraChangeComplete}
+          isLoading={isLoading}
+          onMapPress={blurInput}
+        />
 
         <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
           <GooglePlacesInput
