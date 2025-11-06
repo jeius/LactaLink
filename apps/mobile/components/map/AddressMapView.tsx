@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import MapView, { type MapViewProps } from '@/components/map/MapWrapper';
+import MapView, { type MapViewProps } from '@/components/map/MapView';
 import { getLottieAsset } from '@/lib/stores/assetsStore';
 import { Coordinates } from '@lactalink/types';
 import LottieView from 'lottie-react-native';

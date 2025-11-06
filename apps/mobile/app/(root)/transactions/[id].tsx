@@ -6,7 +6,7 @@ import { TransactionBottomSheet } from '@/components/bottom-sheets/TransactionBo
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { TransactionStatusCard } from '@/components/cards/TransactionDeliveryCard';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import MapView from '@/components/map/MapWrapper';
+import MapView from '@/components/map/MapView';
 import SafeArea from '@/components/SafeArea';
 import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
