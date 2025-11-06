@@ -68,29 +68,26 @@ export function NewLocateButton({
   action = 'info',
   ...props
 }: LocateButtonProps) {
-  const mapRef = useMap();
+  const [map] = useMap();
   const [followingUser, setFollowUser] = useIsFollowingUser();
   const [userLocated] = useIsUserLocated();
   const heading = useHeading();
 
   const handleLocatePress = useCallback(() => {
     const animDuration = 300;
-    if (userLocated && !followingUser && !disableFollowUser && mapRef) {
-      mapRef.current?.setCamera({ tilt: 65, zoom: 18, bearing: heading }, true, animDuration);
+    if (userLocated && !followingUser && !disableFollowUser && map) {
+      map?.setCamera({ tilt: 65, zoom: 18, bearing: heading }, true, animDuration);
       setTimeout(() => setFollowUser(true), animDuration);
     } else if (followingUser) {
       setFollowUser(false);
-      setTimeout(
-        () => mapRef.current?.setCamera({ tilt: 0, zoom: 16 }, true, animDuration),
-        animDuration
-      );
+      setTimeout(() => map?.setCamera({ tilt: 0, zoom: 16 }, true, animDuration), animDuration);
     } else {
       const userCoordinates = getCurrentCoordinates();
-      if (mapRef.current && userCoordinates) {
-        mapRef.current?.setCamera({ center: userCoordinates }, true, animDuration);
+      if (map && userCoordinates) {
+        map?.setCamera({ center: userCoordinates }, true, animDuration);
       }
     }
-  }, [userLocated, followingUser, disableFollowUser, mapRef, heading, setFollowUser]);
+  }, [userLocated, followingUser, disableFollowUser, map, heading, setFollowUser]);
 
   return (
     <Button

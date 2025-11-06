@@ -6,6 +6,7 @@ export interface MapStore {
   mapRef: RefObject<GoogleMapsViewRef | null>;
   isFollowingUser: boolean;
   isUserLocated: boolean;
+  createMapRef: (ref: GoogleMapsViewRef | null) => void;
   setFollowingUser: (following: boolean) => void;
   setUserLocated: (located: boolean) => void;
 }
@@ -21,12 +22,18 @@ function useMapStore<T>(selector: (state: MapStore) => T) {
   return useStore(store, selector);
 }
 
-export const useMap = () => useMapStore((state) => state.mapRef);
+export const useMap = () => {
+  const map = useMapStore((state) => state.mapRef.current);
+  const createRef = useMapStore((state) => state.createMapRef);
+  return [map, createRef] as const;
+};
+
 export const useIsFollowingUser = () => {
   const isFollowingUser = useMapStore((state) => state.isFollowingUser);
   const setFollowingUser = useMapStore((state) => state.setFollowingUser);
   return [isFollowingUser, setFollowingUser] as const;
 };
+
 export const useIsUserLocated = () => {
   const isUserLocated = useMapStore((state) => state.isUserLocated);
   const setUserLocated = useMapStore((state) => state.setUserLocated);
@@ -39,10 +46,14 @@ interface MapProviderProps extends PropsWithChildren {
 
 export function MapProvider({ children, mapRef }: MapProviderProps) {
   const [mapStore] = useState(() =>
-    createStore<MapStore>((set) => ({
+    createStore<MapStore>((set, get) => ({
       mapRef: mapRef,
       isFollowingUser: false,
       isUserLocated: false,
+      createMapRef: (ref) => {
+        const mapRef = get().mapRef;
+        mapRef.current = ref;
+      },
       setFollowingUser: (following) => set({ isFollowingUser: following }),
       setUserLocated: (located) => set({ isUserLocated: located }),
     }))

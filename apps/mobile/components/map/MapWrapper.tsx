@@ -28,20 +28,18 @@ import {
   transformExpoLocationToRN,
   transformRNLocationToExpo,
 } from '@/lib/utils/transformLocationData';
-import { MarkOptional } from '@lactalink/types/utils';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { callback } from 'react-native-nitro-modules';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { MapProvider, useIsFollowingUser, useIsUserLocated } from '../contexts/MapProvider';
+import { MapProvider, useIsFollowingUser, useIsUserLocated, useMap } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 
-type Props = ViewProps &
+type Props = Pick<ViewProps, 'style'> &
   RNGoogleMapsPlusViewProps &
   PropsWithChildren & {
-    mapRef: React.RefObject<GoogleMapsViewRef | null>;
     hideUserLocationMarker?: boolean;
     offset?: Insets;
   };
@@ -97,33 +95,25 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const mapPadding = useMemo<RNMapPadding>(() => {
-    return {
-      top: insets.top + 20 + (offset?.top ?? 0),
-      left: insets.left + 20 + (offset?.left ?? 0),
-      bottom: insets.bottom + 20 + (offset?.bottom ?? 0),
-      right: insets.right + 20 + (offset?.right ?? 0),
-    };
-  }, [insets, offset]);
+  const uiSettings = createUISettings(props.uiSettings);
+  const mapPadding: RNMapPadding = {
+    top: insets.top + 20 + (offset?.top ?? 0),
+    left: insets.left + 20 + (offset?.left ?? 0),
+    bottom: insets.bottom + 20 + (offset?.bottom ?? 0),
+    right: insets.right + 20 + (offset?.right ?? 0),
+  };
 
-  const uiSettings = useMemo(() => createUISettings(props.uiSettings), [props.uiSettings]);
-
+  const [mapReady, setMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [followingUser, setFollowUser] = useIsFollowingUser();
+  const [map, createRef] = useMap();
+  const [followingUser] = useIsFollowingUser();
   const setUserLocated = useIsUserLocated()[1];
 
-  const initialLoc: RNLocation = useMemo(() => {
-    const currentLoc = getCurrentLocation();
-    if (!currentLoc) return DEFAULT_LOCATION;
-    return transformExpoLocationToRN(currentLoc);
-  }, []);
+  const initialLoc: RNLocation = useMemo(() => getInitialLocation(), []);
+  const initialProps: RNInitialProps = { camera: { center: initialLoc.center, zoom: 16 } };
 
-  const initialProps = useMemo<RNInitialProps>(
-    () => ({ camera: { center: initialLoc.center, zoom: 16 } }),
-    [initialLoc.center]
-  );
-
+  const [locationUpdates, setLocationUpdates] = useState<RNLocation>(initialLoc);
   const heading = useHeading({ updateInterval: 'fast' });
   const { animateTo, animatedLatLng } = useAnimatedLatLng(initialLoc.center);
 
@@ -142,20 +132,17 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
   }, [hideUserLocationMarker, animatedLatLng, heading]);
 
   const markers = useMemo<RNMarker[] | undefined>(() => {
+    if (!mapLoaded || !mapReady) return undefined;
     return userLocationMarker ? [userLocationMarker, ...(props.markers || [])] : props.markers;
-  }, [props.markers, userLocationMarker]);
+  }, [mapLoaded, mapReady, props.markers, userLocationMarker]);
 
   const onLocationUpdate = useCallback(
     (location: RNLocation) => {
-      const center = location.center;
-      animateTo(center);
+      animateTo(location.center);
       setLocationStore(transformRNLocationToExpo(location));
-
-      if (followingUser) {
-        props.mapRef.current?.setCamera({ center, bearing: heading }, false);
-      }
+      setLocationUpdates(location);
     },
-    [animateTo, followingUser, heading, props.mapRef]
+    [animateTo]
   );
 
   const onCameraChangeComplete = useCallback(
@@ -169,26 +156,18 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
     [setUserLocated, userLocationMarker?.coordinate]
   );
 
-  const onCameraChange = useCallback(
-    (_: RNRegion, __: RNCamera, isGesture: boolean) => {
-      if (followingUser && isGesture) {
-        setFollowUser(false);
-      }
-    },
-    [followingUser, setFollowUser]
-  );
-
   useEffect(() => {
-    if (followingUser && props.mapRef) {
-      props.mapRef.current?.setCamera({ bearing: heading }, false);
+    if (followingUser) {
+      const newCam: RNCamera = { bearing: heading, center: locationUpdates.center };
+      map?.setCamera(newCam, false);
     }
-  }, [heading, followingUser, props.mapRef]);
+  }, [heading, followingUser, locationUpdates, map]);
 
   return (
     <Box className="flex-1">
       <GoogleMapsView
         {...props}
-        hybridRef={wrapCallback((ref) => (props.mapRef.current = ref))}
+        hybridRef={wrapCallback(createRef)}
         initialProps={props.initialProps ?? initialProps}
         markers={markers}
         uiSettings={uiSettings}
@@ -219,9 +198,9 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
         onMyLocationPress={wrapCallback(props.onMyLocationPress)}
         onMyLocationButtonPress={wrapCallback(props.onMyLocationButtonPress)}
         onCameraChangeStart={wrapCallback(props.onCameraChangeStart)}
-        onCameraChange={wrapCallback(props.onCameraChange, onCameraChange)}
+        onCameraChange={wrapCallback(props.onCameraChange)}
         onCameraChangeComplete={wrapCallback(props.onCameraChangeComplete, onCameraChangeComplete)}
-        onMapReady={wrapCallback(props.onMapReady)}
+        onMapReady={wrapCallback(props.onMapReady, () => setMapReady(true))}
         onMapLoaded={wrapCallback(props.onMapLoaded, () => setMapLoaded(true))}
         onMapError={wrapCallback(props.onMapError, (e) => console.warn('Map error:', e))}
         onLocationUpdate={wrapCallback(props.onLocationUpdate, onLocationUpdate)}
@@ -245,13 +224,13 @@ function MapView({ children, hideUserLocationMarker = false, offset, ...props }:
 export default function MapWrapper({
   mapRef: mapRefProp,
   ...props
-}: MarkOptional<Props, 'mapRef'>) {
+}: Props & { mapRef?: React.RefObject<GoogleMapsViewRef | null> }) {
   const localMapRef = useRef<GoogleMapsViewRef | null>(null);
   const mapRef = mapRefProp ?? localMapRef;
 
   return (
     <MapProvider mapRef={mapRef}>
-      <MapView {...props} mapRef={mapRef} />
+      <MapView {...props} />
     </MapProvider>
   );
 }
@@ -269,6 +248,12 @@ function wrapCallback<T extends (...args: any[]) => void>(
   });
 }
 
-const createUISettings = (overrides: RNMapUiSettings = {}) => {
+function createUISettings(overrides: RNMapUiSettings = {}) {
   return { ...UI_SETTINGS, ...overrides };
-};
+}
+
+function getInitialLocation() {
+  const currentLoc = getCurrentLocation();
+  if (!currentLoc) return DEFAULT_LOCATION;
+  return transformExpoLocationToRN(currentLoc);
+}
