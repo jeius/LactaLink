@@ -18,7 +18,10 @@ import { useIsFocused } from '@react-navigation/native';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { EditIcon, SearchIcon, XIcon } from 'lucide-react-native';
 import React from 'react';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const AnimatedInput = Animated.createAnimatedComponent(Input);
 
 export default function Explore() {
   const insets = useSafeAreaInsets();
@@ -26,19 +29,34 @@ export default function Explore() {
   const { adr, ...params } = useLocalSearchParams<MapPageSearchParams>();
   const router = useRouter();
 
+  const snapPointProgress = useSharedValue(0);
+
+  const animatedHeaderBGStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(snapPointProgress.value, [1, 2], [0, 1]);
+    return { opacity };
+  });
+
+  const animatedInputStyle = useAnimatedStyle(() => {
+    const shadowOpacity = interpolate(snapPointProgress.value, [1, 2], [1, 0]);
+    return { shadowOpacity };
+  });
+
   function handleClose() {
     router.replace({ pathname: '/map/explore', params });
   }
 
   return (
-    <Box
-      style={[{ flex: 1, marginTop: insets.top, pointerEvents: isFocused ? 'box-none' : 'none' }]}
-    >
-      <Box pointerEvents="box-none" className="absolute inset-x-0 top-0 px-5 py-2">
-        <Input variant="rounded" className="bg-background-0 shadow-md">
-          <InputIcon as={SearchIcon} className="text-primary-500 ml-3" />
+    <Box pointerEvents={isFocused ? 'box-none' : 'none'} className="flex-1 flex-col items-stretch">
+      <Box pointerEvents="box-none" className="px-5" style={{ paddingTop: insets.top }}>
+        <Animated.View className="absolute inset-0 bg-background-0" style={animatedHeaderBGStyle} />
+        <AnimatedInput
+          variant="rounded"
+          className="my-2 bg-background-0 shadow-md"
+          style={animatedInputStyle}
+        >
+          <InputIcon as={SearchIcon} className="ml-3 text-primary-500" />
           <InputField placeholder="Search donors, requesters, hospitals" />
-        </Input>
+        </AnimatedInput>
       </Box>
 
       <AnimatePresence>
@@ -53,7 +71,7 @@ export default function Explore() {
             <AddressCard id={adr} onClose={handleClose} />
           </Motion.View>
         ) : (
-          <MapBottomSheet />
+          <MapBottomSheet snapPointProgress={snapPointProgress} />
         )}
       </AnimatePresence>
     </Box>
@@ -94,11 +112,11 @@ function AddressCard({ id, onClose }: AddressCardProps) {
       ) : (
         <HStack space="sm" className="w-full">
           <Box className="p-2">
-            <Icon as={BasicLocationPin} className="fill-primary-500 h-8 w-8" />
+            <Icon as={BasicLocationPin} className="h-8 w-8 fill-primary-500" />
           </Box>
           <VStack className="flex-1 items-start">
             <HStack space="sm" className="items-start">
-              <Text className="font-JakartaMedium grow">{street}</Text>
+              <Text className="grow font-JakartaMedium">{street}</Text>
               <Button
                 size="sm"
                 variant="link"

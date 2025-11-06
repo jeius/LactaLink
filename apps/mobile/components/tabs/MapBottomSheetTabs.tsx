@@ -22,7 +22,13 @@ export function MapBottomSheetTabs() {
       initialLayout={{ width }}
       renderScene={sceneMap}
       renderTabBar={(props) => (
-        <TabBar {...props} tabStyle={{ width: width / 2 }} scrollEnabled={false} />
+        <TabBar
+          {...props}
+          tabStyle={{ width: width / 2 }}
+          style={{ height: 40 }}
+          indicatorContainerStyle={{ height: 42 }}
+          scrollEnabled={false}
+        />
       )}
     />
   );

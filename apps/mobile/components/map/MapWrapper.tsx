@@ -230,10 +230,11 @@ function MapView({
   );
 }
 
-export default function MapWrapper({
-  mapRef: mapRefProp,
-  ...props
-}: Props & { mapRef?: React.RefObject<GoogleMapsViewRef | null> }) {
+export interface MapViewProps extends Props {
+  mapRef?: React.RefObject<GoogleMapsViewRef | null>;
+}
+
+export default function MapViewWrapper({ mapRef: mapRefProp, ...props }: MapViewProps) {
   const localMapRef = useRef<GoogleMapsViewRef | null>(null);
   const mapRef = mapRefProp ?? localMapRef;
 

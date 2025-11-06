@@ -6,10 +6,12 @@ import { TransactionBottomSheet } from '@/components/bottom-sheets/TransactionBo
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { TransactionStatusCard } from '@/components/cards/TransactionDeliveryCard';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { MapView } from '@/components/map/MapView';
+import MapView from '@/components/map/MapWrapper';
+import SafeArea from '@/components/SafeArea';
 import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { useTransactionQuery } from '@/hooks/transactions/fetcher';
 import { shadow } from '@/lib/utils/shadows';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
@@ -80,66 +82,71 @@ export default function TransactionPage() {
   return (
     <>
       <Stack.Screen options={{ contentStyle: { backgroundColor: themeColors.background[0] } }} />
-      <Box className="flex-1 flex-col" style={{ marginBottom: insets.bottom }}>
-        <MapView containerStyle={{ ...StyleSheet.absoluteFillObject, zIndex: -1 }} />
-
-        <Animated.View className="absolute inset-0" style={animatedCardStyle}>
-          <Box className="px-5">
-            <Box className="absolute right-4 top-0" style={{ transform: [{ translateY: -56 }] }}>
-              <LocateButton disableFollowUser />
-            </Box>
-            <TransactionStatusCard transactionID={id} />
-          </Box>
-        </Animated.View>
-
-        {/* Header */}
-        <Box
-          className="absolute inset-x-0 top-0 z-10"
-          onLayout={(e) => setHeaderSize(e.nativeEvent.layout)}
-        >
-          <Box
-            className="flex-row items-center gap-2 px-4"
-            style={{ paddingTop: insets.top + 8, paddingBottom: 8 }}
-          >
-            {/* Header Background */}
-            <Animated.View
-              className="absolute inset-0 border-b border-outline-100 bg-background-0"
-              style={[shadow.md, animatedHeaderInStyle]}
-            />
-
-            {/* Header Back Button */}
-            <Box className="overflow-hidden rounded-full p-0">
-              <Animated.View
-                className="rounded-full border border-outline-200 bg-background-100"
-                style={[StyleSheet.absoluteFillObject, animatedHeaderOutStyle]}
-              />
-              <HeaderBackButton />
-            </Box>
-
-            {/* Header Title */}
-            <Animated.View className="flex-col" style={animatedHeaderInStyle}>
-              <Text bold size="lg">
-                {displayVolume(data?.matchedVolume || 0)}
-              </Text>
-              <Text size="xs" className="font-JakartaMedium">
-                {data && TRANSACTION_STATUS[data.status].label}
-              </Text>
+      <SafeArea safeTop={false} className="items-stretch bg-background-0">
+        <MapView>
+          <VStack className="flex-1">
+            <Animated.View className="absolute inset-0" style={animatedCardStyle}>
+              <Box className="px-5">
+                <Box
+                  className="absolute right-4 top-0"
+                  style={{ transform: [{ translateY: -56 }] }}
+                >
+                  <LocateButton disableFollowUser />
+                </Box>
+                <TransactionStatusCard transactionID={id} />
+              </Box>
             </Animated.View>
-          </Box>
-        </Box>
 
-        <Box
-          style={{ flex: 1, marginTop: headerSize.height - HANDLEHEIGHT }}
-          onLayout={(e) => setSheetSize(e.nativeEvent.layout)}
-        >
-          <TransactionBottomSheet
-            transactionID={id}
-            snapPoints={snapPoints}
-            snapToIndex={1}
-            animatedPosition={scrollY}
-          />
-        </Box>
-      </Box>
+            {/* Header */}
+            <Box
+              className="absolute inset-x-0 top-0 z-10"
+              onLayout={(e) => setHeaderSize(e.nativeEvent.layout)}
+            >
+              <Box
+                className="flex-row items-center gap-2 px-4"
+                style={{ paddingTop: insets.top + 8, paddingBottom: 8 }}
+              >
+                {/* Header Background */}
+                <Animated.View
+                  className="absolute inset-0 border-b border-outline-100 bg-background-0"
+                  style={[shadow.md, animatedHeaderInStyle]}
+                />
+
+                {/* Header Back Button */}
+                <Box className="overflow-hidden rounded-full p-0">
+                  <Animated.View
+                    className="rounded-full border border-outline-200 bg-background-100"
+                    style={[StyleSheet.absoluteFillObject, animatedHeaderOutStyle]}
+                  />
+                  <HeaderBackButton />
+                </Box>
+
+                {/* Header Title */}
+                <Animated.View className="flex-col" style={animatedHeaderInStyle}>
+                  <Text bold size="lg">
+                    {displayVolume(data?.matchedVolume || 0)}
+                  </Text>
+                  <Text size="xs" className="font-JakartaMedium">
+                    {data && TRANSACTION_STATUS[data.status].label}
+                  </Text>
+                </Animated.View>
+              </Box>
+            </Box>
+
+            <Box
+              style={{ flex: 1, marginTop: headerSize.height - HANDLEHEIGHT }}
+              onLayout={(e) => setSheetSize(e.nativeEvent.layout)}
+            >
+              <TransactionBottomSheet
+                transactionID={id}
+                snapPoints={snapPoints}
+                snapToIndex={1}
+                animatedPosition={scrollY}
+              />
+            </Box>
+          </VStack>
+        </MapView>
+      </SafeArea>
     </>
   );
 }

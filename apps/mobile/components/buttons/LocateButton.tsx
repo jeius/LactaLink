@@ -29,7 +29,7 @@ export function LocateButton({
   const handleLocatePress = useCallback(() => {
     const animDuration = 300;
     if (userLocated && !followingUser && !disableFollowUser && map) {
-      map?.setCamera({ tilt: 65, zoom: 18, bearing: heading }, true, animDuration);
+      map?.setCamera({ tilt: 65, zoom: 19, bearing: heading }, true, animDuration);
       setTimeout(() => setFollowUser(true), animDuration);
     } else if (followingUser) {
       setFollowUser(false);
@@ -37,7 +37,7 @@ export function LocateButton({
     } else {
       const userCoordinates = getCurrentCoordinates();
       if (map && userCoordinates) {
-        map?.setCamera({ center: userCoordinates }, true, animDuration);
+        map?.setCamera({ center: userCoordinates, zoom: 16 }, true, animDuration);
       }
     }
   }, [userLocated, followingUser, disableFollowUser, map, heading, setFollowUser]);

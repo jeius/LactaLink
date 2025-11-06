@@ -465,7 +465,12 @@ export function BottomSheetFlashList<TItem>(props: IBottomSheetFlashListProps<TI
   return <FlashList {...props} renderScrollComponent={BottomSheetScrollable} />;
 }
 
-export const BottomSheetScrollView = GorhomBottomSheetScrollView;
+type IBottomSheetScrollViewProps = React.ComponentProps<typeof GorhomBottomSheetScrollView>;
+
+export function BottomSheetScrollView(props: IBottomSheetScrollViewProps) {
+  return <GorhomBottomSheetScrollView {...props} focusHook={useFocusEffect} />;
+}
+
 export const BottomSheetFlatList = GorhomBottomSheetFlatList;
 export const BottomSheetSectionList = GorhomBottomSheetSectionList;
 export const BottomSheetModal = GorhomBottomSheetModal;

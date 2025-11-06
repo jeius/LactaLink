@@ -17,7 +17,7 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
     options[route.key] = {
       ...options[route.key],
       label: ({ color, labelText }) => (
-        <Text className="font-JakartaMedium" size="sm" style={{ color }}>
+        <Text className="flex-1 text-center font-JakartaSemiBold" size="sm" style={{ color }}>
           {labelText}
         </Text>
       ),
