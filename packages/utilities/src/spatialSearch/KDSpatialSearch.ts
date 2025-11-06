@@ -33,4 +33,12 @@ export class SpatialSearch<T> extends KDBush {
       .map((i) => this.items[i])
       .filter(Boolean) as T[];
   }
+
+  /**
+   * Retrieves all items stored in the spatial search structure.
+   * @returns An array of all items.
+   */
+  getAllItems(): T[] {
+    return this.items;
+  }
 }
