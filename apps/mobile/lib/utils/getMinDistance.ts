@@ -2,7 +2,7 @@ import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
 import { LatLng } from 'react-native-maps';
-import { useLocationStore } from '../stores/locationStore';
+import { getCurrentCoordinates } from '../stores/locationStore';
 
 /**
  * Calculates the minimum distance from a coordinates to any of the delivery preferences.
@@ -14,7 +14,7 @@ export function getMinDistance<T extends DeliveryPreference[] | null | undefined
   deliveryPreferences: T,
   locationCoords?: LatLng | null
 ): T extends DeliveryPreference[] ? number | null : null {
-  const currentLocationCoords = useLocationStore.getState().coordinates;
+  const currentLocationCoords = getCurrentCoordinates();
   const coords = locationCoords === undefined ? currentLocationCoords : locationCoords;
 
   if (!coords || !deliveryPreferences || !deliveryPreferences.length) {

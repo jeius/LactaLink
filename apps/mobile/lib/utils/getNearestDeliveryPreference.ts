@@ -2,7 +2,7 @@ import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
 import { LatLng } from 'react-native-maps';
-import { useLocationStore } from '../stores/locationStore';
+import { getCurrentCoordinates } from '../stores/locationStore';
 
 /**
  * Gets the nearest delivery preference based on provided coordinates.
@@ -16,7 +16,7 @@ export function getNearestDeliveryPreference<T extends DeliveryPreference[] | nu
 ): T extends DeliveryPreference[]
   ? { deliveryPreference: DeliveryPreference | null; distance: number | null }
   : null {
-  const currentLocationCoords = useLocationStore.getState().coordinates;
+  const currentLocationCoords = getCurrentCoordinates();
   const coords = locationCoords === undefined ? currentLocationCoords : locationCoords;
 
   if (!coords || !deliveryPreferences)
