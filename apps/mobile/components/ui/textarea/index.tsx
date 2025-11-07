@@ -1,10 +1,12 @@
 'use client';
+import { useKeyboardAvoider } from '@/components/KeyboardAvoider';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { createTextarea } from '@gluestack-ui/textarea';
-import React from 'react';
-import { TextInput, View } from 'react-native';
+import { randomUUID } from 'expo-crypto';
+import React, { useEffect, useRef, useState } from 'react';
+import { FocusEvent, TextInput, View } from 'react-native';
 
 const SCOPE = 'TEXTAREA';
 const UITextarea = createTextarea({
@@ -13,11 +15,11 @@ const UITextarea = createTextarea({
 });
 
 const textareaStyle = tva({
-  base: 'bg-background-0 border-outline-500 data-[hover=true]:border-outline-300 data-[focus=true]:border-indicator-primary data-[focus=true]:data-[hover=true]:border-primary-400 data-[disabled=true]:bg-outline-400 data-[disabled=true]:data-[hover=true]:border-outline-400 w-full border data-[disabled=true]:opacity-40',
+  base: 'w-full border border-outline-500 bg-background-0 data-[focus=true]:border-indicator-primary data-[focus=true]:data-[hover=true]:border-primary-400 data-[hover=true]:border-outline-300 data-[disabled=true]:data-[hover=true]:border-outline-400 data-[disabled=true]:bg-outline-400 data-[disabled=true]:opacity-40',
   variants: {
     variant: {
       default:
-        'data-[focus=true]:border-indicator-primary data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary data-[invalid=true]:border-indicator-error data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[hover=true]:border-error-400 data-[invalid=true]:data-[focus=true]:data-[hover=true]:border-primary-400 data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-1 data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-inset data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-indicator-primary data-[invalid=true]:data-[disabled=true]:data-[hover=true]:border-error-500 data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-1 data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-inset data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-indicator-error',
+        'data-[invalid=true]:border-indicator-error data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[hover=true]:border-error-400 data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-inset data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-indicator-primary data-[invalid=true]:data-[focus=true]:data-[hover=true]:web:ring-1 data-[invalid=true]:data-[focus=true]:data-[hover=true]:border-primary-400 data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-inset data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-indicator-error data-[invalid=true]:data-[disabled=true]:data-[hover=true]:web:ring-1 data-[invalid=true]:data-[disabled=true]:data-[hover=true]:border-error-500 data-[focus=true]:border-indicator-primary data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary',
     },
     size: {
       sm: 'h-20',
@@ -42,7 +44,7 @@ const textareaStyle = tva({
 });
 
 const textareaInputStyle = tva({
-  base: 'web:outline-0 web:outline-none text-typography-900 placeholder:text-typography-500 web:cursor-text web:data-[disabled=true]:cursor-not-allowed flex-1 p-2 text-justify align-text-top font-sans',
+  base: 'flex-1 p-2 text-justify align-text-top font-sans text-typography-900 placeholder:text-typography-500 web:cursor-text web:outline-none web:outline-0 web:data-[disabled=true]:cursor-not-allowed',
   parentVariants: {
     size: {
       sm: 'text-sm',
@@ -74,8 +76,32 @@ type ITextareaInputProps = React.ComponentProps<typeof UITextarea.Input> &
 const TextareaInput = React.forwardRef<
   React.ComponentRef<typeof UITextarea.Input>,
   ITextareaInputProps
->(function TextareaInput({ className, ...props }, ref) {
+>(function TextareaInput({ className, ...props }, refProp) {
   const { size: parentSize } = useStyleContext(SCOPE);
+
+  const { onFocus, registerInput } = useKeyboardAvoider();
+  const localRef = useRef<TextInput>(null);
+  const [inputID, setInputID] = useState('');
+
+  const ref = refProp || localRef;
+
+  useEffect(() => {
+    if (typeof ref !== 'function' && ref.current) {
+      const inputID = `input-${randomUUID()}`;
+      setInputID(inputID);
+
+      const unregister = registerInput?.(inputID, ref.current as TextInput);
+      return () => {
+        unregister?.();
+      };
+    }
+    return () => {};
+  }, [ref, registerInput]);
+
+  function handleFocus(event: FocusEvent) {
+    props.onFocus?.(event);
+    onFocus?.(inputID);
+  }
 
   return (
     <UITextarea.Input
@@ -87,6 +113,7 @@ const TextareaInput = React.forwardRef<
         },
         class: className,
       })}
+      onFocus={handleFocus}
     />
   );
 });

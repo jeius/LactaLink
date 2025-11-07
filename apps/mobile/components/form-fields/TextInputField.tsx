@@ -1,11 +1,19 @@
-import React from 'react';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { EyeClosedIcon, EyeIcon, LucideIcon, LucideProps } from 'lucide-react-native';
+import React, { FC, useState } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
-import { BlurEvent } from 'react-native';
+import { BlurEvent, ViewProps } from 'react-native';
+import { SvgProps } from 'react-native-svg';
 import { BottomSheetInputField } from '../ui/bottom-sheet/input';
-import { Input, InputField, InputFieldProps, InputProps } from '../ui/input';
+import { Input, InputField, InputFieldProps, InputIcon, InputProps } from '../ui/input';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
 import { BaseFieldProps } from './types';
+
+const iconStyle = tva({
+  base: 'ml-3',
+});
 
 interface TextInputFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -16,6 +24,8 @@ interface TextInputFieldProps<
       containerStyle?: InputProps['style'];
       containerClassName?: InputProps['className'];
       useBottomSheetInput?: boolean;
+      icon?: LucideIcon | FC<LucideProps | SvgProps>;
+      iconClassName?: ViewProps['className'];
     };
 }
 
@@ -32,6 +42,9 @@ export function TextInputField<
     containerClassName,
     containerStyle,
     useBottomSheetInput = false,
+    icon,
+    iconClassName,
+    type,
     ...inputProps
   } = {},
   ...props
@@ -41,6 +54,8 @@ export function TextInputField<
     fieldState: { error },
     formState: { isSubmitting },
   } = useController({ name, control });
+
+  const [showPass, setShowPass] = useState(false);
 
   function handleBlur(e: BlurEvent) {
     onBlur();
@@ -60,10 +75,36 @@ export function TextInputField<
           isDisabled={disabled}
           onBlur={handleBlur}
         >
+          {icon && <InputIcon as={icon} className={iconStyle({ className: iconClassName })} />}
           {useBottomSheetInput ? (
-            <BottomSheetInputField {...inputProps} value={value || ''} onChangeText={onChange} />
+            <BottomSheetInputField
+              {...inputProps}
+              type={showPass ? 'text' : 'password'}
+              secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
+              value={value || ''}
+              onChangeText={onChange}
+            />
           ) : (
-            <InputField {...inputProps} value={value || ''} onChangeText={onChange} />
+            <InputField
+              {...inputProps}
+              type={showPass ? 'text' : 'password'}
+              secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
+              value={value || ''}
+              onChangeText={onChange}
+            />
+          )}
+          {type === 'password' && value && (
+            <Pressable
+              className="mr-3"
+              hitSlop={8}
+              android_ripple={null}
+              onPress={(e) => {
+                e.stopPropagation();
+                setShowPass(!showPass);
+              }}
+            >
+              <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
+            </Pressable>
           )}
         </Input>
       )}

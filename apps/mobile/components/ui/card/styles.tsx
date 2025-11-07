@@ -12,13 +12,13 @@ export const cardStyle = tva({
       xl: 'rounded-2xl p-5',
     },
     variant: {
-      elevated: 'bg-background-0 border-outline-100 border',
-      outline: 'border-outline-200 border',
+      elevated: 'border border-outline-100 bg-background-0',
+      outline: 'border border-outline-200',
       ghost: 'rounded-none',
-      filled: 'bg-background-0 border-outline-100 border',
+      filled: 'border border-outline-100 bg-background-0',
     },
     isDisabled: {
-      true: 'pointer-events-none opacity-50',
+      true: 'pointer-events-none opacity-75',
       false: 'pointer-events-auto opacity-100',
     },
   },

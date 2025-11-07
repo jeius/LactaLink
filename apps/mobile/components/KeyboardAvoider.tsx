@@ -121,6 +121,7 @@ const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
           keyboardShouldPersistTaps="handled"
           contentContainerClassName={contentContainerClassName}
           contentContainerStyle={contentContainerStyle}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             refreshing !== undefined || onRefresh ? (
               <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />

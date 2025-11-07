@@ -7,10 +7,11 @@ import { VStack } from '@/components/ui/vstack';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInSchema } from '@lactalink/form-schemas';
-import { FormProvider, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { signIn } from '@/auth';
-import { FormField } from '@/components/FormField';
+import { Form } from '@/components/contexts/FormProvider';
+import { TextInputField } from '@/components/form-fields/TextInputField';
 import { Box } from '@/components/ui/box';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
@@ -43,30 +44,37 @@ export default function SignInForm() {
   }
 
   return (
-    <FormProvider {...form}>
-      <VStack space="lg" className="flex-1">
-        <FormField
+    <Form {...form}>
+      <VStack space="lg" className="flex-1 items-stretch">
+        <TextInputField
+          control={form.control}
           name="email"
           label="Email"
-          fieldType="text"
-          placeholder="Enter email address"
-          autoCorrect={false}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          inputIcon={MailIcon}
+          inputProps={{
+            placeholder: 'Enter email address',
+            autoCorrect: false,
+            autoCapitalize: 'none',
+            autoComplete: 'email',
+            keyboardType: 'email-address',
+            icon: MailIcon,
+            iconClassName: 'text-primary-500',
+          }}
         />
 
         <VStack space="md">
-          <FormField
+          <TextInputField
+            control={form.control}
             name="password"
             label="Password"
-            fieldType="password"
-            placeholder="Enter your password"
-            autoCorrect={false}
-            autoCapitalize="none"
-            autoComplete="current-password"
-            inputIcon={LockIcon}
+            inputProps={{
+              placeholder: 'Enter your password',
+              autoCorrect: false,
+              autoCapitalize: 'none',
+              autoComplete: 'current-password',
+              type: 'password',
+              icon: LockIcon,
+              iconClassName: 'text-primary-500',
+            }}
           />
 
           <HStack>
@@ -85,7 +93,7 @@ export default function SignInForm() {
           </HStack>
         </VStack>
 
-        <Box className="flex-1" />
+        <Box className="grow" />
 
         <GoogleButtonWrapper disabled={isSubmitting} className="mt-5">
           <Button
@@ -98,6 +106,6 @@ export default function SignInForm() {
           </Button>
         </GoogleButtonWrapper>
       </VStack>
-    </FormProvider>
+    </Form>
   );
 }

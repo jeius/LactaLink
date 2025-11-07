@@ -8,7 +8,7 @@ import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-util
 import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
 import React, { useEffect, useRef, useState } from 'react';
-import { FocusEvent, NativeSyntheticEvent, Pressable, TextInput, View } from 'react-native';
+import { FocusEvent, Pressable, TextInput, View } from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -33,7 +33,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const inputStyle = tva({
-  base: 'bg-background-0 data-[hover=true]:border-outline-300 data-[focus=true]:border-indicator-primary data-[focus=true]:hover:border-indicator-primary data-[disabled=true]:hover:border-outline-400 border-outline-500 flex-row content-center items-center overflow-hidden data-[disabled=true]:opacity-40',
+  base: 'flex-row content-center items-center overflow-hidden border-outline-500 bg-background-0 data-[focus=true]:border-indicator-primary data-[focus=true]:hover:border-indicator-primary data-[hover=true]:border-outline-300 data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-outline-400',
 
   variants: {
     size: {
@@ -45,19 +45,19 @@ const inputStyle = tva({
 
     variant: {
       underlined:
-        'data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:border-error-400 rounded-none border-b data-[invalid=true]:border-b-2',
+        'rounded-none border-b data-[invalid=true]:border-b-2 data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:border-error-400',
 
       outline:
-        'data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:border-error-400 data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-1 data-[invalid=true]:data-[focus=true]:hover:web:ring-inset data-[invalid=true]:data-[focus=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[disabled=true]:hover:web:ring-1 data-[invalid=true]:data-[disabled=true]:hover:web:ring-inset data-[invalid=true]:data-[disabled=true]:hover:web:ring-indicator-error rounded-xl border',
+        'rounded-xl border data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-inset data-[invalid=true]:data-[focus=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-1 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:web:ring-inset data-[invalid=true]:data-[disabled=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[disabled=true]:hover:web:ring-1 data-[invalid=true]:data-[disabled=true]:hover:border-error-400 data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary',
 
       rounded:
-        'data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:border-error-400 data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-1 data-[invalid=true]:data-[focus=true]:hover:web:ring-inset data-[invalid=true]:data-[focus=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[disabled=true]:hover:web:ring-1 data-[invalid=true]:data-[disabled=true]:hover:web:ring-inset data-[invalid=true]:data-[disabled=true]:hover:web:ring-indicator-error rounded-full border',
+        'rounded-full border data-[invalid=true]:border-error-500 data-[invalid=true]:hover:border-error-600 data-[invalid=true]:web:ring-1 data-[invalid=true]:web:ring-inset data-[invalid=true]:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-inset data-[invalid=true]:data-[focus=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[focus=true]:hover:web:ring-1 data-[invalid=true]:data-[focus=true]:hover:border-error-500 data-[invalid=true]:data-[focus=true]:border-error-500 data-[invalid=true]:data-[disabled=true]:hover:web:ring-inset data-[invalid=true]:data-[disabled=true]:hover:web:ring-indicator-error data-[invalid=true]:data-[disabled=true]:hover:web:ring-1 data-[invalid=true]:data-[disabled=true]:hover:border-error-400 data-[focus=true]:web:ring-1 data-[focus=true]:web:ring-inset data-[focus=true]:web:ring-indicator-primary',
     },
   },
 });
 
 const inputIconStyle = tva({
-  base: 'text-typography-600 items-center justify-center',
+  base: 'items-center justify-center text-typography-600',
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -75,13 +75,13 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: 'text-typography-900 placeholder:text-typography-500 ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed h-full flex-1 px-3 py-0 font-sans',
+  base: 'ios:leading-[0px] h-full flex-1 px-3 py-0 font-sans text-typography-900 placeholder:text-typography-500 web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
 
   parentVariants: {
     variant: {
-      underlined: 'web:outline-0 web:outline-none px-0',
-      outline: 'web:outline-0 web:outline-none',
-      rounded: 'web:outline-0 web:outline-none px-4',
+      underlined: 'px-0 web:outline-none web:outline-0',
+      outline: 'web:outline-none web:outline-0',
+      rounded: 'px-4 web:outline-none web:outline-0',
     },
 
     size: {
@@ -177,15 +177,16 @@ type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
 const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, IInputFieldProps>(
   function InputField({ className, ...props }, refProp) {
     const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
+
     const { onFocus, registerInput } = useKeyboardAvoider();
-    const inputRef = useRef<TextInput>(null);
+    const localRef = useRef<TextInput>(null);
     const [inputID, setInputID] = useState('');
 
-    const ref = refProp || inputRef;
+    const ref = refProp || localRef;
 
     useEffect(() => {
       if (typeof ref !== 'function' && ref.current) {
-        const inputID = 'input-' + randomUUID();
+        const inputID = `input-${randomUUID()}`;
         setInputID(inputID);
 
         const unregister = registerInput?.(inputID, ref.current as TextInput);
@@ -193,19 +194,18 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
           unregister?.();
         };
       }
-      return undefined;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+      return () => {};
+    }, [ref, registerInput]);
 
-    function handleFocus(event: NativeSyntheticEvent<FocusEvent>) {
+    function handleFocus(event: FocusEvent) {
       props.onFocus?.(event);
       onFocus?.(inputID);
     }
 
     return (
       <UIInput.Input
-        ref={ref}
         {...props}
+        ref={ref}
         className={inputFieldStyle({
           parentVariants: {
             variant: parentVariant,
