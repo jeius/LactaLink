@@ -77,21 +77,16 @@ export function AddressMapBottomSheet({
       <BottomSheet disableClose snapToIndex={1}>
         <BottomSheetPortal
           snapPoints={snapPoints}
-          snapToIndex={1}
           enableDynamicSizing={false}
           handleComponent={BottomSheetHandle}
           enableBlurKeyboardOnGesture={false}
-          keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
           android_keyboardInputMode="adjustPan"
           enableContentPanningGesture={true}
           animatedPosition={positionProgress}
           animatedIndex={snapPointProgress}
         >
-          <BottomSheetScrollView
-            showsVerticalScrollIndicator={false}
-            automaticallyAdjustKeyboardInsets
-          >
+          <BottomSheetScrollView>
             {editing ? <FormSheetContent {...props} /> : children}
           </BottomSheetScrollView>
         </BottomSheetPortal>

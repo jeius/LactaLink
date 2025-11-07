@@ -99,16 +99,7 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
 
   // render
   return (
-    <Animated.View
-      style={[
-        topShadow,
-        {
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          backgroundColor: bgColor,
-        },
-      ]}
-    >
+    <Animated.View style={[topShadow, { borderTopLeftRadius: 20, borderTopRightRadius: 20 }]}>
       <Animated.View
         style={[containerStyle, containerAnimatedStyle]}
         renderToHardwareTextureAndroid={true}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { BlurEvent } from 'react-native';
-import { BottomSheetTextInput } from '../ui/bottom-sheet';
+import { BottomSheetInputField } from '../ui/bottom-sheet/input';
 import { Input, InputField, InputFieldProps, InputProps } from '../ui/input';
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
@@ -61,8 +61,7 @@ export function TextInputField<
           onBlur={handleBlur}
         >
           {useBottomSheetInput ? (
-            //@ts-expect-error Expected mismatch type
-            <BottomSheetTextInput {...inputProps} value={value || ''} onChangeText={onChange} />
+            <BottomSheetInputField {...inputProps} value={value || ''} onChangeText={onChange} />
           ) : (
             <InputField {...inputProps} value={value || ''} onChangeText={onChange} />
           )}

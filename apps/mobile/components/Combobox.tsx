@@ -26,7 +26,6 @@ import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getImageAsset } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { BottomSheetModal as BottomSheetModalType } from '@gorhom/bottom-sheet';
 import { BottomSheetTextInputProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetTextInput';
 import { ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
@@ -130,7 +129,7 @@ export default function ComboBox<
   where: whereParam,
   placeholder,
   value: selectedProps,
-  onChange: setSelectedProps,
+  onChange,
   searchPath,
   labelPath = searchPath,
   descriptionPath,
@@ -141,13 +140,14 @@ export default function ComboBox<
   isLoading: isLoadingProp,
 }: InfiniteScrollComboBoxProps<T, TSelect>) {
   const inputRef = useRef<BottomSheetTextInputProps & TextInput>(null);
-  const bottomSheetModalRef = useRef<BottomSheetModalType>(null);
 
   const insets = useSafeAreaInsets();
 
-  const [searchDefault, setSearchDefault] = useState('');
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(selectedProps);
+  const [searchValue, setSearchValue] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSetSearch = useMemo(() => debounce(setSearch, 300), []);
 
   const { data: selectedDoc, isFetching: isFetchingLabel } = useFetchById(!!selected, {
     collection: collection,
@@ -157,9 +157,6 @@ export default function ComboBox<
 
   // @ts-expect-error TS can't infer deeply
   const selectedLabel = selectedDoc && String(selectedDoc[labelPath]);
-
-  const [search, setSearch] = useState('');
-  const debouncedSetSearch = useMemo(() => debounce(setSearch, 300), []);
 
   const searchQuery: Where = { [searchPath]: { contains: search.toLowerCase() } };
   const where: Where = whereParam ? { and: [searchQuery, whereParam] } : searchQuery;
@@ -176,48 +173,32 @@ export default function ComboBox<
 
   const items = useMemo(() => data?.pages?.flatMap((page) => page.docs) || [], [data]);
 
-  useFocusEffect(useCallback(() => debouncedSetSearch.cancel(), [debouncedSetSearch]));
-
-  useEffect(() => {
-    setSelected(selectedProps);
-  }, [selectedProps]);
-
-  useEffect(() => {
-    if (!open) {
-      setSearchDefault((prev) => (prev !== search ? search : prev));
-    }
-  }, [open, search]);
-
-  function resetSelection() {
-    clearSearch();
-    handleSelectionChange(undefined);
-  }
-
-  function clearSearch() {
+  const clearSearch = () => {
     setSearch('');
-    setSearchDefault('');
     inputRef.current?.clear();
-  }
+  };
 
-  function handleOpen() {
-    bottomSheetModalRef.current?.present();
-    setOpen(true);
-  }
-
-  const handleClose = useCallback(() => {
-    bottomSheetModalRef.current?.dismiss();
-    setOpen(false);
-  }, []);
+  const handleClose = useCallback(() => setOpen(false), []);
 
   const handleSelectionChange = useCallback(
     (value?: string) => {
       handleClose();
       setTimeout(() => {
         setSelected(value);
-        setSelectedProps?.(value);
+        onChange?.(value);
       }, 50); // Delay to ensure the bottom sheet closes before setting the value
     },
-    [handleClose, setSelected, setSelectedProps]
+    [handleClose, setSelected, onChange]
+  );
+
+  const resetSelection = useCallback(() => {
+    clearSearch();
+    handleSelectionChange(undefined);
+  }, [handleSelectionChange]);
+
+  const handleSearchChange = useCallback(
+    (text: string) => debouncedSetSearch(text),
+    [debouncedSetSearch]
   );
 
   const renderItem = useCallback<ListRenderItem<TransformCollectionWithSelect<T, TSelect>>>(
@@ -237,26 +218,22 @@ export default function ComboBox<
     [labelPath, descriptionPath, icon, iconPosition, handleSelectionChange]
   );
 
-  const EmptyComponent = useCallback(() => {
-    return (
-      !isLoading && (
-        <VStack className="mx-auto items-center p-4">
-          <Image
-            alt="Nothing found"
-            source={getImageAsset('noData_0.75x')}
-            contentFit="contain"
-            style={{ width: '60%', aspectRatio: 1.25 }}
-          />
-          <Text className="mb-5">Oops! Nothing to show here.</Text>
-        </VStack>
-      )
-    );
-  }, [isLoading]);
+  useFocusEffect(useCallback(() => debouncedSetSearch.cancel(), [debouncedSetSearch]));
+
+  useEffect(() => () => debouncedSetSearch.cancel(), [debouncedSetSearch]);
+
+  useEffect(() => {
+    setSelected(selectedProps);
+  }, [selectedProps]);
+
+  useEffect(() => {
+    if (!open) setSearchValue(search);
+  }, [open, search]);
 
   return isLoadingProp ? (
     <Skeleton className="h-10" />
   ) : (
-    <BottomSheet open={open} setOpen={setOpen} sheetModalRef={bottomSheetModalRef}>
+    <BottomSheet open={open} setOpen={setOpen}>
       <BottomSheetTrigger
         disableAnimation
         className="w-full overflow-hidden rounded-lg"
@@ -283,9 +260,7 @@ export default function ComboBox<
             )}
             {isFetchingLabel && <Spinner size="small" className="mx-2" />}
           </InputSlot>
-          <InputSlot onPress={handleOpen}>
-            <InputIcon as={ChevronDownIcon} className="mr-3" />
-          </InputSlot>
+          <InputIcon as={ChevronDownIcon} pointerEvents="none" className="mr-3" />
         </Input>
       </BottomSheetTrigger>
       <BottomSheetModalPortal
@@ -308,8 +283,8 @@ export default function ComboBox<
             <BottomSheetInputIcon as={SearchIcon} className="ml-3 text-primary-400" />
             <BottomSheetInputField
               ref={inputRef}
-              defaultValue={searchDefault}
-              onChangeText={debouncedSetSearch}
+              defaultValue={searchValue}
+              onChangeText={handleSearchChange}
               placeholder={searchPlaceholder}
             />
             {search && (
@@ -396,5 +371,21 @@ function ComboBoxItem({
         )}
       </HStack>
     </Pressable>
+  );
+}
+
+function EmptyComponent({ isLoading }: { isLoading: boolean }) {
+  return (
+    !isLoading && (
+      <VStack className="mx-auto items-center p-4">
+        <Image
+          alt="Nothing found"
+          source={getImageAsset('noData_0.75x')}
+          contentFit="contain"
+          style={{ width: '60%', aspectRatio: 1.25 }}
+        />
+        <Text className="mb-5">Oops! Nothing to show here.</Text>
+      </VStack>
+    )
   );
 }

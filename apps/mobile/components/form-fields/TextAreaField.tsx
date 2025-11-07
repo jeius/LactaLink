@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { BlurEvent } from 'react-native';
-import { BottomSheetTextInput } from '../ui/bottom-sheet';
+import { BottomSheetTextareaInput } from '../ui/bottom-sheet/textarea';
 import { Skeleton } from '../ui/skeleton';
 import { Textarea, TextareaInput, TextareaInputProps, TextareaProps } from '../ui/textarea';
 import { FieldWrapper } from './FieldWrapper';
@@ -67,7 +67,7 @@ export function TextAreaField<
           onBlur={handleBlur}
         >
           {useBottomSheetInput ? (
-            <BottomSheetTextInput
+            <BottomSheetTextareaInput
               {...textareaProps}
               value={value || ''}
               onChangeText={onChange}
