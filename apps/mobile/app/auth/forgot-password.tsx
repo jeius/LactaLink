@@ -2,7 +2,7 @@ import { resetPassword } from '@/auth';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { FormField } from '@/components/FormField';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -58,8 +58,8 @@ export default function ForgotPassword() {
   }
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow p-5 justify-center">
         <VStack>
           <Card className="p-0">
             <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 1.75 }}>
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
             </Button>
           </HStack>
         </VStack>
-      </KeyboardAvoidingWrapper>
+      </KeyboardAvoidingScrollView>
     </SafeArea>
   );
 }

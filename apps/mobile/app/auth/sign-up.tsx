@@ -1,7 +1,7 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SignUpForm from '@/components/forms/SignUpForm';
 import GoogleButtonWrapper from '@/components/GoogleButtonWrapper';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -26,8 +26,8 @@ export default function SignUp() {
   ] as const;
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow p-5 justify-center">
         <Card className="p-0">
           <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
             <Image
@@ -79,12 +79,12 @@ export default function SignUp() {
               <ButtonText className="text-primary-500">Privacy Policy</ButtonText>
             </Button>
 
-            <Text size="sm" className="text-typography-600 -ml-2">
+            <Text size="sm" className="-ml-2 text-typography-600">
               .
             </Text>
           </HStack>
         </Card>
-      </KeyboardAvoidingWrapper>
+      </KeyboardAvoidingScrollView>
     </SafeArea>
   );
 }

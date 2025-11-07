@@ -1,7 +1,7 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import OTPForm from '@/components/forms/OTPForm';
 import SendAgain from '@/components/forms/OTPForm/SendAgain';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 
 import { Box } from '@/components/ui/box';
@@ -30,8 +30,8 @@ export default function VerifyOTP() {
   const params: VerifyOtp = { ...searchParams };
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow justify-center p-5">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow justify-center p-5">
         <Card className="p-0">
           <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
             <Image
@@ -73,7 +73,7 @@ export default function VerifyOTP() {
             <SendAgain {...params} />
           </VStack>
         </Card>
-      </KeyboardAvoidingWrapper>
+      </KeyboardAvoidingScrollView>
     </SafeArea>
   );
 }

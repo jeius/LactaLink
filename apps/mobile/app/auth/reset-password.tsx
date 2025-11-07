@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
@@ -24,8 +24,8 @@ export default function ResetPassword() {
   ] as const;
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow p-5 justify-center">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow p-5 justify-center">
         <Card className="p-0">
           <VStack>
             <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
@@ -53,7 +53,7 @@ export default function ResetPassword() {
             <ResetPasswordForm />
           </VStack>
         </Card>
-      </KeyboardAvoidingWrapper>
+      </KeyboardAvoidingScrollView>
     </SafeArea>
   );
 }

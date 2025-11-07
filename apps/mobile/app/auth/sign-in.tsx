@@ -2,7 +2,7 @@ import Logo from '@/assets/svgs/logo.svg';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SignInForm from '@/components/forms/SignInForm';
-import KeyboardAvoidingWrapper from '@/components/KeyboardAvoider';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -27,8 +27,8 @@ export default function SignIn() {
   ] as const;
 
   return (
-    <SafeArea>
-      <KeyboardAvoidingWrapper contentContainerClassName="grow">
+    <SafeArea className="items-stretch">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow">
         <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
           <Image
             contentFit="cover"
@@ -60,7 +60,7 @@ export default function SignIn() {
 
           <SignInForm />
         </VStack>
-      </KeyboardAvoidingWrapper>
+      </KeyboardAvoidingScrollView>
     </SafeArea>
   );
 }

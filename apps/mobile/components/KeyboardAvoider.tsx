@@ -1,6 +1,7 @@
 import React, {
   ComponentProps,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -29,12 +30,6 @@ interface KeyboardAvoiderContextProps {
   registerInput?: (id: string, ref: TextInput | null) => () => void;
 }
 
-const KeyboardAvoiderContext = createContext<KeyboardAvoiderContextProps>({});
-
-export const useKeyboardAvoider = () => {
-  return useContext(KeyboardAvoiderContext);
-};
-
 interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
   keyboardVerticalOffset?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
@@ -43,13 +38,16 @@ interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
   onRefresh?: () => void;
 }
 
+const KeyboardAvoiderContext = createContext<KeyboardAvoiderContextProps>({});
+
+export const useKeyboardAvoider = () => useContext(KeyboardAvoiderContext);
+
 /**
  * A wrapper component that adjusts its position when the keyboard is shown, ensuring that input fields are not obscured.
  * It uses a ScrollView to allow scrolling of content when the keyboard is active.
  *
- * @deprecated Use `KeyboardAwareScrollView` from `react-native-keyboard-controller` instead.
  */
-const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
+const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
   children,
   keyboardVerticalOffset = 0,
   contentContainerClassName,
@@ -69,9 +67,25 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
     height: height.value,
   }));
 
-  function handleFocus(id: string) {
+  const handleFocus = useCallback((id: string) => {
     setFocusedInputID(id);
-  }
+  }, []);
+
+  const handleRegisterInput = useCallback((id: string, ref: TextInput | null) => {
+    const unregister = (id: string) => {
+      if (inputRefs.current[id]) {
+        delete inputRefs.current[id];
+      }
+    };
+
+    if (ref) {
+      inputRefs.current[id] = ref;
+    } else {
+      unregister(id);
+    }
+
+    return () => unregister(id);
+  }, []);
 
   useEffect(() => {
     if (isKeyboardShown && scrollEvent.current) {
@@ -94,21 +108,6 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
     }
   }, [focusedInputID, isKeyboardShown]);
 
-  function unRegisterInput(id: string) {
-    if (inputRefs.current[id]) {
-      delete inputRefs.current[id];
-    }
-  }
-
-  function handleRegisterInput(id: string, ref: TextInput | null) {
-    if (ref) {
-      inputRefs.current[id] = ref;
-    } else {
-      delete inputRefs.current[id];
-    }
-    return unRegisterInput.bind(null, id);
-  }
-
   return (
     <KeyboardAvoiderContext.Provider
       value={{ onFocus: handleFocus, registerInput: handleRegisterInput }}
@@ -123,7 +122,7 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
           contentContainerClassName={contentContainerClassName}
           contentContainerStyle={contentContainerStyle}
           refreshControl={
-            refreshing || onRefresh ? (
+            refreshing !== undefined || onRefresh ? (
               <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
             ) : undefined
           }
@@ -136,9 +135,9 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoiderProps> = ({
   );
 };
 
-export default KeyboardAvoidingWrapper;
+export default KeyboardAvoidingScrollView;
 
-export function useKeyboardSharedHeight(offset: number = OFFSET) {
+function useKeyboardSharedHeight(offset: number = OFFSET) {
   const height = useSharedValue(0);
   const [isKeyboardShown, setIsKeyboardShown] = useState(false);
 
