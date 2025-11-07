@@ -105,8 +105,8 @@ export function OrganizationScene({
         let href: Href = '/+not-found';
 
         const params: RecipientSearchParams = {
-          recipientSlug: route.key as RecipientSearchParams['recipientSlug'],
-          recipientID: data.id,
+          rslg: route.key as RecipientSearchParams['rslg'],
+          rid: data.id,
         };
 
         if (actionCollection === 'requests') {

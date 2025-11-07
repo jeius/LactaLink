@@ -165,8 +165,8 @@ function IndividualProfile({ profile }: IndividualProfileProps) {
   const profileIcon = PROFILE_TYPE_ICONS['INDIVIDUAL'] || PROFILE_TYPE_ICONS.INDIVIDUAL;
 
   const params: RecipientSearchParams = {
-    recipientID: profile.id,
-    recipientSlug: user?.profile?.relationTo,
+    rid: profile.id,
+    rslg: user?.profile?.relationTo,
   };
 
   const avatarRingColor = getAccentColor(isVerified || isVerifiedDonor ? '500' : '0');
@@ -197,7 +197,7 @@ function IndividualProfile({ profile }: IndividualProfileProps) {
           ...shadow.xl,
           shadowColor: sheetShadowColor,
         }}
-        className="bg-background-50 relative grow items-stretch rounded-t-2xl p-5"
+        className="relative grow items-stretch rounded-t-2xl bg-background-50 p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
           <Box className="relative">

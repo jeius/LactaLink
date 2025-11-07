@@ -3,22 +3,22 @@ import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { useCreateDonationForm } from '@/hooks/forms/useCreateDonationForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
-import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
+import { DonationCreateParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { ErrorSearchParams } from '@lactalink/types';
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
 type SearchParams = {
   step: DonationCreateSteps;
-} & DonationCreateSearchParams;
+} & DonationCreateParams;
 
 export default function DonationCreateLayout() {
   const screenOptions = useScreenOptions({ animationType: 'slide' });
 
   const {
-    matchedRequest: matchedRequestID,
-    recipientID,
-    recipientSlug,
+    mrid: matchedRequestID,
+    rid: recipientID,
+    rslg: recipientSlug,
     step,
   } = useLocalSearchParams<SearchParams>();
 

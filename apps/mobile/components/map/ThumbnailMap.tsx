@@ -52,7 +52,7 @@ export function ThumbnailMap({
           <GoogleMapsView
             initialProps={{
               camera: { zoom, center, bearing: heading, tilt: pitch },
-              // liteMode: true,
+              liteMode: true,
             }}
             style={StyleSheet.absoluteFill}
             myLocationEnabled={false}

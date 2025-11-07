@@ -27,8 +27,8 @@ export default function SignIn() {
   ] as const;
 
   return (
-    <SafeArea className="items-stretch">
-      <KeyboardAvoidingScrollView contentContainerClassName="grow">
+    <SafeArea className="items-stretch justify-start">
+      <KeyboardAvoidingScrollView contentContainerClassName="grow flex-col items-stretch">
         <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
           <Image
             contentFit="cover"
@@ -43,20 +43,18 @@ export default function SignIn() {
           <Icon as={Logo} className="absolute left-3 top-3 h-16 w-24" />
         </Box>
 
-        <VStack className="w-full flex-1 p-5">
-          <VStack className="mb-4">
-            <Text bold size="2xl">
-              Welcome 👋
+        <VStack className="flex-1 items-stretch p-5">
+          <Text bold size="2xl">
+            Welcome 👋
+          </Text>
+          <HStack space="sm" className="mb-4 items-center">
+            <Text size="md" className="text-typography-600">
+              Don&apos;t have an account?
             </Text>
-            <HStack space="sm" className="items-center">
-              <Text size="md" className="text-typography-600">
-                Don&apos;t have an account?
-              </Text>
-              <Button size="md" variant="link" onPress={() => router.push('/auth/sign-up')}>
-                <ButtonText className="text-primary-500">Create account</ButtonText>
-              </Button>
-            </HStack>
-          </VStack>
+            <Button size="md" variant="link" onPress={() => router.push('/auth/sign-up')}>
+              <ButtonText className="text-primary-500">Create account</ButtonText>
+            </Button>
+          </HStack>
 
           <SignInForm />
         </VStack>

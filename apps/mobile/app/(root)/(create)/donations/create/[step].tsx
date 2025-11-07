@@ -16,7 +16,7 @@ import { usePagination } from '@/hooks/forms';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
 
-import { DonationCreateSearchParams, DonationCreateSteps } from '@/lib/types/donationRequest';
+import { DonationCreateParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
@@ -47,13 +47,13 @@ const buttonTextMap: Record<DonationCreateSteps, string> = {
 
 type SearchParams = {
   step: DonationCreateSteps;
-} & DonationCreateSearchParams;
+} & DonationCreateParams;
 
 export default function CreateDonation() {
   //#region Hooks
   const router = useRouter();
 
-  const { matchedRequest, step } = useLocalSearchParams<SearchParams>();
+  const { mrid: matchedRequest, step } = useLocalSearchParams<SearchParams>();
   const { nextPage, skipToPage, currentPageIndex, hasNextPage } = usePagination(routes);
   const revalidateDonations = useRevalidateCollectionQueries();
 

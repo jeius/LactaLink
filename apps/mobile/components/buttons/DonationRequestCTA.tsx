@@ -5,7 +5,7 @@ import { Popover, PopoverBackdrop, PopoverContent } from '@/components/ui/popove
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
+import { DonationCreateParams, RequestCreateParams } from '@/lib/types/donationRequest';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -93,7 +93,7 @@ export function DonationRequestCTA({
             )}
             {isDeletable && (
               <Pressable className="flex-row items-center overflow-hidden rounded-md p-2">
-                <Icon as={Trash2Icon} size="sm" className="text-error-500 mr-2" />
+                <Icon as={Trash2Icon} size="sm" className="mr-2 text-error-500" />
                 <Text size="sm" className="text-error-500">
                   Delete
                 </Text>
@@ -102,7 +102,7 @@ export function DonationRequestCTA({
 
             {isEditable && (
               <Pressable className="flex-row items-center overflow-hidden rounded-md p-2">
-                <Icon as={XCircleIcon} size="sm" className="text-error-500 mr-2" />
+                <Icon as={XCircleIcon} size="sm" className="mr-2 text-error-500" />
                 <Text size="sm" className="text-error-500">
                   Cancel
                 </Text>
@@ -148,14 +148,14 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
       if (isOwner) {
         router.push(`/requests/${data.id}/edit`);
       } else {
-        const params: DonationCreateSearchParams = { matchedRequest: data.id };
+        const params: DonationCreateParams = { mrid: data.id };
         router.push({ pathname: '/donations/create', params });
       }
     } else if (data && isDonation(data)) {
       if (isOwner) {
         router.push(`/donations/${data.id}/edit`);
       } else {
-        const params: RequestSearchParams = { matchedDonation: data.id };
+        const params: RequestCreateParams = { mdid: data.id };
         router.push({ pathname: '/requests/create', params });
       }
     }
@@ -164,7 +164,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
   return isLoading ? null : (
     <Box
       onLayout={onLayout}
-      className="bg-background-0 border-outline-300 absolute inset-x-0 bottom-0 rounded-t-2xl border p-4"
+      className="absolute inset-x-0 bottom-0 rounded-t-2xl border border-outline-300 bg-background-0 p-4"
       style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
       <Button onPress={handlePress}>

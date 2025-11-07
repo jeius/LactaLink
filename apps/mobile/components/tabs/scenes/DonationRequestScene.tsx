@@ -11,7 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
-import { DonationCreateSearchParams, RequestSearchParams } from '@/lib/types/donationRequest';
+import { DonationCreateParams, RequestCreateParams } from '@/lib/types/donationRequest';
 import { useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';
 import { generatePlaceHolders } from '@lactalink/utilities';
 import { formatKebab } from '@lactalink/utilities/formatters';
@@ -66,13 +66,13 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
           e.stopPropagation();
 
           if (route.key === 'donations') {
-            const params: RequestSearchParams = {
-              matchedDonation: item.id,
+            const params: RequestCreateParams = {
+              mdid: item.id,
             };
             router.push({ pathname: '/requests/create', params });
           } else if (route.key === 'requests') {
-            const params: DonationCreateSearchParams = {
-              matchedRequest: item.id,
+            const params: DonationCreateParams = {
+              mrid: item.id,
             };
             router.push({ pathname: '/donations/create', params });
           }

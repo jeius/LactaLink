@@ -10,7 +10,7 @@ import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 
-import { RequestSearchParams } from '@/lib/types/donationRequest';
+import { RequestCreateParams } from '@/lib/types/donationRequest';
 import { RequestCreateSchema } from '@lactalink/form-schemas';
 
 import { ErrorSearchParams } from '@lactalink/types';
@@ -26,8 +26,11 @@ import { toast } from 'sonner-native';
 
 export default function CreateRequest() {
   //#region Hooks
-  const { matchedDonation, recipientID, recipientSlug } =
-    useLocalSearchParams<RequestSearchParams>();
+  const {
+    mdid: matchedDonation,
+    rid: recipientID,
+    rslg: recipientSlug,
+  } = useLocalSearchParams<RequestCreateParams>();
   const revalidateQueries = useRevalidateCollectionQueries();
 
   const router = useRouter();

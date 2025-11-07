@@ -2,7 +2,7 @@ import { Request } from '@lactalink/types/payload-generated-types';
 import React from 'react';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationCreateSearchParams } from '@/lib/types/donationRequest';
+import { DonationCreateParams } from '@/lib/types/donationRequest';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { URGENCY_LEVELS } from '@lactalink/enums';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
@@ -49,7 +49,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
   const isOwner = profile && profile.id === requester?.id;
 
   function handleDonatePress() {
-    const params: DonationCreateSearchParams = { matchedRequest: data.id };
+    const params: DonationCreateParams = { mrid: data.id };
     router.push({ pathname: '/donations/create', params });
   }
 
@@ -100,7 +100,7 @@ export function RequestInfoCard({ data }: RequestInfoCardProps) {
             size="sm"
             trackColor={themeColors.tertiary[500]}
           />
-          <Text size="xs" className="text-typography-700 mt-1 text-center">
+          <Text size="xs" className="mt-1 text-center text-typography-700">
             {volumeFulfilled.toLocaleString()} mL ({volumePercentage}%)
           </Text>
         </VStack>
