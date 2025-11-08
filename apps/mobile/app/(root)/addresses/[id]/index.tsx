@@ -14,8 +14,8 @@ export default function AddressPage() {
   });
 
   if (lat && lng) {
-    const params: MapPageSearchParams = { adr: id, lat, lng };
-    return <Redirect href={{ pathname: '/map/explore', params }} />;
+    const params: MapPageSearchParams = { lat, lng };
+    return <Redirect href={{ pathname: `/map/explore/address/${id}`, params }} />;
   }
 
   if (!isLoading && error) {
@@ -25,16 +25,13 @@ export default function AddressPage() {
 
   const coordinates = data?.coordinates && pointToLatLng(data.coordinates);
 
-  if (!coordinates) {
-    const params: MapPageSearchParams = { adr: id };
-    return <Redirect href={{ pathname: '/map/explore', params }} />;
+  if (coordinates) {
+    const params: MapPageSearchParams = {
+      lat: String(coordinates.latitude),
+      lng: String(coordinates.longitude),
+    };
+    return <Redirect href={{ pathname: `/map/explore/address/${id}`, params }} />;
   }
 
-  const params: MapPageSearchParams = {
-    adr: id,
-    lat: String(coordinates.latitude),
-    lng: String(coordinates.longitude),
-  };
-
-  return <Redirect href={{ pathname: '/map/explore', params }} />;
+  return <Redirect href={`/map/explore/address/${id}`} />;
 }

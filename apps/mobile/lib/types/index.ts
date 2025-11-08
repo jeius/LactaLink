@@ -14,7 +14,6 @@ export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['option
 
 export type MapPageSearchParams = {
   mrk?: string;
-  adr?: string;
   lat?: string;
   lng?: string;
   title?: string;

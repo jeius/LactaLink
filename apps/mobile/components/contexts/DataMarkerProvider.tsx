@@ -2,7 +2,7 @@ import { DONATION_PIN, HOSPITAL_PIN, MILK_BANK_PIN, REQUEST_PIN } from '@/lib/co
 import { QUERY_KEYS } from '@/lib/constants/queryKeys';
 import { getApiClient } from '@lactalink/api';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import { ErrorSearchParams, Point } from '@lactalink/types';
+import { Coordinates, ErrorSearchParams, Point } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug, Where } from '@lactalink/types/payload-types';
@@ -17,7 +17,7 @@ import { PointExtractor, SpatialSearch } from '@lactalink/utilities/spatial-sear
 import { isDonation, isHospital, isMilkBank, isRequest } from '@lactalink/utilities/type-guards';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
-import { createContext, PropsWithChildren, useContext, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { RNMarker } from 'react-native-google-maps-plus';
 import { createStore, StoreApi, useStore } from 'zustand';
 
@@ -70,15 +70,36 @@ export function DataMarkerProvider({ children, selectedMarkerId }: DataMarkerPro
     }))
   );
 
-  const { error } = useQuery({
+  const { data, error } = useQuery({
     queryKey: QUERY_KEYS.MARKERS,
-    queryFn: async () => {
-      return await initializeMarkersIndex(store, selectedMarkerId);
-    },
+    queryFn: () => initializeMarkers(store.getState().markerMap),
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnMount: true,
     refetchOnReconnect: true,
   });
+
+  useEffect(() => {
+    if (data) {
+      const { selectedDataMarker: prevSelected } = store.getState();
+
+      const { markers, map } = data;
+
+      const markersIndex = new SpatialSearch(markers.flat(), pointExtractor);
+
+      let selectedDataMarker =
+        typeof selectedMarkerId === 'string' ? map.get(selectedMarkerId) : selectedMarkerId;
+
+      if (prevSelected && selectedDataMarker === undefined) {
+        // Retain the previous selected marker reference if no new selection is provided
+        selectedDataMarker = prevSelected;
+      } else if (prevSelected?.data.id === selectedDataMarker?.data.id) {
+        // Retain the previous selected marker reference if the same marker is selected
+        selectedDataMarker = prevSelected;
+      }
+
+      store.setState({ markersIndex, markerMap: map, selectedDataMarker });
+    }
+  }, [data, selectedMarkerId, store]);
 
   if (error) {
     const params: ErrorSearchParams = {
@@ -117,15 +138,31 @@ export function createMarkerID<TSlug extends CollectionSlug>(
   point: Point
 ) {
   const [longitude, latitude] = point;
-  return `${slug}-${id}-${longitude}-${latitude}`;
+  return `${slug}-${id}-[${longitude},${latitude}]`;
+}
+
+export function destructureMarkerID(markerID: string): {
+  slug: CollectionSlug;
+  id: string;
+  coordinates: Coordinates;
+} | null {
+  const parts = markerID.split('-');
+  if (parts.length < 3) return null;
+
+  const slug = parts[0] as CollectionSlug;
+  const id = parts.slice(1, parts.length - 1).join('-');
+  const coordPart = parts[parts.length - 1]!;
+  const match = coordPart.match(/\[([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)\]/);
+  if (!match) return null;
+
+  const longitude = parseFloat(match[1] ?? '0');
+  const latitude = parseFloat(match[2] ?? '0');
+  return { slug, id, coordinates: { latitude, longitude } };
 }
 
 //#region Helpers
-async function initializeMarkersIndex(
-  store: StoreApi<DataMarkerStore>,
-  selectedMarkerId?: string | null
-) {
-  const map = new Map<string, DataMarker>();
+async function initializeMarkers(oldMap: Map<string, DataMarker>) {
+  const map = new Map(oldMap);
 
   const markers = await Promise.all([
     createDataMarkers('donations', map),
@@ -134,28 +171,7 @@ async function initializeMarkersIndex(
     createDataMarkers('milkBanks', map),
   ]);
 
-  console.log('Initializing Markers Index: donations', markers[0].length);
-  console.log('Initializing Markers Index: requests', markers[1].length);
-  console.log('Initializing Markers Index: hospitals', markers[2].length);
-  console.log('Initializing Markers Index: milkBanks', markers[3].length);
-
-  const markersIndex = new SpatialSearch(markers.flat(), pointExtractor);
-
-  const prevSelected = store.getState().selectedDataMarker;
-  let selectedDataMarker =
-    typeof selectedMarkerId === 'string' ? map.get(selectedMarkerId) : selectedMarkerId;
-
-  if (prevSelected && selectedDataMarker === undefined) {
-    // Retain the previous selected marker reference if no new selection is provided
-    selectedDataMarker = prevSelected;
-  } else if (prevSelected?.data.id === selectedDataMarker?.data.id) {
-    // Retain the previous selected marker reference if the same marker is selected
-    selectedDataMarker = undefined;
-  }
-
-  store.setState({ markersIndex, markerMap: map, selectedDataMarker });
-
-  return store;
+  return { markers, map };
 }
 
 async function createDataMarkers<TSlug extends DataMarkerSlug>(

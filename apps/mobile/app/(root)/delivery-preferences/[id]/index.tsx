@@ -4,7 +4,7 @@ import SafeArea from '@/components/SafeArea';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 import { ErrorSearchParams } from '@lactalink/types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 
 import { Image } from '@/components/Image';
 import { ThumbnailMap } from '@/components/map/ThumbnailMap';
@@ -54,12 +54,11 @@ export default function DeliveryPreferencePage() {
     if (!address || !center) return;
 
     const params: MapPageSearchParams = {
-      adr: extractID(address),
       lat: String(center.latitude),
       lng: String(center.longitude),
     };
 
-    router.push({ pathname: '/map/explore', params });
+    router.push({ pathname: `/addresses/${address.id}`, params });
   }
 
   if (!isLoading && error) {
@@ -81,7 +80,7 @@ export default function DeliveryPreferencePage() {
             <ThumbnailMap isLoading={isLoading} center={center} zoom={16} className="h-64 w-full" />
 
             <HStack space="lg" className="items-center p-5">
-              <Text size="lg" className="font-JakartaSemiBold flex-1">
+              <Text size="lg" className="flex-1 font-JakartaSemiBold">
                 {name}
               </Text>
               <DeleteActionButton
@@ -147,7 +146,7 @@ export default function DeliveryPreferencePage() {
                   </Box>
                 </HStack>
                 <Button
-                  animateOnPress={false}
+                  disablePressAnimation
                   variant="link"
                   action="default"
                   className="h-fit w-fit p-0"
@@ -170,7 +169,7 @@ export default function DeliveryPreferencePage() {
         style={{ width: '100%' }}
       >
         <Box
-          className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
+          className="rounded-t-2xl border border-outline-300 bg-background-0 p-4"
           style={{ paddingBottom: insets.bottom }}
         >
           <Link href={`/delivery-preferences/${id}/edit`} push asChild>

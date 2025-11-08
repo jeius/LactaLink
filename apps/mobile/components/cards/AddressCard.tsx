@@ -70,12 +70,11 @@ export function AddressCard({
     if (!data || !center) return;
 
     const params: MapPageSearchParams = {
-      adr: extractID(data),
       lat: String(center.latitude),
       lng: String(center.longitude),
     };
 
-    router.push({ pathname: '/map/explore', params });
+    router.push({ pathname: `/addresses/${data.id}`, params });
   }
 
   if (isLoading) {

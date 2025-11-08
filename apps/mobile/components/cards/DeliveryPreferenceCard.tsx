@@ -4,7 +4,6 @@ import { DELIVERY_OPTIONS, ShortDays } from '@lactalink/enums';
 import { CalendarDaysIcon, MapPinIcon } from 'lucide-react-native';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { MapPageSearchParams } from '@/lib/types';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DeliveryPreferenceCreateSchema, DeliveryPreferenceSchema } from '@lactalink/form-schemas';
@@ -14,9 +13,8 @@ import { extractCollection, extractID, extractObject } from '@lactalink/utilitie
 import { formatDaysToText } from '@lactalink/utilities/formatters';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isString } from '@lactalink/utilities/type-guards';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { ReactNode } from 'react';
-import { GestureResponderEvent } from 'react-native';
 import { BasicBadge } from '../badges/BasicBadge';
 import { Image } from '../Image';
 import { ThumbnailMap } from '../map/ThumbnailMap';
@@ -169,7 +167,7 @@ function DeliveryModeIcons({
         const iconAsset = getDeliveryPreferenceIcon(mode);
         return (
           <HStack key={index} space="xs" className="items-center">
-            <Box className="border-primary-500 rounded-full border p-1">
+            <Box className="rounded-full border border-primary-500 p-1">
               <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 16, height: 16 }} />
             </Box>
 
@@ -249,7 +247,7 @@ function ListCard({
             size={textSize}
             ellipsizeMode="tail"
             numberOfLines={2}
-            className="font-JakartaMedium flex-1"
+            className="flex-1 font-JakartaMedium"
           >
             {availableDaysText}
           </Text>
@@ -294,23 +292,12 @@ function CompactCard({
     base: 'w-40 flex-col items-stretch justify-start p-0',
   });
 
-  const router = useRouter();
   const { preferenceData, address, isLoading: dataLoading } = useDeliveryPreferenceData(preference);
   const isLoading = isLoadingProp || dataLoading;
 
   const fullAddress = address?.displayName || 'No address';
   const center = pointToLatLng(address?.coordinates);
   const { preferredMode, availableDays } = preferenceData || {};
-
-  function handlePress(e: GestureResponderEvent) {
-    e.stopPropagation();
-    const params: MapPageSearchParams = {
-      adr: extractID(address),
-      lat: String(center.latitude),
-      lng: String(center.longitude),
-    };
-    router.push({ pathname: '/map/explore', params });
-  }
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>

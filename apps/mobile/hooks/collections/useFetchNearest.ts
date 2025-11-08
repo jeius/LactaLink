@@ -1,5 +1,5 @@
 import { INFINITE_QUERY_KEY } from '@/lib/constants';
-import { useCurrentLocation } from '@/lib/stores/locationStore';
+import { useCurrentCoordinates } from '@/lib/stores/locationStore';
 import { useMatchingService } from '@lactalink/api';
 import { DonationRequestStatus, Point } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
@@ -12,19 +12,19 @@ export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations
   status: DonationRequestStatus = 'AVAILABLE',
   maxDistance?: number
 ): UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Collection<TSlug>> | null>> {
-  const location = useCurrentLocation();
+  const coords = useCurrentCoordinates();
   const matchingService = useMatchingService();
 
   return useInfiniteQuery({
-    enabled: enabled && Boolean(location),
+    enabled: enabled && Boolean(coords),
     queryKey: [...INFINITE_QUERY_KEY, collection, 'nearest'],
     initialPageParam: 1,
     queryFn: async ({ pageParam }) => {
-      if (!location) {
+      if (!coords) {
         return null;
       }
 
-      const point: Point = [location.coords.longitude, location.coords.latitude];
+      const point: Point = [coords.longitude, coords.latitude];
 
       switch (collection) {
         case 'donations':

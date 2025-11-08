@@ -9,7 +9,7 @@ import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { MapPageSearchParams } from '@/lib/types';
-import { Tabs, useLocalSearchParams } from 'expo-router';
+import { Tabs, useLocalSearchParams, useRouter } from 'expo-router';
 import { CompassIcon, MapIcon } from 'lucide-react-native';
 import React, { PropsWithChildren, useMemo } from 'react';
 import { RNMarker } from 'react-native-google-maps-plus';
@@ -19,10 +19,14 @@ const EXTRA_MARKER_ID = 'info-marker';
 
 function Map({ children }: PropsWithChildren) {
   const insets = useSafeAreaInsets();
-  const { lat, lng, title } = useLocalSearchParams<MapPageSearchParams>();
+  const router = useRouter();
+
+  const params = useLocalSearchParams<MapPageSearchParams>();
+  const { lat, lng, title } = params;
 
   const infoMarkerCoords =
     lat && lng ? { latitude: Number(lat), longitude: Number(lng) } : undefined;
+
   const infoMarker: RNMarker | null = infoMarkerCoords
     ? {
         id: EXTRA_MARKER_ID,
@@ -50,6 +54,7 @@ function Map({ children }: PropsWithChildren) {
   function handleMarkerPress(markerID: string) {
     if (markerID === EXTRA_MARKER_ID) return;
     setSelectedMarker(markerID);
+    router.push(`/map/explore/marker/${markerID}`);
   }
 
   function unSelectMarker() {
