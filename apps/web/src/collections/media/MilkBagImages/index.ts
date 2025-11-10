@@ -6,16 +6,16 @@ import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
-import { admin, anyone, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { admin, anyone, authenticated } from '../../_access-control';
 
-export const Images: CollectionConfig<'images'> = {
-  slug: 'images',
+export const MilkBagImages: CollectionConfig<'milk-bag-images'> = {
+  slug: 'milk-bag-images',
   access: {
     admin: admin,
     create: authenticated,
     read: anyone,
-    update: collectionOwnerOrAdmin,
-    delete: collectionOwnerOrAdmin,
+    update: admin,
+    delete: admin,
   },
   admin: {
     group: COLLECTION_GROUP.CONTENT,

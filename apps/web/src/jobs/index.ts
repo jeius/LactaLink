@@ -1,15 +1,14 @@
 import { admin } from '@/collections/_access-control';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { JobsConfig } from 'payload';
-import { idVerificationTask } from './tasks/idVerification';
-import { sendEmailTask } from './tasks/sendEmail';
+import tasks from './tasks';
 import { idVerificationWorkflow } from './workflows/idVerification';
 
 export const jobs: JobsConfig = {
   access: {
     run: ({ req: { user } }) => Boolean(user),
   },
-  tasks: [idVerificationTask, sendEmailTask],
+  tasks: tasks,
   workflows: [idVerificationWorkflow],
   jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
     ...defaultJobsCollection,

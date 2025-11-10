@@ -18,6 +18,7 @@ import {
   timestamp,
   numeric,
   integer,
+  type AnyPgColumn,
   serial,
   jsonb,
   pgEnum,
@@ -29,6 +30,7 @@ export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalitie
   'CITY',
   'MUNICIPALITY',
 ]);
+export const comment_status_enum = pgEnum('comment_status_enum', ['PUBLISHED', 'EDITED']);
 export const enum_delivery_modes = pgEnum('enum_delivery_modes', ['PICKUP', 'DELIVERY', 'MEETUP']);
 export const enum_days = pgEnum('enum_days', [
   'MONDAY',
@@ -166,6 +168,9 @@ export const enum_notification_trigger_event = pgEnum('enum_notification_trigger
   'UPDATE',
   'DELETE',
 ]);
+export const post_attachment_media_type_enum = pgEnum('post_attachment_media_type_enum', ['IMAGE']);
+export const enum_posts_visibility = pgEnum('enum_posts_visibility', ['PUBLIC', 'PRIVATE']);
+export const enum_posts_status = pgEnum('enum_posts_status', ['DRAFT', 'PUBLISHED', 'REMOVED']);
 export const enum_requests_details_storage_preference = pgEnum(
   'enum_requests_details_storage_preference',
   ['FRESH', 'FROZEN', 'OTHER', 'EITHER']
@@ -192,6 +197,8 @@ export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_tas
   'inline',
   'id-verification-task',
   'send-email',
+  'calculate-post-comment-count-task',
+  'calculate-comment-reply-count-task',
 ]);
 export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', [
   'failed',
@@ -204,6 +211,8 @@ export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug',
   'inline',
   'id-verification-task',
   'send-email',
+  'calculate-post-comment-count-task',
+  'calculate-comment-reply-count-task',
 ]);
 
 export const addresses = pgTable(
@@ -386,6 +395,102 @@ export const cities_municipalities = pgTable(
     index('cities_municipalities_island_group_idx').on(columns.islandGroup),
     index('cities_municipalities_updated_at_idx').on(columns.updatedAt),
     index('cities_municipalities_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const comments_mentions = pgTable(
+  'comments_mentions',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+  },
+  (columns) => [
+    index('comments_mentions_order_idx').on(columns._order),
+    index('comments_mentions_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [comments.id],
+      name: 'comments_mentions_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    post: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, {
+        onDelete: 'set null',
+      }),
+    status: comment_status_enum('status').default('PUBLISHED'),
+    parent: uuid('parent_id').references((): AnyPgColumn => comments.id, {
+      onDelete: 'set null',
+    }),
+    content: varchar('content').notNull(),
+    likesCount: numeric('likes_count', { mode: 'number' }).default(0),
+    repliesCount: numeric('replies_count', { mode: 'number' }).default(0),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('comments_post_idx').on(columns.post),
+    index('comments_parent_idx').on(columns.parent),
+    index('comments_owner_idx').on(columns.owner),
+    index('comments_updated_at_idx').on(columns.updatedAt),
+    index('comments_created_at_idx').on(columns.createdAt),
+    index('comments_deleted_at_idx').on(columns.deletedAt),
+  ]
+);
+
+export const comments_rels = pgTable(
+  'comments_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('comments_rels_order_idx').on(columns.order),
+    index('comments_rels_parent_idx').on(columns.parent),
+    index('comments_rels_path_idx').on(columns.path),
+    index('comments_rels_individuals_id_idx').on(columns.individualsID),
+    index('comments_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('comments_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [comments.id],
+      name: 'comments_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'comments_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'comments_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'comments_rels_milk_banks_fk',
+    }).onDelete('cascade'),
   ]
 );
 
@@ -1409,6 +1514,142 @@ export const notification_types_rels = pgTable(
   ]
 );
 
+export const posts_attachments = pgTable(
+  'posts_attachments',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    mediaType: post_attachment_media_type_enum('media_type').notNull().default('IMAGE'),
+    image: uuid('image_id').references(() => images.id, {
+      onDelete: 'set null',
+    }),
+    caption: varchar('caption'),
+  },
+  (columns) => [
+    index('posts_attachments_order_idx').on(columns._order),
+    index('posts_attachments_parent_id_idx').on(columns._parentID),
+    index('posts_attachments_image_idx').on(columns.image),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [posts.id],
+      name: 'posts_attachments_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const posts_tags = pgTable(
+  'posts_tags',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    tag: varchar('tag'),
+  },
+  (columns) => [
+    index('posts_tags_order_idx').on(columns._order),
+    index('posts_tags_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [posts.id],
+      name: 'posts_tags_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const posts = pgTable(
+  'posts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title').notNull(),
+    content: varchar('content').notNull(),
+    summary: varchar('summary'),
+    visibility: enum_posts_visibility('visibility').notNull().default('PUBLIC'),
+    status: enum_posts_status('status').default('DRAFT'),
+    likesCount: numeric('likes_count', { mode: 'number' }).default(0),
+    commentsCount: numeric('comments_count', { mode: 'number' }).default(0),
+    sharesCount: numeric('shares_count', { mode: 'number' }).default(0),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('posts_owner_idx').on(columns.owner),
+    index('posts_updated_at_idx').on(columns.updatedAt),
+    index('posts_created_at_idx').on(columns.createdAt),
+    index('posts_deleted_at_idx').on(columns.deletedAt),
+  ]
+);
+
+export const posts_rels = pgTable(
+  'posts_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+    postsID: uuid('posts_id'),
+    donationsID: uuid('donations_id'),
+    requestsID: uuid('requests_id'),
+  },
+  (columns) => [
+    index('posts_rels_order_idx').on(columns.order),
+    index('posts_rels_parent_idx').on(columns.parent),
+    index('posts_rels_path_idx').on(columns.path),
+    index('posts_rels_individuals_id_idx').on(columns.individualsID),
+    index('posts_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('posts_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    index('posts_rels_posts_id_idx').on(columns.postsID),
+    index('posts_rels_donations_id_idx').on(columns.donationsID),
+    index('posts_rels_requests_id_idx').on(columns.requestsID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [posts.id],
+      name: 'posts_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'posts_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'posts_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'posts_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['postsID']],
+      foreignColumns: [posts.id],
+      name: 'posts_rels_posts_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['donationsID']],
+      foreignColumns: [donations.id],
+      name: 'posts_rels_donations_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['requestsID']],
+      foreignColumns: [requests.id],
+      name: 'posts_rels_requests_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
 export const provinces = pgTable(
   'provinces',
   {
@@ -2055,6 +2296,7 @@ export const payload_locked_documents_rels = pgTable(
     avatarsID: uuid('avatars_id'),
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
+    commentsID: uuid('comments_id'),
     'delivery-preferencesID': uuid('delivery_preferences_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
@@ -2071,6 +2313,7 @@ export const payload_locked_documents_rels = pgTable(
     'notification-channelsID': uuid('notification_channels_id'),
     notificationsID: uuid('notifications_id'),
     'notification-typesID': uuid('notification_types_id'),
+    postsID: uuid('posts_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
     requestsID: uuid('requests_id'),
@@ -2090,6 +2333,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_cities_municipalities_id_idx').on(
       columns.citiesMunicipalitiesID
     ),
+    index('payload_locked_documents_rels_comments_id_idx').on(columns.commentsID),
     index('payload_locked_documents_rels_delivery_preferences_id_idx').on(
       columns['delivery-preferencesID']
     ),
@@ -2114,6 +2358,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_notification_types_id_idx').on(
       columns['notification-typesID']
     ),
+    index('payload_locked_documents_rels_posts_id_idx').on(columns.postsID),
     index('payload_locked_documents_rels_provinces_id_idx').on(columns.provincesID),
     index('payload_locked_documents_rels_regions_id_idx').on(columns.regionsID),
     index('payload_locked_documents_rels_requests_id_idx').on(columns.requestsID),
@@ -2146,6 +2391,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['citiesMunicipalitiesID']],
       foreignColumns: [cities_municipalities.id],
       name: 'payload_locked_documents_rels_cities_municipalities_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['commentsID']],
+      foreignColumns: [comments.id],
+      name: 'payload_locked_documents_rels_comments_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['delivery-preferencesID']],
@@ -2226,6 +2476,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['notification-typesID']],
       foreignColumns: [notification_types.id],
       name: 'payload_locked_documents_rels_notification_types_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['postsID']],
+      foreignColumns: [posts.id],
+      name: 'payload_locked_documents_rels_posts_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['provincesID']],
@@ -2412,6 +2667,58 @@ export const relations_cities_municipalities = relations(cities_municipalities, 
     fields: [cities_municipalities.islandGroup],
     references: [island_groups.id],
     relationName: 'islandGroup',
+  }),
+}));
+export const relations_comments_mentions = relations(comments_mentions, ({ one }) => ({
+  _parentID: one(comments, {
+    fields: [comments_mentions._parentID],
+    references: [comments.id],
+    relationName: 'mentions',
+  }),
+}));
+export const relations_comments_rels = relations(comments_rels, ({ one }) => ({
+  parent: one(comments, {
+    fields: [comments_rels.parent],
+    references: [comments.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [comments_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [comments_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [comments_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations_comments = relations(comments, ({ one, many }) => ({
+  post: one(posts, {
+    fields: [comments.post],
+    references: [posts.id],
+    relationName: 'post',
+  }),
+  parent: one(comments, {
+    fields: [comments.parent],
+    references: [comments.id],
+    relationName: 'parent',
+  }),
+  mentions: many(comments_mentions, {
+    relationName: 'mentions',
+  }),
+  owner: one(users, {
+    fields: [comments.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  _rels: many(comments_rels, {
+    relationName: '_rels',
   }),
 }));
 export const relations_delivery_preferences_preferred_mode = relations(
@@ -2833,6 +3140,78 @@ export const relations_notification_types = relations(notification_types, ({ one
     relationName: '_rels',
   }),
 }));
+export const relations_posts_attachments = relations(posts_attachments, ({ one }) => ({
+  _parentID: one(posts, {
+    fields: [posts_attachments._parentID],
+    references: [posts.id],
+    relationName: 'attachments',
+  }),
+  image: one(images, {
+    fields: [posts_attachments.image],
+    references: [images.id],
+    relationName: 'image',
+  }),
+}));
+export const relations_posts_tags = relations(posts_tags, ({ one }) => ({
+  _parentID: one(posts, {
+    fields: [posts_tags._parentID],
+    references: [posts.id],
+    relationName: 'tags',
+  }),
+}));
+export const relations_posts_rels = relations(posts_rels, ({ one }) => ({
+  parent: one(posts, {
+    fields: [posts_rels.parent],
+    references: [posts.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [posts_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [posts_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [posts_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+  postsID: one(posts, {
+    fields: [posts_rels.postsID],
+    references: [posts.id],
+    relationName: 'posts',
+  }),
+  donationsID: one(donations, {
+    fields: [posts_rels.donationsID],
+    references: [donations.id],
+    relationName: 'donations',
+  }),
+  requestsID: one(requests, {
+    fields: [posts_rels.requestsID],
+    references: [requests.id],
+    relationName: 'requests',
+  }),
+}));
+export const relations_posts = relations(posts, ({ one, many }) => ({
+  attachments: many(posts_attachments, {
+    relationName: 'attachments',
+  }),
+  owner: one(users, {
+    fields: [posts.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+  tags: many(posts_tags, {
+    relationName: 'tags',
+  }),
+  _rels: many(posts_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_provinces = relations(provinces, ({ one }) => ({
   region: one(regions, {
     fields: [provinces.region],
@@ -3095,6 +3474,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [cities_municipalities.id],
       relationName: 'citiesMunicipalities',
     }),
+    commentsID: one(comments, {
+      fields: [payload_locked_documents_rels.commentsID],
+      references: [comments.id],
+      relationName: 'comments',
+    }),
     'delivery-preferencesID': one(delivery_preferences, {
       fields: [payload_locked_documents_rels['delivery-preferencesID']],
       references: [delivery_preferences.id],
@@ -3175,6 +3559,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [notification_types.id],
       relationName: 'notification-types',
     }),
+    postsID: one(posts, {
+      fields: [payload_locked_documents_rels.postsID],
+      references: [posts.id],
+      relationName: 'posts',
+    }),
     provincesID: one(provinces, {
       fields: [payload_locked_documents_rels.provincesID],
       references: [provinces.id],
@@ -3249,6 +3638,7 @@ export const relations_payload_migrations = relations(payload_migrations, () => 
 
 type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
+  comment_status_enum: typeof comment_status_enum;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
   enum_donation_request_status: typeof enum_donation_request_status;
@@ -3270,6 +3660,9 @@ type DatabaseSchema = {
   enum_js_types: typeof enum_js_types;
   enum_notification_trigger_collection: typeof enum_notification_trigger_collection;
   enum_notification_trigger_event: typeof enum_notification_trigger_event;
+  post_attachment_media_type_enum: typeof post_attachment_media_type_enum;
+  enum_posts_visibility: typeof enum_posts_visibility;
+  enum_posts_status: typeof enum_posts_status;
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
@@ -3283,6 +3676,9 @@ type DatabaseSchema = {
   avatars: typeof avatars;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
+  comments_mentions: typeof comments_mentions;
+  comments: typeof comments;
+  comments_rels: typeof comments_rels;
   delivery_preferences_preferred_mode: typeof delivery_preferences_preferred_mode;
   delivery_preferences_available_days: typeof delivery_preferences_available_days;
   delivery_preferences: typeof delivery_preferences;
@@ -3310,6 +3706,10 @@ type DatabaseSchema = {
   notification_types_template_variables: typeof notification_types_template_variables;
   notification_types: typeof notification_types;
   notification_types_rels: typeof notification_types_rels;
+  posts_attachments: typeof posts_attachments;
+  posts_tags: typeof posts_tags;
+  posts: typeof posts;
+  posts_rels: typeof posts_rels;
   provinces: typeof provinces;
   regions: typeof regions;
   requests: typeof requests;
@@ -3335,6 +3735,9 @@ type DatabaseSchema = {
   relations_avatars: typeof relations_avatars;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
+  relations_comments_mentions: typeof relations_comments_mentions;
+  relations_comments_rels: typeof relations_comments_rels;
+  relations_comments: typeof relations_comments;
   relations_delivery_preferences_preferred_mode: typeof relations_delivery_preferences_preferred_mode;
   relations_delivery_preferences_available_days: typeof relations_delivery_preferences_available_days;
   relations_delivery_preferences: typeof relations_delivery_preferences;
@@ -3362,6 +3765,10 @@ type DatabaseSchema = {
   relations_notification_types_template_variables: typeof relations_notification_types_template_variables;
   relations_notification_types_rels: typeof relations_notification_types_rels;
   relations_notification_types: typeof relations_notification_types;
+  relations_posts_attachments: typeof relations_posts_attachments;
+  relations_posts_tags: typeof relations_posts_tags;
+  relations_posts_rels: typeof relations_posts_rels;
+  relations_posts: typeof relations_posts;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
   relations_requests_rels: typeof relations_requests_rels;

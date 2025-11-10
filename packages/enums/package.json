@@ -40,6 +40,10 @@
     "./error-names": {
       "types": "./dist/errorNames.d.ts",
       "default": "./dist/errorNames.js"
+    },
+    "./posts": {
+      "types": "./dist/posts.d.ts",
+      "default": "./dist/posts.js"
     }
   },
   "scripts": {

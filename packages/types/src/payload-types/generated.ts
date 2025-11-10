@@ -179,6 +179,7 @@ export interface Config {
     avatars: Avatar;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
+    comments: Comment;
     'delivery-preferences': DeliveryPreference;
     donations: Donation;
     hospitals: Hospital;
@@ -195,6 +196,7 @@ export interface Config {
     'notification-channels': NotificationChannel;
     notifications: Notification;
     'notification-types': NotificationType;
+    posts: Post;
     provinces: Province;
     regions: Region;
     requests: Request;
@@ -234,6 +236,9 @@ export interface Config {
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
     };
+    posts: {
+      comments: 'comments';
+    };
     requests: {
       transactions: 'transactions';
     };
@@ -247,6 +252,7 @@ export interface Config {
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
@@ -263,6 +269,7 @@ export interface Config {
     'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'notification-types': NotificationTypesSelect<false> | NotificationTypesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     requests: RequestsSelect<false> | RequestsSelect<true>;
@@ -288,6 +295,8 @@ export interface Config {
     tasks: {
       'id-verification-task': IDVerficationTask;
       'send-email': SendEmailTask;
+      'calculate-post-comment-count-task': CalculatePostCommentCountTask;
+      'calculate-comment-reply-count-task': CalculateCommentReplyCountTask;
       inline: {
         input: unknown;
         output: unknown;
@@ -1320,6 +1329,166 @@ export interface Barangay {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: string;
+  author:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * Post this comment belongs to
+   */
+  post: string | Post;
+  /**
+   * Moderation status for the comment.
+   */
+  status?: ('PUBLISHED' | 'EDITED') | null;
+  /**
+   * Optional: parent comment for threaded replies
+   */
+  parent?: (string | null) | Comment;
+  /**
+   * Comment text (supports replies via parent field).
+   */
+  content: string;
+  /**
+   * Users mentioned in this comment.
+   */
+  mentions?:
+    | {
+        /**
+         * User mentioned in the comment.
+         */
+        user:
+          | {
+              relationTo: 'individuals';
+              value: string | Individual;
+            }
+          | {
+              relationTo: 'hospitals';
+              value: string | Hospital;
+            }
+          | {
+              relationTo: 'milkBanks';
+              value: string | MilkBank;
+            };
+        id?: string | null;
+      }[]
+    | null;
+  likesCount?: number | null;
+  repliesCount?: number | null;
+  owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: string;
+  author:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * Brief, descriptive title for the post (helps with searchability).
+   */
+  title: string;
+  /**
+   * Content of the post. Encourage clear, health-relevant info.
+   */
+  content?: string | null;
+  /**
+   * Short summary used in lists (keeps feed scannable).
+   */
+  summary?: string | null;
+  /**
+   * Images/videos or documents attached to the post.
+   */
+  attachments?:
+    | {
+        mediaType: 'IMAGE';
+        /**
+         * Upload an image
+         */
+        image?: (string | null) | Image;
+        /**
+         * Optional caption for the media attachment.
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Who can see this post.
+   */
+  visibility: 'PUBLIC' | 'PRIVATE';
+  /**
+   * Moderation status. Admins can change.
+   */
+  status?: ('DRAFT' | 'PUBLISHED' | 'REMOVED') | null;
+  /**
+   * If this post is a share, the original post/donation/request.
+   */
+  sharedFrom?:
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: string | Donation;
+      } | null)
+    | ({
+        relationTo: 'requests';
+        value: string | Request;
+      } | null);
+  /**
+   * Comments made on this post.
+   */
+  comments?: {
+    docs?: (string | Comment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  likesCount?: number | null;
+  commentsCount?: number | null;
+  sharesCount?: number | null;
+  owner?: (string | null) | User;
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "identities".
  */
 export interface Identity {
@@ -1894,7 +2063,12 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'id-verification-task' | 'send-email';
+        taskSlug:
+          | 'inline'
+          | 'id-verification-task'
+          | 'send-email'
+          | 'calculate-post-comment-count-task'
+          | 'calculate-comment-reply-count-task';
         taskID: string;
         input?:
           | {
@@ -1928,7 +2102,15 @@ export interface PayloadJob {
       }[]
     | null;
   workflowSlug?: 'id-verification-workflow' | null;
-  taskSlug?: ('inline' | 'id-verification-task' | 'send-email') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'id-verification-task'
+        | 'send-email'
+        | 'calculate-post-comment-count-task'
+        | 'calculate-comment-reply-count-task'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1957,6 +2139,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'citiesMunicipalities';
         value: string | CityMunicipality;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: string | Comment;
       } | null)
     | ({
         relationTo: 'delivery-preferences';
@@ -2021,6 +2207,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notification-types';
         value: string | NotificationType;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
       } | null)
     | ({
         relationTo: 'provinces';
@@ -2194,6 +2384,29 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
   islandGroup?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  author?: T;
+  post?: T;
+  status?: T;
+  parent?: T;
+  content?: T;
+  mentions?:
+    | T
+    | {
+        user?: T;
+        id?: T;
+      };
+  likesCount?: T;
+  repliesCount?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2716,6 +2929,41 @@ export interface NotificationTypeTemplateSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  author?: T;
+  title?: T;
+  content?: T;
+  summary?: T;
+  attachments?:
+    | T
+    | {
+        mediaType?: T;
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  visibility?: T;
+  status?: T;
+  sharedFrom?: T;
+  comments?: T;
+  likesCount?: T;
+  commentsCount?: T;
+  sharesCount?: T;
+  owner?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "provinces_select".
  */
 export interface ProvincesSelect<T extends boolean = true> {
@@ -3013,6 +3261,33 @@ export interface SendEmailTask {
   output: {
     message: string;
     sent: boolean;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CalculatePostCommentCountTask".
+ */
+export interface CalculatePostCommentCountTask {
+  input: {
+    postID: string;
+  };
+  output: {
+    count: number;
+    post: string | Post;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CalculateCommentReplyCountTask".
+ */
+export interface CalculateCommentReplyCountTask {
+  input: {
+    commentID: string;
+    postID: string;
+  };
+  output: {
+    count: number;
+    comment: string | Comment;
   };
 }
 /**
