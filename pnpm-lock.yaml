@@ -330,8 +330,8 @@ importers:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))
       react-native-google-maps-plus:
-        specifier: 1.8.4-dev.4
-        version: 1.8.4-dev.4(expo@54.0.22)(react-native-nitro-modules@0.31.4(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+        specifier: 1.8.7
+        version: 1.8.7(expo@54.0.22)(react-native-nitro-modules@0.31.4(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-google-places-autocomplete:
         specifier: ^2.5.7
         version: 2.5.7(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))
@@ -9134,8 +9134,8 @@ packages:
     peerDependencies:
       react-native: '>=0.56'
 
-  react-native-google-maps-plus@1.8.4-dev.4:
-    resolution: {integrity: sha512-5ZZd1UdxaTvtTYOLYt//XziKJjEhSpn6NwRylRjmMq6d4SCCYp8VzOteQ9Wcy205VuAAfnOGHMtUQCACDeVs7g==}
+  react-native-google-maps-plus@1.8.7:
+    resolution: {integrity: sha512-djWKPXXL1/Hq1IwQosGzqezmiejFtfluO3m2WkSswA3y/2/KK7ayyXLWuWhWQ21C+4vvifDpM8NhCluwR+kS2w==}
     peerDependencies:
       expo: '*'
       react: '*'
@@ -21338,7 +21338,7 @@ snapshots:
       fast-base64-decode: 1.0.0
       react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0)
 
-  react-native-google-maps-plus@1.8.4-dev.4(expo@54.0.22)(react-native-nitro-modules@0.31.4(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
+  react-native-google-maps-plus@1.8.7(expo@54.0.22)(react-native-nitro-modules@0.31.4(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@react-native/metro-config@0.80.2(@babel/core@7.28.5))(@types/react@19.2.2)(react@19.1.0)
