@@ -1,44 +1,31 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import {
   DataMarkerProvider,
-  useDataMarkersIndex,
+  useDataMarkers,
   useSelectedDataMarker,
-} from '@/components/contexts/DataMarkerProvider';
+} from '@/components/contexts/markers/DataMarker';
 import MapView from '@/components/map/MapView';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { MapPageSearchParams } from '@/lib/types';
-import { Tabs, useLocalSearchParams, useRouter } from 'expo-router';
+import { destructureMarkerID } from '@/lib/utils/markerUtils';
+import { Tabs, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { CompassIcon, MapIcon } from 'lucide-react-native';
-import React, { PropsWithChildren, useMemo } from 'react';
-import { RNMarker } from 'react-native-google-maps-plus';
+import React, { PropsWithChildren } from 'react';
+import { RNLatLng } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const EXTRA_MARKER_ID = 'info-marker';
 
 function Map({ children }: PropsWithChildren) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const pathName = usePathname();
 
-  const params = useLocalSearchParams<MapPageSearchParams>();
-  const { lat, lng, title } = params;
+  const isAddressInfoPage = pathName.includes('address');
+  const isMarkerInfoPage = pathName.includes('marker');
 
-  const infoMarkerCoords =
-    lat && lng ? { latitude: Number(lat), longitude: Number(lng) } : undefined;
-
-  const infoMarker: RNMarker | null = infoMarkerCoords
-    ? {
-        id: EXTRA_MARKER_ID,
-        coordinate: infoMarkerCoords,
-        title: title,
-      }
-    : null;
-
-  const markersIndex = useDataMarkersIndex();
-  const setSelectedMarker = useSelectedDataMarker()[1];
-
-  const markers = useMemo(() => markersIndex.getAllItems(), [markersIndex]);
+  const markers = useDataMarkers();
+  const [selectedMarker] = useSelectedDataMarker();
 
   // const [visibleMarkers, setVisibleMarkers] = useState<RNMarker[]>([]);
   // const updateVisibleMarkers = debounce(
@@ -52,25 +39,46 @@ function Map({ children }: PropsWithChildren) {
   // );
 
   function handleMarkerPress(markerID: string) {
-    if (markerID === EXTRA_MARKER_ID) return;
-    setSelectedMarker(markerID);
-    router.push(`/map/explore/marker/${markerID}`);
+    // Do nothing if the selected marker is already the pressed marker
+    if (selectedMarker?.marker.id === markerID) return;
+
+    // Determine the type of marker and navigate accordingly
+    const { slug, id } = destructureMarkerID(markerID);
+
+    // Navigate to the appropriate page based on marker type
+    // For addresses, go to address info page
+    if (slug === 'addresses') {
+      // Push if not already on an info page, else replace
+      if (!isAddressInfoPage && !isMarkerInfoPage) {
+        router.push(`/map/explore/address/${id}`);
+      } else if (isMarkerInfoPage) {
+        router.replace(`/map/explore/address/${id}`, { withAnchor: true });
+      }
+      // For other data markers, go to generic marker info page
+    } else {
+      // Push if not already on an info page, else replace
+      if (isAddressInfoPage || isMarkerInfoPage) {
+        router.replace(`/map/explore/marker/${markerID}`, { withAnchor: true });
+      } else {
+        router.push(`/map/explore/marker/${markerID}`);
+      }
+    }
   }
 
-  function unSelectMarker() {
-    setSelectedMarker(null);
+  function handleOnMapPress(_coords: RNLatLng) {
+    // If on an info page, go back to the explore page
+    if (isAddressInfoPage || isMarkerInfoPage) {
+      router.back();
+    }
   }
 
   return (
     <MapView
-      initialProps={
-        infoMarkerCoords ? { camera: { center: infoMarkerCoords, zoom: 16 } } : undefined
-      }
       // onCameraChange={updateVisibleMarkers}
       mapPadding={{ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 64 + 20 }}
-      markers={infoMarker ? [...markers, infoMarker] : markers}
+      markers={markers}
       onMarkerPress={handleMarkerPress}
-      onMapPress={unSelectMarker}
+      onMapPress={handleOnMapPress}
     >
       {children}
     </MapView>

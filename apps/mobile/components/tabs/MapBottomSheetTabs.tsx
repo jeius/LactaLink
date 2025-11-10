@@ -1,13 +1,14 @@
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { Route, SceneMap } from 'react-native-tab-view';
 
+import { createMarkerID } from '@/lib/utils/markerUtils';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { validatePoint } from '@lactalink/utilities/geo-utils';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
-import { createMarkerID, useSelectedDataMarker } from '../contexts/DataMarkerProvider';
+import { useSelectedDataMarker } from '../contexts/markers/DataMarker';
 import { DonationRequestScene } from './scenes/DonationRequestScene';
 import { SceneProps } from './scenes/types';
 import { Tab } from './Tab';

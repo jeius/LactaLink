@@ -13,7 +13,6 @@ import { isString } from '@lactalink/utilities/type-guards';
 import { ComponentProps, ReactNode, useMemo } from 'react';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { MapPageSearchParams } from '@/lib/types';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useRouter } from 'expo-router';
@@ -67,14 +66,8 @@ export function AddressCard({
 
   function navigateToMap(e: GestureResponderEvent) {
     e.stopPropagation();
-    if (!data || !center) return;
-
-    const params: MapPageSearchParams = {
-      lat: String(center.latitude),
-      lng: String(center.longitude),
-    };
-
-    router.push({ pathname: `/addresses/${data.id}`, params });
+    if (!data) return;
+    router.push(`/map/explore/address/${data.id}`);
   }
 
   if (isLoading) {

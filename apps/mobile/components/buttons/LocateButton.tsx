@@ -3,7 +3,12 @@ import { getCurrentCoordinates } from '@/lib/stores';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CompassIcon, LocateFixedIcon, LocateIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
-import { useIsFollowingUser, useIsUserLocated, useMap } from '../contexts/MapProvider';
+import {
+  useIsFollowingUser,
+  useIsUserLocated,
+  useMap,
+  useMapZoomLevel,
+} from '../contexts/MapProvider';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonProps } from '../ui/button';
 
@@ -25,22 +30,34 @@ export function LocateButton({
   const [followingUser, setFollowUser] = useIsFollowingUser();
   const [userLocated] = useIsUserLocated();
   const heading = useHeading();
+  const zoomLevel = useMapZoomLevel();
 
   const handleLocatePress = useCallback(() => {
     const animDuration = 300;
     if (userLocated && !followingUser && !disableFollowUser && map) {
-      map?.setCamera({ tilt: 65, zoom: 19, bearing: heading }, true, animDuration);
+      map?.setCamera(
+        { tilt: 65, zoom: Math.max(19, zoomLevel.value), bearing: heading },
+        true,
+        animDuration
+      );
       setTimeout(() => setFollowUser(true), animDuration);
     } else if (followingUser) {
       setFollowUser(false);
-      setTimeout(() => map?.setCamera({ tilt: 0, zoom: 16 }, true, animDuration), animDuration);
+      setTimeout(
+        () => map?.setCamera({ tilt: 0, zoom: Math.min(16, zoomLevel.value) }, true, animDuration),
+        animDuration
+      );
     } else {
       const userCoordinates = getCurrentCoordinates();
       if (map && userCoordinates) {
-        map?.setCamera({ center: userCoordinates, zoom: 16 }, true, animDuration);
+        map?.setCamera(
+          { center: userCoordinates, zoom: Math.max(16, zoomLevel.value) },
+          true,
+          animDuration
+        );
       }
     }
-  }, [userLocated, followingUser, disableFollowUser, map, heading, setFollowUser]);
+  }, [userLocated, followingUser, disableFollowUser, map, zoomLevel.value, heading, setFollowUser]);
 
   return (
     <Button

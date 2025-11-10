@@ -17,7 +17,6 @@ import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { MapPageSearchParams } from '@/lib/types';
 import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
 import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
@@ -51,14 +50,8 @@ export default function DeliveryPreferencePage() {
 
   function navigateToMap(e: GestureResponderEvent) {
     e.stopPropagation();
-    if (!address || !center) return;
-
-    const params: MapPageSearchParams = {
-      lat: String(center.latitude),
-      lng: String(center.longitude),
-    };
-
-    router.push({ pathname: `/addresses/${address.id}`, params });
+    if (!address) return;
+    router.push(`/map/explore/address/${address.id}`);
   }
 
   if (!isLoading && error) {

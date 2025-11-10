@@ -11,6 +11,7 @@ export function validatePoint(point: unknown): point is Point {
       name: ValidationErrorNames.INVALID_FORMAT,
       statusCode: 400,
       statusText: 'Bad Request',
+      cause: `Received: ${JSON.stringify(point)}`,
     });
   }
 

@@ -1,14 +1,22 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useRouter } from 'expo-router';
 import { ArrowLeftIcon, ChevronLeftIcon } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
+import { AnimatedPressable, AnimatedPressableProps } from './animated/pressable';
 import { LeaveToastAction } from './toasts/ToastAction';
 import { Icon } from './ui/icon';
-import { Pressable, PressableProps } from './ui/pressable';
+import { PressableProps } from './ui/pressable';
 
-interface HeaderBackButtonProps extends PressableProps {
+const baseStyle = tva({
+  base: 'h-fit w-fit overflow-hidden rounded-full',
+});
+
+interface HeaderBackButtonProps
+  extends PressableProps,
+    Pick<AnimatedPressableProps, 'disablePressAnimation' | 'disableRipple'> {
   preventBack?: boolean;
   message?: string;
   toastAction?: React.ReactNode;
@@ -29,6 +37,8 @@ export function HeaderBackButton({
   onPress,
   tintColor,
   iconType = 'chevron',
+  className,
+  disablePressAnimation = true,
   ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
@@ -68,14 +78,15 @@ export function HeaderBackButton({
   }
 
   return (
-    <Pressable
-      className="h-fit w-fit overflow-hidden rounded-full"
+    <AnimatedPressable
       {...props}
+      disablePressAnimation={disablePressAnimation}
+      className={baseStyle({ className })}
       hitSlop={10}
       onPress={handleOnPress}
       style={StyleSheet.flatten([{ padding: 8 }, props.style])}
     >
       <Icon className="h-6 w-6" as={icon} color={tintColor} />
-    </Pressable>
+    </AnimatedPressable>
   );
 }

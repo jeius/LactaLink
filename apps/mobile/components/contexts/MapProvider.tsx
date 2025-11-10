@@ -1,14 +1,30 @@
-import { createContext, PropsWithChildren, RefObject, useContext, useState } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  RefObject,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { type GoogleMapsViewRef } from 'react-native-google-maps-plus';
+import { SharedValue, useSharedValue } from 'react-native-reanimated';
 import { createStore, useStore, type StoreApi } from 'zustand';
 
 interface MapStore {
-  mapRef: RefObject<GoogleMapsViewRef | null>;
+  map: GoogleMapsViewRef | null;
   isFollowingUser: boolean;
   isUserLocated: boolean;
-  createMapRef: (ref: GoogleMapsViewRef | null) => void;
-  setFollowingUser: (following: boolean) => void;
-  setUserLocated: (located: boolean) => void;
+  zoomLevel: SharedValue<number>;
+  actions: {
+    setMap: (ref: GoogleMapsViewRef | null) => void;
+    setFollowingUser: (following: boolean) => void;
+    setUserLocated: (located: boolean) => void;
+    setZoomLevel: (zoom: number) => void;
+  };
+}
+
+interface MapProviderProps extends PropsWithChildren {
+  mapRef: RefObject<GoogleMapsViewRef | null>;
 }
 
 const MapStoreContext = createContext<StoreApi<MapStore> | null>(null);
@@ -23,41 +39,50 @@ function useMapStore<T>(selector: (state: MapStore) => T) {
 }
 
 export const useMap = () => {
-  const map = useMapStore((state) => state.mapRef.current);
-  const createRef = useMapStore((state) => state.createMapRef);
-  return [map, createRef] as const;
+  const map = useMapStore((state) => state.map);
+  const setMap = useMapStore((state) => state.actions.setMap);
+  return [map, setMap] as const;
 };
 
 export const useIsFollowingUser = () => {
   const isFollowingUser = useMapStore((state) => state.isFollowingUser);
-  const setFollowingUser = useMapStore((state) => state.setFollowingUser);
+  const setFollowingUser = useMapStore((state) => state.actions.setFollowingUser);
   return [isFollowingUser, setFollowingUser] as const;
 };
 
 export const useIsUserLocated = () => {
   const isUserLocated = useMapStore((state) => state.isUserLocated);
-  const setUserLocated = useMapStore((state) => state.setUserLocated);
+  const setUserLocated = useMapStore((state) => state.actions.setUserLocated);
   return [isUserLocated, setUserLocated] as const;
 };
 
-interface MapProviderProps extends PropsWithChildren {
-  mapRef: RefObject<GoogleMapsViewRef | null>;
-}
+export const useMapZoomLevel = () => useMapStore((state) => state.zoomLevel);
+
+export const useMapActions = () => useMapStore((state) => state.actions);
 
 export function MapProvider({ children, mapRef }: MapProviderProps) {
+  const zoomLevel = useSharedValue(0);
+
   const [mapStore] = useState(() =>
     createStore<MapStore>((set, get) => ({
-      mapRef: mapRef,
+      map: null,
       isFollowingUser: false,
       isUserLocated: false,
-      createMapRef: (ref) => {
-        const mapRef = get().mapRef;
-        mapRef.current = ref;
+      zoomLevel,
+      actions: {
+        setMap: (ref) => set({ map: ref }),
+        setFollowingUser: (following) => set({ isFollowingUser: following }),
+        setUserLocated: (located) => set({ isUserLocated: located }),
+        setZoomLevel: (zoom) => {
+          get().zoomLevel.value = zoom;
+        },
       },
-      setFollowingUser: (following) => set({ isFollowingUser: following }),
-      setUserLocated: (located) => set({ isUserLocated: located }),
     }))
   );
+
+  useEffect(() => {
+    if (mapRef.current) mapStore.getState().actions.setMap(mapRef.current);
+  }, [mapRef, mapStore]);
 
   return <MapStoreContext.Provider value={mapStore}>{children}</MapStoreContext.Provider>;
 }

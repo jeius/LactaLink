@@ -9,6 +9,7 @@ export default function ExploreCardLayout() {
         headerShown: false,
         sceneStyle: { backgroundColor: 'transparent', pointerEvents: 'box-none' },
         tabBarStyle: { display: 'none' },
+        animation: 'shift',
       }}
     />
   );

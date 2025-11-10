@@ -1,5 +1,6 @@
 import type { Collection } from '@lactalink/types/collections';
 import type {
+  Address,
   Donation,
   Hospital,
   Individual,
@@ -27,4 +28,8 @@ export function isMilkBank(data: Collection): data is Hospital {
 
 export function isIndividual(data: Collection): data is Individual {
   return 'givenName' in data && 'birth' in data;
+}
+
+export function isAddress(data: Collection): data is Address {
+  return 'street' in data && 'zipCode' in data;
 }

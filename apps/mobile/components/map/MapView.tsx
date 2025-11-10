@@ -32,7 +32,7 @@ import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { callback } from 'react-native-nitro-modules';
 import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
-import { MapProvider, useIsFollowingUser, useIsUserLocated, useMap } from '../contexts/MapProvider';
+import { MapProvider, useIsFollowingUser, useMap, useMapActions } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
@@ -115,9 +115,9 @@ function MapView({
   const [mapReady, setMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [map, createRef] = useMap();
+  const [map, setMapRef] = useMap();
   const [followingUser] = useIsFollowingUser();
-  const setUserLocated = useIsUserLocated()[1];
+  const { setUserLocated, setZoomLevel } = useMapActions();
 
   const initialLoc: RNLocation = useMemo(() => getInitialLocation(), []);
   const initialProps: RNInitialProps = { camera: { center: initialLoc.center, zoom: 16 } };
@@ -165,9 +165,16 @@ function MapView({
     [setUserLocated, userLocationMarker?.coordinate]
   );
 
+  const onCameraChange = useCallback(
+    (_region: RNRegion, camera: RNCamera, _isGesture: boolean) => {
+      setZoomLevel(camera.zoom);
+    },
+    [setZoomLevel]
+  );
+
   useEffect(() => {
     if (followingUser) {
-      const newCam: RNCamera = { bearing: heading, center: locationUpdates.center };
+      const newCam: Partial<RNCamera> = { bearing: heading, center: locationUpdates.center };
       map?.setCamera(newCam, false);
     }
   }, [heading, followingUser, locationUpdates, map]);
@@ -176,7 +183,7 @@ function MapView({
     <Box style={containerStyle} className={containerClassName ?? 'flex-1'}>
       <GoogleMapsView
         {...props}
-        hybridRef={wrapCallback(createRef)}
+        hybridRef={wrapCallback(setMapRef)}
         initialProps={props.initialProps ?? initialProps}
         markers={markers}
         uiSettings={uiSettings}
@@ -207,7 +214,7 @@ function MapView({
         onMyLocationPress={wrapCallback(props.onMyLocationPress)}
         onMyLocationButtonPress={wrapCallback(props.onMyLocationButtonPress)}
         onCameraChangeStart={wrapCallback(props.onCameraChangeStart)}
-        onCameraChange={wrapCallback(props.onCameraChange)}
+        onCameraChange={wrapCallback(props.onCameraChange, onCameraChange)}
         onCameraChangeComplete={wrapCallback(props.onCameraChangeComplete, onCameraChangeComplete)}
         onMapReady={wrapCallback(props.onMapReady, () => setMapReady(true))}
         onMapLoaded={wrapCallback(props.onMapLoaded, () => setMapLoaded(true))}

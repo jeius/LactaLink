@@ -1,47 +1,50 @@
 import { DeliveryPreferenceCard, DonationInfoCard } from '@/components/cards';
 import { RequestInfoCard } from '@/components/cards/RequestInfoCard';
-import {
-  createMarkerID,
-  destructureMarkerID,
-  useDataMarkerMap,
-  useSelectedDataMarker,
-} from '@/components/contexts/DataMarkerProvider';
 import { useMap } from '@/components/contexts/MapProvider';
+import {
+  useDataMarkerActions,
+  useDataMarkersMap,
+  useSelectedDataMarker,
+} from '@/components/contexts/markers/DataMarker';
+import { DataMarkerSlug } from '@/components/contexts/markers/types';
 import { BottomSheetScrollView } from '@/components/ui/bottom-sheet';
-import { useBottomSheetRef } from '@/components/ui/bottom-sheet/context';
+import { useBottomSheetActions, useBottomSheetRef } from '@/components/ui/bottom-sheet/context';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getColor } from '@/lib/colors';
+import { createMarkerID, destructureMarkerID } from '@/lib/utils/markerUtils';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { validatePoint } from '@lactalink/utilities/geo-utils';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { MapIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 type Slug = Extract<CollectionSlug, 'donations' | 'requests' | 'hospitals' | 'milkBanks'>;
 
 export default function SelectedDataMarkerPage() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id: markerID } = useLocalSearchParams<{ id: string }>();
 
   const [map] = useMap();
-  const markerMap = useDataMarkerMap();
+  const markerMap = useDataMarkersMap();
+  const { addMarker, setSelectedMarker } = useDataMarkerActions();
+  const { handleOpen: openBottomSheet } = useBottomSheetActions();
 
-  const dataMarker = useMemo(() => markerMap.get(id), [markerMap, id]);
+  const dataMarker = useMemo(() => markerMap.get(markerID), [markerMap, markerID]);
 
-  const destructured = destructureMarkerID(id);
+  const destructured = destructureMarkerID(markerID);
 
   const query = useFetchById(!dataMarker || !!destructured, {
-    collection: destructured?.slug ?? 'donations',
+    collection: (destructured?.slug ?? 'donations') as DataMarkerSlug,
     id: destructured?.id ?? '',
   });
 
-  const data = dataMarker ? dataMarker.data : query.data;
+  const data = dataMarker ? dataMarker.data.value : query.data;
 
   const { slug, title, preferences } = useMemo(() => {
     if (!data) return {};
@@ -62,18 +65,23 @@ export default function SelectedDataMarkerPage() {
     return { slug, title, preferences };
   }, [data]);
 
-  useEffect(() => {
-    if (dataMarker) {
-      const marker = dataMarker.marker;
-      map?.setCamera({ center: marker.coordinate }, false);
-      map?.showMarkerInfoWindow(marker.id);
-
+  useFocusEffect(
+    useCallback(() => {
+      // Ensure the data marker is added to the context
+      if (!dataMarker && query.data) addMarker(query.data);
+      // Set the selected marker in context
+      setSelectedMarker(markerID);
+      // Show the marker info window on the map
+      map?.showMarkerInfoWindow(markerID);
+      // Open the bottom sheet to show marker details
+      openBottomSheet();
+      // On unFocus, clear the selected marker and hide the info window
       return () => {
-        map?.hideMarkerInfoWindow(marker.id);
+        setSelectedMarker(null);
+        map?.hideMarkerInfoWindow(markerID);
       };
-    }
-    return () => {};
-  }, [map, id, dataMarker]);
+    }, [dataMarker, map, markerID, query.data, addMarker, setSelectedMarker, openBottomSheet])
+  );
 
   return (
     <>

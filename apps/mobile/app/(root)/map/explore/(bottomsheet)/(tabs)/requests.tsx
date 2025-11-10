@@ -1,5 +1,5 @@
 import { RequestListCard } from '@/components/cards';
-import { createMarkerID, useSelectedDataMarker } from '@/components/contexts/DataMarkerProvider';
+import { useSelectedDataMarker } from '@/components/contexts/markers/DataMarker';
 import { NoData } from '@/components/NoData';
 import { RefreshButton } from '@/components/RefreshButton';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -12,6 +12,7 @@ import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { DonationCreateParams } from '@/lib/types/donationRequest';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
+import { createMarkerID } from '@/lib/utils/markerUtils';
 import { Collection } from '@lactalink/types/collections';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';

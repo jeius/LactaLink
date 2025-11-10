@@ -82,6 +82,7 @@ export const Users: CollectionConfig<'users'> = {
       type: 'join',
       collection: 'addresses',
       on: 'owner',
+      maxDepth: 3,
       admin: {
         defaultColumns: ['name', 'displayName', 'default', 'coordinates'],
       },

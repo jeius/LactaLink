@@ -41,4 +41,15 @@ export class SpatialSearch<T> extends KDBush {
   getAllItems(): T[] {
     return this.items;
   }
+
+  /**
+   * Adds a new item to the spatial search structure.
+   * @param item The item to be added.
+   */
+  addItem(item: T) {
+    const { x, y } = this.pointExtractor(item);
+    this.items.push(item);
+    this.add(x, y);
+    this.finish();
+  }
 }

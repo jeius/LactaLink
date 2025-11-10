@@ -1,3 +1,4 @@
+import { createMarkerID } from '@/lib/utils/markerUtils';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -6,8 +7,8 @@ import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { MapIcon } from 'lucide-react-native';
 import React from 'react';
 import { DeliveryPreferenceCard, DonationInfoCard, RequestInfoCard } from '../cards';
-import { createMarkerID, useSelectedDataMarker } from '../contexts/DataMarkerProvider';
 import { useMap } from '../contexts/MapProvider';
+import { useSelectedDataMarker } from '../contexts/markers/DataMarker';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';
 import { Text } from '../ui/text';
@@ -40,7 +41,7 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
         if (!validatePoint(point)) return;
 
         const [longitude, latitude] = point;
-        const markerID = createMarkerID(slug, data.id, point);
+        const markerID = createMarkerID(slug, data.value.id, point);
         setSelectedMarker(markerID);
         map?.setCamera({ center: { latitude, longitude }, zoom: 16 }, true, 300);
         setTimeout(() => map?.showMarkerInfoWindow(markerID), 350);
@@ -61,24 +62,24 @@ export function MapMarkerInfo({ onViewOnMap }: MapMarkerInfoProps) {
     });
   }
 
-  if (isDonation(data)) {
-    const preferences = extractCollection(data.deliveryPreferences) || [];
+  if (isDonation(data.value)) {
+    const preferences = extractCollection(data.value.deliveryPreferences) || [];
     return (
       <VStack space="sm" className="mb-10 w-full items-stretch">
         <Text className="font-JakartaSemiBold">Donation Details</Text>
-        <DonationInfoCard data={data} />
+        <DonationInfoCard data={data.value} />
         <Text className="mt-4 font-JakartaSemiBold">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="donations" data={preferences} />
       </VStack>
     );
   }
 
-  if (isRequest(data)) {
-    const preferences = extractCollection(data.deliveryPreferences) || [];
+  if (isRequest(data.value)) {
+    const preferences = extractCollection(data.value.deliveryPreferences) || [];
     return (
       <VStack space="sm" className="mb-10 w-full items-stretch">
         <Text className="font-JakartaSemiBold">Request Details</Text>
-        <RequestInfoCard data={data} />
+        <RequestInfoCard data={data.value} />
         <Text className="mt-4 font-JakartaSemiBold">Delivery Preferences</Text>
         <DeliveryPreferencesCard slug="requests" data={preferences} />
       </VStack>
