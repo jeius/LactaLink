@@ -19,8 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
+import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
 import { getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
@@ -98,7 +98,7 @@ export default function RequestDetailsPage() {
       >
         <Box className="relative">
           <Animated.View
-            className="bg-background-0 absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-full bg-background-0"
             style={titleAnimatedStyles(false)}
           />
           <HeaderBackButton style={{ marginRight: 0 }} tintColor={getTypographyColor('900')} />
@@ -180,7 +180,7 @@ export default function RequestDetailsPage() {
                     <VStack space="xs" className="items-end">
                       <Box className="flex-1 justify-center">
                         {status && (
-                          <Card className="bg-tertiary-100 rounded-full border-0 px-4 py-2">
+                          <Card className="rounded-full border-0 bg-tertiary-100 px-4 py-2">
                             <Text className="font-JakartaSemiBold text-tertiary-900">
                               {DONATION_REQUEST_STATUS[status].label}
                             </Text>
@@ -209,7 +209,7 @@ export default function RequestDetailsPage() {
                       value={percentage}
                       trackColor={progressTrackColor}
                     />
-                    <Text size="xs" className="text-typography-700 text-center">
+                    <Text size="xs" className="text-center text-typography-700">
                       {fulfilledVolume} mL fulfilled
                     </Text>
                   </>
@@ -225,7 +225,7 @@ export default function RequestDetailsPage() {
             </HStack>
 
             <VStack className="px-5">
-              <Text className="font-JakartaSemiBold mb-1">Reason</Text>
+              <Text className="mb-1 font-JakartaSemiBold">Reason</Text>
               {isLoading ? (
                 <Skeleton className="h-20" />
               ) : (
@@ -241,7 +241,7 @@ export default function RequestDetailsPage() {
             </VStack>
 
             <VStack className="px-5">
-              <Text className="font-JakartaSemiBold mb-1">Notes</Text>
+              <Text className="mb-1 font-JakartaSemiBold">Notes</Text>
               {isLoading ? (
                 <Skeleton className="h-32" />
               ) : (

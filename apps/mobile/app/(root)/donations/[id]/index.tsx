@@ -18,8 +18,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
+import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { useParallaxAnimationStyles } from '@/hooks/useAnimationStyles';
 import { getTypographyColor } from '@/lib/colors/getColor';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
@@ -91,7 +91,7 @@ export default function DonationDetailsPage() {
       >
         <Box className="relative">
           <Animated.View
-            className="bg-background-0 absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-full bg-background-0"
             style={titleAnimatedStyles(false)}
           />
           <HeaderBackButton style={{ marginRight: 0 }} tintColor={getTypographyColor('900')} />
@@ -167,7 +167,7 @@ export default function DonationDetailsPage() {
                     <VStack space="xs" className="items-end">
                       <Box className="flex-1 justify-center">
                         {status && (
-                          <Card className="bg-primary-100 rounded-full border-0 px-4 py-2">
+                          <Card className="rounded-full border-0 bg-primary-100 px-4 py-2">
                             <Text className="font-JakartaSemiBold text-primary-900">
                               {DONATION_REQUEST_STATUS[status].label}
                             </Text>
@@ -191,7 +191,7 @@ export default function DonationDetailsPage() {
                 ) : (
                   <>
                     <AnimatedProgress size="sm" orientation="horizontal" value={percentage} />
-                    <Text size="xs" className="text-typography-700 text-center">
+                    <Text size="xs" className="text-center text-typography-700">
                       {remainingVolume} mL available
                     </Text>
                   </>
@@ -207,7 +207,7 @@ export default function DonationDetailsPage() {
             </HStack>
 
             <VStack className="px-5">
-              <Text className="font-JakartaSemiBold mb-1">Notes</Text>
+              <Text className="mb-1 font-JakartaSemiBold">Notes</Text>
               {isLoading ? (
                 <Skeleton className="h-32" />
               ) : (

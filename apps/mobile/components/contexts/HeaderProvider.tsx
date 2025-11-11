@@ -1,6 +1,6 @@
 import { useHideOnScrollDownAnimation } from '@/hooks/animations/useHideOnScrollDownAnimation';
-import { Layout } from '@react-navigation/elements';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { LayoutRectangle } from 'react-native';
 import { ScrollHandlerProcessed, SharedValue, useSharedValue } from 'react-native-reanimated';
 import { createStore, StoreApi, useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
@@ -8,13 +8,13 @@ import { useShallow } from 'zustand/shallow';
 type ScrollHandler = ScrollHandlerProcessed<Record<string, unknown>>;
 
 interface HeaderStore {
-  size: Layout;
+  size: LayoutRectangle;
   visible: boolean;
   translateProgress: SharedValue<number>;
   opacityProgress: SharedValue<number>;
   scrollHandler?: ScrollHandler;
   actions: {
-    setSize: (size: Layout) => void;
+    setSize: (size: LayoutRectangle) => void;
     setVisible: (visible: boolean) => void;
   };
 }
@@ -43,12 +43,12 @@ export function HeaderProvider({ children }: PropsWithChildren) {
 
   const [store] = useState(() =>
     createStore<HeaderStore>((set) => ({
-      size: { height: 0, width: 0 },
+      size: { height: 0, width: 0, x: 0, y: 0 },
       visible: true,
       translateProgress,
       opacityProgress,
       actions: {
-        setSize: (size: Layout) => set(() => ({ size })),
+        setSize: (size) => set(() => ({ size })),
         setVisible: (visible: boolean) => set(() => ({ visible })),
       },
     }))
