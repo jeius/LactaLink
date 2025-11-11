@@ -11,13 +11,13 @@ import {
   MessageSquareIcon,
   NewspaperIcon,
 } from 'lucide-react-native';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import NumberBadge from '../badges/NumberBadge';
-import { useHideOnScrollAnimation, useScroll } from '../contexts/ScrollProvider';
+import { useHeaderProgress } from '../contexts/HeaderProvider';
 import HomeIcon from '../icons/HomeIcon';
 import { Card } from '../ui/card';
 import { TabButton } from './TabButton';
@@ -39,39 +39,42 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
   const insets = useSafeAreaInsets();
 
-  const { scrollValue } = useScroll();
-  const containerAnimatedStyle = useHideOnScrollAnimation(scrollValue);
+  const itemWidth = useMemo(
+    () => dimensions.width / state.routes.length,
+    [dimensions.width, state.routes.length]
+  );
 
-  const itemWidth = dimensions.width / state.routes.length;
-  const translateX = useSharedValue(itemWidth * state.index);
+  const headerProgress = useHeaderProgress();
 
-  const onItemLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setDimensions({ width, height });
-  };
-
-  const onButtonLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setButtonSize({ width, height });
-  };
-
-  const circleStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+  const containerAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: headerProgress.translateY.value * -1 }],
+    opacity: headerProgress.opacity.value,
   }));
 
-  useEffect(() => {
-    translateX.value = withSpring(itemWidth * state.index, {
+  const circleStyle = useAnimatedStyle(() => {
+    const translateX = withSpring(itemWidth * state.index, {
       damping: 70,
       stiffness: 700,
     });
-  }, [state.index, itemWidth, translateX]);
+    return { transform: [{ translateX: translateX }] };
+  }, [state.index, itemWidth]);
+
+  const onItemLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setDimensions({ width, height });
+  }, []);
+
+  const onButtonLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setButtonSize({ width, height });
+  }, []);
 
   return (
     <Animated.View
       style={[
         {
           position: 'absolute',
-          bottom: Math.max(insets.bottom, 12),
+          bottom: Math.max(insets.bottom + 12, 12),
           left: 12,
           right: 12,
           zIndex: 1,

@@ -1562,10 +1562,10 @@ export const posts = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title').notNull(),
-    content: varchar('content').notNull(),
+    content: varchar('content'),
     summary: varchar('summary'),
     visibility: enum_posts_visibility('visibility').notNull().default('PUBLIC'),
-    status: enum_posts_status('status').default('DRAFT'),
+    status: enum_posts_status('status').default('PUBLISHED'),
     likesCount: numeric('likes_count', { mode: 'number' }).default(0),
     commentsCount: numeric('comments_count', { mode: 'number' }).default(0),
     sharesCount: numeric('shares_count', { mode: 'number' }).default(0),

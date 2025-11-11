@@ -1,11 +1,8 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { ProfileAvatar } from '@/components/Avatar';
+import { HeaderProvider } from '@/components/contexts/HeaderProvider';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
 import { Icon } from '@/components/ui/icon';
 import { MilkBottleIcon } from '@/components/ui/icon/custom';
-import { useMeUser } from '@/hooks/auth/useAuth';
-import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { extractName } from '@lactalink/utilities/extractors';
 import { Drawer } from 'expo-router/drawer';
 import { Building2Icon, BuildingIcon, HomeIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -17,12 +14,6 @@ export default function Layout() {
   const activeBgColor = themeColors.primary[500];
   const inActiveTintColor = themeColors.typography[900];
 
-  const { data: user } = useMeUser();
-  const name = user && extractName(user);
-  const profile = user?.profile;
-
-  const screenOptions = useScreenOptions();
-
   const [defaultStatus, setDefaultStatus] = useState<'open' | 'closed'>('closed');
 
   useEffect(() => {
@@ -30,68 +21,59 @@ export default function Layout() {
   }, []);
 
   return (
-    <Drawer
-      drawerContent={NavigationDrawerContent}
-      initialRouteName="(tabs)"
-      backBehavior="initialRoute"
-      defaultStatus={defaultStatus}
-      //@ts-expect-error Expected type mismatch due to screenOptions custom type
-      screenOptions={{
-        ...screenOptions,
-        headerShown: true,
-        headerRightContainerStyle: { paddingRight: 12 },
-        headerRight: () => <ProfileAvatar size="sm" profile={profile} enablePress />,
-        drawerActiveTintColor: activeTintColor,
-        drawerActiveBackgroundColor: activeBgColor,
-        drawerItemStyle: {
-          borderRadius: 14,
-          height: 48,
-        },
-        drawerContentContainerStyle: { backgroundColor: bgColor },
-        drawerContentStyle: { paddingTop: 12 },
-        drawerStyle: { backgroundColor: bgColor },
-        drawerInactiveTintColor: inActiveTintColor,
-        drawerLabelStyle: { fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 },
-      }}
-    >
-      <Drawer.Screen
-        name="(tabs)"
-        options={{
-          headerTitle: (name && `Welcome, ${name}!`) || 'Welcome!',
-          drawerLabel: 'Home',
-          drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" color={color} />,
+    <HeaderProvider>
+      <Drawer
+        drawerContent={NavigationDrawerContent}
+        initialRouteName="(tabs)"
+        backBehavior="initialRoute"
+        defaultStatus={defaultStatus}
+        screenOptions={{
+          headerShown: false,
+          drawerActiveTintColor: activeTintColor,
+          drawerActiveBackgroundColor: activeBgColor,
+          drawerItemStyle: {
+            borderRadius: 14,
+            height: 48,
+          },
+          drawerContentContainerStyle: { backgroundColor: bgColor },
+          drawerContentStyle: { paddingTop: 12 },
+          drawerStyle: { backgroundColor: bgColor },
+          drawerInactiveTintColor: inActiveTintColor,
+          drawerLabelStyle: { fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 },
         }}
-      />
+      >
+        <Drawer.Screen
+          name="(tabs)"
+          options={{
+            drawerLabel: 'Home',
+            drawerIcon: ({ color }) => <Icon as={HomeIcon} size="md" color={color} />,
+          }}
+        />
 
-      <Drawer.Screen
-        name="listings"
-        options={{
-          title: 'Available Listings',
-          drawerLabel: 'Available Listings',
-          drawerIcon: ({ color }) => <Icon as={MilkBottleIcon} size="md" color={color} />,
-          headerShadowVisible: false,
-        }}
-      />
+        <Drawer.Screen
+          name="listings"
+          options={{
+            drawerLabel: 'Available Listings',
+            drawerIcon: ({ color }) => <Icon as={MilkBottleIcon} size="md" color={color} />,
+          }}
+        />
 
-      <Drawer.Screen
-        name="hospitals"
-        options={{
-          title: 'Hospitals',
-          drawerLabel: 'Hospitals',
-          drawerIcon: ({ color }) => <Icon as={Building2Icon} size="md" color={color} />,
-          headerShadowVisible: false,
-        }}
-      />
+        <Drawer.Screen
+          name="hospitals"
+          options={{
+            drawerLabel: 'Hospitals',
+            drawerIcon: ({ color }) => <Icon as={Building2Icon} size="md" color={color} />,
+          }}
+        />
 
-      <Drawer.Screen
-        name="milk-banks"
-        options={{
-          title: 'Milk Banks',
-          drawerLabel: 'Milk Banks',
-          drawerIcon: ({ color }) => <Icon as={BuildingIcon} size="md" color={color} />,
-          headerShadowVisible: false,
-        }}
-      />
-    </Drawer>
+        <Drawer.Screen
+          name="milk-banks"
+          options={{
+            drawerLabel: 'Milk Banks',
+            drawerIcon: ({ color }) => <Icon as={BuildingIcon} size="md" color={color} />,
+          }}
+        />
+      </Drawer>
+    </HeaderProvider>
   );
 }

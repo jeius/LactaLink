@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import TransactionListCard from '@/components/cards/TransactionListCard';
-import { useScrollHandlers } from '@/components/contexts/ScrollProvider';
+import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -14,16 +14,23 @@ import { Text } from '@/components/ui/text';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useTransactions } from '@/hooks/transactions';
 import { Transaction } from '@lactalink/types/payload-generated-types';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 import { ChevronRightIcon } from 'lucide-react-native';
+import Animated, { AnimatedProps } from 'react-native-reanimated';
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
+  AnimatedProps<FlashListProps<Transaction>>
+>;
 
 export default function TransactionsTab() {
-  const scrollHandlers = useScrollHandlers();
-
   const meUser = useMeUser();
 
   const { transactions: data, queryMethods: query, markAsSeen } = useTransactions();
+
+  const scrollHandler = useHeaderScrollHandler();
+
+  const { height: headerHeight } = useHeaderSize();
 
   const renderItem: ListRenderItem<Transaction> = ({ item }) => {
     const isLoading = item.id.includes('placeholder');
@@ -31,8 +38,7 @@ export default function TransactionsTab() {
   };
 
   // Clear transactions badge when screen is unfocused
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useFocusEffect(useCallback(() => markAsSeen, []));
+  useFocusEffect(useCallback(() => markAsSeen, [markAsSeen]));
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no active transactions" />;
@@ -67,10 +73,10 @@ export default function TransactionsTab() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <FlashList
-        {...scrollHandlers}
+      <AnimatedFlashList
         data={data}
         renderItem={renderItem}
+        onScroll={scrollHandler}
         ListEmptyComponent={EmptyComponent}
         ItemSeparatorComponent={SeparatorComponent}
         ListHeaderComponent={HeaderComponent}
@@ -80,7 +86,12 @@ export default function TransactionsTab() {
         ListHeaderComponentStyle={{ marginBottom: 8 }}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, idx) => `${item.id}-${idx}`}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 80,
+          marginTop: headerHeight,
+          flexGrow: 1,
+        }}
         ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
         ListFooterComponentStyle={{ marginTop: 8 }}
         onEndReachedThreshold={0.25}

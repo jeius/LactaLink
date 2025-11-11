@@ -1,9 +1,11 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { BottomTabBar } from '@/components/BottomTabBar';
-import { ScrollProvider } from '@/components/contexts/ScrollProvider';
+import { DrawerHeader } from '@/components/drawer/DrawerHeader';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
 import { useTransactions } from '@/hooks/transactions';
+import { extractName } from '@lactalink/utilities/extractors';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
@@ -16,8 +18,12 @@ export default function Layout() {
   const { themeColors } = useTheme();
   const bgColor = themeColors.background[50];
 
+  const { data: user } = useMeUser();
+  const name = user && extractName(user);
+
   return (
-    <ScrollProvider>
+    <>
+      <DrawerHeader title={(name && `Welcome, ${name}!`) || 'Welcome!'} />
       <Tabs
         initialRouteName="feed"
         tabBar={(props) => <BottomTabBar {...props} />}
@@ -33,6 +39,6 @@ export default function Layout() {
         <Tabs.Screen name="notifications" options={{ tabBarBadge: notifUnseenCount }} />
         <Tabs.Screen name="messages" />
       </Tabs>
-    </ScrollProvider>
+    </>
   );
 }

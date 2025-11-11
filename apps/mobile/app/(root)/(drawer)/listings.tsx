@@ -1,3 +1,5 @@
+import { useHeaderSize } from '@/components/contexts/HeaderProvider';
+import { DrawerHeader } from '@/components/drawer/DrawerHeader';
 import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import SafeArea from '@/components/SafeArea';
@@ -5,6 +7,7 @@ import { DonationRequestScene } from '@/components/tabs/scenes/DonationRequestSc
 import { SceneProps } from '@/components/tabs/scenes/types';
 import { Tab } from '@/components/tabs/Tab';
 import { TabBar } from '@/components/tabs/TabBar';
+import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { LucideProps } from 'lucide-react-native';
@@ -23,8 +26,14 @@ const iconMap: Record<RouteKey, FC<SvgProps | LucideProps>> = {
 export default function ListingsPage() {
   const { width } = useWindowDimensions();
   const { routes, sceneMap } = useMemo(() => createRoutesAndScenes(), []);
+  const { height: headerHeight } = useHeaderSize();
   return (
     <SafeArea safeTop={false} className="items-stretch">
+      <DrawerHeader title="Available Listings" hideShadow />
+
+      {/* Spacer to offset for the header */}
+      <Box className="w-0" style={{ height: headerHeight }} />
+
       <Tab
         routes={routes}
         renderScene={sceneMap}

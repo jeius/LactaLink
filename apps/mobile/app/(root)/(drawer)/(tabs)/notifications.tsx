@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
-import { useScrollHandlers } from '@/components/contexts/ScrollProvider';
+import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
@@ -14,13 +14,19 @@ import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications'
 import { useNotification } from '@/hooks/notifications';
 import { Notification } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
+import Animated, { AnimatedProps } from 'react-native-reanimated';
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
+  AnimatedProps<FlashListProps<any>>
+>;
 
 export default function NotificationsTab() {
   useLiveNotifications();
 
-  const scrollHandlers = useScrollHandlers();
+  const scrollHandler = useHeaderScrollHandler();
+  const { height: headerHeight } = useHeaderSize();
 
   const meUser = useMeUser();
 
@@ -39,8 +45,7 @@ export default function NotificationsTab() {
   };
 
   // Clear notifications badge when screen is unfocused
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useFocusEffect(useCallback(() => markAsSeen, []));
+  useFocusEffect(useCallback(() => markAsSeen, [markAsSeen]));
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no notifications" />;
@@ -66,10 +71,10 @@ export default function NotificationsTab() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <FlashList
-        {...scrollHandlers}
+      <AnimatedFlashList
         data={data}
         renderItem={renderItem}
+        onScroll={scrollHandler}
         ListEmptyComponent={EmptyComponent}
         ItemSeparatorComponent={SeparatorComponent}
         ListHeaderComponent={ListHeaderComponent}
@@ -79,7 +84,12 @@ export default function NotificationsTab() {
         ListHeaderComponentStyle={{ marginBottom: 8 }}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, idx) => `${item.id}-${idx}`}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 80,
+          marginTop: headerHeight,
+          flexGrow: 1,
+        }}
         ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
         ListFooterComponentStyle={{ marginTop: 8 }}
         onEndReachedThreshold={0.25}
