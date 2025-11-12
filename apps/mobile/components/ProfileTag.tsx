@@ -58,7 +58,7 @@ function Content({ profile, direction = 'ltr', label: labelProp }: ContentProps)
         <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
           <Link asChild push href={`/profile/${profile.relationTo}/${data.id}`}>
             <Button
-              animateOnPress={false}
+              disablePressAnimation
               size="xs"
               variant="link"
               action="default"

@@ -11,12 +11,13 @@ import { getImageAsset } from '@/lib/stores';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
-import { ComponentProps, ReactNode, useState } from 'react';
+import { ComponentProps, createElement, FC, useState } from 'react';
 import { GestureResponderEvent, useWindowDimensions } from 'react-native';
 import { Icon } from '../ui/icon';
+import { PressableProps } from '../ui/pressable';
 
 interface ModalProps extends ComponentProps<typeof Modal> {
-  trigger?: ReactNode;
+  trigger?: FC<PressableProps>;
 }
 
 export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
@@ -55,22 +56,26 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
 
   return (
     <>
-      <AnimatedPressable
-        disableRipple
-        onPress={() => {
-          setOpen(true);
-        }}
-        onPressIn={() => setTriggerPressed(true)}
-        onPressOut={() => setTriggerPressed(false)}
-      >
-        {trigger || (
+      {trigger ? (
+        createElement(trigger, {
+          onPress: handleModalTrigger,
+        })
+      ) : (
+        <AnimatedPressable
+          disableRipple
+          onPress={() => {
+            setOpen(true);
+          }}
+          onPressIn={() => setTriggerPressed(true)}
+          onPressOut={() => setTriggerPressed(false)}
+        >
           <Box
             className={`rounded-full p-4 ${triggerPressed ? 'bg-primary-600' : 'bg-primary-400'}`}
           >
             <Icon as={PlusIcon} size="xl" className="text-primary-0" />
           </Box>
-        )}
-      </AnimatedPressable>
+        </AnimatedPressable>
+      )}
 
       <Modal
         {...props}
@@ -86,7 +91,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
             </Text> */}
 
             <AnimatedPressable onPress={handleDonatePressed} containerStyle={{ width: '100%' }}>
-              <Card size="xl" className="bg-primary-100 border-primary-400 relative h-44 p-0">
+              <Card size="xl" className="relative h-44 border-primary-400 bg-primary-100 p-0">
                 <Image
                   alt="Donate"
                   source={donateImageSrc}
@@ -94,7 +99,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
                   style={{ width: '100%', height: '100%' }}
                 />
                 <Box className="absolute inset-0 items-start justify-end p-2">
-                  <Box className="bg-primary-400 rounded-xl p-3 opacity-90">
+                  <Box className="rounded-xl bg-primary-400 p-3 opacity-90">
                     <Text size="xl" className="font-JakartaSemiBold text-primary-900">
                       Donate
                     </Text>
@@ -104,7 +109,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
             </AnimatedPressable>
 
             <AnimatedPressable onPress={handleRequestPressed} containerStyle={{ width: '100%' }}>
-              <Card size="xl" className="bg-tertiary-50 border-tertiary-200 relative h-44 p-0">
+              <Card size="xl" className="relative h-44 border-tertiary-200 bg-tertiary-50 p-0">
                 <Image
                   alt="Request"
                   source={requestImageSrc}
@@ -112,7 +117,7 @@ export function DonateRequestModal({ onClose, trigger, ...props }: ModalProps) {
                   style={{ width: '100%', height: '100%' }}
                 />
                 <Box className="absolute inset-0 items-start justify-end p-2">
-                  <Box className="bg-tertiary-300 rounded-xl p-3 opacity-90">
+                  <Box className="rounded-xl bg-tertiary-300 p-3 opacity-90">
                     <Text size="xl" className="font-JakartaSemiBold text-tertiary-900">
                       Request
                     </Text>

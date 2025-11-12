@@ -23,7 +23,7 @@ export default function Layout() {
 
   return (
     <>
-      <DrawerHeader title={(name && `Welcome, ${name}!`) || 'Welcome!'} />
+      <DrawerHeader showSearch title={(name && `Welcome, ${name}!`) || 'Welcome!'} />
       <Tabs
         initialRouteName="feed"
         tabBar={(props) => <BottomTabBar {...props} />}

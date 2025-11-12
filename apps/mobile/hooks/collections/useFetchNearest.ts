@@ -6,12 +6,19 @@ import { Collection } from '@lactalink/types/collections';
 import { CollectionSlug, PaginatedDocs } from '@lactalink/types/payload-types';
 import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
 
+type Config = {
+  enabled?: boolean;
+  maxDistance?: number;
+  limit?: number;
+  status?: DonationRequestStatus;
+};
+
 export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>>(
   collection: TSlug,
-  enabled: boolean = true,
-  status: DonationRequestStatus = 'AVAILABLE',
-  maxDistance?: number
+  config: Config = {}
 ): UseInfiniteQueryResult<InfiniteData<PaginatedDocs<Collection<TSlug>> | null>> {
+  const { enabled = true, maxDistance, status = 'AVAILABLE', limit = 20 } = config;
+
   const coords = useCurrentCoordinates();
   const matchingService = useMatchingService();
 
@@ -30,12 +37,12 @@ export function useFetchNearest<TSlug extends Extract<CollectionSlug, 'donations
         case 'donations':
           return matchingService.getNearestDonations(point, status, maxDistance, {
             page: pageParam,
-            limit: 20,
+            limit: limit,
           });
         case 'requests':
           return matchingService.getNearestRequests(point, status, maxDistance, {
             page: pageParam,
-            limit: 20,
+            limit: limit,
           });
         default:
           return null;

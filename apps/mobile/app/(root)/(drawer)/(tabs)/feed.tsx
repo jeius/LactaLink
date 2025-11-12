@@ -1,65 +1,128 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 
-import {
-  useHeaderProgress,
-  useHeaderScrollHandler,
-  useHeaderSize,
-} from '@/components/contexts/HeaderProvider';
+import { FeedItemCard } from '@/components/cards/FeedItemCard';
+import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
+import { NearestListingsList } from '@/components/lists/NearestListingsList';
+import { DonateRequestModal } from '@/components/modals';
+import { NoData } from '@/components/NoData';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { Input, InputField, InputIcon } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useMeUser } from '@/hooks/auth/useAuth';
+import { Card } from '@/components/ui/card';
+import { HStack, HStackProps } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { shadow } from '@/lib/utils/shadows';
+import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { Link, useRouter } from 'expo-router';
-import { SearchIcon } from 'lucide-react-native';
+import { Link } from 'expo-router';
+import { PlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const PLACEHOLDER = generatePlaceHoldersWithID(50, {});
+const PLACEHOLDER = generatePlaceHoldersWithID(50, {} as Post);
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
-  AnimatedProps<FlashListProps<any>>
+  AnimatedProps<FlashListProps<Post>>
 >;
 
 export default function FeedPage() {
-  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  const { data } = useMeUser();
-
-  const headerProgress = useHeaderProgress();
   const scrollHandler = useHeaderScrollHandler();
-
   const { height: headerHeight } = useHeaderSize();
 
+  const query = useInfiniteFetchBySlug(true, {
+    collection: 'posts',
+    limit: 10,
+    populate: {
+      comments: { likesCount: true, author: true, repliesCount: true, content: true },
+    },
+  });
+
+  const posts = useMemo(() => query.data?.pages.flatMap((p) => p.docs) ?? [], [query.data?.pages]);
+  const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
+
+  const ListFooter = useCallback(() => {
+    if (hasNextPage) return <Spinner size={'small'} className="mt-2" />;
+    return (
+      <Box className="mt-4 p-4">
+        <Text size="sm" className="text-center text-typography-600">
+          You have reached the end of the feed.
+        </Text>
+      </Box>
+    );
+  }, [hasNextPage]);
+
   return (
-    <SafeArea safeTop={false} mode="margin" className="items-stretch">
+    <SafeArea className="items-stretch">
       <AnimatedFlashList
-        data={PLACEHOLDER}
+        data={isLoading ? PLACEHOLDER : posts}
         keyExtractor={(item, idx) => `feed-${item.id}-${idx}`}
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
+        bounces={false}
+        overScrollMode="never"
         contentContainerClassName="flex-col items-stretch grow"
-        ListHeaderComponent={() => <SearchInput />}
-        ListHeaderComponentStyle={{ padding: 16, marginTop: headerHeight }}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        ListHeaderComponent={ListHeader}
+        ListFooterComponent={ListFooter}
+        ListEmptyComponent={ListEmpty}
         ItemSeparatorComponent={() => <Box className="h-2" />}
-        renderItem={({ item }) => <Skeleton variant="sharp" className="h-64" />}
+        refreshControl={
+          <RefreshControl
+            progressViewOffset={headerHeight - insets.top}
+            refreshing={isRefetching}
+            onRefresh={refetch}
+          />
+        }
+        ListHeaderComponentStyle={{ paddingTop: headerHeight - insets.top, marginBottom: 8 }}
+        onEndReached={fetchNextPage}
+        renderItem={({ item }) => {
+          const isPlaceholder = isPlaceHolderData(item);
+          if (isPlaceholder) return <Card variant="filled" className="h-64 rounded-none" />;
+          return <FeedItemCard item={item} />;
+        }}
       />
     </SafeArea>
   );
 }
 
-function SearchInput() {
+function CTA(props: HStackProps) {
   return (
-    <Link asChild push href={'/search'}>
-      <Input size="md" variant="rounded" className="flex-1">
-        <InputIcon as={SearchIcon} className="ml-3 text-primary-500" />
-        <InputField
-          placeholder="Search donors, hospitals, milk banks..."
-          editable={false}
-          pointerEvents="none"
-        />
-      </Input>
-    </Link>
+    <HStack {...props} space="sm" style={shadow.sm}>
+      <Link asChild push href={'/search'}>
+        <Pressable className="flex-1 flex-row items-center overflow-hidden rounded-full border border-outline-500 px-3 py-2">
+          <Text className="font-JakartaMedium text-typography-600">Say something...</Text>
+        </Pressable>
+      </Link>
+
+      <DonateRequestModal
+        trigger={(props) => (
+          <Pressable {...props} hitSlop={8} className="overflow-hidden rounded-full p-2">
+            <Icon as={PlusIcon} size="xl" />
+          </Pressable>
+        )}
+      />
+    </HStack>
   );
+}
+
+function ListHeader() {
+  return (
+    <VStack className="items-stretch gap-2">
+      <CTA className="border border-outline-200 bg-background-0 p-4" />
+      <NearestListingsList />
+    </VStack>
+  );
+}
+
+function ListEmpty() {
+  return <NoData title="No one has posted yet" />;
 }

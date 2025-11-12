@@ -34,10 +34,10 @@ export function NoData({
           contentFit="contain"
         />
       )}
-      <Text size="lg" className="font-JakartaSemiBold text-center">
+      <Text size="lg" className="text-center font-JakartaSemiBold">
         {title || 'No Data Available'}
       </Text>
-      {description && <Text className="text-typography-700 text-center">{description}</Text>}
+      {description && <Text className="text-center text-typography-700">{description}</Text>}
     </VStack>
   );
 }

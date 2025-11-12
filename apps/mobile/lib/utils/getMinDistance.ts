@@ -1,7 +1,7 @@
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
-import { LatLng } from 'react-native-maps';
+import { RNLatLng as LatLng } from 'react-native-google-maps-plus';
 import { getCurrentCoordinates } from '../stores/locationStore';
 
 /**
@@ -14,8 +14,7 @@ export function getMinDistance<T extends DeliveryPreference[] | null | undefined
   deliveryPreferences: T,
   locationCoords?: LatLng | null
 ): T extends DeliveryPreference[] ? number | null : null {
-  const currentLocationCoords = getCurrentCoordinates();
-  const coords = locationCoords === undefined ? currentLocationCoords : locationCoords;
+  const coords = locationCoords === undefined ? getCurrentCoordinates() : locationCoords;
 
   if (!coords || !deliveryPreferences || !deliveryPreferences.length) {
     return null as T extends DeliveryPreference[] ? number : null;
