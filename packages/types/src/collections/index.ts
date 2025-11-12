@@ -1,6 +1,6 @@
-import type { CollectionSlug, UploadCollectionSlug } from '../payload-types/config';
 import type { PopulateType } from '../payload-types/collection';
-import type { Config, Donation, Image, Individual } from '../payload-types/generated';
+import type { CollectionSlug, UploadCollectionSlug } from '../payload-types/config';
+import type { Config, Donation, Image, Individual, Like } from '../payload-types/generated';
 
 export type Collections = Config['collections'][keyof Config['collections']];
 
@@ -12,6 +12,8 @@ export type Collection<Slug extends CollectionSlug | unknown = unknown> =
 export type CollectionWithOwner = Extract<Collection, Pick<Individual, 'owner'>>;
 
 export type CollectionWithCreatedBy = Extract<Collection, Pick<Donation, 'createdBy'>>;
+
+export type CollectionWithCreatedByProfile = Extract<Collection, Pick<Like, 'createdBy'>>;
 
 export type CollectionWithAvatar = Extract<Collection, Pick<Individual, 'avatar'>>;
 

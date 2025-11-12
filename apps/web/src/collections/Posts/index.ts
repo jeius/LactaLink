@@ -1,10 +1,13 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { POST_ATTACHMENT_MEDIA_TYPE, POST_STATUS, POST_VISIBILITY } from '@lactalink/enums/posts';
 import { CollectionConfig } from 'payload';
+import { authenticated, collectionAuthorOrAdmin } from '../_access-control/general';
 import { sharedFromFilter } from './filterOptions/sharedFromFIlter';
 import { setSummary } from './hooks/beforeChange';
 import { updatePostSharesCount } from './hooks/updatePostSharesCount';
+import { preventCircularShares } from './validate/preventCircularShares';
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
@@ -15,10 +18,17 @@ export const Posts: CollectionConfig<'posts'> = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', 'status', 'visibility', 'createdAt'],
+    group: COLLECTION_GROUP.CONTENT,
   },
   timestamps: true,
   versions: false,
   trash: true,
+  access: {
+    create: authenticated,
+    read: authenticated,
+    update: collectionAuthorOrAdmin,
+    delete: collectionAuthorOrAdmin,
+  },
   hooks: {
     beforeChange: [setSummary, generateOwner],
     afterChange: [updatePostSharesCount],
@@ -123,23 +133,79 @@ export const Posts: CollectionConfig<'posts'> = {
       relationTo: ['posts', 'donations', 'requests'],
       hasMany: false,
       filterOptions: sharedFromFilter,
-      validate: () => true, // Custom validation handled in filterOptions
+      validate: preventCircularShares,
       admin: { description: 'If this post is a share, the original post/donation/request.' },
     },
 
-    // Join field to get comments on this post
+    // Freeform tags for search / classification
     {
-      name: 'comments',
-      type: 'join',
-      collection: 'comments',
-      on: 'post',
-      where: {
-        and: [{ parent: { exists: false } }, { deletedAt: { exists: false } }],
-      },
-      admin: {
-        description: 'Comments made on this post.',
-        defaultColumns: ['author', 'content', 'createdAt'],
-      },
+      name: 'tags',
+      type: 'array',
+      fields: [{ name: 'tag', type: 'text' }],
+      admin: { description: 'Optional tags to help classify and search for posts.' },
+    },
+
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Likes',
+          fields: [
+            // Join field to get likes on this post
+            {
+              name: 'likes',
+              type: 'join',
+              collection: 'likes',
+              on: 'liked',
+              admin: {
+                description: 'Likes associated with this post.',
+                defaultColumns: ['createdBy', 'createdAt'],
+              },
+            },
+          ],
+        },
+
+        {
+          label: 'Comments',
+          fields: [
+            // Join field to get comments on this post
+            {
+              name: 'comments',
+              type: 'join',
+              collection: 'comments',
+              on: 'post',
+              where: {
+                and: [{ parent: { exists: false } }, { deletedAt: { exists: false } }],
+              },
+              admin: {
+                description: 'Comments made on this post.',
+                defaultColumns: ['author', 'content', 'createdAt'],
+              },
+            },
+          ],
+        },
+
+        {
+          label: 'Shares',
+          fields: [
+            // Join field to get shares of this post
+            {
+              name: 'shares',
+              type: 'join',
+              collection: 'posts',
+              on: 'sharedFrom',
+              maxDepth: 1,
+              where: {
+                and: [{ deletedAt: { exists: false } }],
+              },
+              admin: {
+                description: 'Posts that share this post.',
+                defaultColumns: ['title', 'author', 'createdAt'],
+              },
+            },
+          ],
+        },
+      ],
     },
 
     // Aggregates to speed up feed rendering
@@ -168,12 +234,5 @@ export const Posts: CollectionConfig<'posts'> = {
     },
 
     ownerField,
-
-    // Freeform tags for search / classification
-    {
-      name: 'tags',
-      type: 'array',
-      fields: [{ name: 'tag', type: 'text' }],
-    },
   ],
 };

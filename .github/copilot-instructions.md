@@ -112,7 +112,7 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 
 - Follow the established folder structure and naming conventions.
 - Use TypeScript for all new code.
-- Ensure compatibility with both mobile and web platforms when adding shared features.
+- Ensure compatibility with both react native and next.js platforms when adding shared features.
 - Refer to the `README.md` files in each directory for additional context.
 
 For further details, consult the documentation in the `docs` folder or reach out to the maintainers.

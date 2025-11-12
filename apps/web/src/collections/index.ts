@@ -8,6 +8,7 @@ import { Hospitals } from './Hospitals';
 import { Identities } from './Identities';
 import { Individuals } from './Individuals';
 import { Inventory } from './Inventory';
+import { Likes } from './Likes';
 import { IdentityImages } from './media/IdentityImages';
 import { Images } from './media/Images';
 import { MilkBagImages } from './media/MilkBagImages';
@@ -39,6 +40,7 @@ const Collections: CollectionConfig[] = [
   Individuals,
   Inventory,
   IslandGroups,
+  Likes,
   MilkBags,
   MilkBagImages,
   MilkBanks,

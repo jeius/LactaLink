@@ -1,5 +1,6 @@
 import { isAdmin } from '@/lib/utils/isAdmin';
-import { Access } from 'payload';
+import { extractID } from '@lactalink/utilities/extractors';
+import { Access, Where } from 'payload';
 
 // This file defines general access control rules for collections in Payload CMS.
 
@@ -59,4 +60,47 @@ export const collectionCreatorOrAdmin: Access = ({ req }) => {
   return {
     createdBy: { equals: user.id },
   };
+};
+
+export const collectionCreatorProfileOrAdmin: Access = ({ req }) => {
+  const user = req.user;
+
+  // If no user is logged in, deny access
+  if (!user) return false;
+
+  // If the user is an admin, allow access
+  if (isAdmin(user)) return true;
+
+  const profile = user.profile;
+
+  if (!profile) return false;
+
+  // If the collection has an owner, check if the user is the owner
+  return {
+    and: [
+      { 'createdBy.relationTo': { equals: profile.relationTo } },
+      { 'createdBy.value': { equals: extractID(profile.value) } },
+    ],
+  } as Where;
+};
+
+export const collectionAuthorOrAdmin: Access = ({ req }) => {
+  const user = req.user;
+
+  // If no user is logged in, deny access
+  if (!user) return false;
+
+  // If the user is an admin, allow access
+  if (isAdmin(user)) return true;
+
+  const profile = user.profile;
+
+  if (!profile) return false;
+
+  return {
+    and: [
+      { 'author.relationTo': { equals: profile.relationTo } },
+      { 'author.value': { equals: extractID(profile.value) } },
+    ],
+  } as Where;
 };

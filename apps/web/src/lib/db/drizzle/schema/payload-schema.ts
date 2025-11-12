@@ -1015,6 +1015,78 @@ export const island_groups = pgTable(
   ]
 );
 
+export const likes = pgTable(
+  'likes',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('likes_updated_at_idx').on(columns.updatedAt),
+    index('likes_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const likes_rels = pgTable(
+  'likes_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+    hospitalsID: uuid('hospitals_id'),
+    postsID: uuid('posts_id'),
+    commentsID: uuid('comments_id'),
+  },
+  (columns) => [
+    index('likes_rels_order_idx').on(columns.order),
+    index('likes_rels_parent_idx').on(columns.parent),
+    index('likes_rels_path_idx').on(columns.path),
+    index('likes_rels_individuals_id_idx').on(columns.individualsID),
+    index('likes_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    index('likes_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('likes_rels_posts_id_idx').on(columns.postsID),
+    index('likes_rels_comments_id_idx').on(columns.commentsID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [likes.id],
+      name: 'likes_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'likes_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'likes_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'likes_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['postsID']],
+      foreignColumns: [posts.id],
+      name: 'likes_rels_posts_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['commentsID']],
+      foreignColumns: [comments.id],
+      name: 'likes_rels_comments_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
 export const milk_bags_ownership_history = pgTable(
   'milk_bags_ownership_history',
   {
@@ -2306,6 +2378,7 @@ export const payload_locked_documents_rels = pgTable(
     individualsID: uuid('individuals_id'),
     inventoryID: uuid('inventory_id'),
     islandGroupsID: uuid('island_groups_id'),
+    likesID: uuid('likes_id'),
     milkBagsID: uuid('milk_bags_id'),
     'milk-bag-imagesID': uuid('milk_bag_images_id'),
     milkBanksID: uuid('milk_banks_id'),
@@ -2345,6 +2418,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_individuals_id_idx').on(columns.individualsID),
     index('payload_locked_documents_rels_inventory_id_idx').on(columns.inventoryID),
     index('payload_locked_documents_rels_island_groups_id_idx').on(columns.islandGroupsID),
+    index('payload_locked_documents_rels_likes_id_idx').on(columns.likesID),
     index('payload_locked_documents_rels_milk_bags_id_idx').on(columns.milkBagsID),
     index('payload_locked_documents_rels_milk_bag_images_id_idx').on(columns['milk-bag-imagesID']),
     index('payload_locked_documents_rels_milk_banks_id_idx').on(columns.milkBanksID),
@@ -2441,6 +2515,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['islandGroupsID']],
       foreignColumns: [island_groups.id],
       name: 'payload_locked_documents_rels_island_groups_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['likesID']],
+      foreignColumns: [likes.id],
+      name: 'payload_locked_documents_rels_likes_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['milkBagsID']],
@@ -2942,6 +3021,43 @@ export const relations_inventory = relations(inventory, ({ one, many }) => ({
   }),
 }));
 export const relations_island_groups = relations(island_groups, () => ({}));
+export const relations_likes_rels = relations(likes_rels, ({ one }) => ({
+  parent: one(likes, {
+    fields: [likes_rels.parent],
+    references: [likes.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [likes_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [likes_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [likes_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  postsID: one(posts, {
+    fields: [likes_rels.postsID],
+    references: [posts.id],
+    relationName: 'posts',
+  }),
+  commentsID: one(comments, {
+    fields: [likes_rels.commentsID],
+    references: [comments.id],
+    relationName: 'comments',
+  }),
+}));
+export const relations_likes = relations(likes, ({ many }) => ({
+  _rels: many(likes_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations_milk_bags_ownership_history = relations(
   milk_bags_ownership_history,
   ({ one }) => ({
@@ -3200,13 +3316,13 @@ export const relations_posts = relations(posts, ({ one, many }) => ({
   attachments: many(posts_attachments, {
     relationName: 'attachments',
   }),
+  tags: many(posts_tags, {
+    relationName: 'tags',
+  }),
   owner: one(users, {
     fields: [posts.owner],
     references: [users.id],
     relationName: 'owner',
-  }),
-  tags: many(posts_tags, {
-    relationName: 'tags',
   }),
   _rels: many(posts_rels, {
     relationName: '_rels',
@@ -3524,6 +3640,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [island_groups.id],
       relationName: 'islandGroups',
     }),
+    likesID: one(likes, {
+      fields: [payload_locked_documents_rels.likesID],
+      references: [likes.id],
+      relationName: 'likes',
+    }),
     milkBagsID: one(milk_bags, {
       fields: [payload_locked_documents_rels.milkBagsID],
       references: [milk_bags.id],
@@ -3693,6 +3814,8 @@ type DatabaseSchema = {
   inventory: typeof inventory;
   inventory_rels: typeof inventory_rels;
   island_groups: typeof island_groups;
+  likes: typeof likes;
+  likes_rels: typeof likes_rels;
   milk_bags_ownership_history: typeof milk_bags_ownership_history;
   milk_bags: typeof milk_bags;
   milk_bags_rels: typeof milk_bags_rels;
@@ -3752,6 +3875,8 @@ type DatabaseSchema = {
   relations_inventory_rels: typeof relations_inventory_rels;
   relations_inventory: typeof relations_inventory;
   relations_island_groups: typeof relations_island_groups;
+  relations_likes_rels: typeof relations_likes_rels;
+  relations_likes: typeof relations_likes;
   relations_milk_bags_ownership_history: typeof relations_milk_bags_ownership_history;
   relations_milk_bags_rels: typeof relations_milk_bags_rels;
   relations_milk_bags: typeof relations_milk_bags;

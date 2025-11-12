@@ -189,6 +189,7 @@ export interface Config {
     individuals: Individual;
     inventory: Inventory;
     islandGroups: IslandGroup;
+    likes: Like;
     milkBags: MilkBag;
     'milk-bag-images': MilkBagImage;
     milkBanks: MilkBank;
@@ -212,6 +213,9 @@ export interface Config {
   collectionsJoins: {
     addresses: {
       deliveryPreferences: 'delivery-preferences';
+    };
+    comments: {
+      likes: 'likes';
     };
     'delivery-preferences': {
       donations: 'donations';
@@ -237,7 +241,9 @@ export interface Config {
       sentTransactions: 'transactions';
     };
     posts: {
+      likes: 'likes';
       comments: 'comments';
+      shares: 'posts';
     };
     requests: {
       transactions: 'transactions';
@@ -262,6 +268,7 @@ export interface Config {
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     inventory: InventorySelect<false> | InventorySelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
+    likes: LikesSelect<false> | LikesSelect<true>;
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
@@ -1386,6 +1393,14 @@ export interface Comment {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Likes associated with this comment.
+   */
+  likes?: {
+    docs?: (string | Like)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   likesCount?: number | null;
   repliesCount?: number | null;
   owner?: (string | null) | User;
@@ -1466,6 +1481,23 @@ export interface Post {
         value: string | Request;
       } | null);
   /**
+   * Optional tags to help classify and search for posts.
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Likes associated with this post.
+   */
+  likes?: {
+    docs?: (string | Like)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * Comments made on this post.
    */
   comments?: {
@@ -1473,19 +1505,55 @@ export interface Post {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Posts that share this post.
+   */
+  shares?: {
+    docs?: (string | Post)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   likesCount?: number | null;
   commentsCount?: number | null;
   sharesCount?: number | null;
   owner?: (string | null) | User;
-  tags?:
-    | {
-        tag?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "likes".
+ */
+export interface Like {
+  id: string;
+  createdBy:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      };
+  /**
+   * The post/comment that was liked
+   */
+  liked:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }
+    | {
+        relationTo: 'comments';
+        value: string | Comment;
+      };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2181,6 +2249,10 @@ export interface PayloadLockedDocument {
         value: string | IslandGroup;
       } | null)
     | ({
+        relationTo: 'likes';
+        value: string | Like;
+      } | null)
+    | ({
         relationTo: 'milkBags';
         value: string | MilkBag;
       } | null)
@@ -2401,6 +2473,7 @@ export interface CommentsSelect<T extends boolean = true> {
         user?: T;
         id?: T;
       };
+  likes?: T;
   likesCount?: T;
   repliesCount?: T;
   owner?: T;
@@ -2646,6 +2719,16 @@ export interface InventorySelect<T extends boolean = true> {
 export interface IslandGroupsSelect<T extends boolean = true> {
   name?: T;
   code?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "likes_select".
+ */
+export interface LikesSelect<T extends boolean = true> {
+  createdBy?: T;
+  liked?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2947,17 +3030,19 @@ export interface PostsSelect<T extends boolean = true> {
   visibility?: T;
   status?: T;
   sharedFrom?: T;
-  comments?: T;
-  likesCount?: T;
-  commentsCount?: T;
-  sharesCount?: T;
-  owner?: T;
   tags?:
     | T
     | {
         tag?: T;
         id?: T;
       };
+  likes?: T;
+  comments?: T;
+  shares?: T;
+  likesCount?: T;
+  commentsCount?: T;
+  sharesCount?: T;
+  owner?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;

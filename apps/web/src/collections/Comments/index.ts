@@ -1,7 +1,9 @@
 import { ownerField } from '@/fields/ownerField';
 import { generateOwner } from '@/hooks/collections/generateOwner';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { COMMENT_STATUS } from '@lactalink/enums/posts';
 import { CollectionConfig } from 'payload';
+import { authenticated, collectionAuthorOrAdmin } from '../_access-control/general';
 import { updateCommentRepliesCount, updatePostCommentCount } from './hooks/updateCounters';
 
 export const Comments: CollectionConfig<'comments'> = {
@@ -10,10 +12,17 @@ export const Comments: CollectionConfig<'comments'> = {
   admin: {
     useAsTitle: 'content',
     defaultColumns: ['content', 'author', 'post', 'parent', 'createdAt'],
+    group: COLLECTION_GROUP.CONTENT,
   },
   timestamps: true,
   versions: false,
   trash: true,
+  access: {
+    create: authenticated,
+    read: authenticated,
+    update: collectionAuthorOrAdmin,
+    delete: collectionAuthorOrAdmin,
+  },
   hooks: {
     beforeChange: [generateOwner],
     afterChange: [updateCommentRepliesCount, updatePostCommentCount],
@@ -81,6 +90,17 @@ export const Comments: CollectionConfig<'comments'> = {
         },
       ],
       admin: { description: 'Users mentioned in this comment.' },
+    },
+
+    {
+      name: 'likes',
+      type: 'join',
+      collection: 'likes',
+      on: 'liked',
+      admin: {
+        description: 'Likes associated with this comment.',
+        defaultColumns: ['createdBy', 'createdAt'],
+      },
     },
 
     // Aggregates to speed up feed rendering
