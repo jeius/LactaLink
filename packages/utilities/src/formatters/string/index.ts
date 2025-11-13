@@ -121,3 +121,25 @@ export function formatDaysToText(
 
   return days.map((day) => (short ? ShortDays[day] : DAYS[day].label)).join(', ');
 }
+
+/**
+ * Formats a number into shortened units (K for thousands, M for millions, B for billions).
+ * @param num - The number to format.
+ * @returns {string} The formatted number with shortened units.
+ * @example
+ * ```typescript
+ * const result = formatNumberToShortenUnits(1500);
+ * console.log(result); // '1.5K'
+ * ```
+ */
+export function formatNumberToShortenUnits(num: number): string {
+  if (num >= 1_000_000_000) {
+    return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  } else if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  } else {
+    return num.toString();
+  }
+}

@@ -7,28 +7,30 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { usePostLikeInteraction } from '@/hooks/posts/usePostInteraction';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
-import { formatTimeToPastLabel } from '@lactalink/utilities/formatters';
+import { formatNumberToShortenUnits, formatTimeToPastLabel } from '@lactalink/utilities/formatters';
 import { isIndividual } from '@lactalink/utilities/type-guards';
 import { useRecyclingState } from '@shopify/flash-list';
+import { QueryKey } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { BadgeCheckIcon, HeartIcon, MessageCircleIcon } from 'lucide-react-native';
 import { TextLayoutEvent } from 'react-native';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 
-export function FeedItemCard({ item }: { item: Post }) {
-  const { author, createdAt, attachments } = item;
+export function FeedItemCard({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
+  const { author, createdAt, attachments } = post;
 
   return (
     <Card variant="filled" className="flex-col items-stretch rounded-none p-0">
       <Pressable className="flex-col items-stretch space-y-2 p-3">
         <Author author={author} createdAt={createdAt} />
-        <ContentText {...item} />
+        <ContentText {...post} />
       </Pressable>
       {attachments && <MediaAttachments attachments={attachments} />}
-      <Stats {...item} />
+      <Stats post={post} queryKey={queryKey} />
     </Card>
   );
 }
@@ -140,16 +142,37 @@ function Author({ author, createdAt }: Pick<Post, 'author' | 'createdAt'>) {
   );
 }
 
-function Stats({ likesCount, commentsCount }: Post) {
+function Stats({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
+  const { commentsCount } = post;
+  const {
+    hasLiked,
+    toggleLike,
+    likesCount,
+    isPending: isLiking,
+  } = usePostLikeInteraction(post, queryKey);
+
+  const handleLikePress = useCallback(() => {
+    if (isLiking) return;
+    toggleLike();
+  }, [isLiking, toggleLike]);
+
   return (
-    <HStack space="md" className="p-3">
+    <HStack space="lg" className="p-3">
       <HStack space="xs" className="items-center">
-        <Icon as={HeartIcon} size="md" className="fill-primary-500 stroke-primary-600" />
-        <Text size="sm">{likesCount}</Text>
+        <Pressable onPress={handleLikePress} hitSlop={8} role="button" disabled={isLiking}>
+          <Icon
+            as={HeartIcon}
+            size="2xl"
+            className={hasLiked ? 'fill-primary-500 stroke-primary-600' : ''}
+          />
+        </Pressable>
+        <Text bold>{formatNumberToShortenUnits(likesCount)}</Text>
       </HStack>
       <HStack space="xs" className="items-center">
-        <Icon as={MessageCircleIcon} size="sm" />
-        <Text size="sm">{commentsCount}</Text>
+        <Pressable hitSlop={8} role="button">
+          <Icon as={MessageCircleIcon} size="xl" />
+        </Pressable>
+        <Text bold>{formatNumberToShortenUnits(commentsCount ?? 0)}</Text>
       </HStack>
     </HStack>
   );

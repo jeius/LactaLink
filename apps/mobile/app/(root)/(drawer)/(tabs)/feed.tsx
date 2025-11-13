@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import { FeedItemCard } from '@/components/cards/FeedItemCard';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
@@ -15,7 +15,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { useInfinitePosts } from '@/hooks/posts/useInfinitePosts';
 import { shadow } from '@/lib/utils/shadows';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -38,16 +38,18 @@ export default function FeedPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const query = useInfiniteFetchBySlug(true, {
-    collection: 'posts',
-    limit: 10,
-    populate: {
-      comments: { likesCount: true, author: true, repliesCount: true, content: true },
-    },
-  });
+  const { data: posts, queryKey, ...query } = useInfinitePosts({ limit: 10 });
 
-  const posts = useMemo(() => query.data?.pages.flatMap((p) => p.docs) ?? [], [query.data?.pages]);
   const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
+
+  const ListHeader = useCallback(() => {
+    return (
+      <VStack className="items-stretch gap-2">
+        <CTA className="border border-outline-200 bg-background-0 p-4" />
+        <NearestListingsList isLoading={isLoading} />
+      </VStack>
+    );
+  }, [isLoading]);
 
   const ListFooter = useCallback(() => {
     if (hasNextPage) return <Spinner size={'small'} className="mt-2" />;
@@ -63,7 +65,7 @@ export default function FeedPage() {
   return (
     <SafeArea className="items-stretch">
       <AnimatedFlashList
-        data={isLoading ? PLACEHOLDER : posts}
+        data={isLoading ? PLACEHOLDER : (posts ?? [])}
         keyExtractor={(item, idx) => `feed-${item.id}-${idx}`}
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
@@ -87,7 +89,7 @@ export default function FeedPage() {
         renderItem={({ item }) => {
           const isPlaceholder = isPlaceHolderData(item);
           if (isPlaceholder) return <Card variant="filled" className="h-64 rounded-none" />;
-          return <FeedItemCard item={item} />;
+          return <FeedItemCard post={item} queryKey={queryKey} />;
         }}
       />
     </SafeArea>
@@ -111,15 +113,6 @@ function CTA(props: HStackProps) {
         )}
       />
     </HStack>
-  );
-}
-
-function ListHeader() {
-  return (
-    <VStack className="items-stretch gap-2">
-      <CTA className="border border-outline-200 bg-background-0 p-4" />
-      <NearestListingsList />
-    </VStack>
   );
 }
 

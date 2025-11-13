@@ -5,6 +5,7 @@ import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
 import { ApiClientConfig } from '@lactalink/api/interfaces';
+import { enableMapSet } from 'immer';
 
 import '@/global.css';
 import 'react-native-get-random-values';
@@ -25,6 +26,9 @@ const config: ApiClientConfig = {
 };
 
 initApiClient(config);
+
+// Enable Immer support for Map and Set
+enableMapSet();
 
 export default function RootLayout() {
   return (

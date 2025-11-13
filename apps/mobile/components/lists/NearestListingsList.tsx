@@ -22,11 +22,11 @@ import { Text } from '../ui/text';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
 
-export function NearestListingsList() {
+export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: boolean }) {
   const donationsQuery = useFetchNearest('donations', { limit: 10 });
   const requestsQuery = useFetchNearest('requests', { limit: 10 });
 
-  const isLoading = donationsQuery.isLoading || requestsQuery.isLoading;
+  const isLoading = isLoadingProp || donationsQuery.isLoading || requestsQuery.isLoading;
 
   const { donations, requests } = useMemo(() => {
     const donations = donationsQuery.data?.pages.flatMap((p) => p?.docs ?? []) ?? [];
