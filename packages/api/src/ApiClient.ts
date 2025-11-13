@@ -303,7 +303,11 @@ export class ApiClient implements IApiClient {
     const { collection, id, ...searchParams } = args;
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, searchParams);
 
-    return this._makeApiRequest<DeleteByIDResult<TSlug, TSelect>>(endpoint, 'DELETE');
+    const { doc } = await this._makeApiRequest<DeleteByIDResult<TSlug, TSelect>>(
+      endpoint,
+      'DELETE'
+    );
+    return doc;
   };
 
   getPreference = async <TValue = unknown>(key: string) => {

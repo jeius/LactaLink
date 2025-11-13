@@ -1,6 +1,7 @@
 import { DeepPartial } from 'react-hook-form';
 import { CustomError } from './errors';
 import type {
+  JoinQuery,
   PopulateType,
   Sort,
   TransformCollectionWithSelect,
@@ -9,6 +10,7 @@ import type {
 import type {
   BulkOperationResult,
   CollectionSlug,
+  DataFromCollectionSlug,
   RequiredDataFromCollectionSlug,
   SelectFromCollectionSlug,
   TypedCollection,
@@ -44,7 +46,7 @@ export type ApiFetchArgs<T extends CollectionSlug> = {
 //#endregion
 
 //#region  Arguments and Options Types
-export interface Options<
+export interface BaseOptions<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
@@ -64,7 +66,7 @@ export interface Options<
   /**
    * Specify a [fallback locale](https://payloadcms.com/docs/configuration/localization) to use for any returned documents.
    */
-  fallbackLocale?: false | TypedLocale;
+  fallbackLocale?: false | TypedLocale | TypedLocale[];
   /**
    * The maximum related documents to be returned.
    * Defaults unless `defaultLimit` is specified for the collection config
@@ -75,12 +77,6 @@ export interface Options<
    * Specify [locale](https://payloadcms.com/docs/configuration/localization) for any returned documents.
    */
   locale?: 'all' | TypedLocale;
-  /**
-   * Skip access control.
-   * Set to `false` if you want to respect Access Control for the operation, for example when fetching data for the fron-end.
-   * @default true
-   */
-  overrideAccess?: boolean;
   /**
    * Get a specific page number
    * @default 1
@@ -106,6 +102,15 @@ export interface Options<
    */
   sort?: Sort;
   /**
+   * When set to `true`, the query will include both normal and trashed documents.
+   * To query only trashed documents, pass `trash: true` and combine with a `where` clause filtering by `deletedAt`.
+   * By default (`false`), the query will only include normal documents and exclude those with a `deletedAt` field.
+   *
+   * This argument has no effect unless `trash` is enabled on the collection.
+   * @default false
+   */
+  trash?: boolean;
+  /**
    * A filter [query](https://payloadcms.com/docs/queries/overview)
    */
   where?: Where;
@@ -115,7 +120,13 @@ export type FindOptions<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
-> = Options<TSlug, TSelect, TPaginate>;
+> = BaseOptions<TSlug, TSelect, TPaginate> & {
+  /**
+   * The [Join Field Query](https://payloadcms.com/docs/fields/join#query-options).
+   * Pass `false` to disable all join fields from the result.
+   */
+  joins?: JoinQuery<TSlug>;
+};
 
 export type CreateOptions<
   TSlug extends CollectionSlug = CollectionSlug,
@@ -123,21 +134,34 @@ export type CreateOptions<
   TPaginate extends boolean = boolean,
 > = {
   data: RequiredDataFromCollectionSlug<TSlug>;
-} & Options<TSlug, TSelect, TPaginate>;
+} & BaseOptions<TSlug, TSelect, TPaginate>;
 
 export type UploadFile<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = {
+  /**
+   * A `File` object when creating a collection with `upload: true`.
+   */
   file: File;
+  /**
+   * If you want to create a document that is a duplicate of another document
+   */
+  duplicateFromID?: DataFromCollectionSlug<TSlug>['id'];
   data?: RequiredDataFromCollectionSlug<TSlug>;
-} & Options<TSlug, TSelect, TPaginate>;
+  /**
+   * If you are uploading a file and would like to replace
+   * the existing file instead of generating a new filename,
+   * you can set the following property to `true`
+   */
+  overwriteExistingFiles?: boolean;
+} & BaseOptions<TSlug, TSelect, TPaginate>;
 
 export type UpdateOptions<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = Omit<Options<TSlug, TSelect, false>, 'pagination' | 'page' | 'limit' | 'where' | 'sort'> & {
+> = Omit<BaseOptions<TSlug, TSelect, false>, 'pagination' | 'page' | 'limit' | 'where' | 'sort'> & {
   data: DeepPartial<RequiredDataFromCollectionSlug<TSlug>>;
 };
 
@@ -241,7 +265,10 @@ export type UpdateManyResult<
 export type DeleteByIDResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = TransformCollectionWithSelect<TSlug, TSelect>;
+> = {
+  doc: TransformCollectionWithSelect<TSlug, TSelect>;
+  message: string;
+};
 
 export type DeleteManyResult<
   TSlug extends CollectionSlug = CollectionSlug,

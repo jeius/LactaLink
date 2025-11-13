@@ -5,6 +5,7 @@ import type {
   DataFromGlobalSlug,
   GlobalSlug,
   SelectFromCollectionSlug,
+  TypedCollectionJoins,
   TypedCollectionSelect,
   TypeWithID,
   TypeWithTimestamps,
@@ -95,3 +96,25 @@ export type PopulateType = Partial<TypedCollectionSelect>;
 export type ResolvedFilterOptions = {
   [collection: string]: Where;
 };
+
+/**
+ * Applies pagination for join fields for including collection relationships
+ */
+export type JoinQuery<TSlug extends CollectionSlug = CollectionSlug> =
+  TSlug extends keyof TypedCollectionJoins
+    ? TypedCollectionJoins[TSlug] extends Record<string, string>
+      ?
+          | false
+          | Partial<{
+              [K in keyof TypedCollectionJoins[TSlug]]:
+                | {
+                    count?: boolean;
+                    limit?: number;
+                    page?: number;
+                    sort?: string;
+                    where?: Where;
+                  }
+                | false;
+            }>
+      : false
+    : never;
