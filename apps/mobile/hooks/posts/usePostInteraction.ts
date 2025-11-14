@@ -3,7 +3,7 @@ import { InfiniteDataMap } from '@/lib/types';
 import { extractLikesData } from '@/lib/utils/extractLikesData';
 import { useApiClient } from '@lactalink/api';
 import { Post } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useRecyclingState } from '@shopify/flash-list';
 import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
 import { produce } from 'immer';
@@ -22,13 +22,16 @@ export function usePostLikeInteraction(post: Post, queryKey: QueryKey) {
 
   const postID = post.id;
 
-  const { likeData: like, likesCount } = useMemo(() => extractLikesData(post), [post]);
+  const { likeData: like, likesCount } = useMemo(() => extractLikesData(post, user), [post, user]);
 
-  const [hasLiked, setHasLiked] = useRecyclingState(!!like, [postID]);
-  const [count, setCount] = useRecyclingState(likesCount, [postID]);
+  const [hasLiked, setHasLiked] = useRecyclingState(!!like, [postID, like]);
+  const [count, setCount] = useRecyclingState(likesCount, [postID, likesCount]);
 
   // Like mutation
   const likeMutation = useMutation({
+    meta: {
+      errorMessage: (err) => extractErrorMessage(err),
+    },
     mutationFn: async () => {
       if (like) {
         return apiClient.deleteByID({ collection: 'likes', id: like.id });
@@ -66,21 +69,32 @@ export function usePostLikeInteraction(post: Post, queryKey: QueryKey) {
 
             if (!post?.likes) continue;
 
-            const { likeData, likesMap, likesCount } = extractLikesData(post);
+            const { likeData, likesMap, likesCount } = extractLikesData(post, user);
+
+            const updateCounter = (count: number) => {
+              if (!post.likes) return;
+
+              post.likesCount = count;
+
+              // Explicitly check for totalDocs existence since this can be
+              // omitted in some queries when count = false
+              if ('totalDocs' in post.likes) {
+                post.likes.totalDocs = count;
+              }
+            };
 
             if (likeData && likeData.id === data.id) {
               // Delete operation
-              post.likes.totalDocs = Math.max(likesCount - 1, 0);
+              updateCounter(Math.max(likesCount - 1, 0));
               likesMap.delete(likeData.id);
               post.likes.docs = Array.from(likesMap.values());
             } else {
               // Add operation
-              post.likes.totalDocs = likesCount + 1;
+              updateCounter(likesCount + 1);
               likesMap.set(data.id, data);
               post.likes.docs = Array.from(likesMap.values());
             }
 
-            // Create new Map reference to trigger reactivity
             page.docs = new Map(page.docs).set(postID, post);
             break; // Exit after finding and updating
           }

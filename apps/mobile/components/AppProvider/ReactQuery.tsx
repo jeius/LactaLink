@@ -7,17 +7,24 @@ declare module '@tanstack/react-query' {
   interface Register {
     mutationMeta: {
       successMessage?: string;
-      errorMessage?: string;
+      errorMessage?: string | ((error: unknown) => string);
       invalidatesQuery?: QueryKey;
+      onError?: (error: unknown) => void;
     };
   }
 }
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
-    onError: (_error, _vars, _context, mutation) => {
+    onError: (error, _vars, _context, mutation) => {
       if (mutation.meta?.errorMessage) {
-        toast.error(mutation.meta.errorMessage);
+        let message = '';
+        if (typeof mutation.meta.errorMessage === 'function') {
+          message = mutation.meta.errorMessage(error);
+        } else {
+          message = mutation.meta.errorMessage;
+        }
+        toast.error(message);
       }
     },
 

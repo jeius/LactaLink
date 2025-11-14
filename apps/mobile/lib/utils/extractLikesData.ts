@@ -1,13 +1,10 @@
-import { getMeUser } from '@/lib/stores/meUserStore';
-import { Comment, Like, Post } from '@lactalink/types/payload-generated-types';
+import { Comment, Like, Post, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
-export function extractLikesData(doc: Post | Comment) {
-  const user = getMeUser();
-  const userProfile = user?.profile;
-
+export function extractLikesData(doc: Post | Comment, user: User | null) {
+  const profile = user?.profile;
   const likes = extractCollection(doc.likes?.docs);
-  const likesCount = doc.likes?.totalDocs ?? 0;
+  const likesCount = doc.likesCount ?? 0;
 
   const likesMap = new Map<string, Like>();
   let likeData: Like | null = null;
@@ -15,9 +12,39 @@ export function extractLikesData(doc: Post | Comment) {
   for (const like of likes ?? []) {
     likesMap.set(like.id, like);
     if (
-      userProfile &&
-      like.createdBy.relationTo === userProfile.relationTo &&
-      extractID(like.createdBy.value) === extractID(userProfile.value)
+      profile &&
+      like.createdBy.relationTo === profile.relationTo &&
+      extractID(like.createdBy.value) === extractID(profile.value)
+    ) {
+      likeData = like;
+    }
+  }
+
+  return { likesMap, likesCount, likeData, likes };
+}
+
+export function extractLikesDataWorklet(doc: Post | Comment, profile: User['profile']) {
+  'worklet';
+  const likes = doc.likes?.docs
+    ?.map((d) => (typeof d === 'string' ? null : d))
+    .filter((d) => d !== null);
+
+  const likesCount = doc.likesCount ?? 0;
+
+  const likesMap = new Map<string, Like>();
+  let likeData: Like | null = null;
+
+  const extractID = (val: string | { id: string }) => {
+    if (typeof val === 'string') return val;
+    return val.id;
+  };
+
+  for (const like of likes ?? []) {
+    likesMap.set(like.id, like);
+    if (
+      profile &&
+      like.createdBy.relationTo === profile.relationTo &&
+      extractID(like.createdBy.value) === extractID(profile.value)
     ) {
       likeData = like;
     }

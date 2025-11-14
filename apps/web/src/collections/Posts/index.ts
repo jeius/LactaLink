@@ -179,7 +179,7 @@ export const Posts: CollectionConfig<'posts'> = {
               },
               admin: {
                 description: 'Comments made on this post.',
-                defaultColumns: ['author', 'content', 'createdAt'],
+                defaultColumns: ['content', 'author', 'createdAt'],
               },
             },
           ],
