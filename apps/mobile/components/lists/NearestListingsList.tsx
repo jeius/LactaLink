@@ -5,7 +5,11 @@ import { shadow } from '@/lib/utils/shadows';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume, generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
+import {
+  extractCollection,
+  extractOneImageData,
+  listKeyExtractor,
+} from '@lactalink/utilities/extractors';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import { FlashList } from '@shopify/flash-list';
 import { Link } from 'expo-router';
@@ -42,7 +46,7 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
   return (
     <FlashList
       data={listings}
-      keyExtractor={(item, idx) => `${item.id}-${idx}`}
+      keyExtractor={listKeyExtractor}
       horizontal
       showsHorizontalScrollIndicator={false}
       className="border border-outline-200"

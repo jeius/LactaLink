@@ -9,13 +9,14 @@ import { Collections } from '@lactalink/types/collections';
 import { DeliveryPreference, MilkBag } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
 import React from 'react';
 import { FlatList } from 'react-native-gesture-handler';
 
 const PLACEHOLDER_DATA = generatePlaceHoldersWithID(4, {});
 const baseLabelStyle = tva({
-  base: 'font-JakartaSemiBold mx-5 mb-1',
+  base: 'mx-5 mb-1 font-JakartaSemiBold',
 });
 
 interface BaseProps<T extends Collections> extends VStackProps {
@@ -38,7 +39,7 @@ export function DPList({
       <FlatList
         data={isLoading ? (PLACEHOLDER_DATA as typeof data) : data}
         horizontal
-        keyExtractor={(item) => item.id}
+        keyExtractor={listKeyExtractor}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <Box className="w-4" />}
         contentContainerClassName="px-5"
@@ -78,7 +79,7 @@ export function MilkBagList({
       <FlatList
         data={isLoading ? (PLACEHOLDER_DATA as typeof data) : data}
         horizontal
-        keyExtractor={(item) => item.id}
+        keyExtractor={listKeyExtractor}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <Box className="w-4" />}
         contentContainerClassName="px-5"

@@ -14,6 +14,7 @@ import {
 import { MarkOptional } from '@lactalink/types/utils';
 import { formatKebab } from '@lactalink/utilities/formatters';
 
+import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { FlashList, FlashListProps, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
 import { NoData } from '../NoData';
@@ -104,7 +105,6 @@ export function InfiniteList<
     if (data) {
       onChange?.(data);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const renderItem = useCallback<ListRenderItem<TransformCollectionWithSelect<TSlug, TSelect>>>(
@@ -134,7 +134,7 @@ export function InfiniteList<
     <FlashList
       {...props}
       data={data}
-      keyExtractor={(item, index) => props.keyExtractor?.(item, index) || `${item.id}-${index}`}
+      keyExtractor={props.keyExtractor || listKeyExtractor}
       renderItem={renderItem}
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}

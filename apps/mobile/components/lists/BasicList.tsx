@@ -9,7 +9,7 @@ import React, { FC, useEffect, useMemo } from 'react';
 import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { useFetchBySlug } from '@/hooks/collections/useFetchBySlug';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection, extractID, listKeyExtractor } from '@lactalink/utilities/extractors';
 import { formatKebab } from '@lactalink/utilities/formatters';
 import { areStrings } from '@lactalink/utilities/type-guards';
 import { FlashList, FlashListProps, ListRenderItemInfo } from '@shopify/flash-list';
@@ -97,7 +97,6 @@ export function BasicList<
     if (data && data.length > 0) {
       onChange?.(data);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   function handleRefresh() {
@@ -125,7 +124,7 @@ export function BasicList<
         const isLoading = props.item.id.includes('placeholder');
         return <ItemComponent {...props} isLoading={isLoading} />;
       }}
-      keyExtractor={(item, index) => props.keyExtractor?.(item, index) || item.id}
+      keyExtractor={props.keyExtractor || listKeyExtractor}
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}
       refreshControl={
