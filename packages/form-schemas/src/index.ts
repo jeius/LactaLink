@@ -6,5 +6,6 @@ export * from './donation-request';
 export * from './file';
 export * from './identity-verification';
 export * from './milk-bag';
+export * from './post';
 export * from './setup-profile';
 export * from './textarea';

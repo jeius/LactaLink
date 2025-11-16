@@ -99,7 +99,7 @@ export default function FeedPage() {
 function CTA(props: HStackProps) {
   return (
     <HStack {...props} space="sm" style={shadow.sm}>
-      <Link asChild push href={'/search'}>
+      <Link asChild push href={'/feed/create'}>
         <Pressable className="flex-1 flex-row items-center overflow-hidden rounded-full border border-outline-500 px-3 py-2">
           <Text className="font-JakartaMedium text-typography-600">Say something...</Text>
         </Pressable>

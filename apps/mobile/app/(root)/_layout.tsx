@@ -61,6 +61,15 @@ export default function Layout() {
       />
 
       <Stack.Screen
+        name="(create)/feed/create"
+        options={{
+          headerShown: true,
+          headerTitle: 'Create Post',
+          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
+        }}
+      />
+
+      <Stack.Screen
         name="(create)/delivery-proposal"
         options={{
           headerShown: false,

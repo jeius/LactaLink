@@ -57,13 +57,16 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
       ListFooterComponentStyle={{ marginLeft: 8 }}
       renderItem={({ item }) => {
         const isPlaceholder = isPlaceHolderData(item);
-
         if (isPlaceholder) return <PlaceholderItem />;
 
+        const slug = isDonation(item) ? 'donations' : 'requests';
+        const id = item.id;
         return (
-          <AnimatedPressable className="overflow-hidden rounded-2xl">
-            <ItemCard item={item} />
-          </AnimatedPressable>
+          <Link asChild push href={`/${slug}/${id}`}>
+            <AnimatedPressable className="overflow-hidden rounded-2xl">
+              <ItemCard item={item} />
+            </AnimatedPressable>
+          </Link>
         );
       }}
     />
