@@ -1,18 +1,21 @@
 import { extractID } from '@lactalink/utilities/extractors';
+import { useCallback, useRef } from 'react';
+import { useNotificationMutations } from '../mutations/useNotificationMutations';
 import { useFetchNotifications } from './fetcher';
-import { useMutateNotifications } from './mutator';
 
 export function useNotification() {
   const { queryKey, data, unReadCount, unSeenData, ...queryMethods } = useFetchNotifications();
 
+  const unSeenDataRef = useRef(unSeenData);
+
   const {
     markAsReadMutation: { mutateAsync: markAsRead },
     markAsSeenMutation,
-  } = useMutateNotifications(queryKey);
+  } = useNotificationMutations(queryKey);
 
-  function markAsSeen() {
-    markAsSeenMutation.mutateAsync(extractID(unSeenData));
-  }
+  const markAsSeen = useCallback(() => {
+    markAsSeenMutation.mutate(extractID(unSeenDataRef.current));
+  }, [markAsSeenMutation]);
 
   return {
     notifications: data,

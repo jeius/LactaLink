@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useEffect } from 'react';
 
 import TransactionListCard from '@/components/cards/TransactionListCard';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
@@ -15,7 +15,6 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { useTransactions } from '@/hooks/transactions';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
-import { useFocusEffect } from 'expo-router';
 import { ChevronRightIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 
@@ -37,8 +36,11 @@ export default function TransactionsTab() {
     return <TransactionListCard data={item} showBadge user={meUser.data} isLoading={isLoading} />;
   };
 
-  // Clear transactions badge when screen is unfocused
-  useFocusEffect(useCallback(() => markAsSeen, [markAsSeen]));
+  useEffect(() => {
+    return () => {
+      markAsSeen();
+    };
+  }, []);
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no active transactions" />;

@@ -1,7 +1,9 @@
+import { FindMany } from '@lactalink/types/api';
 import { Like, User } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { MutationKey, QueryKey } from '@tanstack/react-query';
-import { MUTATION_KEYS } from '../constants';
+import { INFINITE_QUERY_KEY, MUTATION_KEYS } from '../constants';
 
 export function createMutationKey(...parts: MutationKey[]): MutationKey {
   return [...parts].flat();
@@ -21,4 +23,11 @@ export function createAddCommentMutationKey(user: User | null) {
 
 export function createDeleteCommentMutationKey(user: User | null) {
   return createMutationKey(MUTATION_KEYS.DELETE_COMMENT, [extractID(user)]);
+}
+
+export function createInfiniteQueryKey(
+  slug: CollectionSlug,
+  options: Omit<FindMany, 'collection'>
+): QueryKey {
+  return [...INFINITE_QUERY_KEY, slug, options];
 }

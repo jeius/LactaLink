@@ -1,52 +1,51 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { createInfiniteQueryKey } from '@/lib/utils/createKeys';
+import { getApiClient } from '@lactalink/api';
 import { Notification } from '@lactalink/types/payload-generated-types';
-import { createStorageKeyByUser, generatePlaceHolders } from '@lactalink/utilities';
+import { createStorageKeyByUser, generatePlaceHoldersWithID } from '@lactalink/utilities';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { MMKV_KEYS } from '../../lib/constants';
-import { INFINITE_QUERY_KEY } from '../../lib/constants/queryKeys';
-import localStorage from '../../lib/localStorage';
-import { depth, ListData } from './utils';
+import { useStoredInfiniteData } from '../useStoredData';
 
 const { LAST_DATA } = MMKV_KEYS.NOTIFICATIONS;
 
 const collection = 'notifications';
-const placeholder = generatePlaceHolders(15, { id: 'placeholder' } as Notification);
+const placeholder = generatePlaceHoldersWithID(15, {} as Notification);
 
 export function useFetchNotifications() {
   // Get current user to create query filter and storage keys
   const meUser = useMeUser();
 
   const { fetchOptions, queryKey } = useMemo(() => {
-    const fetchOptions = { sort: '-createdAt', depth };
-    const queryKey = [...INFINITE_QUERY_KEY, collection, fetchOptions];
+    const fetchOptions = { sort: '-createdAt', depth: 3, limit: 15 };
+    const queryKey = createInfiniteQueryKey(collection, fetchOptions);
     return { fetchOptions, queryKey };
-  }, [meUser.data]);
+  }, []);
 
-  // Load last fetched data from storage as placeholder data
-  const { lastStoredData, lastDataKey } = useMemo(() => {
-    const baseKey = `${LAST_DATA}-${meUser.data?.id}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
-    const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
-    const lastFetchedData = localStorage.getString(lastDataKey);
+  const baseKey = `${LAST_DATA}-${queryKey.map((k) => JSON.stringify(k)).join('-')}`;
+  const lastDataKey = createStorageKeyByUser(meUser.data, baseKey);
 
-    let parsedData: ListData | undefined = undefined;
-    try {
-      if (lastFetchedData) {
-        parsedData = JSON.parse(lastFetchedData);
-      }
-    } catch (err) {
-      console.warn('Failed to parse stored notifications data', err);
-    }
+  const [stored, setStored] = useStoredInfiniteData<Notification>(lastDataKey);
 
-    return { lastDataKey, lastStoredData: parsedData };
-  }, [meUser.data, queryKey]);
-
-  // Infinite query to fetch notifications
-  const { data: queryData, ...queryRes } = useInfiniteFetchBySlug(
-    true,
-    { collection, ...fetchOptions },
-    { queryKey, placeholderData: lastStoredData }
-  );
+  const { data: queryData, ...queryRes } = useInfiniteQuery({
+    queryKey,
+    initialPageParam: 1,
+    placeholderData: stored,
+    queryFn: async ({ pageParam }) => {
+      const apiClient = getApiClient();
+      const { docs, ...result } = await apiClient.find({
+        collection: 'notifications',
+        ...fetchOptions,
+        page: pageParam,
+        pagination: true,
+      });
+      const map = new Map(docs.map((doc) => [doc.id, doc]));
+      return { docs: map, ...result };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getPreviousPageParam: (firstPage) => firstPage.prevPage,
+  });
 
   // Derive notifications and unReadCount from query data
   const aggregatedResults = useMemo(() => {
@@ -59,25 +58,23 @@ export function useFetchNotifications() {
 
     const data: Notification[] = [];
 
-    queryData?.pages.forEach((page) => {
+    for (const page of queryData?.pages ?? []) {
       page.docs.forEach((doc) => {
         data.push(doc);
-        if (!doc.read) ++unReadCount;
-        if (!doc.seen) {
-          unSeenData.push(doc);
-        }
+        if (!doc.read) unReadCount += 1;
+        if (!doc.seen) unSeenData.push(doc);
       });
-    });
+    }
 
     return { data, unReadCount, unSeenData };
-  }, [queryRes.isLoading, queryData?.pages]);
+  }, [queryData, queryRes.isLoading]);
 
-  // Persist last fetched data to storage
   useEffect(() => {
     if (queryData) {
-      localStorage.set(lastDataKey, JSON.stringify(queryData));
+      // @ts-expect-error Safe to ignore
+      setStored(queryData);
     }
-  }, [lastDataKey, queryData, queryRes.dataUpdatedAt]);
+  }, [queryData, setStored]);
 
   return { ...aggregatedResults, queryKey, ...queryRes };
 }

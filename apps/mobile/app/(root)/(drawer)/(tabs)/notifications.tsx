@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useEffect } from 'react';
 
 import NotificationListCard from '@/components/cards/NotificationListCard';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
@@ -14,18 +14,20 @@ import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications'
 import { useNotification } from '@/hooks/notifications';
 import { Notification } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
-import { useFocusEffect } from 'expo-router';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
-  AnimatedProps<FlashListProps<any>>
+  AnimatedProps<FlashListProps<Notification>>
 >;
 
 export default function NotificationsTab() {
   useLiveNotifications();
 
   const scrollHandler = useHeaderScrollHandler();
+  const insets = useSafeAreaInsets();
   const { height: headerHeight } = useHeaderSize();
 
   const meUser = useMeUser();
@@ -44,8 +46,11 @@ export default function NotificationsTab() {
     );
   };
 
-  // Clear notifications badge when screen is unfocused
-  useFocusEffect(useCallback(() => markAsSeen, [markAsSeen]));
+  useEffect(() => {
+    return () => {
+      markAsSeen();
+    };
+  }, []);
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no notifications" />;
@@ -70,30 +75,36 @@ export default function NotificationsTab() {
   }
 
   return (
-    <SafeArea safeTop={false} className="items-stretch">
+    <SafeArea className="items-stretch">
       <AnimatedFlashList
         data={data}
+        bounces={false}
+        overScrollMode={'never'}
         renderItem={renderItem}
         onScroll={scrollHandler}
+        keyExtractor={listKeyExtractor}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={EmptyComponent}
         ItemSeparatorComponent={SeparatorComponent}
         ListHeaderComponent={ListHeaderComponent}
-        refreshControl={
-          <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
-        }
         ListHeaderComponentStyle={{ marginBottom: 8 }}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item, idx) => `${item.id}-${idx}`}
-        contentContainerStyle={{
-          padding: 16,
-          paddingBottom: 80,
-          marginTop: headerHeight,
-          flexGrow: 1,
-        }}
         ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
         ListFooterComponentStyle={{ marginTop: 8 }}
         onEndReachedThreshold={0.25}
         onEndReached={handleFetchNextPage}
+        refreshControl={
+          <RefreshControl
+            progressViewOffset={headerHeight - insets.top}
+            refreshing={query.isRefetching}
+            onRefresh={query.refetch}
+          />
+        }
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 80,
+          marginTop: headerHeight - insets.top,
+          flexGrow: 1,
+        }}
       />
       <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>

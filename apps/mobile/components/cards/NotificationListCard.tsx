@@ -73,7 +73,7 @@ export default function NotificationListCard({
           <HStack space="sm" className="w-full items-center justify-between">
             <Text
               size="xs"
-              className="text-typography-700 flex-1"
+              className="flex-1 text-typography-700"
               ellipsizeMode="tail"
               numberOfLines={1}
             >
@@ -92,7 +92,7 @@ export default function NotificationListCard({
           </HStack>
 
           {showBadge && isNotSeen && (
-            <Box className="bg-primary-500 absolute right-0 top-0 h-2 w-2 rounded-full" />
+            <Box className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary-500" />
           )}
         </VStack>
       )}
