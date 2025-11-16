@@ -33,6 +33,12 @@ const svgConfig = {
   resolver: {
     assetExts: [...defaultConfig.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
     sourceExts: [...defaultConfig.resolver.sourceExts, 'svg'],
+    blockList: [
+      ...defaultConfig.resolver.blockList,
+      new RegExp(
+        `${path.resolve(monorepoRoot, 'apps/web').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+      ),
+    ],
   },
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
