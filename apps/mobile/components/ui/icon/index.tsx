@@ -14,7 +14,7 @@ export const UIIcon = createIcon({
 >;
 
 const iconStyle = tva({
-  base: 'text-typography-900 pointer-events-none',
+  base: 'pointer-events-none text-typography-900',
   variants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -58,6 +58,7 @@ const Icon = React.forwardRef<React.ComponentRef<typeof UIIcon>, IIConProps>(fun
 });
 
 export { Icon };
+export type { IIConProps as IconProps };
 
 type ParameterTypes = Omit<Parameters<typeof createIcon>[0], 'Root'>;
 

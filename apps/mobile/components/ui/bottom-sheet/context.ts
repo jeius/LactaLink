@@ -1,4 +1,6 @@
+import { TimingConfig } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { createContext, useContext } from 'react';
+import { Easing } from 'react-native-reanimated';
 import { useStore } from 'zustand/react';
 import { useShallow } from 'zustand/shallow';
 import { createStore, StoreApi } from 'zustand/vanilla';
@@ -7,6 +9,8 @@ import { BottomSheetState, BottomSheetStore, CreateBottomSheetStore } from './ty
 export const BottomSheetStoreContext = createContext<StoreApi<BottomSheetStore> | null>(null);
 
 export function createBottomSheetStore({ actions, ...init }: CreateBottomSheetStore) {
+  const timingConfig: TimingConfig = { duration: 300, easing: Easing.inOut(Easing.ease) };
+
   return createStore<BottomSheetStore>((set, get) => ({
     ...init,
     bottomSheetRef: init.bottomSheetRef ?? null,
@@ -23,9 +27,9 @@ export function createBottomSheetStore({ actions, ...init }: CreateBottomSheetSt
         const { bottomSheetRef, snapToIndex, bottomSheetModalRef } = get();
 
         if (snapToIndex === undefined) {
-          bottomSheetRef?.current?.expand();
+          bottomSheetRef?.current?.expand(timingConfig);
         } else {
-          bottomSheetRef?.current?.snapToIndex(Math.max(0, snapToIndex));
+          bottomSheetRef?.current?.snapToIndex(Math.max(0, snapToIndex), timingConfig);
         }
         bottomSheetModalRef?.current?.present();
 
@@ -36,11 +40,11 @@ export function createBottomSheetStore({ actions, ...init }: CreateBottomSheetSt
         const { bottomSheetRef, disableClose, bottomSheetModalRef } = get();
 
         if (disableClose) {
-          bottomSheetRef?.current?.collapse();
-          bottomSheetModalRef?.current?.collapse();
+          bottomSheetRef?.current?.collapse(timingConfig);
+          bottomSheetModalRef?.current?.collapse(timingConfig);
         } else {
-          bottomSheetRef?.current?.close();
-          bottomSheetModalRef?.current?.dismiss();
+          bottomSheetRef?.current?.close(timingConfig);
+          bottomSheetModalRef?.current?.dismiss(timingConfig);
         }
 
         set({ visible: false });

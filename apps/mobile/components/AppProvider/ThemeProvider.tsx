@@ -7,7 +7,14 @@ import { Theme } from '@lactalink/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
-import React, { createContext, FC, PropsWithChildren, useContext, useEffect } from 'react';
+import React, {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+} from 'react';
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
 
@@ -34,16 +41,24 @@ export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const setThemeStore = useThemeStore((s) => s.setTheme);
 
+  const updateTheme = useCallback(
+    (newTheme: Theme) => {
+      // Update color scheme for nativewind
+      setColorScheme(newTheme);
+      // Persist to storage
+      Storage.set(MMKV_KEYS.THEME, newTheme);
+      // Update zustand store
+      setThemeStore(newTheme);
+    },
+    [setColorScheme, setThemeStore]
+  );
+
   const { isLoading } = useQuery({
     enabled: !storedTheme, // Only fetch from server if no stored theme
     queryKey: QUERY_KEYS.USER_THEME,
     queryFn: async () => {
       const serverTheme = await getTheme();
-
-      if (serverTheme) {
-        updateTheme(serverTheme);
-      }
-
+      if (serverTheme) updateTheme(serverTheme);
       return serverTheme;
     },
     staleTime: Infinity,
@@ -77,8 +92,7 @@ export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
       // No stored theme, use system preference
       updateTheme(theme);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [storedTheme, theme, updateTheme]);
 
   // Sync system UI and navigation bar with theme
   useEffect(() => {
@@ -86,17 +100,6 @@ export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
       NavigationBar.setStyle(theme);
     }
   }, [theme]);
-
-  function updateTheme(newTheme: Theme) {
-    // Update color scheme for nativewind
-    setColorScheme(newTheme);
-
-    // Persist to storage
-    Storage.set(MMKV_KEYS.THEME, newTheme);
-
-    // Update zustand store
-    setThemeStore(newTheme);
-  }
 
   function toggleTheme() {
     const newTheme = theme === 'light' ? 'dark' : 'light';

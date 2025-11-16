@@ -216,6 +216,7 @@ export interface Config {
     };
     comments: {
       likes: 'likes';
+      replies: 'comments';
     };
     'delivery-preferences': {
       donations: 'donations';
@@ -1354,17 +1355,21 @@ export interface Comment {
         value: string | MilkBank;
       };
   /**
-   * Post this comment belongs to
-   */
-  post: string | Post;
-  /**
    * Moderation status for the comment.
    */
   status?: ('PUBLISHED' | 'EDITED') | null;
   /**
+   * Post this comment belongs to
+   */
+  post: string | Post;
+  /**
    * Optional: parent comment for threaded replies
    */
   parent?: (string | null) | Comment;
+  /**
+   * Optional: comment being replied
+   */
+  repliedTo?: (string | null) | Comment;
   /**
    * Comment text (supports replies via parent field).
    */
@@ -1398,6 +1403,14 @@ export interface Comment {
    */
   likes?: {
     docs?: (string | Like)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Replies made on this comment.
+   */
+  replies?: {
+    docs?: (string | Comment)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -2463,9 +2476,10 @@ export interface CitiesMunicipalitiesSelect<T extends boolean = true> {
  */
 export interface CommentsSelect<T extends boolean = true> {
   author?: T;
-  post?: T;
   status?: T;
+  post?: T;
   parent?: T;
+  repliedTo?: T;
   content?: T;
   mentions?:
     | T
@@ -2474,6 +2488,7 @@ export interface CommentsSelect<T extends boolean = true> {
         id?: T;
       };
   likes?: T;
+  replies?: T;
   likesCount?: T;
   repliesCount?: T;
   owner?: T;

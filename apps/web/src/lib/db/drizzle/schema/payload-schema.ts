@@ -420,13 +420,16 @@ export const comments = pgTable(
   'comments',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    status: comment_status_enum('status').default('PUBLISHED'),
     post: uuid('post_id')
       .notNull()
       .references(() => posts.id, {
         onDelete: 'set null',
       }),
-    status: comment_status_enum('status').default('PUBLISHED'),
     parent: uuid('parent_id').references((): AnyPgColumn => comments.id, {
+      onDelete: 'set null',
+    }),
+    repliedTo: uuid('replied_to_id').references((): AnyPgColumn => comments.id, {
       onDelete: 'set null',
     }),
     content: varchar('content').notNull(),
@@ -446,6 +449,7 @@ export const comments = pgTable(
   (columns) => [
     index('comments_post_idx').on(columns.post),
     index('comments_parent_idx').on(columns.parent),
+    index('comments_replied_to_idx').on(columns.repliedTo),
     index('comments_owner_idx').on(columns.owner),
     index('comments_updated_at_idx').on(columns.updatedAt),
     index('comments_created_at_idx').on(columns.createdAt),
@@ -2787,6 +2791,11 @@ export const relations_comments = relations(comments, ({ one, many }) => ({
     fields: [comments.parent],
     references: [comments.id],
     relationName: 'parent',
+  }),
+  repliedTo: one(comments, {
+    fields: [comments.repliedTo],
+    references: [comments.id],
+    relationName: 'repliedTo',
   }),
   mentions: many(comments_mentions, {
     relationName: 'mentions',

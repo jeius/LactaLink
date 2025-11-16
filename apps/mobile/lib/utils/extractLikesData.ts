@@ -1,5 +1,6 @@
 import { Comment, Like, Post, User } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { isEqualProfiles } from '@lactalink/utilities/checkers';
+import { extractCollection } from '@lactalink/utilities/extractors';
 
 export function extractLikesData(doc: Post | Comment, user: User | null) {
   const profile = user?.profile;
@@ -11,11 +12,7 @@ export function extractLikesData(doc: Post | Comment, user: User | null) {
 
   for (const like of likes ?? []) {
     likesMap.set(like.id, like);
-    if (
-      profile &&
-      like.createdBy.relationTo === profile.relationTo &&
-      extractID(like.createdBy.value) === extractID(profile.value)
-    ) {
+    if (profile && isEqualProfiles(like.createdBy, profile)) {
       likeData = like;
     }
   }

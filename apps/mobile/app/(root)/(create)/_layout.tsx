@@ -20,7 +20,7 @@ export default function CreateLayout() {
         name="delivery-proposal"
         options={{
           headerShown: false,
-          presentation: 'pageSheet',
+          presentation: 'transparentModal',
           contentStyle: { backgroundColor: 'transparent' },
           animation: 'slide_from_bottom',
         }}

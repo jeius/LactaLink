@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { ProfileAvatar } from '@/components/Avatar';
 import { Card } from '@/components/ui/card';
@@ -7,18 +7,18 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { usePostLikeInteraction } from '@/hooks/posts/usePostInteraction';
+import { useLikeInteraction } from '@/hooks/posts/useInteraction';
+import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
 import { formatNumberToShortenUnits, formatTimeToPastLabel } from '@lactalink/utilities/formatters';
 import { isIndividual } from '@lactalink/utilities/type-guards';
-import { useRecyclingState } from '@shopify/flash-list';
 import { QueryKey } from '@tanstack/react-query';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { BadgeCheckIcon, HeartIcon, MessageCircleIcon } from 'lucide-react-native';
-import { TextLayoutEvent } from 'react-native';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
+import { TruncatedText } from '../ui/truncated-text';
 
 export function FeedItemCard({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
   const { author, createdAt, attachments } = post;
@@ -40,76 +40,25 @@ function ContentText({ content, title, id, attachments }: Post) {
   const titleInitialLines = hasAttachments ? 2 : 3;
   const contentInitialLines = hasAttachments ? 2 : 5;
 
-  const [mounted, setMounted] = useRecyclingState(false, [id]);
-
-  const [titleShown, setTitleShown] = useRecyclingState(false, [id]);
-  const [titleLengthMore, setTitleLengthMore] = useRecyclingState(false, [id]);
-
-  const [contentShown, setContentShown] = useRecyclingState(false, [id]);
-  const [contentLengthMore, setContentLengthMore] = useRecyclingState(false, [id]);
-
-  const toggleTitleLines = () => setTitleShown(!titleShown);
-  const toggleContentLines = () => setContentShown(!contentShown);
-
-  const onTitleLayout = useCallback(
-    (e: TextLayoutEvent) => {
-      if (!titleLengthMore && e.nativeEvent.lines.length > titleInitialLines) {
-        setTitleLengthMore(true);
-      }
-    },
-    [titleInitialLines, titleLengthMore, setTitleLengthMore]
-  );
-
-  const onContentLayout = useCallback(
-    (e: TextLayoutEvent) => {
-      if (!contentLengthMore && e.nativeEvent.lines.length > contentInitialLines) {
-        setContentLengthMore(true);
-      }
-    },
-    [contentInitialLines, contentLengthMore, setContentLengthMore]
-  );
-
-  useEffect(() => {
-    setMounted(true);
-  }, [setMounted]);
-
   return (
-    <VStack className="mt-2 items-start">
-      <Text
+    <VStack className="mt-2 items-stretch">
+      <TruncatedText
+        initialLines={titleInitialLines}
         size="lg"
         bold
-        onTextLayout={onTitleLayout}
-        numberOfLines={(mounted && (titleShown ? undefined : titleInitialLines)) || undefined}
-        className="flex-1"
+        className="grow"
+        recyclingKey={`title-${id}`}
       >
         {title}
-      </Text>
-      {titleLengthMore && (
-        <Pressable onPress={toggleTitleLines}>
-          <Text size="sm" className="font-JakartaSemiBold">
-            {titleShown ? '—See less' : '—See more'}
-          </Text>
-        </Pressable>
-      )}
+      </TruncatedText>
       {content && (
-        <>
-          <Text
-            onTextLayout={onContentLayout}
-            numberOfLines={
-              (mounted && (contentShown ? undefined : contentInitialLines)) || undefined
-            }
-            className="mt-2"
-          >
-            {content}
-          </Text>
-          {contentLengthMore && (
-            <Pressable onPress={toggleContentLines}>
-              <Text size="sm" className="font-JakartaSemiBold">
-                {contentShown ? '—See less' : '—See more'}
-              </Text>
-            </Pressable>
-          )}
-        </>
+        <TruncatedText
+          initialLines={contentInitialLines}
+          className="mt-2 grow"
+          recyclingKey={`content-${id}`}
+        >
+          {content}
+        </TruncatedText>
       )}
     </VStack>
   );
@@ -143,18 +92,25 @@ function Author({ author, createdAt }: Pick<Post, 'author' | 'createdAt'>) {
 }
 
 function Stats({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
+  const router = useRouter();
+
   const { commentsCount } = post;
   const {
     hasLiked,
     toggleLike,
     likesCount,
     isPending: isLiking,
-  } = usePostLikeInteraction(post, queryKey);
+  } = useLikeInteraction({ relationTo: 'posts', value: post }, queryKey);
 
   const handleLikePress = useCallback(() => {
     if (isLiking) return;
     toggleLike();
   }, [isLiking, toggleLike]);
+
+  const handleCommentPress = useCallback(() => {
+    const params: FeedCommentsSearchParams = { post: post.id };
+    router.push({ pathname: '/feed/comments', params });
+  }, [router, post.id]);
 
   return (
     <HStack space="lg" className="p-3">
@@ -169,7 +125,7 @@ function Stats({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
         <Text bold>{formatNumberToShortenUnits(likesCount)}</Text>
       </HStack>
       <HStack space="xs" className="items-center">
-        <Pressable hitSlop={8} role="button">
+        <Pressable hitSlop={8} role="button" onPress={handleCommentPress}>
           <Icon as={MessageCircleIcon} size="xl" />
         </Pressable>
         <Text bold>{formatNumberToShortenUnits(commentsCount ?? 0)}</Text>

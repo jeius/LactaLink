@@ -37,16 +37,7 @@ export const Comments: CollectionConfig<'comments'> = {
           type: 'relationship',
           relationTo: ['individuals', 'hospitals', 'milkBanks'],
           required: true,
-          admin: { readOnly: true, width: '50%' },
-          index: true,
-        },
-
-        {
-          name: 'post',
-          type: 'relationship',
-          relationTo: 'posts',
-          required: true,
-          admin: { description: 'Post this comment belongs to', readOnly: false, width: '50%' },
+          admin: { readOnly: false, width: '50%' },
           index: true,
         },
 
@@ -62,11 +53,28 @@ export const Comments: CollectionConfig<'comments'> = {
     },
 
     {
+      name: 'post',
+      type: 'relationship',
+      relationTo: 'posts',
+      required: true,
+      admin: { description: 'Post this comment belongs to', readOnly: false },
+      index: true,
+    },
+
+    {
       name: 'parent',
       label: 'Parent Comment',
       type: 'relationship',
       relationTo: 'comments',
       admin: { description: 'Optional: parent comment for threaded replies' },
+    },
+
+    {
+      name: 'repliedTo',
+      label: 'Replied Comment',
+      type: 'relationship',
+      relationTo: 'comments',
+      admin: { description: 'Optional: comment being replied' },
     },
 
     {
@@ -93,14 +101,40 @@ export const Comments: CollectionConfig<'comments'> = {
     },
 
     {
-      name: 'likes',
-      type: 'join',
-      collection: 'likes',
-      on: 'liked',
-      admin: {
-        description: 'Likes associated with this comment.',
-        defaultColumns: ['createdBy', 'createdAt'],
-      },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Likes',
+          fields: [
+            {
+              name: 'likes',
+              type: 'join',
+              collection: 'likes',
+              on: 'liked',
+              admin: {
+                description: 'Likes associated with this comment.',
+                defaultColumns: ['createdBy', 'createdAt'],
+              },
+            },
+          ],
+        },
+
+        {
+          label: 'Replies',
+          fields: [
+            {
+              name: 'replies',
+              type: 'join',
+              collection: 'comments',
+              on: 'parent',
+              admin: {
+                description: 'Replies made on this comment.',
+                defaultColumns: ['content', 'author', 'createdAt'],
+              },
+            },
+          ],
+        },
+      ],
     },
 
     // Aggregates to speed up feed rendering

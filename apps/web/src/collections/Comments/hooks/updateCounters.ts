@@ -20,7 +20,7 @@ export async function updatePostCommentCount({ req, doc, operation }: Args): Pro
       collection: 'comments',
       req: req,
       where: {
-        and: [{ post: { equals: postID } }, { deletedAt: { exists: false } }],
+        and: [{ post: { equals: postID } }, { parent: { exists: false } }],
       },
     });
 
@@ -60,11 +60,7 @@ export async function updateCommentRepliesCount({ req, doc, operation }: Args): 
       collection: 'comments',
       req: req,
       where: {
-        and: [
-          { post: { equals: postID } },
-          { parent: { equals: parentID } },
-          { deletedAt: { exists: false } },
-        ],
+        and: [{ post: { equals: postID } }, { parent: { equals: parentID } }],
       },
     });
 

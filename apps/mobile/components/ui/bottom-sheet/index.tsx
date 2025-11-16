@@ -1,6 +1,7 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { getColor, getPrimaryColor } from '@/lib/colors';
+import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import GorhomBottomSheet, {
   BottomSheetHandle,
@@ -77,6 +78,16 @@ export const BottomSheet = ({
   const position = useSharedValue(0);
   const currentIndex = useSharedValue(0);
 
+  const handleOpen = useCallback(() => {
+    onOpen?.();
+    setOpen?.(true);
+  }, [onOpen, setOpen]);
+
+  const handleClose = useCallback(() => {
+    onClose?.();
+    setOpen?.(false);
+  }, [onClose, setOpen]);
+
   const [store] = useState(() =>
     createBottomSheetStore({
       snapToIndex: snapToIndex,
@@ -84,11 +95,7 @@ export const BottomSheet = ({
       currentIndex: currentIndex,
       disableClose: disableClose,
       visible: open ?? defaultOpen,
-      actions: {
-        handleClose: onClose,
-        handleOpen: onOpen,
-        setVisible: setOpen,
-      },
+      actions: { handleClose, handleOpen, setVisible: setOpen },
     })
   );
 
@@ -138,13 +145,13 @@ export const BottomSheetPortal = ({
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
       if (index === -1 || (index === 0 && state.disableClose)) {
-        setVisible(false);
+        handleClose();
       } else if (index >= 0 || (index === 0 && !state.disableClose)) {
         setVisible(true);
       }
       onChange?.(index, pos, type);
     },
-    [state.disableClose, onChange, setVisible]
+    [state.disableClose, onChange, handleClose, setVisible]
   );
 
   usePreventBackPress(!disableCollapseOnBackPress && state.visible, handleClose);
@@ -194,13 +201,13 @@ export const BottomSheetModalPortal = ({
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
       if (index === -1 || (index === 0 && state.disableClose)) {
-        setVisible(false);
+        handleClose();
       } else if (index >= 0 || (index === 0 && !state.disableClose)) {
         setVisible(true);
       }
       onChange?.(index, pos, type);
     },
-    [state.disableClose, onChange, setVisible]
+    [state.disableClose, onChange, handleClose, setVisible]
   );
 
   usePreventBackPress(!disableCollapseOnBackPress && state.visible, handleClose);
@@ -293,7 +300,11 @@ export const BottomSheetDragIndicator = ({
       className={bottomSheetIndicatorStyle({
         className: className,
       })}
-      style={[{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }, props.style]}
+      style={[
+        { borderTopLeftRadius: 18, borderTopRightRadius: 18 },
+        createDirectionalShadow('top', 'md'),
+        props.style,
+      ]}
     >
       {children}
     </BottomSheetHandle>

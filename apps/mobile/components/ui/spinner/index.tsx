@@ -1,5 +1,6 @@
 'use client';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { VariantProps } from '@gluestack-ui/nativewind-utils/types';
 import { cssInterop } from 'nativewind';
 import React from 'react';
 import { ActivityIndicator } from 'react-native';
@@ -16,6 +17,7 @@ const spinnerStyle = tva({
       secondary: 'text-secondary-500',
       tertiary: 'text-tertiary-500',
       info: 'text-info-500',
+      default: 'text-typography-900',
     },
   },
   defaultVariants: {
@@ -25,9 +27,9 @@ const spinnerStyle = tva({
 
 const Spinner = React.forwardRef<
   React.ComponentRef<typeof ActivityIndicator>,
-  React.ComponentProps<typeof ActivityIndicator>
+  React.ComponentProps<typeof ActivityIndicator> & VariantProps<typeof spinnerStyle>
 >(function Spinner(
-  { className, color, focusable = false, 'aria-label': ariaLabel = 'loading', ...props },
+  { className, color, focusable = false, 'aria-label': ariaLabel = 'loading', variant, ...props },
   ref
 ) {
   return (
@@ -37,7 +39,7 @@ const Spinner = React.forwardRef<
       aria-label={ariaLabel}
       {...props}
       color={color}
-      className={spinnerStyle({ class: className })}
+      className={spinnerStyle({ class: className, variant })}
     />
   );
 });

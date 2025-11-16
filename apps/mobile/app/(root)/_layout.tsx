@@ -17,6 +17,18 @@ export default function Layout() {
       <Stack.Protected guard={!hasProfile}>
         <Stack.Screen name="(profile-setup)/profile" />
       </Stack.Protected>
+
+      <Stack.Screen
+        name="feed/comments"
+        options={{
+          animation: 'slide_from_bottom',
+          headerShown: false,
+          presentation: 'transparentModal',
+          contentStyle: {
+            backgroundColor: 'transparent',
+          },
+        }}
+      />
     </Stack>
   );
 }

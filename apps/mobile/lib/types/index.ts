@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 export * from './assets';
 export * from './markers';
 export * from './profile';
+export type { MapPageSearchParams } from './searchParams';
 
 export type NativeFile = {
   uri: string;
@@ -13,13 +14,6 @@ export type NativeFile = {
 };
 
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
-
-export type MapPageSearchParams = {
-  mrk?: string;
-  lat?: string;
-  lng?: string;
-  title?: string;
-};
 
 export type InfiniteDataMap<T, V = number> = InfiniteData<
   { docs: Map<string, T> } & Omit<PaginatedDocs, 'docs'>,

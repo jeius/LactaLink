@@ -7,7 +7,8 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
 import React from 'react';
-import { Platform, Pressable, Text, TextProps, View } from 'react-native';
+import { Platform, Text, TextProps, View } from 'react-native';
+import { Pressable } from '../pressable';
 
 const SCOPE = 'ACCORDION';
 /** Styles */
@@ -16,7 +17,7 @@ const accordionStyle = tva({
   base: 'w-full',
   variants: {
     variant: {
-      filled: 'shadow-hard-2 bg-white',
+      filled: 'bg-background-0 shadow-hard-2',
       unfilled: '',
     },
     size: {
@@ -37,7 +38,7 @@ const accordionItemStyle = tva({
   },
 });
 const accordionTitleTextStyle = tva({
-  base: 'text-typography-900 font-JakartaBold flex-1 text-left',
+  base: 'flex-1 text-left font-JakartaBold text-typography-900',
   parentVariants: {
     size: {
       sm: 'text-sm',
@@ -47,7 +48,7 @@ const accordionTitleTextStyle = tva({
   },
 });
 const accordionIconStyle = tva({
-  base: 'text-typography-900 fill-none',
+  base: 'fill-none text-typography-900',
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -60,7 +61,7 @@ const accordionIconStyle = tva({
   },
 });
 const accordionContentTextStyle = tva({
-  base: 'text-typography-700 font-sans',
+  base: 'font-sans text-typography-700',
   parentVariants: {
     size: {
       sm: 'text-sm',
@@ -76,7 +77,7 @@ const accordionContentStyle = tva({
   base: 'px-4 pb-3 pt-1',
 });
 const accordionTriggerStyle = tva({
-  base: 'web:outline-none data-[focus-visible=true]:bg-background-50 w-full flex-row items-center justify-between px-4 py-3 focus:outline-none data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-40',
+  base: 'w-full flex-row items-center justify-between px-4 py-3 focus:outline-none web:outline-none data-[focus-visible=true]:bg-background-50 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-40',
 });
 
 const Root = withStyleContext(View, SCOPE);

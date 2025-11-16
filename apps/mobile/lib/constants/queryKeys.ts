@@ -22,3 +22,9 @@ export const QUERY_KEYS: QueryKeys = {
 
 export const INFINITE_QUERY_KEY = ['infinite'];
 export const COLLECTION_QUERY_KEY = ['collection'];
+
+export const MUTATION_KEYS = {
+  LIKE_INTERACTION: ['likes', 'interaction'],
+  ADD_COMMENT: ['comments', 'add'],
+  DELETE_COMMENT: ['comments', 'delete'],
+};

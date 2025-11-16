@@ -38,7 +38,7 @@ export default function FeedPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data: posts, queryKey, ...query } = useInfinitePosts({ limit: 10 });
+  const { data: posts, queryKey, ...query } = useInfinitePosts(undefined, { limit: 10 });
 
   const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
 
