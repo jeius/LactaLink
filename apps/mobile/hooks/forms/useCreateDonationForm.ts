@@ -81,7 +81,7 @@ export function useCreateDonationForm({
   const form = useForm<DonationCreateSchema>({
     resolver: zodResolver(donationCreateSchema),
     mode: 'onTouched',
-    defaultValues: createDefaultValues(user, !!matchedRequest),
+    defaultValues: createDefaultValues(user, !!matchedRequest, !!recipient),
   });
 
   const { reset, getValues, watch, formState } = form;
@@ -199,12 +199,13 @@ function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
 
 function createDefaultValues(
   user: User | null,
-  isMatched: boolean
+  isMatched: boolean,
+  hasRecipient: boolean
 ): DonationCreateSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
   const savedData = getSavedFormData('donation-create');
 
-  if (savedData && !isMatched) return savedData as DonationCreateSchema;
+  if (savedData && !isMatched && !hasRecipient) return savedData as DonationCreateSchema;
 
   if (!user || !profile) return;
 

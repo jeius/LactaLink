@@ -14,7 +14,7 @@ import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { upsertAddress } from '@/lib/api/upsert';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
-import { Redirect, Stack, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 
 export default function CreatePage() {
@@ -59,28 +59,27 @@ export default function CreatePage() {
   return (
     <Form {...form}>
       <FormPreventBack />
-      <Stack.Screen options={{ headerShown: true, headerTitle: 'New Address' }} />
 
       <SafeArea safeTop={false} mode="margin" className="items-stretch">
         <AddressMapView
           onCameraChangeComplete={handleCameraChangeComplete}
           isLoading={isLoading}
           onMapPress={blurInput}
-        />
+        >
+          <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
+            <GooglePlacesInput
+              inputRef={googlePlacesInputRef}
+              rounded="full"
+              onSelected={handleSearchSelected}
+            />
+          </Box>
 
-        <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
-          <GooglePlacesInput
-            inputRef={googlePlacesInputRef}
-            rounded="full"
-            onSelected={handleSearchSelected}
+          <AddressMapBottomSheet
+            editing
+            onSavePress={form.handleSubmit(onSubmit)}
+            isLoading={isLoading}
           />
-        </Box>
-
-        <AddressMapBottomSheet
-          editing
-          onSavePress={form.handleSubmit(onSubmit)}
-          isLoading={isLoading}
-        />
+        </AddressMapView>
       </SafeArea>
     </Form>
   );

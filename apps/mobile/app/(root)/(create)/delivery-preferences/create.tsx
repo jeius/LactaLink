@@ -21,7 +21,7 @@ import { DAYS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DeliveryPreferenceCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { Redirect, Stack, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { CalendarDaysIcon, MapPinIcon, TagIcon, TruckIcon } from 'lucide-react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
@@ -75,7 +75,6 @@ export default function CreatePage() {
   return (
     <Form {...form}>
       <FormPreventBack />
-      <Stack.Screen options={{ headerShown: true, headerTitle: 'New Delivery Preference' }} />
 
       <SafeArea safeTop={false} mode="margin" className="relative flex-1 overflow-hidden">
         <KeyboardAwareScrollView
@@ -121,7 +120,7 @@ export default function CreatePage() {
             <VStack>
               <HStack space="sm">
                 <Icon as={TagIcon} />
-                <Text className="font-JakartaMedium mb-1">Label</Text>
+                <Text className="mb-1 font-JakartaMedium">Label</Text>
               </HStack>
               <Card isDisabled={isSubmitting}>
                 <FormField

@@ -58,7 +58,7 @@ export default function ProfileCard({
           <Box className="relative h-full">
             <ProfileAvatar profile={profile} size="xl" className="aspect-square w-auto" />
             {profileType && (
-              <Box className="bg-background-0 absolute right-1 top-0 rounded-full p-1.5">
+              <Box className="absolute right-1 top-0 rounded-full bg-background-0 p-1.5">
                 <Icon as={profileIcon} size="xs" color={themeColors.typography[700]} />
               </Box>
             )}
@@ -67,7 +67,7 @@ export default function ProfileCard({
           <VStack space="sm" className="flex-1 items-start">
             <Link href={`/profile/${profileSlug}/${profile!.id}`} push asChild>
               <Button
-                animateOnPress={false}
+                disablePressAnimation
                 variant="link"
                 action="default"
                 className="h-fit w-fit p-0"

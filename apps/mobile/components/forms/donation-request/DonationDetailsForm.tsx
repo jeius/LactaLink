@@ -61,7 +61,7 @@ export function DonationDetailsForm({
     <VStack space="2xl" className="py-5">
       {(donationType === 'MATCHED' || isMatched) && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Request</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Request</Text>
           <RequestListCard
             isLoading={isLoading}
             data={matchedRequestDoc}
@@ -79,7 +79,7 @@ export function DonationDetailsForm({
 
       {recipient && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Recipient</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Recipient</Text>
           <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
@@ -88,7 +88,7 @@ export function DonationDetailsForm({
 
       <VStack space="lg" className="mx-5">
         <HStack space="md" className="items-center">
-          <Text size="lg" className="font-JakartaSemiBold flex-1">
+          <Text size="lg" className="flex-1 font-JakartaSemiBold">
             Milk Details
           </Text>
           <Icon as={ClipboardPenIcon} />

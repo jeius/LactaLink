@@ -50,7 +50,7 @@ export function useCreateRequestForm({
   const form = useForm<RequestCreateSchema>({
     resolver: zodResolver(requestCreateSchema),
     mode: 'onTouched',
-    defaultValues: createDefaultValues(user, !!matchedDonation),
+    defaultValues: createDefaultValues(user, !!matchedDonation, !!recipient),
   });
 
   const { reset, getValues, watch, formState } = form;
@@ -139,12 +139,13 @@ export function useCreateRequestForm({
 
 function createDefaultValues(
   user: User | null,
-  isMatched: boolean
+  isMatched: boolean,
+  hasRecipient: boolean
 ): RequestCreateSchema | undefined {
   const profile = extractCollection(user?.profile?.value);
   const savedData = getSavedFormData('request-create');
 
-  if (savedData && !isMatched) return savedData as RequestCreateSchema;
+  if (savedData && !isMatched && !hasRecipient) return savedData as RequestCreateSchema;
 
   if (!profile) return;
 
