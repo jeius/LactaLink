@@ -5,9 +5,6 @@ import {
   useDeleteCommentMutation,
   useLikeInteraction,
 } from '@/hooks/posts/useInteraction';
-import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { getColor, getPrimaryColor } from '@/lib/colors/getColor';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checkers';
@@ -29,16 +26,7 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react-native';
-import React, {
-  ComponentRef,
-  FC,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, TextInput, TextInputContentSizeChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,6 +42,8 @@ import {
   BottomSheetContent,
   BottomSheetDragIndicator,
   BottomSheetFlashList,
+  BottomSheetItem,
+  BottomSheetModalPortal,
   BottomSheetPortal,
 } from '../ui/bottom-sheet';
 import { BottomSheetPortalProps, BottomSheetProps } from '../ui/bottom-sheet/types';
@@ -132,120 +122,6 @@ const COMMENT_INPUT_HEIGHT = 40;
 const MAX_COMMENT_INPUT_HEIGHT = 160;
 
 const AnimatedInput = Animated.createAnimatedComponent(Input);
-
-const CommentItemActions = forwardRef<
-  ComponentRef<typeof BottomSheetModal>,
-  CommentItemActionsProps
->(function CommentItemActions(
-  { comment, commentsQueryKey, repliesQueryKey, open, setOpen },
-  refProp
-) {
-  const { data: meUser } = useMeUser();
-  const insets = useSafeAreaInsets();
-
-  const localRef = useRef<BottomSheetModal>(null);
-  const ref = refProp || localRef;
-
-  const isAuthor = isEqualProfiles(meUser?.profile, comment.author);
-
-  const { hasLiked, toggleLike } = useLikeInteraction(
-    { relationTo: 'comments', value: comment },
-    commentsQueryKey
-  );
-
-  const rootQueryKey = useCommentStore((state) => state.rootQueryKey) ?? [];
-
-  const { deleteComment } = useDeleteCommentMutation(
-    commentsQueryKey,
-    !isEqual(rootQueryKey, commentsQueryKey) ? [rootQueryKey] : undefined
-  );
-
-  const handleReplyPress = () => {
-    handleReply({
-      comment,
-      rootQueryKey: commentsQueryKey,
-      subQueryKey: repliesQueryKey,
-    });
-  };
-
-  const actions: CommentAction[] = [
-    { label: hasLiked ? 'Unlike' : 'Like', icon: HeartIcon, action: toggleLike },
-    { label: 'Reply', icon: SendIcon, action: handleReplyPress },
-  ];
-
-  if (isAuthor) {
-    actions.push({ label: 'Edit', icon: PenIcon, action: () => {} });
-  }
-
-  const dismiss = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
-
-  usePreventBackPress(open, dismiss);
-
-  useEffect(() => {
-    if (open) {
-      ref && typeof ref === 'object' && ref.current?.present();
-    } else {
-      ref && typeof ref === 'object' && ref.current?.dismiss();
-    }
-  }, [open, ref]);
-
-  return (
-    <BottomSheetModal
-      ref={ref}
-      enableDynamicSizing
-      handleComponent={BottomSheetDragIndicator}
-      backdropComponent={(props) => <BottomSheetBackdrop {...props} onPress={dismiss} />}
-      handleIndicatorStyle={{ backgroundColor: getPrimaryColor('500'), width: 40 }}
-      backgroundStyle={{ backgroundColor: getColor('background', '0') }}
-      onChange={(index) => {
-        if (index < 0) dismiss();
-      }}
-    >
-      <BottomSheet>
-        <BottomSheetContent
-          className="flex-col items-stretch bg-background-0"
-          style={{ paddingBottom: insets.bottom }}
-        >
-          {actions.map(({ label, icon, action }, idx) => (
-            <Pressable
-              key={`${label}-${idx}`}
-              onPress={() => {
-                action();
-                dismiss();
-              }}
-            >
-              <HStack space="md" className="items-center px-4 py-3">
-                <Icon as={icon} />
-                <Text className="font-JakartaMedium">{label}</Text>
-              </HStack>
-            </Pressable>
-          ))}
-
-          {isAuthor && (
-            <>
-              <Divider className="my-2" />
-              <ActionModal
-                title="Delete Comment"
-                description="Are you sure you want to delete this comment? This action cannot be undone."
-                className="mx-4"
-                confirmLabel="Delete"
-                action="negative"
-                triggerLabel="Delete"
-                triggerIcon={Trash2Icon}
-                onConfirm={() => {
-                  dismiss();
-                  deleteComment(comment);
-                }}
-              />
-            </>
-          )}
-        </BottomSheetContent>
-      </BottomSheet>
-    </BottomSheetModal>
-  );
-});
 
 export default function CommentsBottomSheet({
   post,
@@ -462,6 +338,95 @@ function CommentItem({ comment, queryKey }: { comment: Comment; queryKey: QueryK
         setOpen={setOpenModal}
       />
     </>
+  );
+}
+
+function CommentItemActions({
+  comment,
+  commentsQueryKey,
+  repliesQueryKey,
+  open,
+  setOpen,
+}: CommentItemActionsProps) {
+  const { data: meUser } = useMeUser();
+  const insets = useSafeAreaInsets();
+
+  const isAuthor = isEqualProfiles(meUser?.profile, comment.author);
+
+  const { hasLiked, toggleLike } = useLikeInteraction(
+    { relationTo: 'comments', value: comment },
+    commentsQueryKey
+  );
+
+  const rootQueryKey = useCommentStore((state) => state.rootQueryKey) ?? [];
+
+  const { deleteComment } = useDeleteCommentMutation(
+    commentsQueryKey,
+    !isEqual(rootQueryKey, commentsQueryKey) ? [rootQueryKey] : undefined
+  );
+
+  const handleReplyPress = () => {
+    handleReply({
+      comment,
+      rootQueryKey: commentsQueryKey,
+      subQueryKey: repliesQueryKey,
+    });
+  };
+
+  const actions: CommentAction[] = [
+    { label: hasLiked ? 'Unlike' : 'Like', icon: HeartIcon, action: toggleLike },
+    { label: 'Reply', icon: SendIcon, action: handleReplyPress },
+  ];
+
+  if (isAuthor) {
+    actions.push({ label: 'Edit', icon: PenIcon, action: () => {} });
+  }
+
+  const dismiss = useCallback(() => {
+    setOpen(false);
+  }, [setOpen]);
+
+  return (
+    <BottomSheet open={open} setOpen={setOpen}>
+      <BottomSheetModalPortal
+        enableDynamicSizing
+        handleComponent={BottomSheetDragIndicator}
+        backdropComponent={BottomSheetBackdrop}
+      >
+        <BottomSheetContent
+          className="flex-col items-stretch bg-background-0"
+          style={{ paddingBottom: insets.bottom }}
+        >
+          {actions.map(({ label, icon, action }, idx) => (
+            <BottomSheetItem key={`${label}-${idx}`} onPress={action}>
+              <HStack space="md" className="items-center px-4 py-3">
+                <Icon as={icon} />
+                <Text className="font-JakartaMedium">{label}</Text>
+              </HStack>
+            </BottomSheetItem>
+          ))}
+
+          {isAuthor && (
+            <>
+              <Divider className="my-2" />
+              <ActionModal
+                title="Delete Comment"
+                description="Are you sure you want to delete this comment? This action cannot be undone."
+                className="mx-4"
+                confirmLabel="Delete"
+                action="negative"
+                triggerLabel="Delete"
+                triggerIcon={Trash2Icon}
+                onConfirm={() => {
+                  dismiss();
+                  deleteComment(comment);
+                }}
+              />
+            </>
+          )}
+        </BottomSheetContent>
+      </BottomSheetModalPortal>
+    </BottomSheet>
   );
 }
 

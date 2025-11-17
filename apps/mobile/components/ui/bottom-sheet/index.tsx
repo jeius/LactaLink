@@ -22,9 +22,10 @@ import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PressableProps, TextProps, ViewProps } from 'react-native';
-import { Platform, Pressable } from 'react-native';
+import { Platform } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable } from '../pressable';
 import { Text } from '../text';
 import {
   BottomSheetStoreContext,

@@ -20,13 +20,12 @@ import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors'
 
 import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { toast } from 'sonner-native';
 
 export default function FaceVerificationPage() {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
-  const [start, setStart] = useState(false);
   const [photo, setPhoto] = useState<CameraCapturedPicture | null>(null);
   const camRef = useRef<CameraView>(null);
 
@@ -40,12 +39,46 @@ export default function FaceVerificationPage() {
 
   const revalidate = useRevalidateCollectionQueries();
 
-  useEffect(() => {
-    if (start) {
-      handleSubmit(onSubmit)();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start]);
+  async function onSubmit(data: IdentitySchema) {
+    const promise = submitVerification(data);
+
+    toast.promise(promise, {
+      loading: 'Submitting verification...',
+      success: (res: { message: string }) => res.message,
+      error: (error) => extractErrorMessage(error),
+    });
+
+    await promise;
+
+    setPhoto(null);
+    revalidate('identities');
+
+    router.dismissTo('/id-verification');
+  }
+
+  async function handleCapture() {
+    if (!camRef.current || !cameraReady) return;
+
+    const photo = await camRef.current.takePictureAsync({ quality: 1 }).catch((err) => {
+      toast.error('Failed to capture photo. Please try again.');
+      return null;
+    });
+
+    if (!photo) return;
+
+    const fileName = photo.uri.split('/').pop() || 'face.jpg';
+    const image = await transformImage({ uri: photo.uri, fileName }).catch((err) => {
+      toast.error(extractErrorMessage(err));
+      return null;
+    });
+
+    if (!image) return;
+
+    setValue('faceImage', image, { shouldValidate: true, shouldDirty: true });
+    setPhoto(photo);
+
+    handleSubmit(onSubmit)();
+  }
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -64,44 +97,10 @@ export default function FaceVerificationPage() {
     );
   }
 
-  async function handleCapture() {
-    if (camRef.current && cameraReady) {
-      try {
-        const photo = await camRef.current.takePictureAsync({ quality: 1 });
-        const fileName = photo.uri.split('/').pop() || 'face.jpg';
-        const image = await transformImage({ uri: photo.uri, fileName });
-        setValue('faceImage', image, { shouldValidate: true, shouldDirty: true });
-        setStart(true);
-        setPhoto(photo);
-      } catch (error) {
-        console.error('Error capturing photo:', extractErrorMessage(error));
-        toast.error('Failed to capture photo. Please try again.');
-      }
-    }
-  }
-
-  async function onSubmit(data: IdentitySchema) {
-    const promise = submitVerification(data);
-
-    toast.promise(promise, {
-      loading: 'Submitting verification...',
-      success: (res: { message: string }) => res.message,
-      error: (error) => extractErrorMessage(error),
-    });
-
-    await promise;
-
-    setStart(false);
-    setPhoto(null);
-    revalidate('identities');
-
-    router.dismissTo('/id-verification');
-  }
-
   return (
     <SafeArea mode="margin" safeTop={false} className="items-stretch p-5">
       <VStack space="xl" className="flex-1 items-center">
-        <Text className="font-JakartaMedium text-center">
+        <Text className="text-center font-JakartaMedium">
           Align your face with the guide and press the button to capture and submit the
           verification.
         </Text>
@@ -120,7 +119,7 @@ export default function FaceVerificationPage() {
                 ratio="1:1"
               />
               <Box className="absolute inset-6 items-center justify-center">
-                <Icon as={FaceOutlineIcon} className="text-primary-400 h-full w-full stroke-1" />
+                <Icon as={FaceOutlineIcon} className="h-full w-full stroke-1 text-primary-400" />
               </Box>
             </>
           ) : (

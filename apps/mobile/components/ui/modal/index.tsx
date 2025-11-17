@@ -41,7 +41,7 @@ cssInterop(AnimatedPressable, { className: 'style' });
 cssInterop(MotionView, { className: 'style' });
 
 const modalStyle = tva({
-  base: 'group/modal web:pointer-events-none h-full w-full items-center justify-center',
+  base: 'group/modal h-full w-full items-center justify-center web:pointer-events-none',
   variants: {
     size: {
       xs: '',
@@ -54,11 +54,11 @@ const modalStyle = tva({
 });
 
 const modalBackdropStyle = tva({
-  base: 'bg-background-100 web:cursor-default absolute bottom-0 left-0 right-0 top-0',
+  base: 'absolute bottom-0 left-0 right-0 top-0 bg-background-100 web:cursor-default',
 });
 
 const modalContentStyle = tva({
-  base: 'bg-background-0 border-outline-100 shadow-hard-2 m-5 overflow-hidden rounded-2xl border p-6',
+  base: 'm-5 overflow-hidden rounded-2xl border border-outline-100 bg-background-0 p-6 shadow-hard-2',
   parentVariants: {
     size: {
       xs: 'w-[60%] max-w-[360px]',
@@ -75,7 +75,7 @@ const modalBodyStyle = tva({
 });
 
 const modalCloseButtonStyle = tva({
-  base: 'group/modal-close-button data-[focus-visible=true]:web:bg-background-100 web:outline-0 z-10 cursor-pointer rounded',
+  base: 'group/modal-close-button z-10 cursor-pointer rounded web:outline-0 data-[focus-visible=true]:web:bg-background-100',
 });
 
 const modalHeaderStyle = tva({

@@ -23,7 +23,7 @@ const containerStyle = tva({
 });
 
 const pressableStyle = tva({
-  base: 'border-primary-500 bg-primary-0 grow flex-col items-center justify-center rounded-xl border border-dashed',
+  base: 'grow flex-col items-center justify-center rounded-xl border border-dashed border-primary-500 bg-primary-0',
   variants: {
     isPressed: { true: 'opacity-70' },
   },
@@ -85,12 +85,6 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     orderedSelection,
   };
 
-  // Expose methods via ref
-  useImperativeHandle(ref, () => ({
-    upload: handleUpload,
-    remove: handleRemove,
-  }));
-
   function handleUpload() {
     if (!isDisabled) showModal(true);
   }
@@ -104,6 +98,12 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     }
     lastImageUri.current = [];
   }
+
+  // Expose methods via ref
+  useImperativeHandle(ref, () => ({
+    upload: handleUpload,
+    remove: handleRemove,
+  }));
 
   async function handleTransform(
     pickedImage: ImagePicker.ImagePickerAsset,
@@ -173,12 +173,12 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
             }}
             onPress={handleUpload}
           >
-            <Icon as={UploadCloudIcon} size="2xl" className="text-primary-500 h-16 w-16" />
-            <Text className="text-primary-500 font-JakartaMedium text-center">Tap to upload</Text>
-            <Text size="xs" className="text-typography-700 text-center">
+            <Icon as={UploadCloudIcon} size="2xl" className="h-16 w-16 text-primary-500" />
+            <Text className="text-center font-JakartaMedium text-primary-500">Tap to upload</Text>
+            <Text size="xs" className="text-center text-typography-700">
               PNG, JPG, WEBP
             </Text>
-            <Text size="2xs" className="text-typography-500 text-center">
+            <Text size="2xs" className="text-center text-typography-500">
               Image is compressed when size exceeds {MAX_IMAGE_SIZE / 1024 / 1024}MB
             </Text>
           </Pressable>
