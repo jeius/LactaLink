@@ -1,10 +1,10 @@
 import BottomSheet, { type BottomSheetModal } from '@gorhom/bottom-sheet';
 import { MarkKeyRequired } from '@lactalink/types/utils';
-import { PropsWithChildren } from 'react';
+import { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
 import { SharedValue } from 'react-native-reanimated';
 
 type IBottomSheetProps = React.ComponentPropsWithoutRef<typeof BottomSheet>;
-type IBottomSheetModalProps = React.ComponentPropsWithoutRef<typeof BottomSheetModal>;
+type IBottomSheetModalProps = Omit<ComponentPropsWithoutRef<typeof BottomSheetModal>, 'children'>;
 type IBaseBottomSheetProps = {
   /**
    * @deprecated Set snapToIndex in BottomSheet component props instead.
@@ -146,4 +146,5 @@ export interface BottomSheetPortalProps extends Partial<IBottomSheetProps>, IBas
 
 export interface BottomSheetModalPortalProps
   extends Partial<IBottomSheetModalProps>,
-    IBaseBottomSheetProps {}
+    IBaseBottomSheetProps,
+    PropsWithChildren {}

@@ -33,6 +33,7 @@ import {
   useBottomSheetModalRef,
   useBottomSheetRef,
   useBottomSheetState,
+  useBottomSheetStore,
   useBottomSheetVisibility,
 } from './context';
 import { BottomSheetModalPortalProps, BottomSheetPortalProps, BottomSheetProps } from './types';
@@ -192,11 +193,14 @@ export const BottomSheetModalPortal = ({
   animatedIndex: parentAnimatedIdx,
   animatedPosition: parentAnimatedPos,
   disableCollapseOnBackPress = false,
+  children,
   ...props
 }: BottomSheetModalPortalProps) => {
   const bottomSheetRef = useBottomSheetModalRef();
   const state = useBottomSheetState();
   const { handleClose, setVisible, setPosition, setCurrentIndex } = useBottomSheetActions();
+
+  const store = useBottomSheetStore();
 
   const handleSheetChanges = useCallback(
     (index: number, pos: number, type: SNAP_POINT_TYPE) => {
@@ -235,7 +239,7 @@ export const BottomSheetModalPortal = ({
       animatedPosition={state.position}
       animatedIndex={state.currentIndex}
     >
-      {props.children}
+      <BottomSheetStoreContext.Provider value={store}>{children}</BottomSheetStoreContext.Provider>
     </GorhomBottomSheetModal>
   );
 };

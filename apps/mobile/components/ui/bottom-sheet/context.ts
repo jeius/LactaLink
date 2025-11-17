@@ -59,7 +59,7 @@ export function createBottomSheetStore({ actions, ...init }: CreateBottomSheetSt
   }));
 }
 
-function useBottomSheetStore<T>(selector: (state: BottomSheetStore) => T) {
+function useSelector<T>(selector: (state: BottomSheetStore) => T) {
   const store = useContext(BottomSheetStoreContext);
   if (!store) {
     throw new Error('useBottomSheetStore must be used within a BottomSheet');
@@ -67,16 +67,25 @@ function useBottomSheetStore<T>(selector: (state: BottomSheetStore) => T) {
   return useStore(store, selector);
 }
 
-export const useBottomSheetRef = () => useBottomSheetStore((state) => state.bottomSheetRef);
+export function useBottomSheetStore() {
+  const store = useContext(BottomSheetStoreContext);
+  if (!store) {
+    throw new Error('useBottomSheetStore must be used within a BottomSheet');
+  }
+  return store;
+}
 
-export const useBottomSheetModalRef = () =>
-  useBottomSheetStore((state) => state.bottomSheetModalRef);
+export const useBottomSheetRef = () => useSelector((state) => state.bottomSheetRef);
 
-export const useBottomSheetActions = () => useBottomSheetStore((state) => state.actions);
+export const useBottomSheetModalRef = () => useSelector((state) => state.bottomSheetModalRef);
 
-export const useBottomSheetVisibility = () => useBottomSheetStore((state) => state.visible);
+export const useBottomSheetActions = () => useSelector((state) => state.actions);
 
-export function useBottomSheet<T = BottomSheetStore>(selector?: (state: BottomSheetStore) => T) {
+export const useBottomSheetVisibility = () => useSelector((state) => state.visible);
+
+export function useBottomSheetShallow<T = BottomSheetStore>(
+  selector?: (state: BottomSheetStore) => T
+) {
   const store = useContext(BottomSheetStoreContext);
   if (!store) {
     throw new Error('useBottomSheet must be used within a BottomSheet');
@@ -87,7 +96,7 @@ export function useBottomSheet<T = BottomSheetStore>(selector?: (state: BottomSh
 export function useBottomSheetState<T = BottomSheetState>(
   selector?: (state: BottomSheetState) => T
 ) {
-  return useBottomSheet(
+  return useBottomSheetShallow(
     selector ??
       ((s) =>
         ({

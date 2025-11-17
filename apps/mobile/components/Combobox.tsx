@@ -17,7 +17,6 @@ import { Box } from './ui/box';
 import { Button, ButtonIcon } from './ui/button';
 import { Icon } from './ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from './ui/input';
-import { Pressable } from './ui/pressable';
 import { Spinner } from './ui/spinner';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
@@ -37,6 +36,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetDragIndicator,
   BottomSheetFlashList,
+  BottomSheetItem,
   BottomSheetModalPortal,
   BottomSheetTrigger,
 } from './ui/bottom-sheet';
@@ -349,7 +349,7 @@ function ComboBoxItem({
   const onPressIn = () => setIsPressed(true);
   const onPressOut = () => setIsPressed(false);
   return (
-    <Pressable onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}>
+    <BottomSheetItem onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}>
       <HStack space="md" className={style({ isSelected, isPressed })}>
         {icon && iconPosition === 'left' && (
           <Icon as={icon} className="text-primary-500" size="md" />
@@ -370,7 +370,7 @@ function ComboBoxItem({
           <Icon as={icon} className="text-primary-500" size="md" />
         )}
       </HStack>
-    </Pressable>
+    </BottomSheetItem>
   );
 }
 
