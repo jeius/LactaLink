@@ -4,10 +4,10 @@ import { Galeria } from '@nandorojo/galeria';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import React, { ComponentProps, useCallback, useState } from 'react';
 import { GestureResponderEvent, useWindowDimensions } from 'react-native';
-import { AnimatedPressable } from './animated/pressable';
+import { useTheme } from './AppProvider/ThemeProvider';
 import { Image } from './Image';
 import { Box } from './ui/box';
-import { PressableProps } from './ui/pressable';
+import { Pressable, PressableProps } from './ui/pressable';
 import { Text } from './ui/text';
 
 interface ImageViewerProps extends Pick<ComponentProps<typeof Image>, 'contentFit'> {
@@ -79,22 +79,22 @@ export function SingleImageViewer({
   disabled = false,
   ...props
 }: SingleImageViewerProps) {
+  const { theme } = useTheme();
   const backgroundColor = getHexColor('light', 'background', 800)?.toString();
 
   function handlePress(e: GestureResponderEvent) {
-    e.stopPropagation();
     props.onPress?.(e);
+    if (e.isDefaultPrevented()) return;
   }
 
   return image?.uri ? (
-    <AnimatedPressable
+    <Pressable
       {...props}
       pointerEvents={disabled ? 'none' : 'auto'}
-      disablePressAnimation={true}
       onPress={handlePress}
       android_disableSound
     >
-      <Galeria urls={[image.uri]}>
+      <Galeria urls={[image.uri]} theme={theme}>
         <Galeria.Image style={{ backgroundColor }}>
           <Image
             source={src(image.uri)}
@@ -107,7 +107,7 @@ export function SingleImageViewer({
           />
         </Galeria.Image>
       </Galeria>
-    </AnimatedPressable>
+    </Pressable>
   ) : (
     <Text size="xs" className="flex-1 text-center align-middle">
       No Image

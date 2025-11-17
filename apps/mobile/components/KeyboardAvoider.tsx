@@ -138,6 +138,94 @@ const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
 
 export default KeyboardAvoidingScrollView;
 
+const KeyboardAvoider: React.FC<KeyboardAvoiderProps> = ({
+  children,
+  keyboardVerticalOffset = 0,
+  contentContainerClassName,
+  contentContainerStyle,
+  refreshing,
+  onRefresh,
+  ...props
+}) => {
+  const { height, isKeyboardShown } = useKeyboardSharedHeight(keyboardVerticalOffset + OFFSET);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollEvent = useRef<NativeScrollEvent>(null);
+  const inputRefs = useRef<Record<string, TextInput | null>>({});
+
+  const [focusedInputID, setFocusedInputID] = useState<string | null>(null);
+
+  const fakeViewStyle = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
+  const handleFocus = useCallback((id: string) => {
+    setFocusedInputID(id);
+  }, []);
+
+  const handleRegisterInput = useCallback((id: string, ref: TextInput | null) => {
+    const unregister = (id: string) => {
+      if (inputRefs.current[id]) {
+        delete inputRefs.current[id];
+      }
+    };
+
+    if (ref) {
+      inputRefs.current[id] = ref;
+    } else {
+      unregister(id);
+    }
+
+    return () => unregister(id);
+  }, []);
+
+  useEffect(() => {
+    if (isKeyboardShown && scrollEvent.current) {
+      const currentOffset = scrollEvent.current.contentOffset.y;
+      const viewportHeight = scrollEvent.current.layoutMeasurement.height;
+
+      const focusedInput = (focusedInputID && inputRefs.current[focusedInputID]) || null;
+
+      if (focusedInput && focusedInput.isFocused()) {
+        focusedInput.measureInWindow((_x, y, _width, height) => {
+          const inputBottom = y + height;
+
+          // Check if the input is covered by the viewport
+          if (inputBottom > viewportHeight) {
+            const scrollToOffset = currentOffset + OFFSET + (inputBottom - viewportHeight);
+            scrollRef.current?.scrollTo({ y: scrollToOffset, animated: true });
+          }
+        });
+      }
+    }
+  }, [focusedInputID, isKeyboardShown]);
+
+  return (
+    <KeyboardAvoiderContext.Provider
+      value={{ onFocus: handleFocus, registerInput: handleRegisterInput }}
+    >
+      <VStack {...props}>
+        <ScrollView
+          ref={scrollRef}
+          onScroll={({ nativeEvent }) => {
+            scrollEvent.current = nativeEvent;
+          }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerClassName={contentContainerClassName}
+          contentContainerStyle={contentContainerStyle}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            refreshing !== undefined || onRefresh ? (
+              <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
+            ) : undefined
+          }
+        >
+          {children}
+        </ScrollView>
+        <Animated.View style={fakeViewStyle} />
+      </VStack>
+    </KeyboardAvoiderContext.Provider>
+  );
+};
 function useKeyboardSharedHeight(offset: number = OFFSET) {
   const height = useSharedValue(0);
   const [isKeyboardShown, setIsKeyboardShown] = useState(false);

@@ -19,3 +19,6 @@ export const postSchema = z.object({
     })
     .optional(),
 });
+
+export type PostSchema = z.infer<typeof postSchema>;
+export type MediaSchema = z.infer<typeof mediaSchema>;

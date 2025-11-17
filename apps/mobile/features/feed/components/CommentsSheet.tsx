@@ -1,3 +1,31 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
+import { ProfileAvatar } from '@/components/Avatar';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
+import { ActionModal } from '@/components/modals';
+import { NoData } from '@/components/NoData';
+import {
+  BottomSheet,
+  BottomSheetBackdrop,
+  BottomSheetContent,
+  BottomSheetDragIndicator,
+  BottomSheetFlashList,
+  BottomSheetItem,
+  BottomSheetModalPortal,
+  BottomSheetPortal,
+} from '@/components/ui/bottom-sheet';
+import { BottomSheetPortalProps, BottomSheetProps } from '@/components/ui/bottom-sheet/types';
+import { Box, BoxProps } from '@/components/ui/box';
+import { Button, ButtonIcon } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
+import { Text, TextProps } from '@/components/ui/text';
+import { TruncatedText } from '@/components/ui/truncated-text';
+import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useInfiniteComments } from '@/hooks/posts/useInfiniteComments';
 import {
@@ -31,36 +59,8 @@ import { Keyboard, TextInput, TextInputContentSizeChangeEvent } from 'react-nati
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
-import { AnimatedPressable } from '../animated/pressable';
-import { ProfileAvatar } from '../Avatar';
-import KeyboardAvoidingScrollView from '../KeyboardAvoider';
-import { ActionModal } from '../modals';
-import { NoData } from '../NoData';
-import {
-  BottomSheet,
-  BottomSheetBackdrop,
-  BottomSheetContent,
-  BottomSheetDragIndicator,
-  BottomSheetFlashList,
-  BottomSheetItem,
-  BottomSheetModalPortal,
-  BottomSheetPortal,
-} from '../ui/bottom-sheet';
-import { BottomSheetPortalProps, BottomSheetProps } from '../ui/bottom-sheet/types';
-import { Box, BoxProps } from '../ui/box';
-import { Button, ButtonIcon } from '../ui/button';
-import { Divider } from '../ui/divider';
-import { HStack } from '../ui/hstack';
-import { Icon } from '../ui/icon';
-import { Input, InputField } from '../ui/input';
-import { Pressable } from '../ui/pressable';
-import { Skeleton } from '../ui/skeleton';
-import { Spinner } from '../ui/spinner';
-import { Text, TextProps } from '../ui/text';
-import { TruncatedText } from '../ui/truncated-text';
-import { VStack } from '../ui/vstack';
 
-interface CommentsBottomSheetModalProps
+interface CommentsSheetProps
   extends BottomSheetProps,
     Pick<
       BottomSheetPortalProps,
@@ -123,7 +123,7 @@ const MAX_COMMENT_INPUT_HEIGHT = 160;
 
 const AnimatedInput = Animated.createAnimatedComponent(Input);
 
-export default function CommentsBottomSheet({
+export default function CommentsSheet({
   post,
   snapPoints,
   enableDynamicSizing = false,
@@ -131,7 +131,7 @@ export default function CommentsBottomSheet({
   topInset,
   bottomInset = 0,
   ...props
-}: CommentsBottomSheetModalProps) {
+}: CommentsSheetProps) {
   const query = useInfiniteComments(undefined, {
     limit: 10,
     where: {

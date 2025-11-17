@@ -55,9 +55,8 @@ export function getMilkBagStatusColor(
 }
 
 export function getDonationRequestStatusColor(
-  theme: Theme,
   status?: keyof typeof DONATION_REQUEST_STATUS,
-  shade: number = 400
+  shade: Shade = '400'
 ): ColorValue {
   const colors: Record<keyof typeof DONATION_REQUEST_STATUS, ColorCategory> = {
     PENDING: 'warning',
@@ -69,7 +68,7 @@ export function getDonationRequestStatusColor(
     CANCELLED: 'background',
   };
 
-  return (status && getHexColor(theme, colors[status], shade)) || '#a2a3a3';
+  return (status && getColor(colors[status], shade)) || '#a2a3a3';
 }
 
 export function getPrimaryColor(shade: Shade = '500') {

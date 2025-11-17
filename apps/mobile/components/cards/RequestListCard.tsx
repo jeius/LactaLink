@@ -5,6 +5,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Request } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
+import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { MapPinIcon, PackageIcon } from 'lucide-react-native';
@@ -40,6 +41,7 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
   footerAction?: ReactNode;
   isImageViewable?: boolean;
   showProgressBar?: boolean;
+  disableLinks?: boolean;
 }
 
 export function RequestListCard(props: RequestListCardProps) {
@@ -81,8 +83,8 @@ function CardContent({
   showMinDistance,
   footerAction,
   hideFooter,
-  isImageViewable = true,
   showProgressBar,
+  disableLinks = false,
 }: MarkKeyRequired<RequestListCardProps, 'data'>) {
   const router = useRouter();
   const { themeColors } = useTheme();
@@ -115,27 +117,39 @@ function CardContent({
         <Pressable
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
-          onPress={viewMore}
+          onPress={!disableLinks ? viewMore : undefined}
+          pointerEvents={!disableLinks ? 'auto' : 'none'}
         >
           <SingleImageViewer disabled image={image} />
         </Pressable>
 
-        <VStack space="xs" className="min-w-0 flex-1 items-start">
+        <VStack space="xs" className="flex-1 items-start">
           <Button
             disablePressAnimation
             variant="link"
             action="default"
             className="h-fit w-fit p-0"
             onPress={viewMore}
+            pointerEvents={!disableLinks ? 'auto' : 'none'}
           >
-            <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
-              {volume} mL
+            <ButtonText
+              className="font-JakartaBold"
+              underlineOnPress
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {displayVolume(volume)}
             </ButtonText>
           </Button>
 
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              size="sm"
+              className="flex-1 font-JakartaMedium"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {PREFERRED_STORAGE_TYPES[storagePreference || 'EITHER'].label}
             </Text>
           </HStack>
@@ -163,7 +177,7 @@ function CardContent({
                   value={percentage}
                   className="w-48"
                 />
-                <Text size="xs" className="text-typography-700 text-center">
+                <Text size="xs" className="text-center text-typography-700">
                   {data.volumeFulfilled} mL fulfilled
                 </Text>
               </VStack>

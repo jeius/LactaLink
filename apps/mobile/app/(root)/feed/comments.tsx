@@ -1,12 +1,12 @@
-import CommentsBottomSheet from '@/components/bottom-sheets/CommentsBottomSheet';
 import { Box } from '@/components/ui/box';
+import CommentsSheet from '@/features/feed/components/CommentsSheet';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { ErrorSearchParams } from '@lactalink/types/errors';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function CommentsModal() {
+export default function CommentsSheetPage() {
   const { post } = useLocalSearchParams<FeedCommentsSearchParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -22,7 +22,7 @@ export default function CommentsModal() {
   return (
     <>
       <Box className="flex-1">
-        <CommentsBottomSheet
+        <CommentsSheet
           post={{ id: post }}
           defaultOpen
           onClose={router.back}

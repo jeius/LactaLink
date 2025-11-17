@@ -5,6 +5,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
+import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { DropletIcon, MapPinIcon, PackageIcon } from 'lucide-react-native';
@@ -40,6 +41,7 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   footerAction?: ReactNode;
   canViewThumbnail?: boolean;
   showProgressBar?: boolean;
+  disableLinks?: boolean;
 }
 
 export function DonationListCard(props: DonationListCardProps) {
@@ -82,6 +84,7 @@ function CardContent({
   hideFooter,
   showMinDistance,
   canViewThumbnail = true,
+  disableLinks = false,
   showProgressBar,
 }: MarkKeyRequired<DonationListCardProps, 'data'>) {
   const router = useRouter();
@@ -120,36 +123,51 @@ function CardContent({
         <Pressable
           className="aspect-square flex-shrink-0 overflow-hidden rounded-md"
           style={{ backgroundColor: fillColor }}
-          onPress={viewMore}
+          onPress={!disableLinks ? viewMore : undefined}
+          pointerEvents={!disableLinks ? 'auto' : 'none'}
         >
           <SingleImageViewer disabled image={image} />
         </Pressable>
 
-        <VStack space="xs" className="min-w-0 flex-1 items-start">
-          <HStack space="xs" className="items-center">
-            <Button
-              animateOnPress={false}
-              variant="link"
-              action="default"
-              className="h-fit w-fit p-0"
-              onPress={viewMore}
+        <VStack space="xs" className="flex-1 items-start">
+          <Button
+            disablePressAnimation
+            variant="link"
+            action="default"
+            className="h-fit w-fit p-0"
+            onPress={viewMore}
+            pointerEvents={!disableLinks ? 'auto' : 'none'}
+          >
+            <ButtonText
+              className="font-JakartaBold"
+              underlineOnPress
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              <ButtonText underlineOnPress numberOfLines={1} ellipsizeMode="tail">
-                {volume} mL
-              </ButtonText>
-            </Button>
-          </HStack>
+              {displayVolume(volume)}
+            </ButtonText>
+          </Button>
 
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={PackageIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              size="sm"
+              className="flex-1 font-JakartaMedium"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {PREFERRED_STORAGE_TYPES[storageType].label}
             </Text>
           </HStack>
 
           <HStack space="xs" className="items-center">
             <Icon size="sm" as={DropletIcon} fill={fillColor} stroke={strokeColor} />
-            <Text size="sm" className="shrink" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              size="sm"
+              className="flex-1 font-JakartaMedium"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {COLLECTION_MODES[collectionMode || 'MANUAL'].label}
             </Text>
           </HStack>
@@ -171,7 +189,7 @@ function CardContent({
                   value={percentage}
                   className="w-48"
                 />
-                <Text size="xs" className="text-typography-700 text-center">
+                <Text size="xs" className="text-center text-typography-700">
                   {data.remainingVolume} mL available
                 </Text>
               </VStack>
