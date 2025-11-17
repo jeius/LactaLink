@@ -17,9 +17,9 @@ type Schemas = {
   'profile-create': SetupProfileSchema;
 };
 
-type SchemaName = keyof Schemas;
+export type SchemaName = keyof Schemas;
 
-type Schema<TName extends SchemaName> = Schemas[TName];
+export type Schema<TName extends SchemaName> = Schemas[TName];
 
 const BASE_STORAGE_KEYS: Record<SchemaName, string> = {
   'donation-create': 'donation-form',

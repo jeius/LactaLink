@@ -5,9 +5,10 @@ import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { useRecyclingState } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
-import React from 'react';
-import { Pressable, View } from 'react-native';
+import React, { ComponentProps, useEffect } from 'react';
+import { Keyboard, Pressable, View } from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -56,7 +57,12 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'items-center justify-center fill-none text-typography-600',
+  base: 'items-center justify-center fill-none text-typography-700',
+  variants: {
+    isFocused: {
+      true: 'text-primary-500',
+    },
+  },
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -99,14 +105,24 @@ const inputFieldStyle = tva({
   },
 });
 
-type IInputProps = React.ComponentProps<typeof UIInput> &
-  VariantProps<typeof inputStyle> & { className?: string };
+type IInputProps = Omit<ComponentProps<typeof UIInput>, 'onBlur'> &
+  VariantProps<typeof inputStyle> & { className?: string; onBlur?: () => void };
 const BottomSheetInput = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(
-  function Input({ className, variant = 'outline', size = 'md', ...props }, ref) {
+  function Input({ className, variant = 'outline', size = 'md', onBlur, ...props }, ref) {
+    useEffect(() => {
+      const sub = Keyboard.addListener('keyboardDidHide', () => {
+        onBlur?.();
+      });
+      return () => {
+        sub.remove();
+      };
+    }, [onBlur]);
+
     return (
       <UIInput
         ref={ref}
         {...props}
+        onBlur={onBlur}
         className={inputStyle({ variant, size, class: className })}
         context={{ variant, size }}
       />
@@ -119,35 +135,51 @@ type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
     className?: string;
     height?: number;
     width?: number;
+    recyclingKey?: string;
   };
 
 const BottomSheetInputIcon = React.forwardRef<
   React.ComponentRef<typeof UIInput.Icon>,
   IInputIconProps
->(function InputIcon({ className, size, ...props }, ref) {
+>(function InputIcon({ className, size, recyclingKey, ...props }, ref) {
   const { size: parentSize } = useStyleContext(SCOPE);
+  const [isFocused, setIsFocused] = useRecyclingState(false, [recyclingKey]);
+
+  useEffect(() => {
+    const sub1 = Keyboard.addListener('keyboardDidShow', () => setIsFocused(true));
+    const sub2 = Keyboard.addListener('keyboardDidHide', () => setIsFocused(false));
+    return () => {
+      sub1.remove();
+      sub2.remove();
+    };
+  }, [setIsFocused]);
 
   if (typeof size === 'number') {
     return (
       <UIInput.Icon
         ref={ref}
         {...props}
-        className={inputIconStyle({ class: className })}
+        className={inputIconStyle({ class: className, isFocused })}
         size={size}
       />
     );
   } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
-    return <UIInput.Icon ref={ref} {...props} className={inputIconStyle({ class: className })} />;
+    return (
+      <UIInput.Icon
+        ref={ref}
+        {...props}
+        className={inputIconStyle({ class: className, isFocused })}
+      />
+    );
   }
   return (
     <UIInput.Icon
       ref={ref}
       {...props}
       className={inputIconStyle({
-        parentVariants: {
-          size: parentSize,
-        },
+        isFocused,
         class: className,
+        parentVariants: { size: parentSize },
       })}
     />
   );
@@ -172,13 +204,24 @@ const BottomSheetInputSlot = React.forwardRef<
 });
 
 type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
-  VariantProps<typeof inputFieldStyle> & { className?: string };
+  VariantProps<typeof inputFieldStyle> & { className?: string; recyclingKey?: string };
 
 const BottomSheetInputField = React.forwardRef<
   React.ComponentRef<typeof UIInput.Input>,
   IInputFieldProps
 >(function InputField({ className, ...props }, ref) {
   const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
+
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      if (ref && 'current' in ref && ref.current && 'blur' in ref.current) {
+        (ref.current as { blur: () => void }).blur();
+      }
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [ref]);
 
   return (
     <UIInput.Input

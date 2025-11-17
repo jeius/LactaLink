@@ -2,7 +2,7 @@ import { getImageAsset } from '@/lib/stores';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { ImageSource } from 'expo-image';
 
-type ProfileTypeOptions = {
+export type ProfileTypeOptions = {
   type: SetupProfileSchema['profileType'];
   description: string;
   styleVariant: 'primary' | 'secondary' | 'tertiary';

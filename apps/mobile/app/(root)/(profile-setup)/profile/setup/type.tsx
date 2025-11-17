@@ -1,17 +1,19 @@
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
-import { Center } from '@/components/ui/center';
 import { Radio, RadioGroup } from '@/components/ui/radio';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import React from 'react';
 
 import { Image } from '@/components/Image';
+import { profileTypeOptions } from '@/features/profile/lib/options';
+import { ProfileTypeOptions } from '@/features/profile/types';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { useFormContext, useWatch } from 'react-hook-form';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { options, ProfileTypeOptions } from './options';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const cardStyle = tva({
   base: 'relative min-h-40 border border-outline-200',
@@ -79,7 +81,9 @@ const descriptionStyle = tva({
 
 const AnimatedCard = Animated.createAnimatedComponent(Card);
 
-export default function ProfileType() {
+export default function SelectProfileType() {
+  const insets = useSafeAreaInsets();
+
   const { setValue, control } = useFormContext<SetupProfileSchema>();
   const selected = useWatch({ control, name: 'profileType' });
 
@@ -88,15 +92,13 @@ export default function ProfileType() {
   }
 
   return (
-    <VStack space="lg" className="mx-5">
-      <Center>
-        <Text bold size="xl">
-          Choose your profile type
-        </Text>
-      </Center>
+    <ScrollView contentContainerClassName="p-5">
+      <Text bold size="xl" className="mb-4 self-center">
+        Choose your account type
+      </Text>
 
       <RadioGroup className="gap-4" onChange={handleRadioChange}>
-        {options.map((option, i) => {
+        {profileTypeOptions.map((option, i) => {
           const type = option.type;
           const isSelected = selected === type;
           return (
@@ -106,7 +108,7 @@ export default function ProfileType() {
           );
         })}
       </RadioGroup>
-    </VStack>
+    </ScrollView>
   );
 }
 

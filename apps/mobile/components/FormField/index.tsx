@@ -167,7 +167,7 @@ function FormField<
           )}
           <FormControlLabelText>{label}</FormControlLabelText>
           {imageProps?.showCount && Array.isArray(currentValue) && (
-            <FormControlLabelText size="sm" className="text-typography-700 font-sans">
+            <FormControlLabelText size="sm" className="font-sans text-typography-700">
               {currentValue.length || 0}/{imageProps.selectionLimit}
             </FormControlLabelText>
           )}
@@ -222,7 +222,7 @@ function FormField<
                   isDisabled={props.isDisabled || field.disabled}
                   className={className}
                 >
-                  {inputIcon && <InputIcon as={inputIcon} className="text-primary-500 ml-3" />}
+                  {inputIcon && <InputIcon as={inputIcon} className="ml-3 text-primary-500" />}
                   <InputField
                     {...restInputProps}
                     value={field.value}

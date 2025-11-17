@@ -8,11 +8,11 @@ import { CollectionSlug } from '@lactalink/types/payload-types';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { StyleProp, ViewStyle } from 'react-native';
 import { ComboboxType } from '../Combobox';
+import { NumberInputType } from '../NumberInput';
 import { Icon } from '../ui/icon';
 import { ButtonGroupInputType } from './ButtonGroupInput';
 import { DateInputType } from './DateInput';
 import { ImageUploadFieldType } from './ImageField';
-import { NumberInputType } from './NumberInput';
 
 type FieldType =
   | 'text'

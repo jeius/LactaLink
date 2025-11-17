@@ -2,7 +2,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { EyeClosedIcon, EyeIcon, LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { FC, useState } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
-import { BlurEvent, ViewProps } from 'react-native';
+import { ViewProps } from 'react-native';
 import { SvgProps } from 'react-native-svg';
 import { BottomSheetInputField } from '../ui/bottom-sheet/input';
 import { Input, InputField, InputFieldProps, InputIcon, InputProps } from '../ui/input';
@@ -55,11 +55,14 @@ export function TextInputField<
     formState: { isSubmitting },
   } = useController({ name, control });
 
-  const [showPass, setShowPass] = useState(false);
+  const [showPass, setShowPass] = useState(type !== 'password');
+  const recyclingKey = `NumberInputField-${name.toString()}`;
 
-  function handleBlur(e: BlurEvent) {
+  const InputFieldComp = useBottomSheetInput ? BottomSheetInputField : InputField;
+
+  function handleBlur() {
     onBlur();
-    inputProps.onBlur?.(e);
+    inputProps.onBlur?.();
   }
 
   return (
@@ -75,24 +78,23 @@ export function TextInputField<
           isDisabled={disabled}
           onBlur={handleBlur}
         >
-          {icon && <InputIcon as={icon} className={iconStyle({ className: iconClassName })} />}
-          {useBottomSheetInput ? (
-            <BottomSheetInputField
-              {...inputProps}
-              type={showPass ? 'text' : 'password'}
-              secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
-              value={value || ''}
-              onChangeText={onChange}
-            />
-          ) : (
-            <InputField
-              {...inputProps}
-              type={showPass ? 'text' : 'password'}
-              secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
-              value={value || ''}
-              onChangeText={onChange}
+          {icon && (
+            <InputIcon
+              as={icon}
+              recyclingKey={recyclingKey}
+              className={iconStyle({ className: iconClassName })}
             />
           )}
+
+          <InputFieldComp
+            {...inputProps}
+            type={showPass ? 'text' : 'password'}
+            secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
+            value={value || ''}
+            onChangeText={onChange}
+            recyclingKey={recyclingKey}
+          />
+
           {type === 'password' && value && (
             <Pressable
               className="mr-3"

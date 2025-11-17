@@ -5,10 +5,11 @@ import { createInput } from '@gluestack-ui/input';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { useRecyclingState } from '@shopify/flash-list';
 import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
-import React, { useEffect, useRef, useState } from 'react';
-import { FocusEvent, Pressable, TextInput, View } from 'react-native';
+import React, { ComponentProps, ComponentRef, useEffect, useRef } from 'react';
+import { FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -57,7 +58,12 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'items-center justify-center text-typography-600',
+  base: 'items-center justify-center text-typography-700',
+  variants: {
+    isFocused: {
+      true: 'text-primary-500',
+    },
+  },
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -100,16 +106,30 @@ const inputFieldStyle = tva({
   },
 });
 
-type IInputProps = React.ComponentProps<typeof UIInput> &
-  VariantProps<typeof inputStyle> & { className?: string };
+type IInputProps = Omit<ComponentProps<typeof UIInput>, 'onBlur'> &
+  VariantProps<typeof inputStyle> & {
+    className?: string;
+    onBlur?: () => void;
+    recyclingKey?: string;
+  };
 const Input = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(function Input(
-  { className, variant = 'outline', size = 'md', ...props },
+  { className, variant = 'outline', size = 'md', onBlur, ...props },
   ref
 ) {
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      onBlur?.();
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [onBlur]);
+
   return (
     <UIInput
       ref={ref}
       {...props}
+      onBlur={onBlur}
       className={inputStyle({ variant, size, class: className })}
       context={{ variant, size }}
     />
@@ -121,33 +141,49 @@ type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
     className?: string;
     height?: number;
     width?: number;
+    recyclingKey?: string;
   };
 
 const InputIcon = React.forwardRef<React.ComponentRef<typeof UIInput.Icon>, IInputIconProps>(
-  function InputIcon({ className, size, ...props }, ref) {
+  function InputIcon({ className, size, recyclingKey, ...props }, ref) {
     const { size: parentSize } = useStyleContext(SCOPE);
+    const [isFocused, setIsFocused] = useRecyclingState(false, [recyclingKey]);
+
+    useEffect(() => {
+      const sub1 = Keyboard.addListener('keyboardDidShow', () => setIsFocused(true));
+      const sub2 = Keyboard.addListener('keyboardDidHide', () => setIsFocused(false));
+      return () => {
+        sub1.remove();
+        sub2.remove();
+      };
+    }, [setIsFocused]);
 
     if (typeof size === 'number') {
       return (
         <UIInput.Icon
           ref={ref}
           {...props}
-          className={inputIconStyle({ class: className })}
+          className={inputIconStyle({ class: className, isFocused })}
           size={size}
         />
       );
     } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
-      return <UIInput.Icon ref={ref} {...props} className={inputIconStyle({ class: className })} />;
+      return (
+        <UIInput.Icon
+          ref={ref}
+          {...props}
+          className={inputIconStyle({ class: className, isFocused })}
+        />
+      );
     }
     return (
       <UIInput.Icon
         ref={ref}
         {...props}
         className={inputIconStyle({
-          parentVariants: {
-            size: parentSize,
-          },
+          isFocused,
           class: className,
+          parentVariants: { size: parentSize },
         })}
       />
     );
@@ -172,15 +208,15 @@ const InputSlot = React.forwardRef<React.ComponentRef<typeof UIInput.Slot>, IInp
 );
 
 type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
-  VariantProps<typeof inputFieldStyle> & { className?: string };
+  VariantProps<typeof inputFieldStyle> & { className?: string; recyclingKey?: string };
 
-const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, IInputFieldProps>(
-  function InputField({ className, ...props }, refProp) {
+const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFieldProps>(
+  function InputField({ className, recyclingKey, ...props }, refProp) {
     const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
 
-    const { onFocus, registerInput } = useKeyboardAvoider();
     const localRef = useRef<TextInput>(null);
-    const [inputID, setInputID] = useState('');
+    const { onFocus, registerInput } = useKeyboardAvoider();
+    const [inputID, setInputID] = useRecyclingState('', [recyclingKey]);
 
     const ref = refProp || localRef;
 
@@ -195,7 +231,18 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
         };
       }
       return () => {};
-    }, [ref, registerInput]);
+    }, [ref, registerInput, setInputID]);
+
+    useEffect(() => {
+      const sub = Keyboard.addListener('keyboardDidHide', () => {
+        if ('current' in ref && ref.current && 'blur' in ref.current) {
+          ref.current.blur();
+        }
+      });
+      return () => {
+        sub.remove();
+      };
+    }, [ref]);
 
     function handleFocus(event: FocusEvent) {
       props.onFocus?.(event);
@@ -205,7 +252,9 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
     return (
       <UIInput.Input
         {...props}
+        //@ts-expect-error Gluestack ref typing issue
         ref={ref}
+        onFocus={handleFocus}
         className={inputFieldStyle({
           parentVariants: {
             variant: parentVariant,
@@ -213,7 +262,6 @@ const InputField = React.forwardRef<React.ComponentRef<typeof UIInput.Input>, II
           },
           class: className,
         })}
-        onFocus={handleFocus}
       />
     );
   }

@@ -7,19 +7,18 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { signOut } from '@/auth';
-import { usePagination } from '@/hooks/forms/usePagination';
-
-import { SETUP_PROFILE_STEPS } from '@/lib/constants/profile';
-import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
 import { getIconAsset } from '@/lib/stores/assetsStore';
+import { useRouter } from 'expo-router';
 import { LogOutIcon, Settings2Icon } from 'lucide-react-native';
 import React from 'react';
 
-const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
-
 export default function Setup() {
-  const { nextPage } = usePagination(STEPS);
+  const router = useRouter();
+
+  const nextPage = () => {
+    router.push('/profile/setup/type');
+  };
 
   return (
     <SafeArea className="justify-center">

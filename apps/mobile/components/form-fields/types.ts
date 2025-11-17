@@ -1,4 +1,5 @@
 import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
+import { ViewProps } from 'react-native';
 import { FormControlProps } from '../ui/form-control';
 
 export type BaseFieldProps<
@@ -11,6 +12,12 @@ export type BaseFieldProps<
     helperText?: string;
     contentPosition?: 'first' | 'middle' | 'last';
     isLoading?: boolean;
+    labelClassName?: ViewProps['className'];
+    labelStyle?: ViewProps['style'];
+    helperTextClassName?: ViewProps['className'];
+    helperTextStyle?: ViewProps['style'];
+    errorTextClassName?: ViewProps['className'];
+    errorTextStyle?: ViewProps['style'];
   };
 
 export type Item = { value: string; label: string };

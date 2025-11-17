@@ -52,6 +52,8 @@ export type DatePickerInputProps = InputProps & {
    * Date picker options to customize the behavior of the date picker.
    */
   options?: Pick<DatePickerOptions, 'minimumDate' | 'maximumDate' | 'display'>;
+
+  recyclingKey?: string;
 };
 
 export type DatePickerProps = DatePickerInputProps & {
@@ -108,6 +110,7 @@ export function DatePicker({
   variant: inputVariant = 'outline',
   size: inputSize = 'md',
   options,
+  recyclingKey,
   ...inputProps
 }: DatePickerProps) {
   const date = value ? new Date(value) : new Date(1999, 6, 6);
@@ -169,7 +172,7 @@ export function DatePicker({
         isDisabled={isDisabled}
         className={inputStyle({ className })}
       >
-        {icon && <InputIcon as={icon} className="text-primary-500 ml-3" />}
+        {icon && <InputIcon as={icon} recyclingKey={recyclingKey} className="ml-3" />}
 
         <InputSlot onPress={togglePicker} className="flex-1">
           <InputField
@@ -180,6 +183,7 @@ export function DatePicker({
             editable={false}
             pointerEvents="none"
             className="flex-1"
+            recyclingKey={recyclingKey}
           />
         </InputSlot>
 

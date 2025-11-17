@@ -1,18 +1,18 @@
 import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
-import { DatePicker, DatePickerInputProps } from '../DatePicker';
+import { NumberInput, NumberInputType } from '../NumberInput';
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
 import { BaseFieldProps } from './types';
 
-interface DateInputFieldProps<
+interface TextInputFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
-  datePickerProps?: DatePickerInputProps;
+  inputProps?: NumberInputType;
 }
 
-export function DateInputField<
+export function NumberInputField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
@@ -20,35 +20,36 @@ export function DateInputField<
   name,
   isDisabled,
   isLoading,
-  datePickerProps,
-  contentPosition = 'middle',
+  inputProps: { size = 'md', ...inputProps } = {},
   ...props
-}: DateInputFieldProps<TFieldValues, TName>) {
+}: TextInputFieldProps<TFieldValues, TName>) {
   const {
-    field: { value, onBlur, onChange, disabled },
+    field: { ref, value, onBlur, onChange, disabled },
     fieldState: { error },
     formState: { isSubmitting },
   } = useController({ name, control });
 
-  const recyclingKey = `DateInputField-${name.toString()}`;
+  const recyclingKey = `NumberInputField-${name.toString()}`;
+
+  function handleBlur() {
+    onBlur();
+    inputProps.onBlur?.();
+  }
 
   return (
-    <FieldWrapper
-      {...props}
-      contentPosition={contentPosition}
-      error={error}
-      isDisabled={isDisabled || isSubmitting}
-    >
+    <FieldWrapper {...props} error={error} isDisabled={isDisabled || isSubmitting}>
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
       ) : (
-        <DatePicker
-          {...datePickerProps}
-          isDisabled={isDisabled || disabled || isSubmitting}
+        <NumberInput
+          {...inputProps}
+          ref={ref}
+          size={size}
           value={value}
           onChange={onChange}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           recyclingKey={recyclingKey}
+          isDisabled={isDisabled || disabled || isSubmitting}
         />
       )}
     </FieldWrapper>

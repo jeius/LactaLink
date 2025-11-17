@@ -55,6 +55,8 @@ export function BasicList<
   ItemComponent,
   ItemSeparatorComponent,
   placeholderLength = 3,
+  showsHorizontalScrollIndicator = false,
+  showsVerticalScrollIndicator = false,
   ...props
 }: BasicListProps<TSlug, TSelect>) {
   const shouldFetch = areStrings(dataProp);
@@ -120,19 +122,21 @@ export function BasicList<
     <FlashList
       {...props}
       data={data}
-      renderItem={(props) => {
-        const isLoading = props.item.id.includes('placeholder');
-        return <ItemComponent {...props} isLoading={isLoading} />;
-      }}
       keyExtractor={props.keyExtractor || listKeyExtractor}
       ListEmptyComponent={EmptyComponent}
       ItemSeparatorComponent={SeparatorComponent}
+      showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
       refreshControl={
         <RefreshControl
           refreshing={refreshing || (!isLoading && isFetching)}
           onRefresh={handleRefresh}
         />
       }
+      renderItem={(props) => {
+        const isLoading = props.item.id.includes('placeholder');
+        return <ItemComponent {...props} isLoading={isLoading} />;
+      }}
     />
   );
 }

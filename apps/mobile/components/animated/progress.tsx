@@ -12,7 +12,7 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 
 const progressStyle = tva({
-  base: 'bg-background-300 w-full rounded-full',
+  base: 'w-full rounded-full bg-background-300',
   variants: {
     orientation: {
       horizontal: 'w-full',
@@ -62,6 +62,8 @@ const progressStyle = tva({
   ],
 });
 
+const AnimatedBox = Animated.createAnimatedComponent(Box);
+
 interface AnimatedProgressTrackProps
   extends VariantProps<typeof progressStyle>,
     ComponentProps<typeof Box> {
@@ -85,7 +87,7 @@ interface AnimatedProgressTrackProps
 }
 
 export function AnimatedProgress({
-  value: targetProgress,
+  value,
   duration = 500,
   orientation = 'horizontal',
   size = 'md',
@@ -94,53 +96,36 @@ export function AnimatedProgress({
   hidden = false,
   ...props
 }: AnimatedProgressTrackProps) {
-  const animatedProgress = useSharedValue(0);
-  const animatedOpacity = useSharedValue(1);
-
   const { themeColors } = useTheme();
   const defaultTrackColor = themeColors.primary[500];
 
   const isHorizontal = orientation === 'horizontal';
+  const progress = useSharedValue(value);
 
   useEffect(() => {
-    animatedProgress.value = withTiming(targetProgress, {
-      duration,
-      easing: Easing.out(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetProgress]);
-
-  useEffect(() => {
-    const opacity = hidden ? 0 : 1;
-    animatedOpacity.value = withTiming(opacity, {
-      duration,
-      easing: Easing.out(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hidden]);
+    progress.value = withTiming(value, { duration, easing: Easing.out(Easing.cubic) });
+  }, [value, progress, duration]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    width: isHorizontal ? `${animatedProgress.value}%` : '100%',
-    height: !isHorizontal ? `${animatedProgress.value}%` : '100%',
+    width: isHorizontal ? `${progress.value}%` : '100%',
+    height: !isHorizontal ? `${progress.value}%` : '100%',
   }));
 
-  const animatedOpacityStyle = useAnimatedStyle(() => ({
-    opacity: animatedOpacity.value,
-  }));
+  const animatedOpacityStyle = useAnimatedStyle(() => {
+    const opacity = withTiming(hidden ? 0 : 1, { duration, easing: Easing.out(Easing.cubic) });
+    return { opacity };
+  }, [hidden]);
 
   return (
-    <Animated.View style={[animatedOpacityStyle]}>
-      <Box {...props} className={progressStyle({ size, orientation, class: className })}>
-        <Animated.View
-          style={[
-            animatedStyle,
-            {
-              backgroundColor: trackColor || defaultTrackColor,
-              borderRadius: 9999,
-            },
-          ]}
-        />
-      </Box>
-    </Animated.View>
+    <AnimatedBox
+      {...props}
+      style={[animatedOpacityStyle]}
+      className={progressStyle({ size, orientation, class: className })}
+    >
+      <Animated.View
+        className="rounded-full"
+        style={[animatedStyle, { backgroundColor: trackColor || defaultTrackColor }]}
+      />
+    </AnimatedBox>
   );
 }
