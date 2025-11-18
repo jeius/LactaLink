@@ -13,7 +13,7 @@ export default function VerificationOnboarding() {
   return (
     <SafeArea mode="margin" className="items-stretch p-5">
       <Box
-        className="bg-background-0 border-outline-100 absolute z-10 rounded-full border"
+        className="absolute z-10 rounded-full border border-outline-100 bg-background-0"
         style={{ top: 12, left: 12 }}
       >
         <HeaderBackButton style={{ marginRight: 0, padding: 12 }} />

@@ -1,4 +1,6 @@
 import { useForm } from '@/components/contexts/FormProvider';
+import { DateInputField } from '@/components/form-fields/DateInputField';
+import { TextInputField } from '@/components/form-fields/TextInputField';
 import { FormField } from '@/components/FormField';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
@@ -11,7 +13,7 @@ import { VStack } from '@/components/ui/vstack';
 import { ID_TYPES } from '@lactalink/enums';
 import { IdentitySchema } from '@lactalink/form-schemas';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { IdCardIcon, ListChecksIcon } from 'lucide-react-native';
+import { CalendarDaysIcon, IdCardIcon, ListChecksIcon } from 'lucide-react-native';
 import React from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
@@ -55,48 +57,50 @@ export default function IDVerificationDetails() {
 
         <HStack space="sm" className="items-center">
           <Icon size="2xl" as={IdCardIcon} className="text-info-600" />
-          <Text size="lg" className="font-JakartaSemiBold text-info-600 capitalize">
+          <Text size="lg" className="font-JakartaSemiBold capitalize text-info-600">
             {ID_TYPES[idType].label}
           </Text>
         </HStack>
 
-        <FormField
+        <TextInputField
           control={control}
           name="details.idNumber"
           label="ID Number"
-          fieldType="text"
-          placeholder="Enter your registered ID number."
           helperText="This can be either your Driver's License No., Passport No., Registration No. or State ID No."
-          autoCapitalize="none"
-          autoComplete="off"
-          textContentType="none"
-          autoCorrect={false}
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your registered ID number.',
+            autoCapitalize: 'none',
+            autoComplete: 'off',
+            textContentType: 'none',
+            autoCorrect: false,
+          }}
         />
 
-        <FormField
+        <DateInputField
           control={control}
           name="details.issueDate"
           label="Date of Issue (Optional)"
-          fieldType="date"
-          datePickerOptions={{ maximumDate: new Date(), minimumDate: new Date('1990-01-01') }}
-          placeholder="Select the date of issue."
           helperText="This is the date your ID was issued/registered. This can usually be found on the front or back of your ID."
           isLoading={isLoading}
+          datePickerProps={{
+            options: { maximumDate: new Date(), minimumDate: new Date('1990-01-01') },
+            placeholder: 'Select the date of issue.',
+            icon: CalendarDaysIcon,
+          }}
         />
 
-        <FormField
+        <DateInputField
           control={control}
           name="details.expiryDate"
           label="Date of Expiry (Optional)"
-          fieldType="date"
-          datePickerOptions={{
-            maximumDate: new Date('2299-12-31'),
-            minimumDate: new Date('1990-01-01'),
-          }}
-          placeholder="Select the date of expiry."
           helperText="This is the date your ID expires. This can usually be found on the front or back of your ID."
           isLoading={isLoading}
+          datePickerProps={{
+            options: { maximumDate: new Date('2299-12-31'), minimumDate: new Date('1990-01-01') },
+            placeholder: 'Select the date of expiry.',
+            icon: CalendarDaysIcon,
+          }}
         />
 
         <FormField

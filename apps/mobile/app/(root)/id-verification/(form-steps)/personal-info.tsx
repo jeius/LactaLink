@@ -1,5 +1,6 @@
 import { useForm } from '@/components/contexts/FormProvider';
-import { FormField } from '@/components/FormField';
+import { DateInputField } from '@/components/form-fields/DateInputField';
+import { TextInputField } from '@/components/form-fields/TextInputField';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -45,81 +46,87 @@ export default function IDVerificationInfo() {
           </Text>
         </VStack>
 
-        <FormField
+        <TextInputField
           control={control}
           name="personalInfo.givenName"
           label="Given Name"
-          fieldType="text"
-          placeholder="Enter your given name."
-          autoCapitalize="words"
-          autoComplete="name-given"
-          textContentType="givenName"
-          autoCorrect={true}
           helperText="Enter given name as it appears on your ID (e.g., first name)."
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your given name.',
+            autoCapitalize: 'words',
+            autoComplete: 'name-given',
+            textContentType: 'givenName',
+            autoCorrect: true,
+          }}
         />
 
-        <FormField
+        <TextInputField
           control={control}
           name="personalInfo.middleName"
           label="Middle Name"
-          fieldType="text"
-          placeholder="Enter your middle name."
-          autoCapitalize="words"
-          autoComplete="name-middle"
-          textContentType="middleName"
           helperText="Enter middle name if applicable."
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your middle name.',
+            autoCapitalize: 'words',
+            autoComplete: 'name-middle',
+            textContentType: 'middleName',
+          }}
         />
 
-        <FormField
+        <TextInputField
           control={control}
           name="personalInfo.familyName"
           label="Family Name"
-          fieldType="text"
-          placeholder="Enter your family name."
-          autoCapitalize="words"
-          autoComplete="name-family"
-          textContentType="familyName"
           helperText="Enter family name as it appears on your ID (e.g., last name or surname)."
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your family name.',
+            autoCapitalize: 'words',
+            autoComplete: 'name-family',
+            textContentType: 'familyName',
+          }}
         />
 
-        <FormField
+        <TextInputField
           control={control}
           name="personalInfo.suffix"
           label="Suffix"
-          fieldType="text"
-          placeholder="Enter your suffix name."
-          autoCapitalize="words"
-          autoComplete="name-suffix"
-          textContentType="nameSuffix"
           helperText="Enter suffix if applicable (e.g., Jr., Sr., III)."
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your suffix name.',
+            autoCapitalize: 'words',
+            autoComplete: 'name-suffix',
+            textContentType: 'nameSuffix',
+          }}
         />
 
-        <FormField
+        <DateInputField
           control={control}
           name="personalInfo.birth"
           label="Date of Birth (Optional)"
-          fieldType="date"
-          datePickerOptions={{ maximumDate: new Date(), minimumDate: new Date('1900-01-01') }}
-          placeholder="Select your date of birth."
           helperText="Provide your birth if it exist on your ID."
           isLoading={isLoading}
+          datePickerProps={{
+            options: { maximumDate: new Date(), minimumDate: new Date('1900-01-01') },
+            placeholder: 'Select your date of birth.',
+          }}
         />
 
-        <FormField
+        <TextInputField
           control={control}
           name="personalInfo.address"
           label="Address (Optional)"
-          fieldType="text"
-          placeholder="Enter your complete address."
-          autoCapitalize="none"
-          autoComplete="street-address"
-          textContentType="fullStreetAddress"
           helperText="Provide your address if it exist on your ID."
           isLoading={isLoading}
+          inputProps={{
+            placeholder: 'Enter your complete address.',
+            autoCapitalize: 'none',
+            autoComplete: 'street-address',
+            textContentType: 'fullStreetAddress',
+          }}
         />
 
         <Button className="mt-4" isDisabled={isLoading} onPress={handleNext}>

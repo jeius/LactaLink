@@ -14,16 +14,17 @@ import { IdentitySchema } from '@lactalink/form-schemas';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRightIcon, IdCardIcon } from 'lucide-react-native';
 import React from 'react';
+import { useWatch } from 'react-hook-form';
 import { FlatList } from 'react-native-gesture-handler';
 
 export default function IDVerificationType() {
   const {
     setValue,
-    watch,
     trigger,
     additionalState: { isLoading, refreshing = false, onRefresh },
+    control,
   } = useForm<IdentitySchema>();
-  const selectedType = watch('details.idType');
+  const selectedType = useWatch({ control, name: 'details.idType' });
 
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function IDVerificationType() {
 
   function Header() {
     return (
-      <Text className="font-JakartaMedium text-center">
+      <Text className="text-center font-JakartaMedium">
         Please choose the government issued ID you&apos;d like to use to verify your identity.
       </Text>
     );
@@ -68,7 +69,7 @@ export default function IDVerificationType() {
   return (
     <SafeArea safeTop={false}>
       <FlatList
-        data={Object.values(ID_TYPES)}
+        data={Array.from(Object.values(ID_TYPES))}
         keyExtractor={(item, idx) => `${item.value}-${idx}`}
         ItemSeparatorComponent={() => <Box className="h-3" />}
         ListHeaderComponentClassName="mb-4"
@@ -100,7 +101,7 @@ export default function IDVerificationType() {
                 ) : (
                   <>
                     <Box
-                      className="bg-background-100 rounded-lg p-3"
+                      className="rounded-lg bg-background-100 p-3"
                       style={isSelected ? { backgroundColor: accentBGColor } : {}}
                     >
                       <Icon as={IdCardIcon} color={isSelected ? accentFGColor : undefined} />

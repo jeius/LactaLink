@@ -7,7 +7,7 @@ export default function FetchingSpinner({ isFetching = true }: { isFetching?: bo
   if (isFetching) {
     return (
       <Box style={{ ...StyleSheet.absoluteFillObject, zIndex: 10 }}>
-        <Box style={StyleSheet.absoluteFill} className="bg-background-100 opacity-70" />
+        <Box style={[StyleSheet.absoluteFill, { opacity: 0.75 }]} className="bg-background-100" />
         <LoadingSpinner isLoading={isFetching} className="bg-transparent" />
       </Box>
     );

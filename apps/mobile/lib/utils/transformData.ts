@@ -2,6 +2,7 @@ import {
   AddressSchema,
   DeliveryPreferenceSchema,
   DonationSchema,
+  IdentitySchema,
   ImageSchema,
   MilkBagCreateSchema,
   MilkBagSchema,
@@ -12,10 +13,11 @@ import {
   Address,
   DeliveryPreference,
   Donation,
+  Identity,
   MilkBag,
   Request,
 } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { PHILIPPINES_COORDINATES } from '../constants';
 
@@ -83,6 +85,10 @@ type TransformedDonation<T, B extends boolean> = T extends Donation
 
 type TransformedRequest<T, B extends boolean> = T extends Request
   ? RequestSchema
+  : BaseReturn<T, B>;
+
+type TransformedIdentity<T, B extends boolean> = T extends Identity
+  ? IdentitySchema
   : BaseReturn<T, B>;
 
 /**
@@ -291,4 +297,42 @@ export function transformToRequestSchema<T extends Request | BaseInput, B extend
     options,
     'Request into RequestSchema'
   ) as TransformedRequest<T, B>;
+}
+
+export function transformToIdentitySchema<T extends Identity | BaseInput, B extends boolean>(
+  identity: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedIdentity<T, B> {
+  return baseTransformer<Identity, IdentitySchema, B>(
+    identity,
+    (data) => {
+      const idImage = extractCollection(data.idImage);
+      const faceImage = extractCollection(data.refImage);
+      return {
+        id: data.id,
+        personalInfo: {
+          givenName: data.givenName,
+          middleName: data.middleName || '',
+          familyName: data.familyName,
+          address: data.address || '',
+          suffix: data.suffix || '',
+          birth: data.birth || '',
+        },
+        details: {
+          idType: data.idType,
+          idNumber: data.idNumber,
+          issueDate: data.issueDate,
+          expiryDate: data.expirationDate,
+        },
+        idImage: (idImage
+          ? transformToImageSchema(idImage)
+          : undefined) as IdentitySchema['idImage'],
+        faceImage: (faceImage
+          ? transformToImageSchema(faceImage)
+          : undefined) as IdentitySchema['faceImage'],
+      };
+    },
+    options,
+    'Identity into IdentitySchema'
+  ) as TransformedIdentity<T, B>;
 }

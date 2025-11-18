@@ -3,7 +3,7 @@ import { Like, User } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { MutationKey, QueryKey } from '@tanstack/react-query';
-import { INFINITE_QUERY_KEY, MUTATION_KEYS } from '../constants';
+import { COLLECTION_QUERY_KEY, INFINITE_QUERY_KEY, MUTATION_KEYS } from '../constants';
 
 export function createMutationKey(...parts: MutationKey[]): MutationKey {
   return [...parts].flat();
@@ -30,4 +30,11 @@ export function createInfiniteQueryKey(
   options: Omit<FindMany, 'collection'>
 ): QueryKey {
   return [...INFINITE_QUERY_KEY, slug, options];
+}
+
+export function createCollectionQueryKey(
+  slug: CollectionSlug,
+  options: Omit<FindMany, 'collection'>
+): QueryKey {
+  return [...COLLECTION_QUERY_KEY, slug, options];
 }

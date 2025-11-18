@@ -18,7 +18,7 @@ export default function IDVerificationOffboarding() {
   return (
     <SafeArea mode="margin" className="items-stretch justify-start gap-3 p-5">
       <Box
-        className="bg-background-0 border-outline-100 absolute z-10 rounded-full border"
+        className="absolute z-10 rounded-full border border-outline-100 bg-background-0"
         style={{ top: 12, left: 12 }}
       >
         <HeaderBackButton style={{ marginRight: 0 }} />
@@ -26,12 +26,12 @@ export default function IDVerificationOffboarding() {
 
       <Image source={getImageAsset('emailReceived')} style={{ width: '100%', aspectRatio: 1 }} />
 
-      <Text className="font-JakartaMedium text-center">
+      <Text className="text-center font-JakartaMedium">
         We have received your submission, this will be reviewed within 1-3 business days. We hope
         for your patience during this time.
       </Text>
 
-      <Text size="xl" className="font-JakartaSemiBold mt-2 text-center">
+      <Text size="xl" className="mt-2 text-center font-JakartaSemiBold">
         Thank you!
       </Text>
 
