@@ -27,6 +27,7 @@ export function TextAreaField<
   name,
   isDisabled,
   isLoading,
+  contentPosition = 'first',
   textareaProps: {
     size = 'md',
     containerClassName,
@@ -34,7 +35,6 @@ export function TextAreaField<
     useBottomSheetInput,
     ...textareaProps
   } = {},
-  contentPosition = 'first',
   ...props
 }: TextAreaFieldProps<TFieldValues, TName>) {
   const {

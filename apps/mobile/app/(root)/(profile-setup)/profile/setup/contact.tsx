@@ -1,102 +1,141 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
+import { AddressCard } from '@/components/cards';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { HintAlert } from '@/components/HintAlert';
-import { AddressList } from '@/components/lists';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
+import { ActionModal } from '@/components/modals';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
+import { useDeleteAddressMutation } from '@/features/address/hooks/useDeleteAddressMutation';
+import { useKeyboardOffset } from '@/features/profile/components/KeyboardOffsetContext';
 import PageTitle from '@/features/profile/components/PageTitle';
 
 import { useMeUser } from '@/hooks/auth/useAuth';
 
 import { MMKV_KEYS } from '@/lib/constants/storageKeys';
-import localStorage from '@/lib/localStorage';
+import Storage from '@/lib/localStorage';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 
 import { useRouter } from 'expo-router';
-import { PhoneIcon, PlusIcon } from 'lucide-react-native';
-import React from 'react';
+import { PhoneIcon, PlusIcon, Trash2Icon } from 'lucide-react-native';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { ListRenderItem, useWindowDimensions } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
+
+const STORAGE_KEY = MMKV_KEYS.ALERT.ADDRESS.CREATE;
 
 export default function ProfileContact() {
   const router = useRouter();
   const { data: user } = useMeUser();
   const addresses = user?.addresses?.docs || [];
 
-  const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.ADDRESS.CREATE);
-  const [showHint, setShowHint] = React.useState(!hasViewedHint);
+  const hasViewedHint = Storage.getBoolean(STORAGE_KEY);
+  const [showHint, setShowHint] = useState(!hasViewedHint);
+  const offset = useKeyboardOffset((s) => s.height);
+  const screen = useWindowDimensions();
 
   const { control } = useFormContext<SetupProfileSchema>();
+  const { mutateAsync } = useDeleteAddressMutation();
 
   function handleAdd() {
     router.push('/addresses/create');
   }
 
   function handleHintClose() {
-    localStorage.set(MMKV_KEYS.ALERT.ADDRESS.CREATE, true);
-    setShowHint(true);
+    Storage.set(STORAGE_KEY, false);
+    setShowHint(false);
   }
 
-  function ListHeader() {
+  const renderItem: ListRenderItem<string | Address> = ({ item }) => {
+    const handlePress = () => {
+      const addressId = extractID(item);
+      router.push(`/addresses/${addressId}/edit`);
+    };
+
     return (
-      <>
-        <PageTitle className="mb-4 px-5" />
+      <AnimatedPressable onPress={handlePress} className="overflow-hidden rounded-2xl">
+        <AddressCard
+          data={item}
+          showMap
+          disableTapOnMap
+          disableLinks
+          style={{ width: screen.width - 48, minHeight: 232 }}
+          action={
+            <ActionModal
+              iconOnly
+              variant="link"
+              action="negative"
+              hitSlop={10}
+              className="h-fit w-fit"
+              triggerIcon={Trash2Icon}
+              title="Delete Address"
+              description="Are you sure you want to delete this address? This action cannot be undone."
+              confirmLabel="Delete"
+              onConfirm={() => mutateAsync(item)}
+            />
+          }
+        />
+      </AnimatedPressable>
+    );
+  };
 
-        <Card variant="filled" className="mx-5">
-          <TextInputField
-            control={control}
-            name="phone"
-            label="Phone Number"
-            inputProps={{
-              placeholder: 'e.g. 09123456789',
-              keyboardType: 'phone-pad',
-              textContentType: 'telephoneNumber',
-              autoComplete: 'tel-device',
-              autoCapitalize: 'none',
-              icon: PhoneIcon,
-            }}
-          />
-        </Card>
+  return (
+    <KeyboardAvoidingScrollView keyboardVerticalOffset={offset}>
+      <PageTitle className="px-5 py-4" />
 
-        <FormControlLabel className="mx-5">
+      <Card variant="filled" className="mx-5">
+        <TextInputField
+          control={control}
+          name="phone"
+          label="Phone Number"
+          inputProps={{
+            placeholder: 'e.g. 09123456789',
+            keyboardType: 'phone-pad',
+            textContentType: 'telephoneNumber',
+            autoComplete: 'tel-device',
+            autoCapitalize: 'none',
+            icon: PhoneIcon,
+          }}
+        />
+      </Card>
+
+      <FormControl className="mt-2 flex-1">
+        <FormControlLabel className="px-5">
           <FormControlLabelText>Addresses</FormControlLabelText>
         </FormControlLabel>
 
-        <Box className="mx-5 pb-2">
+        <Box className="px-5 pb-2">
           <HintAlert
             visible={showHint}
             message="You can add more addresses."
             onClose={handleHintClose}
           />
         </Box>
-      </>
-    );
-  }
 
-  function ListFooter() {
-    return (
-      <Button size="sm" variant="outline" action="positive" onPress={handleAdd}>
-        <ButtonIcon size="md" as={PlusIcon} />
-        <ButtonText>Add New Address</ButtonText>
-      </Button>
-    );
-  }
+        <FlatList
+          horizontal
+          data={addresses}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <Box className="w-4" />}
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="px-5 pb-4 justify-center grow"
+          getItemLayout={(_, index) => ({
+            length: screen.width - 48,
+            offset: (screen.width - 48 + 16) * index,
+            index,
+          })}
+        />
 
-  return (
-    <FormControl className="flex-1">
-      <AddressList
-        data={addresses}
-        gap={12}
-        allowEdit
-        allowDelete
-        showMap
-        itemVariant="card"
-        disableRemove={addresses.length === 1}
-        ListHeaderComponent={ListHeader}
-        ListFooterComponent={ListFooter}
-        ListHeaderComponentStyle={{ marginBottom: 8, gap: 8 }}
-        ListFooterComponentStyle={{ marginTop: 8 }}
-      />
-    </FormControl>
+        <Button size="sm" variant="outline" action="positive" className="mx-5" onPress={handleAdd}>
+          <ButtonIcon size="md" as={PlusIcon} />
+          <ButtonText>Add New Address</ButtonText>
+        </Button>
+      </FormControl>
+    </KeyboardAvoidingScrollView>
   );
 }

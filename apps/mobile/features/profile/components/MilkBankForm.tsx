@@ -16,6 +16,7 @@ export default function MilkBankForm({ control }: { control: Control<SetupProfil
           control={control}
           name="name"
           label="Milk Bank Name"
+          contentPosition="first"
           inputProps={{
             placeholder: 'Enter your hospital name',
             autoCapitalize: 'words',
@@ -29,6 +30,7 @@ export default function MilkBankForm({ control }: { control: Control<SetupProfil
           control={control}
           name="description"
           label="Description"
+          contentPosition="first"
           textareaProps={{
             placeholder: 'Enter brief description of the hospital.',
           }}
@@ -39,6 +41,7 @@ export default function MilkBankForm({ control }: { control: Control<SetupProfil
           name="head"
           label="Milk Bank Head"
           helperText="Enter the name of head/president if applicable."
+          contentPosition="first"
           inputProps={{
             placeholder: 'e.g. John M. Doe',
             autoCapitalize: 'words',

@@ -10,6 +10,10 @@ import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
 import React, { ComponentProps, ComponentRef, useEffect, useRef } from 'react';
 import { FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
+import InputFocusStateProvider, {
+  useInputFocusStateActions,
+  useInputIsFocused,
+} from '../../contexts/InputFocusStateProvider';
 
 const SCOPE = 'INPUT';
 
@@ -126,13 +130,15 @@ const Input = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(
   }, [onBlur]);
 
   return (
-    <UIInput
-      ref={ref}
-      {...props}
-      onBlur={onBlur}
-      className={inputStyle({ variant, size, class: className })}
-      context={{ variant, size }}
-    />
+    <InputFocusStateProvider recyclingKey={props.recyclingKey}>
+      <UIInput
+        ref={ref}
+        {...props}
+        onBlur={onBlur}
+        className={inputStyle({ variant, size, class: className })}
+        context={{ variant, size }}
+      />
+    </InputFocusStateProvider>
   );
 });
 
@@ -147,16 +153,7 @@ type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
 const InputIcon = React.forwardRef<React.ComponentRef<typeof UIInput.Icon>, IInputIconProps>(
   function InputIcon({ className, size, recyclingKey, ...props }, ref) {
     const { size: parentSize } = useStyleContext(SCOPE);
-    const [isFocused, setIsFocused] = useRecyclingState(false, [recyclingKey]);
-
-    useEffect(() => {
-      const sub1 = Keyboard.addListener('keyboardDidShow', () => setIsFocused(true));
-      const sub2 = Keyboard.addListener('keyboardDidHide', () => setIsFocused(false));
-      return () => {
-        sub1.remove();
-        sub2.remove();
-      };
-    }, [setIsFocused]);
+    const isFocused = useInputIsFocused();
 
     if (typeof size === 'number') {
       return (
@@ -217,6 +214,7 @@ const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFi
     const localRef = useRef<TextInput>(null);
     const { onFocus, registerInput } = useKeyboardAvoider();
     const [inputID, setInputID] = useRecyclingState('', [recyclingKey]);
+    const { setFocused } = useInputFocusStateActions();
 
     const ref = refProp || localRef;
 
@@ -247,6 +245,12 @@ const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFi
     function handleFocus(event: FocusEvent) {
       props.onFocus?.(event);
       onFocus?.(inputID);
+      setFocused(true);
+    }
+
+    function handleBlur() {
+      setFocused(false);
+      props.onBlur?.();
     }
 
     return (
@@ -255,6 +259,7 @@ const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFi
         //@ts-expect-error Gluestack ref typing issue
         ref={ref}
         onFocus={handleFocus}
+        onBlur={handleBlur}
         className={inputFieldStyle({
           parentVariants: {
             variant: parentVariant,

@@ -3,6 +3,7 @@ import FormSaver from '@/components/forms/FormSaver';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
+import KeyboardOffsetProvider from '@/features/profile/components/KeyboardOffsetContext';
 import { useSetupProfileForm } from '@/features/profile/hooks/useSetupForm';
 import {
   AVATAR_FIELDS,
@@ -22,9 +23,11 @@ import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { FormProvider, useWatch } from 'react-hook-form';
+import { LayoutRectangle } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
@@ -36,9 +39,12 @@ export default function Layout() {
   const insets = useSafeAreaInsets();
   const screenOptions = useScreenOptions({ animationType: 'slide' });
 
-  const { step } = useLocalSearchParams<{ step: SetupProfileSteps }>();
-  const { nextPage, hasNextPage, prevPage, hasPrevPage, progress, currentPageIndex } =
+  const { nextPage, hasNextPage, prevPage, hasPrevPage, progress, currentPageIndex, pathname } =
     usePagination(STEPS);
+
+  const isInOnboarding = currentPageIndex < 0;
+
+  const [ctaSize, setCtaSize] = useState<LayoutRectangle>({ x: 0, y: 0, width: 0, height: 0 });
 
   const form = useSetupProfileForm();
   const { handleSubmit, trigger } = form;
@@ -82,6 +88,13 @@ export default function Layout() {
       return;
     }
 
+    const currentStep = pathname.split('/').pop() as SetupProfileSteps | undefined;
+
+    if (!currentStep) {
+      toast.error('An unexpected error occurred. Please try again.');
+      return;
+    }
+
     const fieldNames: SetupProfileFields = {
       type: TYPE_FIELDS,
       details: DETAILS_FIELDS[profileType],
@@ -89,7 +102,7 @@ export default function Layout() {
       avatar: AVATAR_FIELDS,
     };
 
-    const allValid = await trigger(fieldNames[step]);
+    const allValid = await trigger(fieldNames[currentStep]);
 
     if (allValid) {
       nextPage();
@@ -103,33 +116,42 @@ export default function Layout() {
     else router.back();
   }
 
-  const ProgressBar = () => (
-    <Box className="px-5" style={{ marginTop: insets.top }}>
-      <AnimatedProgress hidden={currentPageIndex < 0} size="sm" value={progress} />
-    </Box>
-  );
-
   return (
     <FormProvider {...form}>
-      <FormSaver schemaName="profile-create" />
+      <KeyboardOffsetProvider {...ctaSize}>
+        <FormSaver schemaName="profile-create" />
 
-      <ProgressBar />
+        {!isInOnboarding && (
+          <Animated.View
+            /**Omit animations for now since there is an issue @https://github.com/software-mansion/react-native-reanimated/issues/8422#issuecomment-3547104492 */
+            // entering={FadeInUp}
+            // exiting={FadeOutUp}
+            className="px-5"
+            style={{ marginTop: insets.top }}
+          >
+            <AnimatedProgress size="sm" value={progress} />
+          </Animated.View>
+        )}
 
-      <Box className="flex-1">
-        <Stack screenOptions={screenOptions} />
-      </Box>
+        <Box className="flex-1">
+          <Stack screenOptions={screenOptions} />
+        </Box>
 
-      <VStack
-        className="w-full rounded-2xl border border-outline-300 bg-background-0 p-4"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-      >
-        <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
-          <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
-        </Button>
-        <Button size="md" variant="link" action="default" onPress={handleBack}>
-          <ButtonText>Back</ButtonText>
-        </Button>
-      </VStack>
+        {!isInOnboarding && (
+          <VStack
+            className="w-full rounded-2xl border border-outline-300 bg-background-0 p-4"
+            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+            onLayout={(e) => setCtaSize(e.nativeEvent.layout)}
+          >
+            <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
+              <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
+            </Button>
+            <Button size="md" variant="link" action="default" onPress={handleBack}>
+              <ButtonText>Back</ButtonText>
+            </Button>
+          </VStack>
+        )}
+      </KeyboardOffsetProvider>
     </FormProvider>
   );
 }

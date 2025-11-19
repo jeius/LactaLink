@@ -11,9 +11,7 @@ import { ProfileTypeOptions } from '@/features/profile/types';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const cardStyle = tva({
   base: 'relative min-h-40 border border-outline-200',
@@ -58,7 +56,7 @@ const titleStyle = tva({
 });
 
 const descriptionBoxStyle = tva({
-  base: 'w-full rounded-lg p-2 opacity-90',
+  base: 'rounded-lg p-2 opacity-90',
   variants: {
     variant: {
       primary: 'bg-primary-200',
@@ -82,8 +80,6 @@ const descriptionStyle = tva({
 const AnimatedCard = Animated.createAnimatedComponent(Card);
 
 export default function SelectProfileType() {
-  const insets = useSafeAreaInsets();
-
   const { setValue, control } = useFormContext<SetupProfileSchema>();
   const selected = useWatch({ control, name: 'profileType' });
 
@@ -92,7 +88,7 @@ export default function SelectProfileType() {
   }
 
   return (
-    <ScrollView contentContainerClassName="p-5">
+    <VStack className="flex-1 p-5">
       <Text bold size="xl" className="mb-4 self-center">
         Choose your account type
       </Text>
@@ -108,7 +104,7 @@ export default function SelectProfileType() {
           );
         })}
       </RadioGroup>
-    </ScrollView>
+    </VStack>
   );
 }
 

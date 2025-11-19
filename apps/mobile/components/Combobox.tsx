@@ -305,7 +305,7 @@ export default function ComboBox<
             onEndReachedThreshold={0.2}
             keyExtractor={(item) => item.id}
             extraData={{ selected: selected }}
-            ListEmptyComponent={EmptyComponent}
+            ListEmptyComponent={() => <EmptyComponent isLoading={isLoading} />}
             contentContainerStyle={{ paddingBottom: insets.bottom }}
             ListFooterComponentStyle={{ marginBottom: 36 }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}

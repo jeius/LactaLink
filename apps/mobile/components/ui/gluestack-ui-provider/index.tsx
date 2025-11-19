@@ -1,4 +1,4 @@
-import { Toaster } from '@/components/Toaster';
+import Toaster from '@/components/Toaster';
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import React from 'react';
 import { View, ViewProps } from 'react-native';
@@ -27,7 +27,7 @@ export function GluestackUIProvider({
   return (
     <View className="flex-1" style={[config[mode as keyof Config], props.style]}>
       <OverlayProvider>
-        <View className="bg-background-50 relative flex-1">{props.children}</View>
+        <View className="relative flex-1 bg-background-50">{props.children}</View>
       </OverlayProvider>
 
       <Toaster />

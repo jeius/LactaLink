@@ -1,4 +1,5 @@
 'use client';
+import { useKeyboardAvoider } from '@/components/KeyboardAvoider';
 import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import { createInput } from '@gluestack-ui/input';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
@@ -6,9 +7,14 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useRecyclingState } from '@shopify/flash-list';
+import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
-import React, { ComponentProps, useEffect } from 'react';
-import { Keyboard, Pressable, View } from 'react-native';
+import React, { ComponentProps, ComponentRef, useEffect, useRef } from 'react';
+import { FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
+import InputFocusStateProvider, {
+  useInputFocusStateActions,
+  useInputIsFocused,
+} from '../../contexts/InputFocusStateProvider';
 
 const SCOPE = 'INPUT';
 
@@ -57,7 +63,7 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'items-center justify-center fill-none text-typography-700',
+  base: 'items-center justify-center text-typography-700',
   variants: {
     isFocused: {
       true: 'text-primary-500',
@@ -76,7 +82,7 @@ const inputIconStyle = tva({
 });
 
 const inputSlotStyle = tva({
-  base: 'items-center justify-center web:disabled:cursor-not-allowed',
+  base: 'web:disabled:cursor-not-allowed',
 });
 
 const inputFieldStyle = tva({
@@ -106,19 +112,26 @@ const inputFieldStyle = tva({
 });
 
 type IInputProps = Omit<ComponentProps<typeof UIInput>, 'onBlur'> &
-  VariantProps<typeof inputStyle> & { className?: string; onBlur?: () => void };
-const BottomSheetInput = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(
-  function Input({ className, variant = 'outline', size = 'md', onBlur, ...props }, ref) {
-    useEffect(() => {
-      const sub = Keyboard.addListener('keyboardDidHide', () => {
-        onBlur?.();
-      });
-      return () => {
-        sub.remove();
-      };
-    }, [onBlur]);
+  VariantProps<typeof inputStyle> & {
+    className?: string;
+    onBlur?: () => void;
+    recyclingKey?: string;
+  };
+const Input = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(function Input(
+  { className, variant = 'outline', size = 'md', onBlur, ...props },
+  ref
+) {
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      onBlur?.();
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [onBlur]);
 
-    return (
+  return (
+    <InputFocusStateProvider recyclingKey={props.recyclingKey}>
       <UIInput
         ref={ref}
         {...props}
@@ -126,9 +139,9 @@ const BottomSheetInput = React.forwardRef<React.ComponentRef<typeof UIInput>, II
         className={inputStyle({ variant, size, class: className })}
         context={{ variant, size }}
       />
-    );
-  }
-);
+    </InputFocusStateProvider>
+  );
+});
 
 type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
   VariantProps<typeof inputIconStyle> & {
@@ -138,109 +151,142 @@ type IInputIconProps = React.ComponentProps<typeof UIInput.Icon> &
     recyclingKey?: string;
   };
 
-const BottomSheetInputIcon = React.forwardRef<
-  React.ComponentRef<typeof UIInput.Icon>,
-  IInputIconProps
->(function InputIcon({ className, size, recyclingKey, ...props }, ref) {
-  const { size: parentSize } = useStyleContext(SCOPE);
-  const [isFocused, setIsFocused] = useRecyclingState(false, [recyclingKey]);
+const InputIcon = React.forwardRef<React.ComponentRef<typeof UIInput.Icon>, IInputIconProps>(
+  function InputIcon({ className, size, recyclingKey, ...props }, ref) {
+    const { size: parentSize } = useStyleContext(SCOPE);
+    const isFocused = useInputIsFocused();
 
-  useEffect(() => {
-    const sub1 = Keyboard.addListener('keyboardDidShow', () => setIsFocused(true));
-    const sub2 = Keyboard.addListener('keyboardDidHide', () => setIsFocused(false));
-    return () => {
-      sub1.remove();
-      sub2.remove();
-    };
-  }, [setIsFocused]);
-
-  if (typeof size === 'number') {
+    if (typeof size === 'number') {
+      return (
+        <UIInput.Icon
+          ref={ref}
+          {...props}
+          className={inputIconStyle({ class: className, isFocused })}
+          size={size}
+        />
+      );
+    } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
+      return (
+        <UIInput.Icon
+          ref={ref}
+          {...props}
+          className={inputIconStyle({ class: className, isFocused })}
+        />
+      );
+    }
     return (
       <UIInput.Icon
         ref={ref}
         {...props}
-        className={inputIconStyle({ class: className, isFocused })}
-        size={size}
-      />
-    );
-  } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
-    return (
-      <UIInput.Icon
-        ref={ref}
-        {...props}
-        className={inputIconStyle({ class: className, isFocused })}
+        className={inputIconStyle({
+          isFocused,
+          class: className,
+          parentVariants: { size: parentSize },
+        })}
       />
     );
   }
-  return (
-    <UIInput.Icon
-      ref={ref}
-      {...props}
-      className={inputIconStyle({
-        isFocused,
-        class: className,
-        parentVariants: { size: parentSize },
-      })}
-    />
-  );
-});
+);
 
 type IInputSlotProps = React.ComponentProps<typeof UIInput.Slot> &
   VariantProps<typeof inputSlotStyle> & { className?: string };
 
-const BottomSheetInputSlot = React.forwardRef<
-  React.ComponentRef<typeof UIInput.Slot>,
-  IInputSlotProps
->(function InputSlot({ className, ...props }, ref) {
-  return (
-    <UIInput.Slot
-      ref={ref}
-      {...props}
-      className={inputSlotStyle({
-        class: className,
-      })}
-    />
-  );
-});
+const InputSlot = React.forwardRef<React.ComponentRef<typeof UIInput.Slot>, IInputSlotProps>(
+  function InputSlot({ className, ...props }, ref) {
+    return (
+      <UIInput.Slot
+        ref={ref}
+        {...props}
+        className={inputSlotStyle({
+          class: className,
+        })}
+      />
+    );
+  }
+);
 
 type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
   VariantProps<typeof inputFieldStyle> & { className?: string; recyclingKey?: string };
 
-const BottomSheetInputField = React.forwardRef<
-  React.ComponentRef<typeof UIInput.Input>,
-  IInputFieldProps
->(function InputField({ className, ...props }, ref) {
-  const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
+const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFieldProps>(
+  function InputField({ className, recyclingKey, ...props }, refProp) {
+    const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
 
-  useEffect(() => {
-    const sub = Keyboard.addListener('keyboardDidHide', () => {
-      if (ref && 'current' in ref && ref.current && 'blur' in ref.current) {
-        (ref.current as { blur: () => void }).blur();
+    const localRef = useRef<TextInput>(null);
+    const { onFocus, registerInput } = useKeyboardAvoider();
+    const [inputID, setInputID] = useRecyclingState('', [recyclingKey]);
+    const { setFocused } = useInputFocusStateActions();
+
+    const ref = refProp || localRef;
+
+    useEffect(() => {
+      if (typeof ref !== 'function' && ref.current) {
+        const inputID = `input-${randomUUID()}`;
+        setInputID(inputID);
+
+        const unregister = registerInput?.(inputID, ref.current as TextInput);
+        return () => {
+          unregister?.();
+        };
       }
-    });
-    return () => {
-      sub.remove();
-    };
-  }, [ref]);
+      return () => {};
+    }, [ref, registerInput, setInputID]);
 
-  return (
-    <UIInput.Input
-      ref={ref}
-      {...props}
-      className={inputFieldStyle({
-        parentVariants: {
-          variant: parentVariant,
-          size: parentSize,
-        },
-        class: className,
-      })}
-    />
-  );
-});
+    useEffect(() => {
+      const sub = Keyboard.addListener('keyboardDidHide', () => {
+        if ('current' in ref && ref.current && 'blur' in ref.current) {
+          ref.current.blur();
+        }
+      });
+      return () => {
+        sub.remove();
+      };
+    }, [ref]);
 
-BottomSheetInput.displayName = 'BottomSheetInput';
-BottomSheetInputIcon.displayName = 'BottomSheetInputIcon';
-BottomSheetInputSlot.displayName = 'BottomSheetInputSlot';
-BottomSheetInputField.displayName = 'BottomSheetInputField';
+    function handleFocus(event: FocusEvent) {
+      props.onFocus?.(event);
+      onFocus?.(inputID);
+      setFocused(true);
+    }
 
-export { BottomSheetInput, BottomSheetInputField, BottomSheetInputIcon, BottomSheetInputSlot };
+    function handleBlur() {
+      setFocused(false);
+      props.onBlur?.();
+    }
+
+    return (
+      <UIInput.Input
+        {...props}
+        //@ts-expect-error Gluestack ref typing issue
+        ref={ref}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className={inputFieldStyle({
+          parentVariants: {
+            variant: parentVariant,
+            size: parentSize,
+          },
+          class: className,
+        })}
+      />
+    );
+  }
+);
+
+Input.displayName = 'BottomSheetInput';
+InputIcon.displayName = 'BottomSheetInputIcon';
+InputSlot.displayName = 'BottomSheetInputSlot';
+InputField.displayName = 'BottomSheetInputField';
+
+export {
+  Input as BottomSheetInput,
+  InputField as BottomSheetInputField,
+  InputIcon as BottomSheetInputIcon,
+  InputSlot as BottomSheetInputSlot,
+};
+export type {
+  IInputFieldProps as BottomSheetInputFieldProps,
+  IInputIconProps as BottomSheetInputIconProps,
+  IInputProps as BottomSheetInputProps,
+  IInputSlotProps as BottomSheetInputSlotProps,
+};

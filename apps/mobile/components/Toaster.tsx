@@ -6,11 +6,11 @@ import { BanIcon } from 'lucide-react-native';
 import '../global.css';
 import { Icon } from './ui/icon';
 
-export const Toaster: React.FC = () => {
+export default function Toaster() {
   const { theme } = useTheme();
   return (
     <Sonner
-      position="top-center"
+      position="bottom-center"
       // offset={100}
       duration={3000}
       swipeToDismissDirection="left"
@@ -37,4 +37,4 @@ export const Toaster: React.FC = () => {
       }}
     />
   );
-};
+}

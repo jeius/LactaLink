@@ -5,8 +5,8 @@ import {
   Input,
   InputField,
   InputFieldProps,
-  InputProps,
   InputIcon,
+  InputProps,
   InputSlot,
 } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
@@ -14,7 +14,12 @@ import { useRecyclingState } from '@shopify/flash-list';
 import { debounce } from 'lodash';
 import { LucideIcon, LucideProps, MinusIcon, PlusIcon } from 'lucide-react-native';
 import { type ViewProps } from 'react-native';
-import { BottomSheetInputField } from './ui/bottom-sheet/input';
+import {
+  BottomSheetInput,
+  BottomSheetInputField,
+  BottomSheetInputIcon,
+  BottomSheetInputSlot,
+} from './ui/bottom-sheet/input';
 import { Skeleton } from './ui/skeleton';
 
 const inputFieldStyle = tva({
@@ -78,6 +83,9 @@ export function NumberInput({
   const [localValue, setLocalValue] = useRecyclingState(value, [recyclingKey]);
 
   const InputFieldComp = useBottomSheetInput ? BottomSheetInputField : InputField;
+  const InputComp = useBottomSheetInput ? BottomSheetInput : Input;
+  const InputIconComp = useBottomSheetInput ? BottomSheetInputIcon : InputIcon;
+  const InputSlotComp = useBottomSheetInput ? BottomSheetInputSlot : InputSlot;
 
   const handleChange = useMemo(
     () =>
@@ -102,7 +110,7 @@ export function NumberInput({
   return isLoading ? (
     <Skeleton className="h-9" />
   ) : (
-    <Input
+    <InputComp
       variant={variant}
       isDisabled={isDisabled}
       style={containerStyle}
@@ -111,7 +119,7 @@ export function NumberInput({
       size={size}
     >
       {inputIcon && (
-        <InputIcon
+        <InputIconComp
           as={inputIcon}
           recyclingKey={recyclingKey}
           className={iconStyle({ className: iconClassName })}
@@ -119,7 +127,7 @@ export function NumberInput({
       )}
 
       {showStepButtons && (
-        <InputSlot>
+        <InputSlotComp>
           <Button
             size="sm"
             variant="link"
@@ -131,7 +139,7 @@ export function NumberInput({
           >
             <ButtonIcon as={MinusIcon} />
           </Button>
-        </InputSlot>
+        </InputSlotComp>
       )}
 
       <InputFieldComp
@@ -147,7 +155,7 @@ export function NumberInput({
       />
 
       {showStepButtons && (
-        <InputSlot>
+        <InputSlotComp>
           <Button
             size="sm"
             variant="link"
@@ -159,8 +167,8 @@ export function NumberInput({
           >
             <ButtonIcon as={PlusIcon} />
           </Button>
-        </InputSlot>
+        </InputSlotComp>
       )}
-    </Input>
+    </InputComp>
   );
 }
