@@ -2,7 +2,6 @@ import { Image } from '@/components/Image';
 import SafeArea from '@/components/SafeArea';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -21,13 +20,7 @@ export default function Setup() {
   };
 
   return (
-    <SafeArea className="justify-center">
-      <HStack className="w-full px-2">
-        <Button action="default" variant="link" onPress={signOut}>
-          <ButtonIcon as={LogOutIcon} />
-          <ButtonText>Log out</ButtonText>
-        </Button>
-      </HStack>
+    <SafeArea className="items-center justify-center">
       <Card className="mx-5">
         <VStack space="2xl">
           <VStack className="items-center">
@@ -54,6 +47,10 @@ export default function Setup() {
           </Button>
         </VStack>
       </Card>
+      <Button action="default" variant="link" onPress={signOut} className="mx-2 self-end">
+        <ButtonIcon as={LogOutIcon} />
+        <ButtonText>Log out</ButtonText>
+      </Button>
     </SafeArea>
   );
 }

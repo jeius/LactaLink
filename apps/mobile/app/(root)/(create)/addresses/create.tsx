@@ -9,13 +9,16 @@ import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInp
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { useAddAddressMutation } from '@/features/address/hooks/useAddAddressMutation';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
-import { upsertAddress } from '@/lib/api/upsert';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, useRouter } from 'expo-router';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
+import { toast } from 'sonner-native';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -23,14 +26,21 @@ export default function CreatePage() {
   const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
   const revalidateQueries = useRevalidateCollectionQueries();
+  const { mutateAsync } = useAddAddressMutation();
 
   const form = useAddressForm(undefined);
   const { isLoading, fetchError: error, setValue } = form;
 
   async function onSubmit(formData: AddressCreateSchema) {
-    const success = await upsertAddress(formData);
+    const promise = mutateAsync(formData);
 
-    if (!success) return;
+    toast.promise(promise, {
+      loading: 'Saving address...',
+      success: (data: Address) => `"${data.name || 'Address'}" created successfully.`,
+      error: (err) => extractErrorMessage(err) || 'Failed to save address.',
+    });
+
+    await promise;
 
     revalidateQueries(['addresses', 'users']);
     form.reset(formData);

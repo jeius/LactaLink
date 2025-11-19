@@ -102,10 +102,6 @@ export function AnimatedProgress({
   const isHorizontal = orientation === 'horizontal';
   const progress = useSharedValue(value);
 
-  useEffect(() => {
-    progress.value = withTiming(value, { duration, easing: Easing.out(Easing.cubic) });
-  }, [value, progress, duration]);
-
   const animatedStyle = useAnimatedStyle(() => ({
     width: isHorizontal ? `${progress.value}%` : '100%',
     height: !isHorizontal ? `${progress.value}%` : '100%',
@@ -115,6 +111,10 @@ export function AnimatedProgress({
     const opacity = withTiming(hidden ? 0 : 1, { duration, easing: Easing.out(Easing.cubic) });
     return { opacity };
   }, [hidden]);
+
+  useEffect(() => {
+    progress.value = withTiming(value, { duration, easing: Easing.out(Easing.cubic) });
+  }, [value, progress, duration]);
 
   return (
     <AnimatedBox

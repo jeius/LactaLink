@@ -12,11 +12,11 @@ export default function Layout() {
 
   return (
     <Stack
-      initialRouteName={hasProfile ? '(drawer)' : '(profile-setup)/profile'}
+      initialRouteName={hasProfile ? '(drawer)' : '(profile-setup)/profile/setup'}
       screenOptions={screenOptions}
     >
       <Stack.Protected guard={!hasProfile}>
-        <Stack.Screen name="(profile-setup)/profile" />
+        <Stack.Screen name="(profile-setup)/profile/setup" />
       </Stack.Protected>
 
       <Stack.Screen

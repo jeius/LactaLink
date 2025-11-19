@@ -11,7 +11,7 @@ import { Card } from '../ui/card';
 import { Text } from '../ui/text';
 
 const cardStyle = tva({
-  base: 'h-24 w-32',
+  base: 'h-40 w-32 items-center justify-center p-4',
   variants: {
     isSelected: {
       true: 'border-2 border-primary-500 bg-primary-0',
@@ -55,7 +55,7 @@ export default function OptionsSelect<T>({
   showsHorizontalScrollIndicator = false,
   showsVerticalScrollIndicator = false,
   itemStyle,
-  itemGap = 12,
+  itemGap = 6,
   ...props
 }: OptionsSelectProps<T>) {
   function handleSelection(val: T) {
@@ -84,11 +84,11 @@ export default function OptionsSelect<T>({
         const isSelected = selected === value;
         return (
           <AnimatedScaleWrapper isSelected={isSelected} onPress={() => handleSelection(value)}>
-            <Card size="md" className={cardStyle({ isSelected })} style={itemStyle}>
+            <Card size="lg" className={cardStyle({ isSelected })} style={itemStyle}>
               {image && (
                 <Image alt={image.alt} source={image.source} style={{ width: 64, height: 64 }} />
               )}
-              <Text size="sm" className="flex-1 text-center font-JakartaMedium">
+              <Text size="sm" className="mt-2 flex-1 text-center align-middle font-JakartaSemiBold">
                 {label}
               </Text>
             </Card>
@@ -113,7 +113,7 @@ function AnimatedScaleWrapper({
     <AnimatedPressable
       disablePressAnimation
       style={[animatedScaleStyle]}
-      className={'overflow-hidden rounded-2xl'}
+      className={'overflow-hidden rounded-lg'}
       onPress={onPress}
     >
       {children}

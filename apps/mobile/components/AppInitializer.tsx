@@ -16,7 +16,7 @@ import { useInitLocation } from '@/hooks/location/useLocation';
 import { useOnlineManager } from '@/hooks/useOnlineManager';
 import { useInitializeTutorialStore } from '@/lib/stores/tutorialStore';
 
-import LoadingSpinner from './loaders/LoadingSpinner';
+import { SplashSpinner } from './loaders/LoadingSpinner';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -107,7 +107,7 @@ export function AppInitializer({ children }: Props) {
     return (
       <>
         <SystemBars hidden={{ navigationBar: true, statusBar: true }} />
-        <LoadingSpinner />
+        <SplashSpinner />
       </>
     );
   }

@@ -4,7 +4,11 @@ import React, { FC, useState } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import { SvgProps } from 'react-native-svg';
-import { BottomSheetInputField } from '../ui/bottom-sheet/input';
+import {
+  BottomSheetInput,
+  BottomSheetInputField,
+  BottomSheetInputIcon,
+} from '../ui/bottom-sheet/input';
 import { Input, InputField, InputFieldProps, InputIcon, InputProps } from '../ui/input';
 import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
@@ -56,9 +60,11 @@ export function TextInputField<
   } = useController({ name, control });
 
   const [showPass, setShowPass] = useState(type !== 'password');
-  const recyclingKey = `NumberInputField-${name.toString()}`;
+  const recyclingKey = `TextInputField-${name.toString()}`;
 
   const InputFieldComp = useBottomSheetInput ? BottomSheetInputField : InputField;
+  const InputComp = useBottomSheetInput ? BottomSheetInput : Input;
+  const InputIconComp = useBottomSheetInput ? BottomSheetInputIcon : InputIcon;
 
   function handleBlur() {
     onBlur();
@@ -70,7 +76,7 @@ export function TextInputField<
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
       ) : (
-        <Input
+        <InputComp
           ref={ref}
           className={containerClassName}
           style={containerStyle}
@@ -79,7 +85,7 @@ export function TextInputField<
           onBlur={handleBlur}
         >
           {icon && (
-            <InputIcon
+            <InputIconComp
               as={icon}
               recyclingKey={recyclingKey}
               className={iconStyle({ className: iconClassName })}
@@ -105,10 +111,10 @@ export function TextInputField<
                 setShowPass(!showPass);
               }}
             >
-              <InputIcon as={showPass ? EyeIcon : EyeClosedIcon} />
+              <InputIconComp as={showPass ? EyeIcon : EyeClosedIcon} />
             </Pressable>
           )}
-        </Input>
+        </InputComp>
       )}
     </FieldWrapper>
   );

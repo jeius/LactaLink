@@ -23,7 +23,7 @@ export default function ProfileAvatar() {
   };
 
   return (
-    <Card className="mx-5">
+    <Card className="m-5 self-center">
       <VStack space="xl">
         <VStack space="sm">
           <Text size="lg" className="font-JakartaMedium">

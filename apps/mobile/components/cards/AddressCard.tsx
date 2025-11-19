@@ -36,6 +36,7 @@ interface AddressCardProps extends ComponentProps<typeof Card> {
   showMap?: boolean;
   action?: ReactNode;
   disableTapOnMap?: boolean;
+  disableLinks?: boolean;
 }
 
 export function AddressCard({
@@ -45,6 +46,7 @@ export function AddressCard({
   action,
   className,
   disableTapOnMap = false,
+  disableLinks = false,
   ...props
 }: AddressCardProps) {
   const router = useRouter();
@@ -118,6 +120,7 @@ export function AddressCard({
                 action="default"
                 className="h-auto w-auto p-0"
                 disablePressAnimation
+                pointerEvents={disableLinks ? 'none' : 'auto'}
                 onPress={navigateToMap}
                 hitSlop={8}
               >

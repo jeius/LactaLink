@@ -7,16 +7,19 @@ import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInp
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { useUpdateAddressMutation } from '@/features/address/hooks/useUpdateAddressMutation';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
-import { upsertAddress } from '@/lib/api/upsert';
 import { AddressSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import MapView from 'react-native-maps';
+import { toast } from 'sonner-native';
 
 export default function EditAddressPage() {
   const router = useRouter();
@@ -31,12 +34,20 @@ export default function EditAddressPage() {
   const form = useAddressForm(id);
   const { isLoading, fetchError: error, extraData: data, setValue } = form;
 
+  const { mutateAsync } = useUpdateAddressMutation();
+
   const coordinates = (data?.coordinates && pointToLatLng(data.coordinates)) || undefined;
 
   async function onSubmit(formData: AddressSchema) {
-    const success = await upsertAddress(formData);
+    const promise = mutateAsync(formData);
 
-    if (!success) return;
+    toast.promise(promise, {
+      loading: 'Updating address...',
+      success: (data: Address) => `"${data.name || 'Address'}" updated successfully.`,
+      error: (err) => extractErrorMessage(err) || 'Failed to update address.',
+    });
+
+    await promise;
 
     revalidateQueries(['addresses', 'users']);
     form.reset(formData);

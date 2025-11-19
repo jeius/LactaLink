@@ -1,19 +1,5 @@
-import React, {
-  ComponentProps,
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-} from 'react';
-import {
-  NativeScrollEvent,
-  Platform,
-  ScrollViewProps,
-  StyleProp,
-  TextInput,
-  ViewStyle,
-} from 'react-native';
+import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import { NativeScrollEvent, Platform, ScrollViewProps, TextInput } from 'react-native';
 
 import { ScrollView } from 'react-native-gesture-handler';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
@@ -30,10 +16,8 @@ interface KeyboardAvoiderContextProps {
   registerInput?: (id: string, ref: TextInput | null) => () => void;
 }
 
-interface KeyboardAvoiderProps extends ComponentProps<typeof VStack> {
+interface KeyboardAvoiderProps extends ScrollViewProps {
   keyboardVerticalOffset?: number;
-  contentContainerStyle?: StyleProp<ViewStyle>;
-  contentContainerClassName?: ScrollViewProps['contentContainerClassName'];
   refreshing?: boolean;
   onRefresh?: () => void;
 }
@@ -50,8 +34,7 @@ export const useKeyboardAvoider = () => useContext(KeyboardAvoiderContext);
 const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
   children,
   keyboardVerticalOffset = 0,
-  contentContainerClassName,
-  contentContainerStyle,
+  showsVerticalScrollIndicator = false,
   refreshing,
   onRefresh,
   ...props
@@ -112,16 +95,15 @@ const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
     <KeyboardAvoiderContext.Provider
       value={{ onFocus: handleFocus, registerInput: handleRegisterInput }}
     >
-      <VStack {...props}>
+      <>
         <ScrollView
+          {...props}
           ref={scrollRef}
           onScroll={({ nativeEvent }) => {
             scrollEvent.current = nativeEvent;
           }}
           keyboardShouldPersistTaps="handled"
-          contentContainerClassName={contentContainerClassName}
-          contentContainerStyle={contentContainerStyle}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={showsVerticalScrollIndicator}
           refreshControl={
             refreshing !== undefined || onRefresh ? (
               <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
@@ -131,7 +113,7 @@ const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
           {children}
         </ScrollView>
         <Animated.View style={fakeViewStyle} />
-      </VStack>
+      </>
     </KeyboardAvoiderContext.Provider>
   );
 };

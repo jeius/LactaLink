@@ -16,6 +16,7 @@ export default function HospitalForm({ control }: { control: Control<SetupProfil
           control={control}
           name="name"
           label="Hospital Name"
+          contentPosition="first"
           inputProps={{
             placeholder: 'Enter your hospital name',
             autoCapitalize: 'words',
@@ -39,6 +40,7 @@ export default function HospitalForm({ control }: { control: Control<SetupProfil
           name="head"
           label="Hospital Head"
           helperText="Enter the name of head/president if applicable."
+          contentPosition="first"
           inputProps={{
             placeholder: 'e.g. John M. Doe',
             autoCapitalize: 'words',
@@ -51,6 +53,7 @@ export default function HospitalForm({ control }: { control: Control<SetupProfil
         <TextInputField
           control={control}
           name="hospitalID"
+          contentPosition="first"
           label="Hospital ID"
           inputProps={{
             placeholder: 'Enter your hospital ID',

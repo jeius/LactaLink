@@ -4,7 +4,7 @@ import { OptionsSelectField } from '@/components/form-fields/OptionsSelectField'
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { VStack } from '@/components/ui/vstack';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
-import { BabyIcon } from 'lucide-react-native';
+import { BabyIcon, CalendarDaysIcon } from 'lucide-react-native';
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { genderOptions, maritalStatusOptions } from '../lib/options';
@@ -17,6 +17,7 @@ export default function PersonalForm({ control }: { control: Control<SetupProfil
           control={control}
           name="givenName"
           label="Given Name"
+          contentPosition="first"
           inputProps={{
             placeholder: 'Enter your given name',
             autoCapitalize: 'words',
@@ -31,6 +32,7 @@ export default function PersonalForm({ control }: { control: Control<SetupProfil
           name="middleName"
           label="Middle Name"
           helperText="If applicable"
+          contentPosition="first"
           inputProps={{
             placeholder: 'Enter your middle name',
             autoCapitalize: 'words',
@@ -43,6 +45,7 @@ export default function PersonalForm({ control }: { control: Control<SetupProfil
           control={control}
           name="familyName"
           label="Family Name"
+          contentPosition="first"
           inputProps={{
             placeholder: 'Enter your family name',
             autoCapitalize: 'words',
@@ -55,10 +58,11 @@ export default function PersonalForm({ control }: { control: Control<SetupProfil
           control={control}
           name="dependents"
           label="Number of Dependent Babies"
+          contentPosition="first"
           inputProps={{
             keyboardType: 'number-pad',
             placeholder: 'e.g. 2',
-            containerClassName: 'max-w-64',
+            containerClassName: 'w-64',
             showStepButtons: true,
             step: 1,
             min: 0,
@@ -70,8 +74,10 @@ export default function PersonalForm({ control }: { control: Control<SetupProfil
           control={control}
           name="birth"
           label="Date of Birth"
+          contentPosition="first"
           datePickerProps={{
             options: { maximumDate: new Date(), minimumDate: new Date('1900-01-01') },
+            icon: CalendarDaysIcon,
           }}
         />
       </VStack>

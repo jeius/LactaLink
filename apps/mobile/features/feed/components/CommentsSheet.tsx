@@ -201,7 +201,7 @@ function CommentItem({ comment, queryKey }: { comment: Comment; queryKey: QueryK
   const limit = 4;
   const sort = hasParent ? '-createdAt' : 'createdAt';
 
-  const { isFetchingNextPage, isLoading, hasNextPage, isEnabled, ...repliesQuery } =
+  const { isFetchingNextPage, isLoading, hasNextPage, isFetching, isEnabled, ...repliesQuery } =
     useInfiniteComments(undefined, {
       enabled: viewMore,
       limit: limit,
@@ -235,13 +235,15 @@ function CommentItem({ comment, queryKey }: { comment: Comment; queryKey: QueryK
   }, [viewMore, hasNextPage, viewedReplies, moreReplies]);
 
   const handleViewMoreReplies = () => {
-    if (!viewMore) setViewMore(true);
-    else if (hasNextPage && !isFetchingNextPage) repliesQuery.fetchNextPage();
+    if (!viewMore) {
+      setViewMore(true);
+      repliesQuery.refetch();
+    } else if (hasNextPage && !isFetchingNextPage) repliesQuery.fetchNextPage();
     else setViewMore(false);
   };
 
   const handleReplyPress = () => {
-    handleReply({ comment, rootQueryKey: queryKey, subQueryKey: repliesQuery.queryKey });
+    reply({ comment, rootQueryKey: queryKey, subQueryKey: repliesQuery.queryKey });
   };
 
   const handleLongPress = () => {
@@ -304,6 +306,14 @@ function CommentItem({ comment, queryKey }: { comment: Comment; queryKey: QueryK
                           queryKey={repliesQuery.queryKey}
                         />
                       ))}
+                      {isFetching && !isFetchingNextPage && (
+                        <Spinner
+                          variant="default"
+                          size={'small'}
+                          className="self-start"
+                          style={{ marginLeft: 32 }}
+                        />
+                      )}
                     </VStack>
                   )}
 
@@ -366,7 +376,7 @@ function CommentItemActions({
   );
 
   const handleReplyPress = () => {
-    handleReply({
+    reply({
       comment,
       rootQueryKey: commentsQueryKey,
       subQueryKey: repliesQueryKey,
@@ -412,7 +422,7 @@ function CommentItemActions({
               <ActionModal
                 title="Delete Comment"
                 description="Are you sure you want to delete this comment? This action cannot be undone."
-                className="mx-4"
+                className="mx-2"
                 confirmLabel="Delete"
                 action="negative"
                 triggerLabel="Delete"
@@ -619,7 +629,7 @@ function CommentInput({
               autoFocus
             />
           </AnimatedInput>
-          {isFocused && (
+          {(isFocused || value) && (
             <Button
               variant={value ? 'solid' : 'link'}
               className="px-4"
@@ -655,7 +665,7 @@ function NameLink({
   );
 }
 
-function handleReply({
+function reply({
   comment,
   rootQueryKey,
   subQueryKey,
