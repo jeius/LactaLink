@@ -15,7 +15,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useInfinitePosts } from '@/hooks/posts/useInfinitePosts';
+import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
 import { shadow } from '@/lib/utils/shadows';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -38,7 +38,7 @@ export default function FeedPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data: posts, queryKey, ...query } = useInfinitePosts(undefined, { limit: 10 });
+  const { data: posts, queryKey, ...query } = useInfinitePosts();
 
   const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
 

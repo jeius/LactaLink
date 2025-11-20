@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useLikeInteraction } from '@/hooks/posts/useInteraction';
+import { useLikeInteraction } from '@/features/feed/hooks/useLikeInteraction';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';

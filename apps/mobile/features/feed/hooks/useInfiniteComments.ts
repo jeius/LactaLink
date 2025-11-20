@@ -1,32 +1,39 @@
-import { INFINITE_QUERY_KEY } from '@/lib/constants';
+import { useMeUser } from '@/hooks/auth/useAuth';
+import { INFINITE_QUERY_KEY } from '@/lib/constants/queryKeys';
 import { InfiniteDataMap } from '@/lib/types';
 import { getApiClient } from '@lactalink/api';
-import { Post } from '@lactalink/types/payload-generated-types';
+import { Comment } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
-import { useMeUser } from '../auth/useAuth';
-import { useStoredInfiniteData } from '../useStoredData';
-import { Config } from './utils';
+import { useMemo } from 'react';
+import { Config, UseInfiniteCommentsReturn } from '../lib/types';
 
-export function useInfinitePosts(initialData?: InfiniteDataMap<Post>, config: Config = {}) {
+export function useInfiniteComments(
+  initialData?: InfiniteDataMap<Comment>,
+  config: Config = {}
+): UseInfiniteCommentsReturn {
   const { data: meUser } = useMeUser();
   const meProfile = meUser?.profile;
 
-  const { limit = 15, sort = '-createdAt', depth = 5 } = config;
+  const { limit = 10, sort = '-createdAt', depth = 5 } = config;
 
-  const [savedData, setSavedData] = useStoredInfiniteData<Post>('infinite-posts');
-
-  const queryKey = [...INFINITE_QUERY_KEY, limit, sort, config.where ?? {}];
+  const queryKey = [...INFINITE_QUERY_KEY, 'comments', limit, sort, config.where ?? {}];
 
   const { data, ...query } = useInfiniteQuery({
+    enabled: config.enabled ?? true,
     initialPageParam: 1,
-    initialData: initialData ?? savedData,
+    initialData: initialData,
+    getNextPageParam: (page) => page.nextPage || null,
+    getPreviousPageParam: (page) => page.prevPage || null,
+    // placeholderData: (prev) => prev,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryKey,
     queryFn: async ({ pageParam }) => {
       const api = getApiClient();
       const { docs, ...rest } = await api.find({
-        collection: 'posts',
+        collection: 'comments',
         page: pageParam,
         limit,
         sort,
@@ -37,8 +44,7 @@ export function useInfinitePosts(initialData?: InfiniteDataMap<Post>, config: Co
           likes: { createdBy: true },
         },
         joins: {
-          comments: false,
-          shares: { count: true },
+          replies: { count: true, sort: '-createdAt', limit: 4 },
           likes: {
             count: true,
             where: {
@@ -54,22 +60,14 @@ export function useInfinitePosts(initialData?: InfiniteDataMap<Post>, config: Co
       const map = new Map(docs.map((d) => [d.id, d]));
       return { docs: map, ...rest };
     },
-    getNextPageParam: (page) => page.nextPage || null,
-    getPreviousPageParam: (page) => page.prevPage || null,
   });
 
   const dataArray = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
 
-  useEffect(() => {
-    if (data) {
-      //@ts-expect-error Safe type error
-      setSavedData(data);
-    }
-  }, [data, setSavedData]);
-
   return {
     queryKey,
     data: dataArray,
+    paginatedData: data,
     ...query,
   };
 }
