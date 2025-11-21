@@ -4,6 +4,7 @@ import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { COMMENT_STATUS } from '@lactalink/enums/posts';
 import { CollectionConfig } from 'payload';
 import { authenticated, collectionAuthorOrAdmin } from '../_access-control/general';
+import { cascadeDeleteComments } from './hooks/cascadeDelete';
 import { updateCommentRepliesCount, updatePostCommentCount } from './hooks/updateCounters';
 
 export const Comments: CollectionConfig<'comments'> = {
@@ -26,6 +27,7 @@ export const Comments: CollectionConfig<'comments'> = {
   hooks: {
     beforeChange: [generateOwner],
     afterChange: [updateCommentRepliesCount, updatePostCommentCount],
+    beforeDelete: [cascadeDeleteComments],
     afterDelete: [updateCommentRepliesCount, updatePostCommentCount],
   },
   fields: [
