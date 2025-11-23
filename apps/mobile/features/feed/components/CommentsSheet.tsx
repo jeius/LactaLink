@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
 import { useInfiniteComments } from '@/features/feed/hooks/useInfiniteComments';
+import { QUERY_KEYS } from '@/lib/constants';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -21,7 +22,6 @@ import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { QueryKey } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import React, { useState } from 'react';
-import { useInfinitePosts } from '../hooks/useInfinitePosts';
 import { CommentPayload, ReplyArgs } from '../lib/types';
 import CommentInput from './CommentInput';
 import CommentsSheetItem from './CommentsSheetItem';
@@ -52,7 +52,7 @@ export default function CommentsSheet({
   bottomInset = 0,
   ...props
 }: CommentsSheetProps) {
-  const { queryKey: postsQueryKey } = useInfinitePosts();
+  const postsQueryKey = QUERY_KEYS.POSTS.INFINITE;
   const { queryKey: commentsQueryKey, ...query } = useInfiniteComments(undefined, {
     limit: 10,
     where: {

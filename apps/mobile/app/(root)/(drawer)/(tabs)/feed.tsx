@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { HStack, HStackProps } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -87,8 +88,7 @@ export default function FeedPage() {
         ListHeaderComponentStyle={{ paddingTop: headerHeight - insets.top, marginBottom: 8 }}
         onEndReached={fetchNextPage}
         renderItem={({ item }) => {
-          const isPlaceholder = isPlaceHolderData(item);
-          if (isPlaceholder) return <Card variant="filled" className="h-64 rounded-none" />;
+          if (isPlaceHolderData(item)) return <PlaceHolderItem />;
           return <FeedItemCard post={item} queryKey={queryKey} />;
         }}
       />
@@ -113,6 +113,30 @@ function CTA(props: HStackProps) {
         )}
       />
     </HStack>
+  );
+}
+
+function PlaceHolderItem() {
+  return (
+    <Card variant="filled" className="h-64 rounded-none p-3">
+      <HStack space="sm">
+        <Skeleton variant="circular" className="h-10 w-10" />
+        <VStack space="xs">
+          <Skeleton variant="sharp" className="h-4 w-32" />
+          <Skeleton variant="sharp" className="h-4 w-10" />
+        </VStack>
+      </HStack>
+      <VStack space="xs" className="mt-4">
+        <Skeleton variant="sharp" className="h-5" />
+        <Skeleton variant="sharp" className="h-5" />
+        <Skeleton variant="sharp" className="h-5" />
+        <Skeleton variant="sharp" className="h-5 w-40" />
+      </VStack>
+      <HStack space="sm" className="flex-1 items-end">
+        <Skeleton variant="rounded" className="mt-4 h-8 w-8" />
+        <Skeleton variant="rounded" className="mt-4 h-8 w-8" />
+      </HStack>
+    </Card>
   );
 }
 

@@ -10,33 +10,57 @@ import {
 } from '@/components/ui/popover';
 import { Pressable } from '@/components/ui/pressable';
 import { type PostSchema } from '@lactalink/form-schemas';
-import { launchCameraAsync, launchImageLibraryAsync } from 'expo-image-picker';
+import { randomUUID } from 'expo-crypto';
+import { ImagePickerResult, launchCameraAsync, launchImageLibraryAsync } from 'expo-image-picker';
 import { CameraIcon, ImageIcon, PlusCircleIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { transformPickerResult } from '../lib/transformPickerResult';
 import AttachmentSheet from './AttachmentSheet';
 
-export function ImagePickerButton() {
+const useMediaField = () => {
   const { setValue, control } = useForm<PostSchema>();
   const media = useWatch({ control, name: 'media' });
+
+  const addMedia = useCallback(
+    async (pickerResult: ImagePickerResult) => {
+      const transformedImages = await transformPickerResult(pickerResult);
+      if (!transformedImages) return;
+
+      const options = { shouldDirty: true, shouldTouch: true };
+      const imagesToAdd = transformedImages
+        .filter((img) => img !== null)
+        .map((img) => ({ image: img, id: `temp-${randomUUID()}` }));
+
+      if (media && media.length > 0) {
+        setValue('media', [...media, ...imagesToAdd], options);
+        // Remove attachments if new images are added
+        setValue('sharedFrom', undefined, options);
+      } else {
+        setValue('media', imagesToAdd, options);
+        // Remove attachments if new images are added
+        setValue('sharedFrom', undefined, options);
+      }
+    },
+    [media, setValue]
+  );
+
+  return { media, addMedia };
+};
+
+export function ImagePickerButton() {
+  const { addMedia } = useMediaField();
 
   const handlePress = async () => {
     const pickerResult = await launchImageLibraryAsync({
       mediaTypes: 'images',
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
     });
 
-    const transformedImage = await transformPickerResult(pickerResult);
-    if (!transformedImage) return;
-
-    const options = { shouldDirty: true, shouldTouch: true };
-    if (media && media.length > 0) {
-      setValue('media', [...media, { image: transformedImage }], options);
-    } else {
-      setValue('media', [{ image: transformedImage }], options);
-    }
+    await addMedia(pickerResult);
   };
 
   return (
@@ -47,8 +71,7 @@ export function ImagePickerButton() {
 }
 
 export function CameraButton() {
-  const { setValue, control } = useForm<PostSchema>();
-  const media = useWatch({ control, name: 'media' });
+  const { addMedia } = useMediaField();
 
   const handlePress = async () => {
     const pickerResult = await launchCameraAsync({
@@ -57,15 +80,7 @@ export function CameraButton() {
       quality: 0.8,
     });
 
-    const transformedImage = await transformPickerResult(pickerResult);
-    if (!transformedImage) return;
-
-    const options = { shouldDirty: true, shouldTouch: true };
-    if (media && media.length > 0) {
-      setValue('media', [...media, { image: transformedImage }], options);
-    } else {
-      setValue('media', [{ image: transformedImage }], options);
-    }
+    await addMedia(pickerResult);
   };
 
   return (

@@ -1,238 +1,150 @@
-import { URGENCY_LEVELS } from '@lactalink/enums';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+
+import { useFetchById } from '@/hooks/collections/useFetchById';
+import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { Request } from '@lactalink/types/payload-generated-types';
-import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
-import React from 'react';
-import { AnimatedPressable, AnimatedPressableProps } from '../animated/pressable';
-import { Box } from '../ui/box';
-import { Card } from '../ui/card';
-import { HStack } from '../ui/hstack';
-import { Skeleton } from '../ui/skeleton';
-import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
+import { displayVolume } from '@lactalink/utilities';
+import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
+import isString from 'lodash/isString';
+import React, { useMemo } from 'react';
+import { useWindowDimensions } from 'react-native';
+import DonationRequestStatusBadge from '../badges/DonationRequestStatusBadge';
+import { ProfileTag } from '../ProfileTag';
+import { DynamicStack, DynamicStackProps } from '../ui/DynamicStack';
 
-import { Image } from '@/components/Image';
-import { BLUR_HASH } from '@/lib/constants';
-import { useCurrentLocation } from '@/lib/stores/locationStore';
-import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon';
-import { getPriorityColor } from '@/lib/utils/getPriorityColor';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { useTheme } from '../AppProvider/ThemeProvider';
-import Avatar from '../Avatar';
-import FastTimerIcon from '../icons/FastTimerIcon';
-import { Icon } from '../ui/icon';
-import { BasicLocationPin } from '../ui/icon/custom';
-
-interface RequestCardProps extends Omit<AnimatedPressableProps, 'children'> {
+type CardContentProps = Pick<DynamicStackProps, 'orientation'> & {
   data: Request;
+  disableLinks?: boolean;
+};
+
+interface RequestCardProps extends Omit<CardContentProps, 'data'> {
+  data?: string | Request;
   isLoading?: boolean;
 }
 
-export default function RequestCard({ data, isLoading, ...props }: RequestCardProps) {
-  const location = useCurrentLocation();
-  const { theme } = useTheme();
+const useRequestData = (data?: string | Request) => {
+  const query = useFetchById(isString(data), { collection: 'requests', id: extractID(data)! });
+  return { ...query, data: extractCollection(data) ?? query.data };
+};
 
-  if (isLoading) {
-    return <RequestSkeleton />;
+export default function RequestCard({
+  data: dataProp,
+  isLoading: isLoadingProp,
+  ...props
+}: RequestCardProps) {
+  const { data: donationData, isLoading: isDataLoading } = useRequestData(dataProp!);
+
+  const isLoading = isLoadingProp || isDataLoading;
+
+  if (isLoading || !donationData) {
+    return <CardSkeleton orientation={props.orientation} />;
   }
 
-  const {
-    details: { urgency, image },
-    volumeNeeded,
-    deliveryPreferences,
-  } = data;
+  return <CardContent {...props} data={donationData} />;
+}
 
-  const requester = extractCollection(data.requester);
-  const name = requester?.displayName || requester?.givenName || 'Unknown Requester';
-  const userAvatar = extractCollection(requester?.avatar);
+function CardContent({ data, orientation = 'horizontal', disableLinks }: CardContentProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const isHorizontal = orientation === 'horizontal';
+  const isVertical = orientation === 'vertical';
 
-  const requestImage = extractCollection(image);
-  const uri = requestImage?.sizes?.small?.url || requestImage?.url || null;
-  const blurhash = requestImage?.blurHash || BLUR_HASH;
+  const image = useMemo(() => {
+    const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
+    const milkSamples = extractCollection(data.details.image);
+    return extractOneImageData(milkSamples, imageSize);
+  }, [data.details.image, screenWidth]);
 
-  const preference = extractCollection(deliveryPreferences);
-  const preferredMode = preference?.[0]?.preferredMode;
-
-  const address = extractCollection(preference?.[0]?.address);
-  const [latitude, longitude] = address?.coordinates || [0, 0];
-
-  const distance =
-    location &&
-    convertDistance(
-      getDistance(
-        { latitude: location.coords.latitude, longitude: location.coords.longitude },
-        { latitude, longitude }
-      ),
-      'km'
-    );
+  const volume = data.volumeNeeded;
 
   return (
-    <AnimatedPressable className="overflow-hidden rounded-2xl" {...props}>
-      <Card variant="filled" className="p-0">
-        <VStack>
-          <Box className="relative aspect-square h-48 bg-tertiary-50">
-            <Box className="h-full w-full overflow-hidden">
-              {uri ? (
-                <Image
-                  source={{ uri }}
-                  contentFit="cover"
-                  contentPosition={'center'}
-                  style={{ width: '100%', height: '100%' }}
-                  placeholder={{ blurhash }}
-                  alt={'Request Image'}
-                />
-              ) : (
-                <Text className="m-auto text-tertiary-900">No Image</Text>
-              )}
-            </Box>
+    <Card className="items-stretch p-0" style={{ maxWidth: 360 }}>
+      <DynamicStack orientation={orientation}>
+        <Box
+          className="relative bg-tertiary-50"
+          style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 164, width: '100%' }}
+        >
+          <SingleImageViewer image={image} disabled={!disableLinks} />
+        </Box>
 
-            <VStack
-              className="justify-between"
-              style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
-            >
-              <HStack>
-                <VStack
-                  className={`px-3 py-1`}
-                  style={{
-                    borderBottomRightRadius: 12,
-                    backgroundColor: getPriorityColor(theme, urgency, 200),
-                  }}
-                >
-                  <Text size="2xs" style={{ color: getPriorityColor(theme, urgency, 900) }}>
-                    Requesting
-                  </Text>
-                  <Text
-                    size="xl"
-                    className="font-JakartaSemiBold"
-                    style={{ color: getPriorityColor(theme, urgency, 900) }}
-                  >
-                    {volumeNeeded}{' '}
-                    <Text
-                      className="font-JakartaMedium"
-                      style={{ color: getPriorityColor(theme, urgency, 900) }}
-                    >
-                      mL
-                    </Text>
-                  </Text>
-                </VStack>
-              </HStack>
-
-              <VStack className="relative px-2 py-1">
-                <Box
-                  className="absolute inset-0"
-                  style={{ backgroundColor: getPriorityColor(theme, urgency), opacity: 0.8 }}
-                />
-                <HStack space="xs" className="items-center justify-end">
-                  <Icon
-                    as={FastTimerIcon}
-                    fill={getPriorityColor('light', urgency, 0).toString()}
-                  />
-                  <Text
-                    size="xs"
-                    className="font-JakartaSemiBold"
-                    style={{ color: getPriorityColor('light', urgency, 0) }}
-                  >
-                    {URGENCY_LEVELS[urgency].label}
-                  </Text>
-                </HStack>
-              </VStack>
-            </VStack>
-          </Box>
-
-          <HStack space="sm" className="items-center p-2 pb-0">
-            {preferredMode && (
-              <>
-                <HStack space="xs">
-                  {preferredMode.map((mode, i) => (
-                    <Image
-                      key={i}
-                      source={getDeliveryPreferenceIcon(mode)}
-                      alt={`${mode} icon`}
-                      style={{ width: 14, height: 14 }}
-                    />
-                  ))}
-                </HStack>
-
-                <Box className="h-4 flex-1 border-b border-dashed border-outline-700" />
-              </>
-            )}
-
-            <HStack>
-              <Icon as={BasicLocationPin} size="xs" className="fill-primary-500" />
-              <Text size="xs">{distance?.toFixed(2)} km</Text>
-            </HStack>
-          </HStack>
-
-          <HStack space="sm" className="items-center p-2">
-            <Avatar size="sm" details={{ avatar: userAvatar, name }} />
-            <Text size="xs" className="flex-1">
-              {name}
+        <HStack space="sm" className="flex-1 px-4 py-2">
+          <VStack className="flex-1 items-start justify-center">
+            <Text size="lg" className="font-JakartaExtraBold" numberOfLines={1}>
+              {displayVolume(volume)}
             </Text>
-          </HStack>
-        </VStack>
-      </Card>
-    </AnimatedPressable>
+            <Text
+              size="sm"
+              className="mb-1 font-JakartaMedium text-typography-700"
+              numberOfLines={1}
+            >
+              Milk Request
+            </Text>
+            {isHorizontal && <DonationRequestStatusBadge status={data.status} />}
+          </VStack>
+
+          <Box className={isVertical ? 'self-center' : 'self-end'}>
+            {isVertical ? (
+              <DonationRequestStatusBadge status={data.status} size="md" />
+            ) : (
+              <ProfileTag
+                hideLabel
+                profile={{ relationTo: 'individuals', value: data.requester }}
+              />
+            )}
+          </Box>
+        </HStack>
+
+        {isVertical && (
+          <Box className="p-4 pt-0">
+            <ProfileTag
+              profile={{ relationTo: 'individuals', value: data.requester }}
+              label="Requester"
+            />
+          </Box>
+        )}
+      </DynamicStack>
+    </Card>
   );
 }
 
-export function RequestSkeleton() {
+function CardSkeleton({ orientation = 'horizontal' }: Pick<CardContentProps, 'orientation'>) {
+  const isHorizontal = orientation === 'horizontal';
+  const isVertical = orientation === 'vertical';
   return (
-    <Card variant="filled" className="p-0">
-      <VStack>
-        <Box className="relative aspect-square h-48 bg-background-muted">
-          <Box className="h-full w-full overflow-hidden">
-            <Skeleton startColor="bg-background-300" speed={4} />
-          </Box>
+    <Card className="items-stretch p-0" style={{ maxWidth: 360 }}>
+      <DynamicStack orientation={orientation}>
+        <Skeleton
+          variant="sharp"
+          style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 164, width: '100%' }}
+        />
 
-          <VStack
-            className="justify-between"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
-          >
-            <HStack>
-              <Skeleton
-                speed={2}
-                startColor="bg-tertiary-50"
-                className="h-12 w-20"
-                variant="sharp"
-                style={{ borderBottomRightRadius: 12 }}
-              />
-            </HStack>
-
-            <Skeleton speed={2} variant="sharp" startColor="bg-tertiary-50" className="h-12" />
+        <HStack space="sm" className="flex-1 px-4 py-2">
+          <VStack space="sm" className="flex-1 items-start justify-center">
+            <Skeleton variant="sharp" className="h-6 w-24" />
+            <Skeleton variant="sharp" className="h-4 w-32" />
+            {isHorizontal && <Skeleton variant="circular" className="h-6 w-24" />}
           </VStack>
-        </Box>
 
-        <VStack space="sm" className="p-2">
-          <HStack space="sm" className="justify-between">
-            <Skeleton
-              speed={4}
-              startColor="bg-background-300"
-              className="h-6 w-14"
-              variant="rounded"
-            />
-            <Skeleton
-              speed={4}
-              startColor="bg-background-300"
-              className="h-6 w-12"
-              variant="rounded"
-            />
-          </HStack>
+          <Box className={isVertical ? 'self-center' : 'self-end'}>
+            {isVertical ? (
+              <Skeleton variant="circular" className="h-8 w-24" />
+            ) : (
+              <Skeleton variant="circular" className="h-8 w-8" />
+            )}
+          </Box>
+        </HStack>
 
-          <HStack space="sm" className="items-center">
-            <Skeleton
-              speed={4}
-              startColor="bg-background-300"
-              className="h-8 w-8"
-              variant="circular"
-            />
-            <Skeleton
-              speed={4}
-              startColor="bg-background-300"
-              className="h-6 w-24"
-              variant="rounded"
-            />
-          </HStack>
-        </VStack>
-      </VStack>
+        {isVertical && (
+          <Box className="p-4 pt-1">
+            <Skeleton variant="circular" className="h-8 w-8" />
+          </Box>
+        )}
+      </DynamicStack>
     </Card>
   );
 }

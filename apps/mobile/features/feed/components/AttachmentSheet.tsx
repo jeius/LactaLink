@@ -49,11 +49,10 @@ export default function AttachmentSheet({
   });
 
   const handleSelect = (item: Donation | Request) => {
-    setValue(
-      'sharedFrom',
-      { relationTo: collection!, value: item.id },
-      { shouldDirty: true, shouldTouch: true }
-    );
+    const options = { shouldDirty: true, shouldTouch: true };
+    setValue('sharedFrom', { relationTo: collection!, value: item.id }, options);
+    // Remove media when an attachment is selected
+    setValue('media', undefined, options);
     setOpen(false);
   };
 
@@ -84,7 +83,13 @@ export default function AttachmentSheet({
           ListHeaderComponentStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}
           contentContainerClassName="flex-col items-stretch"
           renderItem={({ item }) => {
-            if (isPlaceHolderData(item)) return <Skeleton className="m-4 my-2 h-24 w-auto" />;
+            if (isPlaceHolderData(item))
+              return (
+                <Skeleton
+                  className="h-24 w-auto"
+                  style={{ marginVertical: 4, marginHorizontal: 8 }}
+                />
+              );
 
             const status = DONATION_REQUEST_STATUS[item.status];
 

@@ -6,13 +6,12 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { User } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';
 import { Link } from 'expo-router';
-import { isString } from 'lodash';
 import { MailIcon, PhoneIcon } from 'lucide-react-native';
 import React, { ComponentProps, ReactNode } from 'react';
 import { Box } from '../ui/box';
@@ -26,7 +25,7 @@ interface ProfileCardProps extends ComponentProps<typeof Card> {
 
 export default function ProfileCard({
   profile: profileProp,
-  isLoading,
+  isLoading: isLoadingProp,
   variant = 'ghost',
   action,
   ...cardProps
@@ -34,12 +33,10 @@ export default function ProfileCard({
   const { themeColors } = useTheme();
 
   const profileSlug = profileProp.relationTo;
-  const query = useFetchById(isString(profileProp.value), {
-    collection: profileSlug,
-    id: extractID(profileProp.value) || '',
-  });
 
-  const profile = extractCollection(profileProp?.value) || query.data;
+  const { data: profile, ...rest } = useProfileData(profileProp);
+  const isLoading = isLoadingProp || rest.isLoading;
+
   const user = extractCollection(profile?.owner) || null;
 
   const name = (profile && ('name' in profile ? profile.name : profile.displayName)) || 'No name';
@@ -51,12 +48,12 @@ export default function ProfileCard({
 
   return (
     <Card variant={variant} {...cardProps}>
-      {isLoading ? (
+      {isLoading || profile === undefined ? (
         <ProfileCardSkeleton />
       ) : (
         <HStack space="lg" className="w-full items-center">
           <Box className="relative h-full">
-            <ProfileAvatar profile={profile} size="xl" className="aspect-square w-auto" />
+            <ProfileAvatar profile={profileProp} size="xl" className="aspect-square w-auto" />
             {profileType && (
               <Box className="absolute right-1 top-0 rounded-full bg-background-0 p-1.5">
                 <Icon as={profileIcon} size="xs" color={themeColors.typography[700]} />
@@ -65,7 +62,7 @@ export default function ProfileCard({
           </Box>
 
           <VStack space="sm" className="flex-1 items-start">
-            <Link href={`/profile/${profileSlug}/${profile!.id}`} push asChild>
+            <Link href={`/profile/${profileSlug}/${profile.id}`} push asChild>
               <Button
                 disablePressAnimation
                 variant="link"

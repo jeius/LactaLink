@@ -1,12 +1,18 @@
+import { QueryKey } from '@tanstack/react-query';
+
 interface QueryKeys {
   AUTH: {
-    ALL: string[];
-    SESSION: string[];
-    USER: string[];
+    ALL: QueryKey;
+    SESSION: QueryKey;
+    USER: QueryKey;
   };
-  USER_THEME: string[];
-  MARKERS: string[];
-  TUTORIAL_STATE: string[];
+  USER_THEME: QueryKey;
+  MARKERS: QueryKey;
+  TUTORIAL_STATE: QueryKey;
+  POSTS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -18,6 +24,10 @@ export const QUERY_KEYS: QueryKeys = {
   USER_THEME: ['user-theme'],
   MARKERS: ['markers'],
   TUTORIAL_STATE: ['tutorial-state'],
+  POSTS: {
+    ALL: ['posts'],
+    INFINITE: ['posts', 'infinite'],
+  },
 };
 
 export const INFINITE_QUERY_KEY = ['infinite'];

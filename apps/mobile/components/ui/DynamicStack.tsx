@@ -1,16 +1,11 @@
-import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import React from 'react';
 import { View } from 'react-native';
 
-const baseStyle = isWeb
-  ? 'flex relative z-0 box-border border-0 list-none min-w-0 min-h-0 bg-transparent items-stretch m-0 p-0 text-decoration-none'
-  : '';
-
 const dynamicStackStyle = tva({
-  base: baseStyle,
+  base: 'items-stretch',
   variants: {
     space: {
       xs: 'gap-1',
@@ -22,9 +17,6 @@ const dynamicStackStyle = tva({
       '3xl': 'gap-7',
       '4xl': 'gap-8',
     },
-    reversed: {
-      true: 'flex-col-reverse',
-    },
     orientation: {
       horizontal: 'flex-row',
       vertical: 'flex-col',
@@ -35,12 +27,12 @@ const dynamicStackStyle = tva({
 type IVStackProps = React.ComponentProps<typeof View> & VariantProps<typeof dynamicStackStyle>;
 
 const DynamicStack = React.forwardRef<React.ComponentRef<typeof View>, IVStackProps>(function Stack(
-  { className, space, reversed, orientation, ...props },
+  { className, space, orientation, ...props },
   ref
 ) {
   return (
     <View
-      className={dynamicStackStyle({ space, reversed, orientation, class: className })}
+      className={dynamicStackStyle({ space, orientation, class: className })}
       {...props}
       ref={ref}
     />
@@ -50,3 +42,4 @@ const DynamicStack = React.forwardRef<React.ComponentRef<typeof View>, IVStackPr
 DynamicStack.displayName = 'DynamicStack';
 
 export { DynamicStack };
+export type { IVStackProps as DynamicStackProps };

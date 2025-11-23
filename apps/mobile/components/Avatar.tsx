@@ -1,17 +1,13 @@
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { isMeUser } from '@/lib/utils/isMeUser';
-import {
-  Avatar as AvatarType,
-  Hospital,
-  Individual,
-  MilkBank,
-  User,
-} from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { Link } from 'expo-router';
-import { ComponentProps, useEffect } from 'react';
+import { Avatar as AvatarType, User } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { useRecyclingState } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
+import { ComponentProps } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { AnimatedPressable } from './animated/pressable';
 import * as UIAvatar from './ui/avatar';
 import { Skeleton } from './ui/skeleton';
@@ -76,7 +72,7 @@ export default function Avatar({
 }
 
 interface ProfileAvatarProps extends Omit<AvatarProps, 'details'> {
-  profile?: User['profile'] | Individual | Hospital | MilkBank | null;
+  profile?: User['profile'];
   enablePress?: boolean;
   isLoading?: boolean;
 }
@@ -87,27 +83,28 @@ export function ProfileAvatar({
   status: badgeStatus,
   onLoad,
   fadeDuration,
-  isLoading,
+  isLoading: isLoadingProp,
   ...props
 }: ProfileAvatarProps) {
-  const profile = extractCollection(
-    profileProp && 'value' in profileProp ? profileProp?.value : profileProp
-  );
-  const avatar: AvatarType | null = extractCollection(profile?.avatar);
+  const router = useRouter();
+
+  const { data: profile, ...rest } = useProfileData(profileProp);
+
+  const isLoading = isLoadingProp || rest.isLoading;
+
+  const avatar = extractCollection(profile?.avatar);
 
   const user = extractCollection(profile?.owner);
   const isOwner = !!(user && isMeUser(user));
 
-  const profileSlug = user?.profile?.relationTo;
-  const profileID = profile?.id;
+  const profileSlug = profileProp?.relationTo;
+  const profileID = extractID(profileProp?.value);
 
-  const pressed = useSharedValue(false);
+  const [isPressed, setIsPressed] = useRecyclingState(false, [profileID]);
   const avatarTintStyle = useAnimatedStyle(() => {
-    const opacity = pressed.value ? 0.3 : 0;
-    return {
-      opacity: withTiming(opacity, { duration: 150 }),
-    };
-  });
+    const opacity = withTiming(isPressed ? 0.3 : 0, { duration: 150 });
+    return { opacity };
+  }, [isPressed]);
 
   const fallbackName = profile?.displayName || 'User';
 
@@ -125,55 +122,48 @@ export function ProfileAvatar({
       break;
   }
 
-  const AvatarComponent = () => (
-    <UIAvatar.Avatar
-      {...props}
-      className={`${props.className} ${isLoading ? 'bg-transparent' : ''}`}
+  const handlePress = () => {
+    if (!enablePress) return;
+    if (isOwner) router.push('/account');
+    else if (profileSlug && profileID) router.push(`/profile/${profileSlug}/${profileID}`);
+  };
+
+  return (
+    <AnimatedPressable
+      className="overflow-hidden rounded-full"
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}
+      onPress={handlePress}
+      pointerEvents={enablePress ? 'auto' : 'none'}
     >
-      {isLoading ? (
-        <Skeleton speed={4} variant="circular" />
-      ) : (
-        <>
-          <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>
-          {avatarUrl && (
-            <UIAvatar.AvatarImage
-              source={{ uri: avatarUrl }}
-              alt={`Profile picture of ${fallbackName}`}
-              onLoad={onLoad}
-              fadeDuration={fadeDuration}
+      <UIAvatar.Avatar
+        {...props}
+        className={`${props.className} ${isLoading ? 'bg-transparent' : ''}`}
+      >
+        {isLoading ? (
+          <Skeleton speed={4} variant="circular" />
+        ) : (
+          <>
+            <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>
+
+            {avatarUrl && (
+              <UIAvatar.AvatarImage
+                source={{ uri: avatarUrl }}
+                alt={`Profile picture of ${fallbackName}`}
+                onLoad={onLoad}
+                fadeDuration={fadeDuration}
+              />
+            )}
+
+            {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
+
+            <Animated.View
+              style={[StyleSheet.absoluteFillObject, avatarTintStyle]}
+              className="bg-background-400"
             />
-          )}
-          {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
-          <Animated.View
-            style={[StyleSheet.absoluteFill, avatarTintStyle]}
-            className="bg-background-400"
-          />
-        </>
-      )}
-    </UIAvatar.Avatar>
-  );
-
-  useEffect(() => {
-    pressed.value = false;
-  }, [profileID, pressed]);
-
-  return enablePress ? (
-    profileSlug && profileID && (
-      <Link href={isOwner ? '/account' : `/profile/${profileSlug}/${profileID}`} push asChild>
-        <AnimatedPressable
-          className="overflow-hidden rounded-full"
-          onPressIn={() => {
-            pressed.value = true;
-          }}
-          onPressOut={() => {
-            pressed.value = false;
-          }}
-        >
-          <AvatarComponent />
-        </AnimatedPressable>
-      </Link>
-    )
-  ) : (
-    <AvatarComponent />
+          </>
+        )}
+      </UIAvatar.Avatar>
+    </AnimatedPressable>
   );
 }

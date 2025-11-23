@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { NativeScrollEvent, Platform, ScrollViewProps, TextInput } from 'react-native';
 
 import { ScrollView } from 'react-native-gesture-handler';
@@ -70,26 +70,26 @@ const KeyboardAvoidingScrollView: React.FC<KeyboardAvoiderProps> = ({
     return () => unregister(id);
   }, []);
 
-  // useEffect(() => {
-  //   if (isKeyboardShown && scrollEvent.current) {
-  //     const currentOffset = scrollEvent.current.contentOffset.y;
-  //     const viewportHeight = scrollEvent.current.layoutMeasurement.height;
+  useEffect(() => {
+    if (isKeyboardShown && scrollEvent.current) {
+      const currentOffset = scrollEvent.current.contentOffset.y;
+      const viewportHeight = scrollEvent.current.layoutMeasurement.height;
 
-  //     const focusedInput = (focusedInputID && inputRefs.current[focusedInputID]) || null;
+      const focusedInput = (focusedInputID && inputRefs.current[focusedInputID]) || null;
 
-  //     if (focusedInput && focusedInput.isFocused()) {
-  //       focusedInput.measureInWindow((_x, y, _width, height) => {
-  //         const inputBottom = y + height;
-
-  //         // Check if the input is covered by the viewport
-  //         if (inputBottom > viewportHeight) {
-  //           const scrollToOffset = currentOffset + OFFSET + (inputBottom - viewportHeight);
-  //           scrollRef.current?.scrollTo({ y: scrollToOffset, animated: true });
-  //         }
-  //       });
-  //     }
-  //   }
-  // }, [focusedInputID, isKeyboardShown]);
+      if (focusedInput && focusedInput.isFocused()) {
+        focusedInput.measureInWindow((_x, y) => {
+          const inputVerticalPosition = y;
+          // Check if the input is covered by the viewport
+          if (inputVerticalPosition > viewportHeight) {
+            const scrollToOffset =
+              currentOffset + OFFSET + (inputVerticalPosition - viewportHeight);
+            scrollRef.current?.scrollTo({ y: scrollToOffset, animated: true });
+          }
+        });
+      }
+    }
+  }, [focusedInputID, isKeyboardShown]);
 
   return (
     <KeyboardAvoiderContext.Provider

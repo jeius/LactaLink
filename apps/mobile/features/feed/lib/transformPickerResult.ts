@@ -1,5 +1,4 @@
 import { transformImage } from '@/lib/utils/imageProcessors';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { ImagePickerResult } from 'expo-image-picker';
 import { toast } from 'sonner-native';
 
@@ -8,11 +7,19 @@ export async function transformPickerResult(pickerResult: ImagePickerResult) {
     return;
   }
 
-  const pickedImage = pickerResult.assets[0]!;
-  const transformedImage = await transformImage(pickedImage).catch((err) => {
-    toast.error(extractErrorMessage(err));
-    return null;
-  });
+  const errors: string[] = [];
+  const imagesToTransform = pickerResult.assets.map((asset) =>
+    transformImage(asset).catch(() => {
+      errors.push(asset.fileName || 'Unknown image');
+      return Promise.resolve(null);
+    })
+  );
 
-  return transformedImage;
+  const transformedImages = await Promise.all(imagesToTransform);
+
+  if (errors.length > 0) {
+    toast.error(`Failed to process: ${errors.join(', ')}`);
+  }
+
+  return transformedImages;
 }

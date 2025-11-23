@@ -56,7 +56,7 @@ export default function MatchedRequestCard({
     <CardPlaceholder />
   ) : (
     <Card
-      className="border-outline-500 relative w-full p-0"
+      className="relative w-full border-outline-500 p-0"
       style={{ shadowColor: getPriorityColor(theme, urgency) }}
     >
       <Box
@@ -69,7 +69,10 @@ export default function MatchedRequestCard({
           className="items-start p-4"
           style={{ backgroundColor: getPriorityColor(theme, urgency, 50) }}
         >
-          <ProfileAvatar size="lg" profile={requester} />
+          <ProfileAvatar
+            size="lg"
+            profile={requester && { relationTo: 'individuals', value: requester }}
+          />
           <VStack className="flex-1">
             <Text
               numberOfLines={1}
@@ -148,7 +151,7 @@ function CardPlaceholder() {
   return (
     <Card className="relative w-full p-0">
       <VStack space="lg">
-        <HStack space="md" className="bg-background-100 items-start p-4">
+        <HStack space="md" className="items-start bg-background-100 p-4">
           <Skeleton variant="circular" className="h-16 w-16" />
           <VStack space="xs" className="flex-1">
             <Skeleton variant="circular" className="h-5 w-32" />

@@ -9,6 +9,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useLikeInteraction } from '@/features/feed/hooks/useLikeInteraction';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
+import { MediaAttachment } from '@lactalink/types';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
 import { formatNumberToShortenUnits, formatTimeToPastLabel } from '@lactalink/utilities/formatters';
@@ -19,48 +20,50 @@ import { BadgeCheckIcon, HeartIcon, MessageCircleIcon } from 'lucide-react-nativ
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { TruncatedText } from '../ui/truncated-text';
+import DonationCard from './DonationCard';
+import RequestCard from './RequestCard';
 
 export function FeedItemCard({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
-  const { author, createdAt, attachments } = post;
+  const { author, createdAt, attachments, sharedFrom, content, title, id } = post;
+  const isTemp = post.id.startsWith('temp-');
 
-  return (
-    <Card variant="filled" className="flex-col items-stretch rounded-none p-0">
-      <Pressable className="flex-col items-stretch space-y-2 p-3">
-        <Author author={author} createdAt={createdAt} />
-        <ContentText {...post} />
-      </Pressable>
-      {attachments && <MediaAttachments attachments={attachments} />}
-      <Stats post={post} queryKey={queryKey} />
-    </Card>
-  );
-}
-
-function ContentText({ content, title, id, attachments }: Post) {
   const hasAttachments = attachments && attachments.length > 0;
   const titleInitialLines = hasAttachments ? 2 : 3;
   const contentInitialLines = hasAttachments ? 2 : 5;
 
   return (
-    <VStack className="mt-2 items-stretch">
-      <TruncatedText
-        initialLines={titleInitialLines}
-        size="lg"
-        bold
-        className="grow"
-        recyclingKey={`title-${id}`}
-      >
-        {title}
-      </TruncatedText>
-      {content && (
-        <TruncatedText
-          initialLines={contentInitialLines}
-          className="mt-2 grow"
-          recyclingKey={`content-${id}`}
-        >
-          {content}
-        </TruncatedText>
-      )}
-    </VStack>
+    <Card isDisabled={isTemp} variant="filled" className="flex-col items-stretch rounded-none p-0">
+      <Pressable className="flex-col items-stretch space-y-2 p-3">
+        <Author author={author} createdAt={createdAt} />
+
+        <VStack className="mt-2 items-stretch">
+          <TruncatedText
+            initialLines={titleInitialLines}
+            size="lg"
+            bold
+            className="grow"
+            recyclingKey={`title-${id}`}
+          >
+            {title}
+          </TruncatedText>
+          {content && (
+            <TruncatedText
+              initialLines={contentInitialLines}
+              className="mt-2 grow"
+              recyclingKey={`content-${id}`}
+            >
+              {content}
+            </TruncatedText>
+          )}
+        </VStack>
+      </Pressable>
+
+      {attachments && attachments.length > 0 && <MediaAttachments attachments={attachments} />}
+
+      {sharedFrom && <SharedAttachment sharedFrom={sharedFrom} />}
+
+      <Stats post={post} queryKey={queryKey} />
+    </Card>
   );
 }
 
@@ -134,7 +137,7 @@ function Stats({ post, queryKey }: { post: Post; queryKey: QueryKey }) {
   );
 }
 
-function MediaAttachments({ attachments }: { attachments: NonNullable<Post['attachments']> }) {
+function MediaAttachments({ attachments }: { attachments: MediaAttachment[] }) {
   const media = useMemo(
     () =>
       attachments
@@ -193,12 +196,10 @@ function MediaAttachments({ attachments }: { attachments: NonNullable<Post['atta
           <SingleImageViewer image={media[0]!.imageData} />
         </Box>
         <HStack space="xs" className="h-32 w-full">
-          {media.slice(1, 2).map((m) => (
-            <Box key={m.id} className="flex-1">
-              <SingleImageViewer image={m!.imageData} />
-            </Box>
-          ))}
-          <Pressable className="flex-1 items-center justify-center rounded-lg bg-background-300">
+          <SingleImageViewer className="flex-1" image={media[1]!.imageData} />
+          <Pressable className="flex-1 items-center justify-center">
+            <SingleImageViewer className="absolute inset-0" image={media[2]!.imageData} />
+            <Box className="absolute inset-0 bg-background-700" style={{ opacity: 0.5 }} />
             <Text size="xl" bold className="text-primary-0">
               +{length - 3}
             </Text>
@@ -206,4 +207,25 @@ function MediaAttachments({ attachments }: { attachments: NonNullable<Post['atta
         </HStack>
       </VStack>
     );
+}
+
+function SharedAttachment({ sharedFrom }: Pick<Post, 'sharedFrom'>) {
+  if (!sharedFrom) return null;
+
+  if (sharedFrom.relationTo === 'posts') return null; // Todo: render shared post preview
+
+  const slug = sharedFrom.relationTo;
+  const id = extractID(sharedFrom.value);
+
+  return (
+    <Link href={`/${slug}/${id}`} push asChild>
+      <Pressable style={{ marginHorizontal: 12 }}>
+        {sharedFrom.relationTo === 'donations' ? (
+          <DonationCard data={sharedFrom.value} />
+        ) : (
+          <RequestCard data={sharedFrom.value} />
+        )}
+      </Pressable>
+    </Link>
+  );
 }

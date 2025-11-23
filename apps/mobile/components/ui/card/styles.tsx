@@ -17,10 +17,6 @@ export const cardStyle = tva({
       ghost: 'rounded-none',
       filled: 'border border-outline-100 bg-background-0',
     },
-    isDisabled: {
-      true: 'pointer-events-none opacity-75',
-      false: 'pointer-events-auto opacity-100',
-    },
   },
   defaultVariants: {
     size: 'xl',

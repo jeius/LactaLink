@@ -1,9 +1,7 @@
-import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { User } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { isHospital, isMilkBank } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
-import isString from 'lodash/isString';
 import React from 'react';
 import { ProfileAvatar } from './Avatar';
 import { Button, ButtonText } from './ui/button';
@@ -12,7 +10,7 @@ import { Skeleton } from './ui/skeleton';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
-interface ProfileTagProps extends Pick<ContentProps, 'label' | 'direction'> {
+interface ProfileTagProps extends Pick<ContentProps, 'label' | 'direction' | 'hideLabel'> {
   profile: User['profile'];
   isLoading?: boolean;
 }
@@ -22,8 +20,8 @@ export function ProfileTag({ profile, isLoading, ...props }: ProfileTagProps) {
       space="sm"
       className={`items-center ${props.direction === 'rtl' ? 'flex-row-reverse' : ''}`}
     >
-      {isLoading ? (
-        <TagSkeleton direction={props.direction} />
+      {isLoading || profile === undefined ? (
+        <TagSkeleton {...props} />
       ) : (
         profile && <Content {...props} profile={profile} />
       )}
@@ -35,26 +33,27 @@ interface ContentProps {
   profile: NonNullable<User['profile']>;
   label?: string;
   direction?: 'ltr' | 'rtl';
+  hideLabel?: boolean;
 }
 
-function Content({ profile, direction = 'ltr', label: labelProp }: ContentProps) {
-  // Fetch profile data if it's a reference
-  const { data: fetchedProfile, isLoading } = useFetchById(isString(profile.value), {
-    collection: profile.relationTo,
-    id: extractID(profile.value),
-  });
+function Content({
+  profile,
+  direction = 'ltr',
+  label: labelProp,
+  hideLabel = false,
+}: ContentProps) {
+  const { data, isLoading } = useProfileData(profile);
 
-  const data = extractCollection(profile.value) || fetchedProfile;
   const label =
     labelProp ||
     (data && (isHospital(data) ? 'Hospital' : isMilkBank(data) ? 'Milk Bank' : 'Individual'));
 
-  return isLoading ? (
-    <TagSkeleton direction={direction} />
-  ) : (
-    data && (
-      <>
-        <ProfileAvatar size="sm" profile={data} enablePress />
+  if (isLoading || !data) return <TagSkeleton hideLabel={hideLabel} direction={direction} />;
+
+  return (
+    <>
+      <ProfileAvatar size="sm" enablePress profile={profile} />
+      {!hideLabel && (
         <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
           <Link asChild push href={`/profile/${profile.relationTo}/${data.id}`}>
             <Button
@@ -74,19 +73,21 @@ function Content({ profile, direction = 'ltr', label: labelProp }: ContentProps)
             {label}
           </Text>
         </VStack>
-      </>
-    )
+      )}
+    </>
   );
 }
 
-function TagSkeleton({ direction = 'ltr' }: { direction?: ContentProps['direction'] }) {
+function TagSkeleton({ direction = 'ltr', hideLabel = false }: Omit<ContentProps, 'profile'>) {
   return (
     <>
       <Skeleton className="h-8 w-8" variant="circular" />
-      <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
-        <Skeleton className="mb-1 h-3 w-32" variant="circular" />
-        <Skeleton className="h-3 w-16" variant="circular" />
-      </VStack>
+      {!hideLabel && (
+        <VStack className={direction === 'rtl' ? 'items-end' : 'items-start'}>
+          <Skeleton className="mb-1 h-3 w-32" variant="circular" />
+          <Skeleton className="h-3 w-16" variant="circular" />
+        </VStack>
+      )}
     </>
   );
 }
