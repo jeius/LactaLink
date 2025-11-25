@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
 import { useInfiniteComments } from '@/features/feed/hooks/useInfiniteComments';
+import { CommentPayload, ReplyArgs } from '@/features/feed/lib/types';
 import { QUERY_KEYS } from '@/lib/constants';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
@@ -22,7 +23,6 @@ import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { QueryKey } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import React, { useState } from 'react';
-import { CommentPayload, ReplyArgs } from '../lib/types';
 import CommentInput from './CommentInput';
 import CommentsSheetItem from './CommentsSheetItem';
 

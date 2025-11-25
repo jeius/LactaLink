@@ -12,6 +12,7 @@ interface QueryKeys {
   POSTS: {
     ALL: QueryKey;
     INFINITE: QueryKey;
+    ONE: QueryKey;
   };
 }
 
@@ -27,6 +28,7 @@ export const QUERY_KEYS: QueryKeys = {
   POSTS: {
     ALL: ['posts'],
     INFINITE: ['posts', 'infinite'],
+    ONE: ['posts', 'one'],
   },
 };
 

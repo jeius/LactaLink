@@ -15,7 +15,7 @@ import { ImagePickerResult, launchCameraAsync, launchImageLibraryAsync } from 'e
 import { CameraIcon, ImageIcon, PlusCircleIcon } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import { useWatch } from 'react-hook-form';
-import { transformPickerResult } from '../lib/transformPickerResult';
+import { transformPickerResult } from '../../lib/transformPickerResult';
 import AttachmentSheet from './AttachmentSheet';
 
 const useMediaField = () => {

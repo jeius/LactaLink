@@ -1,12 +1,12 @@
+import { useDeleteCommentMutation } from '@/features/feed/hooks/useDeleteCommentMutation';
+import { useInfiniteComments } from '@/features/feed/hooks/useInfiniteComments';
 import { useLikeInteraction } from '@/features/feed/hooks/useLikeInteraction';
+import { DeleteCommentPayload, ReplyArgs } from '@/features/feed/lib/types';
 import { Comment } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useRecyclingState } from '@shopify/flash-list';
 import { QueryKey } from '@tanstack/react-query';
 import React from 'react';
-import { useDeleteCommentMutation } from '../hooks/useDeleteCommentMutation';
-import { useInfiniteComments } from '../hooks/useInfiniteComments';
-import { DeleteCommentPayload, ReplyArgs } from '../lib/types';
 import CommentItem from './CommentItem';
 import CommentItemActions from './CommentItemActions';
 import CommentLikeButton from './CommentLikeButton';

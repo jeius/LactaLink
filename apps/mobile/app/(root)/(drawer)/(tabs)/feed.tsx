@@ -1,6 +1,5 @@
 import React, { FC, useCallback } from 'react';
 
-import { FeedItemCard } from '@/components/cards/FeedItemCard';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import { NearestListingsList } from '@/components/lists/NearestListingsList';
 import { DonateRequestModal } from '@/components/modals';
@@ -16,13 +15,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import PostItem from '@/features/feed/components/post-item/PostItem';
 import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
 import { shadow } from '@/lib/utils/shadows';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,6 +35,7 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
 
 export default function FeedPage() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
@@ -89,7 +90,9 @@ export default function FeedPage() {
         onEndReached={fetchNextPage}
         renderItem={({ item }) => {
           if (isPlaceHolderData(item)) return <PlaceHolderItem />;
-          return <FeedItemCard post={item} queryKey={queryKey} />;
+
+          const handlePress = () => router.push(`/feed/${item.id}`);
+          return <PostItem post={item} queryKey={queryKey} onPress={handlePress} />;
         }}
       />
     </SafeArea>

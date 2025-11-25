@@ -52,3 +52,7 @@ export type LikableRelation = {
 export type LikeMutationContext = {
   previousData: InfiniteDataMap<Post | Comment> | undefined;
 };
+
+export type FeedSearchParams = {
+  mediaId?: string;
+};

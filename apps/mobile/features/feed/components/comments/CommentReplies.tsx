@@ -4,10 +4,10 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { ReplyArgs, UseInfiniteCommentsReturn } from '@/features/feed/lib/types';
 import { Comment } from '@lactalink/types/payload-generated-types';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { ReplyArgs, UseInfiniteCommentsReturn } from '../lib/types';
 import CommentsSheetItem from './CommentsSheetItem';
 
 interface CommentRepliesProps {

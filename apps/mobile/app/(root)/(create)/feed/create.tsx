@@ -9,9 +9,9 @@ import {
   AddAttachmentButton,
   CameraButton,
   ImagePickerButton,
-} from '@/features/feed/components/add-buttons';
-import Attachment from '@/features/feed/components/Attachment';
-import MediaList from '@/features/feed/components/MediaList';
+} from '@/features/feed/components/post-create/add-buttons';
+import Attachment from '@/features/feed/components/post-create/Attachment';
+import MediaList from '@/features/feed/components/post-create/MediaList';
 import { useAddPostMutation } from '@/features/feed/hooks/useAddPostMutation';
 import { uploadImage } from '@/lib/api/file';
 import { getMeUser } from '@/lib/stores/meUserStore';

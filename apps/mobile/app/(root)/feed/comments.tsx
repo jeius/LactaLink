@@ -1,5 +1,5 @@
 import { Box } from '@/components/ui/box';
-import CommentsSheet from '@/features/feed/components/CommentsSheet';
+import CommentsSheet from '@/features/feed/components/comments/CommentsSheet';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { ErrorSearchParams } from '@lactalink/types/errors';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';

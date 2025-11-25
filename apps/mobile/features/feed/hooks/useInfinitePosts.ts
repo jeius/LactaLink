@@ -65,6 +65,7 @@ export function useInfinitePosts() {
   return {
     queryKey,
     data: dataArray,
+    mappedData: data,
     ...query,
   };
 }

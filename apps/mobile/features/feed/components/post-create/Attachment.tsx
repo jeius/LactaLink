@@ -21,9 +21,11 @@ export default function Attachment() {
 
   if (!attachment) return null;
 
+  const title = attachment.relationTo === 'donations' ? 'Donation' : 'Request';
+
   return (
     <Box className="p-4">
-      <Text className="mb-1 font-JakartaSemiBold">Attachment</Text>
+      <Text className="mb-1 font-JakartaSemiBold">{title}</Text>
       <AnimatedPressable className="overflow-hidden rounded-2xl">
         {attachment.relationTo === 'donations' ? (
           <DonationCard data={attachment.value} orientation="horizontal" />

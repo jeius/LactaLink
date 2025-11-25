@@ -19,3 +19,33 @@ export function extractName(user: Pick<User, 'profile'>): string | null {
   }
   return null;
 }
+
+/**
+ * Extracts the display name from a user's profile.
+ *
+ * @param user - The user object from which to extract the display name.
+ * @returns {string | null} - The extracted display name from the user profile, or null if not found.
+ */
+export function extractDisplayName(user: Pick<User, 'profile'>): string {
+  if (!user.profile) {
+    throw new Error('User profile is not found.');
+  }
+
+  const profile = user.profile.value;
+
+  if (typeof profile === 'string') {
+    throw new Error('User profile is a string, expected an object.');
+  }
+
+  const displayName = profile.displayName;
+
+  if (!displayName) {
+    if ('givenName' in profile) {
+      return profile.givenName;
+    } else {
+      return profile.name;
+    }
+  }
+
+  return displayName;
+}
