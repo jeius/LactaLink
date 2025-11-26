@@ -4,38 +4,55 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { ReplyArgs, UseInfiniteCommentsReturn } from '@/features/feed/lib/types';
+import { DeleteCommentPayload, ReplyArgs } from '@/features/feed/lib/types';
+import { isTempID } from '@/lib/utils/tempID';
 import { Comment } from '@lactalink/types/payload-generated-types';
-import { QueryKey, useQueryClient } from '@tanstack/react-query';
-import React from 'react';
-import CommentsSheetItem from './CommentsSheetItem';
+import { useRecyclingState } from '@shopify/flash-list';
+import { QueryKey, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useMemo } from 'react';
+import { useDeleteCommentMutation } from '../../hooks/useDeleteCommentMutation';
+import { useLikeInteraction } from '../../hooks/useLikeInteraction';
+import { REPLIES_LIMIT } from '../../lib/constants';
+import { createRepliesInfiniteOptions } from '../../lib/queryOptions/repliesInfiniteOptions';
+import CommentItem from './CommentItem';
+import CommentItemActions from './CommentItemActions';
+import CommentLikeButton from './CommentLikeButton';
 
 interface CommentRepliesProps {
   comment: Comment;
-  postsQueryKey: QueryKey;
   onReply?: (args: ReplyArgs) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
-  query: UseInfiniteCommentsReturn;
 }
-
-const REPLIES_LIMIT = 4;
 
 export default function CommentReplies({
   comment,
-  postsQueryKey,
   onReply,
-  query,
   open: viewMore,
   setOpen: setViewMore,
 }: CommentRepliesProps) {
   const queryClient = useQueryClient();
 
-  const { isFetchingNextPage, isLoading, hasNextPage, isFetching, isEnabled, ...repliesQuery } =
-    query;
+  const repliesInfiniteOptions = useMemo(
+    () => createRepliesInfiniteOptions(comment.id, viewMore),
+    [comment.id, viewMore]
+  );
+  const repliesQueryKey = repliesInfiniteOptions.queryKey;
+
+  const {
+    isFetchingNextPage,
+    isLoading,
+    hasNextPage,
+    isFetching,
+    isEnabled,
+    data,
+    ...repliesQuery
+  } = useInfiniteQuery(repliesInfiniteOptions);
+
+  const replies = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
 
   const totalReplies = comment.repliesCount ?? 0;
-  const viewedReplies = repliesQuery.data?.length ?? 0;
+  const viewedReplies = replies?.length ?? 0;
   const remainingReplies = Math.max(0, totalReplies - viewedReplies);
   const moreReplies =
     isEnabled && !hasNextPage ? remainingReplies : Math.min(REPLIES_LIMIT, remainingReplies);
@@ -63,7 +80,7 @@ export default function CommentReplies({
       repliesQuery.fetchNextPage();
     } else {
       setViewMore(false);
-      queryClient.cancelQueries({ queryKey: repliesQuery.queryKey });
+      queryClient.cancelQueries(repliesInfiniteOptions);
     }
   };
 
@@ -71,14 +88,14 @@ export default function CommentReplies({
 
   return (
     <>
-      {viewMore && (repliesQuery.data?.length ?? 0) > 0 && (
+      {viewMore && (replies?.length ?? 0) > 0 && (
         <VStack space="md" className="mt-2 items-stretch gap-3 py-1">
-          {repliesQuery.data.map((reply) => (
-            <CommentsSheetItem
+          {replies?.map((reply) => (
+            <ReplyItem
               key={reply.id}
-              comment={reply}
-              queryKey={repliesQuery.queryKey}
-              postsQueryKey={postsQueryKey}
+              reply={reply}
+              queryKey={repliesQueryKey}
+              parentComment={comment}
               onReply={onReply}
             />
           ))}
@@ -103,6 +120,60 @@ export default function CommentReplies({
           </Pressable>
         )}
       </HStack>
+    </>
+  );
+}
+
+interface ReplyItemProps {
+  reply: Comment;
+  queryKey: QueryKey;
+  parentComment: Comment;
+  onReply?: (args: ReplyArgs) => void;
+}
+
+function ReplyItem({ reply, queryKey, onReply, parentComment }: ReplyItemProps) {
+  const [openModal, setOpenModal] = useRecyclingState(false, [reply.id]);
+
+  const { hasLiked, toggleLike } = useLikeInteraction(
+    { relationTo: 'comments', value: reply },
+    queryKey
+  );
+
+  const { mutate: deleteComment } = useDeleteCommentMutation(queryKey);
+
+  const handleReplyPress = () => {
+    onReply?.({
+      comment: reply,
+      queryKey: queryKey,
+      parentComment: parentComment,
+    });
+  };
+
+  const handleDelete = (comment: Comment) => {
+    const payload: DeleteCommentPayload = { ...comment, queryKey };
+    deleteComment(payload);
+  };
+
+  return (
+    <>
+      <CommentItem
+        comment={reply}
+        isTemporary={isTempID(reply.id)}
+        avatarSize={24}
+        likeButton={<CommentLikeButton comment={reply} queryKey={queryKey} />}
+        onReplyPress={handleReplyPress}
+        onLongPress={() => setOpenModal(true)}
+      />
+
+      <CommentItemActions
+        comment={reply}
+        open={openModal}
+        hasLiked={hasLiked}
+        setOpen={setOpenModal}
+        onReply={handleReplyPress}
+        onLike={toggleLike}
+        onDelete={handleDelete}
+      />
     </>
   );
 }

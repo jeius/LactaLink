@@ -2,7 +2,7 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { InfiniteDataMap } from '@/lib/types';
 import { createDeleteCommentMutationKey } from '@/lib/utils/createKeys';
 import { getApiClient } from '@lactalink/api';
-import { Comment, Post } from '@lactalink/types/payload-generated-types';
+import { Comment } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,23 +10,21 @@ import {
   updateCommentRepliesCountInCache,
   updatePostCommentsCountInCache,
 } from '../lib/commentCacheUtils';
-import { CommentMutationContext, DeleteCommentPayload } from '../lib/types';
+import { postsInfiniteOptions } from '../lib/queryOptions/postsInfiniteOptions';
+import { DeleteCommentPayload } from '../lib/types';
 
-export function useDeleteCommentMutation(postsQueryKey: QueryKey, commentsQueryKey: QueryKey) {
+export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
   const queryClient = useQueryClient();
   const { data: meUser } = useMeUser();
 
-  const deleteMutation = useMutation<
-    Comment,
-    Error,
-    DeleteCommentPayload,
-    CommentMutationContext<InfiniteDataMap<Comment | Post>>
-  >({
+  const postsQueryKey = postsInfiniteOptions.queryKey;
+
+  const deleteMutation = useMutation({
     mutationKey: createDeleteCommentMutationKey(meUser),
     meta: {
       errorMessage: (err) => extractErrorMessage(err),
     },
-    mutationFn: async ({ id }) => {
+    mutationFn: async ({ id }: DeleteCommentPayload) => {
       const apiClient = getApiClient();
       return apiClient.deleteByID({ collection: 'comments', id });
     },
@@ -34,12 +32,12 @@ export function useDeleteCommentMutation(postsQueryKey: QueryKey, commentsQueryK
       // Cancel any outgoing refetches
       await Promise.all([
         queryClient.cancelQueries({ queryKey }),
-        queryClient.cancelQueries({ queryKey: postsQueryKey }),
+        queryClient.cancelQueries(postsInfiniteOptions),
       ]);
 
       // Snapshot previous values
       const previousComments = queryClient.getQueryData<InfiniteDataMap<Comment>>(queryKey);
-      const previousPosts = queryClient.getQueryData<InfiniteDataMap<Post>>(postsQueryKey);
+      const previousPosts = queryClient.getQueryData(postsQueryKey);
       const previousParentComments =
         queryClient.getQueryData<InfiniteDataMap<Comment>>(commentsQueryKey);
 
@@ -52,7 +50,7 @@ export function useDeleteCommentMutation(postsQueryKey: QueryKey, commentsQueryK
 
       // If it's a root comment, update the post's commentsCount
       if (!parentID) {
-        queryClient.setQueryData<InfiniteDataMap<Post>>(postsQueryKey, (oldData) =>
+        queryClient.setQueryData(postsQueryKey, (oldData) =>
           updatePostCommentsCountInCache(oldData, extractID(post), 'decrement')
         );
       } else {

@@ -1,5 +1,4 @@
 import { URGENCY_LEVELS } from '@lactalink/enums';
-import { MapRegion } from '@lactalink/types';
 import { LatLng } from 'react-native-maps';
 
 export * from './assets';
@@ -24,15 +23,11 @@ export const PHILIPPINES_COORDINATES: LatLng = {
   longitude: 121.774,
 };
 
-export const DEFAULT_REGION: MapRegion = {
-  ...PHILIPPINES_COORDINATES,
-  latitudeDelta: 10,
-  longitudeDelta: 10,
-};
-
 export const PRIORITY_LEVEL_COLORS: Record<keyof typeof URGENCY_LEVELS, string> = {
   LOW: 'success-400',
   MEDIUM: 'secondary-400',
   HIGH: 'warning-400',
   CRITICAL: 'error-400',
 };
+
+export const TEMP_ID_PREFIX = 'temp-';

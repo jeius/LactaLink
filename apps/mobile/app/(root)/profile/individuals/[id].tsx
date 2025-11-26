@@ -16,9 +16,9 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
-import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
 import { Shade } from '@/lib/types/colors';
 import { RecipientSearchParams } from '@/lib/types/donationRequest';
 import { isMeUser } from '@/lib/utils/isMeUser';
@@ -202,7 +202,7 @@ function IndividualProfile({ profile }: IndividualProfileProps) {
         <VStack className="items-center" style={{ marginTop: -60 }}>
           <Box className="relative">
             <ProfileAvatar
-              profile={profile}
+              profile={{ relationTo: 'individuals', value: profile }}
               size="xl"
               style={{ borderColor: avatarRingColor, borderWidth: 3 }}
             />

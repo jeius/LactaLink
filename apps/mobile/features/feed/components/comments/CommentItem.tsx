@@ -12,7 +12,6 @@ import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { formatTimeToPastLabel } from '@lactalink/utilities/formatters';
 import { isIndividual } from '@lactalink/utilities/type-guards';
 import { useRecyclingState } from '@shopify/flash-list';
-import { QueryKey } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { BadgeCheckIcon } from 'lucide-react-native';
 import React, { ReactNode } from 'react';
@@ -22,7 +21,6 @@ const INITIAL_COMMENT_LINES = 3;
 
 interface CommentItemProps {
   comment: Comment;
-  queryKey: QueryKey;
   isTemporary: boolean;
   avatarSize: number;
   likeButton: ReactNode;

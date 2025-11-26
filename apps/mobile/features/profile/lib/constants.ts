@@ -4,7 +4,9 @@ import {
   MilkBankSchema,
   SetupProfileSchema,
 } from '@lactalink/form-schemas';
-import { SetupProfileSteps } from '../types';
+import { Building2Icon, HospitalIcon, LucideProps, UserIcon } from 'lucide-react-native';
+import { SvgProps } from 'react-native-svg';
+import { ProfileType, SetupProfileSteps } from '../types';
 
 export const SETUP_PROFILE_STEPS: SetupProfileSteps[] = ['type', 'details', 'contact', 'avatar'];
 
@@ -37,3 +39,9 @@ export const DETAILS_FIELDS = {
 };
 export const CONTACT_FIELDS: (keyof SetupProfileSchema)[] = ['phone'];
 export const AVATAR_FIELDS: (keyof SetupProfileSchema)[] = ['avatar'];
+
+export const PROFILE_TYPE_ICONS: Record<ProfileType, React.FC<SvgProps | LucideProps>> = {
+  INDIVIDUAL: UserIcon,
+  HOSPITAL: HospitalIcon,
+  MILK_BANK: Building2Icon,
+};

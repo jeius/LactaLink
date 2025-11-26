@@ -4,29 +4,30 @@ import { createAddCommentMutationKey } from '@/lib/utils/createKeys';
 import { getApiClient } from '@lactalink/api';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
-import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   addCommentToCache,
   updateCommentRepliesCountInCache,
   updatePostCommentsCountInCache,
 } from '../lib/commentCacheUtils';
-import { CommentMutationContext, CommentPayload } from '../lib/types';
+import { createCommentsInfiniteOptions } from '../lib/queryOptions/commentsInfiniteOptions';
+import { postsInfiniteOptions } from '../lib/queryOptions/postsInfiniteOptions';
+import { CommentPayload } from '../lib/types';
 
-export function useAddCommentMutation(postsQueryKey: QueryKey, commentsQueryKey: QueryKey) {
+export function useAddCommentMutation(postID: Post['id']) {
   const queryClient = useQueryClient();
   const { data: meUser } = useMeUser();
 
-  const addMutation = useMutation<
-    Comment,
-    Error,
-    CommentPayload,
-    CommentMutationContext<InfiniteDataMap<Comment | Post>>
-  >({
+  const postsQueryKey = postsInfiniteOptions.queryKey;
+  const commentsInfiniteOptions = createCommentsInfiniteOptions(postID);
+  const commentsQueryKey = commentsInfiniteOptions.queryKey;
+
+  const addMutation = useMutation({
     mutationKey: createAddCommentMutationKey(meUser),
     meta: {
       errorMessage: (err) => extractErrorMessage(err),
     },
-    mutationFn: async ({ queryKey, ...commentData }) => {
+    mutationFn: async ({ queryKey, ...commentData }: CommentPayload) => {
       const apiClient = getApiClient();
       return apiClient.create({
         collection: 'comments',
@@ -46,14 +47,13 @@ export function useAddCommentMutation(postsQueryKey: QueryKey, commentsQueryKey:
       // Cancel any outgoing refetches
       await Promise.all([
         queryClient.cancelQueries({ queryKey }),
-        queryClient.cancelQueries({ queryKey: postsQueryKey }),
+        queryClient.cancelQueries(postsInfiniteOptions),
       ]);
 
       // Snapshot previous values
       const previousComments = queryClient.getQueryData<InfiniteDataMap<Comment>>(queryKey);
-      const previousPosts = queryClient.getQueryData<InfiniteDataMap<Post>>(postsQueryKey);
-      const previousParentComments =
-        queryClient.getQueryData<InfiniteDataMap<Comment>>(commentsQueryKey);
+      const previousPosts = queryClient.getQueryData(postsQueryKey);
+      const previousParentComments = queryClient.getQueryData(commentsQueryKey);
 
       // Optimistically update comments cache
       queryClient.setQueryData<InfiniteDataMap<Comment>>(queryKey, (oldData) =>
@@ -64,12 +64,12 @@ export function useAddCommentMutation(postsQueryKey: QueryKey, commentsQueryKey:
 
       // If it's a root comment, update the post's commentsCount
       if (!parentID) {
-        queryClient.setQueryData<InfiniteDataMap<Post>>(postsQueryKey, (oldData) =>
+        queryClient.setQueryData(postsQueryKey, (oldData) =>
           updatePostCommentsCountInCache(oldData, extractID(newComment.post), 'increment')
         );
       } else {
         // For replies, we have to update the parent comment's replies count in the cache
-        queryClient.setQueryData<InfiniteDataMap<Comment>>(commentsQueryKey, (oldData) =>
+        queryClient.setQueryData(commentsQueryKey, (oldData) =>
           updateCommentRepliesCountInCache(oldData, parentID, 'increment')
         );
       }

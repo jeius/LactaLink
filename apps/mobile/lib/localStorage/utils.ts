@@ -7,8 +7,9 @@ import {
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { DeepPartial } from 'react-hook-form';
+import { type MMKV } from 'react-native-mmkv';
 import { getMeUser } from '../stores/meUserStore';
-import { formDataStorage } from './mmkv-storages';
+import Storage, { formDataStorage } from './mmkv-storages';
 
 type Schemas = {
   'donation-create': DonationSchema;
@@ -68,8 +69,27 @@ export function deleteSavedFormData(schemaName: SchemaName): void {
   formDataStorage.delete(key);
 }
 
+export function getStoredData<T>(key: string, storage: MMKV = Storage) {
+  const stored = storage.getString(key);
+  try {
+    if (stored) {
+      return JSON.parse(stored) as T;
+    }
+    return undefined;
+  } catch (err) {
+    console.warn('Failed to parse stored data', err);
+    throw err;
+  }
+}
+
+export function storeData<T>(key: string, data: T, storage: MMKV = Storage) {
+  storage.set(key, JSON.stringify(data));
+}
+
+// #region Helpers
 function createKey(schemaName: SchemaName): string | null {
   const user = getMeUser();
   if (!user) return null;
   return createStorageKeyByUser(user, BASE_STORAGE_KEYS[schemaName]);
 }
+// #endregion

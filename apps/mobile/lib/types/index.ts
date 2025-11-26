@@ -15,9 +15,9 @@ export type NativeFile = {
 
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
 
-export type InfiniteDataMap<T, V = number> = InfiniteData<
+export type InfiniteDataMap<T, V = unknown> = InfiniteData<
   { docs: Map<string, T> } & Omit<PaginatedDocs, 'docs'>,
   V
 >;
 
-export type InfiniteDoc<T, V = number> = InfiniteData<PaginatedDocs<T>, V>;
+export type InfiniteDoc<T, V = unknown> = InfiniteData<PaginatedDocs<T>, V>;

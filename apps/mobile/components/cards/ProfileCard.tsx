@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
-import { PROFILE_TYPE_ICONS } from '@/lib/constants/profile';
+import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';

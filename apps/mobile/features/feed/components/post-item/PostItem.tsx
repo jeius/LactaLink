@@ -7,19 +7,20 @@ import { VStack } from '@/components/ui/vstack';
 import PostAuthor from '@/features/feed/components/post-item/PostAuthor';
 import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostStats from '@/features/feed/components/post-item/PostStats';
+import { isTempID } from '@/lib/utils/tempID';
 import { Post } from '@lactalink/types/payload-generated-types';
-import { QueryKey } from '@tanstack/react-query';
 import { GestureResponderEvent } from 'react-native';
+import { postsInfiniteOptions } from '../../lib/queryOptions/postsInfiniteOptions';
 import PostShare from './PostShare';
 
 interface PostItemProps {
   post: Post;
-  queryKey: QueryKey;
   onPress?: (e: GestureResponderEvent) => void;
 }
-export default function PostItem({ post, queryKey, onPress }: PostItemProps) {
+export default function PostItem({ post, onPress }: PostItemProps) {
+  const queryKey = postsInfiniteOptions.queryKey;
   const { author, createdAt, attachments, sharedFrom, content, title, id } = post;
-  const isTemp = post.id.startsWith('temp-');
+  const isTemp = isTempID(post.id);
 
   const hasAttachments = attachments && attachments.length > 0;
   const titleInitialLines = hasAttachments ? 2 : 3;

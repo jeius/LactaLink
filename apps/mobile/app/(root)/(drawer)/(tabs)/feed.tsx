@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import { NearestListingsList } from '@/components/lists/NearestListingsList';
@@ -16,12 +16,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import PostItem from '@/features/feed/components/post-item/PostItem';
-import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
+import { postsInfiniteOptions } from '@/features/feed/lib/queryOptions/postsInfiniteOptions';
 import { shadow } from '@/lib/utils/shadows';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
@@ -40,7 +41,9 @@ export default function FeedPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data: posts, queryKey, ...query } = useInfinitePosts();
+  const { data, ...query } = useInfiniteQuery(postsInfiniteOptions);
+
+  const posts = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
 
   const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
 
@@ -92,7 +95,7 @@ export default function FeedPage() {
           if (isPlaceHolderData(item)) return <PlaceHolderItem />;
 
           const handlePress = () => router.push(`/feed/${item.id}`);
-          return <PostItem post={item} queryKey={queryKey} onPress={handlePress} />;
+          return <PostItem post={item} onPress={handlePress} />;
         }}
       />
     </SafeArea>

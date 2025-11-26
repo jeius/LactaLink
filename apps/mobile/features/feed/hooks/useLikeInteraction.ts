@@ -2,16 +2,14 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { InfiniteDataMap } from '@/lib/types';
 import { createLikeMutationKey } from '@/lib/utils/createKeys';
 import { extractLikesData } from '@/lib/utils/extractLikesData';
+import { createTempID, isTempID } from '@/lib/utils/tempID';
 import { getApiClient } from '@lactalink/api';
 import { Comment, Like, Post } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
-import { randomUUID } from 'expo-crypto';
 import { useMemo } from 'react';
 import { updateLikeInCache } from '../lib/likeCacheUtils';
 import { LikableRelation, LikeMutationContext } from '../lib/types';
-
-const TEMPORARY_ID_PREFIX = 'temp-';
 
 /**
  * Hook for managing like interactions on posts and comments
@@ -33,13 +31,13 @@ export function useLikeInteraction(
     [document, user]
   );
 
-  const isTemporary = currentLike?.id.startsWith(TEMPORARY_ID_PREFIX) ?? false;
+  const isTemporary = currentLike ? isTempID(currentLike.id) : false;
 
   /**
    * Creates a temporary like object for optimistic updates
    */
   const createTemporaryLike = (): Like => ({
-    id: `${TEMPORARY_ID_PREFIX}${randomUUID()}`,
+    id: createTempID(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     liked: { relationTo, value: documentId },

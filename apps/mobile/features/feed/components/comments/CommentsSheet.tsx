@@ -12,17 +12,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
-import { useInfiniteComments } from '@/features/feed/hooks/useInfiniteComments';
 import { CommentPayload, ReplyArgs } from '@/features/feed/lib/types';
-import { QUERY_KEYS } from '@/lib/constants';
 import { getMeUser } from '@/lib/stores/meUserStore';
+import { createTempID } from '@/lib/utils/tempID';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
-import { QueryKey } from '@tanstack/react-query';
-import { randomUUID } from 'expo-crypto';
-import React, { useState } from 'react';
+import { QueryKey, useInfiniteQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { createCommentsInfiniteOptions } from '../../lib/queryOptions/commentsInfiniteOptions';
 import CommentInput from './CommentInput';
 import CommentsSheetItem from './CommentsSheetItem';
 
@@ -52,13 +51,11 @@ export default function CommentsSheet({
   bottomInset = 0,
   ...props
 }: CommentsSheetProps) {
-  const postsQueryKey = QUERY_KEYS.POSTS.INFINITE;
-  const { queryKey: commentsQueryKey, ...query } = useInfiniteComments(undefined, {
-    limit: 10,
-    where: {
-      and: [{ post: { equals: post.id } }, { parent: { exists: false } }],
-    },
-  });
+  const commentsInfiniteOptions = createCommentsInfiniteOptions(post.id);
+  const commentsQueryKey = commentsInfiniteOptions.queryKey;
+
+  const { data, ...query } = useInfiniteQuery(commentsInfiniteOptions);
+  const comments = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
 
   const [inputHeight, setInputHeight] = useState(0);
 
@@ -66,7 +63,7 @@ export default function CommentsSheet({
   const [parentComment, setParentComment] = useState<Comment | null>(null);
   const [invalidateQueryKey, setInvalidateQueryKey] = useState<QueryKey>(commentsQueryKey);
 
-  const { mutate: addComment } = useAddCommentMutation(postsQueryKey, commentsQueryKey);
+  const { mutate: addComment } = useAddCommentMutation(post.id);
 
   const handleReset = () => {
     setRepliedComment(null);
@@ -80,7 +77,7 @@ export default function CommentsSheet({
     if (!meProfile) return;
 
     const payload: CommentPayload = {
-      id: `temp-${randomUUID()}`,
+      id: createTempID(),
       post: repliedComment?.post ?? parentComment?.post ?? post.id,
       repliedTo: repliedComment ?? undefined,
       parent: parentComment ?? undefined,
@@ -113,7 +110,7 @@ export default function CommentsSheet({
           topInset={topInset}
         >
           <BottomSheetFlashList
-            data={query.isLoading ? PLACEHOLDER_COMMENTS : (query.data ?? [])}
+            data={query.isLoading ? PLACEHOLDER_COMMENTS : (comments ?? [])}
             keyExtractor={listKeyExtractor}
             className="flex-1"
             contentContainerClassName="px-4 py-2 flex-col items-stretch grow"
@@ -131,7 +128,6 @@ export default function CommentsSheet({
                 <CommentsSheetItem
                   comment={item}
                   queryKey={commentsQueryKey}
-                  postsQueryKey={postsQueryKey}
                   onReply={handleReply}
                 />
               )
