@@ -1,23 +1,28 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import SafeArea from '@/components/SafeArea';
+import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { TruncatedText } from '@/components/ui/truncated-text';
 import { VStack } from '@/components/ui/vstack';
+import CommentsSheetItem from '@/features/feed/components/comments/CommentsSheetItem';
 import PostAuthor from '@/features/feed/components/post-item/PostAuthor';
 import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostShare from '@/features/feed/components/post-item/PostShare';
 import PostStats from '@/features/feed/components/post-item/PostStats';
-import { usePost } from '@/features/feed/hooks/usePost';
+import { createCommentsInfiniteOptions } from '@/features/feed/lib/queryOptions/commentsInfiniteOptions';
+import { createPostQueryOptions } from '@/features/feed/lib/queryOptions/postQueryOptions';
 import { postsInfiniteOptions } from '@/features/feed/lib/queryOptions/postsInfiniteOptions';
 import { FeedSearchParams } from '@/features/feed/lib/types';
 import { InfiniteDataMap } from '@/lib/types';
 import { Post } from '@lactalink/types/payload-generated-types';
-import { extractDisplayName } from '@lactalink/utilities/extractors';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { extractDisplayName, listKeyExtractor } from '@lactalink/utilities/extractors';
+import { FlashList } from '@shopify/flash-list';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { MessageSquareIcon, XIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
@@ -28,56 +33,38 @@ export default function Feed() {
   const { id } = useLocalSearchParams<SearchParams>();
 
   const { data: mappedData } = useInfiniteQuery(postsInfiniteOptions);
-  const queryKey = postsInfiniteOptions.queryKey;
 
   const initialData = useMemo(() => getPost(id, mappedData), [id, mappedData]);
-  const { data: post, isLoading } = usePost(id, initialData);
+  const postQueryOptions = createPostQueryOptions(id, initialData);
+  const { data: post, isLoading } = useQuery(postQueryOptions);
+
+  const commentsQueryOptions = createCommentsInfiniteOptions(id);
+  const { isFetchingNextPage, ...commentsQuery } = useInfiniteQuery(commentsQueryOptions);
+
+  const comments = useMemo(
+    () => commentsQuery.data?.pages.flatMap((p) => Array.from(p.docs.values())),
+    [commentsQuery.data]
+  );
 
   if (isLoading || !post) return <LoadingSpinner />;
 
   const authorName = extractDisplayName({ profile: post.author });
-  const { author, createdAt, title, content, attachments, sharedFrom } = post;
-
-  const hasAttachments = attachments && attachments.length > 0;
-  const titleInitialLines = hasAttachments ? 2 : 3;
-  const contentInitialLines = hasAttachments ? 2 : 5;
 
   return (
     <SafeArea className="items-stretch justify-start">
       <Header authorName={authorName} />
 
-      <VStack space="sm" className="p-3">
-        <PostAuthor author={author} createdAt={createdAt} />
-
-        <VStack className="mt-2 items-stretch">
-          <TruncatedText
-            initialLines={titleInitialLines}
-            size="lg"
-            bold
-            className="grow"
-            recyclingKey={`title-${id}`}
-          >
-            {title}
-          </TruncatedText>
-          {content && (
-            <TruncatedText
-              initialLines={contentInitialLines}
-              className="mt-2 grow"
-              recyclingKey={`content-${id}`}
-            >
-              {content}
-            </TruncatedText>
-          )}
-        </VStack>
-      </VStack>
-
-      {attachments && attachments.length > 0 && <PostMedia attachments={attachments} />}
-
-      {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
-
-      <PostStats post={post} queryKey={queryKey} disableCommentPress />
-
-      <Divider orientation="horizontal" />
+      <FlashList
+        data={comments ?? []}
+        keyExtractor={listKeyExtractor}
+        keyboardShouldPersistTaps="handled"
+        ItemSeparatorComponent={() => <Box className="h-4" />}
+        ListHeaderComponent={() => <ListHeader {...post} />}
+        ListFooterComponent={() => isFetchingNextPage && <Spinner size={'small'} />}
+        ListFooterComponentStyle={{ marginVertical: 8 }}
+        onEndReached={commentsQuery.fetchNextPage}
+        renderItem={({ item }) => <CommentsSheetItem comment={item} />}
+      />
     </SafeArea>
   );
 }
@@ -137,7 +124,7 @@ function ListHeader(post: Post) {
 
       {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
 
-      <PostStats post={post} queryKey={queryKey} disableCommentPress />
+      <PostStats post={post} disableCommentPress />
 
       <Divider orientation="horizontal" />
     </>

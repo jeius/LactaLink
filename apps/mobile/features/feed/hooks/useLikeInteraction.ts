@@ -6,10 +6,11 @@ import { createTempID, isTempID } from '@/lib/utils/tempID';
 import { getApiClient } from '@lactalink/api';
 import { Comment, Like, Post } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
-import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryKey, useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { updateLikeInCache } from '../lib/likeCacheUtils';
-import { LikableRelation, LikeMutationContext } from '../lib/types';
+import { updateLikeInCache, updatePostLikesInCache } from '../lib/likeCacheUtils';
+import { createPostQueryOptions } from '../lib/queryOptions/postQueryOptions';
+import { LikableRelation } from '../lib/types';
 
 /**
  * Hook for managing like interactions on posts and comments
@@ -21,9 +22,10 @@ export function useLikeInteraction(
 ) {
   const { data: user } = useMeUser();
   const profile = user?.profile;
-  const queryClient = useQueryClient();
 
   const documentId = document.id;
+
+  const postQueryOptions = createPostQueryOptions(documentId);
 
   // Extract current like state
   const { likeData: currentLike, likesCount } = useMemo(
@@ -47,7 +49,7 @@ export function useLikeInteraction(
     },
   });
 
-  const likeMutation = useMutation<Like, Error, void, LikeMutationContext>({
+  const likeMutation = useMutation({
     mutationKey: createLikeMutationKey({ relationTo, value: documentId }),
     meta: {
       errorMessage: (err) => extractErrorMessage(err),
@@ -71,32 +73,40 @@ export function useLikeInteraction(
         },
       });
     },
-    onMutate: async () => {
+    onMutate: async (_, { client }) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey });
+      await client.cancelQueries({ queryKey });
+      await client.cancelQueries(postQueryOptions);
 
       // Snapshot previous data
-      const previousData = queryClient.getQueryData<InfiniteDataMap<Post | Comment>>(queryKey);
+      const previousData = client.getQueryData<InfiniteDataMap<Post | Comment>>(queryKey);
+      const prevPost = client.getQueryData(postQueryOptions.queryKey);
 
       // Optimistically update cache
       const likeToProcess = currentLike ?? createTemporaryLike();
       const operation = currentLike ? 'remove' : 'add';
 
-      queryClient.setQueryData<InfiniteDataMap<Post | Comment>>(queryKey, (oldData) =>
+      client.setQueryData<InfiniteDataMap<Post | Comment>>(queryKey, (oldData) =>
         updateLikeInCache(oldData, documentId, likeToProcess, user, operation)
       );
 
-      return { previousData };
+      client.setQueryData(postQueryOptions.queryKey, (oldData) =>
+        updatePostLikesInCache(oldData, likeToProcess, user, operation)
+      );
+
+      return { previousData, prevPost };
     },
-    onError: (_err, _variables, context) => {
+    onError: (_err, _variables, ctx, { client }) => {
       // Rollback on error
-      if (context?.previousData) {
-        queryClient.setQueryData(queryKey, context.previousData);
+      if (ctx) {
+        client.setQueryData(queryKey, ctx.previousData);
+        client.setQueryData(postQueryOptions.queryKey, ctx.prevPost);
       }
     },
-    onSuccess: () => {
+    onSettled: (_data, _err, _vars, _ctx, { client }) => {
       // Invalidate to ensure fresh data
-      queryClient.invalidateQueries({ queryKey });
+      client.invalidateQueries({ queryKey });
+      client.invalidateQueries(postQueryOptions);
     },
   });
 

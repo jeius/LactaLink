@@ -125,11 +125,7 @@ export default function CommentsSheet({
               isPlaceHolderData(item) ? (
                 <CommentItemPlaceholder />
               ) : (
-                <CommentsSheetItem
-                  comment={item}
-                  queryKey={commentsQueryKey}
-                  onReply={handleReply}
-                />
+                <CommentsSheetItem comment={item} onReply={handleReply} />
               )
             }
           />

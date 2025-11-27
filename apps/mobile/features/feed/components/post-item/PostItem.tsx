@@ -10,7 +10,6 @@ import PostStats from '@/features/feed/components/post-item/PostStats';
 import { isTempID } from '@/lib/utils/tempID';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { GestureResponderEvent } from 'react-native';
-import { postsInfiniteOptions } from '../../lib/queryOptions/postsInfiniteOptions';
 import PostShare from './PostShare';
 
 interface PostItemProps {
@@ -18,7 +17,6 @@ interface PostItemProps {
   onPress?: (e: GestureResponderEvent) => void;
 }
 export default function PostItem({ post, onPress }: PostItemProps) {
-  const queryKey = postsInfiniteOptions.queryKey;
   const { author, createdAt, attachments, sharedFrom, content, title, id } = post;
   const isTemp = isTempID(post.id);
 
@@ -57,7 +55,7 @@ export default function PostItem({ post, onPress }: PostItemProps) {
 
       {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
 
-      <PostStats post={post} queryKey={queryKey} />
+      <PostStats post={post} />
     </Card>
   );
 }

@@ -45,6 +45,32 @@ export function updateLikeInCache(
   });
 }
 
+export function updatePostLikesInCache(
+  oldData: Post | undefined,
+  likeData: Like,
+  user: User | null,
+  operation: 'add' | 'remove'
+): Post | undefined {
+  if (!oldData || !oldData.likes) return oldData;
+
+  return produce(oldData, (draft) => {
+    if (!draft.likes) return;
+
+    const { likesMap, likesCount } = extractLikesData(oldData, user);
+
+    if (operation === 'remove') {
+      likesMap.delete(likeData.id);
+      updateLikesCount(draft, Math.max(likesCount - 1, 0));
+    } else {
+      likesMap.set(likeData.id, likeData);
+      updateLikesCount(draft, likesCount + 1);
+    }
+
+    // Update the document's likes array
+    draft.likes.docs = Array.from(likesMap.values());
+  });
+}
+
 /**
  * Updates the likes count on a document
  */

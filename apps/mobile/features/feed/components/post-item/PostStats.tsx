@@ -8,14 +8,13 @@ import { useLikeInteraction } from '@/features/feed/hooks/useLikeInteraction';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { formatNumberToShortenUnits } from '@lactalink/utilities/formatters';
-import { QueryKey } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { HeartIcon, MessageCircleIcon } from 'lucide-react-native';
 import { GestureResponderEvent } from 'react-native';
+import { postsInfiniteOptions } from '../../lib/queryOptions/postsInfiniteOptions';
 
 interface PostStatsProps {
   post: Post;
-  queryKey: QueryKey;
   onCommentPress?: (e: GestureResponderEvent) => void;
   onLikePress?: (e: GestureResponderEvent) => void;
   disableCommentPress?: boolean;
@@ -23,12 +22,12 @@ interface PostStatsProps {
 
 export default function PostStats({
   post,
-  queryKey,
   onCommentPress,
   onLikePress,
   disableCommentPress = false,
 }: PostStatsProps) {
   const router = useRouter();
+  const queryKey = postsInfiniteOptions.queryKey;
 
   const { commentsCount } = post;
   const {
