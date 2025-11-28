@@ -1,10 +1,15 @@
 import { getMeUser } from '@/lib/stores/meUserStore';
+import { transformToInfiniteDataMap } from '@/lib/utils/transformToInfiniteData';
 import { getApiClient } from '@lactalink/api';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-export function createCommentsInfiniteOptions(postID: Post['id'], enabled: boolean = true) {
+export function createCommentsInfiniteOptions(
+  postID: Post['id'],
+  enabled: boolean = true,
+  initialData?: Post['comments']
+) {
   return infiniteQueryOptions({
     enabled: enabled,
     initialPageParam: 1,
@@ -15,6 +20,7 @@ export function createCommentsInfiniteOptions(postID: Post['id'], enabled: boole
     queryFn: fetchComments(postID),
     getNextPageParam: (page) => page.nextPage,
     getPreviousPageParam: (page) => page.prevPage,
+    placeholderData: transformToInfiniteDataMap(initialData),
   });
 }
 

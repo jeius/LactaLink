@@ -1,4 +1,3 @@
-import { NoData } from '@/components/NoData';
 import {
   BottomSheet,
   BottomSheetDragIndicator,
@@ -7,10 +6,8 @@ import {
 } from '@/components/ui/bottom-sheet';
 import { BottomSheetPortalProps, BottomSheetProps } from '@/components/ui/bottom-sheet/types';
 import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { VStack } from '@/components/ui/vstack';
+import { Text } from '@/components/ui/text';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
 import { CommentPayload, ReplyArgs } from '@/features/feed/lib/types';
 import { getMeUser } from '@/lib/stores/meUserStore';
@@ -23,7 +20,8 @@ import { QueryKey, useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { createCommentsInfiniteOptions } from '../../lib/queryOptions/commentsInfiniteOptions';
 import CommentInput from './CommentInput';
-import CommentsSheetItem from './CommentsSheetItem';
+import CommentItemPlaceholder from './CommentItemPlaceholder';
+import CommentsListItem from './CommentsListItem';
 
 interface CommentsSheetProps
   extends BottomSheetProps,
@@ -117,7 +115,7 @@ export default function CommentsSheet({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: inputHeight + 8 }}
             ItemSeparatorComponent={() => <Box className="h-4" />}
-            ListEmptyComponent={() => <NoData title="No one has commented yet" />}
+            ListEmptyComponent={ListEmpty}
             ListFooterComponent={() => query.isFetchingNextPage && <Spinner className="my-4" />}
             onEndReachedThreshold={0.35}
             onEndReached={query.fetchNextPage}
@@ -125,7 +123,7 @@ export default function CommentsSheet({
               isPlaceHolderData(item) ? (
                 <CommentItemPlaceholder />
               ) : (
-                <CommentsSheetItem comment={item} onReply={handleReply} />
+                <CommentsListItem comment={item} onReply={handleReply} />
               )
             }
           />
@@ -143,17 +141,12 @@ export default function CommentsSheet({
   );
 }
 
-function CommentItemPlaceholder() {
+function ListEmpty() {
   return (
-    <HStack space="sm">
-      <Skeleton variant="circular" style={{ width: 32, height: 32 }} />
-      <VStack space="xs" className="h-32 flex-1">
-        <Skeleton variant="sharp" className="mb-1 h-4 w-28" />
-        {Array.from({ length: 3 }).map((_, idx) => (
-          <Skeleton key={idx} variant="sharp" className="h-5 w-full" />
-        ))}
-        <Skeleton variant="sharp" className="mt-1 h-4 w-12" />
-      </VStack>
-    </HStack>
+    <Box className="flex-1 items-center justify-center py-8">
+      <Text className="text-center text-typography-700">
+        No comments yet. Be the first to comment!
+      </Text>
+    </Box>
   );
 }

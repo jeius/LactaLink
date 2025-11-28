@@ -8,13 +8,15 @@ import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   removeCommentFromCache,
   updateCommentRepliesCountInCache,
+  updatePostCommentsCount,
   updatePostCommentsCountInCache,
 } from '../lib/commentCacheUtils';
+import { createPostQueryOptions } from '../lib/queryOptions/postQueryOptions';
 import { postsInfiniteOptions } from '../lib/queryOptions/postsInfiniteOptions';
 import { DeleteCommentPayload } from '../lib/types';
 
 export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
-  const queryClient = useQueryClient();
+  const client = useQueryClient();
   const { data: meUser } = useMeUser();
 
   const postsQueryKey = postsInfiniteOptions.queryKey;
@@ -28,21 +30,26 @@ export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
       const apiClient = getApiClient();
       return apiClient.deleteByID({ collection: 'comments', id });
     },
-    onMutate: async ({ id: commentID, parent, post, queryKey }) => {
+    onMutate: async ({ id: commentID, parent, post, queryKey }, { client }) => {
+      const postQueryOptions = createPostQueryOptions(extractID(post));
+
       // Cancel any outgoing refetches
       await Promise.all([
-        queryClient.cancelQueries({ queryKey }),
-        queryClient.cancelQueries(postsInfiniteOptions),
+        client.cancelQueries({ queryKey }),
+        client.cancelQueries(postsInfiniteOptions),
+        client.cancelQueries({ queryKey: commentsQueryKey }),
+        client.cancelQueries(postQueryOptions),
       ]);
 
       // Snapshot previous values
-      const previousComments = queryClient.getQueryData<InfiniteDataMap<Comment>>(queryKey);
-      const previousPosts = queryClient.getQueryData(postsQueryKey);
+      const previousComments = client.getQueryData<InfiniteDataMap<Comment>>(queryKey);
+      const previousPosts = client.getQueryData(postsQueryKey);
       const previousParentComments =
-        queryClient.getQueryData<InfiniteDataMap<Comment>>(commentsQueryKey);
+        client.getQueryData<InfiniteDataMap<Comment>>(commentsQueryKey);
+      const prevPost = client.getQueryData(postQueryOptions.queryKey);
 
       // Optimistically remove the comment
-      queryClient.setQueryData<InfiniteDataMap<Comment>>(queryKey, (oldData) =>
+      client.setQueryData<InfiniteDataMap<Comment>>(queryKey, (oldData) =>
         removeCommentFromCache(oldData, commentID)
       );
 
@@ -50,33 +57,38 @@ export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
 
       // If it's a root comment, update the post's commentsCount
       if (!parentID) {
-        queryClient.setQueryData(postsQueryKey, (oldData) =>
+        client.setQueryData(postsQueryKey, (oldData) =>
           updatePostCommentsCountInCache(oldData, extractID(post), 'decrement')
+        );
+        client.setQueryData(postQueryOptions.queryKey, (oldData) =>
+          updatePostCommentsCount(oldData, 'decrement')
         );
       } else {
         // For replies, we have to update the parent comment's replies count in the cache
-        queryClient.setQueryData<InfiniteDataMap<Comment>>(commentsQueryKey, (oldData) =>
+        client.setQueryData<InfiniteDataMap<Comment>>(commentsQueryKey, (oldData) =>
           updateCommentRepliesCountInCache(oldData, parentID, 'decrement')
         );
       }
 
-      return { previousComments, previousPosts, previousParentComments };
+      return { previousComments, previousPosts, previousParentComments, prevPost };
     },
-    onError: (_err, { parent, queryKey }, context) => {
-      if (!context) return;
-      const { previousComments, previousPosts, previousParentComments } = context;
+    onError: (_err, { parent, queryKey, post }, ctx, { client }) => {
+      if (!ctx) return;
+      const postQueryOptions = createPostQueryOptions(extractID(post));
+      const { previousComments, previousPosts, previousParentComments } = ctx;
 
       // Rollback optimistic updates
-      if (previousComments) queryClient.setQueryData(queryKey, previousComments);
-      if (!parent && previousPosts) {
-        queryClient.setQueryData(postsQueryKey, previousPosts);
-      } else if (previousParentComments) {
-        queryClient.setQueryData(commentsQueryKey, previousParentComments);
+      if (previousComments) client.setQueryData(queryKey, previousComments);
+      if (!parent) {
+        client.setQueryData(postsQueryKey, previousPosts);
+        client.setQueryData(postQueryOptions.queryKey, ctx.prevPost);
+      } else {
+        client.setQueryData(commentsQueryKey, previousParentComments);
       }
     },
     onSuccess: (_data, { queryKey }) => {
       // Invalidate to ensure fresh data
-      queryClient.invalidateQueries({ queryKey });
+      client.invalidateQueries({ queryKey });
     },
   });
 

@@ -18,7 +18,7 @@ interface CommentsSheetItemProps {
   onReply?: (args: ReplyArgs) => void;
 }
 
-export default function CommentsSheetItem({ comment, onReply }: CommentsSheetItemProps) {
+export default function CommentsListItem({ comment, onReply }: CommentsSheetItemProps) {
   const [openModal, setOpenModal] = useRecyclingState(false, [comment.id]);
 
   const [viewMore, setViewMore] = useRecyclingState(false, [comment.id]);

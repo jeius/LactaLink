@@ -7,11 +7,16 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Comment } from '@lactalink/types/payload-generated-types';
 import { SendIcon, XIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Keyboard, TextInput, TextInputContentSizeChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
+const baseStyle = tva({
+  base: 'absolute inset-x-0 bottom-0 bg-background-0',
+});
 
 interface CommentInputProps extends BoxProps {
   onSubmit?: (value: string) => void;
@@ -25,6 +30,7 @@ const AnimatedInput = Animated.createAnimatedComponent(Input);
 
 export default function CommentInput({
   style,
+  className,
   onLayout,
   replyToAuthor,
   onSubmit,
@@ -77,7 +83,7 @@ export default function CommentInput({
   }, [replyToAuthor]);
 
   return (
-    <Box className="absolute inset-x-0 bottom-0 bg-background-50" style={style} onLayout={onLayout}>
+    <Box className={baseStyle({ className })} style={style} onLayout={onLayout}>
       {replyToAuthor && (
         <HStack space="xs" className="items-center bg-primary-0 px-4 py-2">
           <Text className="flex-1 text-primary-700">

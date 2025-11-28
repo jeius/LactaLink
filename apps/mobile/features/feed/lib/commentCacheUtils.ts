@@ -73,6 +73,16 @@ export function updatePostCommentsCountInCache(
   });
 }
 
+export function updatePostCommentsCount(
+  oldData: Post | undefined,
+  type: 'increment' | 'decrement'
+) {
+  if (!oldData) return oldData;
+  return produce(oldData, (draft) => {
+    draft.commentsCount = updateCount(draft.commentsCount, type);
+  });
+}
+
 export function updateCommentRepliesCountInCache(
   oldData: InfiniteDataMap<Comment> | undefined,
   commentID: string,

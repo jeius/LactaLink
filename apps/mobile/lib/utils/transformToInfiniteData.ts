@@ -9,7 +9,7 @@ export function transformToInfiniteDataMap<T extends { id: string }>(
       }
     | undefined
     | null
-): InfiniteDataMap<T> | undefined {
+): InfiniteDataMap<T, number> | undefined {
   if (!initialData) return undefined;
 
   const docsMap = new Map<string, T>();
