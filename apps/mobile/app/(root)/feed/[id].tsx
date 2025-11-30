@@ -1,8 +1,10 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
+import { SingleImageViewer } from '@/components/ImageViewer';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -28,19 +30,25 @@ import { createTempID } from '@/lib/utils/tempID';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { extractDisplayName, listKeyExtractor } from '@lactalink/utilities/extractors';
-import { FlashList } from '@shopify/flash-list';
+import {
+  extractCollection,
+  extractDisplayName,
+  extractOneImageData,
+  listKeyExtractor,
+} from '@lactalink/utilities/extractors';
+import { FlashList, FlashListRef, ListRenderItem } from '@shopify/flash-list';
 import { QueryKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MessageSquareIcon, XIcon } from 'lucide-react-native';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 type SearchParams = FeedSearchParams & { id: string };
 
 const PLACEHOLDER_COMMENTS = generatePlaceHoldersWithID(10, {} as Comment);
 
 export default function Feed() {
-  const { id } = useLocalSearchParams<SearchParams>();
+  const { id, media } = useLocalSearchParams<SearchParams>();
+  const mediaIndex = media ? parseInt(media) : undefined;
 
   const { data: mappedData } = useInfiniteQuery(postsInfiniteOptions);
 
@@ -53,7 +61,11 @@ export default function Feed() {
   return (
     <SafeArea className="items-stretch justify-start">
       <Header {...post} />
-      <Content {...post} />
+      {mediaIndex !== undefined ? (
+        <MediaContent {...post} mediaIndex={mediaIndex} />
+      ) : (
+        <CommentsContent {...post} />
+      )}
     </SafeArea>
   );
 }
@@ -82,7 +94,7 @@ function Header(post: Post) {
   );
 }
 
-function ListHeader(post: Post) {
+function ListHeader({ mediaIndex, ...post }: Post & { mediaIndex?: number }) {
   const { author, createdAt, title, content, attachments, sharedFrom, id } = post;
 
   const hasAttachments = attachments && attachments.length > 0;
@@ -115,11 +127,13 @@ function ListHeader(post: Post) {
         </VStack>
       </VStack>
 
-      {attachments && attachments.length > 0 && <PostMedia attachments={attachments} />}
+      {mediaIndex === undefined && attachments && attachments.length > 0 && (
+        <PostMedia attachments={attachments} id={post.id} />
+      )}
 
       {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
 
-      <PostStats post={post} disableCommentPress />
+      <PostStats post={post} disableCommentPress={mediaIndex === undefined} />
 
       <Divider orientation="horizontal" />
     </>
@@ -136,7 +150,7 @@ function ListEmpty() {
   );
 }
 
-function Content({
+function CommentsContent({
   onRefresh,
   refreshing = false,
   ...post
@@ -230,6 +244,65 @@ function Content({
         replyToAuthor={repliedComment?.author}
       />
     </Box>
+  );
+}
+
+function MediaContent({ mediaIndex = 0, ...post }: Post & { mediaIndex?: number }) {
+  const ref = useRef<FlashListRef<NonNullable<typeof media>[number]>>(null);
+
+  const media = useMemo(
+    () =>
+      post.attachments
+        ?.map((att) => {
+          const data = extractCollection(att.image);
+          if (!data) return null;
+          return {
+            id: att.id,
+            imageData: extractOneImageData(data),
+            caption: att.caption,
+            type: att.mediaType,
+          };
+        })
+        .filter((i) => i !== null),
+    [post.attachments]
+  );
+
+  const renderItem: ListRenderItem<NonNullable<typeof media>[number]> = ({ item }) => {
+    return (
+      <Card className="rounded-none p-0">
+        <Box className="h-64 w-full">
+          <SingleImageViewer image={item!.imageData} />
+        </Box>
+        {item.caption && (
+          <TruncatedText initialLines={3} className="mx-4 my-2">
+            {item.caption}
+          </TruncatedText>
+        )}
+      </Card>
+    );
+  };
+
+  useEffect(() => {
+    if (isNaN(mediaIndex)) return;
+    if (!media || media.length === 0) return;
+    if (mediaIndex < 0 || mediaIndex >= media.length) return;
+    ref.current?.scrollToIndex({ index: mediaIndex, animated: false });
+  }, [mediaIndex, media]);
+
+  return (
+    <FlashList
+      ref={ref}
+      data={media ?? []}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      ItemSeparatorComponent={() => <Box className="h-4" />}
+      ListHeaderComponent={() => <ListHeader {...post} mediaIndex={mediaIndex} />}
+      ListEmptyComponent={ListEmpty}
+      ListHeaderComponentStyle={{ marginBottom: 16 }}
+      ListFooterComponentStyle={{ marginVertical: 8 }}
+      contentContainerStyle={{ paddingBottom: 8 }}
+      renderItem={renderItem}
+    />
   );
 }
 

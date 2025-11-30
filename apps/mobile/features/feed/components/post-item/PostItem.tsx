@@ -51,7 +51,9 @@ export default function PostItem({ post, onPress }: PostItemProps) {
         </VStack>
       </Pressable>
 
-      {attachments && attachments.length > 0 && <PostMedia attachments={attachments} />}
+      {attachments && attachments.length > 0 && (
+        <PostMedia id={post.id} attachments={attachments} />
+      )}
 
       {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
 

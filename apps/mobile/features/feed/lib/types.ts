@@ -54,5 +54,5 @@ export type LikeMutationContext = {
 };
 
 export type FeedSearchParams = {
-  mediaId?: string;
+  media?: string;
 };
