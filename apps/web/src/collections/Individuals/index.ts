@@ -36,6 +36,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+        description: 'Automatically generated from given, middle, and family names.',
       },
     },
     ownerField,

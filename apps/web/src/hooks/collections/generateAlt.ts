@@ -1,7 +1,10 @@
-import { Image, MilkBagImage } from '@lactalink/types/payload-generated-types';
+import { Collection } from '@lactalink/types/collections';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook } from 'payload';
 
-export const generateAlt: CollectionBeforeChangeHook<Image | MilkBagImage> = ({
+type CollectionWithAlt = Extract<Collection, { alt?: string | null }>;
+
+export const generateAlt: CollectionBeforeChangeHook<CollectionWithAlt> = async ({
   data,
   req,
   operation,
@@ -11,10 +14,18 @@ export const generateAlt: CollectionBeforeChangeHook<Image | MilkBagImage> = ({
 
   if (!req.user) return data;
 
-  let name = 'anonymous-user';
+  if (!req.file || !req.file.mimetype.startsWith('image/')) return data;
 
-  if (req.file) {
-    name = req.user.email;
+  let name = req.user.email;
+
+  if (req.user.profile) {
+    const { displayName } = await req.payload.findByID({
+      collection: req.user.profile.relationTo,
+      id: extractID(req.user.profile.value),
+      select: { displayName: true },
+      req,
+    });
+    if (displayName) name = displayName;
   }
 
   data.alt = `Photo uploaded by ${name}`;

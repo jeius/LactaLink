@@ -1,22 +1,34 @@
-import { CollectionConfig } from 'payload/types';
+import { generateUser } from '@/hooks/collections/generateUser';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { isAdmin } from '@/lib/utils/isAdmin';
+import { CollectionConfig } from 'payload';
+import { authenticated } from '../_access-control';
 
 const MessageReactions: CollectionConfig = {
   slug: 'message-reactions',
   admin: {
     useAsTitle: 'emoji',
+    group: COLLECTION_GROUP.CHAT,
+    hidden: true,
   },
   access: {
-    read: ({ req: { user } }) => !!user,
-    create: ({ req: { user } }) => !!user,
+    read: authenticated,
+    create: authenticated,
     update: () => false,
     delete: ({ req: { user } }) => {
       if (!user) return false;
-      return {
-        user: {
-          equals: user.id,
-        },
-      };
+      if (isAdmin(user)) return true;
+      return { user: { equals: user.id } };
     },
+  },
+  indexes: [
+    {
+      fields: ['message', 'user', 'emoji'],
+      unique: true,
+    },
+  ],
+  hooks: {
+    beforeChange: [generateUser],
   },
   fields: [
     {
@@ -41,46 +53,16 @@ const MessageReactions: CollectionConfig = {
       type: 'text',
       required: true,
       maxLength: 10,
-      validate: (value) => {
-        // Basic emoji validation
-        const emojiRegex = /^[\u{1F300}-\u{1F9FF}]$/u;
-        if (!emojiRegex.test(value)) {
-          return 'Invalid emoji';
-        }
-        return true;
-      },
+      // validate: (value) => {
+      //   // Basic emoji validation
+      //   const emojiRegex = /^[\u{1F300}-\u{1F9FF}]$/u;
+      //   if (!emojiRegex.test(value)) {
+      //     return 'Invalid emoji';
+      //   }
+      //   return true;
+      // },
     },
   ],
-  indexes: [
-    {
-      fields: {
-        message: 1,
-        user: 1,
-        emoji: 1,
-      },
-      options: {
-        unique: true,
-      },
-    },
-  ],
-  hooks: {
-    beforeChange: [
-      async ({ req, operation, data }) => {
-        if (operation === 'create') {
-          data.user = req.user.id;
-        }
-        return data;
-      },
-    ],
-    afterChange: [
-      async ({ req, doc, operation }) => {
-        if (operation === 'create') {
-          console.log(`[Realtime] Reaction ${doc.emoji} added to message ${doc.message}`);
-        }
-      },
-    ],
-  },
-  timestamps: true,
 };
 
 export default MessageReactions;

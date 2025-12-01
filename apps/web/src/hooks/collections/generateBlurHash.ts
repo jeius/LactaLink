@@ -17,6 +17,9 @@ export const generateBlurHash: CollectionBeforeChangeHook<CollectionWithBlurHash
     return data; // Skip if no file is present
   }
 
+  // Only process images
+  if (!file.mimetype.startsWith('image/')) return data;
+
   try {
     // Convert image to smaller size for better performance
     const { data: pixels, info } = await sharp(file.data)

@@ -1,6 +1,7 @@
 import { CollectionConfig } from 'payload';
 import { Addresses } from './Addresses';
-import { Avatars } from './Avatars';
+import BlockedUsers from './BlockedUsers';
+import { ChatSystemCollections } from './chat-system';
 import { Comments } from './Comments';
 import { DeliveryPreferences } from './DeliveryPreferences';
 import { Donations } from './Donations';
@@ -9,9 +10,7 @@ import { Identities } from './Identities';
 import { Individuals } from './Individuals';
 import { Inventory } from './Inventory';
 import { Likes } from './Likes';
-import { IdentityImages } from './media/IdentityImages';
-import { Images } from './media/Images';
-import { MilkBagImages } from './media/MilkBagImages';
+import MediaCollections from './media';
 import { MilkBags } from './MilkBags';
 import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
@@ -27,7 +26,7 @@ import { Users } from './Users';
 
 const Collections: CollectionConfig[] = [
   Addresses,
-  Avatars,
+  BlockedUsers,
   Barangays,
   CitiesMunicipalities,
   Comments,
@@ -35,14 +34,11 @@ const Collections: CollectionConfig[] = [
   Donations,
   Hospitals,
   Identities,
-  IdentityImages,
-  Images,
   Individuals,
   Inventory,
   IslandGroups,
   Likes,
   MilkBags,
-  MilkBagImages,
   MilkBanks,
   NotificationCategories,
   NotificationChannels,
@@ -54,6 +50,8 @@ const Collections: CollectionConfig[] = [
   Requests,
   Users,
   Transactions,
+  ...ChatSystemCollections,
+  ...MediaCollections,
 ];
 
 export { Hospitals, Individuals, MilkBanks, Users };

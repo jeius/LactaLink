@@ -1,46 +1,31 @@
-import { CollectionConfig } from 'payload/types';
+import { createdByField } from '@/fields/createdByField';
+import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
+import { COLLECTION_GROUP } from '@/lib/constants';
+import { isAdmin } from '@/lib/utils/isAdmin';
+import { CollectionConfig, Field } from 'payload';
+import { authenticated, collectionCreatorOrAdmin } from '../_access-control/general';
+import { deleteRelatedAttachment } from './_hooks/afterDeleteAttachments';
 
-const MessageAttachments: CollectionConfig = {
+const MessageAttachments: CollectionConfig<'message-attachments'> = {
   slug: 'message-attachments',
-  upload: {
-    staticURL: '/media',
-    staticDir: 'media',
-    mimeTypes: ['image/*', 'video/*', 'application/pdf', 'audio/*'],
-    imageSizes: [
-      {
-        name: 'thumbnail',
-        width: 400,
-        height: 300,
-        position: 'centre',
-      },
-      {
-        name: 'preview',
-        width: 800,
-        height: 600,
-        position: 'centre',
-      },
-    ],
+  admin: {
+    group: COLLECTION_GROUP.CHAT,
+    hidden: true,
   },
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false;
+      if (isAdmin(user)) return true;
       // Users can only access attachments from conversations they're part of
       return {
-        'message.conversation.participants.user': {
+        'message.conversation.participants.participant': {
           equals: user.id,
         },
       };
     },
-    create: ({ req: { user } }) => !!user,
+    create: authenticated,
     update: () => false,
-    delete: ({ req: { user } }) => {
-      if (!user) return false;
-      return {
-        uploadedBy: {
-          equals: user.id,
-        },
-      };
-    },
+    delete: collectionCreatorOrAdmin,
   },
   fields: [
     {
@@ -52,54 +37,20 @@ const MessageAttachments: CollectionConfig = {
       },
     },
     {
-      name: 'uploadedBy',
+      name: 'attachment',
       type: 'relationship',
-      relationTo: 'users',
       required: true,
+      relationTo: ['donations', 'requests', 'message-media'],
       admin: {
         readOnly: true,
       },
     },
-    {
-      name: 'fileType',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Image', value: 'image' },
-        { label: 'Video', value: 'video' },
-        { label: 'Audio', value: 'audio' },
-        { label: 'Document', value: 'document' },
-      ],
-      admin: {
-        readOnly: true,
-      },
-    },
+    { ...createdByField, required: true } as Field,
   ],
   hooks: {
-    beforeChange: [
-      async ({ req, operation, data }) => {
-        if (operation === 'create') {
-          data.uploadedBy = req.user.id;
-
-          // Determine file type
-          if (data.mimeType) {
-            if (data.mimeType.startsWith('image/')) {
-              data.fileType = 'image';
-            } else if (data.mimeType.startsWith('video/')) {
-              data.fileType = 'video';
-            } else if (data.mimeType.startsWith('audio/')) {
-              data.fileType = 'audio';
-            } else {
-              data.fileType = 'document';
-            }
-          }
-        }
-
-        return data;
-      },
-    ],
+    beforeChange: [generateCreatedBy],
+    afterDelete: [deleteRelatedAttachment],
   },
-  timestamps: true,
 };
 
 export default MessageAttachments;

@@ -9,7 +9,7 @@ import {
   authenticated,
   collectionOwner,
   collectionOwnerOrAdmin,
-} from '../_access-control';
+} from '../../_access-control';
 import { generateAlt } from './hooks/generateAlt';
 
 export const Avatars: CollectionConfig<'avatars'> = {
@@ -22,7 +22,7 @@ export const Avatars: CollectionConfig<'avatars'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
-    group: COLLECTION_GROUP.PROFILES,
+    group: COLLECTION_GROUP.MEDIA,
     description:
       'Avatars are images used to represent users in the system. They can be uploaded by users themselves or by administrators.',
     useAsTitle: 'filename',

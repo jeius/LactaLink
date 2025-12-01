@@ -1,3 +1,4 @@
+export * from './chat';
 export * from './identities';
 export * from './inventory';
 export * from './milkbags';

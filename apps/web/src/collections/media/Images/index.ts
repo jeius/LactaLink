@@ -1,4 +1,5 @@
 import { createdByField } from '@/fields/createdByField';
+import { imageFields } from '@/fields/imageFields';
 import { ownerField } from '@/fields/ownerField';
 import { generateAlt } from '@/hooks/collections/generateAlt';
 import { generateBlurHash } from '@/hooks/collections/generateBlurHash';
@@ -18,30 +19,14 @@ export const Images: CollectionConfig<'images'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
-    group: COLLECTION_GROUP.CONTENT,
+    group: COLLECTION_GROUP.MEDIA,
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'createdBy'],
   },
   hooks: {
     beforeChange: [generateAlt, generateBlurHash, generateCreatedBy, generateOwner],
   },
-  fields: [
-    {
-      name: 'alt',
-      type: 'text',
-    },
-    {
-      name: 'blurHash',
-      type: 'text',
-      admin: {
-        description: 'A string that represents a blurred version of the image.',
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
-    createdByField,
-    ownerField,
-  ],
+  fields: [...imageFields, createdByField, ownerField],
   upload: {
     adminThumbnail: 'thumbnail',
     mimeTypes: ['image/*'],

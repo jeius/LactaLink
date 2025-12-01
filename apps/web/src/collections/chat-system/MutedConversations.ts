@@ -1,36 +1,26 @@
-import { CollectionConfig } from 'payload/types';
+import { generateUser } from '@/hooks/collections/generateUser';
+import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { isAdmin } from '@/lib/utils/isAdmin';
+import { Access, CollectionConfig } from 'payload';
+import { authenticated } from '../_access-control';
 
-const MutedConversations: CollectionConfig = {
+const userOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false;
+  if (isAdmin(user)) return true;
+  return { user: { equals: user.id } };
+};
+
+const MutedConversations: CollectionConfig<'muted-conversations'> = {
   slug: 'muted-conversations',
   admin: {
     useAsTitle: 'conversation',
+    group: COLLECTION_GROUP.CHAT,
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false;
-      return {
-        user: {
-          equals: user.id,
-        },
-      };
-    },
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => {
-      if (!user) return false;
-      return {
-        user: {
-          equals: user.id,
-        },
-      };
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false;
-      return {
-        user: {
-          equals: user.id,
-        },
-      };
-    },
+    read: userOrAdmin,
+    create: authenticated,
+    update: userOrAdmin,
+    delete: userOrAdmin,
   },
   fields: [
     {
@@ -55,31 +45,19 @@ const MutedConversations: CollectionConfig = {
       type: 'date',
       admin: {
         description: 'Leave empty for permanent mute',
+        position: 'sidebar',
       },
     },
   ],
   indexes: [
     {
-      fields: {
-        conversation: 1,
-        user: 1,
-      },
-      options: {
-        unique: true,
-      },
+      fields: ['conversation', 'user'],
+      unique: true,
     },
   ],
   hooks: {
-    beforeChange: [
-      async ({ req, operation, data }) => {
-        if (operation === 'create') {
-          data.user = req.user.id;
-        }
-        return data;
-      },
-    ],
+    beforeChange: [generateUser],
   },
-  timestamps: true,
 };
 
 export default MutedConversations;

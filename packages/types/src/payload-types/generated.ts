@@ -176,7 +176,7 @@ export interface Config {
   blocks: {};
   collections: {
     addresses: Address;
-    avatars: Avatar;
+    'blocked-users': BlockedUser;
     barangays: Barangay;
     citiesMunicipalities: CityMunicipality;
     comments: Comment;
@@ -184,14 +184,11 @@ export interface Config {
     donations: Donation;
     hospitals: Hospital;
     identities: Identity;
-    'identity-images': IdentityImage;
-    images: Image;
     individuals: Individual;
     inventory: Inventory;
     islandGroups: IslandGroup;
     likes: Like;
     milkBags: MilkBag;
-    'milk-bag-images': MilkBagImage;
     milkBanks: MilkBank;
     'notification-categories': NotificationCategory;
     'notification-channels': NotificationChannel;
@@ -203,6 +200,18 @@ export interface Config {
     requests: Request;
     users: User;
     transactions: Transaction;
+    messages: Message;
+    conversations: Conversation;
+    'message-attachments': MessageAttachment;
+    'message-reactions': MessageReaction;
+    'conversation-participants': ConversationParticipant;
+    'muted-conversations': MutedConversation;
+    'message-reads': MessageRead;
+    'message-media': MessageMedia;
+    'milk-bag-images': MilkBagImage;
+    images: Image;
+    'identity-images': IdentityImage;
+    avatars: Avatar;
     search: Search;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -253,10 +262,20 @@ export interface Config {
       addresses: 'addresses';
       deliveryPreferences: 'delivery-preferences';
     };
+    messages: {
+      attachments: 'message-attachments';
+      reactions: 'message-reactions';
+      replies: 'messages';
+      reads: 'message-reads';
+    };
+    conversations: {
+      participants: 'conversation-participants';
+      messages: 'messages';
+    };
   };
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
-    avatars: AvatarsSelect<false> | AvatarsSelect<true>;
+    'blocked-users': BlockedUsersSelect<false> | BlockedUsersSelect<true>;
     barangays: BarangaysSelect<false> | BarangaysSelect<true>;
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
@@ -264,14 +283,11 @@ export interface Config {
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
-    'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
-    images: ImagesSelect<false> | ImagesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     inventory: InventorySelect<false> | InventorySelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     likes: LikesSelect<false> | LikesSelect<true>;
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
-    'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     'notification-categories': NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
@@ -283,6 +299,18 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
+    'message-attachments': MessageAttachmentsSelect<false> | MessageAttachmentsSelect<true>;
+    'message-reactions': MessageReactionsSelect<false> | MessageReactionsSelect<true>;
+    'conversation-participants': ConversationParticipantsSelect<false> | ConversationParticipantsSelect<true>;
+    'muted-conversations': MutedConversationsSelect<false> | MutedConversationsSelect<true>;
+    'message-reads': MessageReadsSelect<false> | MessageReadsSelect<true>;
+    'message-media': MessageMediaSelect<false> | MessageMediaSelect<true>;
+    'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
+    images: ImagesSelect<false> | ImagesSelect<true>;
+    'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
+    avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -422,6 +450,9 @@ export interface User {
  */
 export interface Individual {
   id: string;
+  /**
+   * Automatically generated from given, middle, and family names.
+   */
   displayName?: string | null;
   owner?: (string | null) | User;
   isVerified?: boolean | null;
@@ -1337,6 +1368,17 @@ export interface Barangay {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-users".
+ */
+export interface BlockedUser {
+  id: string;
+  blocker: string | User;
+  blocked: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
  */
 export interface Comment {
@@ -2050,6 +2092,241 @@ export interface NotificationTypeTemplate {
     | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: string;
+  conversation: string | Conversation;
+  sender:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  type: 'TEXT' | 'SYSTEM' | 'ATTACHMENT';
+  content: string;
+  /**
+   * Message this is replying to (threading)
+   */
+  replyTo?: (string | null) | Message;
+  mentions?:
+    | (
+        | {
+            relationTo: 'individuals';
+            value: string | Individual;
+          }
+        | {
+            relationTo: 'hospitals';
+            value: string | Hospital;
+          }
+        | {
+            relationTo: 'milkBanks';
+            value: string | MilkBank;
+          }
+      )[]
+    | null;
+  edited?: boolean | null;
+  editedAt?: string | null;
+  searchVector?: string | null;
+  /**
+   * Attachments associated with this message
+   */
+  attachments?: {
+    docs?: (string | MessageAttachment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Reactions to this message
+   */
+  reactions?: {
+    docs?: (string | MessageReaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Messages that are replies to this message
+   */
+  replies?: {
+    docs?: (string | Message)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Read receipts for this message
+   */
+  reads?: {
+    docs?: (string | MessageRead)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: string;
+  type: 'DIRECT' | 'GROUP';
+  /**
+   * Optional title for group chats
+   */
+  title?: string | null;
+  /**
+   * Group chat avatar
+   */
+  avatar?: (string | null) | Avatar;
+  archived?: boolean | null;
+  createdBy: string | User;
+  /**
+   * Participants in this conversation
+   */
+  participants?: {
+    docs?: (string | ConversationParticipant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Messages in this conversation
+   */
+  messages?: {
+    docs?: (string | Message)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversation-participants".
+ */
+export interface ConversationParticipant {
+  id: string;
+  conversation: string | Conversation;
+  participant: string | User;
+  role: 'ADMIN' | 'MODERATOR' | 'MEMBER';
+  addedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-attachments".
+ */
+export interface MessageAttachment {
+  id: string;
+  message?: (string | null) | Message;
+  attachment:
+    | {
+        relationTo: 'donations';
+        value: string | Donation;
+      }
+    | {
+        relationTo: 'requests';
+        value: string | Request;
+      }
+    | {
+        relationTo: 'message-media';
+        value: string | MessageMedia;
+      };
+  createdBy: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-media".
+ */
+export interface MessageMedia {
+  id: string;
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image.
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    preview?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-reactions".
+ */
+export interface MessageReaction {
+  id: string;
+  message: string | Message;
+  user: string | User;
+  emoji: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-reads".
+ */
+export interface MessageRead {
+  id: string;
+  message: string | Message;
+  user: string | User;
+  readAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "muted-conversations".
+ */
+export interface MutedConversation {
+  id: string;
+  conversation: string | Conversation;
+  user: string | User;
+  /**
+   * Leave empty for permanent mute
+   */
+  mutedUntil?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2210,8 +2487,8 @@ export interface PayloadLockedDocument {
         value: string | Address;
       } | null)
     | ({
-        relationTo: 'avatars';
-        value: string | Avatar;
+        relationTo: 'blocked-users';
+        value: string | BlockedUser;
       } | null)
     | ({
         relationTo: 'barangays';
@@ -2242,14 +2519,6 @@ export interface PayloadLockedDocument {
         value: string | Identity;
       } | null)
     | ({
-        relationTo: 'identity-images';
-        value: string | IdentityImage;
-      } | null)
-    | ({
-        relationTo: 'images';
-        value: string | Image;
-      } | null)
-    | ({
         relationTo: 'individuals';
         value: string | Individual;
       } | null)
@@ -2268,10 +2537,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'milkBags';
         value: string | MilkBag;
-      } | null)
-    | ({
-        relationTo: 'milk-bag-images';
-        value: string | MilkBagImage;
       } | null)
     | ({
         relationTo: 'milkBanks';
@@ -2316,6 +2581,54 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: string | Message;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: string | Conversation;
+      } | null)
+    | ({
+        relationTo: 'message-attachments';
+        value: string | MessageAttachment;
+      } | null)
+    | ({
+        relationTo: 'message-reactions';
+        value: string | MessageReaction;
+      } | null)
+    | ({
+        relationTo: 'conversation-participants';
+        value: string | ConversationParticipant;
+      } | null)
+    | ({
+        relationTo: 'muted-conversations';
+        value: string | MutedConversation;
+      } | null)
+    | ({
+        relationTo: 'message-reads';
+        value: string | MessageRead;
+      } | null)
+    | ({
+        relationTo: 'message-media';
+        value: string | MessageMedia;
+      } | null)
+    | ({
+        relationTo: 'milk-bag-images';
+        value: string | MilkBagImage;
+      } | null)
+    | ({
+        relationTo: 'images';
+        value: string | Image;
+      } | null)
+    | ({
+        relationTo: 'identity-images';
+        value: string | IdentityImage;
+      } | null)
+    | ({
+        relationTo: 'avatars';
+        value: string | Avatar;
       } | null)
     | ({
         relationTo: 'search';
@@ -2394,47 +2707,13 @@ export interface AddressesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "avatars_select".
+ * via the `definition` "blocked-users_select".
  */
-export interface AvatarsSelect<T extends boolean = true> {
-  alt?: T;
-  blurHash?: T;
-  owner?: T;
+export interface BlockedUsersSelect<T extends boolean = true> {
+  blocker?: T;
+  blocked?: T;
   updatedAt?: T;
   createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        icon?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2592,96 +2871,6 @@ export interface IdentitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "identity-images_select".
- */
-export interface IdentityImagesSelect<T extends boolean = true> {
-  alt?: T;
-  blurHash?: T;
-  createdBy?: T;
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "images_select".
- */
-export interface ImagesSelect<T extends boolean = true> {
-  alt?: T;
-  blurHash?: T;
-  createdBy?: T;
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "individuals_select".
  */
 export interface IndividualsSelect<T extends boolean = true> {
@@ -2778,61 +2967,6 @@ export interface MilkBagOwnershipHistorySelect<T extends boolean = true> {
   transferReason?: T;
   transferredAt?: T;
   id?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milk-bag-images_select".
- */
-export interface MilkBagImagesSelect<T extends boolean = true> {
-  alt?: T;
-  blurHash?: T;
-  createdBy?: T;
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3247,6 +3381,332 @@ export interface ConfirmedDeliverySelect<T extends boolean = true> {
   address?: T;
   instructions?: T;
   confirmedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  sender?: T;
+  type?: T;
+  content?: T;
+  replyTo?: T;
+  mentions?: T;
+  edited?: T;
+  editedAt?: T;
+  searchVector?: T;
+  attachments?: T;
+  reactions?: T;
+  replies?: T;
+  reads?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  type?: T;
+  title?: T;
+  avatar?: T;
+  archived?: T;
+  createdBy?: T;
+  participants?: T;
+  messages?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-attachments_select".
+ */
+export interface MessageAttachmentsSelect<T extends boolean = true> {
+  message?: T;
+  attachment?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-reactions_select".
+ */
+export interface MessageReactionsSelect<T extends boolean = true> {
+  message?: T;
+  user?: T;
+  emoji?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversation-participants_select".
+ */
+export interface ConversationParticipantsSelect<T extends boolean = true> {
+  conversation?: T;
+  participant?: T;
+  role?: T;
+  addedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "muted-conversations_select".
+ */
+export interface MutedConversationsSelect<T extends boolean = true> {
+  conversation?: T;
+  user?: T;
+  mutedUntil?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-reads_select".
+ */
+export interface MessageReadsSelect<T extends boolean = true> {
+  message?: T;
+  user?: T;
+  readAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-media_select".
+ */
+export interface MessageMediaSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        preview?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milk-bag-images_select".
+ */
+export interface MilkBagImagesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "images_select".
+ */
+export interface ImagesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identity-images_select".
+ */
+export interface IdentityImagesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "avatars_select".
+ */
+export interface AvatarsSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        icon?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

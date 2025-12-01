@@ -16,9 +16,9 @@ import {
   varchar,
   boolean,
   timestamp,
-  numeric,
   integer,
   type AnyPgColumn,
+  numeric,
   serial,
   jsonb,
   pgEnum,
@@ -193,6 +193,13 @@ export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'CANCELLED',
 ]);
 export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
+export const enum_message_type = pgEnum('enum_message_type', ['TEXT', 'SYSTEM', 'ATTACHMENT']);
+export const enum_conversation_type = pgEnum('enum_conversation_type', ['DIRECT', 'GROUP']);
+export const enum_conversation_participants_role = pgEnum('enum_conversation_participants_role', [
+  'ADMIN',
+  'MODERATOR',
+  'MEMBER',
+]);
 export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', [
   'inline',
   'id-verification-task',
@@ -266,52 +273,33 @@ export const addresses = pgTable(
   ]
 );
 
-export const avatars = pgTable(
-  'avatars',
+export const blocked_users = pgTable(
+  'blocked_users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    alt: varchar('alt'),
-    blurHash: varchar('blur_hash'),
-    owner: uuid('owner_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
+    blocker: uuid('blocker_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    blocked: uuid('blocked_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
-    url: varchar('url'),
-    thumbnailURL: varchar('thumbnail_u_r_l'),
-    filename: varchar('filename'),
-    mimeType: varchar('mime_type'),
-    filesize: numeric('filesize', { mode: 'number' }),
-    width: numeric('width', { mode: 'number' }),
-    height: numeric('height', { mode: 'number' }),
-    focalX: numeric('focal_x', { mode: 'number' }),
-    focalY: numeric('focal_y', { mode: 'number' }),
-    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
-    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
-    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
-    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
-    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
-    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
-    sizes_icon_url: varchar('sizes_icon_url'),
-    sizes_icon_width: numeric('sizes_icon_width', { mode: 'number' }),
-    sizes_icon_height: numeric('sizes_icon_height', { mode: 'number' }),
-    sizes_icon_mimeType: varchar('sizes_icon_mime_type'),
-    sizes_icon_filesize: numeric('sizes_icon_filesize', { mode: 'number' }),
-    sizes_icon_filename: varchar('sizes_icon_filename'),
   },
   (columns) => [
-    index('avatars_owner_idx').on(columns.owner),
-    index('avatars_updated_at_idx').on(columns.updatedAt),
-    index('avatars_created_at_idx').on(columns.createdAt),
-    uniqueIndex('avatars_filename_idx').on(columns.filename),
-    index('avatars_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
-      columns.sizes_thumbnail_filename
-    ),
-    index('avatars_sizes_icon_sizes_icon_filename_idx').on(columns.sizes_icon_filename),
+    index('blocked_users_blocker_idx').on(columns.blocker),
+    index('blocked_users_blocked_idx').on(columns.blocked),
+    index('blocked_users_updated_at_idx').on(columns.updatedAt),
+    index('blocked_users_created_at_idx').on(columns.createdAt),
+    uniqueIndex('blocker_blocked_idx').on(columns.blocker, columns.blocked),
   ]
 );
 
@@ -762,112 +750,6 @@ export const identities = pgTable(
   ]
 );
 
-export const identity_images = pgTable(
-  'identity_images',
-  {
-    id: uuid('id').defaultRandom().primaryKey(),
-    alt: varchar('alt'),
-    blurHash: varchar('blur_hash'),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    owner: uuid('owner_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    url: varchar('url'),
-    thumbnailURL: varchar('thumbnail_u_r_l'),
-    filename: varchar('filename'),
-    mimeType: varchar('mime_type'),
-    filesize: numeric('filesize', { mode: 'number' }),
-    width: numeric('width', { mode: 'number' }),
-    height: numeric('height', { mode: 'number' }),
-    focalX: numeric('focal_x', { mode: 'number' }),
-    focalY: numeric('focal_y', { mode: 'number' }),
-    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
-    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
-    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
-    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
-    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
-    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
-  },
-  (columns) => [
-    index('identity_images_created_by_idx').on(columns.createdBy),
-    index('identity_images_owner_idx').on(columns.owner),
-    index('identity_images_updated_at_idx').on(columns.updatedAt),
-    index('identity_images_created_at_idx').on(columns.createdAt),
-    uniqueIndex('identity_images_filename_idx').on(columns.filename),
-    index('identity_images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
-      columns.sizes_thumbnail_filename
-    ),
-  ]
-);
-
-export const images = pgTable(
-  'images',
-  {
-    id: uuid('id').defaultRandom().primaryKey(),
-    alt: varchar('alt'),
-    blurHash: varchar('blur_hash'),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    owner: uuid('owner_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    url: varchar('url'),
-    thumbnailURL: varchar('thumbnail_u_r_l'),
-    filename: varchar('filename'),
-    mimeType: varchar('mime_type'),
-    filesize: numeric('filesize', { mode: 'number' }),
-    width: numeric('width', { mode: 'number' }),
-    height: numeric('height', { mode: 'number' }),
-    focalX: numeric('focal_x', { mode: 'number' }),
-    focalY: numeric('focal_y', { mode: 'number' }),
-    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
-    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
-    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
-    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
-    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
-    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
-    sizes_small_url: varchar('sizes_small_url'),
-    sizes_small_width: numeric('sizes_small_width', { mode: 'number' }),
-    sizes_small_height: numeric('sizes_small_height', { mode: 'number' }),
-    sizes_small_mimeType: varchar('sizes_small_mime_type'),
-    sizes_small_filesize: numeric('sizes_small_filesize', { mode: 'number' }),
-    sizes_small_filename: varchar('sizes_small_filename'),
-    sizes_large_url: varchar('sizes_large_url'),
-    sizes_large_width: numeric('sizes_large_width', { mode: 'number' }),
-    sizes_large_height: numeric('sizes_large_height', { mode: 'number' }),
-    sizes_large_mimeType: varchar('sizes_large_mime_type'),
-    sizes_large_filesize: numeric('sizes_large_filesize', { mode: 'number' }),
-    sizes_large_filename: varchar('sizes_large_filename'),
-  },
-  (columns) => [
-    index('images_created_by_idx').on(columns.createdBy),
-    index('images_owner_idx').on(columns.owner),
-    index('images_updated_at_idx').on(columns.updatedAt),
-    index('images_created_at_idx').on(columns.createdAt),
-    uniqueIndex('images_filename_idx').on(columns.filename),
-    index('images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
-      columns.sizes_thumbnail_filename
-    ),
-    index('images_sizes_small_sizes_small_filename_idx').on(columns.sizes_small_filename),
-    index('images_sizes_large_sizes_large_filename_idx').on(columns.sizes_large_filename),
-  ]
-);
-
 export const individuals = pgTable(
   'individuals',
   {
@@ -1196,66 +1078,6 @@ export const milk_bags_rels = pgTable(
       foreignColumns: [milk_banks.id],
       name: 'milk_bags_rels_milk_banks_fk',
     }).onDelete('cascade'),
-  ]
-);
-
-export const milk_bag_images = pgTable(
-  'milk_bag_images',
-  {
-    id: uuid('id').defaultRandom().primaryKey(),
-    alt: varchar('alt'),
-    blurHash: varchar('blur_hash'),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    owner: uuid('owner_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    url: varchar('url'),
-    thumbnailURL: varchar('thumbnail_u_r_l'),
-    filename: varchar('filename'),
-    mimeType: varchar('mime_type'),
-    filesize: numeric('filesize', { mode: 'number' }),
-    width: numeric('width', { mode: 'number' }),
-    height: numeric('height', { mode: 'number' }),
-    focalX: numeric('focal_x', { mode: 'number' }),
-    focalY: numeric('focal_y', { mode: 'number' }),
-    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
-    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
-    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
-    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
-    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
-    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
-    sizes_small_url: varchar('sizes_small_url'),
-    sizes_small_width: numeric('sizes_small_width', { mode: 'number' }),
-    sizes_small_height: numeric('sizes_small_height', { mode: 'number' }),
-    sizes_small_mimeType: varchar('sizes_small_mime_type'),
-    sizes_small_filesize: numeric('sizes_small_filesize', { mode: 'number' }),
-    sizes_small_filename: varchar('sizes_small_filename'),
-    sizes_large_url: varchar('sizes_large_url'),
-    sizes_large_width: numeric('sizes_large_width', { mode: 'number' }),
-    sizes_large_height: numeric('sizes_large_height', { mode: 'number' }),
-    sizes_large_mimeType: varchar('sizes_large_mime_type'),
-    sizes_large_filesize: numeric('sizes_large_filesize', { mode: 'number' }),
-    sizes_large_filename: varchar('sizes_large_filename'),
-  },
-  (columns) => [
-    index('milk_bag_images_created_by_idx').on(columns.createdBy),
-    index('milk_bag_images_owner_idx').on(columns.owner),
-    index('milk_bag_images_updated_at_idx').on(columns.updatedAt),
-    index('milk_bag_images_created_at_idx').on(columns.createdAt),
-    uniqueIndex('milk_bag_images_filename_idx').on(columns.filename),
-    index('milk_bag_images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
-      columns.sizes_thumbnail_filename
-    ),
-    index('milk_bag_images_sizes_small_sizes_small_filename_idx').on(columns.sizes_small_filename),
-    index('milk_bag_images_sizes_large_sizes_large_filename_idx').on(columns.sizes_large_filename),
   ]
 );
 
@@ -2203,6 +2025,571 @@ export const transactions_rels = pgTable(
   ]
 );
 
+export const messages = pgTable(
+  'messages',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    conversation: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, {
+        onDelete: 'set null',
+      }),
+    type: enum_message_type('type').notNull().default('TEXT'),
+    content: varchar('content').notNull(),
+    replyTo: uuid('reply_to_id').references((): AnyPgColumn => messages.id, {
+      onDelete: 'set null',
+    }),
+    edited: boolean('edited').default(false),
+    editedAt: timestamp('edited_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    searchVector: varchar('search_vector'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('messages_conversation_idx').on(columns.conversation),
+    index('messages_reply_to_idx').on(columns.replyTo),
+    index('messages_updated_at_idx').on(columns.updatedAt),
+    index('messages_created_at_idx').on(columns.createdAt),
+    index('messages_deleted_at_idx').on(columns.deletedAt),
+    index('conversation_createdAt_idx').on(columns.conversation, columns.createdAt),
+    index('searchVector_idx').on(columns.searchVector),
+  ]
+);
+
+export const messages_rels = pgTable(
+  'messages_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('messages_rels_order_idx').on(columns.order),
+    index('messages_rels_parent_idx').on(columns.parent),
+    index('messages_rels_path_idx').on(columns.path),
+    index('messages_rels_individuals_id_idx').on(columns.individualsID),
+    index('messages_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('messages_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [messages.id],
+      name: 'messages_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'messages_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'messages_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'messages_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: enum_conversation_type('type').notNull().default('DIRECT'),
+    title: varchar('title'),
+    avatar: uuid('avatar_id').references(() => avatars.id, {
+      onDelete: 'set null',
+    }),
+    archived: boolean('archived').default(false),
+    createdBy: uuid('created_by_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('conversations_avatar_idx').on(columns.avatar),
+    index('conversations_created_by_idx').on(columns.createdBy),
+    index('conversations_updated_at_idx').on(columns.updatedAt),
+    index('conversations_created_at_idx').on(columns.createdAt),
+    index('conversations_deleted_at_idx').on(columns.deletedAt),
+  ]
+);
+
+export const message_attachments = pgTable(
+  'message_attachments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    message: uuid('message_id').references(() => messages.id, {
+      onDelete: 'set null',
+    }),
+    createdBy: uuid('created_by_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('message_attachments_message_idx').on(columns.message),
+    index('message_attachments_created_by_idx').on(columns.createdBy),
+    index('message_attachments_updated_at_idx').on(columns.updatedAt),
+    index('message_attachments_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const message_attachments_rels = pgTable(
+  'message_attachments_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    donationsID: uuid('donations_id'),
+    requestsID: uuid('requests_id'),
+    'message-mediaID': uuid('message_media_id'),
+  },
+  (columns) => [
+    index('message_attachments_rels_order_idx').on(columns.order),
+    index('message_attachments_rels_parent_idx').on(columns.parent),
+    index('message_attachments_rels_path_idx').on(columns.path),
+    index('message_attachments_rels_donations_id_idx').on(columns.donationsID),
+    index('message_attachments_rels_requests_id_idx').on(columns.requestsID),
+    index('message_attachments_rels_message_media_id_idx').on(columns['message-mediaID']),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [message_attachments.id],
+      name: 'message_attachments_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['donationsID']],
+      foreignColumns: [donations.id],
+      name: 'message_attachments_rels_donations_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['requestsID']],
+      foreignColumns: [requests.id],
+      name: 'message_attachments_rels_requests_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['message-mediaID']],
+      foreignColumns: [message_media.id],
+      name: 'message_attachments_rels_message_media_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const message_reactions = pgTable(
+  'message_reactions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    message: uuid('message_id')
+      .notNull()
+      .references(() => messages.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    emoji: varchar('emoji').notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('message_reactions_message_idx').on(columns.message),
+    index('message_reactions_user_idx').on(columns.user),
+    index('message_reactions_updated_at_idx').on(columns.updatedAt),
+    index('message_reactions_created_at_idx').on(columns.createdAt),
+    uniqueIndex('message_user_emoji_idx').on(columns.message, columns.user, columns.emoji),
+  ]
+);
+
+export const conversation_participants = pgTable(
+  'conversation_participants',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    conversation: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, {
+        onDelete: 'set null',
+      }),
+    participant: uuid('participant_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    role: enum_conversation_participants_role('role').notNull().default('MEMBER'),
+    addedBy: uuid('added_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('conversation_participants_conversation_idx').on(columns.conversation),
+    index('conversation_participants_participant_idx').on(columns.participant),
+    index('conversation_participants_added_by_idx').on(columns.addedBy),
+    index('conversation_participants_updated_at_idx').on(columns.updatedAt),
+    index('conversation_participants_created_at_idx').on(columns.createdAt),
+    index('conversation_participants_deleted_at_idx').on(columns.deletedAt),
+    uniqueIndex('conversation_participant_idx').on(columns.conversation, columns.participant),
+  ]
+);
+
+export const muted_conversations = pgTable(
+  'muted_conversations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    conversation: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    mutedUntil: timestamp('muted_until', { mode: 'string', withTimezone: true, precision: 3 }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('muted_conversations_conversation_idx').on(columns.conversation),
+    index('muted_conversations_user_idx').on(columns.user),
+    index('muted_conversations_updated_at_idx').on(columns.updatedAt),
+    index('muted_conversations_created_at_idx').on(columns.createdAt),
+    uniqueIndex('conversation_user_idx').on(columns.conversation, columns.user),
+  ]
+);
+
+export const message_reads = pgTable(
+  'message_reads',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    message: uuid('message_id')
+      .notNull()
+      .references(() => messages.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    readAt: timestamp('read_at', { mode: 'string', withTimezone: true, precision: 3 }).notNull(),
+  },
+  (columns) => [
+    index('message_reads_message_idx').on(columns.message),
+    index('message_reads_user_idx').on(columns.user),
+    uniqueIndex('message_user_idx').on(columns.message, columns.user),
+  ]
+);
+
+export const message_media = pgTable(
+  'message_media',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+    sizes_preview_url: varchar('sizes_preview_url'),
+    sizes_preview_width: numeric('sizes_preview_width', { mode: 'number' }),
+    sizes_preview_height: numeric('sizes_preview_height', { mode: 'number' }),
+    sizes_preview_mimeType: varchar('sizes_preview_mime_type'),
+    sizes_preview_filesize: numeric('sizes_preview_filesize', { mode: 'number' }),
+    sizes_preview_filename: varchar('sizes_preview_filename'),
+  },
+  (columns) => [
+    index('message_media_created_by_idx').on(columns.createdBy),
+    index('message_media_updated_at_idx').on(columns.updatedAt),
+    index('message_media_created_at_idx').on(columns.createdAt),
+    uniqueIndex('message_media_filename_idx').on(columns.filename),
+    index('message_media_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+    index('message_media_sizes_preview_sizes_preview_filename_idx').on(
+      columns.sizes_preview_filename
+    ),
+  ]
+);
+
+export const milk_bag_images = pgTable(
+  'milk_bag_images',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+    sizes_small_url: varchar('sizes_small_url'),
+    sizes_small_width: numeric('sizes_small_width', { mode: 'number' }),
+    sizes_small_height: numeric('sizes_small_height', { mode: 'number' }),
+    sizes_small_mimeType: varchar('sizes_small_mime_type'),
+    sizes_small_filesize: numeric('sizes_small_filesize', { mode: 'number' }),
+    sizes_small_filename: varchar('sizes_small_filename'),
+    sizes_large_url: varchar('sizes_large_url'),
+    sizes_large_width: numeric('sizes_large_width', { mode: 'number' }),
+    sizes_large_height: numeric('sizes_large_height', { mode: 'number' }),
+    sizes_large_mimeType: varchar('sizes_large_mime_type'),
+    sizes_large_filesize: numeric('sizes_large_filesize', { mode: 'number' }),
+    sizes_large_filename: varchar('sizes_large_filename'),
+  },
+  (columns) => [
+    index('milk_bag_images_created_by_idx').on(columns.createdBy),
+    index('milk_bag_images_owner_idx').on(columns.owner),
+    index('milk_bag_images_updated_at_idx').on(columns.updatedAt),
+    index('milk_bag_images_created_at_idx').on(columns.createdAt),
+    uniqueIndex('milk_bag_images_filename_idx').on(columns.filename),
+    index('milk_bag_images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+    index('milk_bag_images_sizes_small_sizes_small_filename_idx').on(columns.sizes_small_filename),
+    index('milk_bag_images_sizes_large_sizes_large_filename_idx').on(columns.sizes_large_filename),
+  ]
+);
+
+export const images = pgTable(
+  'images',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+    sizes_small_url: varchar('sizes_small_url'),
+    sizes_small_width: numeric('sizes_small_width', { mode: 'number' }),
+    sizes_small_height: numeric('sizes_small_height', { mode: 'number' }),
+    sizes_small_mimeType: varchar('sizes_small_mime_type'),
+    sizes_small_filesize: numeric('sizes_small_filesize', { mode: 'number' }),
+    sizes_small_filename: varchar('sizes_small_filename'),
+    sizes_large_url: varchar('sizes_large_url'),
+    sizes_large_width: numeric('sizes_large_width', { mode: 'number' }),
+    sizes_large_height: numeric('sizes_large_height', { mode: 'number' }),
+    sizes_large_mimeType: varchar('sizes_large_mime_type'),
+    sizes_large_filesize: numeric('sizes_large_filesize', { mode: 'number' }),
+    sizes_large_filename: varchar('sizes_large_filename'),
+  },
+  (columns) => [
+    index('images_created_by_idx').on(columns.createdBy),
+    index('images_owner_idx').on(columns.owner),
+    index('images_updated_at_idx').on(columns.updatedAt),
+    index('images_created_at_idx').on(columns.createdAt),
+    uniqueIndex('images_filename_idx').on(columns.filename),
+    index('images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+    index('images_sizes_small_sizes_small_filename_idx').on(columns.sizes_small_filename),
+    index('images_sizes_large_sizes_large_filename_idx').on(columns.sizes_large_filename),
+  ]
+);
+
+export const identity_images = pgTable(
+  'identity_images',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+  },
+  (columns) => [
+    index('identity_images_created_by_idx').on(columns.createdBy),
+    index('identity_images_owner_idx').on(columns.owner),
+    index('identity_images_updated_at_idx').on(columns.updatedAt),
+    index('identity_images_created_at_idx').on(columns.createdAt),
+    uniqueIndex('identity_images_filename_idx').on(columns.filename),
+    index('identity_images_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+  ]
+);
+
+export const avatars = pgTable(
+  'avatars',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    owner: uuid('owner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+    sizes_icon_url: varchar('sizes_icon_url'),
+    sizes_icon_width: numeric('sizes_icon_width', { mode: 'number' }),
+    sizes_icon_height: numeric('sizes_icon_height', { mode: 'number' }),
+    sizes_icon_mimeType: varchar('sizes_icon_mime_type'),
+    sizes_icon_filesize: numeric('sizes_icon_filesize', { mode: 'number' }),
+    sizes_icon_filename: varchar('sizes_icon_filename'),
+  },
+  (columns) => [
+    index('avatars_owner_idx').on(columns.owner),
+    index('avatars_updated_at_idx').on(columns.updatedAt),
+    index('avatars_created_at_idx').on(columns.createdAt),
+    uniqueIndex('avatars_filename_idx').on(columns.filename),
+    index('avatars_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+    index('avatars_sizes_icon_sizes_icon_filename_idx').on(columns.sizes_icon_filename),
+  ]
+);
+
 export const search = pgTable(
   'search',
   {
@@ -2369,7 +2756,7 @@ export const payload_locked_documents_rels = pgTable(
     parent: uuid('parent_id').notNull(),
     path: varchar('path').notNull(),
     addressesID: uuid('addresses_id'),
-    avatarsID: uuid('avatars_id'),
+    'blocked-usersID': uuid('blocked_users_id'),
     barangaysID: uuid('barangays_id'),
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
     commentsID: uuid('comments_id'),
@@ -2377,14 +2764,11 @@ export const payload_locked_documents_rels = pgTable(
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     identitiesID: uuid('identities_id'),
-    'identity-imagesID': uuid('identity_images_id'),
-    imagesID: uuid('images_id'),
     individualsID: uuid('individuals_id'),
     inventoryID: uuid('inventory_id'),
     islandGroupsID: uuid('island_groups_id'),
     likesID: uuid('likes_id'),
     milkBagsID: uuid('milk_bags_id'),
-    'milk-bag-imagesID': uuid('milk_bag_images_id'),
     milkBanksID: uuid('milk_banks_id'),
     'notification-categoriesID': uuid('notification_categories_id'),
     'notification-channelsID': uuid('notification_channels_id'),
@@ -2396,6 +2780,18 @@ export const payload_locked_documents_rels = pgTable(
     requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
     transactionsID: uuid('transactions_id'),
+    messagesID: uuid('messages_id'),
+    conversationsID: uuid('conversations_id'),
+    'message-attachmentsID': uuid('message_attachments_id'),
+    'message-reactionsID': uuid('message_reactions_id'),
+    'conversation-participantsID': uuid('conversation_participants_id'),
+    'muted-conversationsID': uuid('muted_conversations_id'),
+    'message-readsID': uuid('message_reads_id'),
+    'message-mediaID': uuid('message_media_id'),
+    'milk-bag-imagesID': uuid('milk_bag_images_id'),
+    imagesID: uuid('images_id'),
+    'identity-imagesID': uuid('identity_images_id'),
+    avatarsID: uuid('avatars_id'),
     searchID: uuid('search_id'),
     'payload-kvID': uuid('payload_kv_id'),
     'payload-jobsID': uuid('payload_jobs_id'),
@@ -2405,7 +2801,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_parent_idx').on(columns.parent),
     index('payload_locked_documents_rels_path_idx').on(columns.path),
     index('payload_locked_documents_rels_addresses_id_idx').on(columns.addressesID),
-    index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
+    index('payload_locked_documents_rels_blocked_users_id_idx').on(columns['blocked-usersID']),
     index('payload_locked_documents_rels_barangays_id_idx').on(columns.barangaysID),
     index('payload_locked_documents_rels_cities_municipalities_id_idx').on(
       columns.citiesMunicipalitiesID
@@ -2417,14 +2813,11 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_donations_id_idx').on(columns.donationsID),
     index('payload_locked_documents_rels_hospitals_id_idx').on(columns.hospitalsID),
     index('payload_locked_documents_rels_identities_id_idx').on(columns.identitiesID),
-    index('payload_locked_documents_rels_identity_images_id_idx').on(columns['identity-imagesID']),
-    index('payload_locked_documents_rels_images_id_idx').on(columns.imagesID),
     index('payload_locked_documents_rels_individuals_id_idx').on(columns.individualsID),
     index('payload_locked_documents_rels_inventory_id_idx').on(columns.inventoryID),
     index('payload_locked_documents_rels_island_groups_id_idx').on(columns.islandGroupsID),
     index('payload_locked_documents_rels_likes_id_idx').on(columns.likesID),
     index('payload_locked_documents_rels_milk_bags_id_idx').on(columns.milkBagsID),
-    index('payload_locked_documents_rels_milk_bag_images_id_idx').on(columns['milk-bag-imagesID']),
     index('payload_locked_documents_rels_milk_banks_id_idx').on(columns.milkBanksID),
     index('payload_locked_documents_rels_notification_categories_id_idx').on(
       columns['notification-categoriesID']
@@ -2442,6 +2835,26 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_requests_id_idx').on(columns.requestsID),
     index('payload_locked_documents_rels_users_id_idx').on(columns.usersID),
     index('payload_locked_documents_rels_transactions_id_idx').on(columns.transactionsID),
+    index('payload_locked_documents_rels_messages_id_idx').on(columns.messagesID),
+    index('payload_locked_documents_rels_conversations_id_idx').on(columns.conversationsID),
+    index('payload_locked_documents_rels_message_attachments_id_idx').on(
+      columns['message-attachmentsID']
+    ),
+    index('payload_locked_documents_rels_message_reactions_id_idx').on(
+      columns['message-reactionsID']
+    ),
+    index('payload_locked_documents_rels_conversation_participants__idx').on(
+      columns['conversation-participantsID']
+    ),
+    index('payload_locked_documents_rels_muted_conversations_id_idx').on(
+      columns['muted-conversationsID']
+    ),
+    index('payload_locked_documents_rels_message_reads_id_idx').on(columns['message-readsID']),
+    index('payload_locked_documents_rels_message_media_id_idx').on(columns['message-mediaID']),
+    index('payload_locked_documents_rels_milk_bag_images_id_idx').on(columns['milk-bag-imagesID']),
+    index('payload_locked_documents_rels_images_id_idx').on(columns.imagesID),
+    index('payload_locked_documents_rels_identity_images_id_idx').on(columns['identity-imagesID']),
+    index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
     index('payload_locked_documents_rels_search_id_idx').on(columns.searchID),
     index('payload_locked_documents_rels_payload_kv_id_idx').on(columns['payload-kvID']),
     index('payload_locked_documents_rels_payload_jobs_id_idx').on(columns['payload-jobsID']),
@@ -2456,9 +2869,9 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_addresses_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['avatarsID']],
-      foreignColumns: [avatars.id],
-      name: 'payload_locked_documents_rels_avatars_fk',
+      columns: [columns['blocked-usersID']],
+      foreignColumns: [blocked_users.id],
+      name: 'payload_locked_documents_rels_blocked_users_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['barangaysID']],
@@ -2496,16 +2909,6 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_identities_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['identity-imagesID']],
-      foreignColumns: [identity_images.id],
-      name: 'payload_locked_documents_rels_identity_images_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['imagesID']],
-      foreignColumns: [images.id],
-      name: 'payload_locked_documents_rels_images_fk',
-    }).onDelete('cascade'),
-    foreignKey({
       columns: [columns['individualsID']],
       foreignColumns: [individuals.id],
       name: 'payload_locked_documents_rels_individuals_fk',
@@ -2529,11 +2932,6 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['milkBagsID']],
       foreignColumns: [milk_bags.id],
       name: 'payload_locked_documents_rels_milk_bags_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['milk-bag-imagesID']],
-      foreignColumns: [milk_bag_images.id],
-      name: 'payload_locked_documents_rels_milk_bag_images_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['milkBanksID']],
@@ -2589,6 +2987,66 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['transactionsID']],
       foreignColumns: [transactions.id],
       name: 'payload_locked_documents_rels_transactions_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['messagesID']],
+      foreignColumns: [messages.id],
+      name: 'payload_locked_documents_rels_messages_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['conversationsID']],
+      foreignColumns: [conversations.id],
+      name: 'payload_locked_documents_rels_conversations_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['message-attachmentsID']],
+      foreignColumns: [message_attachments.id],
+      name: 'payload_locked_documents_rels_message_attachments_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['message-reactionsID']],
+      foreignColumns: [message_reactions.id],
+      name: 'payload_locked_documents_rels_message_reactions_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['conversation-participantsID']],
+      foreignColumns: [conversation_participants.id],
+      name: 'payload_locked_documents_rels_conversation_participants_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['muted-conversationsID']],
+      foreignColumns: [muted_conversations.id],
+      name: 'payload_locked_documents_rels_muted_conversations_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['message-readsID']],
+      foreignColumns: [message_reads.id],
+      name: 'payload_locked_documents_rels_message_reads_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['message-mediaID']],
+      foreignColumns: [message_media.id],
+      name: 'payload_locked_documents_rels_message_media_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milk-bag-imagesID']],
+      foreignColumns: [milk_bag_images.id],
+      name: 'payload_locked_documents_rels_milk_bag_images_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['imagesID']],
+      foreignColumns: [images.id],
+      name: 'payload_locked_documents_rels_images_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['identity-imagesID']],
+      foreignColumns: [identity_images.id],
+      name: 'payload_locked_documents_rels_identity_images_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['avatarsID']],
+      foreignColumns: [avatars.id],
+      name: 'payload_locked_documents_rels_avatars_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['searchID']],
@@ -2706,11 +3164,16 @@ export const relations_addresses = relations(addresses, ({ one }) => ({
     relationName: 'islandGroup',
   }),
 }));
-export const relations_avatars = relations(avatars, ({ one }) => ({
-  owner: one(users, {
-    fields: [avatars.owner],
+export const relations_blocked_users = relations(blocked_users, ({ one }) => ({
+  blocker: one(users, {
+    fields: [blocked_users.blocker],
     references: [users.id],
-    relationName: 'owner',
+    relationName: 'blocker',
+  }),
+  blocked: one(users, {
+    fields: [blocked_users.blocked],
+    references: [users.id],
+    relationName: 'blocked',
   }),
 }));
 export const relations_barangays = relations(barangays, ({ one }) => ({
@@ -2943,30 +3406,6 @@ export const relations_identities = relations(identities, ({ one }) => ({
     relationName: 'refImage',
   }),
 }));
-export const relations_identity_images = relations(identity_images, ({ one }) => ({
-  createdBy: one(users, {
-    fields: [identity_images.createdBy],
-    references: [users.id],
-    relationName: 'createdBy',
-  }),
-  owner: one(users, {
-    fields: [identity_images.owner],
-    references: [users.id],
-    relationName: 'owner',
-  }),
-}));
-export const relations_images = relations(images, ({ one }) => ({
-  createdBy: one(users, {
-    fields: [images.createdBy],
-    references: [users.id],
-    relationName: 'createdBy',
-  }),
-  owner: one(users, {
-    fields: [images.owner],
-    references: [users.id],
-    relationName: 'owner',
-  }),
-}));
 export const relations_individuals = relations(individuals, ({ one }) => ({
   owner: one(users, {
     fields: [individuals.owner],
@@ -3120,18 +3559,6 @@ export const relations_milk_bags = relations(milk_bags, ({ one, many }) => ({
   }),
   _rels: many(milk_bags_rels, {
     relationName: '_rels',
-  }),
-}));
-export const relations_milk_bag_images = relations(milk_bag_images, ({ one }) => ({
-  createdBy: one(users, {
-    fields: [milk_bag_images.createdBy],
-    references: [users.id],
-    relationName: 'createdBy',
-  }),
-  owner: one(users, {
-    fields: [milk_bag_images.owner],
-    references: [users.id],
-    relationName: 'owner',
   }),
 }));
 export const relations_milk_banks = relations(milk_banks, ({ one }) => ({
@@ -3531,6 +3958,201 @@ export const relations_transactions = relations(transactions, ({ one, many }) =>
     relationName: '_rels',
   }),
 }));
+export const relations_messages_rels = relations(messages_rels, ({ one }) => ({
+  parent: one(messages, {
+    fields: [messages_rels.parent],
+    references: [messages.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [messages_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [messages_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [messages_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations_messages = relations(messages, ({ one, many }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversation],
+    references: [conversations.id],
+    relationName: 'conversation',
+  }),
+  replyTo: one(messages, {
+    fields: [messages.replyTo],
+    references: [messages.id],
+    relationName: 'replyTo',
+  }),
+  _rels: many(messages_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations_conversations = relations(conversations, ({ one }) => ({
+  avatar: one(avatars, {
+    fields: [conversations.avatar],
+    references: [avatars.id],
+    relationName: 'avatar',
+  }),
+  createdBy: one(users, {
+    fields: [conversations.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+}));
+export const relations_message_attachments_rels = relations(
+  message_attachments_rels,
+  ({ one }) => ({
+    parent: one(message_attachments, {
+      fields: [message_attachments_rels.parent],
+      references: [message_attachments.id],
+      relationName: '_rels',
+    }),
+    donationsID: one(donations, {
+      fields: [message_attachments_rels.donationsID],
+      references: [donations.id],
+      relationName: 'donations',
+    }),
+    requestsID: one(requests, {
+      fields: [message_attachments_rels.requestsID],
+      references: [requests.id],
+      relationName: 'requests',
+    }),
+    'message-mediaID': one(message_media, {
+      fields: [message_attachments_rels['message-mediaID']],
+      references: [message_media.id],
+      relationName: 'message-media',
+    }),
+  })
+);
+export const relations_message_attachments = relations(message_attachments, ({ one, many }) => ({
+  message: one(messages, {
+    fields: [message_attachments.message],
+    references: [messages.id],
+    relationName: 'message',
+  }),
+  createdBy: one(users, {
+    fields: [message_attachments.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  _rels: many(message_attachments_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations_message_reactions = relations(message_reactions, ({ one }) => ({
+  message: one(messages, {
+    fields: [message_reactions.message],
+    references: [messages.id],
+    relationName: 'message',
+  }),
+  user: one(users, {
+    fields: [message_reactions.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
+export const relations_conversation_participants = relations(
+  conversation_participants,
+  ({ one }) => ({
+    conversation: one(conversations, {
+      fields: [conversation_participants.conversation],
+      references: [conversations.id],
+      relationName: 'conversation',
+    }),
+    participant: one(users, {
+      fields: [conversation_participants.participant],
+      references: [users.id],
+      relationName: 'participant',
+    }),
+    addedBy: one(users, {
+      fields: [conversation_participants.addedBy],
+      references: [users.id],
+      relationName: 'addedBy',
+    }),
+  })
+);
+export const relations_muted_conversations = relations(muted_conversations, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [muted_conversations.conversation],
+    references: [conversations.id],
+    relationName: 'conversation',
+  }),
+  user: one(users, {
+    fields: [muted_conversations.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
+export const relations_message_reads = relations(message_reads, ({ one }) => ({
+  message: one(messages, {
+    fields: [message_reads.message],
+    references: [messages.id],
+    relationName: 'message',
+  }),
+  user: one(users, {
+    fields: [message_reads.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
+export const relations_message_media = relations(message_media, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [message_media.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+}));
+export const relations_milk_bag_images = relations(milk_bag_images, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [milk_bag_images.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [milk_bag_images.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+}));
+export const relations_images = relations(images, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [images.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [images.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+}));
+export const relations_identity_images = relations(identity_images, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [identity_images.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  owner: one(users, {
+    fields: [identity_images.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+}));
+export const relations_avatars = relations(avatars, ({ one }) => ({
+  owner: one(users, {
+    fields: [avatars.owner],
+    references: [users.id],
+    relationName: 'owner',
+  }),
+}));
 export const relations_search_rels = relations(search_rels, ({ one }) => ({
   parent: one(search, {
     fields: [search_rels.parent],
@@ -3584,10 +4206,10 @@ export const relations_payload_locked_documents_rels = relations(
       references: [addresses.id],
       relationName: 'addresses',
     }),
-    avatarsID: one(avatars, {
-      fields: [payload_locked_documents_rels.avatarsID],
-      references: [avatars.id],
-      relationName: 'avatars',
+    'blocked-usersID': one(blocked_users, {
+      fields: [payload_locked_documents_rels['blocked-usersID']],
+      references: [blocked_users.id],
+      relationName: 'blocked-users',
     }),
     barangaysID: one(barangays, {
       fields: [payload_locked_documents_rels.barangaysID],
@@ -3624,16 +4246,6 @@ export const relations_payload_locked_documents_rels = relations(
       references: [identities.id],
       relationName: 'identities',
     }),
-    'identity-imagesID': one(identity_images, {
-      fields: [payload_locked_documents_rels['identity-imagesID']],
-      references: [identity_images.id],
-      relationName: 'identity-images',
-    }),
-    imagesID: one(images, {
-      fields: [payload_locked_documents_rels.imagesID],
-      references: [images.id],
-      relationName: 'images',
-    }),
     individualsID: one(individuals, {
       fields: [payload_locked_documents_rels.individualsID],
       references: [individuals.id],
@@ -3658,11 +4270,6 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.milkBagsID],
       references: [milk_bags.id],
       relationName: 'milkBags',
-    }),
-    'milk-bag-imagesID': one(milk_bag_images, {
-      fields: [payload_locked_documents_rels['milk-bag-imagesID']],
-      references: [milk_bag_images.id],
-      relationName: 'milk-bag-images',
     }),
     milkBanksID: one(milk_banks, {
       fields: [payload_locked_documents_rels.milkBanksID],
@@ -3718,6 +4325,66 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.transactionsID],
       references: [transactions.id],
       relationName: 'transactions',
+    }),
+    messagesID: one(messages, {
+      fields: [payload_locked_documents_rels.messagesID],
+      references: [messages.id],
+      relationName: 'messages',
+    }),
+    conversationsID: one(conversations, {
+      fields: [payload_locked_documents_rels.conversationsID],
+      references: [conversations.id],
+      relationName: 'conversations',
+    }),
+    'message-attachmentsID': one(message_attachments, {
+      fields: [payload_locked_documents_rels['message-attachmentsID']],
+      references: [message_attachments.id],
+      relationName: 'message-attachments',
+    }),
+    'message-reactionsID': one(message_reactions, {
+      fields: [payload_locked_documents_rels['message-reactionsID']],
+      references: [message_reactions.id],
+      relationName: 'message-reactions',
+    }),
+    'conversation-participantsID': one(conversation_participants, {
+      fields: [payload_locked_documents_rels['conversation-participantsID']],
+      references: [conversation_participants.id],
+      relationName: 'conversation-participants',
+    }),
+    'muted-conversationsID': one(muted_conversations, {
+      fields: [payload_locked_documents_rels['muted-conversationsID']],
+      references: [muted_conversations.id],
+      relationName: 'muted-conversations',
+    }),
+    'message-readsID': one(message_reads, {
+      fields: [payload_locked_documents_rels['message-readsID']],
+      references: [message_reads.id],
+      relationName: 'message-reads',
+    }),
+    'message-mediaID': one(message_media, {
+      fields: [payload_locked_documents_rels['message-mediaID']],
+      references: [message_media.id],
+      relationName: 'message-media',
+    }),
+    'milk-bag-imagesID': one(milk_bag_images, {
+      fields: [payload_locked_documents_rels['milk-bag-imagesID']],
+      references: [milk_bag_images.id],
+      relationName: 'milk-bag-images',
+    }),
+    imagesID: one(images, {
+      fields: [payload_locked_documents_rels.imagesID],
+      references: [images.id],
+      relationName: 'images',
+    }),
+    'identity-imagesID': one(identity_images, {
+      fields: [payload_locked_documents_rels['identity-imagesID']],
+      references: [identity_images.id],
+      relationName: 'identity-images',
+    }),
+    avatarsID: one(avatars, {
+      fields: [payload_locked_documents_rels.avatarsID],
+      references: [avatars.id],
+      relationName: 'avatars',
     }),
     searchID: one(search, {
       fields: [payload_locked_documents_rels.searchID],
@@ -3798,12 +4465,15 @@ type DatabaseSchema = {
   enum_users_profile_type: typeof enum_users_profile_type;
   enum_transaction_status: typeof enum_transaction_status;
   enum_transaction_type: typeof enum_transaction_type;
+  enum_message_type: typeof enum_message_type;
+  enum_conversation_type: typeof enum_conversation_type;
+  enum_conversation_participants_role: typeof enum_conversation_participants_role;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
   enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug;
   addresses: typeof addresses;
-  avatars: typeof avatars;
+  blocked_users: typeof blocked_users;
   barangays: typeof barangays;
   cities_municipalities: typeof cities_municipalities;
   comments_mentions: typeof comments_mentions;
@@ -3816,8 +4486,6 @@ type DatabaseSchema = {
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
   identities: typeof identities;
-  identity_images: typeof identity_images;
-  images: typeof images;
   individuals: typeof individuals;
   inventory_allocation_details: typeof inventory_allocation_details;
   inventory: typeof inventory;
@@ -3828,7 +4496,6 @@ type DatabaseSchema = {
   milk_bags_ownership_history: typeof milk_bags_ownership_history;
   milk_bags: typeof milk_bags;
   milk_bags_rels: typeof milk_bags_rels;
-  milk_bag_images: typeof milk_bag_images;
   milk_banks: typeof milk_banks;
   notification_categories: typeof notification_categories;
   notification_channels: typeof notification_channels;
@@ -3853,6 +4520,20 @@ type DatabaseSchema = {
   transactions_tracking_status_history: typeof transactions_tracking_status_history;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
+  messages: typeof messages;
+  messages_rels: typeof messages_rels;
+  conversations: typeof conversations;
+  message_attachments: typeof message_attachments;
+  message_attachments_rels: typeof message_attachments_rels;
+  message_reactions: typeof message_reactions;
+  conversation_participants: typeof conversation_participants;
+  muted_conversations: typeof muted_conversations;
+  message_reads: typeof message_reads;
+  message_media: typeof message_media;
+  milk_bag_images: typeof milk_bag_images;
+  images: typeof images;
+  identity_images: typeof identity_images;
+  avatars: typeof avatars;
   search: typeof search;
   search_rels: typeof search_rels;
   payload_kv: typeof payload_kv;
@@ -3864,7 +4545,7 @@ type DatabaseSchema = {
   payload_preferences_rels: typeof payload_preferences_rels;
   payload_migrations: typeof payload_migrations;
   relations_addresses: typeof relations_addresses;
-  relations_avatars: typeof relations_avatars;
+  relations_blocked_users: typeof relations_blocked_users;
   relations_barangays: typeof relations_barangays;
   relations_cities_municipalities: typeof relations_cities_municipalities;
   relations_comments_mentions: typeof relations_comments_mentions;
@@ -3877,8 +4558,6 @@ type DatabaseSchema = {
   relations_donations: typeof relations_donations;
   relations_hospitals: typeof relations_hospitals;
   relations_identities: typeof relations_identities;
-  relations_identity_images: typeof relations_identity_images;
-  relations_images: typeof relations_images;
   relations_individuals: typeof relations_individuals;
   relations_inventory_allocation_details: typeof relations_inventory_allocation_details;
   relations_inventory_rels: typeof relations_inventory_rels;
@@ -3889,7 +4568,6 @@ type DatabaseSchema = {
   relations_milk_bags_ownership_history: typeof relations_milk_bags_ownership_history;
   relations_milk_bags_rels: typeof relations_milk_bags_rels;
   relations_milk_bags: typeof relations_milk_bags;
-  relations_milk_bag_images: typeof relations_milk_bag_images;
   relations_milk_banks: typeof relations_milk_banks;
   relations_notification_categories: typeof relations_notification_categories;
   relations_notification_channels: typeof relations_notification_channels;
@@ -3914,6 +4592,20 @@ type DatabaseSchema = {
   relations_transactions_tracking_status_history: typeof relations_transactions_tracking_status_history;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;
+  relations_messages_rels: typeof relations_messages_rels;
+  relations_messages: typeof relations_messages;
+  relations_conversations: typeof relations_conversations;
+  relations_message_attachments_rels: typeof relations_message_attachments_rels;
+  relations_message_attachments: typeof relations_message_attachments;
+  relations_message_reactions: typeof relations_message_reactions;
+  relations_conversation_participants: typeof relations_conversation_participants;
+  relations_muted_conversations: typeof relations_muted_conversations;
+  relations_message_reads: typeof relations_message_reads;
+  relations_message_media: typeof relations_message_media;
+  relations_milk_bag_images: typeof relations_milk_bag_images;
+  relations_images: typeof relations_images;
+  relations_identity_images: typeof relations_identity_images;
+  relations_avatars: typeof relations_avatars;
   relations_search_rels: typeof relations_search_rels;
   relations_search: typeof relations_search;
   relations_payload_kv: typeof relations_payload_kv;
