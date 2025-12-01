@@ -7,6 +7,11 @@ export const preventDuplicateParticipants: CollectionBeforeValidateHook<
   ConversationParticipant
 > = async ({ req, operation, data }) => {
   if (!data || operation !== 'create' || !req.user) return data;
+
+  if (!data.addedBy) {
+    data.addedBy = req.user.id;
+  }
+
   // Prevent duplicate participants
   const { participant, conversation } = data;
 

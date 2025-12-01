@@ -1,10 +1,11 @@
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { isAdmin } from '@/lib/utils/isAdmin';
 import { CONVERSATION_ROLE } from '@lactalink/enums';
-import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionConfig, Where } from 'payload';
 import { authenticated } from '../_access-control';
+import { validateParticipantPermissions } from './_hooks/beforeChangeParticipants';
 import { preventDuplicateParticipants } from './_hooks/beforeValidateParticipants';
+import { getUserConversationIds } from './_utils/getConversationIds';
 
 const ConversationParticipants: CollectionConfig<'conversation-participants'> = {
   slug: 'conversation-participants',
@@ -21,62 +22,32 @@ const ConversationParticipants: CollectionConfig<'conversation-participants'> = 
     read: async ({ req: { user }, req }) => {
       if (!user) return false;
       if (isAdmin(user)) return true;
-      // Users can only see participants of conversations they're part of
-      const { values } = await req.payload.findDistinct({
-        req,
-        collection: 'conversation-participants',
-        depth: 0,
-        field: 'conversation',
-        sort: 'conversation',
-        where: { participant: { equals: user.id } },
-      });
 
-      const conversationIds = values.map((p) => extractID(p.conversation));
-      return { conversation: { in: conversationIds } };
+      const conversationIds = await getUserConversationIds(req);
+      // Can read if they are a participant in the conversation or if the conversation includes them
+      if (conversationIds.length > 0) return { conversation: { in: conversationIds } } as Where;
+
+      return { participant: { equals: user.id } };
     },
     update: async ({ req: { user }, req }) => {
       if (!user) return false;
       if (isAdmin(user)) return true;
-      // Users can update their own roles only if they are admins in the conversation
-      const { values } = await req.payload.findDistinct({
-        req,
-        collection: 'conversation-participants',
-        depth: 0,
-        field: 'conversation',
-        sort: 'conversation',
-        where: {
-          and: [
-            { participant: { equals: user.id } },
-            { role: { equals: CONVERSATION_ROLE.ADMIN.value } },
-          ],
-        },
-      });
 
-      const conversationIds = values.map((p) => extractID(p.conversation));
-      return { conversation: { in: conversationIds } };
+      const adminConversationIds = await getUserConversationIds(req, 'ADMIN');
+      // Can update if they are an admin in the conversation
+      if (adminConversationIds.length > 0) return { conversation: { in: adminConversationIds } };
+
+      return false;
     },
     delete: async ({ req: { user }, req }) => {
       if (!user) return false;
       if (isAdmin(user)) return true;
-      // Users can leave, admins can remove others
-      const { values } = await req.payload.findDistinct({
-        req,
-        collection: 'conversation-participants',
-        depth: 0,
-        field: 'conversation',
-        sort: 'conversation',
-        where: {
-          and: [
-            { participant: { equals: user.id } },
-            { role: { equals: CONVERSATION_ROLE.ADMIN.value } },
-          ],
-        },
-      });
 
-      const conversationIds = values.map((p) => extractID(p.conversation));
       const query: Where[] = [{ participant: { equals: user.id } }];
-      if (conversationIds.length > 0) {
-        query.push({ conversation: { in: conversationIds } });
+
+      const adminConversationIds = await getUserConversationIds(req, 'ADMIN');
+      if (adminConversationIds.length > 0) {
+        query.push({ conversation: { in: adminConversationIds } });
       }
 
       return { or: query };
@@ -90,6 +61,7 @@ const ConversationParticipants: CollectionConfig<'conversation-participants'> = 
   ],
   hooks: {
     beforeValidate: [preventDuplicateParticipants],
+    beforeChange: [validateParticipantPermissions],
     afterChange: [
       async ({ req, doc, operation }) => {
         // Emit real-time event
