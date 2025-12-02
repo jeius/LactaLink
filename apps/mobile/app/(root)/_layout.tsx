@@ -69,6 +69,8 @@ export default function Layout() {
         }}
       />
 
+      <Stack.Screen name="(create)/conversations/create" options={{ headerShown: false }} />
+
       <Stack.Screen
         name="(create)/delivery-proposal"
         options={{

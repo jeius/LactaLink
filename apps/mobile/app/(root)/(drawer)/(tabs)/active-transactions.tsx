@@ -54,7 +54,7 @@ export default function TransactionsTab() {
     const isEmpty = data.length === 0;
     return (
       <HStack space="sm" className="items-center justify-between">
-        <Text size="lg" className="font-JakartaMedium">
+        <Text size="lg" bold>
           Active Transactions
         </Text>
         {!isEmpty && (

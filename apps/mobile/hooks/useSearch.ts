@@ -19,6 +19,8 @@ export function useSearch(debounceTime = 300) {
     collection: 'search',
     where: { title: { contains: searchTerm } },
     limit: 10,
+    depth: 5,
+    populate: { individuals: { avatar: true, displayName: true, givenName: true } },
   });
 
   // Flatten the search results for easier consumption
@@ -26,6 +28,8 @@ export function useSearch(debounceTime = 300) {
     () => query.data?.pages.flatMap((page) => page.docs) || [],
     [query.data?.pages]
   );
+
+  console.log('Search Results:', searchResults);
 
   // Clear the search term
   const clearSearch = () => {

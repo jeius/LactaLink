@@ -62,7 +62,7 @@ export default function NotificationsTab() {
 
   function ListHeaderComponent() {
     return (
-      <Text size="lg" className="font-JakartaMedium">
+      <Text size="lg" bold>
         Notifications
       </Text>
     );

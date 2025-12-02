@@ -63,6 +63,14 @@ export const Conversations: CollectionConfig<'conversations'> = {
       },
     },
 
+    {
+      name: 'lastMessageAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+
     { ...createdByField, required: true } as Field,
 
     {
@@ -77,6 +85,7 @@ export const Conversations: CollectionConfig<'conversations'> = {
               type: 'join',
               collection: 'conversation-participants',
               on: 'conversation',
+              maxDepth: 5,
               admin: {
                 description: 'Participants in this conversation',
               },
@@ -92,6 +101,7 @@ export const Conversations: CollectionConfig<'conversations'> = {
               collection: 'messages',
               on: 'conversation',
               defaultSort: '-createdAt',
+              maxDepth: 5,
               admin: {
                 description: 'Messages in this conversation',
               },

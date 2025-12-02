@@ -8,13 +8,12 @@ export const updateLastMessage: CollectionAfterChangeHook<Message> = async ({
   operation,
 }) => {
   if (operation === 'create') {
-    // Update conversation's lastMessage and lastMessageAt
+    // Update conversation's lastMessageAt
     await req.payload.update({
       req,
       collection: 'conversations',
       id: extractID(doc.conversation),
       data: {
-        lastMessage: doc.id,
         lastMessageAt: doc.createdAt,
       },
     });

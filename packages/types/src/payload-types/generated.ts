@@ -2188,6 +2188,7 @@ export interface Conversation {
    */
   avatar?: (string | null) | Avatar;
   archived?: boolean | null;
+  lastMessageAt?: string | null;
   createdBy: string | User;
   /**
    * Participants in this conversation
@@ -3413,6 +3414,7 @@ export interface ConversationsSelect<T extends boolean = true> {
   title?: T;
   avatar?: T;
   archived?: T;
+  lastMessageAt?: T;
   createdBy?: T;
   participants?: T;
   messages?: T;
