@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
+import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import ConversationListItem from '@/features/chat/components/ConversationListItem';
 import { conversationsInfiniteOptions } from '@/features/chat/lib/queryOptions';
+import { shadow } from '@/lib/utils/shadows';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
@@ -47,6 +49,13 @@ export default function MessagesPage() {
         ListEmptyComponent={ListEmpty}
         overScrollMode={'never'}
         bounces={false}
+        refreshControl={
+          <RefreshControl
+            progressViewOffset={headerHeight - insets.top}
+            refreshing={query.isRefetching}
+            onRefresh={query.refetch}
+          />
+        }
         contentContainerStyle={{
           paddingBottom: 80,
           marginTop: headerHeight - insets.top,
@@ -63,13 +72,13 @@ export default function MessagesPage() {
 
 function ListHeader() {
   return (
-    <Box>
+    <Box className="bg-background-0" style={shadow.sm}>
       <HStack space="lg" className="items-center px-5 py-4">
         <Text bold size="lg" className="grow">
           Messages
         </Text>
         <Link href={'/conversations/create'} push asChild>
-          <AnimatedPressable>
+          <AnimatedPressable className="overflow-hidden rounded-full p-2">
             <Icon size="xl" as={PlusIcon} />
           </AnimatedPressable>
         </Link>

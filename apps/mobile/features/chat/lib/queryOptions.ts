@@ -23,7 +23,7 @@ export const conversationsInfiniteOptions = infiniteQueryOptions({
   getPreviousPageParam: (page) => page.prevPage,
 });
 
-export function createMessageQueryOptions(id: Message['id'] | undefined, enabled = true) {
+export function createMessageQueryOptions(id: Message['id'] | undefined | null, enabled = true) {
   return queryOptions({
     enabled: !!id || enabled,
     queryKey: ['messages', id],
@@ -57,10 +57,32 @@ export function createConvoParticipantQueryOptions(id: ConversationParticipant['
   });
 }
 
+export function createConvoParticipantsQueryOptions(
+  ids: ConversationParticipant['id'][] | undefined,
+  enabled = true
+) {
+  return queryOptions({
+    enabled: !!ids || enabled,
+    queryKey: ['conversation-participants', ids],
+    queryFn: () => {
+      if (!ids) throw new Error('Conversation participants IDs is undefined');
+      const apiClient = getApiClient();
+      return apiClient.find({
+        collection: 'conversation-participants',
+        where: { id: { in: ids } },
+        depth: 5,
+        pagination: false,
+      });
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
 export const createNearestUsersQueryOptions = (coordinates: RNLatLng | null) =>
   queryOptions({
     queryKey: ['users', 'nearest', coordinates],
     queryFn: () => findNearestUsers(coordinates),
+    placeholderData: (prev) => prev,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 3, // 3 minutes
   });

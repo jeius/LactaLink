@@ -8,7 +8,7 @@ import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
-import { useSearch } from '@/hooks/useSearch';
+import { useUserSearch } from '@/features/user-search/hooks/useUserSearch';
 import { getColor } from '@/lib/colors';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
@@ -25,15 +25,19 @@ import UserProfileItem from './UserProfileItem';
 
 export default function CreateDirectChat() {
   const coordinates = useCurrentCoordinates();
-  const { data: nearestUsers } = useQuery(createNearestUsersQueryOptions(coordinates));
+  const { data: nearestUsers, ...usersQuery } = useQuery(
+    createNearestUsersQueryOptions(coordinates)
+  );
   const suggestions = nearestUsers?.map((user) => user.profile).filter((v) => !!v);
 
   const inputRef = useRef<TextInput>(null);
 
   const { searchTerm, setSearchTerm, clearSearch, willSearch, searchResults, ...query } =
-    useSearch();
+    useUserSearch();
 
-  const profiles = willSearch ? searchResults.map((s) => s.doc) : suggestions;
+  const profiles = willSearch ? searchResults.map((s) => s.doc) : suggestions || [];
+
+  const isLoading = query.isLoading || usersQuery.isLoading;
 
   function handleClearSearch() {
     clearSearch();
@@ -83,26 +87,28 @@ export default function CreateDirectChat() {
       </Box>
 
       <FlashList
-        data={profiles || []}
+        data={profiles}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         ListHeaderComponentStyle={{ marginBottom: 4 }}
         onEndReached={query.fetchNextPage}
         ListHeaderComponent={
           willSearch
-            ? () => query.isLoading && <Spinner size={'large'} style={{ marginTop: 16 }} />
-            : () => <ListHeader />
+            ? () => isLoading && <Spinner size={'large'} style={{ marginTop: 16 }} />
+            : () => <ListHeader isLoading={usersQuery.isLoading} />
         }
         ListFooterComponent={() =>
           query.isFetchingNextPage && <Spinner size={'small'} className="my-2" />
         }
-        ListEmptyComponent={() => (
-          <NoData
-            title="No results found"
-            className="self-center"
-            style={{ marginTop: 64, width: '80%' }}
-          />
-        )}
+        ListEmptyComponent={() =>
+          !isLoading && (
+            <NoData
+              title="No results found"
+              className="self-center"
+              style={{ marginTop: 64, width: '80%' }}
+            />
+          )
+        }
         renderItem={({ item }) => {
           const slug = item.relationTo;
           const id = extractID(item.value);
@@ -119,7 +125,7 @@ export default function CreateDirectChat() {
   );
 }
 
-function ListHeader() {
+function ListHeader({ isLoading }: { isLoading?: boolean }) {
   const params: CreateConvoSearchParams = { type: 'group' };
   return (
     <>
@@ -132,6 +138,7 @@ function ListHeader() {
       <Text size="sm" className="mx-5 mt-2 font-JakartaMedium text-typography-700">
         Suggested
       </Text>
+      {isLoading && <Spinner size={'large'} style={{ marginTop: 32 }} />}
     </>
   );
 }
