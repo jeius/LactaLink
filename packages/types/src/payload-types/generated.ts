@@ -212,7 +212,7 @@ export interface Config {
     images: Image;
     'identity-images': IdentityImage;
     avatars: Avatar;
-    search: Search;
+    'user-search': UserSearch;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -311,7 +311,7 @@ export interface Config {
     images: ImagesSelect<false> | ImagesSelect<true>;
     'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
-    search: SearchSelect<false> | SearchSelect<true>;
+    'user-search': UserSearchSelect<false> | UserSearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -2331,9 +2331,9 @@ export interface MutedConversation {
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "search".
+ * via the `definition` "user-search".
  */
-export interface Search {
+export interface UserSearch {
   id: string;
   title?: string | null;
   priority?: number | null;
@@ -2350,6 +2350,7 @@ export interface Search {
         relationTo: 'milkBanks';
         value: string | MilkBank;
       };
+  searchExcerpt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2632,8 +2633,8 @@ export interface PayloadLockedDocument {
         value: string | Avatar;
       } | null)
     | ({
-        relationTo: 'search';
-        value: string | Search;
+        relationTo: 'user-search';
+        value: string | UserSearch;
       } | null)
     | ({
         relationTo: 'payload-kv';
@@ -3712,12 +3713,13 @@ export interface AvatarsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "search_select".
+ * via the `definition` "user-search_select".
  */
-export interface SearchSelect<T extends boolean = true> {
+export interface UserSearchSelect<T extends boolean = true> {
   title?: T;
   priority?: T;
   doc?: T;
+  searchExcerpt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

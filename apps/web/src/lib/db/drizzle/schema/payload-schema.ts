@@ -2112,6 +2112,11 @@ export const conversations = pgTable(
       onDelete: 'set null',
     }),
     archived: boolean('archived').default(false),
+    lastMessageAt: timestamp('last_message_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
     createdBy: uuid('created_by_id')
       .notNull()
       .references(() => users.id, {
@@ -2590,12 +2595,13 @@ export const avatars = pgTable(
   ]
 );
 
-export const search = pgTable(
-  'search',
+export const user_search = pgTable(
+  'user_search',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title'),
     priority: numeric('priority', { mode: 'number' }),
+    searchExcerpt: varchar('search_excerpt'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -2604,13 +2610,13 @@ export const search = pgTable(
       .notNull(),
   },
   (columns) => [
-    index('search_updated_at_idx').on(columns.updatedAt),
-    index('search_created_at_idx').on(columns.createdAt),
+    index('user_search_updated_at_idx').on(columns.updatedAt),
+    index('user_search_created_at_idx').on(columns.createdAt),
   ]
 );
 
-export const search_rels = pgTable(
-  'search_rels',
+export const user_search_rels = pgTable(
+  'user_search_rels',
   {
     id: serial('id').primaryKey(),
     order: integer('order'),
@@ -2621,31 +2627,31 @@ export const search_rels = pgTable(
     milkBanksID: uuid('milk_banks_id'),
   },
   (columns) => [
-    index('search_rels_order_idx').on(columns.order),
-    index('search_rels_parent_idx').on(columns.parent),
-    index('search_rels_path_idx').on(columns.path),
-    index('search_rels_individuals_id_idx').on(columns.individualsID),
-    index('search_rels_hospitals_id_idx').on(columns.hospitalsID),
-    index('search_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    index('user_search_rels_order_idx').on(columns.order),
+    index('user_search_rels_parent_idx').on(columns.parent),
+    index('user_search_rels_path_idx').on(columns.path),
+    index('user_search_rels_individuals_id_idx').on(columns.individualsID),
+    index('user_search_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('user_search_rels_milk_banks_id_idx').on(columns.milkBanksID),
     foreignKey({
       columns: [columns['parent']],
-      foreignColumns: [search.id],
-      name: 'search_rels_parent_fk',
+      foreignColumns: [user_search.id],
+      name: 'user_search_rels_parent_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['individualsID']],
       foreignColumns: [individuals.id],
-      name: 'search_rels_individuals_fk',
+      name: 'user_search_rels_individuals_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['hospitalsID']],
       foreignColumns: [hospitals.id],
-      name: 'search_rels_hospitals_fk',
+      name: 'user_search_rels_hospitals_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['milkBanksID']],
       foreignColumns: [milk_banks.id],
-      name: 'search_rels_milk_banks_fk',
+      name: 'user_search_rels_milk_banks_fk',
     }).onDelete('cascade'),
   ]
 );
@@ -2792,7 +2798,7 @@ export const payload_locked_documents_rels = pgTable(
     imagesID: uuid('images_id'),
     'identity-imagesID': uuid('identity_images_id'),
     avatarsID: uuid('avatars_id'),
-    searchID: uuid('search_id'),
+    'user-searchID': uuid('user_search_id'),
     'payload-kvID': uuid('payload_kv_id'),
     'payload-jobsID': uuid('payload_jobs_id'),
   },
@@ -2855,7 +2861,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_images_id_idx').on(columns.imagesID),
     index('payload_locked_documents_rels_identity_images_id_idx').on(columns['identity-imagesID']),
     index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
-    index('payload_locked_documents_rels_search_id_idx').on(columns.searchID),
+    index('payload_locked_documents_rels_user_search_id_idx').on(columns['user-searchID']),
     index('payload_locked_documents_rels_payload_kv_id_idx').on(columns['payload-kvID']),
     index('payload_locked_documents_rels_payload_jobs_id_idx').on(columns['payload-jobsID']),
     foreignKey({
@@ -3049,9 +3055,9 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_avatars_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['searchID']],
-      foreignColumns: [search.id],
-      name: 'payload_locked_documents_rels_search_fk',
+      columns: [columns['user-searchID']],
+      foreignColumns: [user_search.id],
+      name: 'payload_locked_documents_rels_user_search_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['payload-kvID']],
@@ -4153,30 +4159,30 @@ export const relations_avatars = relations(avatars, ({ one }) => ({
     relationName: 'owner',
   }),
 }));
-export const relations_search_rels = relations(search_rels, ({ one }) => ({
-  parent: one(search, {
-    fields: [search_rels.parent],
-    references: [search.id],
+export const relations_user_search_rels = relations(user_search_rels, ({ one }) => ({
+  parent: one(user_search, {
+    fields: [user_search_rels.parent],
+    references: [user_search.id],
     relationName: '_rels',
   }),
   individualsID: one(individuals, {
-    fields: [search_rels.individualsID],
+    fields: [user_search_rels.individualsID],
     references: [individuals.id],
     relationName: 'individuals',
   }),
   hospitalsID: one(hospitals, {
-    fields: [search_rels.hospitalsID],
+    fields: [user_search_rels.hospitalsID],
     references: [hospitals.id],
     relationName: 'hospitals',
   }),
   milkBanksID: one(milk_banks, {
-    fields: [search_rels.milkBanksID],
+    fields: [user_search_rels.milkBanksID],
     references: [milk_banks.id],
     relationName: 'milkBanks',
   }),
 }));
-export const relations_search = relations(search, ({ many }) => ({
-  _rels: many(search_rels, {
+export const relations_user_search = relations(user_search, ({ many }) => ({
+  _rels: many(user_search_rels, {
     relationName: '_rels',
   }),
 }));
@@ -4386,10 +4392,10 @@ export const relations_payload_locked_documents_rels = relations(
       references: [avatars.id],
       relationName: 'avatars',
     }),
-    searchID: one(search, {
-      fields: [payload_locked_documents_rels.searchID],
-      references: [search.id],
-      relationName: 'search',
+    'user-searchID': one(user_search, {
+      fields: [payload_locked_documents_rels['user-searchID']],
+      references: [user_search.id],
+      relationName: 'user-search',
     }),
     'payload-kvID': one(payload_kv, {
       fields: [payload_locked_documents_rels['payload-kvID']],
@@ -4534,8 +4540,8 @@ type DatabaseSchema = {
   images: typeof images;
   identity_images: typeof identity_images;
   avatars: typeof avatars;
-  search: typeof search;
-  search_rels: typeof search_rels;
+  user_search: typeof user_search;
+  user_search_rels: typeof user_search_rels;
   payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
@@ -4606,8 +4612,8 @@ type DatabaseSchema = {
   relations_images: typeof relations_images;
   relations_identity_images: typeof relations_identity_images;
   relations_avatars: typeof relations_avatars;
-  relations_search_rels: typeof relations_search_rels;
-  relations_search: typeof relations_search;
+  relations_user_search_rels: typeof relations_user_search_rels;
+  relations_user_search: typeof relations_user_search;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;

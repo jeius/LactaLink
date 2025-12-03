@@ -14,6 +14,10 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  SEARCH: {
+    ALL: QueryKey;
+    USER: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -29,6 +33,10 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['posts'],
     INFINITE: ['posts', 'infinite'],
     ONE: ['posts', 'one'],
+  },
+  SEARCH: {
+    ALL: ['search'],
+    USER: ['search', 'user'],
   },
 };
 

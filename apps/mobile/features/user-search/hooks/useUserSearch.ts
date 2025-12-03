@@ -1,11 +1,12 @@
-import { useInfiniteFetchBySlug } from '@/hooks/collections/useInfiniteFetchBySlug';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import debounce from 'lodash/debounce';
 import { useMemo, useState } from 'react';
+import { createUserInfiniteQueryOptions } from '../lib/queryOptions';
 
 /**
  * Hook for handling search functionality
  */
-export function useSearch(debounceTime = 300) {
+export function useUserSearch(debounceTime = 300) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Debounce the search term update to avoid excessive API calls
@@ -14,22 +15,14 @@ export function useSearch(debounceTime = 300) {
   // Only search if the search term has more than 1 character
   const willSearch = searchTerm.length > 1;
 
-  // Use the infinite fetch hook for search results
-  const query = useInfiniteFetchBySlug(willSearch, {
-    collection: 'search',
-    where: { title: { contains: searchTerm } },
-    limit: 10,
-    depth: 5,
-    populate: { individuals: { avatar: true, displayName: true, givenName: true } },
-  });
+  // Use the infinite query hook for search results
+  const query = useInfiniteQuery(createUserInfiniteQueryOptions(searchTerm));
 
   // Flatten the search results for easier consumption
   const searchResults = useMemo(
     () => query.data?.pages.flatMap((page) => page.docs) || [],
     [query.data?.pages]
   );
-
-  console.log('Search Results:', searchResults);
 
   // Clear the search term
   const clearSearch = () => {

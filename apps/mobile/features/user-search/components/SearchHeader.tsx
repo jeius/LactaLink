@@ -2,8 +2,8 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
-import { Search } from '@lactalink/types/payload-generated-types';
-import React, { memo } from 'react';
+import { UserSearch as Search } from '@lactalink/types/payload-generated-types';
+import React from 'react';
 
 type SearchHeaderProps = {
   isSearchMode?: boolean;
@@ -15,7 +15,7 @@ type SearchHeaderProps = {
 /**
  * Header component for the search results or history list
  */
-export const SearchHeader = memo(function SearchHeader({
+export function SearchHeader({
   isSearchMode = true,
   isLoading,
   history,
@@ -23,7 +23,7 @@ export const SearchHeader = memo(function SearchHeader({
 }: SearchHeaderProps) {
   if (isSearchMode) {
     if (isLoading) {
-      return <Spinner className="mt-5" size={'large'} />;
+      return <Spinner style={{ marginTop: 32 }} size={'large'} />;
     }
     return null;
   } else if (history?.length) {
@@ -39,4 +39,6 @@ export const SearchHeader = memo(function SearchHeader({
     );
   }
   return null;
-});
+}
+
+export default SearchHeader;
