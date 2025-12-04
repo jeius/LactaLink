@@ -1,4 +1,5 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
+import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -15,12 +16,16 @@ import { shadow } from '@/lib/utils/shadows';
 import { UserProfile } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { FlashList } from '@shopify/flash-list';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'expo-router';
+import { useMutation, useMutationState, useQuery } from '@tanstack/react-query';
+import { Link, useRouter } from 'expo-router';
 import { UsersRoundIcon, XIcon } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput } from 'react-native';
-import { createNearestUsersQueryOptions } from '../lib/queryOptions';
+import { createDirectChatCreationMutation } from '../lib/mutationOptions';
+import {
+  createFindDirectChatQueryOptions,
+  createNearestUsersQueryOptions,
+} from '../lib/queryOptions';
 import { CreateConvoSearchParams } from '../lib/types';
 import UserProfileItem from './UserProfileItem';
 
@@ -30,6 +35,12 @@ export default function CreateDirectChat() {
     createNearestUsersQueryOptions(coordinates)
   );
   const suggestions = nearestUsers?.map((user) => user.profile).filter((v) => !!v);
+
+  const mutationKey = createDirectChatCreationMutation().mutationKey;
+  const mutationStates = useMutationState({
+    filters: { mutationKey, status: 'pending' },
+    select: (m) => m.state,
+  });
 
   const inputRef = useRef<TextInput>(null);
 
@@ -112,6 +123,8 @@ export default function CreateDirectChat() {
           )
         }
       />
+
+      <FetchingSpinner isFetching={mutationStates.length > 0} />
     </SafeArea>
   );
 }
@@ -135,14 +148,23 @@ function ListHeader({ isLoading }: { isLoading?: boolean }) {
 }
 
 function ListItem({ data }: { data: UserProfile }) {
+  const router = useRouter();
   const owner = extractCollection(data.value)?.owner;
-  const ownerId = extractID(owner);
-  if (!ownerId) return null;
+  const { data: conversation } = useQuery(createFindDirectChatQueryOptions(owner));
+  const { mutateAsync: createChat } = useMutation(createDirectChatCreationMutation());
+
+  const handlePress = async () => {
+    if (conversation) {
+      router.replace(`/chat/${extractID(conversation)}`);
+    } else if (owner) {
+      const createdConvo = await createChat(owner);
+      router.replace(`/chat/${extractID(createdConvo)}`);
+    }
+  };
+
   return (
-    <Link href={'/'} asChild>
-      <Pressable className="px-5 py-4">
-        <UserProfileItem profile={data} />
-      </Pressable>
-    </Link>
+    <Pressable className="px-5 py-4" onPress={handlePress}>
+      <UserProfileItem profile={data} />
+    </Pressable>
   );
 }

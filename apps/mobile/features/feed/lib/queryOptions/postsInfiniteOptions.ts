@@ -1,12 +1,9 @@
 import { QUERY_KEYS } from '@/lib/constants/queryKeys';
-import { getStoredData, storeData } from '@/lib/localStorage/utils';
+import { getStoredInfiniteDocuments, storeInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { InfiniteDataMap } from '@/lib/types';
 import { getApiClient } from '@lactalink/api';
-import { Post } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { infiniteQueryOptions } from '@tanstack/react-query';
-import { produce } from 'immer';
 
 const STORAGE_KEY = 'infinite-posts';
 
@@ -17,8 +14,8 @@ export const postsInfiniteOptions = infiniteQueryOptions({
   getNextPageParam: (page) => page.nextPage,
   getPreviousPageParam: (page) => page.prevPage,
   placeholderData: (prevData) => {
-    if (!prevData) return getStoredInfinitePosts();
-    storeInfinitePosts(prevData);
+    if (!prevData) return getStoredInfiniteDocuments(STORAGE_KEY);
+    storeInfiniteDocuments(prevData, STORAGE_KEY);
     return prevData;
   },
 });
@@ -59,26 +56,4 @@ async function fetchPosts({ pageParam }: { pageParam: number }) {
 
   const map = new Map(docs.map((d) => [d.id, d]));
   return { docs: map, ...rest };
-}
-
-function getStoredInfinitePosts() {
-  const stored = getStoredData<InfiniteDataMap<Post, number>>(STORAGE_KEY);
-  if (!stored) return undefined;
-  return produce(stored, (draft) => {
-    draft.pages.forEach((page) => {
-      // Convert Array of entries back into Map
-      page.docs = new Map(page.docs);
-    });
-  });
-}
-
-function storeInfinitePosts(data: InfiniteDataMap<Post>) {
-  storeData(STORAGE_KEY, {
-    ...data,
-    pages: data.pages.map((page) => ({
-      ...page,
-      // Convert Map into Array of entries for storage serialization
-      docs: Array.from(page.docs.entries()),
-    })),
-  });
 }

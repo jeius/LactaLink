@@ -94,8 +94,8 @@ export function createPayloadHandler<T>({
       // Log the success message and elapsed time.
       if (message) payload.logger.info(`${message}`);
 
-      // Exclude data in the response if its null or undefined;
-      if (data === null || data === undefined) {
+      // Exclude data in the response if its undefined;
+      if (data === undefined) {
         return Response.json({ message }, { status });
       }
 

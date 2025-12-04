@@ -1,28 +1,13 @@
 import { getApiClient } from '@lactalink/api';
 import { ConversationParticipant, Message } from '@lactalink/types/payload-generated-types';
-import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
+import { extractID } from '@lactalink/utilities/extractors';
+import { queryOptions } from '@tanstack/react-query';
 import { RNLatLng } from 'react-native-google-maps-plus';
-import { fetchConvoParticipants } from './api/fetchConvoParticipants';
-import { findNearestUsers } from './api/findNearestUsers';
+import { fetchConvoParticipants } from '../api/fetchConvoParticipants';
+import { findDirectChat } from '../api/findDirectChat';
+import { findNearestUsers } from '../api/findNearestUsers';
 
-export const conversationsInfiniteOptions = infiniteQueryOptions({
-  initialPageParam: 1,
-  queryKey: ['conversations'],
-  queryFn: async ({ pageParam }) => {
-    const apiClient = getApiClient();
-    const { docs, ...conversations } = await apiClient.find({
-      collection: 'conversations',
-      pagination: true,
-      page: pageParam,
-      limit: 15,
-      depth: 5,
-      sort: '-lastMessageAt',
-    });
-    return { ...conversations, docs: new Map(docs.map((d) => [d.id, d])) };
-  },
-  getNextPageParam: (page) => page.nextPage,
-  getPreviousPageParam: (page) => page.prevPage,
-});
+export * from './conversationsInfiniteOptions';
 
 export function createMessageQueryOptions(id: Message['id'] | undefined | null, enabled = true) {
   return queryOptions({
@@ -62,11 +47,25 @@ export function createConvoParticipantsQueryOptions(
   });
 }
 
-export const createNearestUsersQueryOptions = (coordinates: RNLatLng | null) =>
-  queryOptions({
+export function createNearestUsersQueryOptions(coordinates: RNLatLng | null) {
+  return queryOptions({
     queryKey: ['users', 'nearest', coordinates],
     queryFn: () => findNearestUsers(coordinates),
     placeholderData: (prev) => prev,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 3, // 3 minutes
+    gcTime: 1000 * 60 * 3,
   });
+}
+
+export function createFindDirectChatQueryOptions(
+  participant: ConversationParticipant['participant'] | undefined | null,
+  enabled = true
+) {
+  return queryOptions({
+    enabled: !!participant || enabled,
+    queryKey: ['conversations', 'direct', extractID(participant)],
+    queryFn: () => findDirectChat(participant),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 10, // 10 minutes
+  });
+}

@@ -5,6 +5,7 @@ import { CONVERSATION_TYPE } from '@lactalink/enums';
 import { CollectionConfig, Field } from 'payload';
 import { authenticated } from '../../_access-control';
 import { allowedParticipantOrAdmin, participantOrAdmin } from './access';
+import conversationEndpoints from './endpoints';
 
 export const Conversations: CollectionConfig<'conversations'> = {
   slug: 'conversations',
@@ -21,6 +22,7 @@ export const Conversations: CollectionConfig<'conversations'> = {
     delete: () => false,
   },
   trash: true,
+  endpoints: conversationEndpoints,
   hooks: {
     beforeChange: [generateCreatedBy],
   },

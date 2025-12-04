@@ -4,11 +4,14 @@ import {
   RequestSchema,
   SetupProfileSchema,
 } from '@lactalink/form-schemas';
+import { Collection } from '@lactalink/types/collections';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { produce } from 'immer';
 import { DeepPartial } from 'react-hook-form';
 import { type MMKV } from 'react-native-mmkv';
 import { getMeUser } from '../stores/meUserStore';
+import { InfiniteDataMap } from '../types';
 import Storage, { formDataStorage } from './mmkv-storages';
 
 type Schemas = {
@@ -84,6 +87,31 @@ export function getStoredData<T>(key: string, storage: MMKV = Storage) {
 
 export function storeData<T>(key: string, data: T, storage: MMKV = Storage) {
   storage.set(key, JSON.stringify(data));
+}
+
+export function getStoredInfiniteDocuments<T extends Collection>(key: string) {
+  const stored = getStoredData<InfiniteDataMap<T, number>>(key);
+  if (!stored) return undefined;
+  return produce(stored, (draft) => {
+    draft.pages.forEach((page) => {
+      // Convert Array of entries back into Map
+      page.docs = new Map(page.docs);
+    });
+  });
+}
+
+export function storeInfiniteDocuments<T extends Collection>(
+  data: InfiniteDataMap<T>,
+  key: string
+) {
+  storeData(key, {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      // Convert Map into Array of entries for storage serialization
+      docs: Array.from(page.docs.entries()),
+    })),
+  });
 }
 
 // #region Helpers

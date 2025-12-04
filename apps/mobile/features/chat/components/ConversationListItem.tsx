@@ -17,7 +17,7 @@ import {
 } from '@lactalink/utilities/extractors';
 import { formatTimeOrDateLabel } from '@lactalink/utilities/formatters';
 import React from 'react';
-import { useConvoParticipantsQuery, useMessage } from '../hooks/queries';
+import { useMessage } from '../hooks/queries';
 import { generateGroupName } from '../lib/generateGroupName';
 
 interface ConversationListItemProps {
@@ -30,9 +30,7 @@ export default function ConversationListItem({ data }: ConversationListItemProps
   const lastMessage = data.messages?.docs?.[0] ?? null;
   const { data: lastMsgDoc, ...msgQuery } = useMessage(lastMessage);
 
-  const { data: participants, ...participantsQuery } = useConvoParticipantsQuery(
-    data.participants?.docs
-  );
+  const participants = extractCollection(data.participants?.docs);
 
   if (data.type === CONVERSATION_TYPE.GROUP.value) {
     const groupName = data.title || generateGroupName(participants || []);
@@ -41,11 +39,7 @@ export default function ConversationListItem({ data }: ConversationListItemProps
     const lastMessageText = lastMsgDoc && lastMsgDoc.content;
     return (
       <HStack space="md" className="items-center px-5 py-2">
-        <GroupChatAvatar
-          avatar={data.avatar}
-          participants={participants || []}
-          isLoading={participantsQuery.isLoading}
-        />
+        <GroupChatAvatar avatar={data.avatar} participants={participants || []} />
         <VStack className="grow">
           <Text className="font-JakartaSemiBold">{groupName}</Text>
           <HStack space="sm" className="items-center">
@@ -79,11 +73,7 @@ export default function ConversationListItem({ data }: ConversationListItemProps
 
   return (
     <HStack space="md" className="items-center px-5 py-2">
-      <GroupChatAvatar
-        avatar={data.avatar}
-        participants={participants || []}
-        isLoading={participantsQuery.isLoading}
-      />
+      <ProfileAvatar profile={otherUser?.profile} style={{ width: 40, height: 40 }} />
       <VStack className="grow">
         <Text className="font-JakartaSemiBold">{otherUserName}</Text>
         <HStack space="sm" className="items-center">

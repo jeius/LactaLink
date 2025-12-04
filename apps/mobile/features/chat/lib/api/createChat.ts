@@ -1,3 +1,4 @@
+import { getChatService } from '@/lib/services/chat';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { CONVERSATION_ROLE, CONVERSATION_TYPE } from '@lactalink/enums';
@@ -175,6 +176,13 @@ export async function createDirectChat(
 
   if (!participantId) {
     throw new Error('Invalid participant ID');
+  }
+
+  const chatService = getChatService();
+  const existingConversation = await chatService.findDirectConversation([participant, meUser]);
+
+  if (existingConversation) {
+    return existingConversation;
   }
 
   const conversation = await createConversation({
