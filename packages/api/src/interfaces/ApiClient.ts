@@ -106,7 +106,12 @@ export interface IApiClient {
    */
   fetch<TResponse>(
     endpoint: string,
-    options?: { method: ApiMethod; body?: Record<string, unknown>; headers?: Headers }
+    options?: {
+      method: ApiMethod;
+      body?: Record<string, unknown>;
+      headers?: Headers;
+      searchParams?: Record<string, unknown>;
+    }
   ): Promise<TResponse>;
 
   /**

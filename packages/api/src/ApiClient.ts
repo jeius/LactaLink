@@ -160,13 +160,20 @@ export class ApiClient implements IApiClient {
 
   fetch = async <TData>(
     endpoint: string,
-    options?: { method: ApiMethod; body?: Record<string, unknown>; headers?: Headers }
+    options?: {
+      method: ApiMethod;
+      body?: Record<string, unknown>;
+      headers?: Headers;
+      searchParams?: Record<string, unknown>;
+    }
   ): Promise<TData> => {
     const fetchOptions = await this._getFetchOptions();
     const { url: apiUrl, ...restOfFetchOptions } = fetchOptions;
-    const { method = 'GET', body } = options || {};
+    const { method = 'GET', body, searchParams } = options || {};
 
-    const url = new URL(endpoint, apiUrl);
+    const queryString = searchParams && stringify(searchParams, { addQueryPrefix: true });
+
+    const url = new URL(queryString ? endpoint.trim() + queryString : endpoint, apiUrl);
     const headers = options?.headers || fetchOptions.headers;
 
     const res = await apiFetch<TData>({
