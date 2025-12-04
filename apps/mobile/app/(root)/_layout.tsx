@@ -1,4 +1,3 @@
-import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { Stack } from 'expo-router';
@@ -23,58 +22,38 @@ export default function Layout() {
         name="feed/comments"
         options={{
           animation: 'slide_from_bottom',
-          headerShown: false,
           presentation: 'transparentModal',
-          contentStyle: {
-            backgroundColor: 'transparent',
-          },
+          contentStyle: { backgroundColor: 'transparent' },
         }}
       />
 
       <Stack.Screen
         name="(create)/requests/create"
-        options={{
-          title: 'New Request',
-          headerShown: true,
-          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
-        }}
+        options={{ headerShown: true, title: 'New Request' }}
       />
 
-      <Stack.Screen name="(create)/donations/create" options={{ headerShown: false }} />
+      <Stack.Screen name="(create)/donations/create" />
 
       <Stack.Screen
         name="(create)/addresses/create"
-        options={{
-          headerShown: true,
-          headerTitle: 'New Address',
-          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
-        }}
+        options={{ headerShown: true, title: 'New Address' }}
       />
 
       <Stack.Screen
         name="(create)/delivery-preferences/create"
-        options={{
-          headerShown: true,
-          headerTitle: 'New Delivery Preference',
-          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
-        }}
+        options={{ headerShown: true, title: 'New Delivery Preference' }}
       />
 
       <Stack.Screen
         name="(create)/feed/create"
-        options={{
-          headerShown: true,
-          headerTitle: 'Create Post',
-          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
-        }}
+        options={{ headerShown: true, title: 'Create Post' }}
       />
 
-      <Stack.Screen name="(create)/conversations/create" options={{ headerShown: false }} />
+      <Stack.Screen name="(create)/conversations/create" />
 
       <Stack.Screen
         name="(create)/delivery-proposal"
         options={{
-          headerShown: false,
           presentation: 'transparentModal',
           contentStyle: { backgroundColor: 'transparent' },
           animation: 'slide_from_bottom',

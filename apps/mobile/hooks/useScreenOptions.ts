@@ -1,4 +1,5 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { StackScreenOptions } from '@/lib/types';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
@@ -36,6 +37,7 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
   return {
     headerShown: false,
     headerBackVisible: false,
+    headerLeft: HeaderBackButton,
     headerTitleStyle: {
       fontFamily: 'Jakarta-SemiBold',
       fontSize: 14,

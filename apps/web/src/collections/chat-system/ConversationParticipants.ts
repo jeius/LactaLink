@@ -20,16 +20,6 @@ const ConversationParticipants: CollectionConfig<'conversation-participants'> = 
   access: {
     create: authenticated,
     read: authenticated,
-    // read: async ({ req: { user }, req }) => {
-    //   if (!user) return false;
-    //   if (isAdmin(user)) return true;
-
-    //   const conversationIds = await getUserConversationIds(req);
-    //   // Can read if they are a participant in the conversation or if the conversation includes them
-    //   if (conversationIds.length > 0) return { conversation: { in: conversationIds } } as Where;
-
-    //   return { participant: { equals: user.id } };
-    // },
     update: async ({ req: { user }, req }) => {
       if (!user) return false;
       if (isAdmin(user)) return true;

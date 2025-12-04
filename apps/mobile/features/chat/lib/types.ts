@@ -1,4 +1,5 @@
-import { User } from '@lactalink/types/payload-generated-types';
+import { UserProfile } from '@lactalink/types';
+import { ConversationParticipant } from '@lactalink/types/payload-generated-types';
 
 export type CreateConvoSearchParams = {
   type?: 'direct' | 'group';
@@ -6,5 +7,10 @@ export type CreateConvoSearchParams = {
 
 export type CreateGroupChatData = {
   name: string;
-  participants: NonNullable<User['profile']>[];
+  participants: UserProfile[];
 };
+
+export interface ParticipantConfig {
+  userId: string;
+  role?: ConversationParticipant['role'];
+}

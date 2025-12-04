@@ -78,7 +78,7 @@ export default function CreateGroupChat() {
     });
 
     const conversation = await promise;
-    router.dismissTo(`/conversations/${conversation.id}`);
+    router.dismissTo(`/chat/${conversation.id}`);
   }, [selectedUsers, createGroupChat, groupName, router]);
 
   const renderItem = useCallback<ListRenderItem<(typeof profiles)[number]>>(

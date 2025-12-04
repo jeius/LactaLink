@@ -5,11 +5,17 @@ import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { BLUR_HASH } from '@/lib/constants';
 import { CONVERSATION_TYPE } from '@lactalink/enums';
 import { Conversation, ConversationParticipant } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractName } from '@lactalink/utilities/extractors';
-import { formatLocaleTime, formatTimeToPastLabel } from '@lactalink/utilities/formatters';
+import {
+  extractCollection,
+  extractDisplayName,
+  extractID,
+  extractName,
+} from '@lactalink/utilities/extractors';
+import { formatTimeOrDateLabel } from '@lactalink/utilities/formatters';
 import React from 'react';
 import { useConvoParticipantsQuery, useMessage } from '../hooks/queries';
 import { generateGroupName } from '../lib/generateGroupName';
@@ -19,19 +25,27 @@ interface ConversationListItemProps {
 }
 
 export default function ConversationListItem({ data }: ConversationListItemProps) {
+  const { data: meUser } = useMeUser();
+
   const lastMessage = data.messages?.docs?.[0] ?? null;
   const { data: lastMsgDoc, ...msgQuery } = useMessage(lastMessage);
-  const lastMessageText = lastMsgDoc && lastMsgDoc.content;
 
-  const { data: participants } = useConvoParticipantsQuery(data.participants?.docs);
+  const { data: participants, ...participantsQuery } = useConvoParticipantsQuery(
+    data.participants?.docs
+  );
 
   if (data.type === CONVERSATION_TYPE.GROUP.value) {
     const groupName = data.title || generateGroupName(participants || []);
     const createdBy = extractCollection(data.createdBy);
     const createdByName = (createdBy && extractName(createdBy)) || 'Someone';
+    const lastMessageText = lastMsgDoc && lastMsgDoc.content;
     return (
       <HStack space="md" className="items-center px-5 py-2">
-        <GroupChatAvatar avatar={data.avatar} participants={participants || []} />
+        <GroupChatAvatar
+          avatar={data.avatar}
+          participants={participants || []}
+          isLoading={participantsQuery.isLoading}
+        />
         <VStack className="grow">
           <Text className="font-JakartaSemiBold">{groupName}</Text>
           <HStack space="sm" className="items-center">
@@ -43,8 +57,7 @@ export default function ConversationListItem({ data }: ConversationListItemProps
                   {lastMessageText || `${createdByName} created the group`}
                 </Text>
                 <Text size="sm" className="ml-1 text-typography-700">
-                  {(lastMsgDoc && formatTimeToPastLabel(lastMsgDoc.createdAt)) ||
-                    formatLocaleTime(data.createdAt)}
+                  {formatTimeOrDateLabel(lastMsgDoc?.createdAt || data.createdAt)}
                 </Text>
               </>
             )}
@@ -54,7 +67,42 @@ export default function ConversationListItem({ data }: ConversationListItemProps
     );
   }
 
-  return null;
+  if (!lastMsgDoc) return null;
+
+  const otherParticipant = (participants ?? []).filter(
+    (p) => extractID(p.participant) !== extractID(meUser)
+  )[0];
+
+  const otherUser = extractCollection(otherParticipant?.participant);
+  const otherUserName = otherUser ? extractDisplayName(otherUser) : 'Unknown User';
+  const lastMessageText = lastMsgDoc && lastMsgDoc.content;
+
+  return (
+    <HStack space="md" className="items-center px-5 py-2">
+      <GroupChatAvatar
+        avatar={data.avatar}
+        participants={participants || []}
+        isLoading={participantsQuery.isLoading}
+      />
+      <VStack className="grow">
+        <Text className="font-JakartaSemiBold">{otherUserName}</Text>
+        <HStack space="sm" className="items-center">
+          {msgQuery.isLoading || lastMsgDoc === undefined ? (
+            <Skeleton variant="sharp" className="mt-1 h-3" />
+          ) : (
+            <>
+              <Text size="sm" numberOfLines={1} className="grow text-typography-700">
+                {lastMessageText}
+              </Text>
+              <Text size="sm" className="ml-1 text-typography-700">
+                {formatTimeOrDateLabel(lastMsgDoc.createdAt)}
+              </Text>
+            </>
+          )}
+        </HStack>
+      </VStack>
+    </HStack>
+  );
 }
 
 function GroupChatAvatar({

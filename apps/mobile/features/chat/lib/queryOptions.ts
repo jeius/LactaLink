@@ -2,7 +2,8 @@ import { getApiClient } from '@lactalink/api';
 import { ConversationParticipant, Message } from '@lactalink/types/payload-generated-types';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { RNLatLng } from 'react-native-google-maps-plus';
-import { findNearestUsers } from './findNearestUsers';
+import { fetchConvoParticipants } from './api/fetchConvoParticipants';
+import { findNearestUsers } from './api/findNearestUsers';
 
 export const conversationsInfiniteOptions = infiniteQueryOptions({
   initialPageParam: 1,
@@ -44,15 +45,7 @@ export function createConvoParticipantQueryOptions(id: ConversationParticipant['
   return queryOptions({
     enabled: !!id,
     queryKey: ['conversation-participants', id],
-    queryFn: () => {
-      if (!id) throw new Error('Message ID is undefined');
-      const apiClient = getApiClient();
-      return apiClient.findByID({
-        collection: 'conversation-participants',
-        id,
-        depth: 5,
-      });
-    },
+    queryFn: () => fetchConvoParticipants(id),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
@@ -64,16 +57,7 @@ export function createConvoParticipantsQueryOptions(
   return queryOptions({
     enabled: !!ids || enabled,
     queryKey: ['conversation-participants', ids],
-    queryFn: () => {
-      if (!ids) throw new Error('Conversation participants IDs is undefined');
-      const apiClient = getApiClient();
-      return apiClient.find({
-        collection: 'conversation-participants',
-        where: { id: { in: ids } },
-        depth: 5,
-        pagination: false,
-      });
-    },
+    queryFn: () => fetchConvoParticipants(ids),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

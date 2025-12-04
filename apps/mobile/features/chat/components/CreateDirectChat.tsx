@@ -12,7 +12,8 @@ import { useUserSearch } from '@/features/user-search/hooks/useUserSearch';
 import { getColor } from '@/lib/colors';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
-import { extractID } from '@lactalink/utilities/extractors';
+import { UserProfile } from '@lactalink/types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { FlashList } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'expo-router';
@@ -92,6 +93,7 @@ export default function CreateDirectChat() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponentStyle={{ marginBottom: 4 }}
         onEndReached={query.fetchNextPage}
+        renderItem={({ item }) => <ListItem data={item} />}
         ListHeaderComponent={
           willSearch
             ? () => isLoading && <Spinner size={'large'} style={{ marginTop: 16 }} />
@@ -109,17 +111,6 @@ export default function CreateDirectChat() {
             />
           )
         }
-        renderItem={({ item }) => {
-          const slug = item.relationTo;
-          const id = extractID(item.value);
-          return (
-            <Link href={'/'} asChild>
-              <Pressable className="px-5 py-4">
-                <UserProfileItem profile={item} />
-              </Pressable>
-            </Link>
-          );
-        }}
       />
     </SafeArea>
   );
@@ -140,5 +131,18 @@ function ListHeader({ isLoading }: { isLoading?: boolean }) {
       </Text>
       {isLoading && <Spinner size={'large'} style={{ marginTop: 32 }} />}
     </>
+  );
+}
+
+function ListItem({ data }: { data: UserProfile }) {
+  const owner = extractCollection(data.value)?.owner;
+  const ownerId = extractID(owner);
+  if (!ownerId) return null;
+  return (
+    <Link href={'/'} asChild>
+      <Pressable className="px-5 py-4">
+        <UserProfileItem profile={data} />
+      </Pressable>
+    </Link>
   );
 }

@@ -1,3 +1,4 @@
+import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { extractID } from '@lactalink/utilities/extractors';
 import { latLngToPoint } from '@lactalink/utilities/geo-utils';
@@ -29,9 +30,13 @@ export async function findNearestUsers(coordinates: RNLatLng | null) {
     .map((addr) => extractID(addr.owner))
     .filter(Boolean) as string[];
 
+  const meUser = getMeUser();
+  // Exclude self from results
+  const filteredOwnerIDs = ownerIDs.filter((id) => id !== meUser?.id);
+
   return apiClient.find({
     collection: 'users',
-    where: { id: { in: ownerIDs } },
+    where: { id: { in: filteredOwnerIDs } },
     depth: 5,
     select: { profile: true, email: true },
     pagination: false,

@@ -60,7 +60,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <SafeArea safeTop={false} className="bg-background-0 items-stretch">
+    <SafeArea safeTop={false} className="items-stretch bg-background-0">
       <ScrollView
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefetch} />}
         className="flex-1"
@@ -90,7 +90,7 @@ export default function ProfilePage() {
 
         <VStack
           space="sm"
-          className="bg-background-0 border-outline-200 grow items-stretch"
+          className="grow items-stretch border-outline-200 bg-background-0"
           style={{ borderTopWidth: 1 }}
         >
           <VStack className="grow">
@@ -140,7 +140,7 @@ function ActionCard({ icon, href, label }: ActionProps) {
         <Card className="h-32 w-36">
           <VStack space="sm" className="flex-1 items-center">
             <Icon as={icon} size="2xl" fill={iconFillColor} />
-            <Text size="sm" className="font-JakartaMedium grow text-center align-middle">
+            <Text size="sm" className="grow text-center align-middle font-JakartaMedium">
               {label}
             </Text>
           </VStack>
@@ -159,7 +159,7 @@ function ActionLink({ icon, href, label, badge }: ActionProps) {
       <AnimatedPressable disablePressAnimation>
         <HStack space="sm" className="w-full items-center justify-start px-5 py-4">
           <Icon as={icon} color={iconFillColor} />
-          <Text className="font-JakartaMedium grow">{label}</Text>
+          <Text className="grow font-JakartaMedium">{label}</Text>
           {badge}
           <Icon as={ChevronRightIcon} color={iconFillColor} />
         </HStack>
@@ -270,7 +270,7 @@ function createOtherLinks(user: User | null): ActionProps[] {
     },
     {
       icon: MessageSquareIcon,
-      href: '/messages',
+      href: '/chat',
       label: 'Messages',
     },
     {

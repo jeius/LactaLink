@@ -56,7 +56,7 @@ function DrawerHeader() {
   return (
     <HStack
       space="md"
-      className="bg-primary-500 border-primary-300 items-center rounded-tr-2xl"
+      className="items-center rounded-tr-2xl border-primary-300 bg-primary-500"
       style={{ paddingTop: insets.top, borderBottomWidth: 2 }}
     >
       <Image
@@ -74,20 +74,19 @@ function DrawerFooter() {
   const { data: user } = useMeUser();
   const profile = extractCollection(user?.profile?.value);
 
-  const name =
-    (profile && ('name' in profile ? profile.name : profile.displayName)) || 'Unknown User';
+  const name = profile?.displayName || 'Unknown User';
   const email = user?.email || 'No email provided';
 
   return (
     <VStack
-      className="bg-primary-500 border-primary-300 items-center justify-start rounded-br-2xl border-t-2"
+      className="items-center justify-start rounded-br-2xl border-t-2 border-primary-300 bg-primary-500"
       style={{ paddingBottom: insets.bottom }}
     >
       <HStack className="w-full items-start justify-between">
         <Link href={'/account'} asChild>
           <AnimatedPressable disablePressAnimation className="flex-1 shrink p-4">
             <HStack space="sm" className="items-center">
-              <ProfileAvatar size="md" profile={profile} />
+              <ProfileAvatar size="md" profile={user?.profile} />
               <VStack className="min-w-0 flex-1">
                 <Text
                   size="sm"
@@ -107,7 +106,7 @@ function DrawerFooter() {
         <AnimatedPressable className="p-4" onPress={signOut}>
           <VStack space="xs" className="items-center">
             <Icon as={LogOutIcon} size="xl" className="text-primary-100" />
-            <Text size="xs" className="text-primary-100 font-JakartaMedium">
+            <Text size="xs" className="font-JakartaMedium text-primary-100">
               Logout
             </Text>
           </VStack>
