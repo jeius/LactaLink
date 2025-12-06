@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
+import { DBUser } from '@lactalink/types/database';
 import { User } from '@lactalink/types/payload-generated-types';
-import type { Database } from '@lactalink/types/supabase';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
 import { useFocusEffect } from 'expo-router';
@@ -10,8 +10,6 @@ type Presence = {
   isOnline: boolean;
   lastOnlineAt: string | undefined;
 };
-
-type SBUserType = Database['public']['Tables']['users']['Row'];
 
 export function useUserPresence(user: string | User) {
   const [presence, setPresence] = useState<Presence>({
@@ -24,7 +22,7 @@ export function useUserPresence(user: string | User) {
   const channel = useMemo(() => {
     const channel = supabase.channel('users-activity');
 
-    channel.on<SBUserType>(
+    channel.on<DBUser>(
       'postgres_changes',
       {
         event: 'UPDATE',
@@ -32,19 +30,16 @@ export function useUserPresence(user: string | User) {
         table: 'users',
         filter: `id=eq.${extractID(user)}`,
       },
-      (payload) => {
-        if ('new' in payload && payload.new) {
-          const user = payload.new;
-          const now = new Date();
-          const onlineAt = new Date(user.online_at || user.created_at);
+      ({ new: user }) => {
+        const now = new Date();
+        const onlineAt = new Date(user.online_at || user.created_at);
 
-          const diffInMs = now.getTime() - onlineAt.getTime();
-          const diffInSeconds = diffInMs / 1000;
-          setPresence({
-            isOnline: diffInSeconds < 30,
-            lastOnlineAt: user.online_at || user.created_at,
-          });
-        }
+        const diffInMs = now.getTime() - onlineAt.getTime();
+        const diffInSeconds = diffInMs / 1000;
+        setPresence({
+          isOnline: diffInSeconds < 30,
+          lastOnlineAt: user.online_at || user.created_at,
+        });
       }
     );
 
