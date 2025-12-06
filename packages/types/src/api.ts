@@ -225,6 +225,8 @@ export type FindMany<
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = FindOptions<TSlug, TSelect, TPaginate>;
+
+export type CountOptions = Pick<BaseOptions, 'where' | 'trash' | 'sort' | 'draft' | 'collection'>;
 //#endregion
 
 //#region Result Types

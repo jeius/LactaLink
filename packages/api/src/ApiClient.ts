@@ -3,6 +3,7 @@ import type {
   ApiFetchArgs,
   ApiMethod,
   BaseApiFetchArgs,
+  CountOptions,
   CreateOptions,
   CreateResult,
   DeleteByID,
@@ -219,6 +220,12 @@ export class ApiClient implements IApiClient {
     const endpoint = this._buildUrlWithQuery(`/api/${collection}/${id}`, queryParams);
 
     return this._makeApiRequest<FindOneResult<TSlug, TSelect>>(endpoint, 'GET');
+  };
+
+  count = async (args: CountOptions) => {
+    const { collection, ...searchParams } = args;
+    const endpoint = this._buildUrlWithQuery(`/api/${collection}`, searchParams);
+    return this._makeApiRequest<Pick<PaginatedDocs, 'totalDocs'>>(endpoint, 'GET');
   };
 
   create = async <TSlug extends CollectionSlug, TSelect extends SelectFromCollectionSlug<TSlug>>(

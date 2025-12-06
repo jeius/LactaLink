@@ -1,5 +1,6 @@
 import type {
   ApiMethod,
+  CountOptions,
   CreateOptions,
   DeleteByID,
   DeleteMany,
@@ -12,7 +13,11 @@ import type {
   UploadFile,
 } from '@lactalink/types/api';
 import type { FileCollectionSlug } from '@lactalink/types/collections';
-import type { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import type {
+  CollectionSlug,
+  PaginatedDocs,
+  SelectFromCollectionSlug,
+} from '@lactalink/types/payload-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IAuthClient } from './AuthClient';
 
@@ -156,6 +161,13 @@ export interface IApiClient {
   >(
     args: CreateOptions<TSlug, TSelect>
   ): Promise<FindOneResult<TSlug, TSelect>>;
+
+  /**
+   * Counts the number of documents in a collection matching the specified criteria.
+   * @param args - Arguments for the count operation including collection, filters, etc.
+   * @returns Promise resolving to an object containing the total document count
+   */
+  count(args: CountOptions): Promise<Pick<PaginatedDocs, 'totalDocs'>>;
 
   /**
    * Creates a new file document in the specified file collection.
