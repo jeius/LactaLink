@@ -1,4 +1,4 @@
-import lodashIsString from 'lodash/isString';
+import isString from 'lodash/isString';
 
 /**
  * Checks if the provided value is an array of strings.
@@ -7,9 +7,9 @@ import lodashIsString from 'lodash/isString';
  */
 function areStrings(value: unknown[]): value is string[] {
   if (Array.isArray(value) && value.length > 0) {
-    return value.every((item) => lodashIsString(item));
+    return value.every(isString);
   }
   return false;
 }
 
-export { areStrings, lodashIsString as isString };
+export { areStrings, isString };

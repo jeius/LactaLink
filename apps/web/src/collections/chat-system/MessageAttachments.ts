@@ -2,6 +2,7 @@ import { createdByField } from '@/fields/createdByField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { isAdmin } from '@/lib/utils/isAdmin';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionConfig, Field } from 'payload';
 import { authenticated, collectionCreatorOrAdmin } from '../_access-control/general';
 import { deleteRelatedAttachment } from './_hooks/afterDeleteAttachments';
@@ -13,15 +14,24 @@ const MessageAttachments: CollectionConfig<'message-attachments'> = {
     hidden: true,
   },
   access: {
-    read: ({ req: { user } }) => {
+    read: async ({ req: { user }, req }) => {
       if (!user) return false;
       if (isAdmin(user)) return true;
+
+      const { values } = await req.payload.findDistinct({
+        collection: 'conversation-participants',
+        where: { participant: { equals: user.id } },
+        limit: 0,
+        depth: 0,
+        req,
+        field: 'conversation',
+        sort: 'conversation',
+      });
+
+      const ids = values.map((p) => extractID(p.conversation));
+
       // Users can only access attachments from conversations they're part of
-      return {
-        'message.conversation.participants.participant': {
-          equals: user.id,
-        },
-      };
+      return { 'message.conversation': { in: ids } };
     },
     create: authenticated,
     update: () => false,

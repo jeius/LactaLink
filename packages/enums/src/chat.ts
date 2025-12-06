@@ -1,7 +1,6 @@
 export const MESSAGE_TYPE = {
-  TEXT: { value: 'TEXT', label: 'Text' },
-  SYSTEM: { value: 'SYSTEM', label: 'System' },
-  ATTACHMENT: { value: 'ATTACHMENT', label: 'Attachment' },
+  TEXT: { value: 'TEXT', label: 'User Message' },
+  SYSTEM: { value: 'SYSTEM', label: 'System Message' },
 } as const;
 
 export const CONVERSATION_TYPE = {

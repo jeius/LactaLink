@@ -14,11 +14,22 @@ export const senderOrAdmin: Access = ({ req: { user } }) => {
   } as Where;
 };
 
-export const participants: Access = ({ req: { user } }) => {
+export const participants: Access = async ({ req: { user }, req }) => {
   if (!user) return false;
   if (isAdmin(user)) return true;
+
+  const { values } = await req.payload.findDistinct({
+    collection: 'conversation-participants',
+    where: { participant: { equals: user.id } },
+    limit: 0,
+    depth: 0,
+    req,
+    field: 'conversation',
+    sort: 'conversation',
+  });
+
+  const ids = values.map((p) => extractID(p.conversation));
+
   // Users can only read messages from conversations they're part of
-  return {
-    'conversation.participants.participant': { equals: user.id },
-  };
+  return { conversation: { in: ids } };
 };

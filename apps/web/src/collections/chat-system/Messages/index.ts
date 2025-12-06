@@ -32,10 +32,10 @@ const Messages: CollectionConfig<'messages'> = {
     beforeChange: [verifySender],
     afterChange: [
       updateLastMessage,
-      async ({ doc, operation }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create') {
           // Emit to Supabase Realtime
-          console.log(`[Realtime] New message in conversation ${doc.conversation}`);
+          req.payload.logger.info(`[Realtime] New message in conversation ${doc.conversation}`);
           // TODO: Notify participants except sender
         }
         return doc;
@@ -81,10 +81,13 @@ const Messages: CollectionConfig<'messages'> = {
 
     {
       name: 'content',
+      label: 'Message Content',
       type: 'textarea',
-      required: true,
-      maxLength: 10000,
+      admin: {
+        description: 'The text content of the message',
+      },
     },
+
     {
       name: 'replyTo',
       type: 'relationship',
@@ -93,6 +96,7 @@ const Messages: CollectionConfig<'messages'> = {
         description: 'Message this is replying to (threading)',
       },
     },
+
     {
       name: 'mentions',
       type: 'relationship',

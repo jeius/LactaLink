@@ -2111,8 +2111,11 @@ export interface Message {
         relationTo: 'milkBanks';
         value: string | MilkBank;
       };
-  type: 'TEXT' | 'SYSTEM' | 'ATTACHMENT';
-  content: string;
+  type: 'TEXT' | 'SYSTEM';
+  /**
+   * The text content of the message
+   */
+  content?: string | null;
   /**
    * Message this is replying to (threading)
    */

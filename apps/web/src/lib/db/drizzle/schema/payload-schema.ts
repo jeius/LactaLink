@@ -193,7 +193,7 @@ export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'CANCELLED',
 ]);
 export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
-export const enum_message_type = pgEnum('enum_message_type', ['TEXT', 'SYSTEM', 'ATTACHMENT']);
+export const enum_message_type = pgEnum('enum_message_type', ['TEXT', 'SYSTEM']);
 export const enum_conversation_type = pgEnum('enum_conversation_type', ['DIRECT', 'GROUP']);
 export const enum_conversation_participants_role = pgEnum('enum_conversation_participants_role', [
   'ADMIN',
@@ -2035,7 +2035,7 @@ export const messages = pgTable(
         onDelete: 'set null',
       }),
     type: enum_message_type('type').notNull().default('TEXT'),
-    content: varchar('content').notNull(),
+    content: varchar('content'),
     replyTo: uuid('reply_to_id').references((): AnyPgColumn => messages.id, {
       onDelete: 'set null',
     }),
