@@ -1,7 +1,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: '12.2.3 (519615d)';
@@ -16,10 +16,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
+          extensions?: Json;
           operationName?: string;
           query?: string;
           variables?: Json;
-          extensions?: Json;
         };
         Returns: Json;
       };
@@ -37,7 +37,7 @@ export type Database = {
         Row: {
           barangay_id: string | null;
           city_municipality_id: string;
-          coordinates: unknown | null;
+          coordinates: unknown;
           created_at: string;
           display_name: string | null;
           id: string;
@@ -54,7 +54,7 @@ export type Database = {
         Insert: {
           barangay_id?: string | null;
           city_municipality_id: string;
-          coordinates?: unknown | null;
+          coordinates?: unknown;
           created_at?: string;
           display_name?: string | null;
           id?: string;
@@ -71,7 +71,7 @@ export type Database = {
         Update: {
           barangay_id?: string | null;
           city_municipality_id?: string;
-          coordinates?: unknown | null;
+          coordinates?: unknown;
           created_at?: string;
           display_name?: string | null;
           id?: string;
@@ -133,6 +133,7 @@ export type Database = {
       avatars: {
         Row: {
           alt: string | null;
+          blur_hash: string | null;
           created_at: string;
           filename: string | null;
           filesize: number | null;
@@ -161,6 +162,7 @@ export type Database = {
         };
         Insert: {
           alt?: string | null;
+          blur_hash?: string | null;
           created_at?: string;
           filename?: string | null;
           filesize?: number | null;
@@ -189,6 +191,7 @@ export type Database = {
         };
         Update: {
           alt?: string | null;
+          blur_hash?: string | null;
           created_at?: string;
           filename?: string | null;
           filesize?: number | null;
@@ -299,6 +302,45 @@ export type Database = {
           },
         ];
       };
+      blocked_users: {
+        Row: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at: string;
+          id: string;
+          updated_at: string;
+        };
+        Insert: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Update: {
+          blocked_id?: string;
+          blocker_id?: string;
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'blocked_users_blocked_id_users_id_fk';
+            columns: ['blocked_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'blocked_users_blocker_id_users_id_fk';
+            columns: ['blocker_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       cities_municipalities: {
         Row: {
           code: string;
@@ -366,221 +408,270 @@ export type Database = {
           },
         ];
       };
-      deliveries: {
+      comments: {
         Row: {
+          content: string;
           created_at: string;
-          created_by_id: string | null;
-          details_confirmed_address_id: string;
-          details_confirmed_time_slot_date: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_end_time: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_start_time: string | null;
-          details_confirmed_time_slot_time_slot_preset_slot:
-            | Database['public']['Enums']['enum_time_slot_preset']
-            | null;
-          details_confirmed_time_slot_time_slot_type:
-            | Database['public']['Enums']['enum_time_slot_type']
-            | null;
-          details_instructions: string | null;
-          donation_id: string;
+          deleted_at: string | null;
           id: string;
-          mode: Database['public']['Enums']['enum_deliveries_mode'];
-          request_id: string;
-          status: Database['public']['Enums']['enum_deliveries_status'];
-          tracking_delivered_at: string | null;
-          tracking_failure_reason: string | null;
+          likes_count: number | null;
+          owner_id: string | null;
+          parent_id: string | null;
+          post_id: string;
+          replied_to_id: string | null;
+          replies_count: number | null;
+          status: Database['public']['Enums']['comment_status_enum'] | null;
           updated_at: string;
         };
         Insert: {
+          content: string;
           created_at?: string;
-          created_by_id?: string | null;
-          details_confirmed_address_id: string;
-          details_confirmed_time_slot_date?: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_end_time?: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_start_time?: string | null;
-          details_confirmed_time_slot_time_slot_preset_slot?:
-            | Database['public']['Enums']['enum_time_slot_preset']
-            | null;
-          details_confirmed_time_slot_time_slot_type?:
-            | Database['public']['Enums']['enum_time_slot_type']
-            | null;
-          details_instructions?: string | null;
-          donation_id: string;
+          deleted_at?: string | null;
           id?: string;
-          mode: Database['public']['Enums']['enum_deliveries_mode'];
-          request_id: string;
-          status?: Database['public']['Enums']['enum_deliveries_status'];
-          tracking_delivered_at?: string | null;
-          tracking_failure_reason?: string | null;
+          likes_count?: number | null;
+          owner_id?: string | null;
+          parent_id?: string | null;
+          post_id: string;
+          replied_to_id?: string | null;
+          replies_count?: number | null;
+          status?: Database['public']['Enums']['comment_status_enum'] | null;
           updated_at?: string;
         };
         Update: {
+          content?: string;
           created_at?: string;
-          created_by_id?: string | null;
-          details_confirmed_address_id?: string;
-          details_confirmed_time_slot_date?: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_end_time?: string | null;
-          details_confirmed_time_slot_time_slot_custom_time_start_time?: string | null;
-          details_confirmed_time_slot_time_slot_preset_slot?:
-            | Database['public']['Enums']['enum_time_slot_preset']
-            | null;
-          details_confirmed_time_slot_time_slot_type?:
-            | Database['public']['Enums']['enum_time_slot_type']
-            | null;
-          details_instructions?: string | null;
-          donation_id?: string;
+          deleted_at?: string | null;
           id?: string;
-          mode?: Database['public']['Enums']['enum_deliveries_mode'];
-          request_id?: string;
-          status?: Database['public']['Enums']['enum_deliveries_status'];
-          tracking_delivered_at?: string | null;
-          tracking_failure_reason?: string | null;
+          likes_count?: number | null;
+          owner_id?: string | null;
+          parent_id?: string | null;
+          post_id?: string;
+          replied_to_id?: string | null;
+          replies_count?: number | null;
+          status?: Database['public']['Enums']['comment_status_enum'] | null;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'deliveries_created_by_id_users_id_fk';
-            columns: ['created_by_id'];
+            foreignKeyName: 'comments_owner_id_users_id_fk';
+            columns: ['owner_id'];
             isOneToOne: false;
             referencedRelation: 'users';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'deliveries_details_confirmed_address_id_addresses_id_fk';
-            columns: ['details_confirmed_address_id'];
+            foreignKeyName: 'comments_parent_id_comments_id_fk';
+            columns: ['parent_id'];
             isOneToOne: false;
-            referencedRelation: 'addresses';
+            referencedRelation: 'comments';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'deliveries_donation_id_donations_id_fk';
-            columns: ['donation_id'];
+            foreignKeyName: 'comments_post_id_posts_id_fk';
+            columns: ['post_id'];
             isOneToOne: false;
-            referencedRelation: 'donations';
+            referencedRelation: 'posts';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'deliveries_request_id_requests_id_fk';
-            columns: ['request_id'];
+            foreignKeyName: 'comments_replied_to_id_comments_id_fk';
+            columns: ['replied_to_id'];
             isOneToOne: false;
-            referencedRelation: 'requests';
+            referencedRelation: 'comments';
             referencedColumns: ['id'];
           },
         ];
       };
-      deliveries_details_proposed_addresses: {
-        Row: {
-          _order: number;
-          _parent_id: string;
-          address_id: string | null;
-          id: string;
-          proposed_by: Database['public']['Enums']['enum_proposedBy'] | null;
-        };
-        Insert: {
-          _order: number;
-          _parent_id: string;
-          address_id?: string | null;
-          id: string;
-          proposed_by?: Database['public']['Enums']['enum_proposedBy'] | null;
-        };
-        Update: {
-          _order?: number;
-          _parent_id?: string;
-          address_id?: string | null;
-          id?: string;
-          proposed_by?: Database['public']['Enums']['enum_proposedBy'] | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'deliveries_details_proposed_addresses_address_id_addresses_id_f';
-            columns: ['address_id'];
-            isOneToOne: false;
-            referencedRelation: 'addresses';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'deliveries_details_proposed_addresses_parent_id_fk';
-            columns: ['_parent_id'];
-            isOneToOne: false;
-            referencedRelation: 'deliveries';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      deliveries_details_proposed_time_slots: {
-        Row: {
-          _order: number;
-          _parent_id: string;
-          date: string | null;
-          id: string;
-          proposed_by: Database['public']['Enums']['enum_proposedBy'] | null;
-          time_slot_custom_time_end_time: string | null;
-          time_slot_custom_time_start_time: string | null;
-          time_slot_preset_slot: Database['public']['Enums']['enum_time_slot_preset'] | null;
-          time_slot_type: Database['public']['Enums']['enum_time_slot_type'] | null;
-        };
-        Insert: {
-          _order: number;
-          _parent_id: string;
-          date?: string | null;
-          id: string;
-          proposed_by?: Database['public']['Enums']['enum_proposedBy'] | null;
-          time_slot_custom_time_end_time?: string | null;
-          time_slot_custom_time_start_time?: string | null;
-          time_slot_preset_slot?: Database['public']['Enums']['enum_time_slot_preset'] | null;
-          time_slot_type?: Database['public']['Enums']['enum_time_slot_type'] | null;
-        };
-        Update: {
-          _order?: number;
-          _parent_id?: string;
-          date?: string | null;
-          id?: string;
-          proposed_by?: Database['public']['Enums']['enum_proposedBy'] | null;
-          time_slot_custom_time_end_time?: string | null;
-          time_slot_custom_time_start_time?: string | null;
-          time_slot_preset_slot?: Database['public']['Enums']['enum_time_slot_preset'] | null;
-          time_slot_type?: Database['public']['Enums']['enum_time_slot_type'] | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'deliveries_details_proposed_time_slots_parent_id_fk';
-            columns: ['_parent_id'];
-            isOneToOne: false;
-            referencedRelation: 'deliveries';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      deliveries_tracking_tracking_history: {
+      comments_mentions: {
         Row: {
           _order: number;
           _parent_id: string;
           id: string;
-          notes: string | null;
-          status: string | null;
-          timestamp: string | null;
         };
         Insert: {
           _order: number;
           _parent_id: string;
           id: string;
-          notes?: string | null;
-          status?: string | null;
-          timestamp?: string | null;
         };
         Update: {
           _order?: number;
           _parent_id?: string;
           id?: string;
-          notes?: string | null;
-          status?: string | null;
-          timestamp?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: 'deliveries_tracking_tracking_history_parent_id_fk';
+            foreignKeyName: 'comments_mentions_parent_id_fk';
             columns: ['_parent_id'];
             isOneToOne: false;
-            referencedRelation: 'deliveries';
+            referencedRelation: 'comments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      comments_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'comments_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'comments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      conversation_participants: {
+        Row: {
+          added_by_id: string | null;
+          conversation_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          participant_id: string;
+          role: Database['public']['Enums']['enum_conversation_participants_role'];
+          updated_at: string;
+        };
+        Insert: {
+          added_by_id?: string | null;
+          conversation_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          participant_id: string;
+          role?: Database['public']['Enums']['enum_conversation_participants_role'];
+          updated_at?: string;
+        };
+        Update: {
+          added_by_id?: string | null;
+          conversation_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          participant_id?: string;
+          role?: Database['public']['Enums']['enum_conversation_participants_role'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversation_participants_added_by_id_users_id_fk';
+            columns: ['added_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversation_participants_conversation_id_conversations_id_fk';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversation_participants_participant_id_users_id_fk';
+            columns: ['participant_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      conversations: {
+        Row: {
+          archived: boolean | null;
+          avatar_id: string | null;
+          created_at: string;
+          created_by_id: string;
+          deleted_at: string | null;
+          id: string;
+          last_message_at: string | null;
+          title: string | null;
+          type: Database['public']['Enums']['enum_conversation_type'];
+          updated_at: string;
+        };
+        Insert: {
+          archived?: boolean | null;
+          avatar_id?: string | null;
+          created_at?: string;
+          created_by_id: string;
+          deleted_at?: string | null;
+          id?: string;
+          last_message_at?: string | null;
+          title?: string | null;
+          type?: Database['public']['Enums']['enum_conversation_type'];
+          updated_at?: string;
+        };
+        Update: {
+          archived?: boolean | null;
+          avatar_id?: string | null;
+          created_at?: string;
+          created_by_id?: string;
+          deleted_at?: string | null;
+          id?: string;
+          last_message_at?: string | null;
+          title?: string | null;
+          type?: Database['public']['Enums']['enum_conversation_type'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversations_avatar_id_avatars_id_fk';
+            columns: ['avatar_id'];
+            isOneToOne: false;
+            referencedRelation: 'avatars';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversations_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
             referencedColumns: ['id'];
           },
         ];
@@ -697,46 +788,64 @@ export type Database = {
       };
       donations: {
         Row: {
+          cancelled_at: string | null;
+          completed_at: string | null;
           created_at: string;
           created_by_id: string | null;
           details_collection_mode: Database['public']['Enums']['enum_donations_details_collection_mode'];
           details_notes: string | null;
           details_storage_type: Database['public']['Enums']['enum_donations_details_storage_type'];
           donor_id: string;
+          expired_at: string | null;
           id: string;
-          remaining_volume: number | null;
-          status: Database['public']['Enums']['enum_donations_status'];
+          rejected_at: string | null;
+          remaining_volume: number;
+          seen: boolean | null;
+          seen_at: string | null;
+          status: Database['public']['Enums']['enum_donation_request_status'];
           title: string | null;
           updated_at: string;
-          volume: number | null;
+          volume: number;
         };
         Insert: {
+          cancelled_at?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           created_by_id?: string | null;
           details_collection_mode: Database['public']['Enums']['enum_donations_details_collection_mode'];
           details_notes?: string | null;
           details_storage_type: Database['public']['Enums']['enum_donations_details_storage_type'];
           donor_id: string;
+          expired_at?: string | null;
           id?: string;
-          remaining_volume?: number | null;
-          status?: Database['public']['Enums']['enum_donations_status'];
+          rejected_at?: string | null;
+          remaining_volume?: number;
+          seen?: boolean | null;
+          seen_at?: string | null;
+          status?: Database['public']['Enums']['enum_donation_request_status'];
           title?: string | null;
           updated_at?: string;
-          volume?: number | null;
+          volume?: number;
         };
         Update: {
+          cancelled_at?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           created_by_id?: string | null;
           details_collection_mode?: Database['public']['Enums']['enum_donations_details_collection_mode'];
           details_notes?: string | null;
           details_storage_type?: Database['public']['Enums']['enum_donations_details_storage_type'];
           donor_id?: string;
+          expired_at?: string | null;
           id?: string;
-          remaining_volume?: number | null;
-          status?: Database['public']['Enums']['enum_donations_status'];
+          rejected_at?: string | null;
+          remaining_volume?: number;
+          seen?: boolean | null;
+          seen_at?: string | null;
+          status?: Database['public']['Enums']['enum_donation_request_status'];
           title?: string | null;
           updated_at?: string;
-          volume?: number | null;
+          volume?: number;
         };
         Relationships: [
           {
@@ -758,33 +867,39 @@ export type Database = {
       donations_rels: {
         Row: {
           delivery_preferences_id: string | null;
+          hospitals_id: string | null;
           id: number;
           images_id: string | null;
+          individuals_id: string | null;
           milk_bags_id: string | null;
+          milk_banks_id: string | null;
           order: number | null;
           parent_id: string;
           path: string;
-          requests_id: string | null;
         };
         Insert: {
           delivery_preferences_id?: string | null;
+          hospitals_id?: string | null;
           id?: number;
           images_id?: string | null;
+          individuals_id?: string | null;
           milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
           order?: number | null;
           parent_id: string;
           path: string;
-          requests_id?: string | null;
         };
         Update: {
           delivery_preferences_id?: string | null;
+          hospitals_id?: string | null;
           id?: number;
           images_id?: string | null;
+          individuals_id?: string | null;
           milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
           order?: number | null;
           parent_id?: string;
           path?: string;
-          requests_id?: string | null;
         };
         Relationships: [
           {
@@ -795,10 +910,24 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'donations_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'donations_rels_images_fk';
             columns: ['images_id'];
             isOneToOne: false;
             referencedRelation: 'images';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'donations_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
             referencedColumns: ['id'];
           },
           {
@@ -809,6 +938,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'donations_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'donations_rels_parent_fk';
             columns: ['parent_id'];
             isOneToOne: false;
@@ -816,11 +952,11 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'donations_rels_requests_fk';
-            columns: ['requests_id'];
+            foreignKeyName: 'donations_rels_parent_fk';
+            columns: ['parent_id'];
             isOneToOne: false;
-            referencedRelation: 'requests';
-            referencedColumns: ['id'];
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
           },
         ];
       };
@@ -829,6 +965,7 @@ export type Database = {
           avatar_id: string | null;
           created_at: string;
           description: string | null;
+          display_name: string | null;
           head: string | null;
           hospital_i_d: string | null;
           id: string;
@@ -842,6 +979,7 @@ export type Database = {
           avatar_id?: string | null;
           created_at?: string;
           description?: string | null;
+          display_name?: string | null;
           head?: string | null;
           hospital_i_d?: string | null;
           id?: string;
@@ -855,6 +993,7 @@ export type Database = {
           avatar_id?: string | null;
           created_at?: string;
           description?: string | null;
+          display_name?: string | null;
           head?: string | null;
           hospital_i_d?: string | null;
           id?: string;
@@ -874,6 +1013,198 @@ export type Database = {
           },
           {
             foreignKeyName: 'hospitals_owner_id_users_id_fk';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      identities: {
+        Row: {
+          address: string | null;
+          birth: string | null;
+          created_at: string;
+          created_by_id: string | null;
+          expiration_date: string | null;
+          family_name: string;
+          given_name: string;
+          id: string;
+          id_image_id: string;
+          id_number: string;
+          id_type: Database['public']['Enums']['enum_identities_id_type'];
+          issue_date: string | null;
+          middle_name: string | null;
+          ref_image_id: string;
+          status: Database['public']['Enums']['enum_identities_status'];
+          submitted_by_id: string;
+          suffix: string | null;
+          updated_at: string;
+          updated_by_id: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          birth?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          expiration_date?: string | null;
+          family_name: string;
+          given_name: string;
+          id?: string;
+          id_image_id: string;
+          id_number: string;
+          id_type: Database['public']['Enums']['enum_identities_id_type'];
+          issue_date?: string | null;
+          middle_name?: string | null;
+          ref_image_id: string;
+          status?: Database['public']['Enums']['enum_identities_status'];
+          submitted_by_id: string;
+          suffix?: string | null;
+          updated_at?: string;
+          updated_by_id?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          birth?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          expiration_date?: string | null;
+          family_name?: string;
+          given_name?: string;
+          id?: string;
+          id_image_id?: string;
+          id_number?: string;
+          id_type?: Database['public']['Enums']['enum_identities_id_type'];
+          issue_date?: string | null;
+          middle_name?: string | null;
+          ref_image_id?: string;
+          status?: Database['public']['Enums']['enum_identities_status'];
+          submitted_by_id?: string;
+          suffix?: string | null;
+          updated_at?: string;
+          updated_by_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'identities_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'identities_id_image_id_identity_images_id_fk';
+            columns: ['id_image_id'];
+            isOneToOne: false;
+            referencedRelation: 'identity_images';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'identities_ref_image_id_identity_images_id_fk';
+            columns: ['ref_image_id'];
+            isOneToOne: false;
+            referencedRelation: 'identity_images';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'identities_submitted_by_id_individuals_id_fk';
+            columns: ['submitted_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'identities_updated_by_id_users_id_fk';
+            columns: ['updated_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      identity_images: {
+        Row: {
+          alt: string | null;
+          blur_hash: string | null;
+          created_at: string;
+          created_by_id: string | null;
+          filename: string | null;
+          filesize: number | null;
+          focal_x: number | null;
+          focal_y: number | null;
+          height: number | null;
+          id: string;
+          mime_type: string | null;
+          owner_id: string | null;
+          sizes_thumbnail_filename: string | null;
+          sizes_thumbnail_filesize: number | null;
+          sizes_thumbnail_height: number | null;
+          sizes_thumbnail_mime_type: string | null;
+          sizes_thumbnail_url: string | null;
+          sizes_thumbnail_width: number | null;
+          thumbnail_u_r_l: string | null;
+          updated_at: string;
+          url: string | null;
+          width: number | null;
+        };
+        Insert: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          owner_id?: string | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Update: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          owner_id?: string | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'identity_images_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'identity_images_owner_id_users_id_fk';
             columns: ['owner_id'];
             isOneToOne: false;
             referencedRelation: 'users';
@@ -1018,6 +1349,7 @@ export type Database = {
           gender: Database['public']['Enums']['enum_individuals_gender'];
           given_name: string;
           id: string;
+          is_verified: boolean | null;
           marital_status: Database['public']['Enums']['enum_individuals_marital_status'];
           middle_name: string | null;
           owner_id: string | null;
@@ -1034,6 +1366,7 @@ export type Database = {
           gender: Database['public']['Enums']['enum_individuals_gender'];
           given_name: string;
           id?: string;
+          is_verified?: boolean | null;
           marital_status: Database['public']['Enums']['enum_individuals_marital_status'];
           middle_name?: string | null;
           owner_id?: string | null;
@@ -1050,6 +1383,7 @@ export type Database = {
           gender?: Database['public']['Enums']['enum_individuals_gender'];
           given_name?: string;
           id?: string;
+          is_verified?: boolean | null;
           marital_status?: Database['public']['Enums']['enum_individuals_marital_status'];
           middle_name?: string | null;
           owner_id?: string | null;
@@ -1069,6 +1403,171 @@ export type Database = {
             columns: ['owner_id'];
             isOneToOne: false;
             referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      inventory: {
+        Row: {
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          initial_volume: number;
+          notes: string | null;
+          received_at: string | null;
+          remaining_volume: number;
+          source_donation_id: string | null;
+          status: Database['public']['Enums']['enum_inventory_status'];
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          initial_volume: number;
+          notes?: string | null;
+          received_at?: string | null;
+          remaining_volume: number;
+          source_donation_id?: string | null;
+          status?: Database['public']['Enums']['enum_inventory_status'];
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          initial_volume?: number;
+          notes?: string | null;
+          received_at?: string | null;
+          remaining_volume?: number;
+          source_donation_id?: string | null;
+          status?: Database['public']['Enums']['enum_inventory_status'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inventory_source_donation_id_donations_id_fk';
+            columns: ['source_donation_id'];
+            isOneToOne: false;
+            referencedRelation: 'donations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inventory_source_donation_id_donations_id_fk';
+            columns: ['source_donation_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
+          },
+        ];
+      };
+      inventory_allocation_details: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          allocated_at: string | null;
+          allocation_id: string | null;
+          id: string;
+          notes: string | null;
+          request_id: string;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          allocated_at?: string | null;
+          allocation_id?: string | null;
+          id: string;
+          notes?: string | null;
+          request_id: string;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          allocated_at?: string | null;
+          allocation_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          request_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inventory_allocation_details_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'inventory';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inventory_allocation_details_request_id_requests_id_fk';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'inventory_allocation_details_request_id_requests_id_fk';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      inventory_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          milk_bags_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inventory_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inventory_rels_milk_bags_fk';
+            columns: ['milk_bags_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bags';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inventory_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inventory_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'inventory';
             referencedColumns: ['id'];
           },
         ];
@@ -1097,8 +1596,636 @@ export type Database = {
         };
         Relationships: [];
       };
+      likes: {
+        Row: {
+          created_at: string;
+          id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      likes_rels: {
+        Row: {
+          comments_id: string | null;
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+          posts_id: string | null;
+        };
+        Insert: {
+          comments_id?: string | null;
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+          posts_id?: string | null;
+        };
+        Update: {
+          comments_id?: string | null;
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+          posts_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'likes_rels_comments_fk';
+            columns: ['comments_id'];
+            isOneToOne: false;
+            referencedRelation: 'comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'likes_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'likes_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'likes_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'likes_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'likes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'likes_rels_posts_fk';
+            columns: ['posts_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_attachments: {
+        Row: {
+          created_at: string;
+          created_by_id: string;
+          id: string;
+          message_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by_id: string;
+          id?: string;
+          message_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by_id?: string;
+          id?: string;
+          message_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_attachments_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_message_id_messages_id_fk';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_attachments_rels: {
+        Row: {
+          donations_id: string | null;
+          id: number;
+          message_media_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+          requests_id: string | null;
+        };
+        Insert: {
+          donations_id?: string | null;
+          id?: number;
+          message_media_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+          requests_id?: string | null;
+        };
+        Update: {
+          donations_id?: string | null;
+          id?: number;
+          message_media_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+          requests_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_attachments_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'donations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_rels_message_media_fk';
+            columns: ['message_media_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_media';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_attachments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'message_attachments_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_media: {
+        Row: {
+          alt: string | null;
+          blur_hash: string | null;
+          created_at: string;
+          created_by_id: string | null;
+          filename: string | null;
+          filesize: number | null;
+          focal_x: number | null;
+          focal_y: number | null;
+          height: number | null;
+          id: string;
+          mime_type: string | null;
+          sizes_preview_filename: string | null;
+          sizes_preview_filesize: number | null;
+          sizes_preview_height: number | null;
+          sizes_preview_mime_type: string | null;
+          sizes_preview_url: string | null;
+          sizes_preview_width: number | null;
+          sizes_thumbnail_filename: string | null;
+          sizes_thumbnail_filesize: number | null;
+          sizes_thumbnail_height: number | null;
+          sizes_thumbnail_mime_type: string | null;
+          sizes_thumbnail_url: string | null;
+          sizes_thumbnail_width: number | null;
+          thumbnail_u_r_l: string | null;
+          updated_at: string;
+          url: string | null;
+          width: number | null;
+        };
+        Insert: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          sizes_preview_filename?: string | null;
+          sizes_preview_filesize?: number | null;
+          sizes_preview_height?: number | null;
+          sizes_preview_mime_type?: string | null;
+          sizes_preview_url?: string | null;
+          sizes_preview_width?: number | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Update: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          sizes_preview_filename?: string | null;
+          sizes_preview_filesize?: number | null;
+          sizes_preview_height?: number | null;
+          sizes_preview_mime_type?: string | null;
+          sizes_preview_url?: string | null;
+          sizes_preview_width?: number | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_media_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_reactions: {
+        Row: {
+          created_at: string;
+          emoji: string;
+          id: string;
+          message_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          emoji: string;
+          id?: string;
+          message_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          emoji?: string;
+          id?: string;
+          message_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_reactions_message_id_messages_id_fk';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_reactions_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_reads: {
+        Row: {
+          id: string;
+          message_id: string;
+          read_at: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          read_at: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          message_id?: string;
+          read_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_reads_message_id_messages_id_fk';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_reads_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          content: string | null;
+          conversation_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          edited: boolean | null;
+          edited_at: string | null;
+          id: string;
+          reply_to_id: string | null;
+          search_vector: string | null;
+          type: Database['public']['Enums']['enum_message_type'];
+          updated_at: string;
+        };
+        Insert: {
+          content?: string | null;
+          conversation_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited?: boolean | null;
+          edited_at?: string | null;
+          id?: string;
+          reply_to_id?: string | null;
+          search_vector?: string | null;
+          type?: Database['public']['Enums']['enum_message_type'];
+          updated_at?: string;
+        };
+        Update: {
+          content?: string | null;
+          conversation_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited?: boolean | null;
+          edited_at?: string | null;
+          id?: string;
+          reply_to_id?: string | null;
+          search_vector?: string | null;
+          type?: Database['public']['Enums']['enum_message_type'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'messages_conversation_id_conversations_id_fk';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_reply_to_id_messages_id_fk';
+            columns: ['reply_to_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      messages_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'messages_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      milk_bag_images: {
+        Row: {
+          alt: string | null;
+          blur_hash: string | null;
+          created_at: string;
+          created_by_id: string | null;
+          filename: string | null;
+          filesize: number | null;
+          focal_x: number | null;
+          focal_y: number | null;
+          height: number | null;
+          id: string;
+          mime_type: string | null;
+          owner_id: string | null;
+          sizes_large_filename: string | null;
+          sizes_large_filesize: number | null;
+          sizes_large_height: number | null;
+          sizes_large_mime_type: string | null;
+          sizes_large_url: string | null;
+          sizes_large_width: number | null;
+          sizes_small_filename: string | null;
+          sizes_small_filesize: number | null;
+          sizes_small_height: number | null;
+          sizes_small_mime_type: string | null;
+          sizes_small_url: string | null;
+          sizes_small_width: number | null;
+          sizes_thumbnail_filename: string | null;
+          sizes_thumbnail_filesize: number | null;
+          sizes_thumbnail_height: number | null;
+          sizes_thumbnail_mime_type: string | null;
+          sizes_thumbnail_url: string | null;
+          sizes_thumbnail_width: number | null;
+          thumbnail_u_r_l: string | null;
+          updated_at: string;
+          url: string | null;
+          width: number | null;
+        };
+        Insert: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          owner_id?: string | null;
+          sizes_large_filename?: string | null;
+          sizes_large_filesize?: number | null;
+          sizes_large_height?: number | null;
+          sizes_large_mime_type?: string | null;
+          sizes_large_url?: string | null;
+          sizes_large_width?: number | null;
+          sizes_small_filename?: string | null;
+          sizes_small_filesize?: number | null;
+          sizes_small_height?: number | null;
+          sizes_small_mime_type?: string | null;
+          sizes_small_url?: string | null;
+          sizes_small_width?: number | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Update: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          owner_id?: string | null;
+          sizes_large_filename?: string | null;
+          sizes_large_filesize?: number | null;
+          sizes_large_height?: number | null;
+          sizes_large_mime_type?: string | null;
+          sizes_large_url?: string | null;
+          sizes_large_width?: number | null;
+          sizes_small_filename?: string | null;
+          sizes_small_filesize?: number | null;
+          sizes_small_height?: number | null;
+          sizes_small_mime_type?: string | null;
+          sizes_small_url?: string | null;
+          sizes_small_width?: number | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'milk_bag_images_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'milk_bag_images_owner_id_users_id_fk';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       milk_bags: {
         Row: {
+          bag_image_id: string | null;
           code: string | null;
           collected_at: string;
           created_at: string;
@@ -1112,6 +2239,7 @@ export type Database = {
           volume: number;
         };
         Insert: {
+          bag_image_id?: string | null;
           code?: string | null;
           collected_at: string;
           created_at?: string;
@@ -1125,6 +2253,7 @@ export type Database = {
           volume?: number;
         };
         Update: {
+          bag_image_id?: string | null;
           code?: string | null;
           collected_at?: string;
           created_at?: string;
@@ -1138,6 +2267,13 @@ export type Database = {
           volume?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: 'milk_bags_bag_image_id_milk_bag_images_id_fk';
+            columns: ['bag_image_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bag_images';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'milk_bags_created_by_id_users_id_fk';
             columns: ['created_by_id'];
@@ -1154,11 +2290,103 @@ export type Database = {
           },
         ];
       };
+      milk_bags_ownership_history: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          transfer_reason: Database['public']['Enums']['enum_milk_bag_transfer_reason'];
+          transferred_at: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          transfer_reason?: Database['public']['Enums']['enum_milk_bag_transfer_reason'];
+          transferred_at?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          transfer_reason?: Database['public']['Enums']['enum_milk_bag_transfer_reason'];
+          transferred_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'milk_bags_ownership_history_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bags';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      milk_bags_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'milk_bags_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'milk_bags_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'milk_bags_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'milk_bags_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bags';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       milk_banks: {
         Row: {
           avatar_id: string | null;
           created_at: string;
           description: string | null;
+          display_name: string | null;
           head: string | null;
           id: string;
           name: string;
@@ -1171,6 +2399,7 @@ export type Database = {
           avatar_id?: string | null;
           created_at?: string;
           description?: string | null;
+          display_name?: string | null;
           head?: string | null;
           id?: string;
           name: string;
@@ -1183,6 +2412,7 @@ export type Database = {
           avatar_id?: string | null;
           created_at?: string;
           description?: string | null;
+          display_name?: string | null;
           head?: string | null;
           id?: string;
           name?: string;
@@ -1208,10 +2438,52 @@ export type Database = {
           },
         ];
       };
+      muted_conversations: {
+        Row: {
+          conversation_id: string;
+          created_at: string;
+          id: string;
+          muted_until: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+          muted_until?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+          muted_until?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'muted_conversations_conversation_id_conversations_id_fk';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'muted_conversations_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       notification_categories: {
         Row: {
           active: boolean | null;
-          color: string | null;
+          color: Database['public']['Enums']['enum_system_colors'] | null;
           created_at: string;
           created_by_id: string | null;
           description: string | null;
@@ -1226,7 +2498,7 @@ export type Database = {
         };
         Insert: {
           active?: boolean | null;
-          color?: string | null;
+          color?: Database['public']['Enums']['enum_system_colors'] | null;
           created_at?: string;
           created_by_id?: string | null;
           description?: string | null;
@@ -1241,7 +2513,7 @@ export type Database = {
         };
         Update: {
           active?: boolean | null;
-          color?: string | null;
+          color?: Database['public']['Enums']['enum_system_colors'] | null;
           created_at?: string;
           created_by_id?: string | null;
           description?: string | null;
@@ -1523,13 +2795,16 @@ export type Database = {
           created_by_id: string | null;
           id: string;
           message: string;
-          notification_type_id: string;
+          notification_category_id: string;
+          notification_type_id: string | null;
           priority: Database['public']['Enums']['enum_priority_level'] | null;
           read: boolean | null;
           read_at: string | null;
           recipient_id: string;
           related_data_action_label: string | null;
           related_data_action_url: string | null;
+          seen: boolean | null;
+          seen_at: string | null;
           title: string;
           updated_at: string;
           variables: Json | null;
@@ -1539,13 +2814,16 @@ export type Database = {
           created_by_id?: string | null;
           id?: string;
           message: string;
-          notification_type_id: string;
+          notification_category_id: string;
+          notification_type_id?: string | null;
           priority?: Database['public']['Enums']['enum_priority_level'] | null;
           read?: boolean | null;
           read_at?: string | null;
           recipient_id: string;
           related_data_action_label?: string | null;
           related_data_action_url?: string | null;
+          seen?: boolean | null;
+          seen_at?: string | null;
           title: string;
           updated_at?: string;
           variables?: Json | null;
@@ -1555,13 +2833,16 @@ export type Database = {
           created_by_id?: string | null;
           id?: string;
           message?: string;
-          notification_type_id?: string;
+          notification_category_id?: string;
+          notification_type_id?: string | null;
           priority?: Database['public']['Enums']['enum_priority_level'] | null;
           read?: boolean | null;
           read_at?: string | null;
           recipient_id?: string;
           related_data_action_label?: string | null;
           related_data_action_url?: string | null;
+          seen?: boolean | null;
+          seen_at?: string | null;
           title?: string;
           updated_at?: string;
           variables?: Json | null;
@@ -1572,6 +2853,13 @@ export type Database = {
             columns: ['created_by_id'];
             isOneToOne: false;
             referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_notification_category_id_notification_categories_';
+            columns: ['notification_category_id'];
+            isOneToOne: false;
+            referencedRelation: 'notification_categories';
             referencedColumns: ['id'];
           },
           {
@@ -1649,46 +2937,46 @@ export type Database = {
       };
       notifications_rels: {
         Row: {
-          deliveries_id: string | null;
           donations_id: string | null;
           id: number;
           order: number | null;
           parent_id: string;
           path: string;
           requests_id: string | null;
+          transactions_id: string | null;
         };
         Insert: {
-          deliveries_id?: string | null;
           donations_id?: string | null;
           id?: number;
           order?: number | null;
           parent_id: string;
           path: string;
           requests_id?: string | null;
+          transactions_id?: string | null;
         };
         Update: {
-          deliveries_id?: string | null;
           donations_id?: string | null;
           id?: number;
           order?: number | null;
           parent_id?: string;
           path?: string;
           requests_id?: string | null;
+          transactions_id?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'notifications_rels_deliveries_fk';
-            columns: ['deliveries_id'];
-            isOneToOne: false;
-            referencedRelation: 'deliveries';
-            referencedColumns: ['id'];
-          },
           {
             foreignKeyName: 'notifications_rels_donations_fk';
             columns: ['donations_id'];
             isOneToOne: false;
             referencedRelation: 'donations';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
           },
           {
             foreignKeyName: 'notifications_rels_parent_fk';
@@ -1701,10 +2989,140 @@ export type Database = {
             foreignKeyName: 'notifications_rels_requests_fk';
             columns: ['requests_id'];
             isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'notifications_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
             referencedRelation: 'requests';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'notifications_rels_transactions_fk';
+            columns: ['transactions_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
         ];
+      };
+      payload_jobs: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          error: Json | null;
+          has_error: boolean | null;
+          id: string;
+          input: Json | null;
+          processing: boolean | null;
+          queue: string | null;
+          task_slug: Database['public']['Enums']['enum_payload_jobs_task_slug'] | null;
+          total_tried: number | null;
+          updated_at: string;
+          wait_until: string | null;
+          workflow_slug: Database['public']['Enums']['enum_payload_jobs_workflow_slug'] | null;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          error?: Json | null;
+          has_error?: boolean | null;
+          id?: string;
+          input?: Json | null;
+          processing?: boolean | null;
+          queue?: string | null;
+          task_slug?: Database['public']['Enums']['enum_payload_jobs_task_slug'] | null;
+          total_tried?: number | null;
+          updated_at?: string;
+          wait_until?: string | null;
+          workflow_slug?: Database['public']['Enums']['enum_payload_jobs_workflow_slug'] | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          error?: Json | null;
+          has_error?: boolean | null;
+          id?: string;
+          input?: Json | null;
+          processing?: boolean | null;
+          queue?: string | null;
+          task_slug?: Database['public']['Enums']['enum_payload_jobs_task_slug'] | null;
+          total_tried?: number | null;
+          updated_at?: string;
+          wait_until?: string | null;
+          workflow_slug?: Database['public']['Enums']['enum_payload_jobs_workflow_slug'] | null;
+        };
+        Relationships: [];
+      };
+      payload_jobs_log: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          completed_at: string;
+          error: Json | null;
+          executed_at: string;
+          id: string;
+          input: Json | null;
+          output: Json | null;
+          state: Database['public']['Enums']['enum_payload_jobs_log_state'];
+          task_i_d: string;
+          task_slug: Database['public']['Enums']['enum_payload_jobs_log_task_slug'];
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          completed_at: string;
+          error?: Json | null;
+          executed_at: string;
+          id: string;
+          input?: Json | null;
+          output?: Json | null;
+          state: Database['public']['Enums']['enum_payload_jobs_log_state'];
+          task_i_d: string;
+          task_slug: Database['public']['Enums']['enum_payload_jobs_log_task_slug'];
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          completed_at?: string;
+          error?: Json | null;
+          executed_at?: string;
+          id?: string;
+          input?: Json | null;
+          output?: Json | null;
+          state?: Database['public']['Enums']['enum_payload_jobs_log_state'];
+          task_i_d?: string;
+          task_slug?: Database['public']['Enums']['enum_payload_jobs_log_task_slug'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'payload_jobs_log_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'payload_jobs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      payload_kv: {
+        Row: {
+          data: Json;
+          id: string;
+          key: string;
+        };
+        Insert: {
+          data: Json;
+          id?: string;
+          key: string;
+        };
+        Update: {
+          data?: Json;
+          id?: string;
+          key?: string;
+        };
+        Relationships: [];
       };
       payload_locked_documents: {
         Row: {
@@ -1732,17 +3150,31 @@ export type Database = {
           addresses_id: string | null;
           avatars_id: string | null;
           barangays_id: string | null;
+          blocked_users_id: string | null;
           cities_municipalities_id: string | null;
-          deliveries_id: string | null;
+          comments_id: string | null;
+          conversation_participants_id: string | null;
+          conversations_id: string | null;
           delivery_preferences_id: string | null;
           donations_id: string | null;
           hospitals_id: string | null;
           id: number;
+          identities_id: string | null;
+          identity_images_id: string | null;
           images_id: string | null;
           individuals_id: string | null;
+          inventory_id: string | null;
           island_groups_id: string | null;
+          likes_id: string | null;
+          message_attachments_id: string | null;
+          message_media_id: string | null;
+          message_reactions_id: string | null;
+          message_reads_id: string | null;
+          messages_id: string | null;
+          milk_bag_images_id: string | null;
           milk_bags_id: string | null;
           milk_banks_id: string | null;
+          muted_conversations_id: string | null;
           notification_categories_id: string | null;
           notification_channels_id: string | null;
           notification_types_id: string | null;
@@ -1750,26 +3182,45 @@ export type Database = {
           order: number | null;
           parent_id: string;
           path: string;
+          payload_jobs_id: string | null;
+          payload_kv_id: string | null;
+          posts_id: string | null;
           provinces_id: string | null;
           regions_id: string | null;
           requests_id: string | null;
+          transactions_id: string | null;
+          user_search_id: string | null;
           users_id: string | null;
         };
         Insert: {
           addresses_id?: string | null;
           avatars_id?: string | null;
           barangays_id?: string | null;
+          blocked_users_id?: string | null;
           cities_municipalities_id?: string | null;
-          deliveries_id?: string | null;
+          comments_id?: string | null;
+          conversation_participants_id?: string | null;
+          conversations_id?: string | null;
           delivery_preferences_id?: string | null;
           donations_id?: string | null;
           hospitals_id?: string | null;
           id?: number;
+          identities_id?: string | null;
+          identity_images_id?: string | null;
           images_id?: string | null;
           individuals_id?: string | null;
+          inventory_id?: string | null;
           island_groups_id?: string | null;
+          likes_id?: string | null;
+          message_attachments_id?: string | null;
+          message_media_id?: string | null;
+          message_reactions_id?: string | null;
+          message_reads_id?: string | null;
+          messages_id?: string | null;
+          milk_bag_images_id?: string | null;
           milk_bags_id?: string | null;
           milk_banks_id?: string | null;
+          muted_conversations_id?: string | null;
           notification_categories_id?: string | null;
           notification_channels_id?: string | null;
           notification_types_id?: string | null;
@@ -1777,26 +3228,45 @@ export type Database = {
           order?: number | null;
           parent_id: string;
           path: string;
+          payload_jobs_id?: string | null;
+          payload_kv_id?: string | null;
+          posts_id?: string | null;
           provinces_id?: string | null;
           regions_id?: string | null;
           requests_id?: string | null;
+          transactions_id?: string | null;
+          user_search_id?: string | null;
           users_id?: string | null;
         };
         Update: {
           addresses_id?: string | null;
           avatars_id?: string | null;
           barangays_id?: string | null;
+          blocked_users_id?: string | null;
           cities_municipalities_id?: string | null;
-          deliveries_id?: string | null;
+          comments_id?: string | null;
+          conversation_participants_id?: string | null;
+          conversations_id?: string | null;
           delivery_preferences_id?: string | null;
           donations_id?: string | null;
           hospitals_id?: string | null;
           id?: number;
+          identities_id?: string | null;
+          identity_images_id?: string | null;
           images_id?: string | null;
           individuals_id?: string | null;
+          inventory_id?: string | null;
           island_groups_id?: string | null;
+          likes_id?: string | null;
+          message_attachments_id?: string | null;
+          message_media_id?: string | null;
+          message_reactions_id?: string | null;
+          message_reads_id?: string | null;
+          messages_id?: string | null;
+          milk_bag_images_id?: string | null;
           milk_bags_id?: string | null;
           milk_banks_id?: string | null;
+          muted_conversations_id?: string | null;
           notification_categories_id?: string | null;
           notification_channels_id?: string | null;
           notification_types_id?: string | null;
@@ -1804,9 +3274,14 @@ export type Database = {
           order?: number | null;
           parent_id?: string;
           path?: string;
+          payload_jobs_id?: string | null;
+          payload_kv_id?: string | null;
+          posts_id?: string | null;
           provinces_id?: string | null;
           regions_id?: string | null;
           requests_id?: string | null;
+          transactions_id?: string | null;
+          user_search_id?: string | null;
           users_id?: string | null;
         };
         Relationships: [
@@ -1832,6 +3307,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_blocked_users_fk';
+            columns: ['blocked_users_id'];
+            isOneToOne: false;
+            referencedRelation: 'blocked_users';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_cities_municipalities_fk';
             columns: ['cities_municipalities_id'];
             isOneToOne: false;
@@ -1839,10 +3321,24 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'payload_locked_documents_rels_deliveries_fk';
-            columns: ['deliveries_id'];
+            foreignKeyName: 'payload_locked_documents_rels_comments_fk';
+            columns: ['comments_id'];
             isOneToOne: false;
-            referencedRelation: 'deliveries';
+            referencedRelation: 'comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_conversation_participants_fk';
+            columns: ['conversation_participants_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversation_participants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_conversations_fk';
+            columns: ['conversations_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
             referencedColumns: ['id'];
           },
           {
@@ -1860,10 +3356,31 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_hospitals_fk';
             columns: ['hospitals_id'];
             isOneToOne: false;
             referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_identities_fk';
+            columns: ['identities_id'];
+            isOneToOne: false;
+            referencedRelation: 'identities';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_identity_images_fk';
+            columns: ['identity_images_id'];
+            isOneToOne: false;
+            referencedRelation: 'identity_images';
             referencedColumns: ['id'];
           },
           {
@@ -1881,10 +3398,66 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_inventory_fk';
+            columns: ['inventory_id'];
+            isOneToOne: false;
+            referencedRelation: 'inventory';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_island_groups_fk';
             columns: ['island_groups_id'];
             isOneToOne: false;
             referencedRelation: 'island_groups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_likes_fk';
+            columns: ['likes_id'];
+            isOneToOne: false;
+            referencedRelation: 'likes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_message_attachments_fk';
+            columns: ['message_attachments_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_attachments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_message_media_fk';
+            columns: ['message_media_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_media';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_message_reactions_fk';
+            columns: ['message_reactions_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_reactions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_message_reads_fk';
+            columns: ['message_reads_id'];
+            isOneToOne: false;
+            referencedRelation: 'message_reads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_messages_fk';
+            columns: ['messages_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_milk_bag_images_fk';
+            columns: ['milk_bag_images_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bag_images';
             referencedColumns: ['id'];
           },
           {
@@ -1899,6 +3472,13 @@ export type Database = {
             columns: ['milk_banks_id'];
             isOneToOne: false;
             referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_muted_conversations_fk';
+            columns: ['muted_conversations_id'];
+            isOneToOne: false;
+            referencedRelation: 'muted_conversations';
             referencedColumns: ['id'];
           },
           {
@@ -1937,6 +3517,27 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_payload_jobs_fk';
+            columns: ['payload_jobs_id'];
+            isOneToOne: false;
+            referencedRelation: 'payload_jobs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_payload_kv_fk';
+            columns: ['payload_kv_id'];
+            isOneToOne: false;
+            referencedRelation: 'payload_kv';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_posts_fk';
+            columns: ['posts_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_provinces_fk';
             columns: ['provinces_id'];
             isOneToOne: false;
@@ -1954,7 +3555,28 @@ export type Database = {
             foreignKeyName: 'payload_locked_documents_rels_requests_fk';
             columns: ['requests_id'];
             isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
             referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_transactions_fk';
+            columns: ['transactions_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_user_search_fk';
+            columns: ['user_search_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_search';
             referencedColumns: ['id'];
           },
           {
@@ -2053,6 +3675,236 @@ export type Database = {
           },
         ];
       };
+      posts: {
+        Row: {
+          comments_count: number | null;
+          content: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          likes_count: number | null;
+          owner_id: string | null;
+          shares_count: number | null;
+          status: Database['public']['Enums']['enum_posts_status'] | null;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+          visibility: Database['public']['Enums']['enum_posts_visibility'];
+        };
+        Insert: {
+          comments_count?: number | null;
+          content?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          likes_count?: number | null;
+          owner_id?: string | null;
+          shares_count?: number | null;
+          status?: Database['public']['Enums']['enum_posts_status'] | null;
+          summary?: string | null;
+          title: string;
+          updated_at?: string;
+          visibility?: Database['public']['Enums']['enum_posts_visibility'];
+        };
+        Update: {
+          comments_count?: number | null;
+          content?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          likes_count?: number | null;
+          owner_id?: string | null;
+          shares_count?: number | null;
+          status?: Database['public']['Enums']['enum_posts_status'] | null;
+          summary?: string | null;
+          title?: string;
+          updated_at?: string;
+          visibility?: Database['public']['Enums']['enum_posts_visibility'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_owner_id_users_id_fk';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      posts_attachments: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          caption: string | null;
+          id: string;
+          image_id: string | null;
+          media_type: Database['public']['Enums']['post_attachment_media_type_enum'];
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          caption?: string | null;
+          id: string;
+          image_id?: string | null;
+          media_type?: Database['public']['Enums']['post_attachment_media_type_enum'];
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          caption?: string | null;
+          id?: string;
+          image_id?: string | null;
+          media_type?: Database['public']['Enums']['post_attachment_media_type_enum'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_attachments_image_id_images_id_fk';
+            columns: ['image_id'];
+            isOneToOne: false;
+            referencedRelation: 'images';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_attachments_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      posts_rels: {
+        Row: {
+          donations_id: string | null;
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+          posts_id: string | null;
+          requests_id: string | null;
+        };
+        Insert: {
+          donations_id?: string | null;
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+          posts_id?: string | null;
+          requests_id?: string | null;
+        };
+        Update: {
+          donations_id?: string | null;
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+          posts_id?: string | null;
+          requests_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'donations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_donations_fk';
+            columns: ['donations_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_posts_fk';
+            columns: ['posts_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'posts_rels_requests_fk';
+            columns: ['requests_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      posts_tags: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          tag: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          tag?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          tag?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_tags_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       provinces: {
         Row: {
           code: string;
@@ -2138,6 +3990,8 @@ export type Database = {
       };
       requests: {
         Row: {
+          cancelled_at: string | null;
+          completed_at: string | null;
           created_at: string;
           created_by_id: string | null;
           details_image_id: string | null;
@@ -2148,17 +4002,22 @@ export type Database = {
             | Database['public']['Enums']['enum_requests_details_storage_preference']
             | null;
           details_urgency: Database['public']['Enums']['enum_priority_level'];
+          expired_at: string | null;
           id: string;
-          matched_at: string | null;
-          matched_donation_id: string | null;
-          requested_donor_id: string | null;
+          initial_volume_needed: number;
+          rejected_at: string | null;
           requester_id: string;
-          status: Database['public']['Enums']['enum_requests_status'];
+          seen: boolean | null;
+          seen_at: string | null;
+          status: Database['public']['Enums']['enum_donation_request_status'];
           title: string | null;
           updated_at: string;
+          volume_fulfilled: number;
           volume_needed: number;
         };
         Insert: {
+          cancelled_at?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           created_by_id?: string | null;
           details_image_id?: string | null;
@@ -2169,17 +4028,22 @@ export type Database = {
             | Database['public']['Enums']['enum_requests_details_storage_preference']
             | null;
           details_urgency?: Database['public']['Enums']['enum_priority_level'];
+          expired_at?: string | null;
           id?: string;
-          matched_at?: string | null;
-          matched_donation_id?: string | null;
-          requested_donor_id?: string | null;
+          initial_volume_needed?: number;
+          rejected_at?: string | null;
           requester_id: string;
-          status?: Database['public']['Enums']['enum_requests_status'];
+          seen?: boolean | null;
+          seen_at?: string | null;
+          status?: Database['public']['Enums']['enum_donation_request_status'];
           title?: string | null;
           updated_at?: string;
-          volume_needed: number;
+          volume_fulfilled?: number;
+          volume_needed?: number;
         };
         Update: {
+          cancelled_at?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           created_by_id?: string | null;
           details_image_id?: string | null;
@@ -2190,14 +4054,17 @@ export type Database = {
             | Database['public']['Enums']['enum_requests_details_storage_preference']
             | null;
           details_urgency?: Database['public']['Enums']['enum_priority_level'];
+          expired_at?: string | null;
           id?: string;
-          matched_at?: string | null;
-          matched_donation_id?: string | null;
-          requested_donor_id?: string | null;
+          initial_volume_needed?: number;
+          rejected_at?: string | null;
           requester_id?: string;
-          status?: Database['public']['Enums']['enum_requests_status'];
+          seen?: boolean | null;
+          seen_at?: string | null;
+          status?: Database['public']['Enums']['enum_donation_request_status'];
           title?: string | null;
           updated_at?: string;
+          volume_fulfilled?: number;
           volume_needed?: number;
         };
         Relationships: [
@@ -2216,20 +4083,6 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'requests_matched_donation_id_donations_id_fk';
-            columns: ['matched_donation_id'];
-            isOneToOne: false;
-            referencedRelation: 'donations';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'requests_requested_donor_id_individuals_id_fk';
-            columns: ['requested_donor_id'];
-            isOneToOne: false;
-            referencedRelation: 'individuals';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'requests_requester_id_individuals_id_fk';
             columns: ['requester_id'];
             isOneToOne: false;
@@ -2241,24 +4094,33 @@ export type Database = {
       requests_rels: {
         Row: {
           delivery_preferences_id: string | null;
+          hospitals_id: string | null;
           id: number;
+          individuals_id: string | null;
           milk_bags_id: string | null;
+          milk_banks_id: string | null;
           order: number | null;
           parent_id: string;
           path: string;
         };
         Insert: {
           delivery_preferences_id?: string | null;
+          hospitals_id?: string | null;
           id?: number;
+          individuals_id?: string | null;
           milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
           order?: number | null;
           parent_id: string;
           path: string;
         };
         Update: {
           delivery_preferences_id?: string | null;
+          hospitals_id?: string | null;
           id?: number;
+          individuals_id?: string | null;
           milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
           order?: number | null;
           parent_id?: string;
           path?: string;
@@ -2272,11 +4134,39 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'requests_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'requests_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'requests_rels_milk_bags_fk';
             columns: ['milk_bags_id'];
             isOneToOne: false;
             referencedRelation: 'milk_bags';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'requests_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'requests_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
           },
           {
             foreignKeyName: 'requests_rels_parent_fk';
@@ -2311,6 +4201,418 @@ export type Database = {
         };
         Relationships: [];
       };
+      transactions: {
+        Row: {
+          created_at: string;
+          created_by_id: string | null;
+          delivery_arrival_recipient_arrived_at: string | null;
+          delivery_arrival_recipient_departed_at: string | null;
+          delivery_arrival_sender_arrived_at: string | null;
+          delivery_arrival_sender_departed_at: string | null;
+          delivery_confirmed_address_id: string | null;
+          delivery_confirmed_confirmed_at: string | null;
+          delivery_confirmed_datetime: string | null;
+          delivery_confirmed_instructions: string | null;
+          delivery_confirmed_mode: Database['public']['Enums']['enum_delivery_modes'] | null;
+          donation_id: string | null;
+          id: string;
+          matched_volume: number;
+          request_id: string | null;
+          status: Database['public']['Enums']['enum_transaction_status'];
+          tracking_cancel_reason: string | null;
+          tracking_cancelled_at: string | null;
+          tracking_completed_at: string | null;
+          tracking_delivered_at: string | null;
+          tracking_failed_at: string | null;
+          tracking_failure_reason: string | null;
+          transaction_number: string | null;
+          transaction_type: Database['public']['Enums']['enum_transaction_type'];
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by_id?: string | null;
+          delivery_arrival_recipient_arrived_at?: string | null;
+          delivery_arrival_recipient_departed_at?: string | null;
+          delivery_arrival_sender_arrived_at?: string | null;
+          delivery_arrival_sender_departed_at?: string | null;
+          delivery_confirmed_address_id?: string | null;
+          delivery_confirmed_confirmed_at?: string | null;
+          delivery_confirmed_datetime?: string | null;
+          delivery_confirmed_instructions?: string | null;
+          delivery_confirmed_mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
+          donation_id?: string | null;
+          id?: string;
+          matched_volume?: number;
+          request_id?: string | null;
+          status?: Database['public']['Enums']['enum_transaction_status'];
+          tracking_cancel_reason?: string | null;
+          tracking_cancelled_at?: string | null;
+          tracking_completed_at?: string | null;
+          tracking_delivered_at?: string | null;
+          tracking_failed_at?: string | null;
+          tracking_failure_reason?: string | null;
+          transaction_number?: string | null;
+          transaction_type?: Database['public']['Enums']['enum_transaction_type'];
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by_id?: string | null;
+          delivery_arrival_recipient_arrived_at?: string | null;
+          delivery_arrival_recipient_departed_at?: string | null;
+          delivery_arrival_sender_arrived_at?: string | null;
+          delivery_arrival_sender_departed_at?: string | null;
+          delivery_confirmed_address_id?: string | null;
+          delivery_confirmed_confirmed_at?: string | null;
+          delivery_confirmed_datetime?: string | null;
+          delivery_confirmed_instructions?: string | null;
+          delivery_confirmed_mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
+          donation_id?: string | null;
+          id?: string;
+          matched_volume?: number;
+          request_id?: string | null;
+          status?: Database['public']['Enums']['enum_transaction_status'];
+          tracking_cancel_reason?: string | null;
+          tracking_cancelled_at?: string | null;
+          tracking_completed_at?: string | null;
+          tracking_delivered_at?: string | null;
+          tracking_failed_at?: string | null;
+          tracking_failure_reason?: string | null;
+          transaction_number?: string | null;
+          transaction_type?: Database['public']['Enums']['enum_transaction_type'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transactions_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_delivery_confirmed_address_id_addresses_id_fk';
+            columns: ['delivery_confirmed_address_id'];
+            isOneToOne: false;
+            referencedRelation: 'addresses';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_donation_id_donations_id_fk';
+            columns: ['donation_id'];
+            isOneToOne: false;
+            referencedRelation: 'donations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_donation_id_donations_id_fk';
+            columns: ['donation_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['donation_id'];
+          },
+          {
+            foreignKeyName: 'transactions_request_id_requests_id_fk';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'matched_donations_requests_view';
+            referencedColumns: ['request_id'];
+          },
+          {
+            foreignKeyName: 'transactions_request_id_requests_id_fk';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      transactions_delivery_proposed: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          address_id: string | null;
+          agreements_both_agreed: boolean | null;
+          agreements_recipient_agreed: boolean | null;
+          agreements_recipient_agreed_at: string | null;
+          agreements_sender_agreed: boolean | null;
+          agreements_sender_agreed_at: string | null;
+          datetime: string | null;
+          id: string;
+          instructions: string | null;
+          mode: Database['public']['Enums']['enum_delivery_modes'] | null;
+          proposed_at: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          address_id?: string | null;
+          agreements_both_agreed?: boolean | null;
+          agreements_recipient_agreed?: boolean | null;
+          agreements_recipient_agreed_at?: string | null;
+          agreements_sender_agreed?: boolean | null;
+          agreements_sender_agreed_at?: string | null;
+          datetime?: string | null;
+          id: string;
+          instructions?: string | null;
+          mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
+          proposed_at?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          address_id?: string | null;
+          agreements_both_agreed?: boolean | null;
+          agreements_recipient_agreed?: boolean | null;
+          agreements_recipient_agreed_at?: string | null;
+          agreements_sender_agreed?: boolean | null;
+          agreements_sender_agreed_at?: string | null;
+          datetime?: string | null;
+          id?: string;
+          instructions?: string | null;
+          mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
+          proposed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transactions_delivery_proposed_address_id_addresses_id_fk';
+            columns: ['address_id'];
+            isOneToOne: false;
+            referencedRelation: 'addresses';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_delivery_proposed_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      transactions_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_bags_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_bags_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transactions_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_rels_milk_bags_fk';
+            columns: ['milk_bags_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_bags';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      transactions_tracking_seen_status: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          seen: boolean | null;
+          seen_at: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          seen?: boolean | null;
+          seen_at?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          seen?: boolean | null;
+          seen_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transactions_tracking_seen_status_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      transactions_tracking_status_history: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          notes: string | null;
+          status: Database['public']['Enums']['enum_transaction_status'];
+          timestamp: string;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          notes?: string | null;
+          status: Database['public']['Enums']['enum_transaction_status'];
+          timestamp: string;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          notes?: string | null;
+          status?: Database['public']['Enums']['enum_transaction_status'];
+          timestamp?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transactions_tracking_status_history_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_search: {
+        Row: {
+          created_at: string;
+          id: string;
+          priority: number | null;
+          search_excerpt: string | null;
+          title: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          priority?: number | null;
+          search_excerpt?: string | null;
+          title?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          priority?: number | null;
+          search_excerpt?: string | null;
+          title?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_search_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_search_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'user_search_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'user_search_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'user_search_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_search';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       users: {
         Row: {
           auth_id: string | null;
@@ -2319,6 +4621,7 @@ export type Database = {
           email_confirmed_at: string | null;
           id: string;
           last_sign_in_at: string | null;
+          online_at: string | null;
           phone: string | null;
           phone_confirmed_at: string | null;
           picture: string | null;
@@ -2333,6 +4636,7 @@ export type Database = {
           email_confirmed_at?: string | null;
           id?: string;
           last_sign_in_at?: string | null;
+          online_at?: string | null;
           phone?: string | null;
           phone_confirmed_at?: string | null;
           picture?: string | null;
@@ -2347,6 +4651,7 @@ export type Database = {
           email_confirmed_at?: string | null;
           id?: string;
           last_sign_in_at?: string | null;
+          online_at?: string | null;
           phone?: string | null;
           phone_confirmed_at?: string | null;
           picture?: string | null;
@@ -2420,10 +4725,10 @@ export type Database = {
       geography_columns: {
         Row: {
           coord_dimension: number | null;
-          f_geography_column: unknown | null;
-          f_table_catalog: unknown | null;
-          f_table_name: unknown | null;
-          f_table_schema: unknown | null;
+          f_geography_column: unknown;
+          f_table_catalog: unknown;
+          f_table_name: unknown;
+          f_table_schema: unknown;
           srid: number | null;
           type: string | null;
         };
@@ -2432,62 +4737,72 @@ export type Database = {
       geometry_columns: {
         Row: {
           coord_dimension: number | null;
-          f_geometry_column: unknown | null;
+          f_geometry_column: unknown;
           f_table_catalog: string | null;
-          f_table_name: unknown | null;
-          f_table_schema: unknown | null;
+          f_table_name: unknown;
+          f_table_schema: unknown;
           srid: number | null;
           type: string | null;
         };
         Insert: {
           coord_dimension?: number | null;
-          f_geometry_column?: unknown | null;
+          f_geometry_column?: unknown;
           f_table_catalog?: string | null;
-          f_table_name?: unknown | null;
-          f_table_schema?: unknown | null;
+          f_table_name?: unknown;
+          f_table_schema?: unknown;
           srid?: number | null;
           type?: string | null;
         };
         Update: {
           coord_dimension?: number | null;
-          f_geometry_column?: unknown | null;
+          f_geometry_column?: unknown;
           f_table_catalog?: string | null;
-          f_table_name?: unknown | null;
-          f_table_schema?: unknown | null;
+          f_table_name?: unknown;
+          f_table_schema?: unknown;
           srid?: number | null;
           type?: string | null;
+        };
+        Relationships: [];
+      };
+      matched_donations_requests_view: {
+        Row: {
+          distance: number | null;
+          donation_id: string | null;
+          donation_status: Database['public']['Enums']['enum_donation_request_status'] | null;
+          id: number | null;
+          matched_barangay_id: string | null;
+          matched_city_municipality_id: string | null;
+          matched_delivery_day: Database['public']['Enums']['enum_days'] | null;
+          matched_delivery_mode: Database['public']['Enums']['enum_delivery_modes'] | null;
+          matched_province_id: string | null;
+          request_id: string | null;
+          request_status: Database['public']['Enums']['enum_donation_request_status'] | null;
         };
         Relationships: [];
       };
     };
     Functions: {
       _postgis_deprecate: {
-        Args: { oldname: string; newname: string; version: string };
+        Args: { newname: string; oldname: string; version: string };
         Returns: undefined;
       };
       _postgis_index_extent: {
-        Args: { tbl: unknown; col: string };
+        Args: { col: string; tbl: unknown };
         Returns: unknown;
       };
-      _postgis_pgsql_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      _postgis_scripts_pgsql_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
+      _postgis_pgsql_version: { Args: never; Returns: string };
+      _postgis_scripts_pgsql_version: { Args: never; Returns: string };
       _postgis_selectivity: {
-        Args: { tbl: unknown; att_name: string; geom: unknown; mode?: string };
+        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown };
         Returns: number;
+      };
+      _postgis_stats: {
+        Args: { ''?: string; att_name: string; tbl: unknown };
+        Returns: string;
       };
       _st_3dintersects: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
-      };
-      _st_bestsrid: {
-        Args: { '': unknown };
-        Returns: number;
       };
       _st_contains: {
         Args: { geom1: unknown; geom2: unknown };
@@ -2497,14 +4812,12 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      _st_coveredby: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      _st_covers: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+      _st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      _st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       _st_crosses: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
@@ -2518,10 +4831,7 @@ export type Database = {
         };
         Returns: boolean;
       };
-      _st_equals: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       _st_intersects: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
@@ -2546,195 +4856,95 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      _st_pointoutside: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      _st_sortablehash: {
-        Args: { geom: unknown };
-        Returns: number;
-      };
+      _st_sortablehash: { Args: { geom: unknown }; Returns: number };
       _st_touches: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
       _st_voronoi: {
         Args: {
-          g1: unknown;
           clip?: unknown;
-          tolerance?: number;
+          g1: unknown;
           return_polygons?: boolean;
+          tolerance?: number;
         };
         Returns: unknown;
       };
-      _st_within: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      addauth: {
-        Args: { '': string };
-        Returns: boolean;
-      };
-      addgeometrycolumn: {
-        Args:
-          | {
-              catalog_name: string;
-              schema_name: string;
-              table_name: string;
+      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      addauth: { Args: { '': string }; Returns: boolean };
+      addgeometrycolumn:
+        | {
+            Args: {
               column_name: string;
-              new_srid_in: number;
-              new_type: string;
               new_dim: number;
-              use_typmod?: boolean;
-            }
-          | {
-              schema_name: string;
-              table_name: string;
-              column_name: string;
               new_srid: number;
               new_type: string;
-              new_dim: number;
-              use_typmod?: boolean;
-            }
-          | {
+              schema_name: string;
               table_name: string;
-              column_name: string;
-              new_srid: number;
-              new_type: string;
-              new_dim: number;
               use_typmod?: boolean;
             };
-        Returns: string;
-      };
-      box: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: unknown;
-      };
-      box2d: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: unknown;
-      };
-      box2d_in: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box2d_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box2df_in: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box2df_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box3d: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: unknown;
-      };
-      box3d_in: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box3d_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      box3dtobox: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      bytea: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: string;
-      };
-      disablelongtransactions: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      dropgeometrycolumn: {
-        Args:
-          | {
+            Returns: string;
+          }
+        | {
+            Args: {
+              column_name: string;
+              new_dim: number;
+              new_srid: number;
+              new_type: string;
+              table_name: string;
+              use_typmod?: boolean;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              catalog_name: string;
+              column_name: string;
+              new_dim: number;
+              new_srid_in: number;
+              new_type: string;
+              schema_name: string;
+              table_name: string;
+              use_typmod?: boolean;
+            };
+            Returns: string;
+          };
+      disablelongtransactions: { Args: never; Returns: string };
+      dropgeometrycolumn:
+        | {
+            Args: {
+              column_name: string;
+              schema_name: string;
+              table_name: string;
+            };
+            Returns: string;
+          }
+        | { Args: { column_name: string; table_name: string }; Returns: string }
+        | {
+            Args: {
+              catalog_name: string;
+              column_name: string;
+              schema_name: string;
+              table_name: string;
+            };
+            Returns: string;
+          };
+      dropgeometrytable:
+        | { Args: { schema_name: string; table_name: string }; Returns: string }
+        | { Args: { table_name: string }; Returns: string }
+        | {
+            Args: {
               catalog_name: string;
               schema_name: string;
               table_name: string;
-              column_name: string;
-            }
-          | { schema_name: string; table_name: string; column_name: string }
-          | { table_name: string; column_name: string };
-        Returns: string;
-      };
-      dropgeometrytable: {
-        Args:
-          | { catalog_name: string; schema_name: string; table_name: string }
-          | { schema_name: string; table_name: string }
-          | { table_name: string };
-        Returns: string;
-      };
-      enablelongtransactions: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      equals: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      geography: {
-        Args: { '': string } | { '': unknown };
-        Returns: unknown;
-      };
-      geography_analyze: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      geography_gist_compress: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geography_gist_decompress: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geography_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geography_send: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      geography_spgist_compress_nd: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geography_typmod_in: {
-        Args: { '': unknown[] };
-        Returns: number;
-      };
-      geography_typmod_out: {
-        Args: { '': number };
-        Returns: unknown;
-      };
-      geometry: {
-        Args:
-          | { '': string }
-          | { '': string }
-          | { '': unknown }
-          | { '': unknown }
-          | { '': unknown }
-          | { '': unknown }
-          | { '': unknown }
-          | { '': unknown };
-        Returns: unknown;
-      };
+            };
+            Returns: string;
+          };
+      enablelongtransactions: { Args: never; Returns: string };
+      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      geometry: { Args: { '': string }; Returns: unknown };
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      geometry_analyze: {
-        Args: { '': unknown };
         Returns: boolean;
       };
       geometry_below: {
@@ -2773,37 +4983,9 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      geometry_gist_compress_2d: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_gist_compress_nd: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_gist_decompress_2d: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_gist_decompress_nd: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_gist_sortsupport_2d: {
-        Args: { '': unknown };
-        Returns: undefined;
-      };
       geometry_gt: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
-      };
-      geometry_hash: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      geometry_in: {
-        Args: { '': unknown };
-        Returns: unknown;
       };
       geometry_le: {
         Args: { geom1: unknown; geom2: unknown };
@@ -2816,10 +4998,6 @@ export type Database = {
       geometry_lt: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
-      };
-      geometry_out: {
-        Args: { '': unknown };
-        Returns: unknown;
       };
       geometry_overabove: {
         Args: { geom1: unknown; geom2: unknown };
@@ -2845,10 +5023,6 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      geometry_recv: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
       geometry_right: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
@@ -2861,274 +5035,53 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      geometry_send: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      geometry_sortsupport: {
-        Args: { '': unknown };
-        Returns: undefined;
-      };
-      geometry_spgist_compress_2d: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_spgist_compress_3d: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_spgist_compress_nd: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      geometry_typmod_in: {
-        Args: { '': unknown[] };
-        Returns: number;
-      };
-      geometry_typmod_out: {
-        Args: { '': number };
-        Returns: unknown;
-      };
       geometry_within: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      geometrytype: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: string;
-      };
-      geomfromewkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      geomfromewkt: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      get_proj4_from_srid: {
-        Args: { '': number };
-        Returns: string;
-      };
-      gettransactionid: {
-        Args: Record<PropertyKey, never>;
-        Returns: unknown;
-      };
-      gidx_in: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      gidx_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      json: {
-        Args: { '': unknown };
-        Returns: Json;
-      };
-      jsonb: {
-        Args: { '': unknown };
-        Returns: Json;
-      };
-      longtransactionsenabled: {
-        Args: Record<PropertyKey, never>;
-        Returns: boolean;
-      };
-      path: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      pgis_asflatgeobuf_finalfn: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      pgis_asgeobuf_finalfn: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      pgis_asmvt_finalfn: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      pgis_asmvt_serialfn: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      pgis_geometry_clusterintersecting_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown[];
-      };
-      pgis_geometry_clusterwithin_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown[];
-      };
-      pgis_geometry_collect_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      pgis_geometry_makeline_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      pgis_geometry_polygonize_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      pgis_geometry_union_parallel_finalfn: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      pgis_geometry_union_parallel_serialfn: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      point: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      polygon: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      populate_geometry_columns: {
-        Args: { tbl_oid: unknown; use_typmod?: boolean } | { use_typmod?: boolean };
-        Returns: string;
-      };
-      postgis_addbbox: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      geomfromewkt: { Args: { '': string }; Returns: unknown };
+      gettransactionid: { Args: never; Returns: unknown };
+      longtransactionsenabled: { Args: never; Returns: boolean };
+      populate_geometry_columns:
+        | { Args: { use_typmod?: boolean }; Returns: string }
+        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number };
       postgis_constraint_dims: {
-        Args: { geomschema: string; geomtable: string; geomcolumn: string };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string };
         Returns: number;
       };
       postgis_constraint_srid: {
-        Args: { geomschema: string; geomtable: string; geomcolumn: string };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string };
         Returns: number;
       };
       postgis_constraint_type: {
-        Args: { geomschema: string; geomtable: string; geomcolumn: string };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string };
         Returns: string;
       };
-      postgis_dropbbox: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      postgis_extensions_upgrade: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_full_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_geos_noop: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      postgis_geos_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_getbbox: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      postgis_hasbbox: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      postgis_index_supportfn: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      postgis_lib_build_date: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_lib_revision: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_lib_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_libjson_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_liblwgeom_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_libprotobuf_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_libxml_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_noop: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      postgis_proj_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_scripts_build_date: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_scripts_installed: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_scripts_released: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_svn_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
+      postgis_extensions_upgrade: { Args: never; Returns: string };
+      postgis_full_version: { Args: never; Returns: string };
+      postgis_geos_version: { Args: never; Returns: string };
+      postgis_lib_build_date: { Args: never; Returns: string };
+      postgis_lib_revision: { Args: never; Returns: string };
+      postgis_lib_version: { Args: never; Returns: string };
+      postgis_libjson_version: { Args: never; Returns: string };
+      postgis_liblwgeom_version: { Args: never; Returns: string };
+      postgis_libprotobuf_version: { Args: never; Returns: string };
+      postgis_libxml_version: { Args: never; Returns: string };
+      postgis_proj_version: { Args: never; Returns: string };
+      postgis_scripts_build_date: { Args: never; Returns: string };
+      postgis_scripts_installed: { Args: never; Returns: string };
+      postgis_scripts_released: { Args: never; Returns: string };
+      postgis_svn_version: { Args: never; Returns: string };
       postgis_type_name: {
         Args: {
-          geomname: string;
           coord_dimension: number;
+          geomname: string;
           use_new_name?: boolean;
         };
         Returns: string;
       };
-      postgis_typmod_dims: {
-        Args: { '': number };
-        Returns: number;
-      };
-      postgis_typmod_srid: {
-        Args: { '': number };
-        Returns: number;
-      };
-      postgis_typmod_type: {
-        Args: { '': number };
-        Returns: string;
-      };
-      postgis_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      postgis_wagyu_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      spheroid_in: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      spheroid_out: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      postgis_version: { Args: never; Returns: string };
+      postgis_wagyu_version: { Args: never; Returns: string };
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
@@ -3140,10 +5093,6 @@ export type Database = {
       st_3dintersects: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
-      };
-      st_3dlength: {
-        Args: { '': unknown };
-        Returns: number;
       };
       st_3dlongestline: {
         Args: { geom1: unknown; geom2: unknown };
@@ -3157,10 +5106,6 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: number;
       };
-      st_3dperimeter: {
-        Args: { '': unknown };
-        Returns: number;
-      };
       st_3dshortestline: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
@@ -3169,202 +5114,172 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
       };
-      st_angle: {
-        Args:
-          | { line1: unknown; line2: unknown }
-          | { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown };
-        Returns: number;
-      };
-      st_area: {
-        Args: { '': string } | { '': unknown } | { geog: unknown; use_spheroid?: boolean };
-        Returns: number;
-      };
-      st_area2d: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_asbinary: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: string;
-      };
+      st_angle:
+        | { Args: { line1: unknown; line2: unknown }; Returns: number }
+        | {
+            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown };
+            Returns: number;
+          };
+      st_area:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { '': string }; Returns: number };
       st_asencodedpolyline: {
         Args: { geom: unknown; nprecision?: number };
         Returns: string;
       };
-      st_asewkb: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      st_asewkt: {
-        Args: { '': string } | { '': unknown } | { '': unknown };
-        Returns: string;
-      };
-      st_asgeojson: {
-        Args:
-          | { '': string }
-          | { geog: unknown; maxdecimaldigits?: number; options?: number }
-          | { geom: unknown; maxdecimaldigits?: number; options?: number }
-          | {
-              r: Record<string, unknown>;
+      st_asewkt: { Args: { '': string }; Returns: string };
+      st_asgeojson:
+        | {
+            Args: {
               geom_column?: string;
               maxdecimaldigits?: number;
               pretty_bool?: boolean;
+              r: Record<string, unknown>;
             };
-        Returns: string;
-      };
-      st_asgml: {
-        Args:
-          | { '': string }
-          | {
-              geog: unknown;
-              maxdecimaldigits?: number;
-              options?: number;
-              nprefix?: string;
-              id?: string;
-            }
-          | { geom: unknown; maxdecimaldigits?: number; options?: number }
-          | {
-              version: number;
-              geog: unknown;
-              maxdecimaldigits?: number;
-              options?: number;
-              nprefix?: string;
-              id?: string;
-            }
-          | {
-              version: number;
+            Returns: string;
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
+            Returns: string;
+          }
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number };
+            Returns: string;
+          }
+        | { Args: { '': string }; Returns: string };
+      st_asgml:
+        | {
+            Args: {
               geom: unknown;
-              maxdecimaldigits?: number;
-              options?: number;
-              nprefix?: string;
               id?: string;
+              maxdecimaldigits?: number;
+              nprefix?: string;
+              options?: number;
+              version: number;
             };
-        Returns: string;
-      };
-      st_ashexewkb: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      st_askml: {
-        Args:
-          | { '': string }
-          | { geog: unknown; maxdecimaldigits?: number; nprefix?: string }
-          | { geom: unknown; maxdecimaldigits?: number; nprefix?: string };
-        Returns: string;
-      };
+            Returns: string;
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
+            Returns: string;
+          }
+        | {
+            Args: {
+              geog: unknown;
+              id?: string;
+              maxdecimaldigits?: number;
+              nprefix?: string;
+              options?: number;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              geog: unknown;
+              id?: string;
+              maxdecimaldigits?: number;
+              nprefix?: string;
+              options?: number;
+              version: number;
+            };
+            Returns: string;
+          }
+        | { Args: { '': string }; Returns: string };
+      st_askml:
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string };
+            Returns: string;
+          }
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string };
+            Returns: string;
+          }
+        | { Args: { '': string }; Returns: string };
       st_aslatlontext: {
         Args: { geom: unknown; tmpl?: string };
         Returns: string;
       };
-      st_asmarc21: {
-        Args: { geom: unknown; format?: string };
-        Returns: string;
-      };
+      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string };
       st_asmvtgeom: {
         Args: {
-          geom: unknown;
           bounds: unknown;
-          extent?: number;
           buffer?: number;
           clip_geom?: boolean;
+          extent?: number;
+          geom: unknown;
         };
         Returns: unknown;
       };
-      st_assvg: {
-        Args:
-          | { '': string }
-          | { geog: unknown; rel?: number; maxdecimaldigits?: number }
-          | { geom: unknown; rel?: number; maxdecimaldigits?: number };
-        Returns: string;
-      };
-      st_astext: {
-        Args: { '': string } | { '': unknown } | { '': unknown };
-        Returns: string;
-      };
-      st_astwkb: {
-        Args:
-          | {
+      st_assvg:
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number };
+            Returns: string;
+          }
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number };
+            Returns: string;
+          }
+        | { Args: { '': string }; Returns: string };
+      st_astext: { Args: { '': string }; Returns: string };
+      st_astwkb:
+        | {
+            Args: {
               geom: unknown[];
               ids: number[];
               prec?: number;
-              prec_z?: number;
               prec_m?: number;
-              with_sizes?: boolean;
+              prec_z?: number;
               with_boxes?: boolean;
-            }
-          | {
+              with_sizes?: boolean;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
               geom: unknown;
               prec?: number;
-              prec_z?: number;
               prec_m?: number;
-              with_sizes?: boolean;
+              prec_z?: number;
               with_boxes?: boolean;
+              with_sizes?: boolean;
             };
-        Returns: string;
-      };
+            Returns: string;
+          };
       st_asx3d: {
         Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
         Returns: string;
       };
-      st_azimuth: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
-      st_boundary: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      st_azimuth:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: number };
       st_boundingdiagonal: {
-        Args: { geom: unknown; fits?: boolean };
+        Args: { fits?: boolean; geom: unknown };
         Returns: unknown;
       };
-      st_buffer: {
-        Args:
-          | { geom: unknown; radius: number; options?: string }
-          | { geom: unknown; radius: number; quadsegs: number };
-        Returns: unknown;
-      };
-      st_buildarea: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_centroid: {
-        Args: { '': string } | { '': unknown };
-        Returns: unknown;
-      };
-      st_cleangeometry: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      st_buffer:
+        | {
+            Args: { geom: unknown; options?: string; radius: number };
+            Returns: unknown;
+          }
+        | {
+            Args: { geom: unknown; quadsegs: number; radius: number };
+            Returns: unknown;
+          };
+      st_centroid: { Args: { '': string }; Returns: unknown };
       st_clipbybox2d: {
-        Args: { geom: unknown; box: unknown };
+        Args: { box: unknown; geom: unknown };
         Returns: unknown;
       };
       st_closestpoint: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
       };
-      st_clusterintersecting: {
-        Args: { '': unknown[] };
-        Returns: unknown[];
-      };
-      st_collect: {
-        Args: { '': unknown[] } | { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
-      st_collectionextract: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_collectionhomogenize: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
       st_concavehull: {
         Args: {
+          param_allow_holes?: boolean;
           param_geom: unknown;
           param_pctconvex: number;
-          param_allow_holes?: boolean;
         };
         Returns: unknown;
       };
@@ -3376,77 +5291,45 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      st_convexhull: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_coorddim: {
-        Args: { geometry: unknown };
-        Returns: number;
-      };
-      st_coveredby: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_covers: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_crosses: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+      st_coorddim: { Args: { geometry: unknown }; Returns: number };
+      st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       st_curvetoline: {
-        Args: { geom: unknown; tol?: number; toltype?: number; flags?: number };
+        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number };
         Returns: unknown;
       };
       st_delaunaytriangles: {
-        Args: { g1: unknown; tolerance?: number; flags?: number };
+        Args: { flags?: number; g1: unknown; tolerance?: number };
         Returns: unknown;
       };
       st_difference: {
         Args: { geom1: unknown; geom2: unknown; gridsize?: number };
         Returns: unknown;
       };
-      st_dimension: {
-        Args: { '': unknown };
-        Returns: number;
-      };
       st_disjoint: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      st_distance: {
-        Args:
-          | { geog1: unknown; geog2: unknown; use_spheroid?: boolean }
-          | { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
-      st_distancesphere: {
-        Args:
-          | { geom1: unknown; geom2: unknown }
-          | { geom1: unknown; geom2: unknown; radius: number };
-        Returns: number;
-      };
+      st_distance:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | {
+            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean };
+            Returns: number;
+          };
+      st_distancesphere:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | {
+            Args: { geom1: unknown; geom2: unknown; radius: number };
+            Returns: number;
+          };
       st_distancespheroid: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: number;
-      };
-      st_dump: {
-        Args: { '': unknown };
-        Returns: Database['public']['CompositeTypes']['geometry_dump'][];
-      };
-      st_dumppoints: {
-        Args: { '': unknown };
-        Returns: Database['public']['CompositeTypes']['geometry_dump'][];
-      };
-      st_dumprings: {
-        Args: { '': unknown };
-        Returns: Database['public']['CompositeTypes']['geometry_dump'][];
-      };
-      st_dumpsegments: {
-        Args: { '': unknown };
-        Returns: Database['public']['CompositeTypes']['geometry_dump'][];
       };
       st_dwithin: {
         Args: {
@@ -3457,41 +5340,24 @@ export type Database = {
         };
         Returns: boolean;
       };
-      st_endpoint: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_envelope: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_equals: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_expand: {
-        Args:
-          | { box: unknown; dx: number; dy: number }
-          | { box: unknown; dx: number; dy: number; dz?: number }
-          | { geom: unknown; dx: number; dy: number; dz?: number; dm?: number };
-        Returns: unknown;
-      };
-      st_exteriorring: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_flipcoordinates: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_force2d: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_force3d: {
-        Args: { geom: unknown; zvalue?: number };
-        Returns: unknown;
-      };
+      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      st_expand:
+        | {
+            Args: {
+              dm?: number;
+              dx: number;
+              dy: number;
+              dz?: number;
+              geom: unknown;
+            };
+            Returns: unknown;
+          }
+        | {
+            Args: { box: unknown; dx: number; dy: number; dz?: number };
+            Returns: unknown;
+          }
+        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown };
+      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown };
       st_force3dm: {
         Args: { geom: unknown; mvalue?: number };
         Returns: unknown;
@@ -3501,132 +5367,52 @@ export type Database = {
         Returns: unknown;
       };
       st_force4d: {
-        Args: { geom: unknown; zvalue?: number; mvalue?: number };
+        Args: { geom: unknown; mvalue?: number; zvalue?: number };
         Returns: unknown;
       };
-      st_forcecollection: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_forcecurve: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_forcepolygonccw: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_forcepolygoncw: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_forcerhr: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_forcesfs: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_generatepoints: {
-        Args: { area: unknown; npoints: number } | { area: unknown; npoints: number; seed: number };
-        Returns: unknown;
-      };
-      st_geogfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geogfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geographyfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geohash: {
-        Args: { geog: unknown; maxchars?: number } | { geom: unknown; maxchars?: number };
-        Returns: string;
-      };
-      st_geomcollfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomcollfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
+      st_generatepoints:
+        | {
+            Args: { area: unknown; npoints: number; seed: number };
+            Returns: unknown;
+          }
+        | { Args: { area: unknown; npoints: number }; Returns: unknown };
+      st_geogfromtext: { Args: { '': string }; Returns: unknown };
+      st_geographyfromtext: { Args: { '': string }; Returns: unknown };
+      st_geohash:
+        | { Args: { geog: unknown; maxchars?: number }; Returns: string }
+        | { Args: { geom: unknown; maxchars?: number }; Returns: string };
+      st_geomcollfromtext: { Args: { '': string }; Returns: unknown };
       st_geometricmedian: {
         Args: {
-          g: unknown;
-          tolerance?: number;
-          max_iter?: number;
           fail_if_not_converged?: boolean;
+          g: unknown;
+          max_iter?: number;
+          tolerance?: number;
         };
         Returns: unknown;
       };
-      st_geometryfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geometrytype: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      st_geomfromewkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfromewkt: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfromgeojson: {
-        Args: { '': Json } | { '': Json } | { '': string };
-        Returns: unknown;
-      };
-      st_geomfromgml: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfromkml: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfrommarc21: {
-        Args: { marc21xml: string };
-        Returns: unknown;
-      };
-      st_geomfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfromtwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_geomfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_gmltosql: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_hasarc: {
-        Args: { geometry: unknown };
-        Returns: boolean;
-      };
+      st_geometryfromtext: { Args: { '': string }; Returns: unknown };
+      st_geomfromewkt: { Args: { '': string }; Returns: unknown };
+      st_geomfromgeojson:
+        | { Args: { '': Json }; Returns: unknown }
+        | { Args: { '': Json }; Returns: unknown }
+        | { Args: { '': string }; Returns: unknown };
+      st_geomfromgml: { Args: { '': string }; Returns: unknown };
+      st_geomfromkml: { Args: { '': string }; Returns: unknown };
+      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown };
+      st_geomfromtext: { Args: { '': string }; Returns: unknown };
+      st_gmltosql: { Args: { '': string }; Returns: unknown };
+      st_hasarc: { Args: { geometry: unknown }; Returns: boolean };
       st_hausdorffdistance: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: number;
       };
       st_hexagon: {
-        Args: { size: number; cell_i: number; cell_j: number; origin?: unknown };
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number };
         Returns: unknown;
       };
       st_hexagongrid: {
-        Args: { size: number; bounds: unknown };
+        Args: { bounds: unknown; size: number };
         Returns: Record<string, unknown>[];
       };
       st_interpolatepoint: {
@@ -3637,362 +5423,144 @@ export type Database = {
         Args: { geom1: unknown; geom2: unknown; gridsize?: number };
         Returns: unknown;
       };
-      st_intersects: {
-        Args: { geog1: unknown; geog2: unknown } | { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_isclosed: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_iscollection: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_isempty: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_ispolygonccw: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_ispolygoncw: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_isring: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_issimple: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_isvalid: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
+      st_intersects:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean };
       st_isvaliddetail: {
-        Args: { geom: unknown; flags?: number };
+        Args: { flags?: number; geom: unknown };
         Returns: Database['public']['CompositeTypes']['valid_detail'];
+        SetofOptions: {
+          from: '*';
+          to: 'valid_detail';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
-      st_isvalidreason: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      st_isvalidtrajectory: {
-        Args: { '': unknown };
-        Returns: boolean;
-      };
-      st_length: {
-        Args: { '': string } | { '': unknown } | { geog: unknown; use_spheroid?: boolean };
-        Returns: number;
-      };
-      st_length2d: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_letters: {
-        Args: { letters: string; font?: Json };
-        Returns: unknown;
-      };
+      st_length:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { '': string }; Returns: number };
+      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown };
       st_linecrossingdirection: {
         Args: { line1: unknown; line2: unknown };
         Returns: number;
       };
       st_linefromencodedpolyline: {
-        Args: { txtin: string; nprecision?: number };
+        Args: { nprecision?: number; txtin: string };
         Returns: unknown;
       };
-      st_linefrommultipoint: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_linefromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_linefromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
+      st_linefromtext: { Args: { '': string }; Returns: unknown };
       st_linelocatepoint: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: number;
       };
-      st_linemerge: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_linestringfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_linetocurve: {
-        Args: { geometry: unknown };
-        Returns: unknown;
-      };
+      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown };
       st_locatealong: {
-        Args: { geometry: unknown; measure: number; leftrightoffset?: number };
+        Args: { geometry: unknown; leftrightoffset?: number; measure: number };
         Returns: unknown;
       };
       st_locatebetween: {
         Args: {
-          geometry: unknown;
           frommeasure: number;
-          tomeasure: number;
+          geometry: unknown;
           leftrightoffset?: number;
+          tomeasure: number;
         };
         Returns: unknown;
       };
       st_locatebetweenelevations: {
-        Args: { geometry: unknown; fromelevation: number; toelevation: number };
+        Args: { fromelevation: number; geometry: unknown; toelevation: number };
         Returns: unknown;
       };
       st_longestline: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
       };
-      st_m: {
-        Args: { '': unknown };
-        Returns: number;
-      };
       st_makebox2d: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
       };
       st_makeline: {
-        Args: { '': unknown[] } | { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
-      st_makepolygon: {
-        Args: { '': unknown };
+        Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
       };
       st_makevalid: {
-        Args: { '': unknown } | { geom: unknown; params: string };
+        Args: { geom: unknown; params: string };
         Returns: unknown;
       };
       st_maxdistance: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: number;
       };
-      st_maximuminscribedcircle: {
-        Args: { '': unknown };
-        Returns: Record<string, unknown>;
-      };
-      st_memsize: {
-        Args: { '': unknown };
-        Returns: number;
-      };
       st_minimumboundingcircle: {
         Args: { inputgeom: unknown; segs_per_quarter?: number };
         Returns: unknown;
       };
-      st_minimumboundingradius: {
-        Args: { '': unknown };
-        Returns: Record<string, unknown>;
-      };
-      st_minimumclearance: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_minimumclearanceline: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_mlinefromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_mlinefromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_mpointfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_mpointfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_mpolyfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_mpolyfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multi: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_multilinefromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multilinestringfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multipointfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multipointfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multipolyfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_multipolygonfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_ndims: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_node: {
-        Args: { g: unknown };
-        Returns: unknown;
-      };
-      st_normalize: {
-        Args: { geom: unknown };
-        Returns: unknown;
-      };
-      st_npoints: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_nrings: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_numgeometries: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_numinteriorring: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_numinteriorrings: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_numpatches: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_numpoints: {
-        Args: { '': unknown };
-        Returns: number;
-      };
+      st_mlinefromtext: { Args: { '': string }; Returns: unknown };
+      st_mpointfromtext: { Args: { '': string }; Returns: unknown };
+      st_mpolyfromtext: { Args: { '': string }; Returns: unknown };
+      st_multilinestringfromtext: { Args: { '': string }; Returns: unknown };
+      st_multipointfromtext: { Args: { '': string }; Returns: unknown };
+      st_multipolygonfromtext: { Args: { '': string }; Returns: unknown };
+      st_node: { Args: { g: unknown }; Returns: unknown };
+      st_normalize: { Args: { geom: unknown }; Returns: unknown };
       st_offsetcurve: {
-        Args: { line: unknown; distance: number; params?: string };
+        Args: { distance: number; line: unknown; params?: string };
         Returns: unknown;
       };
       st_orderingequals: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
-      st_orientedenvelope: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
       st_overlaps: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: boolean;
       };
       st_perimeter: {
-        Args: { '': unknown } | { geog: unknown; use_spheroid?: boolean };
+        Args: { geog: unknown; use_spheroid?: boolean };
         Returns: number;
       };
-      st_perimeter2d: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_pointfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_pointfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
+      st_pointfromtext: { Args: { '': string }; Returns: unknown };
       st_pointm: {
         Args: {
-          xcoordinate: number;
-          ycoordinate: number;
           mcoordinate: number;
           srid?: number;
+          xcoordinate: number;
+          ycoordinate: number;
         };
-        Returns: unknown;
-      };
-      st_pointonsurface: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
-      st_points: {
-        Args: { '': unknown };
         Returns: unknown;
       };
       st_pointz: {
         Args: {
+          srid?: number;
           xcoordinate: number;
           ycoordinate: number;
           zcoordinate: number;
-          srid?: number;
         };
         Returns: unknown;
       };
       st_pointzm: {
         Args: {
+          mcoordinate: number;
+          srid?: number;
           xcoordinate: number;
           ycoordinate: number;
           zcoordinate: number;
-          mcoordinate: number;
-          srid?: number;
         };
         Returns: unknown;
       };
-      st_polyfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_polyfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_polygonfromtext: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_polygonfromwkb: {
-        Args: { '': string };
-        Returns: unknown;
-      };
-      st_polygonize: {
-        Args: { '': unknown[] };
-        Returns: unknown;
-      };
+      st_polyfromtext: { Args: { '': string }; Returns: unknown };
+      st_polygonfromtext: { Args: { '': string }; Returns: unknown };
       st_project: {
-        Args: { geog: unknown; distance: number; azimuth: number };
+        Args: { azimuth: number; distance: number; geog: unknown };
         Returns: unknown;
       };
       st_quantizecoordinates: {
         Args: {
           g: unknown;
+          prec_m?: number;
           prec_x: number;
           prec_y?: number;
           prec_z?: number;
-          prec_m?: number;
         };
         Returns: unknown;
       };
@@ -4000,32 +5568,20 @@ export type Database = {
         Args: { geom: unknown; gridsize: number };
         Returns: unknown;
       };
-      st_relate: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: string;
-      };
+      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string };
       st_removerepeatedpoints: {
         Args: { geom: unknown; tolerance?: number };
-        Returns: unknown;
-      };
-      st_reverse: {
-        Args: { '': unknown };
         Returns: unknown;
       };
       st_segmentize: {
         Args: { geog: unknown; max_segment_length: number };
         Returns: unknown;
       };
-      st_setsrid: {
-        Args: { geog: unknown; srid: number } | { geom: unknown; srid: number };
-        Returns: unknown;
-      };
+      st_setsrid:
+        | { Args: { geom: unknown; srid: number }; Returns: unknown }
+        | { Args: { geog: unknown; srid: number }; Returns: unknown };
       st_sharedpaths: {
         Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
-      st_shiftlongitude: {
-        Args: { '': unknown };
         Returns: unknown;
       };
       st_shortestline: {
@@ -4033,36 +5589,24 @@ export type Database = {
         Returns: unknown;
       };
       st_simplifypolygonhull: {
-        Args: { geom: unknown; vertex_fraction: number; is_outer?: boolean };
+        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number };
         Returns: unknown;
       };
-      st_split: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
       st_square: {
-        Args: { size: number; cell_i: number; cell_j: number; origin?: unknown };
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number };
         Returns: unknown;
       };
       st_squaregrid: {
-        Args: { size: number; bounds: unknown };
+        Args: { bounds: unknown; size: number };
         Returns: Record<string, unknown>[];
       };
-      st_srid: {
-        Args: { geog: unknown } | { geom: unknown };
-        Returns: number;
-      };
-      st_startpoint: {
-        Args: { '': unknown };
-        Returns: unknown;
-      };
+      st_srid:
+        | { Args: { geog: unknown }; Returns: number }
+        | { Args: { geom: unknown }; Returns: number };
       st_subdivide: {
-        Args: { geom: unknown; maxvertices?: number; gridsize?: number };
+        Args: { geom: unknown; gridsize?: number; maxvertices?: number };
         Returns: unknown[];
-      };
-      st_summary: {
-        Args: { '': unknown } | { '': unknown };
-        Returns: string;
       };
       st_swapordinates: {
         Args: { geom: unknown; ords: unknown };
@@ -4078,148 +5622,90 @@ export type Database = {
       };
       st_tileenvelope: {
         Args: {
-          zoom: number;
-          x: number;
-          y: number;
           bounds?: unknown;
           margin?: number;
+          x: number;
+          y: number;
+          zoom: number;
         };
         Returns: unknown;
       };
-      st_touches: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_transform: {
-        Args:
-          | { geom: unknown; from_proj: string; to_proj: string }
-          | { geom: unknown; from_proj: string; to_srid: number }
-          | { geom: unknown; to_proj: string };
-        Returns: unknown;
-      };
-      st_triangulatepolygon: {
-        Args: { g1: unknown };
-        Returns: unknown;
-      };
-      st_union: {
-        Args:
-          | { '': unknown[] }
-          | { geom1: unknown; geom2: unknown }
-          | { geom1: unknown; geom2: unknown; gridsize: number };
-        Returns: unknown;
-      };
+      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      st_transform:
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+        | {
+            Args: { from_proj: string; geom: unknown; to_srid: number };
+            Returns: unknown;
+          }
+        | {
+            Args: { from_proj: string; geom: unknown; to_proj: string };
+            Returns: unknown;
+          };
+      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown };
+      st_union:
+        | {
+            Args: { geom1: unknown; geom2: unknown; gridsize: number };
+            Returns: unknown;
+          }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
       st_voronoilines: {
-        Args: { g1: unknown; tolerance?: number; extend_to?: unknown };
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number };
         Returns: unknown;
       };
       st_voronoipolygons: {
-        Args: { g1: unknown; tolerance?: number; extend_to?: unknown };
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number };
         Returns: unknown;
       };
-      st_within: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_wkbtosql: {
-        Args: { wkb: string };
-        Returns: unknown;
-      };
-      st_wkttosql: {
-        Args: { '': string };
-        Returns: unknown;
-      };
+      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+      st_wkbtosql: { Args: { wkb: string }; Returns: unknown };
+      st_wkttosql: { Args: { '': string }; Returns: unknown };
       st_wrapx: {
-        Args: { geom: unknown; wrap: number; move: number };
+        Args: { geom: unknown; move: number; wrap: number };
         Returns: unknown;
       };
-      st_x: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_xmax: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_xmin: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_y: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_ymax: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_ymin: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_z: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_zmax: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_zmflag: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      st_zmin: {
-        Args: { '': unknown };
-        Returns: number;
-      };
-      text: {
-        Args: { '': unknown };
-        Returns: string;
-      };
-      unlockrows: {
-        Args: { '': string };
-        Returns: number;
-      };
-      update_milk_bag_status: {
-        Args: Record<PropertyKey, never>;
-        Returns: undefined;
-      };
+      unlockrows: { Args: { '': string }; Returns: number };
+      update_milk_bag_status: { Args: never; Returns: undefined };
       updategeometrysrid: {
         Args: {
           catalogn_name: string;
-          schema_name: string;
-          table_name: string;
           column_name: string;
           new_srid_in: number;
+          schema_name: string;
+          table_name: string;
         };
         Returns: string;
       };
     };
     Enums: {
+      comment_status_enum: 'PUBLISHED' | 'EDITED';
       enum_cities_municipalities_type: 'NONE' | 'CITY' | 'MUNICIPALITY';
+      enum_conversation_participants_role: 'ADMIN' | 'MODERATOR' | 'MEMBER';
+      enum_conversation_type: 'DIRECT' | 'GROUP';
       enum_days: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-      enum_deliveries_mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-      enum_deliveries_status:
-        | 'PENDING'
-        | 'PENDING_CONFIRMATION'
-        | 'CONFIRMED'
-        | 'SCHEDULED'
-        | 'IN_TRANSIT'
-        | 'READY_FOR_PICKUP'
-        | 'DELIVERED'
-        | 'FAILED'
-        | 'CANCELLED';
       enum_delivery_modes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-      enum_donations_details_collection_mode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
-      enum_donations_details_storage_type: 'FRESH' | 'FROZEN';
-      enum_donations_status:
+      enum_donation_request_status:
+        | 'PENDING'
         | 'AVAILABLE'
-        | 'PARTIALLY_ALLOCATED'
-        | 'FULLY_ALLOCATED'
+        | 'MATCHED'
         | 'COMPLETED'
         | 'EXPIRED'
-        | 'CANCELLED';
+        | 'CANCELLED'
+        | 'REJECTED';
+      enum_donations_details_collection_mode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
+      enum_donations_details_storage_type: 'FRESH' | 'FROZEN' | 'OTHER';
       enum_hospitals_type: 'GOVERNMENT' | 'PRIVATE' | 'OTHER';
+      enum_identities_id_type:
+        | 'PASSPORT'
+        | 'DRIVER_LICENSE'
+        | 'UMID'
+        | 'SSS'
+        | 'POSTAL_ID'
+        | 'TIN'
+        | 'PHILHEALTH'
+        | 'PHILID'
+        | 'PRC'
+        | 'OTHERS';
+      enum_identities_status: 'PENDING' | 'REQUIRED_ACTION' | 'APPROVED' | 'REJECTED';
       enum_individuals_gender: 'MALE' | 'FEMALE' | 'OTHER';
       enum_individuals_marital_status:
         | 'SINGLE'
@@ -4228,8 +5714,17 @@ export type Database = {
         | 'WIDOWED'
         | 'DIVORCED'
         | 'N/A';
+      enum_inventory_status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
       enum_js_types: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object';
-      enum_milk_bag_status: 'AVAILABLE' | 'ALLOCATED' | 'EXPIRED' | 'DISCARDED';
+      enum_message_type: 'TEXT' | 'SYSTEM';
+      enum_milk_bag_status:
+        | 'DRAFT'
+        | 'AVAILABLE'
+        | 'ALLOCATED'
+        | 'CONSUMED'
+        | 'EXPIRED'
+        | 'DISCARDED';
+      enum_milk_bag_transfer_reason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN' | 'N/A';
       enum_milk_banks_type: 'GOVERNMENT' | 'PRIVATE' | 'OTHER';
       enum_notification_channel_type:
         | 'IN_APP'
@@ -4239,32 +5734,60 @@ export type Database = {
         | 'WEBHOOK'
         | 'EXTERNAL_API';
       enum_notification_retry_strategy: 'FIXED' | 'EXPONENTIAL' | 'LINEAR';
-      enum_notification_trigger_collection: 'requests' | 'donations' | 'deliveries' | 'system';
+      enum_notification_trigger_collection: 'requests' | 'donations' | 'transactions';
       enum_notification_trigger_event: 'CREATE' | 'UPDATE' | 'DELETE';
+      enum_payload_jobs_log_state: 'failed' | 'succeeded';
+      enum_payload_jobs_log_task_slug:
+        | 'inline'
+        | 'id-verification-task'
+        | 'send-email'
+        | 'calculate-post-comment-count-task'
+        | 'calculate-comment-reply-count-task';
+      enum_payload_jobs_task_slug:
+        | 'inline'
+        | 'id-verification-task'
+        | 'send-email'
+        | 'calculate-post-comment-count-task'
+        | 'calculate-comment-reply-count-task';
+      enum_payload_jobs_workflow_slug: 'id-verification-workflow';
+      enum_posts_status: 'DRAFT' | 'PUBLISHED' | 'REMOVED';
+      enum_posts_visibility: 'PUBLIC' | 'PRIVATE';
       enum_priority_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-      enum_proposedBy: 'DONOR' | 'REQUESTER';
-      enum_requests_details_storage_preference: 'FRESH' | 'FROZEN' | 'EITHER';
-      enum_requests_status: 'PENDING' | 'MATCHED' | 'FULFILLED' | 'EXPIRED' | 'CANCELLED';
-      enum_time_slot_preset:
-        | '08:00-10:00'
-        | '10:00-12:00'
-        | '12:00-14:00'
-        | '14:00-16:00'
-        | '16:00-18:00'
-        | '18:00-20:00';
-      enum_time_slot_type: 'CUSTOM' | 'PRESET';
+      enum_requests_details_storage_preference: 'FRESH' | 'FROZEN' | 'OTHER' | 'EITHER';
+      enum_system_colors:
+        | 'PRIMARY'
+        | 'SECONDARY'
+        | 'TERTIARY'
+        | 'POSITIVE'
+        | 'WARNING'
+        | 'DANGER'
+        | 'INFO'
+        | 'MUTED'
+        | 'DEFAULT';
+      enum_transaction_status:
+        | 'MATCHED'
+        | 'PENDING_DELIVERY_CONFIRMATION'
+        | 'DELIVERY_SCHEDULED'
+        | 'IN_TRANSIT'
+        | 'READY_FOR_PICKUP'
+        | 'DELIVERED'
+        | 'COMPLETED'
+        | 'FAILED'
+        | 'CANCELLED';
+      enum_transaction_type: 'P2P' | 'P2O' | 'O2P';
       enum_users_profile_type: 'INDIVIDUAL' | 'HOSPITAL' | 'MILK_BANK';
       enum_users_role: 'AUTHENTICATED' | 'ADMIN';
+      post_attachment_media_type_enum: 'IMAGE';
     };
     CompositeTypes: {
       geometry_dump: {
         path: number[] | null;
-        geom: unknown | null;
+        geom: unknown;
       };
       valid_detail: {
         valid: boolean | null;
         reason: string | null;
-        location: unknown | null;
+        location: unknown;
       };
     };
   };
@@ -4391,32 +5914,37 @@ export const Constants = {
   },
   public: {
     Enums: {
+      comment_status_enum: ['PUBLISHED', 'EDITED'],
       enum_cities_municipalities_type: ['NONE', 'CITY', 'MUNICIPALITY'],
+      enum_conversation_participants_role: ['ADMIN', 'MODERATOR', 'MEMBER'],
+      enum_conversation_type: ['DIRECT', 'GROUP'],
       enum_days: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'],
-      enum_deliveries_mode: ['PICKUP', 'DELIVERY', 'MEETUP'],
-      enum_deliveries_status: [
-        'PENDING',
-        'PENDING_CONFIRMATION',
-        'CONFIRMED',
-        'SCHEDULED',
-        'IN_TRANSIT',
-        'READY_FOR_PICKUP',
-        'DELIVERED',
-        'FAILED',
-        'CANCELLED',
-      ],
       enum_delivery_modes: ['PICKUP', 'DELIVERY', 'MEETUP'],
-      enum_donations_details_collection_mode: ['MANUAL', 'MANUAL_PUMP', 'ELECTRIC_PUMP'],
-      enum_donations_details_storage_type: ['FRESH', 'FROZEN'],
-      enum_donations_status: [
+      enum_donation_request_status: [
+        'PENDING',
         'AVAILABLE',
-        'PARTIALLY_ALLOCATED',
-        'FULLY_ALLOCATED',
+        'MATCHED',
         'COMPLETED',
         'EXPIRED',
         'CANCELLED',
+        'REJECTED',
       ],
+      enum_donations_details_collection_mode: ['MANUAL', 'MANUAL_PUMP', 'ELECTRIC_PUMP'],
+      enum_donations_details_storage_type: ['FRESH', 'FROZEN', 'OTHER'],
       enum_hospitals_type: ['GOVERNMENT', 'PRIVATE', 'OTHER'],
+      enum_identities_id_type: [
+        'PASSPORT',
+        'DRIVER_LICENSE',
+        'UMID',
+        'SSS',
+        'POSTAL_ID',
+        'TIN',
+        'PHILHEALTH',
+        'PHILID',
+        'PRC',
+        'OTHERS',
+      ],
+      enum_identities_status: ['PENDING', 'REQUIRED_ACTION', 'APPROVED', 'REJECTED'],
       enum_individuals_gender: ['MALE', 'FEMALE', 'OTHER'],
       enum_individuals_marital_status: [
         'SINGLE',
@@ -4426,28 +5954,62 @@ export const Constants = {
         'DIVORCED',
         'N/A',
       ],
+      enum_inventory_status: ['AVAILABLE', 'RESERVED', 'EXPIRED', 'CONSUMED'],
       enum_js_types: ['string', 'number', 'boolean', 'date', 'array', 'object'],
-      enum_milk_bag_status: ['AVAILABLE', 'ALLOCATED', 'EXPIRED', 'DISCARDED'],
+      enum_message_type: ['TEXT', 'SYSTEM'],
+      enum_milk_bag_status: ['DRAFT', 'AVAILABLE', 'ALLOCATED', 'CONSUMED', 'EXPIRED', 'DISCARDED'],
+      enum_milk_bag_transfer_reason: ['DONATION_COMPLETED', 'REDISTRIBUTION', 'RETURN', 'N/A'],
       enum_milk_banks_type: ['GOVERNMENT', 'PRIVATE', 'OTHER'],
       enum_notification_channel_type: ['IN_APP', 'EMAIL', 'SMS', 'PUSH', 'WEBHOOK', 'EXTERNAL_API'],
       enum_notification_retry_strategy: ['FIXED', 'EXPONENTIAL', 'LINEAR'],
-      enum_notification_trigger_collection: ['requests', 'donations', 'deliveries', 'system'],
+      enum_notification_trigger_collection: ['requests', 'donations', 'transactions'],
       enum_notification_trigger_event: ['CREATE', 'UPDATE', 'DELETE'],
-      enum_priority_level: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
-      enum_proposedBy: ['DONOR', 'REQUESTER'],
-      enum_requests_details_storage_preference: ['FRESH', 'FROZEN', 'EITHER'],
-      enum_requests_status: ['PENDING', 'MATCHED', 'FULFILLED', 'EXPIRED', 'CANCELLED'],
-      enum_time_slot_preset: [
-        '08:00-10:00',
-        '10:00-12:00',
-        '12:00-14:00',
-        '14:00-16:00',
-        '16:00-18:00',
-        '18:00-20:00',
+      enum_payload_jobs_log_state: ['failed', 'succeeded'],
+      enum_payload_jobs_log_task_slug: [
+        'inline',
+        'id-verification-task',
+        'send-email',
+        'calculate-post-comment-count-task',
+        'calculate-comment-reply-count-task',
       ],
-      enum_time_slot_type: ['CUSTOM', 'PRESET'],
+      enum_payload_jobs_task_slug: [
+        'inline',
+        'id-verification-task',
+        'send-email',
+        'calculate-post-comment-count-task',
+        'calculate-comment-reply-count-task',
+      ],
+      enum_payload_jobs_workflow_slug: ['id-verification-workflow'],
+      enum_posts_status: ['DRAFT', 'PUBLISHED', 'REMOVED'],
+      enum_posts_visibility: ['PUBLIC', 'PRIVATE'],
+      enum_priority_level: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+      enum_requests_details_storage_preference: ['FRESH', 'FROZEN', 'OTHER', 'EITHER'],
+      enum_system_colors: [
+        'PRIMARY',
+        'SECONDARY',
+        'TERTIARY',
+        'POSITIVE',
+        'WARNING',
+        'DANGER',
+        'INFO',
+        'MUTED',
+        'DEFAULT',
+      ],
+      enum_transaction_status: [
+        'MATCHED',
+        'PENDING_DELIVERY_CONFIRMATION',
+        'DELIVERY_SCHEDULED',
+        'IN_TRANSIT',
+        'READY_FOR_PICKUP',
+        'DELIVERED',
+        'COMPLETED',
+        'FAILED',
+        'CANCELLED',
+      ],
+      enum_transaction_type: ['P2P', 'P2O', 'O2P'],
       enum_users_profile_type: ['INDIVIDUAL', 'HOSPITAL', 'MILK_BANK'],
       enum_users_role: ['AUTHENTICATED', 'ADMIN'],
+      post_attachment_media_type_enum: ['IMAGE'],
     },
   },
 } as const;

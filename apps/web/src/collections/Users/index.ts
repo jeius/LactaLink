@@ -102,6 +102,11 @@ export const Users: CollectionConfig<'users'> = {
       admin: { position: 'sidebar', readOnly: true },
     },
     {
+      name: 'onlineAt',
+      type: 'date',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
       name: 'emailConfirmedAt',
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },

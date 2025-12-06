@@ -436,6 +436,7 @@ export interface User {
     totalDocs?: number;
   };
   lastSignInAt?: string | null;
+  onlineAt?: string | null;
   emailConfirmedAt?: string | null;
   phoneConfirmedAt?: string | null;
   picture?: string | null;
@@ -3274,6 +3275,7 @@ export interface UsersSelect<T extends boolean = true> {
   addresses?: T;
   deliveryPreferences?: T;
   lastSignInAt?: T;
+  onlineAt?: T;
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;
   picture?: T;

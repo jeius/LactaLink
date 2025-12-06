@@ -1,4 +1,5 @@
 import { QUERY_KEYS } from '@/lib/constants';
+import { meUserQueryOptions, sessionQueryOptions } from '@/lib/queries/authQueryOptions';
 import { setMeUser } from '@/lib/stores/meUserStore';
 import { useApiClient } from '@lactalink/api';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -7,40 +8,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 export function useMeUser() {
-  const apiClient = useApiClient();
-  return useQuery({
-    initialData: null,
-    queryKey: QUERY_KEYS.AUTH.USER,
-    queryFn: async () => {
-      const user = await apiClient.auth.getMeUser();
-      setMeUser(user);
-      return user;
-    },
-    staleTime: Infinity,
-    retry: false,
-  });
+  return useQuery(meUserQueryOptions);
 }
 
 export function useAuth() {
-  const apiClient = useApiClient();
-  const queryClient = useQueryClient();
-
-  const { data: session, ...sessionQuery } = useQuery({
-    queryKey: QUERY_KEYS.AUTH.SESSION,
-    queryFn: () => apiClient.auth.getSession(),
-    staleTime: Infinity,
-    retry: false,
-  });
+  const { data: session, ...sessionQuery } = useQuery(sessionQueryOptions);
 
   const user = session?.user || null;
   const profile = (user?.profile?.value && extractCollection(user.profile.value)) || null;
   const profileCollection = user?.profile?.relationTo || null;
-
-  useEffect(() => {
-    const user = session?.user || null;
-    queryClient.setQueryData(QUERY_KEYS.AUTH.USER, user);
-    setMeUser(user);
-  }, [session?.user, queryClient]);
 
   return {
     // Session data
@@ -68,8 +44,8 @@ export function useAuthListener() {
   const mutateSession = useMutation({
     mutationFn: () => apiClient.auth.getSession(),
     onSuccess: (session) => {
-      queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, session);
-      queryClient.setQueryData(QUERY_KEYS.AUTH.USER, session?.user || null);
+      queryClient.setQueryData(sessionQueryOptions.queryKey, session);
+      queryClient.setQueryData(meUserQueryOptions.queryKey, session?.user || null);
       setMeUser(session?.user || null);
     },
   });
@@ -84,12 +60,13 @@ export function useAuthListener() {
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
+          if (GoogleSignin.hasPreviousSignIn()) GoogleSignin.signOut();
+
           queryClient.invalidateQueries({ refetchType: 'all' });
-          queryClient.setQueryData(QUERY_KEYS.AUTH.SESSION, null);
-          queryClient.setQueryData(QUERY_KEYS.AUTH.USER, null);
-          if (GoogleSignin.hasPreviousSignIn()) {
-            GoogleSignin.signOut();
-          }
+
+          queryClient.setQueryData(sessionQueryOptions.queryKey, null);
+          queryClient.setQueryData(meUserQueryOptions.queryKey, null);
+          setMeUser(null);
           break;
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed');

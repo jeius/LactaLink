@@ -1728,6 +1728,7 @@ export const users = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    onlineAt: timestamp('online_at', { mode: 'string', withTimezone: true, precision: 3 }),
     emailConfirmedAt: timestamp('email_confirmed_at', {
       mode: 'string',
       withTimezone: true,
