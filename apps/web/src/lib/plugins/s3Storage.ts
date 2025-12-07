@@ -48,4 +48,13 @@ export const s3StoragePlugin: Plugin[] = [
     clientUploads: true,
     acl: 'private',
   }),
+  s3Storage({
+    collections: {
+      'message-media': true,
+    },
+    bucket: process.env.S3_BUCKET_MESSAGE_MEDIA,
+    config: StorageConfig,
+    clientUploads: true,
+    acl: 'private',
+  }),
 ];
