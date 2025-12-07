@@ -2143,9 +2143,11 @@ export const message_attachments = pgTable(
   'message_attachments',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    message: uuid('message_id').references(() => messages.id, {
-      onDelete: 'set null',
-    }),
+    message: uuid('message_id')
+      .notNull()
+      .references(() => messages.id, {
+        onDelete: 'set null',
+      }),
     createdBy: uuid('created_by_id')
       .notNull()
       .references(() => users.id, {

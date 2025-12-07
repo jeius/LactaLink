@@ -42,6 +42,7 @@ const MessageAttachments: CollectionConfig<'message-attachments'> = {
       name: 'message',
       type: 'relationship',
       relationTo: 'messages',
+      required: true,
       admin: {
         readOnly: true,
       },

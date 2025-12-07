@@ -2274,7 +2274,7 @@ export interface ConversationStatus {
  */
 export interface MessageAttachment {
   id: string;
-  message?: (string | null) | Message;
+  message: string | Message;
   attachment:
     | {
         relationTo: 'donations';

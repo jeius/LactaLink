@@ -5,6 +5,7 @@ import { authenticated } from '../../_access-control';
 import { participants, senderOrAdmin } from './access';
 import { updateLastMessage } from './hooks/afterChange';
 import { verifySender } from './hooks/beforeChange';
+import { deleteRelatedDocs } from './hooks/beforeDelete';
 
 const Messages: CollectionConfig<'messages'> = {
   slug: 'messages',
@@ -30,6 +31,7 @@ const Messages: CollectionConfig<'messages'> = {
   ],
   hooks: {
     beforeChange: [verifySender],
+    beforeDelete: [deleteRelatedDocs],
     afterChange: [
       updateLastMessage,
       async ({ doc, operation, req }) => {
