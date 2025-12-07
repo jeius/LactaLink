@@ -1,4 +1,3 @@
-import { InfiniteDataMap } from '@/lib/types';
 import { Conversation, Message } from '@lactalink/types/payload-generated-types';
 import { QueryClient } from '@tanstack/react-query';
 import { produce } from 'immer';
@@ -42,25 +41,6 @@ export function addConversationToCache(client: QueryClient, data: Conversation) 
   });
 }
 
-export function addMessageToCache(
-  oldData: InfiniteDataMap<Message> | undefined,
-  newMessage: Message
-) {
-  if (!oldData) return oldData;
-  return produce(oldData, (draft) => {
-    const firstPage = draft.pages[0];
-    if (!firstPage) return;
-
-    // Insert the new message at the start
-    const arrayDocs = Array.from(firstPage.docs.values());
-    arrayDocs.unshift(newMessage);
-    firstPage.docs = new Map(arrayDocs.map((d) => [d.id, d]));
-
-    // Update total count
-    firstPage.totalDocs += 1;
-  });
-}
-
 export function updateMessageInCache(
   client: QueryClient,
   newMessage: Message | Message[],
@@ -84,4 +64,47 @@ export function updateMessageInCache(
       }
     });
   });
+}
+
+export function addMessageToCache(
+  client: QueryClient,
+  newMessage: Message,
+  conversation: Conversation
+) {
+  const infiniteMessagesOptions = createInfiniteMessagesOptions(conversation);
+
+  // Optimistically add the new message to the messages cache
+  client.setQueryData(infiniteMessagesOptions.queryKey, (oldData) => {
+    if (!oldData) return oldData;
+    return produce(oldData, (draft) => {
+      const firstPage = draft.pages[0];
+      if (!firstPage) return;
+
+      // Insert the new message at the start
+      const arrayDocs = Array.from(firstPage.docs.values());
+      arrayDocs.unshift(newMessage);
+      firstPage.docs = new Map(arrayDocs.map((d) => [d.id, d]));
+
+      // Update total count
+      firstPage.totalDocs += 1;
+    });
+  });
+
+  const updatedConversation = produce(conversation, (draft) => {
+    draft.lastMessageAt = newMessage.createdAt;
+
+    if (!draft.messages) {
+      draft.messages = { docs: [newMessage], totalDocs: 1, hasNextPage: false };
+      return;
+    }
+
+    const totalDocs = draft.messages.totalDocs || 0;
+    const docs = draft.messages.docs || [];
+    draft.messages = {
+      docs: [newMessage, ...docs],
+      totalDocs: totalDocs + 1,
+    };
+  });
+
+  addConversationToCache(client, updatedConversation);
 }

@@ -25,9 +25,6 @@ export function transformToChatMessage(msg: Message): ChatMessage {
 
   const image = media?.[0]?.url || undefined;
 
-  // console.log('Message', msg);
-  console.log('Transforming message:', msg.id, 'Image URL:', image);
-
   return {
     _id: msg.id,
     text: msg.content ?? '',

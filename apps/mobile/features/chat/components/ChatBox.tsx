@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { getColor } from '@/lib/colors';
+import { getColor, getPrimaryColor } from '@/lib/colors';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { createTempID } from '@/lib/utils/tempID';
 import { ImageSchema } from '@lactalink/form-schemas';
@@ -27,15 +27,20 @@ import { StyleSheet } from 'react-native';
 import {
   Bubble,
   BubbleProps,
+  Day,
+  DayProps,
   GiftedChat,
   User as GiftedUser,
   InputToolbar,
   InputToolbarProps,
   MessageImageProps,
   SendProps,
+  SystemMessage,
+  SystemMessageProps,
 } from 'react-native-gifted-chat';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useInfiniteMessages } from '../hooks/queries';
+import { useConversationChannel } from '../hooks/useChatChannel';
 import { pickImage, takePhoto } from '../lib/mediaUtils';
 import { createMarkAsReadMutation, createSendMessageMutation } from '../lib/mutationOptions';
 import { transformToChatMessage } from '../lib/transformUtils';
@@ -69,6 +74,8 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
       }),
     [messages]
   );
+
+  const { typingUsers } = useConversationChannel(conversation);
 
   const { mutate: sendMessage } = useMutation(createSendMessageMutation(conversation));
   const { mutate: markAsRead } = useMutation(createMarkAsReadMutation(conversation));
@@ -160,12 +167,15 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
       messages={chatMessages}
       renderAccessory={renderAccessory}
       user={meUserGifted}
+      isTyping={typingUsers.length > 0}
       isUserAvatarVisible={false}
       colorScheme={theme}
       keyboardAvoidingViewProps={{ keyboardVerticalOffset }}
       renderSend={renderSend}
       renderInputToolbar={ChatInputToolbar}
       renderBubble={ChatBubble}
+      // renderDay={ChatDay}
+      renderSystemMessage={ChatSystemMessage}
       renderActions={renderActions}
       text={text}
       textInputProps={{ style: styles.input, onChangeText: setText }}
@@ -178,6 +188,27 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
           <Spinner size={'small'} className="my-4" />
         ) : null,
       }}
+    />
+  );
+}
+
+function ChatDay(props: DayProps) {
+  const bgColor = getPrimaryColor('50');
+  return (
+    <Day
+      {...props}
+      wrapperStyle={{ backgroundColor: bgColor, borderRadius: 16 }}
+      textStyle={[styles.dayText]}
+    />
+  );
+}
+
+function ChatSystemMessage(props: SystemMessageProps<ChatMessage>) {
+  return (
+    <SystemMessage
+      {...props}
+      containerStyle={{ backgroundColor: 'none', borderWidth: 0, alignItems: 'center' }}
+      messageTextProps={{ customTextStyle: styles.systemText }}
     />
   );
 }
@@ -256,6 +287,8 @@ function ChatBubble(props: BubbleProps<ChatMessage>) {
 const styles = StyleSheet.create({
   icon: { height: 24, width: 24 },
   messageText: { fontFamily: 'Jakarta-Regular', fontSize: 14 },
+  systemText: { fontFamily: 'Jakarta-Medium', fontSize: 12, color: getColor('typography', '700') },
+  dayText: { fontFamily: 'Jakarta-SemiBold', fontSize: 12, color: getColor('typography', '900') },
   input: {
     fontFamily: 'Jakarta-Regular',
     fontSize: 14,

@@ -1,8 +1,7 @@
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { mutationOptions } from '@tanstack/react-query';
-import { produce } from 'immer';
 import { sendMessage } from '../api/sendMessage';
-import { addConversationToCache, addMessageToCache } from '../chatCacheUtils';
+import { addMessageToCache } from '../chatCacheUtils';
 import { createInfiniteMessagesOptions } from '../queryOptions';
 import { transformToMessage } from '../transformUtils';
 
@@ -21,27 +20,7 @@ export function createSendMessageMutation(conversation: Conversation) {
       const newMessage = transformToMessage(vars);
 
       // Optimistically update the messages cache
-      client.setQueryData(infiniteMessagesOptions.queryKey, (oldData) =>
-        addMessageToCache(oldData, newMessage)
-      );
-
-      const updatedConversation = produce(conversation, (draft) => {
-        draft.lastMessageAt = newMessage.createdAt;
-
-        if (!draft.messages) {
-          draft.messages = { docs: [newMessage], totalDocs: 1, hasNextPage: false };
-          return;
-        }
-
-        const totalDocs = draft.messages.totalDocs || 0;
-        const docs = draft.messages.docs || [];
-        draft.messages = {
-          docs: [newMessage, ...docs],
-          totalDocs: totalDocs + 1,
-        };
-      });
-
-      addConversationToCache(client, updatedConversation);
+      addMessageToCache(client, newMessage, conversation);
       return { prevMessages };
     },
     onError: (_err, _vars, ctx, { client }) => {
