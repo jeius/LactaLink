@@ -1,11 +1,10 @@
 import { generateUser } from '@/hooks/collections/generateUser';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
-import { isAdmin } from '@/lib/utils/isAdmin';
 import { MessageRead } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import status from 'http-status';
 import { APIError, CollectionBeforeValidateHook, CollectionConfig } from 'payload';
-import { authenticated } from '../_access-control';
+import { authenticated, userOrAdmin } from '../_access-control';
 
 const preventReadOwnMessages: CollectionBeforeValidateHook<MessageRead> = async ({
   req,
@@ -52,11 +51,7 @@ export const MessageReads: CollectionConfig<'message-reads'> = {
     hidden: true,
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false;
-      if (isAdmin(user)) return true;
-      return { user: { equals: user.id } };
-    },
+    read: userOrAdmin,
     create: authenticated,
     update: () => false, // Read receipts are immutable
     delete: () => false,

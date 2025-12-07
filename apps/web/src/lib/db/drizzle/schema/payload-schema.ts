@@ -2112,7 +2112,6 @@ export const conversations = pgTable(
     avatar: uuid('avatar_id').references(() => avatars.id, {
       onDelete: 'set null',
     }),
-    archived: boolean('archived').default(false),
     lastMessageAt: timestamp('last_message_at', {
       mode: 'string',
       withTimezone: true,
@@ -2276,8 +2275,8 @@ export const conversation_participants = pgTable(
   ]
 );
 
-export const muted_conversations = pgTable(
-  'muted_conversations',
+export const conversation_statuses = pgTable(
+  'conversation_statuses',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     conversation: uuid('conversation_id')
@@ -2290,6 +2289,8 @@ export const muted_conversations = pgTable(
       .references(() => users.id, {
         onDelete: 'set null',
       }),
+    archived: boolean('archived').default(false),
+    permanentMute: boolean('permanent_mute').default(false),
     mutedUntil: timestamp('muted_until', { mode: 'string', withTimezone: true, precision: 3 }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
@@ -2299,10 +2300,13 @@ export const muted_conversations = pgTable(
       .notNull(),
   },
   (columns) => [
-    index('muted_conversations_conversation_idx').on(columns.conversation),
-    index('muted_conversations_user_idx').on(columns.user),
-    index('muted_conversations_updated_at_idx').on(columns.updatedAt),
-    index('muted_conversations_created_at_idx').on(columns.createdAt),
+    index('conversation_statuses_conversation_idx').on(columns.conversation),
+    index('conversation_statuses_user_idx').on(columns.user),
+    index('conversation_statuses_archived_idx').on(columns.archived),
+    index('conversation_statuses_permanent_mute_idx').on(columns.permanentMute),
+    index('conversation_statuses_muted_until_idx').on(columns.mutedUntil),
+    index('conversation_statuses_updated_at_idx').on(columns.updatedAt),
+    index('conversation_statuses_created_at_idx').on(columns.createdAt),
     uniqueIndex('conversation_user_idx').on(columns.conversation, columns.user),
   ]
 );
@@ -2792,7 +2796,7 @@ export const payload_locked_documents_rels = pgTable(
     'message-attachmentsID': uuid('message_attachments_id'),
     'message-reactionsID': uuid('message_reactions_id'),
     'conversation-participantsID': uuid('conversation_participants_id'),
-    'muted-conversationsID': uuid('muted_conversations_id'),
+    'conversation-statusesID': uuid('conversation_statuses_id'),
     'message-readsID': uuid('message_reads_id'),
     'message-mediaID': uuid('message_media_id'),
     'milk-bag-imagesID': uuid('milk_bag_images_id'),
@@ -2853,8 +2857,8 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_conversation_participants__idx').on(
       columns['conversation-participantsID']
     ),
-    index('payload_locked_documents_rels_muted_conversations_id_idx').on(
-      columns['muted-conversationsID']
+    index('payload_locked_documents_rels_conversation_statuses_id_idx').on(
+      columns['conversation-statusesID']
     ),
     index('payload_locked_documents_rels_message_reads_id_idx').on(columns['message-readsID']),
     index('payload_locked_documents_rels_message_media_id_idx').on(columns['message-mediaID']),
@@ -3021,9 +3025,9 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_conversation_participants_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['muted-conversationsID']],
-      foreignColumns: [muted_conversations.id],
-      name: 'payload_locked_documents_rels_muted_conversations_fk',
+      columns: [columns['conversation-statusesID']],
+      foreignColumns: [conversation_statuses.id],
+      name: 'payload_locked_documents_rels_conversation_statuses_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['message-readsID']],
@@ -4086,14 +4090,14 @@ export const relations_conversation_participants = relations(
     }),
   })
 );
-export const relations_muted_conversations = relations(muted_conversations, ({ one }) => ({
+export const relations_conversation_statuses = relations(conversation_statuses, ({ one }) => ({
   conversation: one(conversations, {
-    fields: [muted_conversations.conversation],
+    fields: [conversation_statuses.conversation],
     references: [conversations.id],
     relationName: 'conversation',
   }),
   user: one(users, {
-    fields: [muted_conversations.user],
+    fields: [conversation_statuses.user],
     references: [users.id],
     relationName: 'user',
   }),
@@ -4358,10 +4362,10 @@ export const relations_payload_locked_documents_rels = relations(
       references: [conversation_participants.id],
       relationName: 'conversation-participants',
     }),
-    'muted-conversationsID': one(muted_conversations, {
-      fields: [payload_locked_documents_rels['muted-conversationsID']],
-      references: [muted_conversations.id],
-      relationName: 'muted-conversations',
+    'conversation-statusesID': one(conversation_statuses, {
+      fields: [payload_locked_documents_rels['conversation-statusesID']],
+      references: [conversation_statuses.id],
+      relationName: 'conversation-statuses',
     }),
     'message-readsID': one(message_reads, {
       fields: [payload_locked_documents_rels['message-readsID']],
@@ -4534,7 +4538,7 @@ type DatabaseSchema = {
   message_attachments_rels: typeof message_attachments_rels;
   message_reactions: typeof message_reactions;
   conversation_participants: typeof conversation_participants;
-  muted_conversations: typeof muted_conversations;
+  conversation_statuses: typeof conversation_statuses;
   message_reads: typeof message_reads;
   message_media: typeof message_media;
   milk_bag_images: typeof milk_bag_images;
@@ -4606,7 +4610,7 @@ type DatabaseSchema = {
   relations_message_attachments: typeof relations_message_attachments;
   relations_message_reactions: typeof relations_message_reactions;
   relations_conversation_participants: typeof relations_conversation_participants;
-  relations_muted_conversations: typeof relations_muted_conversations;
+  relations_conversation_statuses: typeof relations_conversation_statuses;
   relations_message_reads: typeof relations_message_reads;
   relations_message_media: typeof relations_message_media;
   relations_milk_bag_images: typeof relations_milk_bag_images;

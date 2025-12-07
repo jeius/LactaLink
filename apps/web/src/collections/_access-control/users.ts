@@ -21,3 +21,9 @@ export const userOwnerOrAdmin: Access<User> = ({ req }) => {
 
   return { id: { equals: user.id } }; // Allow access if the user is the owner
 };
+
+export const userOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false;
+  if (isAdmin(user)) return true;
+  return { user: { equals: user.id } };
+};

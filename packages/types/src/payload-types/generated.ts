@@ -205,7 +205,7 @@ export interface Config {
     'message-attachments': MessageAttachment;
     'message-reactions': MessageReaction;
     'conversation-participants': ConversationParticipant;
-    'muted-conversations': MutedConversation;
+    'conversation-statuses': ConversationStatus;
     'message-reads': MessageRead;
     'message-media': MessageMedia;
     'milk-bag-images': MilkBagImage;
@@ -271,6 +271,8 @@ export interface Config {
     conversations: {
       participants: 'conversation-participants';
       messages: 'messages';
+      mutedStatuses: 'conversation-statuses';
+      archivedStatuses: 'conversation-statuses';
     };
   };
   collectionsSelect: {
@@ -304,7 +306,7 @@ export interface Config {
     'message-attachments': MessageAttachmentsSelect<false> | MessageAttachmentsSelect<true>;
     'message-reactions': MessageReactionsSelect<false> | MessageReactionsSelect<true>;
     'conversation-participants': ConversationParticipantsSelect<false> | ConversationParticipantsSelect<true>;
-    'muted-conversations': MutedConversationsSelect<false> | MutedConversationsSelect<true>;
+    'conversation-statuses': ConversationStatusesSelect<false> | ConversationStatusesSelect<true>;
     'message-reads': MessageReadsSelect<false> | MessageReadsSelect<true>;
     'message-media': MessageMediaSelect<false> | MessageMediaSelect<true>;
     'milk-bag-images': MilkBagImagesSelect<false> | MilkBagImagesSelect<true>;
@@ -2191,7 +2193,6 @@ export interface Conversation {
    * Group chat avatar
    */
   avatar?: (string | null) | Avatar;
-  archived?: boolean | null;
   lastMessageAt?: string | null;
   createdBy: string | User;
   /**
@@ -2207,6 +2208,22 @@ export interface Conversation {
    */
   messages?: {
     docs?: (string | Message)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Users who have muted this conversation
+   */
+  mutedStatuses?: {
+    docs?: (string | ConversationStatus)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Users who have archived this conversation
+   */
+  archivedStatuses?: {
+    docs?: (string | ConversationStatus)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -2227,6 +2244,29 @@ export interface ConversationParticipant {
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversation-statuses".
+ */
+export interface ConversationStatus {
+  id: string;
+  conversation: string | Conversation;
+  user: string | User;
+  /**
+   * Whether the user has archived this conversation
+   */
+  archived?: boolean | null;
+  /**
+   * Whether the user has muted this conversation permanently
+   */
+  permanentMute?: boolean | null;
+  /**
+   * If set, the conversation is muted until this date/time
+   */
+  mutedUntil?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2315,21 +2355,6 @@ export interface MessageRead {
   message: string | Message;
   user: string | User;
   readAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "muted-conversations".
- */
-export interface MutedConversation {
-  id: string;
-  conversation: string | Conversation;
-  user: string | User;
-  /**
-   * Leave empty for permanent mute
-   */
-  mutedUntil?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
@@ -2609,8 +2634,8 @@ export interface PayloadLockedDocument {
         value: string | ConversationParticipant;
       } | null)
     | ({
-        relationTo: 'muted-conversations';
-        value: string | MutedConversation;
+        relationTo: 'conversation-statuses';
+        value: string | ConversationStatus;
       } | null)
     | ({
         relationTo: 'message-reads';
@@ -3419,11 +3444,12 @@ export interface ConversationsSelect<T extends boolean = true> {
   type?: T;
   title?: T;
   avatar?: T;
-  archived?: T;
   lastMessageAt?: T;
   createdBy?: T;
   participants?: T;
   messages?: T;
+  mutedStatuses?: T;
+  archivedStatuses?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -3465,11 +3491,13 @@ export interface ConversationParticipantsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "muted-conversations_select".
+ * via the `definition` "conversation-statuses_select".
  */
-export interface MutedConversationsSelect<T extends boolean = true> {
+export interface ConversationStatusesSelect<T extends boolean = true> {
   conversation?: T;
   user?: T;
+  archived?: T;
+  permanentMute?: T;
   mutedUntil?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -1,11 +1,11 @@
 import { CollectionConfig } from 'payload';
 import ConversationParticipants from './ConversationParticipants';
 import Conversations from './Conversations';
+import ConversationStatus from './ConversationStatus';
 import MessageAttachments from './MessageAttachments';
 import MessageReactions from './MessageReactions';
 import MessageReads from './MessageReads';
 import Messages from './Messages';
-import MutedConversations from './MutedConversations';
 
 export const ChatSystemCollections: CollectionConfig[] = [
   Messages,
@@ -13,7 +13,7 @@ export const ChatSystemCollections: CollectionConfig[] = [
   MessageAttachments,
   MessageReactions,
   ConversationParticipants,
-  MutedConversations,
+  ConversationStatus,
   MessageReads,
 ];
 

@@ -1,8 +1,7 @@
 import { generateUser } from '@/hooks/collections/generateUser';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
-import { isAdmin } from '@/lib/utils/isAdmin';
 import { CollectionConfig } from 'payload';
-import { authenticated } from '../_access-control';
+import { authenticated, userOrAdmin } from '../_access-control';
 
 const MessageReactions: CollectionConfig = {
   slug: 'message-reactions',
@@ -15,11 +14,7 @@ const MessageReactions: CollectionConfig = {
     read: authenticated,
     create: authenticated,
     update: () => false,
-    delete: ({ req: { user } }) => {
-      if (!user) return false;
-      if (isAdmin(user)) return true;
-      return { user: { equals: user.id } };
-    },
+    delete: userOrAdmin,
   },
   indexes: [
     {

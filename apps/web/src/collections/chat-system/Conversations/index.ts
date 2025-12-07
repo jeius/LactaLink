@@ -6,6 +6,7 @@ import { CollectionConfig, Field } from 'payload';
 import { authenticated } from '../../_access-control';
 import { allowedParticipantOrAdmin, participantOrAdmin } from './access';
 import conversationEndpoints from './endpoints';
+import { addFirstParticipant, createFirstGroupMessage } from './hooks/afterChange';
 
 export const Conversations: CollectionConfig<'conversations'> = {
   slug: 'conversations',
@@ -19,12 +20,13 @@ export const Conversations: CollectionConfig<'conversations'> = {
     read: participantOrAdmin,
     create: authenticated,
     update: allowedParticipantOrAdmin,
-    delete: () => false,
+    delete: () => false, // Handle deletion via archive only
   },
   trash: true,
   endpoints: conversationEndpoints,
   hooks: {
     beforeChange: [generateCreatedBy],
+    afterChange: [addFirstParticipant, createFirstGroupMessage],
   },
   fields: [
     {
@@ -53,15 +55,6 @@ export const Conversations: CollectionConfig<'conversations'> = {
       relationTo: 'avatars',
       admin: {
         description: 'Group chat avatar',
-      },
-    },
-
-    {
-      name: 'archived',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        position: 'sidebar',
       },
     },
 
@@ -106,6 +99,50 @@ export const Conversations: CollectionConfig<'conversations'> = {
               maxDepth: 5,
               admin: {
                 description: 'Messages in this conversation',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Muted Statuses',
+          fields: [
+            {
+              name: 'mutedStatuses',
+              label: 'Muted Conversation Statuses',
+              type: 'join',
+              collection: 'conversation-statuses',
+              on: 'conversation',
+              maxDepth: 5,
+              where: {
+                or: [
+                  { permanentMute: { equals: true } },
+                  {
+                    and: [
+                      { mutedUntil: { exists: true } },
+                      { mutedUntil: { greater_than: new Date().toISOString() } },
+                    ],
+                  },
+                ],
+              },
+              admin: {
+                description: 'Users who have muted this conversation',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Archived',
+          fields: [
+            {
+              name: 'archivedStatuses',
+              label: 'Archived Conversation Statuses',
+              type: 'join',
+              collection: 'conversation-statuses',
+              on: 'conversation',
+              maxDepth: 5,
+              where: { archived: { equals: true } },
+              admin: {
+                description: 'Users who have archived this conversation',
               },
             },
           ],

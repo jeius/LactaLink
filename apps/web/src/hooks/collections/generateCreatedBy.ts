@@ -10,8 +10,10 @@ export const generateCreatedBy: CollectionBeforeChangeHook<CollectionWithCreated
   operation,
   data,
 }) => {
-  if (operation !== 'create' || data.createdBy || !req.user) return data;
-  data.createdBy = extractID(req.user);
+  if (operation !== 'create' || !req.user) return data;
+  if (!data.createdBy || data.createdBy === '') {
+    data.createdBy = extractID(req.user);
+  }
   return data;
 };
 

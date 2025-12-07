@@ -1,20 +1,14 @@
 import { generateUser } from '@/hooks/collections/generateUser';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
-import { isAdmin } from '@/lib/utils/isAdmin';
-import { Access, CollectionConfig } from 'payload';
-import { authenticated } from '../_access-control';
+import { CollectionConfig } from 'payload';
+import { authenticated, userOrAdmin } from '../_access-control';
 
-const userOrAdmin: Access = ({ req: { user } }) => {
-  if (!user) return false;
-  if (isAdmin(user)) return true;
-  return { user: { equals: user.id } };
-};
-
-const MutedConversations: CollectionConfig<'muted-conversations'> = {
-  slug: 'muted-conversations',
+const ConversationStatus: CollectionConfig<'conversation-statuses'> = {
+  slug: 'conversation-statuses',
   admin: {
     useAsTitle: 'conversation',
     group: COLLECTION_GROUP.CHAT,
+    hidden: true,
   },
   access: {
     read: userOrAdmin,
@@ -41,11 +35,30 @@ const MutedConversations: CollectionConfig<'muted-conversations'> = {
       },
     },
     {
+      name: 'archived',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: {
+        description: 'Whether the user has archived this conversation',
+      },
+    },
+    {
+      name: 'permanentMute',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: {
+        description: 'Whether the user has muted this conversation permanently',
+      },
+    },
+    {
       name: 'mutedUntil',
       type: 'date',
+      index: true,
       admin: {
-        description: 'Leave empty for permanent mute',
-        position: 'sidebar',
+        description: 'If set, the conversation is muted until this date/time',
+        condition: (_, { permanentMute }) => !permanentMute,
       },
     },
   ],
@@ -60,4 +73,4 @@ const MutedConversations: CollectionConfig<'muted-conversations'> = {
   },
 };
 
-export default MutedConversations;
+export default ConversationStatus;
