@@ -15,9 +15,9 @@ export default function ListPage() {
   const router = useRouter();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { data: authUser, ...meUser } = useMeUser();
+  const { data: meUser, ...meUserQuery } = useMeUser();
 
-  const isAuthenticatedUser = authUser?.id === userID;
+  const isAuthenticatedUser = meUser?.id === userID;
 
   const shouldFetch = Boolean(userID) && !isAuthenticatedUser;
 
@@ -31,11 +31,11 @@ export default function ListPage() {
     select: { deliveryPreferences: true, profile: true },
   });
 
-  const user = userID ? fetchedData : authUser;
+  const user = userID ? fetchedData : meUser;
 
-  const isLoading = fetched.isLoading || meUser.isLoading;
-  const isFetching = fetched.isFetching || meUser.isFetching;
-  const isRefreshing = shouldFetch ? fetched.isRefetching : meUser.isRefetching;
+  const isLoading = fetched.isLoading || meUserQuery.isLoading;
+  const isFetching = fetched.isFetching || meUserQuery.isFetching;
+  const isRefreshing = shouldFetch ? fetched.isRefetching : meUserQuery.isRefetching;
 
   const data = (user && user?.deliveryPreferences?.docs) || [];
   const headerTitle =
@@ -51,7 +51,7 @@ export default function ListPage() {
     if (shouldFetch) {
       fetched.refetch();
     } else {
-      meUser.refetch();
+      meUserQuery.refetch();
     }
   }
 
@@ -72,7 +72,7 @@ export default function ListPage() {
           />
 
           <Box
-            className="border-outline-300 bg-background-0 rounded-t-2xl border p-4"
+            className="rounded-t-2xl border border-outline-300 bg-background-0 p-4"
             style={{ paddingBottom: Math.max(insets.bottom, 16) }}
           >
             <Button onPress={handleAddAddress}>

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { DBUser } from '@lactalink/types/database';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
+import { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from '@supabase/supabase-js';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -11,16 +11,33 @@ type Presence = {
   lastOnlineAt: string | undefined;
 };
 
-export function useUserPresence(user: string | User | null | undefined) {
-  const [presence, setPresence] = useState<Presence>({
-    isOnline: false,
-    lastOnlineAt: extractCollection(user)?.createdAt,
-  });
+export function useUserPresence(user: string | User | null | undefined): Presence {
+  const userDoc = extractCollection(user);
 
-  const channelSubscribedRef = useRef(false);
+  const [onlineAt, setOnlineAt] = useState(
+    userDoc?.onlineAt || userDoc?.createdAt || new Date().toISOString()
+  );
 
-  const channel = useMemo(() => {
+  const isOnline = useMemo(() => {
+    const now = new Date();
+    const diffInMs = now.getTime() - new Date(onlineAt).getTime();
+    const diffInSeconds = diffInMs / 1000;
+    return diffInSeconds < 15; // Consider online if last onlineAt is within last 15 seconds
+  }, [onlineAt]);
+
+  const isSubscribedRef = useRef(false);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+
+  useEffect(() => {
+    // Cleanup previous channel if conversation changed
+    if (channelRef.current) {
+      channelRef.current.unsubscribe();
+      channelRef.current = null;
+      isSubscribedRef.current = false;
+    }
+
     const channel = supabase.channel('users-activity');
+    channelRef.current = channel;
 
     channel.on<DBUser>(
       'postgres_changes',
@@ -31,43 +48,43 @@ export function useUserPresence(user: string | User | null | undefined) {
         filter: `id=eq.${extractID(user)}`,
       },
       ({ new: user }) => {
-        const now = new Date();
-        const onlineAt = new Date(user.online_at || user.created_at);
-
-        const diffInMs = now.getTime() - onlineAt.getTime();
-        const diffInSeconds = diffInMs / 1000;
-        setPresence({
-          isOnline: diffInSeconds < 30,
-          lastOnlineAt: user.online_at || user.created_at,
-        });
+        setOnlineAt(user.online_at || user.created_at);
       }
     );
 
-    return channel;
+    // Subscribe to channel
+    channel.subscribe((status) => {
+      const isSubscribed = status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED;
+      isSubscribedRef.current = isSubscribed;
+    });
+
+    // Cleanup on unmount or conversation change
+    return () => {
+      channel.unsubscribe();
+      channelRef.current = null;
+      isSubscribedRef.current = false;
+    };
   }, [user]);
 
-  const unsubscribe = useCallback(() => {
-    if (channelSubscribedRef.current) return;
-    channel.unsubscribe();
-    channelSubscribedRef.current = false;
-  }, [channel]);
-
+  // Handle focus/blur for subscription management
   useFocusEffect(
     useCallback(() => {
-      if (!user) return;
+      // Resubscribe when screen is focused
+      if (channelRef.current && !isSubscribedRef.current) {
+        channelRef.current.subscribe((status) => {
+          isSubscribedRef.current = status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED;
+        });
+      }
 
-      channel.subscribe((status) => {
-        const isSubscribed = status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED;
-        channelSubscribedRef.current = isSubscribed;
-      });
-
-      return () => unsubscribe();
-    }, [channel, unsubscribe, user])
+      return () => {
+        // Unsubscribe when screen loses focus
+        if (channelRef.current && isSubscribedRef.current) {
+          channelRef.current.unsubscribe();
+          isSubscribedRef.current = false;
+        }
+      };
+    }, [])
   );
 
-  useEffect(() => {
-    return () => unsubscribe();
-  }, [unsubscribe]);
-
-  return presence;
+  return { isOnline: isOnline, lastOnlineAt: onlineAt };
 }

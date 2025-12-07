@@ -17,7 +17,7 @@ export function useOnlineManager() {
     refetchOnReconnect: 'always',
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',
-    refetchInterval: 1000 * 25, // every 25 seconds
+    refetchInterval: 1000 * 10, // every 10 seconds
     staleTime: Infinity,
   });
 
@@ -40,19 +40,33 @@ async function updateMyPresence({ client }: { client: QueryClient }) {
 
   const apiClient = getApiClient();
 
+  const now = new Date().toISOString();
+
   const updatedUser = await apiClient.updateByID({
     collection: 'users',
     id: meUser.id,
-    data: { onlineAt: new Date().toISOString() },
+    data: { onlineAt: now },
   });
 
   // Update meUser in store and cache
-  setMeUser(updatedUser);
-  client.setQueryData(meUserQueryOptions.queryKey, updatedUser);
+  setMeUser(
+    produce(meUser, (draft) => {
+      draft.onlineAt = now;
+    })
+  );
+
+  client.setQueryData(meUserQueryOptions.queryKey, (old) => {
+    if (!old) return old;
+    return produce(old, (draft) => {
+      draft.onlineAt = now;
+    });
+  });
+
   client.setQueryData(sessionQueryOptions.queryKey, (old) => {
     if (!old) return old;
     return produce(old, (draft) => {
-      draft.user = updatedUser;
+      if (!draft.user) return;
+      draft.user.onlineAt = now;
     });
   });
 

@@ -8,6 +8,7 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { DonationCreateParams } from '@/lib/types/donationRequest';
@@ -24,7 +25,7 @@ import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { ChevronRightIcon } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
-import { GestureResponderEvent, Text } from 'react-native';
+import { GestureResponderEvent } from 'react-native';
 
 type TSlug = Extract<CollectionSlug, 'requests'>;
 type TData = Collection<TSlug>;
