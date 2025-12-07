@@ -6,17 +6,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import ConversationListItem from '@/features/chat/components/ConversationListItem';
-import { conversationsInfiniteOptions } from '@/features/chat/lib/queryOptions';
+import { useInfiniteConversations } from '@/features/chat/hooks/queries';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link, useRouter } from 'expo-router';
 import { PenLineIcon } from 'lucide-react-native';
 
 export default function ChatsPage() {
   const router = useRouter();
 
-  const { data, ...query } = useInfiniteQuery(conversationsInfiniteOptions);
+  const { data, ...query } = useInfiniteConversations();
   const conversations = data?.pages.flatMap((page) => Array.from(page.docs.values())) || [];
 
   return (

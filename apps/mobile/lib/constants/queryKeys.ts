@@ -18,6 +18,11 @@ interface QueryKeys {
     ALL: QueryKey;
     USER: QueryKey;
   };
+  CHATS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -37,6 +42,11 @@ export const QUERY_KEYS: QueryKeys = {
   SEARCH: {
     ALL: ['search'],
     USER: ['search', 'user'],
+  },
+  CHATS: {
+    ALL: ['conversations'],
+    INFINITE: ['conversations', 'infinite'],
+    ONE: ['conversation'],
   },
 };
 

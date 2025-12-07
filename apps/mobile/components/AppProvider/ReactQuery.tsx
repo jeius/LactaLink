@@ -8,7 +8,7 @@ declare module '@tanstack/react-query' {
     mutationMeta: {
       successMessage?: string;
       errorMessage?: string | ((error: unknown) => string);
-      invalidatesQuery?: QueryKey;
+      invalidatesQuery?: QueryKey | QueryKey[];
       onError?: (error: unknown) => void;
     };
   }
@@ -28,11 +28,13 @@ const queryClient = new QueryClient({
       }
     },
 
-    onSuccess: (_data, _vars, _context, mutation) => {
-      if (mutation.meta?.invalidatesQuery) {
-        queryClient.invalidateQueries({
-          queryKey: mutation.meta.invalidatesQuery,
-        });
+    onSuccess: async (_data, _vars, _context, mutation) => {
+      const queryKeys = mutation.meta?.invalidatesQuery;
+
+      const keysToInvalidate = queryKeys && (Array.isArray(queryKeys) ? queryKeys : [queryKeys]);
+
+      if (keysToInvalidate) {
+        await Promise.all(keysToInvalidate.map((key) => queryClient.invalidateQueries(key)));
       }
 
       if (mutation.meta?.successMessage) {

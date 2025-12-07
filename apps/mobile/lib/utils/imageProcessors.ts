@@ -49,7 +49,7 @@ export async function compressImage(uri: string) {
 export async function transformImage(
   pickedImage: { uri: string; fileName?: string | null },
   fileName?: string
-): Promise<ImageSchema> {
+): Promise<Omit<ImageSchema, 'id' | 'blurhash'>> {
   const compressedImage = await compressImage(pickedImage.uri).catch((err) => {
     throw new Error('Failed to compress image, try using a smaller image.', {
       cause: extractErrorMessage(err),

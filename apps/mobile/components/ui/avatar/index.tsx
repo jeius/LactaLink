@@ -20,7 +20,7 @@ const UIAvatar = createAvatar({
 });
 
 const avatarStyle = tva({
-  base: 'bg-primary-500 border-primary-500 relative items-center justify-center rounded-full group-[.avatar-group]/avatar-group:-ml-2.5',
+  base: 'relative items-center justify-center rounded-full border-primary-500 bg-primary-500 group-[.avatar-group]/avatar-group:-ml-2.5',
   variants: {
     size: {
       xs: 'h-6 w-6',
@@ -34,7 +34,7 @@ const avatarStyle = tva({
 });
 
 const avatarFallbackTextStyle = tva({
-  base: 'text-typography-0 text-transform:uppercase web:cursor-default overflow-hidden font-semibold',
+  base: 'text-transform:uppercase overflow-hidden font-semibold text-typography-0 web:cursor-default',
 
   parentVariants: {
     size: {
@@ -53,10 +53,10 @@ const avatarGroupStyle = tva({
 });
 
 const avatarBadgeStyle = tva({
-  base: 'bg-success-500 border-background-0 absolute bottom-0 right-0 h-5 w-5 rounded-full border-2',
+  base: 'absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-background-0 bg-success-400',
   variants: {
     status: {
-      online: 'bg-success-500',
+      online: 'bg-success-400',
       offline: 'bg-background-300',
       away: 'bg-warning-500',
     },

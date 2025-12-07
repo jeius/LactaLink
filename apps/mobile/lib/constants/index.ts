@@ -30,4 +30,4 @@ export const PRIORITY_LEVEL_COLORS: Record<keyof typeof URGENCY_LEVELS, string> 
   CRITICAL: 'error-400',
 };
 
-export const TEMP_ID_PREFIX = 'temp-';
+export const TEMP_ID_PREFIX = 'temp';

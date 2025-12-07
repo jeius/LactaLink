@@ -1,7 +1,11 @@
+import { Conversation } from '@lactalink/types/payload-generated-types';
 import { mutationOptions } from '@tanstack/react-query';
-import { createDirectChat, createGroupChat } from './api/createChat';
-import { addConversationToCache } from './chatCacheUtils';
-import { createFindDirectChatQueryOptions } from './queryOptions';
+import { createDirectChat, createGroupChat } from '../api/createChat';
+import { markAsRead } from '../api/markAsRead';
+import { addConversationToCache } from '../chatCacheUtils';
+import { createFindDirectChatQueryOptions } from '../queryOptions';
+
+export * from './sendMessageMutation';
 
 export function createGroupChatCreationOptions() {
   return mutationOptions({
@@ -24,5 +28,12 @@ export function createDirectChatCreationMutation() {
       const queryOptions = createFindDirectChatQueryOptions(participant);
       client.setQueryData(queryOptions.queryKey, data);
     },
+  });
+}
+
+export function createMarkAsReadMutation(conversation: Conversation) {
+  return mutationOptions({
+    mutationKey: ['mark-as-read', 'messages', conversation],
+    mutationFn: markAsRead,
   });
 }

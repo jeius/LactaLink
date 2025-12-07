@@ -17,8 +17,8 @@ export function useOnlineManager() {
     refetchOnReconnect: 'always',
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',
-    refetchInterval: 1000 * 10, // every 1 minute
-    staleTime: 1000 * 5, // every 40 seconds
+    refetchInterval: 1000 * 25, // every 25 seconds
+    staleTime: Infinity,
   });
 
   useEffect(() => {

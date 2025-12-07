@@ -130,7 +130,7 @@ export function ProfileAvatar({
 
   return (
     <AnimatedPressable
-      className="overflow-hidden rounded-full"
+      className="rounded-full"
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
       onPress={handlePress}

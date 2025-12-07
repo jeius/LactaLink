@@ -149,10 +149,10 @@ export async function createGroupChat(data: CreateGroupChatData): Promise<Conver
     createdBy: meUser.id,
   });
 
-  const participantConfigs: ParticipantConfig[] = [
-    ...participantIds.map((userId) => ({ userId, role: MEMBER_ROLE })),
-    { userId: meUser.id, role: ADMIN_ROLE },
-  ];
+  // No need to create for the creator, they are auto-added as admin
+  const participantConfigs = participantIds.map(
+    (userId): ParticipantConfig => ({ userId, role: MEMBER_ROLE })
+  );
 
   try {
     const participants = await createParticipants(conversation.id, participantConfigs);
@@ -190,10 +190,9 @@ export async function createDirectChat(
     createdBy: meUser.id,
   });
 
-  const participantConfigs: ParticipantConfig[] = [
-    { userId: participantId, role: MEMBER_ROLE },
-    { userId: meUser.id, role: ADMIN_ROLE },
-  ];
+  // No need to create for the creator, they are auto-added as admin
+  // Participants in a direct chat are always admins
+  const participantConfigs: ParticipantConfig[] = [{ userId: participantId, role: ADMIN_ROLE }];
 
   try {
     const participants = await createParticipants(conversation.id, participantConfigs);

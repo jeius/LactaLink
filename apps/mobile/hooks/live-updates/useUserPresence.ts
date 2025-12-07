@@ -11,7 +11,7 @@ type Presence = {
   lastOnlineAt: string | undefined;
 };
 
-export function useUserPresence(user: string | User) {
+export function useUserPresence(user: string | User | null | undefined) {
   const [presence, setPresence] = useState<Presence>({
     isOnline: false,
     lastOnlineAt: extractCollection(user)?.createdAt,
@@ -54,12 +54,15 @@ export function useUserPresence(user: string | User) {
 
   useFocusEffect(
     useCallback(() => {
+      if (!user) return;
+
       channel.subscribe((status) => {
         const isSubscribed = status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED;
         channelSubscribedRef.current = isSubscribed;
       });
+
       return () => unsubscribe();
-    }, [channel, unsubscribe])
+    }, [channel, unsubscribe, user])
   );
 
   useEffect(() => {

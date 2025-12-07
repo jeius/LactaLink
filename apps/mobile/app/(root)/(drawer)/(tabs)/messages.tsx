@@ -14,13 +14,12 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import ConversationListItem from '@/features/chat/components/ConversationListItem';
 import CreateChatButton from '@/features/chat/components/CreateChatButton';
-import { conversationsInfiniteOptions } from '@/features/chat/lib/queryOptions';
+import { useInfiniteConversations } from '@/features/chat/hooks/queries';
 import { shadow } from '@/lib/utils/shadows';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { PenLineIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps, interpolate, useAnimatedStyle } from 'react-native-reanimated';
@@ -37,7 +36,7 @@ export default function MessagesPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data, ...query } = useInfiniteQuery(conversationsInfiniteOptions);
+  const { data, ...query } = useInfiniteConversations();
   const conversations = data?.pages.flatMap((page) => Array.from(page.docs.values())) || [];
 
   return (

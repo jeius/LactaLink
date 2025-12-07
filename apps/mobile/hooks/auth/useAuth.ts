@@ -62,11 +62,13 @@ export function useAuthListener() {
           console.log('User signed out');
           if (GoogleSignin.hasPreviousSignIn()) GoogleSignin.signOut();
 
-          queryClient.invalidateQueries({ refetchType: 'all' });
-
+          // Clear auth-related queries
           queryClient.setQueryData(sessionQueryOptions.queryKey, null);
           queryClient.setQueryData(meUserQueryOptions.queryKey, null);
           setMeUser(null);
+
+          // Clear entire cache to avoid stale data
+          queryClient.clear();
           break;
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed');
