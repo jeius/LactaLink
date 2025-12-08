@@ -8,7 +8,16 @@ export function createPostQueryOptions(id: Post['id'], initialData?: Post) {
     queryKey: ['posts', id],
     queryFn: async () => {
       const apiClient = getApiClient();
-      return apiClient.findByID({ collection: 'posts', id, depth: 5 });
+      return apiClient.findByID({
+        collection: 'posts',
+        id,
+        depth: 5,
+        joins: {
+          comments: { count: true, limit: 10 },
+          shares: { count: true, limit: 0 },
+          likes: { count: true, limit: 0 },
+        },
+      });
     },
   });
 }

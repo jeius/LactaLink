@@ -1,11 +1,11 @@
 import { QUERY_KEYS } from '@/lib/constants/queryKeys';
-import { getStoredInfiniteDocuments, storeInfiniteDocuments } from '@/lib/localStorage/utils';
+import { getStoredInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { extractID } from '@lactalink/utilities/extractors';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-const STORAGE_KEY = 'infinite-posts';
+const STORAGE_KEY = QUERY_KEYS.POSTS.INFINITE.join('-');
 
 export const postsInfiniteOptions = infiniteQueryOptions({
   initialPageParam: 1,
@@ -15,7 +15,6 @@ export const postsInfiniteOptions = infiniteQueryOptions({
   getPreviousPageParam: (page) => page.prevPage,
   placeholderData: (prevData) => {
     if (!prevData) return getStoredInfiniteDocuments(STORAGE_KEY);
-    storeInfiniteDocuments(prevData, STORAGE_KEY);
     return prevData;
   },
 });

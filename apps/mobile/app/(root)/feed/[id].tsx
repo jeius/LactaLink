@@ -20,9 +20,9 @@ import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostShare from '@/features/feed/components/post-item/PostShare';
 import PostStats from '@/features/feed/components/post-item/PostStats';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
+import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
 import { createCommentsInfiniteOptions } from '@/features/feed/lib/queryOptions/commentsInfiniteOptions';
 import { createPostQueryOptions } from '@/features/feed/lib/queryOptions/postQueryOptions';
-import { postsInfiniteOptions } from '@/features/feed/lib/queryOptions/postsInfiniteOptions';
 import { CommentPayload, FeedSearchParams, ReplyArgs } from '@/features/feed/lib/types';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { InfiniteDataMap } from '@/lib/types';
@@ -50,7 +50,7 @@ export default function Feed() {
   const { id, media } = useLocalSearchParams<SearchParams>();
   const mediaIndex = media ? parseInt(media) : undefined;
 
-  const { data: mappedData } = useInfiniteQuery(postsInfiniteOptions);
+  const { dataMap: mappedData } = useInfinitePosts();
 
   const initialData = useMemo(() => getPost(id, mappedData), [id, mappedData]);
   const postQueryOptions = createPostQueryOptions(id, initialData);

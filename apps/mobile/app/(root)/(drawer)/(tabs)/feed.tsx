@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import { NearestListingsList } from '@/components/lists/NearestListingsList';
@@ -7,22 +7,20 @@ import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
 import { HStack, HStackProps } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import PostItem from '@/features/feed/components/post-item/PostItem';
-import { postsInfiniteOptions } from '@/features/feed/lib/queryOptions/postsInfiniteOptions';
+import PostPlaceholderItem from '@/features/feed/components/post-item/PostPlaceholderItem';
+import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
 import { shadow } from '@/lib/utils/shadows';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link, useRouter } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
@@ -41,9 +39,7 @@ export default function FeedPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data, ...query } = useInfiniteQuery(postsInfiniteOptions);
-
-  const posts = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
+  const { data: posts, ...query } = useInfinitePosts();
 
   const { isLoading, fetchNextPage, hasNextPage, isRefetching, refetch } = query;
 
@@ -92,7 +88,7 @@ export default function FeedPage() {
         ListHeaderComponentStyle={{ paddingTop: headerHeight - insets.top, marginBottom: 8 }}
         onEndReached={fetchNextPage}
         renderItem={({ item }) => {
-          if (isPlaceHolderData(item)) return <PlaceHolderItem />;
+          if (isPlaceHolderData(item)) return <PostPlaceholderItem />;
 
           const handlePress = () => router.push(`/feed/${item.id}`);
           return <PostItem post={item} onPress={handlePress} />;
@@ -119,30 +115,6 @@ function CTA(props: HStackProps) {
         )}
       />
     </HStack>
-  );
-}
-
-function PlaceHolderItem() {
-  return (
-    <Card variant="filled" className="h-64 rounded-none p-3">
-      <HStack space="sm">
-        <Skeleton variant="circular" className="h-10 w-10" />
-        <VStack space="xs">
-          <Skeleton variant="sharp" className="h-4 w-32" />
-          <Skeleton variant="sharp" className="h-4 w-10" />
-        </VStack>
-      </HStack>
-      <VStack space="xs" className="mt-4">
-        <Skeleton variant="sharp" className="h-5" />
-        <Skeleton variant="sharp" className="h-5" />
-        <Skeleton variant="sharp" className="h-5" />
-        <Skeleton variant="sharp" className="h-5 w-40" />
-      </VStack>
-      <HStack space="sm" className="flex-1 items-end">
-        <Skeleton variant="rounded" className="mt-4 h-8 w-8" />
-        <Skeleton variant="rounded" className="mt-4 h-8 w-8" />
-      </HStack>
-    </Card>
   );
 }
 

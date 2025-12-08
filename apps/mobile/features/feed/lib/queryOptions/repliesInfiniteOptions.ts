@@ -47,6 +47,7 @@ function fetchReplies(parentCommentID: Comment['id']) {
         replies: false,
         likes: {
           count: true,
+          limit: 0,
           where: {
             and: [
               { 'createdBy.relationTo': { equals: meProfile?.relationTo || '' } },

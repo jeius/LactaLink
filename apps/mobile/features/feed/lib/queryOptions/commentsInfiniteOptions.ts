@@ -48,9 +48,10 @@ function fetchComments(postID: Post['id']) {
         likes: { createdBy: true },
       },
       joins: {
-        replies: { count: true, sort: '-createdAt', limit: 4 },
+        replies: { count: true, sort: '-createdAt', limit: 10 },
         likes: {
           count: true,
+          limit: 0,
           where: {
             and: [
               { 'createdBy.relationTo': { equals: meProfile?.relationTo || '' } },
