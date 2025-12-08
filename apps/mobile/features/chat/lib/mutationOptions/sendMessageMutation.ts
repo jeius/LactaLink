@@ -1,7 +1,7 @@
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { mutationOptions } from '@tanstack/react-query';
 import { sendMessage } from '../api/sendMessage';
-import { addMessageToCache } from '../chatCacheUtils';
+import { addMessageToInfiniteCache } from '../chatCacheUtils';
 import { createInfiniteMessagesOptions } from '../queryOptions';
 import { transformToMessage } from '../transformUtils';
 
@@ -20,7 +20,7 @@ export function createSendMessageMutation(conversation: Conversation) {
       const newMessage = transformToMessage(vars);
 
       // Optimistically update the messages cache
-      addMessageToCache(client, newMessage, conversation);
+      addMessageToInfiniteCache(client, newMessage, conversation);
       return { prevMessages };
     },
     onError: (_err, _vars, ctx, { client }) => {

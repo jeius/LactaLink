@@ -36,8 +36,7 @@ export default function MessagesPage() {
   const scrollHandler = useHeaderScrollHandler();
   const { height: headerHeight } = useHeaderSize();
 
-  const { data, ...query } = useInfiniteConversations();
-  const conversations = data?.pages.flatMap((page) => Array.from(page.docs.values())) || [];
+  const { data: conversations, ...query } = useInfiniteConversations();
 
   return (
     <SafeArea safeTop={false} className="items-stretch">

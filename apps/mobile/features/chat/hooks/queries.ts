@@ -1,32 +1,21 @@
 import { QUERY_KEYS } from '@/lib/constants/queryKeys';
 import { storeInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import {
-  Conversation,
-  ConversationParticipant,
-  Message,
-} from '@lactalink/types/payload-generated-types';
+import { Conversation, Message } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { areStrings } from '@lactalink/utilities/type-guards';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import isString from 'lodash/isString';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { addConversationToAllCaches, addConversationToCache } from '../lib/chatCacheUtils';
 import {
   conversationsInfiniteOptions,
   createConversationQueryOptions,
-  createConvoParticipantsQueryOptions,
   createInfiniteMessagesOptions,
-  createMessageQueryOptions,
 } from '../lib/queryOptions';
-
-export function useMessage(message: string | Message | undefined | null) {
-  const { data, ...query } = useQuery(
-    createMessageQueryOptions(extractID(message), isString(message))
-  );
-
-  return { ...query, data: message === null ? null : extractCollection(message) || data };
-}
+import { transformToChatMessage } from '../lib/transformUtils';
+import { ChatMessage } from '../lib/types';
+import { updateMessageInConversation } from '../lib/updateConversation';
 
 export function useConversation(conversation: string | Conversation | undefined) {
   const { data, ...query } = useQuery(
@@ -36,32 +25,56 @@ export function useConversation(conversation: string | Conversation | undefined)
   return { ...query, data: extractCollection(conversation) || data };
 }
 
-export function useConvoParticipantsQuery(
-  participants: (string | ConversationParticipant)[] | undefined
-) {
-  const participantIds = (participants || []).map((p) => extractID(p));
-  const queryOptions = createConvoParticipantsQueryOptions(
-    participantIds,
-    areStrings(participants || [])
-  );
+export function useInfiniteMessages(conversation: Conversation) {
+  const queryClient = useQueryClient();
+  const { data, ...query } = useInfiniteQuery(createInfiniteMessagesOptions(conversation));
 
-  const { data, ...query } = useQuery(queryOptions);
+  const dataArray = useMemo(() => {
+    if (!data) return;
+    const messages: Message[] = [];
+    const chatMessages: ChatMessage[] = [];
 
-  return { ...query, data: extractCollection(participants) || data };
-}
+    data.pages.forEach((page) => {
+      page.docs.forEach((message) => {
+        messages.push(message);
+        chatMessages.push(transformToChatMessage(message));
+        // Update messages in conversation cache
+        const updatedConversation = updateMessageInConversation(conversation, message);
+        addConversationToAllCaches(queryClient, updatedConversation);
+      });
+    });
 
-export function useInfiniteMessages(conversation: Conversation | undefined) {
-  const infiniteQuery = useInfiniteQuery(createInfiniteMessagesOptions(conversation));
-  return infiniteQuery;
+    return { messages, chatMessages };
+  }, [conversation, data, queryClient]);
+
+  return {
+    ...query,
+    data: dataArray?.messages,
+    chatMessages: dataArray?.chatMessages,
+    dataMap: data,
+  };
 }
 
 export function useInfiniteConversations() {
+  const queryClient = useQueryClient();
   const { data, ...query } = useInfiniteQuery(conversationsInfiniteOptions);
+
+  const dataArray = useMemo(() => {
+    if (!data) return;
+    const allDocs: Conversation[] = [];
+    data.pages.forEach((page) => {
+      page.docs.forEach((doc) => {
+        allDocs.push(doc);
+        addConversationToCache(queryClient, doc);
+      });
+    });
+    return allDocs;
+  }, [data, queryClient]);
 
   useEffect(() => {
     const storageKey = createStorageKeyByUser(getMeUser(), QUERY_KEYS.CHATS.INFINITE.join('-'));
     if (data) storeInfiniteDocuments(data, storageKey);
   }, [data]);
 
-  return { ...query, data };
+  return { ...query, data: dataArray, dataMap: data };
 }

@@ -15,8 +15,7 @@ import { PenLineIcon } from 'lucide-react-native';
 export default function ChatsPage() {
   const router = useRouter();
 
-  const { data, ...query } = useInfiniteConversations();
-  const conversations = data?.pages.flatMap((page) => Array.from(page.docs.values())) || [];
+  const { data: conversations, ...query } = useInfiniteConversations();
 
   return (
     <SafeArea safeTop={false} className="items-stretch">

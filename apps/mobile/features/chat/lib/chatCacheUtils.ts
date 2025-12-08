@@ -6,13 +6,10 @@ import {
   createConversationQueryOptions,
   createInfiniteMessagesOptions,
 } from './queryOptions';
+import { addNewMessageInConversation } from './updateConversation';
 
-export function addConversationToCache(client: QueryClient, data: Conversation) {
+export function addConversationToInfiniteCache(client: QueryClient, data: Conversation) {
   const infiniteQueryKey = conversationsInfiniteOptions.queryKey;
-  const singleQueryKey = createConversationQueryOptions(data.id).queryKey;
-
-  // Update the single conversation cache
-  client.setQueryData(singleQueryKey, data);
 
   // Update the infinite conversations cache
   client.setQueryData(infiniteQueryKey, (oldData) => {
@@ -41,7 +38,18 @@ export function addConversationToCache(client: QueryClient, data: Conversation) 
   });
 }
 
-export function updateMessageInCache(
+export function addConversationToCache(client: QueryClient, data: Conversation) {
+  const singleQueryKey = createConversationQueryOptions(data.id).queryKey;
+  // Update the single conversation cache
+  client.setQueryData(singleQueryKey, data);
+}
+
+export function addConversationToAllCaches(client: QueryClient, data: Conversation) {
+  addConversationToCache(client, data);
+  addConversationToInfiniteCache(client, data);
+}
+
+export function updateMessageInInfiniteCache(
   client: QueryClient,
   newMessage: Message | Message[],
   conversation: Conversation
@@ -66,7 +74,7 @@ export function updateMessageInCache(
   });
 }
 
-export function addMessageToCache(
+export function addMessageToInfiniteCache(
   client: QueryClient,
   newMessage: Message,
   conversation: Conversation
@@ -90,21 +98,6 @@ export function addMessageToCache(
     });
   });
 
-  const updatedConversation = produce(conversation, (draft) => {
-    draft.lastMessageAt = newMessage.createdAt;
-
-    if (!draft.messages) {
-      draft.messages = { docs: [newMessage], totalDocs: 1, hasNextPage: false };
-      return;
-    }
-
-    const totalDocs = draft.messages.totalDocs || 0;
-    const docs = draft.messages.docs || [];
-    draft.messages = {
-      docs: [newMessage, ...docs],
-      totalDocs: totalDocs + 1,
-    };
-  });
-
-  addConversationToCache(client, updatedConversation);
+  const updatedConversation = addNewMessageInConversation(conversation, newMessage);
+  addConversationToAllCaches(client, updatedConversation);
 }

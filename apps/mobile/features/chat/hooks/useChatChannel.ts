@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
-import { addMessageToCache } from '../lib/chatCacheUtils';
+import { addMessageToInfiniteCache } from '../lib/chatCacheUtils';
 import { createChatChannel } from '../lib/realtime/channels';
 
 type TypingTracker = {
@@ -116,7 +116,7 @@ export function useConversationChannel(conversation: Conversation) {
 
         // Avoid duplicating own messages
         if (isEqualProfiles(messageDoc.sender, getMeUser()?.profile)) return;
-        addMessageToCache(queryClient, messageDoc, conversation);
+        addMessageToInfiniteCache(queryClient, messageDoc, conversation);
       }
     );
 

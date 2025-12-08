@@ -5,6 +5,7 @@ import { getApiClient } from '@lactalink/api';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
+import { addConversationToCache } from '../chatCacheUtils';
 
 const BASE_KEY = QUERY_KEYS.CHATS.INFINITE.join('-');
 
@@ -22,6 +23,9 @@ export const conversationsInfiniteOptions = infiniteQueryOptions({
       sort: '-lastMessageAt',
       joins: {
         messages: { limit: 15, sort: '-createdAt', count: true },
+        participants: { limit: 0, count: true },
+        archivedStatuses: { limit: 0, count: true },
+        mutedStatuses: { limit: 0, count: true },
       },
     });
 
@@ -29,8 +33,7 @@ export const conversationsInfiniteOptions = infiniteQueryOptions({
 
     docs.forEach((doc) => {
       docMap.set(doc.id, doc);
-      const queryKey = createConversationQueryOptions(doc.id).queryKey;
-      client.setQueryData(queryKey, doc);
+      addConversationToCache(client, doc);
     });
 
     return { ...conversations, docs: docMap };
