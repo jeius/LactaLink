@@ -159,6 +159,8 @@ export const Posts: CollectionConfig<'posts'> = {
               type: 'join',
               collection: 'likes',
               on: 'liked',
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 description: 'Likes associated with this post.',
                 defaultColumns: ['createdBy', 'createdAt'],
@@ -179,6 +181,8 @@ export const Posts: CollectionConfig<'posts'> = {
               where: {
                 and: [{ parent: { exists: false } }, { deletedAt: { exists: false } }],
               },
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 description: 'Comments made on this post.',
                 defaultColumns: ['content', 'author', 'createdAt'],
@@ -196,7 +200,8 @@ export const Posts: CollectionConfig<'posts'> = {
               type: 'join',
               collection: 'posts',
               on: 'sharedFrom',
-              maxDepth: 1,
+              maxDepth: 3,
+              defaultLimit: 10,
               where: {
                 and: [{ deletedAt: { exists: false } }],
               },

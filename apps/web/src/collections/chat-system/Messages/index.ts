@@ -143,6 +143,8 @@ const Messages: CollectionConfig<'messages'> = {
               type: 'join',
               collection: 'message-attachments',
               on: 'message',
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 description: 'Attachments associated with this message',
               },
@@ -157,6 +159,8 @@ const Messages: CollectionConfig<'messages'> = {
               type: 'join',
               collection: 'message-reactions',
               on: 'message',
+              maxDepth: 3,
+              defaultLimit: 5,
               admin: {
                 description: 'Reactions to this message',
               },
@@ -171,6 +175,8 @@ const Messages: CollectionConfig<'messages'> = {
               type: 'join',
               collection: 'messages',
               on: 'replyTo',
+              maxDepth: 3,
+              defaultLimit: 5,
               admin: {
                 description: 'Messages that are replies to this message',
                 defaultColumns: ['conversation', 'sender', 'content', 'createdAt'],
@@ -186,6 +192,8 @@ const Messages: CollectionConfig<'messages'> = {
               type: 'join',
               collection: 'message-reads',
               on: 'message',
+              maxDepth: 3,
+              defaultLimit: 5,
               admin: {
                 description: 'Read receipts for this message',
               },

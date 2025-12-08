@@ -81,6 +81,7 @@ export const Conversations: CollectionConfig<'conversations'> = {
               collection: 'conversation-participants',
               on: 'conversation',
               maxDepth: 5,
+              defaultLimit: 10,
               admin: {
                 description: 'Participants in this conversation',
               },
@@ -96,7 +97,8 @@ export const Conversations: CollectionConfig<'conversations'> = {
               collection: 'messages',
               on: 'conversation',
               defaultSort: '-createdAt',
-              maxDepth: 5,
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 description: 'Messages in this conversation',
               },
@@ -112,7 +114,8 @@ export const Conversations: CollectionConfig<'conversations'> = {
               type: 'join',
               collection: 'conversation-statuses',
               on: 'conversation',
-              maxDepth: 5,
+              maxDepth: 3,
+              defaultLimit: 10,
               where: {
                 or: [
                   { permanentMute: { equals: true } },
@@ -139,7 +142,8 @@ export const Conversations: CollectionConfig<'conversations'> = {
               type: 'join',
               collection: 'conversation-statuses',
               on: 'conversation',
-              maxDepth: 5,
+              maxDepth: 3,
+              defaultLimit: 10,
               where: { archived: { equals: true } },
               admin: {
                 description: 'Users who have archived this conversation',

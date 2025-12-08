@@ -4,7 +4,6 @@ import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import { PROFILE_TYPES } from '@lactalink/enums';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, authenticated, userOwnerOrAdmin } from '../_access-control';
-import { appendPermissions } from './hooks/afterMe';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
@@ -14,7 +13,6 @@ export const Users: CollectionConfig<'users'> = {
     defaultColumns: ['email', 'type', 'role', 'id'],
   },
   hooks: {
-    afterMe: [appendPermissions],
     afterLogout: [signOut],
   },
   auth: {
@@ -73,6 +71,7 @@ export const Users: CollectionConfig<'users'> = {
           name: 'profile',
           type: 'relationship',
           relationTo: ['individuals', 'milkBanks', 'hospitals'],
+          maxDepth: 5,
           admin: { width: '50%' },
         },
       ],
@@ -83,6 +82,7 @@ export const Users: CollectionConfig<'users'> = {
       collection: 'addresses',
       on: 'owner',
       maxDepth: 3,
+      defaultLimit: 1,
       admin: {
         defaultColumns: ['name', 'displayName', 'default', 'coordinates'],
       },
@@ -92,6 +92,8 @@ export const Users: CollectionConfig<'users'> = {
       type: 'join',
       collection: 'delivery-preferences',
       on: 'owner',
+      maxDepth: 3,
+      defaultLimit: 1,
       admin: {
         defaultColumns: ['name', 'address', 'preferredMode', 'availableDays'],
       },
