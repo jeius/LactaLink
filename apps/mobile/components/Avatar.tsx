@@ -1,7 +1,8 @@
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { isMeUser } from '@/lib/utils/isMeUser';
-import { Avatar as AvatarType, User } from '@lactalink/types/payload-generated-types';
+import { UserProfile } from '@lactalink/types';
+import { Avatar as AvatarType } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useRecyclingState } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
@@ -72,7 +73,7 @@ export default function Avatar({
 }
 
 interface ProfileAvatarProps extends Omit<AvatarProps, 'details'> {
-  profile?: User['profile'];
+  profile?: UserProfile;
   enablePress?: boolean;
   isLoading?: boolean;
 }
@@ -88,9 +89,9 @@ export function ProfileAvatar({
 }: ProfileAvatarProps) {
   const router = useRouter();
 
-  const { data: profile, ...rest } = useProfileData(profileProp);
+  const { data: profile, ...query } = useProfileData(profileProp);
 
-  const isLoading = isLoadingProp || rest.isLoading;
+  const isLoading = isLoadingProp || query.isLoading;
 
   const avatar = extractCollection(profile?.avatar);
 

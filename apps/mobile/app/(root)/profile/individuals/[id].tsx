@@ -9,74 +9,61 @@ import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Divider } from '@/components/ui/divider';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import PostItem from '@/features/feed/components/post-item/PostItem';
+import PostPlaceholderItem from '@/features/feed/components/post-item/PostPlaceholderItem';
+import ProfileDetails from '@/features/profile/components/ProfileDetails';
+import { useInfiniteUserPosts } from '@/features/profile/hooks/queries';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { Shade } from '@/lib/types/colors';
 import { RecipientSearchParams } from '@/lib/types/donationRequest';
 import { isMeUser } from '@/lib/utils/isMeUser';
 import { shadow } from '@/lib/utils/shadows';
-import { Individual } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractDefaultAddress } from '@lactalink/utilities/extractors';
-import { capitalizeFirst } from '@lactalink/utilities/formatters';
+import { Individual, Post } from '@lactalink/types/payload-generated-types';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import {
+  extractCollection,
+  extractDefaultAddress,
+  extractID,
+  listKeyExtractor,
+} from '@lactalink/utilities/extractors';
 import { isIndividual } from '@lactalink/utilities/type-guards';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { BadgeCheckIcon, Edit2Icon, MailIcon, MapPinIcon, PhoneIcon } from 'lucide-react-native';
-import { ComponentProps, useMemo } from 'react';
-
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-};
-
-const samplePosts: Post[] = [
-  {
-    id: '1',
-    title: 'My First Post',
-    content:
-      'This is the content of my first post. I am excited to share my thoughts and experiences with you all!',
-  },
-  {
-    id: '2',
-    title: 'A Day in the Life',
-    content:
-      'Today, I want to take you through a typical day in my life. From morning routines to evening reflections, here is how I spend my days.',
-  },
-  {
-    id: '3',
-    title: 'Travel Adventures',
-    content:
-      'Traveling is one of my passions. In this post, I will share some of my most memorable travel experiences and tips for fellow travelers.',
-  },
-];
+import { useCallback } from 'react';
 
 export default function IndividualProfilePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data: user, ...meUserQuery } = useMeUser();
-  const meUserProfile = extractCollection(user?.profile?.value);
+  const isMeUser = extractID(user?.profile?.value) === id;
 
-  const isMeUser = meUserProfile?.id === id;
+  const { data: profile, ...profileQuery } = useProfileData(
+    isMeUser
+      ? user?.profile!
+      : {
+          relationTo: 'individuals',
+          value: id,
+        }
+  );
 
-  const { data: fetchedProfile, ...profileQuery } = useFetchById(!isMeUser, {
-    collection: 'individuals',
-    id,
-  });
+  const isRefetching = profileQuery.isRefetching;
+  const isLoading = profileQuery.isLoading;
 
-  const profile = isMeUser ? meUserProfile : fetchedProfile;
-  const isRefetching = meUserQuery.isRefetching || profileQuery.isRefetching;
-  const isLoading = meUserQuery.isLoading || profileQuery.isLoading;
+  const refresh = useCallback(() => {
+    meUserQuery.refetch();
+    profileQuery.refetch();
+  }, [meUserQuery, profileQuery]);
 
-  if (isLoading) {
+  if (isLoading || !profile) {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Loading Profile...' }} />
@@ -85,69 +72,86 @@ export default function IndividualProfilePage() {
     );
   }
 
-  if (!profile || !isIndividual(profile)) return null;
+  if (!isIndividual(profile)) return null;
 
-  const name = profile.givenName;
-  const headerTitle = isMeUser ? 'My Profile' : (name && `${name}'s Profile`) || 'Profile';
-
-  const renderItem: ListRenderItem<Post> = ({ item }) => {
-    const { title, content } = item;
-    return (
-      <Box className="bg-background-50 px-5 py-2">
-        <Card>
-          <VStack space="sm">
-            <Text size="lg" className="font-JakartaSemiBold">
-              {title}
-            </Text>
-            <Text size="md">{content}</Text>
-          </VStack>
-        </Card>
-      </Box>
-    );
-  };
-
-  function refresh() {
-    meUserQuery.refetch();
-    profileQuery.refetch();
-  }
-
-  function HeaderComponent() {
-    if (!profile || !isIndividual(profile)) return null;
-
-    if (isMeUser) {
-      profile.owner = user;
-    }
-
-    return (
-      <>
-        <IndividualProfile profile={profile} />
-        <Text size="lg" bold className="bg-background-50 px-5">
-          Posts
-        </Text>
-      </>
-    );
-  }
+  const headerTitle = isMeUser ? 'My Profile' : profile.displayName || 'Profile';
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
       <Stack.Screen options={{ headerTitle }} />
-      <FlashList
-        data={samplePosts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refresh} />}
-        ListHeaderComponent={HeaderComponent}
-      />
+      <PostList profile={profile} isRefreshing={isRefetching} onRefresh={refresh} />
     </SafeArea>
   );
 }
 
 //#region Components
-
-interface IndividualProfileProps {
+interface PostListProps {
   profile: Individual;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
 }
-function IndividualProfile({ profile }: IndividualProfileProps) {
+
+function PostList({ profile, isRefreshing, onRefresh }: PostListProps) {
+  const { data: posts, ...postsQuery } = useInfiniteUserPosts({
+    relationTo: 'individuals',
+    value: profile,
+  });
+  const router = useRouter();
+
+  const renderItem: ListRenderItem<Post> = ({ item }) => {
+    if (isPlaceHolderData(item)) return <PostPlaceholderItem />;
+
+    const handlePress = () => router.push(`/feed/${item.id}`);
+    return <PostItem post={item} onPress={handlePress} />;
+  };
+
+  const HeaderComponent = () => {
+    return (
+      <>
+        <IndividualProfile profile={profile} />
+        <Text size="xl" bold className="bg-background-50 px-4 py-2">
+          Posts
+        </Text>
+      </>
+    );
+  };
+
+  return (
+    <FlashList
+      data={posts}
+      renderItem={renderItem}
+      keyExtractor={listKeyExtractor}
+      showsVerticalScrollIndicator={false}
+      ListHeaderComponent={HeaderComponent}
+      ListEmptyComponent={ListEmpty}
+      ListFooterComponent={() =>
+        postsQuery.isFetchingNextPage && <Spinner size={'small'} className="my-4" />
+      }
+      contentContainerStyle={{ paddingBottom: 16 }}
+      ItemSeparatorComponent={() => <Box className="h-1" />}
+      refreshControl={<RefreshControl refreshing={isRefreshing ?? false} onRefresh={onRefresh} />}
+      onEndReached={postsQuery.fetchNextPage}
+      onEndReachedThreshold={0.25}
+    />
+  );
+}
+
+function ListEmpty() {
+  return (
+    <VStack space="lg" className="items-center justify-center p-5">
+      <Text size="lg" className="mt-10 text-typography-700">
+        No posts yet. Share one!
+      </Text>
+      <Link asChild push href={{ pathname: '/feed/create' }}>
+        <Button>
+          <ButtonText>Create Post</ButtonText>
+        </Button>
+      </Link>
+    </VStack>
+  );
+}
+
+function IndividualProfile({ profile }: { profile: Individual }) {
   const { themeColors } = useTheme();
 
   const user = extractCollection(profile.owner);
@@ -196,8 +200,10 @@ function IndividualProfile({ profile }: IndividualProfileProps) {
         style={{
           ...shadow.xl,
           shadowColor: sheetShadowColor,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
         }}
-        className="relative grow items-stretch rounded-t-2xl bg-background-50 p-5"
+        className="relative grow items-stretch bg-background-50 p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
           <Box className="relative">
@@ -289,55 +295,12 @@ function IndividualProfile({ profile }: IndividualProfileProps) {
           </HStack>
         </VStack>
 
-        <IndividualDetails profile={profile} className="mt-2 p-2" />
+        <ProfileDetails
+          profile={{ relationTo: 'individuals', value: profile }}
+          className="mt-2 p-2"
+        />
       </VStack>
     </VStack>
-  );
-}
-
-interface IndividualDetailsProps extends ComponentProps<typeof Card> {
-  profile: Individual;
-}
-function IndividualDetails({ profile, ...props }: IndividualDetailsProps) {
-  const individualDetails = useMemo(() => {
-    if (!profile || !isIndividual(profile)) {
-      return null;
-    }
-
-    const birthDate = new Date(profile.birth);
-    const age = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-    const babies = profile.dependents || 0;
-    const maritalStatus = capitalizeFirst(profile.maritalStatus.toLowerCase());
-    return { age, babies, maritalStatus };
-  }, [profile]);
-
-  return (
-    individualDetails && (
-      <Card {...props}>
-        <HStack space="sm" className="w-full items-stretch">
-          <VStack space="sm" className="flex-1 items-center">
-            <Text size="lg" bold>
-              {individualDetails.babies}
-            </Text>
-            <Text size="sm">Dependents</Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text size="lg" bold>
-              {individualDetails.age}
-            </Text>
-            <Text size="sm">Age</Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center justify-stretch">
-            <Text size="sm" bold className="flex-1 text-center align-middle">
-              {individualDetails.maritalStatus}
-            </Text>
-            <Text size="sm">Status</Text>
-          </VStack>
-        </HStack>
-      </Card>
-    )
   );
 }
 

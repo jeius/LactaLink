@@ -8,12 +8,12 @@ import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Divider } from '@/components/ui/divider';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import ProfileDetails from '@/features/profile/components/ProfileDetails';
 import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
@@ -36,7 +36,7 @@ import {
   PhoneIcon,
   StethoscopeIcon,
 } from 'lucide-react-native';
-import React, { ComponentProps, useMemo } from 'react';
+import React from 'react';
 
 type Post = {
   id: string;
@@ -290,80 +290,9 @@ function OrganizationProfile({
           </HStack>
         </VStack>
 
-        <OrganizationDetails profile={profile} className="mt-2 p-2" />
+        <ProfileDetails profile={{ relationTo, value: profile }} className="mt-2 p-2" />
       </VStack>
     </VStack>
   );
 }
-
-interface OrganizationDetailsProps extends ComponentProps<typeof Card> {
-  profile: Hospital | MilkBank;
-}
-
-function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
-  const orgDetails = useMemo(() => {
-    if (!profile || isIndividual(profile)) {
-      return null;
-    }
-
-    const inStock = profile.totalVolume || 0;
-    const sentTransactions = profile.sentTransactions?.docs?.length || 0;
-    const receivedTransactions = profile.receivedTransactions?.docs?.length || 0;
-    return { inStock, sentTransactions, receivedTransactions };
-  }, [profile]);
-
-  return (
-    orgDetails && (
-      <Card {...props}>
-        <HStack space="sm" className="w-full items-stretch">
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.inStock.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Current Stock (mL)
-            </Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.receivedTransactions.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Received Donations
-            </Text>
-          </VStack>
-          <Divider orientation="vertical" />
-          <VStack space="sm" className="flex-1 items-center">
-            <Text
-              size="lg"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              bold
-              className="flex-1 text-center align-middle"
-            >
-              {orgDetails.sentTransactions.toLocaleString()}
-            </Text>
-            <Text size="sm" className="shrink text-center">
-              Fulfilled Requests
-            </Text>
-          </VStack>
-        </HStack>
-      </Card>
-    )
-  );
-}
-
 //#endregion
