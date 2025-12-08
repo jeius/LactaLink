@@ -6,3 +6,7 @@ export function createChatChannel(conversation: string | Conversation) {
   const conversationId = extractID(conversation);
   return supabase.channel(`chat-${conversationId}`);
 }
+
+export function createGeneralChatsChannel() {
+  return supabase.channel('chats-general');
+}

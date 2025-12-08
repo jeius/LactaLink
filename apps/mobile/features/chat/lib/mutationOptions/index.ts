@@ -4,6 +4,7 @@ import { createDirectChat, createGroupChat } from '../api/createChat';
 import { markAsRead } from '../api/markAsRead';
 import { addConversationToAllCaches } from '../chatCacheUtils';
 import { createFindDirectChatQueryOptions } from '../queryOptions';
+import { updateMessageInConversation } from '../updateConversation';
 
 export * from './sendMessageMutation';
 
@@ -35,5 +36,13 @@ export function createMarkAsReadMutation(conversation: Conversation) {
   return mutationOptions({
     mutationKey: ['mark-as-read', 'messages', conversation],
     mutationFn: markAsRead,
+    onSuccess: (data, _vars, _ctx, { client }) => {
+      data
+        .filter((m) => !!m)
+        .map((msg) => {
+          const updatedConversation = updateMessageInConversation(conversation, msg);
+          addConversationToAllCaches(client, updatedConversation);
+        });
+    },
   });
 }

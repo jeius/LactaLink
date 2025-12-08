@@ -18,8 +18,6 @@ export function addNewMessageInConversation(conversation: Conversation, newMessa
 
 export function updateMessageInConversation(conversation: Conversation, newMessage: Message) {
   return produce(conversation, (draft) => {
-    draft.lastMessageAt = newMessage.createdAt;
-
     const messages = draft.messages?.docs ?? [];
     const messageIndex = messages.findIndex((msg) => extractID(msg) === newMessage.id);
 

@@ -14,7 +14,7 @@ import {
 import { formatTimeOrDateLabel } from '@lactalink/utilities/formatters';
 import { useRecyclingState } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { generateGroupName } from '../lib/generateGroupName';
 import { getOtherUserFromDirectChat } from '../lib/getOtherUserFromDirectChat';
 import { extractLastMessage } from '../lib/transformUtils';
@@ -52,6 +52,10 @@ export default function ConversationListItem({ data }: ConversationListItemProps
   const participants = extractCollection(data.participants?.docs);
 
   const [isUnread, setIsUnread] = useRecyclingState(unread, [unread]);
+
+  useEffect(() => {
+    setIsUnread(unread);
+  }, [unread, setIsUnread]);
 
   const handlePress = useCallback(() => {
     router.push(`/chat/${data.id}`);

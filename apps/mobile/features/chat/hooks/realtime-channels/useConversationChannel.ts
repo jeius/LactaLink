@@ -9,8 +9,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
-import { addMessageToInfiniteCache } from '../lib/chatCacheUtils';
-import { createChatChannel } from '../lib/realtime/channels';
+import { addMessageToInfiniteCache } from '../../lib/chatCacheUtils';
+import { createChatChannel } from '../../lib/realtime/channels';
 
 type TypingTracker = {
   user_id: string;
@@ -97,26 +97,26 @@ export function useConversationChannel(conversation: Conversation) {
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
-      async ({ new: message }) => {
-        const apiClient = getApiClient();
-        const messageDoc = await apiClient
+      ({ new: message }) => {
+        getApiClient()
           .findByID({
             id: message.id,
             collection: 'messages',
             depth: 4,
           })
           .catch((error) => {
-            console.warn('[Chat] Failed to fetch new message:', error);
+            console.warn(`[Chat] Failed to fetch new message ID-${message.id}:`, error);
             return null;
+          })
+          .then((messageDoc) => {
+            if (!messageDoc) return;
+
+            setNewMessage(messageDoc);
+
+            // Avoid duplicating own messages
+            if (isEqualProfiles(messageDoc.sender, getMeUser()?.profile)) return;
+            addMessageToInfiniteCache(queryClient, messageDoc, conversation);
           });
-
-        if (!messageDoc) return;
-
-        setNewMessage(messageDoc);
-
-        // Avoid duplicating own messages
-        if (isEqualProfiles(messageDoc.sender, getMeUser()?.profile)) return;
-        addMessageToInfiniteCache(queryClient, messageDoc, conversation);
       }
     );
 

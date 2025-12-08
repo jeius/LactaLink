@@ -113,7 +113,6 @@ export class ChatService {
         and: [
           { message: { equals: extractID(message) } },
           { user: { equals: extractID(user) } },
-          { 'message.sender.relationTo': { not_equals: userProfile.relationTo } },
           { 'message.sender.value': { not_equals: extractID(userProfile.value) } },
         ],
       },
@@ -121,10 +120,10 @@ export class ChatService {
     return totalDocs > 0;
   };
 
-  markMessageAsRead = async (message: Message, user: User): Promise<Message> => {
+  markMessageAsRead = async (message: Message, user: User): Promise<Message | null> => {
     // Check if already read
     const alreadyRead = await this.isMessageRead(message, user);
-    if (alreadyRead) return message;
+    if (alreadyRead) return null;
 
     const read = await this.apiClient.create({
       collection: 'message-reads',
@@ -135,12 +134,11 @@ export class ChatService {
       },
     });
 
-    const readDocs = message.reads ? (message.reads.docs ?? []) : [];
+    const readDocs = message?.reads?.docs ?? [];
     readDocs.push(read);
 
-    const totalReads = message.reads ? (message.reads.totalDocs ?? 0) + 1 : 1;
-    const hasNextPage = message.reads ? message.reads.hasNextPage : false;
+    const hasNextPage = message?.reads?.hasNextPage;
 
-    return { ...message, reads: { docs: readDocs, totalDocs: totalReads, hasNextPage } };
+    return { ...message, reads: { docs: readDocs, totalDocs: readDocs.length, hasNextPage } };
   };
 }

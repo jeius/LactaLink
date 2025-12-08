@@ -10,7 +10,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { GiftedChat, User as GiftedUser, SendProps } from 'react-native-gifted-chat';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useInfiniteMessages } from '../../hooks/queries';
-import { useConversationChannel } from '../../hooks/useChatChannel';
+import { useConversationChannel } from '../../hooks/realtime-channels';
 import { createMarkAsReadMutation, createSendMessageMutation } from '../../lib/mutationOptions';
 import { ChatMessage, CreateChatMessage } from '../../lib/types';
 import ChatSendButton from './ChatSendButton';

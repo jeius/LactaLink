@@ -15,6 +15,7 @@ import { VStack } from '@/components/ui/vstack';
 import ConversationListItem from '@/features/chat/components/ConversationListItem';
 import CreateChatButton from '@/features/chat/components/CreateChatButton';
 import { useInfiniteConversations } from '@/features/chat/hooks/queries';
+import { useChatsChannel } from '@/features/chat/hooks/realtime-channels';
 import { shadow } from '@/lib/utils/shadows';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -37,6 +38,8 @@ export default function MessagesPage() {
   const { height: headerHeight } = useHeaderSize();
 
   const { data: conversations, ...query } = useInfiniteConversations();
+
+  useChatsChannel(conversations || []);
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
