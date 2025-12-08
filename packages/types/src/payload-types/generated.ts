@@ -239,6 +239,10 @@ export interface Config {
       milkBags: 'milkBags';
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
+      posts: 'posts';
+    };
+    individuals: {
+      posts: 'posts';
     };
     milkBags: {
       donation: 'donations';
@@ -249,6 +253,7 @@ export interface Config {
       milkBags: 'milkBags';
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
+      posts: 'posts';
     };
     posts: {
       likes: 'likes';
@@ -468,6 +473,14 @@ export interface Individual {
   dependents?: number | null;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
   maritalStatus: 'SINGLE' | 'MARRIED' | 'SEPARATED' | 'WIDOWED' | 'DIVORCED' | 'N/A';
+  /**
+   * Posts authored by this user.
+   */
+  posts?: {
+    docs?: (string | Post)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -517,12 +530,125 @@ export interface Avatar {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkBanks".
+ * via the `definition` "posts".
  */
-export interface MilkBank {
+export interface Post {
+  id: string;
+  author:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * Brief, descriptive title for the post (helps with searchability).
+   */
+  title: string;
+  /**
+   * Content of the post. Encourage clear, health-relevant info.
+   */
+  content?: string | null;
+  /**
+   * Short summary used in lists (keeps feed scannable).
+   */
+  summary?: string | null;
+  /**
+   * Images/videos or documents attached to the post.
+   */
+  attachments?:
+    | {
+        mediaType: 'IMAGE';
+        /**
+         * Upload an image
+         */
+        image?: (string | null) | Image;
+        /**
+         * Optional caption for the media attachment.
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Who can see this post.
+   */
+  visibility: 'PUBLIC' | 'PRIVATE';
+  /**
+   * Moderation status. Admins can change.
+   */
+  status?: ('DRAFT' | 'PUBLISHED' | 'REMOVED') | null;
+  /**
+   * If this post is a share, the original post/donation/request.
+   */
+  sharedFrom?:
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: string | Donation;
+      } | null)
+    | ({
+        relationTo: 'requests';
+        value: string | Request;
+      } | null);
+  /**
+   * Optional tags to help classify and search for posts.
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Likes associated with this post.
+   */
+  likes?: {
+    docs?: (string | Like)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Comments made on this post.
+   */
+  comments?: {
+    docs?: (string | Comment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Posts that share this post.
+   */
+  shares?: {
+    docs?: (string | Post)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  likesCount?: number | null;
+  commentsCount?: number | null;
+  sharesCount?: number | null;
+  owner?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospitals".
+ */
+export interface Hospital {
   id: string;
   /**
-   * Display name for the milk bank, used in public profiles.
+   * Display name for the hospital, used in public profiles.
    */
   displayName?: string | null;
   owner?: (string | null) | User;
@@ -530,17 +656,18 @@ export interface MilkBank {
   name: string;
   description?: string | null;
   /**
-   * Head or president of the milk bank.
+   * Head or president of the hospital.
    */
   head?: string | null;
+  hospitalID?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
   /**
-   * Total volume of milk in stock at the milk bank. (Auto calculated)
+   * Total volume of milk in stock at the hospital. (Auto calculated)
    */
   totalVolume?: number | null;
   /**
-   * Inventory of milk bags available in this milk bank.
+   * Inventory of milk bags available in this hospital.
    */
   inventory?: {
     docs?: (string | Inventory)[];
@@ -548,7 +675,7 @@ export interface MilkBank {
     totalDocs?: number;
   };
   /**
-   * Milk bags associated with this milk bank.
+   * Milk bags associated with this hospital.
    */
   milkBags?: {
     docs?: (string | MilkBag)[];
@@ -568,6 +695,14 @@ export interface MilkBank {
    */
   sentTransactions?: {
     docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Posts authored by this user.
+   */
+  posts?: {
+    docs?: (string | Post)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -642,12 +777,12 @@ export interface Inventory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "hospitals".
+ * via the `definition` "milkBanks".
  */
-export interface Hospital {
+export interface MilkBank {
   id: string;
   /**
-   * Display name for the hospital, used in public profiles.
+   * Display name for the milk bank, used in public profiles.
    */
   displayName?: string | null;
   owner?: (string | null) | User;
@@ -655,18 +790,17 @@ export interface Hospital {
   name: string;
   description?: string | null;
   /**
-   * Head or president of the hospital.
+   * Head or president of the milk bank.
    */
   head?: string | null;
-  hospitalID?: string | null;
   type?: ('GOVERNMENT' | 'PRIVATE' | 'OTHER') | null;
   phone?: string | null;
   /**
-   * Total volume of milk in stock at the hospital. (Auto calculated)
+   * Total volume of milk in stock at the milk bank. (Auto calculated)
    */
   totalVolume?: number | null;
   /**
-   * Inventory of milk bags available in this hospital.
+   * Inventory of milk bags available in this milk bank.
    */
   inventory?: {
     docs?: (string | Inventory)[];
@@ -674,7 +808,7 @@ export interface Hospital {
     totalDocs?: number;
   };
   /**
-   * Milk bags associated with this hospital.
+   * Milk bags associated with this milk bank.
    */
   milkBags?: {
     docs?: (string | MilkBag)[];
@@ -694,6 +828,14 @@ export interface Hospital {
    */
   sentTransactions?: {
     docs?: (string | Transaction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Posts authored by this user.
+   */
+  posts?: {
+    docs?: (string | Post)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -1287,96 +1429,36 @@ export interface ConfirmedDelivery {
   confirmedAt: string;
 }
 /**
- * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "provinces".
+ * via the `definition` "likes".
  */
-export interface Province {
+export interface Like {
   id: string;
-  name: string;
-  code: string;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "regions".
- */
-export interface Region {
-  id: string;
-  name: string;
-  code: string;
-  regionName?: string | null;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "islandGroups".
- */
-export interface IslandGroup {
-  id: string;
-  name: string;
-  code: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citiesMunicipalities".
- */
-export interface CityMunicipality {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  isCapital: boolean;
-  code: string;
-  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
-  districtCode?: string | null;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "barangays".
- */
-export interface Barangay {
-  id: string;
-  name: string;
-  oldName?: string | null;
-  code: string;
-  subMunicipalityCode?: string | null;
-  districtCode?: string | null;
-  cityMunicipality?: (string | null) | CityMunicipality;
-  province?: (string | null) | Province;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blocked-users".
- */
-export interface BlockedUser {
-  id: string;
-  blocker: string | User;
-  blocked: string | User;
+  createdBy:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      };
+  /**
+   * The post/comment that was liked
+   */
+  liked:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }
+    | {
+        relationTo: 'comments';
+        value: string | Comment;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1467,149 +1549,96 @@ export interface Comment {
   deletedAt?: string | null;
 }
 /**
+ * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
+ * via the `definition` "provinces".
  */
-export interface Post {
+export interface Province {
   id: string;
-  author:
-    | {
-        relationTo: 'individuals';
-        value: string | Individual;
-      }
-    | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      }
-    | {
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      };
-  /**
-   * Brief, descriptive title for the post (helps with searchability).
-   */
-  title: string;
-  /**
-   * Content of the post. Encourage clear, health-relevant info.
-   */
-  content?: string | null;
-  /**
-   * Short summary used in lists (keeps feed scannable).
-   */
-  summary?: string | null;
-  /**
-   * Images/videos or documents attached to the post.
-   */
-  attachments?:
-    | {
-        mediaType: 'IMAGE';
-        /**
-         * Upload an image
-         */
-        image?: (string | null) | Image;
-        /**
-         * Optional caption for the media attachment.
-         */
-        caption?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Who can see this post.
-   */
-  visibility: 'PUBLIC' | 'PRIVATE';
-  /**
-   * Moderation status. Admins can change.
-   */
-  status?: ('DRAFT' | 'PUBLISHED' | 'REMOVED') | null;
-  /**
-   * If this post is a share, the original post/donation/request.
-   */
-  sharedFrom?:
-    | ({
-        relationTo: 'posts';
-        value: string | Post;
-      } | null)
-    | ({
-        relationTo: 'donations';
-        value: string | Donation;
-      } | null)
-    | ({
-        relationTo: 'requests';
-        value: string | Request;
-      } | null);
-  /**
-   * Optional tags to help classify and search for posts.
-   */
-  tags?:
-    | {
-        tag?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Likes associated with this post.
-   */
-  likes?: {
-    docs?: (string | Like)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Comments made on this post.
-   */
-  comments?: {
-    docs?: (string | Comment)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Posts that share this post.
-   */
-  shares?: {
-    docs?: (string | Post)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  likesCount?: number | null;
-  commentsCount?: number | null;
-  sharesCount?: number | null;
-  owner?: (string | null) | User;
+  name: string;
+  code: string;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
   updatedAt: string;
   createdAt: string;
-  deletedAt?: string | null;
+}
+/**
+ * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regions".
+ */
+export interface Region {
+  id: string;
+  name: string;
+  code: string;
+  regionName?: string | null;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Island groups in the Philippines, which are collections of islands that share geographical and cultural characteristics.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "islandGroups".
+ */
+export interface IslandGroup {
+  id: string;
+  name: string;
+  code: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Cities and municipalities in the Philippines, including their details such as name, code, type, and associated regions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citiesMunicipalities".
+ */
+export interface CityMunicipality {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  isCapital: boolean;
+  code: string;
+  type: 'NONE' | 'CITY' | 'MUNICIPALITY';
+  districtCode?: string | null;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Barangays in the Philippines, including their details such as name, code, and associated city/municipality, province, region, and island group.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "barangays".
+ */
+export interface Barangay {
+  id: string;
+  name: string;
+  oldName?: string | null;
+  code: string;
+  subMunicipalityCode?: string | null;
+  districtCode?: string | null;
+  cityMunicipality?: (string | null) | CityMunicipality;
+  province?: (string | null) | Province;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "likes".
+ * via the `definition` "blocked-users".
  */
-export interface Like {
+export interface BlockedUser {
   id: string;
-  createdBy:
-    | {
-        relationTo: 'individuals';
-        value: string | Individual;
-      }
-    | {
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
-      }
-    | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      };
-  /**
-   * The post/comment that was liked
-   */
-  liked:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }
-    | {
-        relationTo: 'comments';
-        value: string | Comment;
-      };
+  blocker: string | User;
+  blocked: string | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -2873,6 +2902,7 @@ export interface HospitalsSelect<T extends boolean = true> {
   milkBags?: T;
   receivedTransactions?: T;
   sentTransactions?: T;
+  posts?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2917,6 +2947,7 @@ export interface IndividualsSelect<T extends boolean = true> {
   dependents?: T;
   gender?: T;
   maritalStatus?: T;
+  posts?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3017,6 +3048,7 @@ export interface MilkBanksSelect<T extends boolean = true> {
   milkBags?: T;
   receivedTransactions?: T;
   sentTransactions?: T;
+  posts?: T;
   updatedAt?: T;
   createdAt?: T;
 }

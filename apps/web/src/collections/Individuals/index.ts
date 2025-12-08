@@ -1,4 +1,5 @@
 import { ownerField } from '@/fields/ownerField';
+import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
 import { generateOwner } from '@/hooks/collections/generateOwner';
@@ -134,6 +135,15 @@ export const Individuals: CollectionConfig<'individuals'> = {
           required: true,
           admin: { width: '50%' },
           options: Object.values(MARITAL_STATUS),
+        },
+      ],
+    },
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Posts',
+          fields: [profilesRelatedPostsField()],
         },
       ],
     },

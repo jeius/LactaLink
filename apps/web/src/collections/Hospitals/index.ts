@@ -1,4 +1,5 @@
 import { ownerField } from '@/fields/ownerField';
+import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
 import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
@@ -123,6 +124,8 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
               type: 'join',
               collection: 'inventory',
               on: 'organization',
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 defaultColumns: ['remainingVolume', 'initialVolume', 'status', 'receivedAt'],
                 description: 'Inventory of milk bags available in this hospital.',
@@ -134,6 +137,8 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
               type: 'join',
               collection: 'milkBags',
               on: 'owner',
+              maxDepth: 3,
+              defaultLimit: 10,
               admin: {
                 defaultColumns: ['volume', 'status', 'donor', 'createdAt'],
                 description: 'Milk bags associated with this hospital.',
@@ -150,6 +155,8 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
               type: 'join',
               collection: 'transactions',
               on: 'recipient',
+              maxDepth: 5,
+              defaultLimit: 10,
               admin: {
                 defaultColumns: ['sender', 'matchedVolume', 'status', 'donation', 'createdAt'],
                 description: 'Transactions of received donations related to this hospital.',
@@ -161,12 +168,18 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
               type: 'join',
               collection: 'transactions',
               on: 'sender',
+              maxDepth: 5,
+              defaultLimit: 10,
               admin: {
                 defaultColumns: ['recipient', 'matchedVolume', 'status', 'request', 'createdAt'],
                 description: 'Transactions of fulfilled requests related to this hospital.',
               },
             },
           ],
+        },
+        {
+          label: 'Posts',
+          fields: [profilesRelatedPostsField()],
         },
       ],
     },
