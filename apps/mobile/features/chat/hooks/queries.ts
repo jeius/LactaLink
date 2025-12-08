@@ -7,7 +7,7 @@ import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import isString from 'lodash/isString';
 import { useEffect, useMemo } from 'react';
-import { addConversationToAllCaches, addConversationToCache } from '../lib/chatCacheUtils';
+import { addConversationToCache } from '../lib/chatCacheUtils';
 import {
   conversationsInfiniteOptions,
   createConversationQueryOptions,
@@ -15,7 +15,6 @@ import {
 } from '../lib/queryOptions';
 import { transformToChatMessage } from '../lib/transformUtils';
 import { ChatMessage } from '../lib/types';
-import { updateMessageInConversation } from '../lib/updateConversation';
 
 export function useConversation(conversation: string | Conversation | undefined) {
   const { data, ...query } = useQuery(
@@ -26,7 +25,6 @@ export function useConversation(conversation: string | Conversation | undefined)
 }
 
 export function useInfiniteMessages(conversation: Conversation) {
-  const queryClient = useQueryClient();
   const { data, ...query } = useInfiniteQuery(createInfiniteMessagesOptions(conversation));
 
   const dataArray = useMemo(() => {
@@ -38,14 +36,11 @@ export function useInfiniteMessages(conversation: Conversation) {
       page.docs.forEach((message) => {
         messages.push(message);
         chatMessages.push(transformToChatMessage(message));
-        // Update messages in conversation cache
-        const updatedConversation = updateMessageInConversation(conversation, message);
-        addConversationToAllCaches(queryClient, updatedConversation);
       });
     });
 
     return { messages, chatMessages };
-  }, [conversation, data, queryClient]);
+  }, [data]);
 
   return {
     ...query,

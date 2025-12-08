@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { XIcon } from 'lucide-react-native';
 import React from 'react';
-import { ChatMessage } from '../lib/types';
+import { ChatMessage } from '../../lib/types';
 
 interface ReplyMessageBarProps {
   onCancelReply: () => void;

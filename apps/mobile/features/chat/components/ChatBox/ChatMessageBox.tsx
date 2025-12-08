@@ -8,7 +8,7 @@ import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/R
 import { Message, MessageProps } from 'react-native-gifted-chat';
 
 import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
-import { ChatMessage } from '../lib/types';
+import { ChatMessage } from '../../lib/types';
 
 export type ChatMessageBoxProps = {
   setReplyOnSwipeOpen: (message: ChatMessage) => void;

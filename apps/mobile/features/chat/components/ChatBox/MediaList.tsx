@@ -2,18 +2,20 @@ import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ImageSchema } from '@lactalink/form-schemas';
 import { extractImageData } from '@lactalink/utilities/extractors';
 import { XIcon } from 'lucide-react-native';
 import React from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import { CreateChatMessage } from '../../lib/types';
 
-interface MediaListProps {
-  media: ImageSchema[];
-  setMedia: (media: ImageSchema[]) => void;
-}
+export default function MediaList() {
+  const { control, setValue } = useFormContext<CreateChatMessage>();
+  const media = useWatch({ name: 'media', control });
 
-export default function MediaList({ media, setMedia }: MediaListProps) {
+  if (!media || media.length === 0) return null;
+
   return (
     <FlatList
       horizontal
@@ -24,14 +26,13 @@ export default function MediaList({ media, setMedia }: MediaListProps) {
       renderItem={({ item, index }) => {
         const image = extractImageData(item);
 
-        function handleRemove() {
-          const newMedia = [...media];
-          newMedia.splice(index, 1);
-          setMedia(newMedia);
-        }
+        const handleRemove = () => {
+          const newMedia = media.filter((_, i) => i !== index);
+          setValue('media', newMedia.length > 0 ? newMedia : undefined);
+        };
 
         return (
-          <Box style={{ paddingRight: 8, paddingTop: 8 }}>
+          <View style={{ paddingRight: 8, paddingTop: 8 }}>
             <Card className="h-24 w-16 rounded-md p-0">
               <SingleImageViewer image={image} />
             </Card>
@@ -43,7 +44,7 @@ export default function MediaList({ media, setMedia }: MediaListProps) {
             >
               <ButtonIcon as={XIcon} />
             </Button>
-          </Box>
+          </View>
         );
       }}
     />
