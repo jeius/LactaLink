@@ -1,9 +1,8 @@
-import type { BaseApiFetchArgs } from '@lactalink/types/api';
+import type { BaseApiFetchArgs, FindMany } from '@lactalink/types/api';
 import type { BackendSession } from '@lactalink/types/auth';
 import type { ErrorCodes } from '@lactalink/types/errors';
 import type { User } from '@lactalink/types/payload-generated-types';
 import type { Database } from '@lactalink/types/supabase';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import {
   AuthError,
   type ResendParams,
@@ -19,6 +18,7 @@ import {
 } from '@supabase/supabase-js';
 import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
 import status from 'http-status';
+import { stringify } from 'qs';
 import type { ApiClientConfig, IAuthClient } from '../interfaces';
 import { apiFetch } from '../utils/apiFetch';
 import { isServerEnvironment } from '../utils/getEnvironment';
@@ -115,18 +115,6 @@ export class AuthClient implements IAuthClient {
     };
   };
 
-  private _sanitizeUser = (user: User): User => {
-    const prefs = extractCollection(user.deliveryPreferences?.docs || []);
-    const addresses = extractCollection(user.addresses?.docs || []);
-    const addrMap = new Map(addresses.map((addr) => [extractID(addr), addr]));
-    const updatedPrefs = prefs.map((pref) => ({
-      ...pref,
-      address: addrMap.get(extractID(pref.address)) || pref.address,
-    }));
-
-    return { ...user, deliveryPreferences: { ...user.deliveryPreferences, docs: updatedPrefs } };
-  };
-
   private _getBackendSession = async (): Promise<BackendSession> => {
     // Ensure we have latest token before making request
     await this._syncToken();
@@ -134,7 +122,16 @@ export class AuthClient implements IAuthClient {
     const fetchOptions = await this._getFetchOptionsWithToken();
     const { url: apiUrl, ...restOfFetchOptions } = fetchOptions;
 
-    const url = new URL('/api/users/me', apiUrl).toString();
+    const options: Omit<FindMany<'users'>, 'collection'> = {
+      depth: 5,
+      joins: {
+        addresses: { limit: 0, count: true },
+        deliveryPreferences: { limit: 0, count: true },
+      },
+    };
+
+    const searchParams = stringify(options, { addQueryPrefix: true });
+    const url = new URL('/api/users/me', apiUrl).toString() + searchParams;
 
     const res = await apiFetch<BackendSession>({
       ...restOfFetchOptions,
@@ -146,12 +143,7 @@ export class AuthClient implements IAuthClient {
       throw new AuthError(res.message, res.status, 'backend_session_error');
     }
 
-    let user = res.data.user;
-    if (user) {
-      user = this._sanitizeUser(user);
-    }
-
-    return { ...res.data, user };
+    return res.data;
   };
 
   // Auth flow helpers

@@ -1,8 +1,6 @@
 import type {
-  AuthError,
   ResendParams,
   EmailOtpType as SbEmailOtpType,
-  SupabaseClient,
   VerifyOtpParams,
 } from '@supabase/supabase-js';
 import { SanitizedPermissions } from './payload-types/auth';
@@ -15,31 +13,28 @@ export type MeUser =
       user: User;
       permissions: SanitizedPermissions;
       message: string;
+      strategy: string;
     }
   | {
       message: string;
       user: null;
     };
 
-export type BackendSession = {
-  user: User | null;
-  permissions?: SanitizedPermissions;
-  message: string;
-};
+export type BackendSession = MeUser;
 
-export type AuthParams = {
-  supabase: SupabaseClient;
-  apiUrl: string;
-  vercelToken?: string;
-};
+// export type AuthParams = {
+//   supabase: SupabaseClient;
+//   apiUrl: string;
+//   vercelToken?: string;
+// };
 
-export type SignInParams = AuthParams & { email: string; password: string };
+// export type SignInParams = AuthParams & { email: string; password: string };
 
-export type SignUpParams = { email: string; password: string; supabase: SupabaseClient };
+// export type SignUpParams = { email: string; password: string; supabase: SupabaseClient };
 
-export type AuthResult = { data: Extract<MeUser, { user: User }> } | { error: AuthError };
+// export type AuthResult = { data: Extract<MeUser, { user: User }> } | { error: AuthError };
 
-export type OTPType = Pick<ResendParams, 'type'> | Extract<SbEmailOtpType, 'recovery'>;
+// export type OTPType = Pick<ResendParams, 'type'> | Extract<SbEmailOtpType, 'recovery'>;
 
 export type ResendEmailOtp = Extract<ResendParams, { type: SbEmailOtpType }>;
 
