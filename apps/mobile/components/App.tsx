@@ -2,7 +2,6 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { Stack, usePathname } from 'expo-router';
-import { HeaderBackButton } from './HeaderBackButton';
 import FetchingSpinner from './loaders/FetchingSpinner';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
@@ -34,7 +33,6 @@ export function App() {
         initialRouteName={initialRoute}
         screenOptions={{
           ...screenOptions,
-          headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
         }}
       >
         <Stack.Protected guard={!viewedOnboarding}>

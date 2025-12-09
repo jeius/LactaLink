@@ -1,4 +1,4 @@
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { getColor, getPrimaryColor } from '@/lib/colors';
 import { StackScreenOptions } from '@/lib/types';
 import { Platform } from 'react-native';
 import { StackAnimationTypes } from 'react-native-screens';
@@ -10,11 +10,6 @@ interface UseScreenOptions {
 }
 
 export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
-  const { themeColors } = useTheme();
-  const headerBgColor = themeColors.primary[500];
-  const headerTintColor = themeColors.primary[0];
-  const bgColor = themeColors.background[50];
-
   const { animationType } = args || {};
 
   let animation: StackAnimationTypes;
@@ -34,16 +29,14 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
   }
 
   return {
-    headerShown: false,
-    headerBackVisible: false,
-    headerTitleStyle: {
-      fontFamily: 'Jakarta-SemiBold',
-      fontSize: 14,
-    },
-    headerStyle: { backgroundColor: headerBgColor?.toString() },
-    headerTintColor: headerTintColor?.toString(),
-    contentStyle: { backgroundColor: bgColor },
-    headerShadowVisible: true,
     animation,
+    headerShown: false,
+    headerBackVisible: true,
+    headerShadowVisible: true,
+    headerBackButtonDisplayMode: 'minimal',
+    headerTitleStyle: { fontFamily: 'Jakarta-Bold', fontSize: 16 },
+    headerTintColor: getPrimaryColor('0'),
+    headerStyle: { backgroundColor: getPrimaryColor('500') },
+    contentStyle: { backgroundColor: getColor('background', '50') },
   };
 }

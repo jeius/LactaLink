@@ -3,7 +3,7 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useRouter } from 'expo-router';
 import { ArrowLeftIcon, ChevronLeftIcon } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
-import { GestureResponderEvent, StyleSheet } from 'react-native';
+import { GestureResponderEvent, Platform, StyleSheet } from 'react-native';
 import { toast } from 'sonner-native';
 import { AnimatedPressable, AnimatedPressableProps } from './animated/pressable';
 import { LeaveToastAction } from './toasts/ToastAction';
@@ -26,6 +26,7 @@ interface HeaderBackButtonProps
   label?: string;
   tintColor?: string;
   iconType?: 'arrow' | 'chevron';
+  marginRight?: number;
 }
 
 export function HeaderBackButton({
@@ -36,9 +37,10 @@ export function HeaderBackButton({
   canGoBack: canGoBackProp,
   onPress,
   tintColor,
-  iconType = 'chevron',
+  iconType = Platform.select({ ios: 'chevron', default: 'arrow' }),
   className,
   disablePressAnimation = true,
+  marginRight,
   ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
@@ -84,9 +86,9 @@ export function HeaderBackButton({
       className={baseStyle({ className })}
       hitSlop={10}
       onPress={handleOnPress}
-      style={StyleSheet.flatten([{ padding: 8 }, props.style])}
+      style={StyleSheet.flatten([{ padding: 8, marginRight }, props.style])}
     >
-      <Icon className="h-6 w-6" as={icon} color={tintColor} />
+      <Icon className="h-6 w-6" as={icon} style={{ width: 24, height: 24 }} color={tintColor} />
     </AnimatedPressable>
   );
 }

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from './AppProvider/ThemeProvider';
 import { HeaderBackButton } from './HeaderBackButton';
 import { Box, BoxProps } from './ui/box';
+import { HStack } from './ui/hstack';
 import { Text, TextProps } from './ui/text';
 
 const boxStyle = tva({
@@ -13,11 +14,11 @@ const boxStyle = tva({
 });
 
 const contentBoxStyle = tva({
-  base: 'flex-row items-center gap-2 px-4 py-3',
+  base: 'items-center px-4 py-3',
 });
 
 const textStyle = tva({
-  base: 'grow font-JakartaSemiBold',
+  base: 'grow',
 });
 
 export type HeaderRightProps = ViewProps & { tintColor?: string };
@@ -67,7 +68,8 @@ export function Header({
       className={boxStyle({ className })}
       style={[{ paddingTop: insets.top }, !hideShadow ? shadow.md : {}, StyleSheet.flatten(style)]}
     >
-      <Box
+      <HStack
+        space="xl"
         className={contentBoxStyle({ className: contentContainerClassName })}
         style={contentContainerStyle}
       >
@@ -88,6 +90,8 @@ export function Header({
         {title ? (
           <Text
             {...textProps}
+            bold
+            size="lg"
             numberOfLines={textProps?.numberOfLines ?? 1}
             className={textStyle({ className: textProps?.className })}
             style={StyleSheet.flatten([{ color: resolvedTintColor }, textProps?.style])}
@@ -104,7 +108,7 @@ export function Header({
             className: headerRightClassName,
             tintColor: resolvedTintColor,
           })}
-      </Box>
+      </HStack>
     </Box>
   );
 }

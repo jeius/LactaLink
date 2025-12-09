@@ -14,7 +14,14 @@ export function FormPreventBack() {
   const message = 'You have unsaved changes. Are you sure you want to leave?';
 
   function headerLeft({ tintColor }: { tintColor?: string }) {
-    return <HeaderBackButton message={message} preventBack={isDirty} tintColor={tintColor} />;
+    return (
+      <HeaderBackButton
+        marginRight={16}
+        message={message}
+        preventBack={isDirty}
+        tintColor={tintColor}
+      />
+    );
   }
 
   return <Stack.Screen options={{ headerLeft, headerBackVisible: false }} />;

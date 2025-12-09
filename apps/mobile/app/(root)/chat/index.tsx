@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import ConversationListItem from '@/features/chat/components/ConversationListItem';
 import { useInfiniteConversations } from '@/features/chat/hooks/queries';
+import { useChatsChannel } from '@/features/chat/hooks/realtime-channels';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList } from '@shopify/flash-list';
 import { Link, useRouter } from 'expo-router';
@@ -16,6 +17,8 @@ export default function ChatsPage() {
   const router = useRouter();
 
   const { data: conversations, ...query } = useInfiniteConversations();
+
+  useChatsChannel(conversations || []);
 
   return (
     <SafeArea safeTop={false} className="items-stretch">

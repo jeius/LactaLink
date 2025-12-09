@@ -11,7 +11,7 @@ export default function ChatsLayout() {
         name="index"
         options={{
           headerShown: true,
-          title: 'Messages',
+          title: 'Chats',
           headerRight: CreateChatButton,
         }}
       />

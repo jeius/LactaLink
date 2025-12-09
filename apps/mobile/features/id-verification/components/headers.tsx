@@ -24,8 +24,8 @@ export function FormStepsHeader() {
   return (
     <VStack className="bg-primary-500" style={{ paddingTop: inset.top + 4 }}>
       <HStack className="items-center p-2">
-        <HeaderBackButton tintColor={tintColor} style={{ marginLeft: 4 }} />
-        <Text className="font-JakartaSemiBold" style={{ color: tintColor }}>
+        <HeaderBackButton marginRight={16} tintColor={tintColor} style={{ marginLeft: 4 }} />
+        <Text bold size="lg" style={{ color: tintColor }}>
           Verification Form
         </Text>
       </HStack>
@@ -45,8 +45,8 @@ export function Header() {
 
   return (
     <HStack className="items-center bg-primary-500 p-2" style={{ paddingTop: inset.top + 12 }}>
-      <HeaderBackButton tintColor={tintColor} style={{ marginLeft: 4 }} />
-      <Text className="font-JakartaSemiBold" style={{ color: tintColor }}>
+      <HeaderBackButton marginRight={16} tintColor={tintColor} style={{ marginLeft: 4 }} />
+      <Text bold size="lg" style={{ color: tintColor }}>
         Identity Verification
       </Text>
     </HStack>

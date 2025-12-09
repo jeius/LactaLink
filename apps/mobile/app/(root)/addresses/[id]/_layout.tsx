@@ -1,4 +1,3 @@
-import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { getColor } from '@/lib/colors';
 import { Stack } from 'expo-router';
@@ -12,7 +11,6 @@ export default function Layout() {
       screenOptions={{
         ...screenOptions,
         headerShown: true,
-        headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
       <Stack.Screen

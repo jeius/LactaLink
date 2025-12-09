@@ -1,4 +1,3 @@
-import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { Stack } from 'expo-router';
@@ -14,7 +13,6 @@ export default function Layout() {
       screenOptions={{
         ...screenOptions,
         headerShown: true,
-        headerLeft: ({ tintColor }) => <HeaderBackButton tintColor={tintColor} />,
       }}
     >
       <Stack.Protected guard={isOrganization}>

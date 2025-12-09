@@ -46,12 +46,12 @@ export function DrawerHeader({ title, showSearch = false, ...props }: DrawerHead
       headerRight={({ tintColor }) => (
         <HStack space="sm" className="items-center">
           {showSearch && <SearchButton tintColor={tintColor} />}
-          <ProfileAvatar size="sm" profile={profile} enablePress />
+          <ProfileAvatar size="sm" profile={profile ?? undefined} enablePress />
         </HStack>
       )}
       headerLeft={({ tintColor }) => (
         <Pressable className="overflow-hidden rounded-lg p-2" hitSlop={8} onPress={openDrawer}>
-          <Icon as={MenuIcon} size="lg" color={tintColor} />
+          <Icon as={MenuIcon} size="xl" color={tintColor} />
         </Pressable>
       )}
     />
@@ -62,7 +62,7 @@ function SearchButton({ tintColor }: { tintColor?: string }) {
   return (
     <Link asChild push href={'/search'}>
       <Pressable className="overflow-hidden rounded-full p-2">
-        <Icon as={SearchIcon} color={tintColor} />
+        <Icon as={SearchIcon} color={tintColor} size="xl" />
       </Pressable>
     </Link>
   );

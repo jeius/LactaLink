@@ -1,6 +1,5 @@
 import { Form } from '@/components/contexts/FormProvider';
 import FormSaver from '@/components/forms/FormSaver';
-import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { FormStepsHeader, Header } from '@/features/id-verification/components/headers';
 import { useIDVerificationForm } from '@/features/id-verification/hooks/useIDVerificationForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
@@ -20,7 +19,6 @@ export default function IDVerificationLayout() {
         initialRouteName="index"
         screenOptions={{
           ...screenOptions,
-          headerLeft: HeaderBackButton,
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: true, header: Header }} />
