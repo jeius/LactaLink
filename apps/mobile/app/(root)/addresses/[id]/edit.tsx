@@ -1,12 +1,10 @@
-import React, { useRef } from 'react';
+import React from 'react';
 
 import { AddressMapBottomSheet } from '@/components/bottom-sheets/AddressMapBottomSheet';
 import { Form } from '@/components/contexts/FormProvider';
 import FormPreventBack from '@/components/forms/FormPreventBack';
-import { GooglePlacesInput, LocationDetails } from '@/components/GooglePlacesInput';
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
-import { Box } from '@/components/ui/box';
 import { useUpdateAddressMutation } from '@/features/address/hooks/useUpdateAddressMutation';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
@@ -17,8 +15,6 @@ import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
-import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
-import MapView from 'react-native-maps';
 import { toast } from 'sonner-native';
 
 export default function EditAddressPage() {
@@ -27,9 +23,6 @@ export default function EditAddressPage() {
   const revalidateQueries = useRevalidateCollectionQueries();
 
   const { id } = useLocalSearchParams<{ id: string }>();
-
-  const mapRef = useRef<MapView | null>(null);
-  const googlePlacesInputRef = useRef<GooglePlacesAutocompleteRef | null>(null);
 
   const form = useAddressForm(id);
   const { isLoading, fetchError: error, extraData: data, setValue } = form;
@@ -59,14 +52,6 @@ export default function EditAddressPage() {
     return <Redirect href={{ pathname: '/error', params }} />;
   }
 
-  function handleSearchSelected({ location }: LocationDetails) {
-    mapRef.current?.animateCamera({ center: location }, { duration: 500 });
-  }
-
-  function blurInput() {
-    googlePlacesInputRef.current?.blur();
-  }
-
   function handleCameraChangeComplete(_: RNRegion, camera: RNCamera, isGesture: boolean) {
     if (isGesture && camera?.center) {
       setValue('coordinates', camera.center, { shouldDirty: true, shouldTouch: true });
@@ -87,16 +72,7 @@ export default function EditAddressPage() {
           onCameraChangeComplete={handleCameraChangeComplete}
           isLoading={isLoading}
           coordinates={coordinates}
-          onMapPress={blurInput}
         >
-          <Box className="absolute inset-x-0 p-4" style={{ top: 0 }}>
-            <GooglePlacesInput
-              inputRef={googlePlacesInputRef}
-              rounded="full"
-              onSelected={handleSearchSelected}
-            />
-          </Box>
-
           <AddressMapBottomSheet
             editing
             onSavePress={form.handleSubmit(onSubmit)}
