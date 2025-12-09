@@ -1,6 +1,7 @@
 import { getHexColor } from '@/lib/colors';
 import { ANDROID_MAPS_API_KEY, IOS_MAPS_API_KEY } from '@/lib/constants';
 import { getImageAsset } from '@/lib/stores';
+import { Coordinates } from '@lactalink/types';
 import { RefObject } from 'react';
 import { Platform } from 'react-native';
 import {
@@ -10,7 +11,6 @@ import {
   GooglePlacesAutocompleteProps,
   GooglePlacesAutocompleteRef,
 } from 'react-native-google-places-autocomplete';
-import { LatLng } from 'react-native-maps';
 import { useTheme } from './AppProvider/ThemeProvider';
 import { Image } from './Image';
 import { Spinner } from './ui/spinner';
@@ -18,7 +18,7 @@ import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
 export type LocationDetails = {
-  location: LatLng;
+  location: Coordinates;
   googlePlaceData: GooglePlaceData;
   googlePlaceDetail: GooglePlaceDetail | null;
 };
@@ -62,7 +62,7 @@ export function GooglePlacesInput({
 
   function handleSelect(data: GooglePlaceData, detail: GooglePlaceDetail | null) {
     if (detail?.geometry?.location) {
-      const location: LatLng = {
+      const location: Coordinates = {
         latitude: detail.geometry.location.lat,
         longitude: detail.geometry.location.lng,
       };
