@@ -1,0 +1,127 @@
+import { VerificationAlert } from '@/components/alerts/VerificationAlert';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { ProfileAvatar } from '@/components/Avatar';
+import { BasicBadge } from '@/components/badges';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon } from '@/components/ui/button';
+import GradientBackground from '@/components/ui/gradient-bg';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
+import { getColor } from '@/lib/colors';
+import { Shade } from '@/lib/types/colors';
+import { isMeUser } from '@/lib/utils/isMeUser';
+import { createDirectionalShadow } from '@/lib/utils/shadows';
+import { PopulatedUserProfile } from '@lactalink/types';
+import { Individual } from '@lactalink/types/payload-generated-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { BadgeCheckIcon, Edit2Icon } from 'lucide-react-native';
+import ProfileCTA from './ProfileCTA';
+import ProfileDetailsCard from './ProfileDetailsCard';
+import ProfileDetailsList from './ProfileDetailsList';
+
+interface IndividualProfileProps {
+  profile: Extract<PopulatedUserProfile, { value: Individual }>;
+}
+
+export default function IndividualProfile({ profile }: IndividualProfileProps) {
+  const user = extractCollection(profile.value.owner);
+  const { themeColors } = useTheme();
+
+  const isOwner = user && isMeUser(user);
+  const isVerified = !!profile.value.isVerified;
+  const isVerifiedDonor = false; //Mocked for now
+
+  const name = profile.value.displayName || profile.value.givenName || 'Unknown User';
+
+  const profileType = 'Individual';
+  const profileIcon = PROFILE_TYPE_ICONS['INDIVIDUAL'];
+
+  const getAccentColor = (shade: Shade) => {
+    if (isVerifiedDonor) return themeColors.primary[shade];
+    else if (isVerified) return themeColors.info[shade];
+    return themeColors.background[shade];
+  };
+
+  const avatarRingColor = getAccentColor(isVerified || isVerifiedDonor ? '500' : '0');
+  const badgeIconFill = getAccentColor('500');
+  const badgeIconStroke = getColor('background', '0');
+  const bgGradientColors = [getAccentColor('50')!, getAccentColor('200')!] as const;
+  const backgroundColor = getAccentColor('200');
+
+  return (
+    <VStack className="flex-col items-stretch" style={{ backgroundColor }}>
+      <Box className="h-28 w-full p-2">
+        <GradientBackground colors={bgGradientColors} />
+      </Box>
+
+      <VStack
+        space="md"
+        style={{
+          ...createDirectionalShadow('top'),
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+        }}
+        className="relative grow items-stretch bg-background-50 p-5"
+      >
+        <VStack className="items-center" style={{ marginTop: -60 }}>
+          <Box className="relative">
+            <ProfileAvatar
+              profile={profile}
+              size="xl"
+              style={{ borderColor: avatarRingColor, borderWidth: 3 }}
+            />
+            {(isVerified || isVerifiedDonor) && (
+              <Box className="absolute bottom-0 right-0">
+                <Icon
+                  size="2xl"
+                  as={BadgeCheckIcon}
+                  fill={badgeIconFill}
+                  stroke={badgeIconStroke}
+                />
+              </Box>
+            )}
+          </Box>
+
+          <Text size="lg" className="font-JakartaSemiBold">
+            {name}
+          </Text>
+
+          {(isVerified || isVerifiedDonor) && (
+            <BasicBadge
+              size="sm"
+              text={isVerifiedDonor ? 'Verified Donor' : 'Verified User'}
+              action={isVerifiedDonor ? 'primary' : 'info'}
+              className="mt-1 py-0.5"
+            />
+          )}
+
+          <HStack space="xs" className="mt-1 items-center">
+            <Icon as={profileIcon} size="xs" />
+            <Text italic size="sm" ellipsizeMode="tail" numberOfLines={1}>
+              {profileType}
+            </Text>
+          </HStack>
+        </VStack>
+
+        {isOwner && (
+          <Box className="absolute right-5 top-4">
+            <Button variant="link" action="default" className="h-fit w-fit rounded-full p-2">
+              <ButtonIcon as={Edit2Icon} />
+            </Button>
+          </Box>
+        )}
+
+        {isOwner && !isVerified && <VerificationAlert />}
+
+        {!isOwner && <ProfileCTA profile={profile} />}
+
+        <ProfileDetailsList profile={profile} />
+
+        <ProfileDetailsCard profile={profile} className="mt-2 p-2" />
+      </VStack>
+    </VStack>
+  );
+}

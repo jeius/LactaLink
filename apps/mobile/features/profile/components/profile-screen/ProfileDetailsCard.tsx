@@ -6,8 +6,12 @@ import { VStack } from '@/components/ui/vstack';
 import { UserProfile } from '@lactalink/types';
 import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { calculateAge, capitalizeFirst } from '@lactalink/utilities/formatters';
-import React, { useEffect, useMemo } from 'react';
+import {
+  calculateAge,
+  capitalizeFirst,
+  formatNumberToShortenUnits,
+} from '@lactalink/utilities/formatters';
+import React, { Fragment, useEffect, useMemo } from 'react';
 
 type IndividualDetailsProps = Omit<ProfileDetailsProps, 'profile'> & {
   profile: Individual;
@@ -21,7 +25,7 @@ interface ProfileDetailsProps extends CardProps {
   profile: UserProfile;
 }
 
-function ProfileDetails({ profile, ...props }: ProfileDetailsProps) {
+function ProfileDetailsCard({ profile, ...props }: ProfileDetailsProps) {
   const slug = profile.relationTo;
   const profileData = extractCollection(profile.value);
 
@@ -73,56 +77,37 @@ function IndividualDetails({ profile, ...props }: IndividualDetailsProps) {
 }
 
 function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
-  const inStock = profile.totalVolume || 0;
-  const sentTransactions = profile.sentTransactions?.docs?.length || 0;
-  const receivedTransactions = profile.receivedTransactions?.docs?.length || 0;
+  const inStock = (profile.totalVolume ?? 0) / 1000; // Convert mL to L
+  const sentTransactions = profile.sentTransactions?.docs?.length ?? 0;
+  const receivedTransactions = profile.receivedTransactions?.docs?.length ?? 0;
+
+  const details: { label: string; value: number }[] = [
+    { label: 'Current Stock (Liters)', value: inStock },
+    { label: 'Received Donations', value: receivedTransactions },
+    { label: 'Fulfilled Requests', value: sentTransactions },
+  ];
+
   return (
     <Card {...props}>
       <HStack space="sm" className="w-full items-stretch">
-        <VStack space="sm" className="flex-1 items-center">
-          <Text
-            size="lg"
-            ellipsizeMode="tail"
-            numberOfLines={2}
-            bold
-            className="flex-1 text-center align-middle"
-          >
-            {inStock.toLocaleString()}
-          </Text>
-          <Text size="sm" className="shrink text-center">
-            Current Stock (mL)
-          </Text>
-        </VStack>
-        <Divider orientation="vertical" />
-        <VStack space="sm" className="flex-1 items-center">
-          <Text
-            size="lg"
-            ellipsizeMode="tail"
-            numberOfLines={2}
-            bold
-            className="flex-1 text-center align-middle"
-          >
-            {receivedTransactions.toLocaleString()}
-          </Text>
-          <Text size="sm" className="shrink text-center">
-            Received Donations
-          </Text>
-        </VStack>
-        <Divider orientation="vertical" />
-        <VStack space="sm" className="flex-1 items-center">
-          <Text
-            size="lg"
-            ellipsizeMode="tail"
-            numberOfLines={2}
-            bold
-            className="flex-1 text-center align-middle"
-          >
-            {sentTransactions.toLocaleString()}
-          </Text>
-          <Text size="sm" className="shrink text-center">
-            Fulfilled Requests
-          </Text>
-        </VStack>
+        {details.map((detail, index) => (
+          <Fragment key={index}>
+            <VStack space="sm" className="flex-1 items-center">
+              <Text
+                size="lg"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                className="flex-1 text-center align-middle font-JakartaExtraBold"
+              >
+                {formatNumberToShortenUnits(detail.value, 2)}
+              </Text>
+              <Text size="sm" className="shrink text-center">
+                {detail.label}
+              </Text>
+            </VStack>
+            {index < details.length - 1 && <Divider orientation="vertical" />}
+          </Fragment>
+        ))}
       </HStack>
     </Card>
   );
@@ -130,4 +115,4 @@ function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
 
 export type { ProfileDetailsProps };
 
-export default ProfileDetails;
+export default ProfileDetailsCard;

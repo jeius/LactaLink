@@ -10,6 +10,13 @@ import { Skeleton } from './ui/skeleton';
 import { Text } from './ui/text';
 import { VStack } from './ui/vstack';
 
+interface ContentProps {
+  profile: NonNullable<User['profile']>;
+  label?: string;
+  direction?: 'ltr' | 'rtl';
+  hideLabel?: boolean;
+}
+
 interface ProfileTagProps extends Pick<ContentProps, 'label' | 'direction' | 'hideLabel'> {
   profile: User['profile'];
   isLoading?: boolean;
@@ -29,21 +36,14 @@ export function ProfileTag({ profile, isLoading, ...props }: ProfileTagProps) {
   );
 }
 
-interface ContentProps {
-  profile: NonNullable<User['profile']>;
-  label?: string;
-  direction?: 'ltr' | 'rtl';
-  hideLabel?: boolean;
-}
-
 function Content({
   profile,
   direction = 'ltr',
   label: labelProp,
   hideLabel = false,
 }: ContentProps) {
-  const { data, isLoading } = useProfileData(profile);
-
+  const { data: profileData, isLoading } = useProfileData(profile);
+  const data = profileData?.value;
   const label =
     labelProp ||
     (data && (isHospital(data) ? 'Hospital' : isMilkBank(data) ? 'Milk Bank' : 'Individual'));

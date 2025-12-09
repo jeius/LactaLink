@@ -34,7 +34,8 @@ export default function ProfileCard({
 
   const profileSlug = profileProp.relationTo;
 
-  const { data: profile, ...rest } = useProfileData(profileProp);
+  const { data, ...rest } = useProfileData(profileProp);
+  const profile = data?.value;
   const isLoading = isLoadingProp || rest.isLoading;
 
   const user = extractCollection(profile?.owner) || null;

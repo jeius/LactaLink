@@ -11,11 +11,11 @@ export function createUserProfileQuery(profile: UserProfile | undefined) {
   return queryOptions({
     enabled: !!id && !!slug,
     queryKey: [...QUERY_KEYS.PROFILE.ONE, id, slug],
-    queryFn: () => {
+    queryFn: async () => {
       if (!id || !slug) throw new Error('Invalid profile data');
 
       const apiClient = getApiClient();
-      return apiClient.findByID({
+      const data = await apiClient.findByID({
         collection: slug,
         id: id,
         depth: 5,
@@ -27,9 +27,11 @@ export function createUserProfileQuery(profile: UserProfile | undefined) {
           sentTransactions: { count: true, limit: 0 },
         },
       });
+
+      return { relationTo: slug, value: data };
     },
     placeholderData: (prev) => {
-      if (!prev) return profileDoc;
+      if (!prev && slug && profileDoc) return { relationTo: slug, value: profileDoc };
       return prev;
     },
   });

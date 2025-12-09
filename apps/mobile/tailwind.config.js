@@ -43,6 +43,7 @@ module.exports = {
           950: 'var(--color-secondary-950)',
         },
         tertiary: {
+          0: 'var(--color-tertiary-0)',
           50: 'var(--color-tertiary-50)',
           100: 'var(--color-tertiary-100)',
           200: 'var(--color-tertiary-200)',

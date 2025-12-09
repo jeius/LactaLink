@@ -1,90 +1,38 @@
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { ProfileAvatar } from '@/components/Avatar';
-import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
-import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
-import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
-import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import GradientBackground from '@/components/ui/gradient-bg';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import ProfileDetails from '@/features/profile/components/ProfileDetails';
-import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
+import IndividualProfile from '@/features/profile/components/profile-screen/IndividualProfile';
+import OrganizationProfile from '@/features/profile/components/profile-screen/OrganizationProfile';
+import ProfilePosts from '@/features/profile/components/ProfilePosts';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useFetchById } from '@/hooks/collections/useFetchById';
-import { Shade } from '@/lib/types/colors';
-import { RecipientSearchParams } from '@/lib/types/donationRequest';
-import { isMeUser } from '@/lib/utils/isMeUser';
-import { shadow } from '@/lib/utils/shadows';
-import { Hospital, MilkBank } from '@lactalink/types/payload-generated-types';
+import { PopulatedUserProfile } from '@lactalink/types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { extractCollection, extractDefaultAddress } from '@lactalink/utilities/extractors';
-import { capitalizeFirst } from '@lactalink/utilities/formatters';
-import { isHospital, isIndividual } from '@lactalink/utilities/type-guards';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import {
-  Edit2Icon,
-  HashIcon,
-  MailIcon,
-  MapPinIcon,
-  PhoneIcon,
-  StethoscopeIcon,
-} from 'lucide-react-native';
-import React from 'react';
+import { extractID } from '@lactalink/utilities/extractors';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import React, { useCallback } from 'react';
 
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-};
-
-const samplePosts: Post[] = [
-  {
-    id: '1',
-    title: 'My First Post',
-    content:
-      'This is the content of my first post. I am excited to share my thoughts and experiences with you all!',
-  },
-  {
-    id: '2',
-    title: 'A Day in the Life',
-    content:
-      'Today, I want to take you through a typical day in my life. From morning routines to evening reflections, here is how I spend my days.',
-  },
-  {
-    id: '3',
-    title: 'Travel Adventures',
-    content:
-      'Traveling is one of my passions. In this post, I will share some of my most memorable travel experiences and tips for fellow travelers.',
-  },
-];
-
-type ProfileSlug = Extract<CollectionSlug, 'hospitals' | 'milkBanks'>;
+type ProfileSlug = Extract<CollectionSlug, 'hospitals' | 'milkBanks' | 'individuals'>;
 
 export default function OrganizationProfilePage() {
   const { id, slug } = useLocalSearchParams<{ slug: ProfileSlug; id: string }>();
 
   const { data: user, ...meUserQuery } = useMeUser();
-  const meUserProfile = extractCollection(user?.profile?.value);
+  const isMeUser = extractID(user?.profile?.value) === id;
 
-  const isMeUser = meUserProfile?.id === id && user?.profile?.relationTo === slug;
+  const { data, ...profileQuery } = useProfileData(
+    isMeUser ? user?.profile! : { relationTo: slug, value: id }
+  );
 
-  const { data: fetchedProfile, ...profileQuery } = useFetchById(!isMeUser, {
-    collection: slug,
-    id,
-  });
+  const profile = data?.value;
+  const isRefetching = profileQuery.isRefetching;
+  const isLoading = profileQuery.isLoading;
 
-  const profile = isMeUser ? meUserProfile : fetchedProfile;
-  const isRefetching = meUserQuery.isRefetching || profileQuery.isRefetching;
-  const isLoading = meUserQuery.isLoading || profileQuery.isLoading;
+  const refresh = useCallback(() => {
+    meUserQuery.refetch();
+    profileQuery.refetch();
+  }, [meUserQuery, profileQuery]);
 
-  if (isLoading) {
+  if (isLoading || !profile) {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Loading Profile...' }} />
@@ -93,206 +41,22 @@ export default function OrganizationProfilePage() {
     );
   }
 
-  if (!profile || isIndividual(profile)) return null;
-
-  const name = profile.name;
-  const headerTitle = isMeUser ? 'My Profile' : (name && `${name}'s Profile`) || 'Profile';
-
-  const renderItem: ListRenderItem<Post> = ({ item }) => {
-    const { title, content } = item;
-    return (
-      <Box className="bg-background-50 px-5 py-2">
-        <Card>
-          <VStack space="sm">
-            <Text size="lg" className="font-JakartaSemiBold">
-              {title}
-            </Text>
-            <Text size="md">{content}</Text>
-          </VStack>
-        </Card>
-      </Box>
-    );
-  };
-
-  function refresh() {
-    meUserQuery.refetch();
-    profileQuery.refetch();
-  }
-
-  function HeaderComponent() {
-    if (!profile || isIndividual(profile)) return null;
-
-    if (isMeUser) {
-      profile.owner = user;
-    }
-
-    return (
-      <>
-        <OrganizationProfile profile={{ relationTo: slug, value: profile }} />
-        <Text size="lg" bold className="bg-background-50 px-5">
-          Posts
-        </Text>
-      </>
-    );
-  }
+  const headerTitle = isMeUser ? 'My Profile' : profile.displayName || 'Profile';
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
       <Stack.Screen options={{ headerTitle }} />
-      <FlashList
-        data={samplePosts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refresh} />}
-        ListHeaderComponent={HeaderComponent}
+      <ProfilePosts
+        profile={{ relationTo: slug, value: profile } as PopulatedUserProfile}
+        isRefreshing={isRefetching}
+        onRefresh={refresh}
+        HeaderComponent={({ profile }) => {
+          if (profile.relationTo !== 'individuals') {
+            return <OrganizationProfile profile={profile} />;
+          }
+          return <IndividualProfile profile={profile} />;
+        }}
       />
     </SafeArea>
   );
 }
-
-//#region Components
-
-interface OrganizationProfileProps {
-  profile:
-    | { relationTo: 'hospitals'; value: Hospital }
-    | { relationTo: 'milkBanks'; value: MilkBank };
-}
-function OrganizationProfile({
-  profile: { relationTo, value: profile },
-}: OrganizationProfileProps) {
-  const { themeColors } = useTheme();
-
-  const user = extractCollection(profile.owner);
-
-  const isOwner = user && isMeUser(user);
-
-  const name = profile?.displayName || profile.name || 'No name';
-  const email = user?.email || 'No email';
-  const phone = profile?.phone || 'No phone number';
-  const fullAddress = extractDefaultAddress(user)?.displayName || 'No address';
-
-  const hospitalHead = profile && isHospital(profile) ? profile.head : null;
-  const hospitalID = profile && isHospital(profile) ? profile.hospitalID : null;
-
-  const profileType = user?.profileType && capitalizeFirst(user.profileType.toLowerCase());
-  const profileIcon =
-    (user?.profileType && PROFILE_TYPE_ICONS[user.profileType]) || PROFILE_TYPE_ICONS.INDIVIDUAL;
-
-  const params: RecipientSearchParams = {
-    rid: profile.id,
-    rslg: user?.profile?.relationTo,
-  };
-
-  const avatarRingColor = getAccentColor('300');
-  const bgGradientColors = [getAccentColor('50')!, getAccentColor('200')!] as const;
-  const backgroundColor = getAccentColor('200');
-  const sheetShadowColor = getAccentColor('900');
-
-  function getAccentColor(shade: Shade) {
-    return themeColors.secondary[shade];
-  }
-
-  return (
-    <VStack className="flex-col items-stretch" style={{ backgroundColor }}>
-      <Box className="h-28 w-full p-2">
-        <GradientBackground colors={bgGradientColors} />
-      </Box>
-
-      <VStack
-        space="md"
-        style={{
-          ...shadow.xl,
-          shadowColor: sheetShadowColor,
-        }}
-        className="relative grow items-stretch rounded-t-2xl bg-background-50 p-5"
-      >
-        <VStack className="items-center" style={{ marginTop: -60 }}>
-          <ProfileAvatar
-            profile={{ relationTo, value: profile }}
-            size="xl"
-            style={{ borderColor: avatarRingColor, borderWidth: 3 }}
-          />
-
-          <Text size="lg" className="font-JakartaSemiBold">
-            {name}
-          </Text>
-
-          <HStack space="xs" className="mt-1 items-center">
-            <Icon as={profileIcon} size="xs" />
-            <Text italic size="sm" ellipsizeMode="tail" numberOfLines={1}>
-              {profileType}
-            </Text>
-          </HStack>
-        </VStack>
-
-        {isOwner && (
-          <Box className="absolute right-5 top-4">
-            <Button variant="link" action="default" className="h-fit w-fit rounded-full p-2">
-              <ButtonIcon as={Edit2Icon} />
-            </Button>
-          </Box>
-        )}
-
-        {!isOwner && (
-          <HStack space="lg" className="w-full items-stretch justify-center">
-            <Link asChild push href={{ pathname: `/donations/create`, params }}>
-              <Button>
-                <ButtonIcon as={DonateMilkIcon} fill={themeColors.primary[0]} />
-                <ButtonText>Donate</ButtonText>
-              </Button>
-            </Link>
-            <Link asChild push href={{ pathname: `/requests/create`, params }}>
-              <Button variant="outline">
-                <ButtonIcon as={MilkBottlePlusIcon} fill={themeColors.primary[500]} />
-                <ButtonText>Request</ButtonText>
-              </Button>
-            </Link>
-          </HStack>
-        )}
-
-        <VStack space="sm" className="mt-1 items-stretch">
-          {hospitalID && (
-            <HStack space="sm" className="items-center">
-              <Icon as={HashIcon} size="sm" />
-              <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-                Hospital ID: {hospitalID}
-              </Text>
-            </HStack>
-          )}
-          {hospitalHead && (
-            <HStack space="sm" className="items-center">
-              <Icon as={StethoscopeIcon} size="sm" />
-              <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-                Hospital Head: {hospitalHead}
-              </Text>
-            </HStack>
-          )}
-
-          <HStack space="sm" className="items-center">
-            <Icon as={MailIcon} size="sm" />
-            <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-              {email}
-            </Text>
-          </HStack>
-
-          <HStack space="sm" className="items-center">
-            <Icon as={PhoneIcon} size="sm" />
-            <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
-              {phone}
-            </Text>
-          </HStack>
-
-          <HStack space="sm" className="items-start">
-            <Icon as={MapPinIcon} size="sm" style={{ marginTop: 2 }} />
-            <Text size="sm" className="shrink" ellipsizeMode="tail" numberOfLines={2}>
-              {fullAddress}
-            </Text>
-          </HStack>
-        </VStack>
-
-        <ProfileDetails profile={{ relationTo, value: profile }} className="mt-2 p-2" />
-      </VStack>
-    </VStack>
-  );
-}
-//#endregion

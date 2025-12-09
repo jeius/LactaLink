@@ -5,12 +5,5 @@ import React from 'react';
 export default function ProfileRootLayout() {
   const screenOptions = useScreenOptions();
 
-  return (
-    <Stack
-      screenOptions={{
-        ...screenOptions,
-        headerShown: true,
-      }}
-    />
-  );
+  return <Stack screenOptions={{ ...screenOptions, headerShown: true }} />;
 }

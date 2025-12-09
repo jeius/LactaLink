@@ -89,7 +89,8 @@ export function ProfileAvatar({
 }: ProfileAvatarProps) {
   const router = useRouter();
 
-  const { data: profile, ...query } = useProfileData(profileProp);
+  const { data, ...query } = useProfileData(profileProp);
+  const profile = data?.value;
 
   const isLoading = isLoadingProp || query.isLoading;
 
