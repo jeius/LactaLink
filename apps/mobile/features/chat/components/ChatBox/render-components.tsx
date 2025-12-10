@@ -1,9 +1,11 @@
-import { ImageViewer } from '@/components/ImageViewer';
+import { ImageViewer, SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { getColor, getPrimaryColor } from '@/lib/colors';
 import { extractImageData } from '@lactalink/utilities/extractors';
 import { CameraIcon, CheckCheckIcon, CheckIcon, ImageIcon } from 'lucide-react-native';
@@ -106,34 +108,64 @@ function ChatActions() {
 
 function ChatBubble(props: BubbleProps<ChatMessage>) {
   return (
-    <Bubble
-      {...props}
-      textStyle={{
-        right: { color: getColor('primary', '0') },
-        left: { color: getColor('typography', '900') },
+    <VStack className="items-end">
+      <ChatReplyMessage {...props} />
+      <Bubble
+        {...props}
+        textStyle={{
+          right: { color: getColor('primary', '0') },
+          left: { color: getColor('typography', '900') },
+        }}
+        wrapperStyle={{
+          right: { backgroundColor: getColor('primary', '500') },
+          left: { backgroundColor: getColor('background', '0') },
+        }}
+        renderMessageImage={ChatImage}
+        renderTicks={({ pending, received, sent }) => {
+          const size = 12;
+          if (pending) {
+            return <Spinner className="text-primary-0" size={size} style={{ marginLeft: 4 }} />;
+          } else if (sent || received) {
+            return (
+              <Box style={{ marginLeft: 4 }}>
+                <Icon
+                  as={sent ? CheckIcon : CheckCheckIcon}
+                  className="text-primary-0"
+                  style={{ width: size, height: size }}
+                />
+              </Box>
+            );
+          } else return null;
+        }}
+      />
+    </VStack>
+  );
+}
+
+function ChatReplyMessage(props: BubbleProps<ChatMessage>) {
+  const replyTo = props.currentMessage.replyTo;
+  if (!replyTo) return null;
+
+  const text = replyTo.text;
+  const media = replyTo.media;
+  return (
+    <Box
+      className="rounded-xl border border-outline-200 bg-background-0 p-2"
+      style={{
+        opacity: 0.8,
+        paddingBottom: 16,
+        transform: [{ translateY: 12 }],
       }}
-      wrapperStyle={{
-        right: { backgroundColor: getColor('primary', '500') },
-        left: { backgroundColor: getColor('background', '0') },
-      }}
-      renderMessageImage={ChatImage}
-      renderTicks={({ pending, received, sent }) => {
-        const size = 12;
-        if (pending) {
-          return <Spinner className="text-primary-0" size={size} style={{ marginLeft: 4 }} />;
-        } else if (sent || received) {
-          return (
-            <Box style={{ marginLeft: 4 }}>
-              <Icon
-                as={sent ? CheckIcon : CheckCheckIcon}
-                className="text-primary-0"
-                style={{ width: size, height: size }}
-              />
-            </Box>
-          );
-        } else return null;
-      }}
-    />
+    >
+      {text.length > 0 && <Text className="text-typography-700">{text}</Text>}
+      {media && (
+        <SingleImageViewer
+          disabled
+          image={media}
+          style={{ width: 80, height: 120, borderRadius: 6, overflow: 'hidden' }}
+        />
+      )}
+    </Box>
   );
 }
 

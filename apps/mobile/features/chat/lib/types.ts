@@ -1,5 +1,5 @@
 import { ImageSchema } from '@lactalink/form-schemas';
-import { UserProfile } from '@lactalink/types';
+import { ImageData, UserProfile } from '@lactalink/types';
 import { Conversation, ConversationParticipant } from '@lactalink/types/payload-generated-types';
 import { LucideIcon } from 'lucide-react-native';
 import { type IMessage } from 'react-native-gifted-chat';
@@ -24,6 +24,7 @@ export type ChatMessage = IMessage & {
   deletedAt?: string | null;
   conversation: string | Conversation;
   sender: UserProfile;
+  replyTo?: (Pick<IMessage, '_id' | 'text'> & { media?: ImageData | null }) | null;
 };
 
 export type CreateChatMessage = Pick<IMessage, 'user'> & Pick<ChatMessage, 'media'>;

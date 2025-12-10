@@ -1,7 +1,7 @@
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { DBMessage } from '@lactalink/types/database';
-import { Conversation, Message } from '@lactalink/types/payload-generated-types';
+import { Conversation, Message, User } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from '@supabase/supabase-js';
@@ -25,10 +25,18 @@ export function useConversationChannel(conversation: Conversation) {
 
   const [newMessage, setNewMessage] = useState<Message | null>(null);
 
-  const { typingMap } = useMemo(() => {
+  const { typingMap, participantsMap } = useMemo(() => {
     const participants = extractCollection(extractCollection(conversation)?.participants?.docs);
-    const map = new Map(participants?.map((p) => [extractID(p.participant), false]) || []);
-    return { participants, typingMap: map };
+
+    const typingMap = new Map<string, boolean>();
+    const participantsMap = new Map<string, User | null>();
+
+    participants?.forEach((p) => {
+      participantsMap.set(extractID(p.participant), extractCollection(p.participant));
+      typingMap.set(extractID(p.participant), false);
+    });
+
+    return { participants, typingMap, participantsMap };
   }, [conversation]);
 
   const [typingUsersMap, setTypingUsersMap] = useState(typingMap);
@@ -169,7 +177,8 @@ export function useConversationChannel(conversation: Conversation) {
     newMessage,
     typingUsers: Array.from(typingUsersMap.entries())
       .filter(([_, isTyping]) => isTyping)
-      .map(([userId]) => userId),
+      .map(([userId]) => participantsMap.get(userId))
+      .filter(Boolean) as User[],
     unsubscribe,
   };
 }

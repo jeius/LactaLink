@@ -1,9 +1,13 @@
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { CONVERSATION_TYPE } from '@lactalink/enums';
-import { Conversation } from '@lactalink/types/payload-generated-types';
+import { PopulatedUserProfile } from '@lactalink/types';
+import { Conversation, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { isString } from '@lactalink/utilities/type-guards';
 
-export function getOtherUserFromDirectChat(conversation: Conversation) {
+export function getOtherUserFromDirectChat(
+  conversation: Conversation
+): Omit<User, 'profile'> & { profile: PopulatedUserProfile } {
   if (conversation.type !== CONVERSATION_TYPE.DIRECT.value) {
     throw new Error('Conversation is not a direct chat');
   }
@@ -27,5 +31,15 @@ export function getOtherUserFromDirectChat(conversation: Conversation) {
     throw new Error('Other participant user data is not populated');
   }
 
-  return otherUser;
+  if (!otherUser.profile) {
+    throw new Error('Other participant has no profile data');
+  }
+
+  const isProfileShallow = isString(otherUser.profile.value);
+
+  if (isProfileShallow) {
+    throw new Error('Other participant profile data is not populated');
+  }
+
+  return otherUser as Omit<User, 'profile'> & { profile: PopulatedUserProfile };
 }

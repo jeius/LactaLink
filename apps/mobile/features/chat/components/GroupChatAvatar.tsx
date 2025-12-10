@@ -39,7 +39,7 @@ export default function GroupChatAvatar({
               left: index * 15,
             }}
           >
-            <ProfileAvatar profile={user.profile} size="xs" isLoading={isLoading} />
+            <ProfileAvatar profile={user.profile!} size="xs" isLoading={isLoading} />
           </Box>
         );
       })}

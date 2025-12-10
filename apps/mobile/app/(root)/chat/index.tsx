@@ -10,12 +10,10 @@ import { useInfiniteConversations } from '@/features/chat/hooks/queries';
 import { useChatsChannel } from '@/features/chat/hooks/realtime-channels';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList } from '@shopify/flash-list';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { PenLineIcon } from 'lucide-react-native';
 
 export default function ChatsPage() {
-  const router = useRouter();
-
   const { data: conversations, ...query } = useInfiniteConversations();
 
   useChatsChannel(conversations || []);

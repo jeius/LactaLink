@@ -17,7 +17,7 @@ export function createSendMessageMutation(conversation: Conversation) {
       // Snapshot previous messages
       const prevMessages = client.getQueryData(infiniteMessagesOptions.queryKey);
 
-      const newMessage = transformToMessage(vars);
+      const newMessage = transformToMessage(vars, prevMessages);
 
       // Optimistically update the messages cache
       addMessageToInfiniteCache(client, newMessage, conversation);

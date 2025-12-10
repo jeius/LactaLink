@@ -19,6 +19,7 @@ type SendMessageArgs = {
   sender: UserProfile;
   content: string;
   attachments?: MessageAttachment['attachment'][];
+  replyTo?: string;
 };
 
 export class SendMessageError extends Error {
@@ -57,6 +58,7 @@ export class ChatService {
     conversation,
     sender,
     attachments,
+    replyTo,
   }: SendMessageArgs): Promise<Message> {
     const message = await this.apiClient.create({
       collection: 'messages',
@@ -65,6 +67,7 @@ export class ChatService {
         conversation: extractID(conversation),
         sender: { relationTo: sender.relationTo, value: extractID(sender.value) },
         content: content,
+        replyTo: replyTo,
       },
     });
 

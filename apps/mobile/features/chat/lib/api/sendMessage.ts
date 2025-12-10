@@ -32,6 +32,7 @@ export async function sendMessage(message: ChatMessage) {
       conversation: message.conversation,
       sender: message.sender,
       content: message.text,
+      replyTo: message.replyTo?._id as string | undefined,
       attachments:
         mediaDocs.length > 0
           ? mediaDocs.map((media) => ({ relationTo: 'message-media', value: media.id }))

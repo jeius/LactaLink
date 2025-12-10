@@ -1,5 +1,6 @@
 import { ProfileAvatar } from '@/components/Avatar';
 import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -14,7 +15,11 @@ import {
 import { formatTimeOrDateLabel } from '@lactalink/utilities/formatters';
 import { useRecyclingState } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
+import { Trash2Icon } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { generateGroupName } from '../lib/generateGroupName';
 import { getOtherUserFromDirectChat } from '../lib/getOtherUserFromDirectChat';
 import { extractLastMessage } from '../lib/transformUtils';
@@ -48,10 +53,42 @@ export default function ConversationListItem({ data }: ConversationListItemProps
   const router = useRouter();
 
   const { unread, lastMessage, text: lastMessageText } = extractLastMessage(data);
+  const [isUnread, setIsUnread] = useRecyclingState(unread, [unread]);
 
   const participants = extractCollection(data.participants?.docs);
+  const isDirectChat = data.type === CONVERSATION_TYPE.DIRECT.value;
+  const isGroupChat = data.type === CONVERSATION_TYPE.GROUP.value;
 
-  const [isUnread, setIsUnread] = useRecyclingState(unread, [unread]);
+  const { title, subtitle } = useMemo(() => {
+    if (isDirectChat) {
+      const otherUser = getOtherUserFromDirectChat(data);
+      const otherUserName = extractDisplayName(otherUser);
+      return {
+        title: otherUserName,
+        subtitle: lastMessageText || 'No messages yet',
+      };
+    }
+
+    const groupName = data.title || generateGroupName(participants || []);
+    const createdBy = extractCollection(data.createdBy);
+    const createdByName = (createdBy && extractName(createdBy)) || 'Someone';
+    return {
+      title: groupName,
+      subtitle: lastMessageText || `${createdByName} created the group`,
+    };
+  }, [data, isDirectChat, lastMessageText, participants]);
+
+  const AvatarComponent = useCallback(() => {
+    if (isGroupChat) {
+      return <GroupChatAvatar avatar={data.avatar} participants={participants || []} />;
+    }
+    const otherUser = getOtherUserFromDirectChat(data);
+    return <ProfileAvatar profile={otherUser.profile} style={{ width: 40, height: 40 }} />;
+  }, [data, isGroupChat, participants]);
+
+  const renderRightActions = useCallback((progress: SharedValue<number>) => {
+    return <Actions progress={progress} />;
+  }, []);
 
   useEffect(() => {
     setIsUnread(unread);
@@ -62,47 +99,45 @@ export default function ConversationListItem({ data }: ConversationListItemProps
     setIsUnread(false);
   }, [data.id, router, setIsUnread]);
 
-  if (data.type === CONVERSATION_TYPE.GROUP.value) {
-    const groupName = data.title || generateGroupName(participants || []);
-    const createdBy = extractCollection(data.createdBy);
-    const createdByName = (createdBy && extractName(createdBy)) || 'Someone';
-    return (
-      <Pressable className="w-full flex-row items-center gap-3 px-5 py-2" onPress={handlePress}>
-        <GroupChatAvatar avatar={data.avatar} participants={participants || []} />
-        <VStack className="flex-1">
-          <Text className="font-JakartaSemiBold">{groupName}</Text>
-          <HStack space="sm" className="items-center">
-            <Text size="sm" numberOfLines={1} className={messageStyle({ isUnread })}>
-              {lastMessageText || `${createdByName} created the group`}
-            </Text>
-            <Text size="sm" className={dateStyle({ isUnread })}>
-              {formatTimeOrDateLabel(lastMessage?.createdAt || data.createdAt)}
-            </Text>
-          </HStack>
-        </VStack>
-      </Pressable>
-    );
-  }
-
-  if (!lastMessage) return null;
-
-  const otherUser = getOtherUserFromDirectChat(data);
-  const otherUserName = extractDisplayName(otherUser);
+  // Don't render direct chats with no messages
+  if (isDirectChat && !lastMessage) return null;
 
   return (
-    <Pressable className="w-full flex-row items-center gap-3 px-5 py-2" onPress={handlePress}>
-      <ProfileAvatar profile={otherUser?.profile} style={{ width: 40, height: 40 }} />
-      <VStack className="flex-1">
-        <Text className="font-JakartaSemiBold">{otherUserName}</Text>
-        <HStack space="sm" className="items-center">
-          <Text size="sm" numberOfLines={1} className={messageStyle({ isUnread })}>
-            {lastMessageText || 'No messages yet'}
-          </Text>
-          <Text size="sm" className={dateStyle({ isUnread })}>
-            {formatTimeOrDateLabel(lastMessage.createdAt)}
-          </Text>
-        </HStack>
-      </VStack>
-    </Pressable>
+    <GestureHandlerRootView>
+      <ReanimatedSwipeable overshootRight={false} renderRightActions={renderRightActions}>
+        <Pressable
+          className="w-full flex-row items-center gap-3 bg-background-50 px-5 py-2"
+          onPress={handlePress}
+        >
+          <AvatarComponent />
+          <VStack className="flex-1">
+            <Text className="font-JakartaSemiBold">{title}</Text>
+            <HStack space="sm" className="items-center">
+              <Text size="sm" numberOfLines={1} className={messageStyle({ isUnread })}>
+                {subtitle}
+              </Text>
+              <Text size="sm" className={dateStyle({ isUnread })}>
+                {formatTimeOrDateLabel(lastMessage?.createdAt || data.createdAt)}
+              </Text>
+            </HStack>
+          </VStack>
+        </Pressable>
+      </ReanimatedSwipeable>
+    </GestureHandlerRootView>
+  );
+}
+
+function Actions({ progress }: { progress: SharedValue<number> }) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = interpolate(progress.value, [0, 1], [0.5, 1]);
+    return { transform: [{ scale }] };
+  });
+
+  return (
+    <Animated.View className="flex-row items-center px-2" style={animatedStyle}>
+      <Pressable className="p-2">
+        <Icon as={Trash2Icon} className="text-error-500" />
+      </Pressable>
+    </Animated.View>
   );
 }

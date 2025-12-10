@@ -11,7 +11,7 @@ import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-nati
 import { ChatMessage } from '../../lib/types';
 
 export type ChatMessageBoxProps = {
-  setReplyOnSwipeOpen: (message: ChatMessage) => void;
+  setReplyOnSwipeOpen?: (message: ChatMessage) => void;
   updateRowRef: (ref: SwipeableMethods | null, id: string | number) => void;
 } & MessageProps<ChatMessage>;
 
@@ -24,14 +24,27 @@ export default function ChatMessageBox({
 
   const isLeft = props.position === 'left';
   const isRight = props.position === 'right';
+  const isSystemMessage = props.currentMessage?.system === true;
 
   const renderAction = (progress: SharedValue<number>) => {
-    return <ReplyAction progress={progress} translateDirection={isLeft ? 'right' : 'left'} />;
+    return (
+      <ReplyAction
+        progress={progress}
+        translateDirection={isLeft ? 'right' : 'left'}
+        style={{
+          marginLeft: isLeft ? 0 : 8,
+          marginRight: isRight ? 0 : 8,
+        }}
+      />
+    );
   };
 
   const onSwipeOpenAction = () => {
     if (props.currentMessage) {
-      setReplyOnSwipeOpen({ ...props.currentMessage });
+      setReplyOnSwipeOpen?.({ ...props.currentMessage });
+      setTimeout(() => {
+        ref.current?.close();
+      }, 300);
     }
   };
 
@@ -46,9 +59,11 @@ export default function ChatMessageBox({
         friction={2}
         rightThreshold={isRight ? 40 : undefined}
         leftThreshold={isLeft ? 40 : undefined}
+        overshootFriction={3}
         renderRightActions={isRight ? renderAction : undefined}
         renderLeftActions={isLeft ? renderAction : undefined}
         onSwipeableOpen={onSwipeOpenAction}
+        enabled={!isSystemMessage}
       >
         <Message {...props} />
       </Swipeable>
@@ -81,7 +96,7 @@ function ReplyAction({
     <Animated.View
       style={[{ width: 40, alignItems: 'center', justifyContent: 'center' }, animatedStyle, style]}
     >
-      <Box className="rounded-full bg-background-0 p-2">
+      <Box className="rounded-full p-2">
         <Icon as={ReplyIcon} />
       </Box>
     </Animated.View>

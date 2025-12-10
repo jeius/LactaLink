@@ -1,7 +1,10 @@
+import { BLUR_HASH } from '@/lib/constants';
 import { getMeUser } from '@/lib/stores/meUserStore';
+import { InfiniteDataMap } from '@/lib/types';
 import { createTempID, isTempID } from '@/lib/utils/tempID';
 import { transformToImageSchema } from '@/lib/utils/transformData';
 import { MESSAGE_TYPE } from '@lactalink/enums';
+import { ImageData } from '@lactalink/types';
 import { Conversation, Message, MessageMedia } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import {
@@ -25,6 +28,20 @@ export function transformToChatMessage(msg: Message): ChatMessage {
 
   const image = media?.[0]?.url || undefined;
 
+  const replyTo = extractCollection(msg.replyTo);
+  const replyToAttachment = extractCollection(replyTo?.attachments?.docs?.[0]);
+  const replyToMedia = replyToAttachment
+    ? replyToAttachment.attachment.relationTo === 'message-media'
+      ? extractCollection(replyToAttachment.attachment.value)
+      : null
+    : null;
+
+  const replyToImageData: ImageData | null = replyToMedia && {
+    uri: replyToMedia.url ?? null,
+    alt: replyToMedia.alt || '',
+    blurHash: replyToMedia.blurHash || BLUR_HASH,
+  };
+
   return {
     _id: msg.id,
     text: msg.content ?? '',
@@ -43,13 +60,32 @@ export function transformToChatMessage(msg: Message): ChatMessage {
       name: displayName,
       avatar: avatar?.sizes?.thumbnail?.url || undefined,
     },
+    replyTo: replyTo && {
+      _id: replyTo.id,
+      text: replyTo.content || '',
+      media: replyToImageData,
+    },
   };
 }
 
-export function transformToMessage(chatMessage: ChatMessage): Message {
+export function transformToMessage(
+  chatMessage: ChatMessage,
+  prevMessages?: InfiniteDataMap<Message>
+): Message {
   const meUser = getMeUser();
-
   const now = new Date().toISOString();
+
+  let replyTo: Message | undefined = undefined;
+  if (chatMessage.replyTo) {
+    // Try to find the full replyTo message in previous messages cache
+    for (const page of prevMessages?.pages || []) {
+      const foundMsg = page.docs.get(chatMessage.replyTo._id as string);
+      if (foundMsg) {
+        replyTo = foundMsg;
+        break;
+      }
+    }
+  }
 
   return {
     id: chatMessage._id as string,
@@ -63,6 +99,7 @@ export function transformToMessage(chatMessage: ChatMessage): Message {
     editedAt: chatMessage.editedAt,
     deletedAt: chatMessage.deletedAt,
     searchVector: chatMessage.text,
+    replyTo: replyTo,
     attachments: {
       docs: chatMessage.media?.map((media) => ({
         id: createTempID(),
