@@ -111,7 +111,7 @@
     "react-native-css-interop": "^0.2.1",
     "react-native-dotenv": "^3.4.11",
     "react-native-edge-to-edge": "^1.7.0",
-    "react-native-gesture-handler": "~2.28.0",
+    "react-native-gesture-handler": "~2.29.1",
     "react-native-get-random-values": "^1.11.0",
     "react-native-gifted-chat": "^3.2.2",
     "react-native-google-maps-plus": "^1.10.2",
@@ -152,7 +152,8 @@
       "exclude": [
         "@types/react",
         "@shopify/flash-list",
-        "@react-navigation/native"
+        "@react-navigation/native",
+        "react-native-gesture-handler"
       ]
     },
     "doctor": {
