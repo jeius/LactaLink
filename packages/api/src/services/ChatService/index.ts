@@ -144,4 +144,29 @@ export class ChatService {
 
     return { ...message, reads: { docs: readDocs, totalDocs: readDocs.length, hasNextPage } };
   };
+
+  archiveConversation = async (
+    conversation: Conversation,
+    user: User | null
+  ): Promise<Conversation> => {
+    if (!user) throw new Error('User not logged in');
+
+    const statusDoc = await this.apiClient.create({
+      collection: 'conversation-statuses',
+      data: {
+        conversation: extractID(conversation),
+        archived: true,
+        user: extractID(user),
+      },
+    });
+
+    const archivedStatuses = conversation.archivedStatuses?.docs || [];
+    archivedStatuses.push(statusDoc);
+    const hasNextPage = conversation.archivedStatuses?.hasNextPage;
+
+    return {
+      ...conversation,
+      archivedStatuses: { docs: archivedStatuses, totalDocs: archivedStatuses.length, hasNextPage },
+    };
+  };
 }

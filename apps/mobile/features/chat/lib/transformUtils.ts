@@ -88,7 +88,7 @@ export function transformToMessage(
   }
 
   return {
-    id: chatMessage._id as string,
+    id: chatMessage._id,
     content: chatMessage.text,
     createdAt: new Date(chatMessage.createdAt).toISOString(),
     conversation: chatMessage.conversation,
@@ -105,7 +105,7 @@ export function transformToMessage(
         id: createTempID(),
         createdAt: now,
         updatedAt: now,
-        message: chatMessage._id as string,
+        message: chatMessage._id,
         createdBy: meUser?.id!,
         attachment: {
           relationTo: 'message-media',
@@ -125,7 +125,7 @@ export function transformToMessage(
   };
 }
 
-export function extractLastMessage(conversation: Conversation) {
+export function getLastMessage(conversation: Conversation) {
   const meUser = getMeUser();
 
   const lastMessage = conversation.messages?.docs?.[0] ?? null;
@@ -155,4 +155,15 @@ export function extractLastMessage(conversation: Conversation) {
         : content);
 
   return { text: lastMessageText, lastMessage: lastMsgDoc, unread };
+}
+
+export function getConversationStatus({ archivedStatuses, mutedStatuses }: Conversation) {
+  const archived = archivedStatuses?.docs?.length ?? 0 > 0;
+
+  const muteStatusDoc = extractCollection(mutedStatuses?.docs?.[0]);
+  const permanentMute = muteStatusDoc?.permanentMute ?? false;
+  const mutedUntil = muteStatusDoc?.mutedUntil ? new Date(muteStatusDoc.mutedUntil) : null;
+  const isMuted = permanentMute || (mutedUntil ? mutedUntil > new Date() : false);
+
+  return { archived, muted: isMuted };
 }

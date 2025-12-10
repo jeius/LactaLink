@@ -18,7 +18,8 @@ export interface ParticipantConfig {
   role?: ConversationParticipant['role'];
 }
 
-export type ChatMessage = IMessage & {
+export type ChatMessage = Omit<IMessage, '_id'> & {
+  _id: string;
   media?: ImageSchema[];
   editedAt?: string | null;
   deletedAt?: string | null;
@@ -27,6 +28,6 @@ export type ChatMessage = IMessage & {
   replyTo?: (Pick<IMessage, '_id' | 'text'> & { media?: ImageData | null }) | null;
 };
 
-export type CreateChatMessage = Pick<IMessage, 'user'> & Pick<ChatMessage, 'media'>;
+export type CreateChatMessage = Pick<ChatMessage, 'media'>;
 
 export type ChatActionType = { icon: LucideIcon; action: () => void };

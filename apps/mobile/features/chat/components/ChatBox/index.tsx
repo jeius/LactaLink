@@ -1,23 +1,25 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
-import { Spinner } from '@/components/ui/spinner';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { getPrimaryColor } from '@/lib/colors';
+import { createTempID } from '@/lib/utils/tempID';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { extractDisplayName, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useIsFocused } from '@react-navigation/native';
-import { useMutation } from '@tanstack/react-query';
 import { produce } from 'immer';
+import { ChevronDownIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SwipeableMethods } from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 import { GiftedChat, User as GiftedUser, MessageProps, SendProps } from 'react-native-gifted-chat';
 import { TypingIndicator } from 'react-native-gifted-chat/src/TypingIndicator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMarkReadConversation, useSendMessage } from '../../hooks/mutations';
 import { useInfiniteMessages } from '../../hooks/queries';
 import { useConversationChannel } from '../../hooks/realtime-channels';
-import { createMarkAsReadMutation, createSendMessageMutation } from '../../lib/mutationOptions';
 import { ChatMessage, CreateChatMessage } from '../../lib/types';
 import ChatMessageBox from './ChatMessageBox';
 import ChatSendButton from './ChatSendButton';
@@ -42,28 +44,25 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
     chatMessages,
     data: messages,
     fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
   } = useInfiniteMessages(conversation);
-
-  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   const swipeableMapRef = useRef(new Map<string, SwipeableMethods>());
 
   const { typingUsers } = useConversationChannel(conversation);
 
-  const { mutate: sendMessage } = useMutation(createSendMessageMutation(conversation));
-  const { mutate: markAsRead } = useMutation(createMarkAsReadMutation(conversation));
+  const { mutate: sendMessage } = useSendMessage(conversation);
+  const { mutate: markAsRead } = useMarkReadConversation(conversation);
 
   const meUserGifted = useMemo(() => {
     if (!meUser) return;
     return { _id: meUser.id, name: extractDisplayName(meUser) } as GiftedUser;
   }, [meUser]);
 
-  const methods = useForm<CreateChatMessage>({
-    defaultValues: { user: meUserGifted! },
-  });
-
+  const methods = useForm<CreateChatMessage>();
   const { reset } = methods;
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   const handleSend = useCallback(
     (messages: ChatMessage[]) => {
@@ -79,17 +78,29 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
             };
         })
       );
-      reset({ media: undefined, user: meUserGifted! });
+      reset({ media: undefined });
       setReplyTo(null);
     },
-    [meUserGifted, replyTo, reset, sendMessage]
+    [replyTo, reset, sendMessage]
   );
 
-  const updateRowRef = useCallback((ref: SwipeableMethods | null, id: string | number) => {
-    if (ref) swipeableMapRef.current.set(id.toString(), ref);
-    else swipeableMapRef.current.delete(id.toString());
+  const updateRowRef = useCallback((ref: SwipeableMethods | null, id: string) => {
+    if (ref) swipeableMapRef.current.set(id, ref);
+    else swipeableMapRef.current.delete(id);
   }, []);
 
+  useEffect(() => {
+    if (messages && isFocused) markAsRead(messages);
+  }, [isFocused, markAsRead, messages]);
+
+  useEffect(() => {
+    if (replyTo) {
+      const swipeableRef = swipeableMapRef.current.get(replyTo._id);
+      swipeableRef?.close();
+    }
+  }, [replyTo]);
+
+  //#region Render Methods
   const renderAccessory = useCallback(() => <MediaList />, []);
 
   const renderActions = useCallback(() => <ChatActions />, []);
@@ -99,6 +110,25 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
       <ChatMessageBox {...props} updateRowRef={updateRowRef} setReplyOnSwipeOpen={setReplyTo} />
     ),
     [updateRowRef]
+  );
+
+  const renderChatFooter = useCallback(() => {
+    if (!replyTo) return null;
+    return <ReplyMessageBar message={replyTo} onCancelReply={() => setReplyTo(null)} />;
+  }, [replyTo]);
+
+  const renderSend = useCallback(
+    (props: SendProps<ChatMessage>) => <ChatSendButton {...props} conversation={conversation} />,
+    [conversation]
+  );
+
+  const renderScrollToBottomComponent = useCallback(
+    () => (
+      <Button action="secondary" size="xl" className="h-fit w-fit self-center rounded-full p-3">
+        <ButtonIcon as={ChevronDownIcon} />
+      </Button>
+    ),
+    []
   );
 
   const renderTypingIndicator = useCallback(() => {
@@ -120,19 +150,7 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
     );
   }, [typingUsers]);
 
-  const renderChatFooter = useCallback(() => {
-    if (!replyTo) return null;
-    return <ReplyMessageBar message={replyTo} onCancelReply={() => setReplyTo(null)} />;
-  }, [replyTo]);
-
-  const renderSend = useCallback(
-    (props: SendProps<ChatMessage>) => <ChatSendButton {...props} conversation={conversation} />,
-    [conversation]
-  );
-
-  useEffect(() => {
-    if (messages && isFocused) markAsRead(messages);
-  }, [isFocused, markAsRead, messages]);
+  //#endregion Render Methods
 
   return (
     <FormProvider {...methods}>
@@ -142,7 +160,9 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
         user={meUserGifted}
         isTyping={typingUsers.length > 0}
         isUserAvatarVisible={false}
+        isScrollToBottomEnabled
         onSend={handleSend}
+        messageIdGenerator={createTempID}
         renderSend={renderSend}
         renderBubble={ChatBubble}
         renderActions={renderActions}
@@ -152,16 +172,22 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
         renderMessage={renderMessage}
         renderChatFooter={renderChatFooter}
         renderTypingIndicator={renderTypingIndicator}
+        scrollToBottomComponent={renderScrollToBottomComponent}
         textInputProps={{ style: styles.input }}
         keyboardAvoidingViewProps={{ keyboardVerticalOffset }}
         messageTextProps={{ customTextStyle: styles.messageText }}
         listProps={{
+          keyExtractor: (item, idx) => `${item._id}-${idx}`,
           showsVerticalScrollIndicator: false,
-          onEndReached: () => fetchNextPage(),
-          onEndReachedThreshold: 0.25,
-          ListFooterComponent: isFetchingNextPage ? (
-            <Spinner size={'small'} className="my-4" />
-          ) : null,
+        }}
+        loadEarlierMessagesProps={{
+          isLoading: isFetchingNextPage,
+          isInfiniteScrollEnabled: true,
+          isAvailable: hasNextPage,
+          onPress: fetchNextPage,
+          activityIndicatorColor: getPrimaryColor('500'),
+          wrapperStyle: { backgroundColor: 'none' },
+          activityIndicatorSize: 24,
         }}
       />
     </FormProvider>

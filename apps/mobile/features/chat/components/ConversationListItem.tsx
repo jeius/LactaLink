@@ -2,6 +2,7 @@ import { ProfileAvatar } from '@/components/Avatar';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
@@ -20,9 +21,10 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import { useDeleteConversation } from '../hooks/mutations';
 import { generateGroupName } from '../lib/generateGroupName';
 import { getOtherUserFromDirectChat } from '../lib/getOtherUserFromDirectChat';
-import { extractLastMessage } from '../lib/transformUtils';
+import { getLastMessage } from '../lib/transformUtils';
 import GroupChatAvatar from './GroupChatAvatar';
 
 const messageStyle = tva({
@@ -45,6 +47,12 @@ const dateStyle = tva({
   },
 });
 
+type ActionsProps = {
+  progress: SharedValue<number>;
+  onDelete: () => void;
+  isDeleting: boolean;
+};
+
 interface ConversationListItemProps {
   data: Conversation;
 }
@@ -52,7 +60,9 @@ interface ConversationListItemProps {
 export default function ConversationListItem({ data }: ConversationListItemProps) {
   const router = useRouter();
 
-  const { unread, lastMessage, text: lastMessageText } = extractLastMessage(data);
+  const { mutate: deleteConvo, isPending: isDeleting } = useDeleteConversation(data);
+
+  const { unread, lastMessage, text: lastMessageText } = getLastMessage(data);
   const [isUnread, setIsUnread] = useRecyclingState(unread, [unread]);
 
   const participants = extractCollection(data.participants?.docs);
@@ -86,9 +96,12 @@ export default function ConversationListItem({ data }: ConversationListItemProps
     return <ProfileAvatar profile={otherUser.profile} style={{ width: 40, height: 40 }} />;
   }, [data, isGroupChat, participants]);
 
-  const renderRightActions = useCallback((progress: SharedValue<number>) => {
-    return <Actions progress={progress} />;
-  }, []);
+  const renderRightActions = useCallback(
+    (progress: SharedValue<number>) => {
+      return <Actions progress={progress} onDelete={deleteConvo} isDeleting={isDeleting} />;
+    },
+    [deleteConvo, isDeleting]
+  );
 
   useEffect(() => {
     setIsUnread(unread);
@@ -127,7 +140,7 @@ export default function ConversationListItem({ data }: ConversationListItemProps
   );
 }
 
-function Actions({ progress }: { progress: SharedValue<number> }) {
+function Actions({ progress, onDelete, isDeleting }: ActionsProps) {
   const animatedStyle = useAnimatedStyle(() => {
     const scale = interpolate(progress.value, [0, 1], [0.5, 1]);
     return { transform: [{ scale }] };
@@ -135,8 +148,12 @@ function Actions({ progress }: { progress: SharedValue<number> }) {
 
   return (
     <Animated.View className="flex-row items-center px-2" style={animatedStyle}>
-      <Pressable className="p-2">
-        <Icon as={Trash2Icon} className="text-error-500" />
+      <Pressable className="p-2" onPress={onDelete}>
+        {isDeleting ? (
+          <Spinner size={'small'} className="text-error-500" />
+        ) : (
+          <Icon as={Trash2Icon} className="text-error-500" />
+        )}
       </Pressable>
     </Animated.View>
   );

@@ -12,7 +12,7 @@ import { ChatMessage } from '../../lib/types';
 
 export type ChatMessageBoxProps = {
   setReplyOnSwipeOpen?: (message: ChatMessage) => void;
-  updateRowRef: (ref: SwipeableMethods | null, id: string | number) => void;
+  updateRowRef?: (ref: SwipeableMethods | null, id: string) => void;
 } & MessageProps<ChatMessage>;
 
 export default function ChatMessageBox({
@@ -42,14 +42,11 @@ export default function ChatMessageBox({
   const onSwipeOpenAction = () => {
     if (props.currentMessage) {
       setReplyOnSwipeOpen?.({ ...props.currentMessage });
-      setTimeout(() => {
-        ref.current?.close();
-      }, 300);
     }
   };
 
   useEffect(() => {
-    updateRowRef(ref.current, props.currentMessage._id);
+    updateRowRef?.(ref.current, props.currentMessage._id);
   }, [props.currentMessage._id, updateRowRef]);
 
   return (

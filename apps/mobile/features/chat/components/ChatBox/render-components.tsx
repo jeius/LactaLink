@@ -157,7 +157,11 @@ function ChatReplyMessage(props: BubbleProps<ChatMessage>) {
         transform: [{ translateY: 12 }],
       }}
     >
-      {text.length > 0 && <Text className="text-typography-700">{text}</Text>}
+      {text.length > 0 && (
+        <Text className="text-typography-700" numberOfLines={5}>
+          {text}
+        </Text>
+      )}
       {media && (
         <SingleImageViewer
           disabled

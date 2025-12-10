@@ -1,3 +1,5 @@
+import { getChatService } from '@/lib/services/chat';
+import { getMeUser } from '@/lib/stores/meUserStore';
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { mutationOptions } from '@tanstack/react-query';
 import { createDirectChat, createGroupChat } from '../api/createChat';
@@ -43,6 +45,16 @@ export function createMarkAsReadMutation(conversation: Conversation) {
           const updatedConversation = updateMessageInConversation(conversation, msg);
           addConversationToAllCaches(client, updatedConversation);
         });
+    },
+  });
+}
+
+export function createDeleteConversationMutation(conversation: Conversation) {
+  return mutationOptions({
+    mutationKey: ['delete', 'conversation', conversation.id],
+    mutationFn: () => getChatService().archiveConversation(conversation, getMeUser()!),
+    onSuccess: (data, _vars, _ctx, { client }) => {
+      addConversationToAllCaches(client, data);
     },
   });
 }

@@ -13,7 +13,7 @@ import {
   createConversationQueryOptions,
   createInfiniteMessagesOptions,
 } from '../lib/queryOptions';
-import { transformToChatMessage } from '../lib/transformUtils';
+import { getConversationStatus, transformToChatMessage } from '../lib/transformUtils';
 import { ChatMessage } from '../lib/types';
 
 export function useConversation(conversation: string | Conversation | undefined) {
@@ -59,6 +59,9 @@ export function useInfiniteConversations() {
     const allDocs: Conversation[] = [];
     data.pages.forEach((page) => {
       page.docs.forEach((doc) => {
+        const { archived } = getConversationStatus(doc);
+        if (archived) return;
+
         allDocs.push(doc);
         addConversationToCache(queryClient, doc);
       });
