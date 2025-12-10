@@ -1,4 +1,4 @@
-import { MESSAGE_TYPE } from '@lactalink/enums';
+import { CONVERSATION_TYPE, MESSAGE_TYPE } from '@lactalink/enums';
 import { FindDirectConversationParams } from '@lactalink/form-schemas/validators';
 import { UserProfile } from '@lactalink/types';
 import { ApiFetchResponse } from '@lactalink/types/api';
@@ -11,6 +11,17 @@ import {
 } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { IApiClient } from 'src/interfaces/ApiClient';
+import { CreateConvoParticipantError, SendMessageError } from './errors';
+import {
+  ADMIN_ROLE,
+  cleanupConversation,
+  createConversation,
+  CreateGroupChatData,
+  createParticipants,
+  extractParticipantIds,
+  MEMBER_ROLE,
+  ParticipantConfig,
+} from './helpers';
 
 type Participant = ConversationParticipant['participant'];
 
@@ -22,20 +33,85 @@ type SendMessageArgs = {
   replyTo?: string;
 };
 
-export class SendMessageError extends Error {
-  constructor(
-    message: string,
-    public data: { attachments?: MessageAttachment[]; message?: Message }
-  ) {
-    super(message);
-    this.name = 'SendMessageError';
-  }
-}
-
-export class ChatService {
+class ChatService {
   constructor(private apiClient: IApiClient) {}
 
-  async findDirectConversation(participants: [Participant, Participant]) {
+  /**
+   * Creates a group chat with multiple participants
+   */
+  createGroupChat = async (data: CreateGroupChatData, createdBy: User): Promise<Conversation> => {
+    const participantIds = extractParticipantIds(data.participants);
+
+    const conversation = await createConversation(
+      {
+        type: CONVERSATION_TYPE.GROUP.value,
+        title: data.name.length > 0 ? data.name : undefined,
+        createdBy: createdBy.id,
+      },
+      this.apiClient
+    );
+
+    // No need to create for the creator, they are auto-added as admin
+    const participantConfigs = participantIds.map(
+      (userId): ParticipantConfig => ({ userId, role: MEMBER_ROLE })
+    );
+
+    try {
+      await createParticipants(conversation.id, participantConfigs, this.apiClient);
+      // Fetch fresh conversation with participants
+      return this._fetchConversation(conversation.id);
+    } catch (error) {
+      if (error instanceof CreateConvoParticipantError) {
+        await cleanupConversation(conversation.id, error.data, this.apiClient);
+      }
+      throw error;
+    }
+  };
+
+  /**
+   * Creates a direct chat between two users
+   */
+  createDirectChat = async (
+    participant: ConversationParticipant['participant'],
+    createdBy: User
+  ): Promise<Conversation> => {
+    const participantId = extractID(participant);
+
+    if (!participantId) {
+      throw new Error('Invalid participant ID');
+    }
+
+    const existingConversation = await this.findDirectConversation([participant, createdBy]);
+
+    if (existingConversation) {
+      return existingConversation;
+    }
+
+    const conversation = await createConversation(
+      {
+        type: CONVERSATION_TYPE.DIRECT.value,
+        createdBy: createdBy.id,
+      },
+      this.apiClient
+    );
+
+    // No need to create for the creator, they are auto-added as admin
+    // Participants in a direct chat are always admins
+    const participantConfigs: ParticipantConfig[] = [{ userId: participantId, role: ADMIN_ROLE }];
+
+    try {
+      await createParticipants(conversation.id, participantConfigs, this.apiClient);
+      // Fetch fresh conversation with participants
+      return this._fetchConversation(conversation.id);
+    } catch (error) {
+      if (error instanceof CreateConvoParticipantError) {
+        await cleanupConversation(conversation.id, error.data, this.apiClient);
+      }
+      throw error;
+    }
+  };
+
+  findDirectConversation = async (participants: [Participant, Participant]) => {
     const params = extractID(participants) as FindDirectConversationParams;
 
     const res = await this.apiClient.fetch<ApiFetchResponse<Conversation | null>>(
@@ -51,15 +127,12 @@ export class ChatService {
     }
 
     return res.data;
-  }
+  };
 
-  async sendMessage({
-    content,
-    conversation,
-    sender,
-    attachments,
-    replyTo,
-  }: SendMessageArgs): Promise<Message> {
+  sendMessage = async (
+    { content, conversation, sender, attachments, replyTo }: SendMessageArgs,
+    createdBy: User
+  ): Promise<Message> => {
     const message = await this.apiClient.create({
       collection: 'messages',
       data: {
@@ -80,7 +153,7 @@ export class ChatService {
           data: {
             message: message.id,
             attachment: { relationTo: attachment.relationTo, value: extractID(attachment.value) },
-            createdBy: '', // Will automatically be set by the backend hook
+            createdBy: createdBy.id,
           },
         });
         successfullAttachments.push(attachmentDoc);
@@ -103,7 +176,7 @@ export class ChatService {
         totalDocs: successfullAttachments.length,
       },
     };
-  }
+  };
 
   isMessageRead = async (message: string | Message, user: User) => {
     const userProfile = user.profile;
@@ -169,4 +242,21 @@ export class ChatService {
       archivedStatuses: { docs: archivedStatuses, totalDocs: archivedStatuses.length, hasNextPage },
     };
   };
+
+  private _fetchConversation = async (id: string): Promise<Conversation> => {
+    return this.apiClient.findByID({
+      collection: 'conversations',
+      id: id,
+      depth: 5,
+      joins: {
+        archivedStatuses: { count: true, limit: 0 },
+        mutedStatuses: { count: true, limit: 0 },
+        participants: { count: true, limit: 0 },
+        messages: { count: true, limit: 10 },
+      },
+    });
+  };
 }
+
+export { ChatService, CreateConvoParticipantError, SendMessageError };
+export type { CreateGroupChatData, SendMessageArgs };

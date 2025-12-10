@@ -1,5 +1,6 @@
 import { uploadImage } from '@/lib/api/file';
 import { getChatService } from '@/lib/services/chat';
+import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { SendMessageError } from '@lactalink/api/services';
 import { MessageMedia } from '@lactalink/types/payload-generated-types';
@@ -9,6 +10,9 @@ import { ChatMessage } from '../types';
 export async function sendMessage(message: ChatMessage) {
   const chatService = getChatService();
   const apiClient = getApiClient();
+  const meUser = getMeUser();
+
+  if (!meUser) throw new Error('User is not logged in');
 
   const mediaDocs: MessageMedia[] = [];
   try {
@@ -28,16 +32,19 @@ export async function sendMessage(message: ChatMessage) {
       });
     }
 
-    return chatService.sendMessage({
-      conversation: message.conversation,
-      sender: message.sender,
-      content: message.text,
-      replyTo: message.replyTo?._id as string | undefined,
-      attachments:
-        mediaDocs.length > 0
-          ? mediaDocs.map((media) => ({ relationTo: 'message-media', value: media.id }))
-          : undefined,
-    });
+    return chatService.sendMessage(
+      {
+        conversation: message.conversation,
+        sender: message.sender,
+        content: message.text,
+        replyTo: message.replyTo?._id as string | undefined,
+        attachments:
+          mediaDocs.length > 0
+            ? mediaDocs.map((media) => ({ relationTo: 'message-media', value: media.id }))
+            : undefined,
+      },
+      meUser
+    );
   } catch (error) {
     // Clean up any uploaded attachments or created message on failure
     if (error instanceof SendMessageError) {

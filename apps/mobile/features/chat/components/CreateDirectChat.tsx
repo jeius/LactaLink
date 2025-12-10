@@ -16,11 +16,12 @@ import { shadow } from '@/lib/utils/shadows';
 import { UserProfile } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { FlashList } from '@shopify/flash-list';
-import { useMutation, useMutationState, useQuery } from '@tanstack/react-query';
+import { useMutationState, useQuery } from '@tanstack/react-query';
 import { Link, useRouter } from 'expo-router';
 import { UsersRoundIcon, XIcon } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput } from 'react-native';
+import { useCreateDirectChat } from '../hooks/mutations';
 import { createDirectChatCreationMutation } from '../lib/mutationOptions';
 import {
   createFindDirectChatQueryOptions,
@@ -151,7 +152,7 @@ function ListItem({ data }: { data: UserProfile }) {
   const router = useRouter();
   const owner = extractCollection(data.value)?.owner;
   const { data: conversation } = useQuery(createFindDirectChatQueryOptions(owner));
-  const { mutateAsync: createChat } = useMutation(createDirectChatCreationMutation());
+  const { mutateAsync: createChat } = useCreateDirectChat();
 
   const handlePress = async () => {
     if (conversation) {

@@ -18,14 +18,14 @@ import { shadow } from '@/lib/utils/shadows';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractName } from '@lactalink/utilities/extractors';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import isEqual from 'lodash/isEqual';
 import { CheckCircle2Icon, CircleIcon, SearchIcon, XIcon } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import { TextInput } from 'react-native';
 import { toast } from 'sonner-native';
-import { createGroupChatCreationOptions } from '../lib/mutationOptions';
+import { useCreateGroupChat } from '../hooks/mutations';
 import { createNearestUsersQueryOptions } from '../lib/queryOptions';
 import UserProfileItem from './UserProfileItem';
 
@@ -60,9 +60,7 @@ export default function CreateGroupChat() {
   const profiles = willSearch ? searchResults.map((s) => s.doc) : suggestions || [];
   const isLoading = query.isLoading || usersQuery.isLoading;
 
-  const { mutateAsync: createGroupChat, isPending: isCreating } = useMutation(
-    createGroupChatCreationOptions()
-  );
+  const { mutateAsync: createGroupChat, isPending: isCreating } = useCreateGroupChat();
 
   const [selectedUsers, setSelectedUsers] = useState<typeof suggestions>([]);
   const [groupName, setGroupName] = useState('');
