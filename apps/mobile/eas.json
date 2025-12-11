@@ -32,7 +32,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://lacta-link-web.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://preview.lactalink.com"
       }
     },
     "production": {
