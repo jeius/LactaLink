@@ -1,4 +1,5 @@
 import {
+  DIRECTIONS_URL,
   ID_VERIFICATION_URL,
   SEED_BARANGAYS_URL,
   SEED_CITIES_MUNICIPALITIES_URL,
@@ -10,6 +11,7 @@ import {
   SEED_STATUS_URL,
 } from '@/lib/constants/routes';
 import { Endpoint } from 'payload';
+import getDirectionsHandler from './directions/getDirections';
 import { idVerificationHandler } from './id-verification';
 import { seedNotificationsHandler } from './seeders/Notifications';
 import { seedBarangaysHandler } from './seeders/PSGC/seedBarangays';
@@ -70,5 +72,10 @@ export const Endpoints: Endpoint[] = [
     method: 'post',
     path: ID_VERIFICATION_URL.replace('/api', ''),
     handler: idVerificationHandler,
+  },
+  {
+    method: 'post',
+    path: DIRECTIONS_URL.replace('/api', ''),
+    handler: getDirectionsHandler,
   },
 ];

@@ -9,6 +9,7 @@
  */
 
 import { ApiFetchResponse } from '@lactalink/types/api';
+import { ValidationError } from '@lactalink/utilities/errors';
 import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 import { status as HttpStatus } from 'http-status';
 import { APIError, PayloadHandler, PayloadRequest } from 'payload';
@@ -105,11 +106,17 @@ export function createPayloadHandler<T>({
       return Response.json(res, { status });
     } catch (error) {
       // Prepare the error response.
-      const message = extractErrorMessage(error);
-      const status: number = extractErrorStatus(error);
+      let message = extractErrorMessage(error);
+      let status: number = extractErrorStatus(error);
+
+      if (error instanceof ValidationError) {
+        status = error.statusCode || HttpStatus.BAD_REQUEST;
+        message = `[Validation Error]: ${error.message}`;
+      }
+
       const res: ApiFetchResponse<T> = { message, error, status };
 
-      payload.logger.error(error, `API Error: ${message}`);
+      payload.logger.error(error, `[API Error]: ${message}`);
 
       // Return the error response.
       return Response.json(res, { status });

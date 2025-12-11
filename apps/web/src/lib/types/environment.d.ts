@@ -27,6 +27,7 @@ declare global {
       NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
       VERCEL_AUTOMATION_BYPASS_SECRET?: string;
       GOOGLE_CLOUD_VISION_API_KEY: string;
+      GOOGLE_ROUTES_API_KEY: string;
     }
   }
 }

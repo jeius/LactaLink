@@ -13,6 +13,8 @@ export type Polygon = {
   coordinates: Line[];
 };
 
+export type Polyline = Coordinates[];
+
 export type MapRegion = {
   /**
    * The center latitude of the region.

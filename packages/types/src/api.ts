@@ -1,5 +1,6 @@
 import { DeepPartial } from 'react-hook-form';
 import { CustomError } from './errors';
+import { Polyline } from './geo-types';
 import type {
   JoinQuery,
   PopulateType,
@@ -276,4 +277,18 @@ export type DeleteManyResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = BulkOperationResult<TSlug, TSelect>;
+
+export type Direction = {
+  description?: string | null;
+  distanceMeters: number;
+  duration: { seconds: number };
+  polyline: Polyline;
+  optimizedIntermediateWaypointIndex?: number[] | null;
+  localizedValues: {
+    distance?: string | null;
+    duration?: string | null;
+  };
+};
+
+export type DirectionsResult = Direction[] | null;
 //#endregion
