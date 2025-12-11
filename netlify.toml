@@ -1,0 +1,40 @@
+# Settings for the [build] key are global and are applied to
+# all deploy contexts unless overridden by a context-specific setting.
+[build]
+  publish = "/apps/web/.next"
+
+  # Default build command.
+  command = "pnpm build:web"
+
+[[plugins]]
+  # Installs the Next.js build plugin for all deploy contexts
+  package = "@netlify/plugin-nextjs"
+
+# Branch Deploy context: all deploys that are not from
+# a pull/merge request or from the Production branch
+# will inherit these settings.
+[context.branch-deploy.environment]
+  NODE_ENV = "development"
+
+# Dev context: environment variables set here
+# are available for local development environments
+# run using Netlify Dev. These values can be
+# overwritten on branches that have a more specific
+# branch context configured.
+[context.dev.environment]
+  NODE_ENV = "development"
+
+[functions]
+  # Directory with serverless functions, including background
+  # functions, to deploy. This is an absolute path relative to the
+  # base directory, which is the root by default (/).
+  directory = "/apps/web/netlify/functions/"
+
+# Use [dev] to set configuration overrides for local
+# development environments run using Netlify Dev - except
+# for environment variables. Environment variables for Netlify
+# Dev should be set under [context.dev.environment] instead.
+[dev]
+  command = "pnpm dev:web"
+  port = 3000
+  publish = "apps/web/.next"
