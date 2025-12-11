@@ -113,7 +113,7 @@ export interface IApiClient {
     endpoint: string,
     options?: {
       method: ApiMethod;
-      body?: Record<string, unknown>;
+      body?: Record<string, unknown> | object;
       headers?: Headers;
       searchParams?: Record<string, unknown>;
     }
