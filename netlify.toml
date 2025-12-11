@@ -6,8 +6,10 @@
   # Default build command.
   command = "pnpm build:web"
 
+# Global environment variables
 [build.environment]
   SECRETS_SCAN_OMIT_PATHS = "apps/web/.next, apps/web/.netlify, .github"
+  NEXT_PUBLIC_SERVER_URL="https://lactalink.com"
 
 [[plugins]]
   # Installs the Next.js build plugin for all deploy contexts
@@ -26,6 +28,16 @@
 # branch context configured.
 [context.dev.environment]
   NODE_ENV = "development"
+
+# Preview Branch context: environment variables for this
+# specific branch are set here.
+[context.preview.environment]
+  NEXT_PUBLIC_SERVER_URL="https://preview.lactalink.com"
+
+# Development Branch context: environment variables for this
+# specific branch are set here.
+[context.development.environment]
+  NEXT_PUBLIC_SERVER_URL="https://development.lactalink.com"
 
 [functions]
   # Directory with serverless functions, including background
