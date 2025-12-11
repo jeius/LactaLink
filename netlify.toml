@@ -6,6 +6,9 @@
   # Default build command.
   command = "pnpm build:web"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = "apps/web/.next, apps/web/.netlify, .github"
+
 [[plugins]]
   # Installs the Next.js build plugin for all deploy contexts
   package = "@netlify/plugin-nextjs"
