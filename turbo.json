@@ -1,6 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "remoteCache": {
+    "apiUrl": "https://turborepo-remote-cache-server.netlify.app",
+    "teamId": "lactalink-team"
+  },
   "tasks": {
     "test": {
       "dependsOn": ["build"],
