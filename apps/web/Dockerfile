@@ -45,18 +45,11 @@ FROM base AS dependencies
 
 # Install build dependencies for native packages (canvas, sharp, etc.)
 RUN apk update && apk add --no-cache \
-    python3 \
     build-base \
-    make \
     g++ \
     cairo-dev \
-    jpeg-dev \
     pango-dev \
-    giflib-dev \
-    pixman-dev \
-    pangomm-dev \
-    libjpeg-turbo-dev \
-    freetype-dev
+    giflib-dev 
 
 # Copy pruned package.json files and lockfile from prune stage
 COPY --from=prune /app/out/json/ .
@@ -137,7 +130,9 @@ FROM node:22.21.0-alpine AS runner
 
 # Install dumb-init to handle signal forwarding and process reaping
 RUN apk add --no-cache \
-    dumb-init 
+    dumb-init \
+    cairo \
+    pango 
 
 WORKDIR /app
 
