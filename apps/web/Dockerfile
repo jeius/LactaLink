@@ -79,12 +79,9 @@ COPY --from=prune /app/out/full/ .
 
 # Build arguments for environment variables
 # These are required at build time by Next.js and Payload CMS
-ARG PAYLOAD_SECRET
-ARG DATABASE_URI
+
+# Non-sensitive build args (safe to expose)
 ARG GOOGLE_CLIENT_ID
-ARG GOOGLE_CLIENT_SECRET
-ARG GOOGLE_CLOUD_VISION_API_KEY
-ARG GOOGLE_ROUTES_API_KEY
 ARG S3_BUCKET_IMAGES
 ARG S3_BUCKET_MILK_BAG_IMAGES
 ARG S3_BUCKET_ID_IMAGES
@@ -92,41 +89,43 @@ ARG S3_BUCKET_MESSAGE_MEDIA
 ARG S3_BUCKET_MEDIA
 ARG S3_BUCKET_FILES
 ARG S3_BUCKET_AVATARS
-ARG S3_ACCESS_KEY_ID
-ARG S3_SECRET_ACCESS_KEY
 ARG S3_REGION
 ARG S3_ENDPOINT
 ARG PSGC_API_URL
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ARG RESEND_API_KEY
 
-# Set environment variables for build
-ENV PAYLOAD_SECRET=$PAYLOAD_SECRET \
-    DATABASE_URI=$DATABASE_URI \
-    GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
-    GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
-    GOOGLE_CLOUD_VISION_API_KEY=$GOOGLE_CLOUD_VISION_API_KEY \
-    GOOGLE_ROUTES_API_KEY=$GOOGLE_ROUTES_API_KEY \
-    S3_BUCKET_IMAGES=$S3_BUCKET_IMAGES \
-    S3_BUCKET_MILK_BAG_IMAGES=$S3_BUCKET_MILK_BAG_IMAGES \
-    S3_BUCKET_ID_IMAGES=$S3_BUCKET_ID_IMAGES \
-    S3_BUCKET_MESSAGE_MEDIA=$S3_BUCKET_MESSAGE_MEDIA \
-    S3_BUCKET_MEDIA=$S3_BUCKET_MEDIA \
-    S3_BUCKET_FILES=$S3_BUCKET_FILES \
-    S3_BUCKET_AVATARS=$S3_BUCKET_AVATARS \
-    S3_ACCESS_KEY_ID=$S3_ACCESS_KEY_ID \
-    S3_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY \
-    S3_REGION=$S3_REGION \
-    S3_ENDPOINT=$S3_ENDPOINT \
-    PSGC_API_URL=$PSGC_API_URL \
-    NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-    RESEND_API_KEY=$RESEND_API_KEY
+# Install jq for parsing JSON secrets file
+RUN apk add --no-cache jq
 
-# Run the build
-# turbo prune ensures only web app and its dependencies are built
-RUN pnpm build:web
+# Load secrets from Northflank JSON file and build the application
+# The secrets file is mounted at /secrets/web/keys.json
+RUN --mount=type=secret,id=keys.json,target=/secrets/web/keys.json \
+    # Parse secrets from JSON file
+    export PAYLOAD_SECRET=$(jq -r '.PAYLOAD_SECRET' /secrets/web/keys.json) && \
+    export DATABASE_URI=$(jq -r '.DATABASE_URI' /secrets/web/keys.json) && \
+    export GOOGLE_CLIENT_SECRET=$(jq -r '.GOOGLE_CLIENT_SECRET' /secrets/web/keys.json) && \
+    export GOOGLE_CLOUD_VISION_API_KEY=$(jq -r '.GOOGLE_CLOUD_VISION_API_KEY' /secrets/web/keys.json) && \
+    export GOOGLE_ROUTES_API_KEY=$(jq -r '.GOOGLE_ROUTES_API_KEY' /secrets/web/keys.json) && \
+    export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' /secrets/web/keys.json) && \
+    export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' /secrets/web/keys.json) && \
+    export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' /secrets/web/keys.json) && \
+    # Set non-sensitive vars from build args
+    export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID && \
+    export S3_BUCKET_IMAGES=$S3_BUCKET_IMAGES && \
+    export S3_BUCKET_MILK_BAG_IMAGES=$S3_BUCKET_MILK_BAG_IMAGES && \
+    export S3_BUCKET_ID_IMAGES=$S3_BUCKET_ID_IMAGES && \
+    export S3_BUCKET_MESSAGE_MEDIA=$S3_BUCKET_MESSAGE_MEDIA && \
+    export S3_BUCKET_MEDIA=$S3_BUCKET_MEDIA && \
+    export S3_BUCKET_FILES=$S3_BUCKET_FILES && \
+    export S3_BUCKET_AVATARS=$S3_BUCKET_AVATARS && \
+    export S3_REGION=$S3_REGION && \
+    export S3_ENDPOINT=$S3_ENDPOINT && \
+    export PSGC_API_URL=$PSGC_API_URL && \
+    export NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL && \
+    export NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY && \
+    # Run the build with all environment variables available
+    pnpm build:web
 
 # ====================================================================================================
 # Stage 5: Runner - Minimal production runtime
