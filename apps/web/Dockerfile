@@ -48,6 +48,7 @@ RUN apk add --no-cache \
     build-base \
     g++ \
     cairo-dev \
+    jpeg-dev \
     pango-dev \
     giflib-dev 
 
@@ -69,6 +70,7 @@ RUN apk add --no-cache \
     build-base \
     g++ \
     cairo-dev \
+    jpeg-dev \
     pango-dev \
     giflib-dev 
 
@@ -141,7 +143,11 @@ FROM node:22.21.0-alpine AS runner
 
 # Install dumb-init to handle signal forwarding and process reaping
 RUN apk add --no-cache \
-    dumb-init 
+    dumb-init \
+    cairo \
+    jpeg \
+    pango \
+    giflib 
 
 WORKDIR /app
 
