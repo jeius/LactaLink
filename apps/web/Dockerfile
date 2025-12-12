@@ -151,12 +151,9 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Set to production environment (can be overridden by Northflank)
-ARG NODE_ENV=production
-ENV NODE_ENV=$NODE_ENV
-
 # Disable Next.js telemetry
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
