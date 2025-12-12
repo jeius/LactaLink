@@ -135,6 +135,24 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
    pnpm dev
    ```
 
+## Docker Deployment 🐳
+
+For production deployment using Docker and Northflank:
+
+- 📖 **[Docker Documentation](./apps/web/DOCKER_README.md)** - Complete Docker setup guide
+- 🚀 **[Quick Commands](./apps/web/DOCKER_COMMANDS.md)** - Common Docker commands
+
+**Quick start:**
+
+```sh
+# Build the Docker image
+docker build -f apps/web/Dockerfile -t lactalink-web:latest .
+
+# Run locally
+cd apps/web
+docker-compose up
+```
+
 ## Contributing 🤝💡📈
 
 - 🍴 Fork the repository
