@@ -1,0 +1,94 @@
+# ====================================================================================================
+# LactaLink - Docker Compose Configuration
+# ====================================================================================================
+# For local testing of the production Docker image
+# DO NOT use this in production - this is for development/testing only
+# ====================================================================================================
+
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Build-time arguments - replace with your actual values
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+        DATABASE_URI: ${DATABASE_URI}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+        GOOGLE_CLOUD_VISION_API_KEY: ${GOOGLE_CLOUD_VISION_API_KEY}
+        GOOGLE_ROUTES_API_KEY: ${GOOGLE_ROUTES_API_KEY}
+        S3_BUCKET_IMAGES: ${S3_BUCKET_IMAGES}
+        S3_BUCKET_MILK_BAG_IMAGES: ${S3_BUCKET_MILK_BAG_IMAGES}
+        S3_BUCKET_ID_IMAGES: ${S3_BUCKET_ID_IMAGES}
+        S3_BUCKET_MESSAGE_MEDIA: ${S3_BUCKET_MESSAGE_MEDIA}
+        S3_BUCKET_MEDIA: ${S3_BUCKET_MEDIA}
+        S3_BUCKET_FILES: ${S3_BUCKET_FILES}
+        S3_BUCKET_AVATARS: ${S3_BUCKET_AVATARS}
+        S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+        S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+        S3_REGION: ${S3_REGION}
+        S3_ENDPOINT: ${S3_ENDPOINT}
+        PSGC_API_URL: ${PSGC_API_URL}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        RESEND_API_KEY: ${RESEND_API_KEY}
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      # Runtime environment variables
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: 1
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+
+      # Application environment variables - same as build args
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      DATABASE_URI: ${DATABASE_URI}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CLOUD_VISION_API_KEY: ${GOOGLE_CLOUD_VISION_API_KEY}
+      GOOGLE_ROUTES_API_KEY: ${GOOGLE_ROUTES_API_KEY}
+      S3_BUCKET_IMAGES: ${S3_BUCKET_IMAGES}
+      S3_BUCKET_MILK_BAG_IMAGES: ${S3_BUCKET_MILK_BAG_IMAGES}
+      S3_BUCKET_ID_IMAGES: ${S3_BUCKET_ID_IMAGES}
+      S3_BUCKET_MESSAGE_MEDIA: ${S3_BUCKET_MESSAGE_MEDIA}
+      S3_BUCKET_MEDIA: ${S3_BUCKET_MEDIA}
+      S3_BUCKET_FILES: ${S3_BUCKET_FILES}
+      S3_BUCKET_AVATARS: ${S3_BUCKET_AVATARS}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      PSGC_API_URL: ${PSGC_API_URL}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+    restart: unless-stopped
+# ====================================================================================================
+# Usage:
+# ====================================================================================================
+# 1. Create a .env file with all required environment variables
+# 2. Run: docker-compose up --build
+# 3. Access the app at http://localhost:3000
+# 4. Check health: curl http://localhost:3000/api/health
+# ====================================================================================================

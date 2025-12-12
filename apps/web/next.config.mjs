@@ -1,4 +1,7 @@
 import { withPayload } from '@payloadcms/next/withPayload';
+import path from 'path';
+
+const monorepoRoot = path.join(__dirname, '../../');
 
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -39,6 +42,7 @@ const nextConfig = {
       },
     ];
   },
+  output: 'standalone',
 };
 
 export default withPayload(nextConfig);
