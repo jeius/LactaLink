@@ -44,7 +44,7 @@ RUN turbo prune @lactalink/web --docker
 FROM base AS dependencies
 
 # Install build dependencies for native packages (canvas, sharp, etc.)
-RUN apk update && apk add --no-cache \
+RUN apk add --no-cache \
     build-base \
     g++ \
     cairo-dev \
@@ -63,6 +63,14 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # Stage 4: Builder - Build the application
 # ====================================================================================================
 FROM base AS builder
+
+# Install build dependencies for canvas
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    pango-dev \
+    giflib-dev 
 
 # Copy installed dependencies from previous stage
 COPY --from=dependencies /app/ .
@@ -88,6 +96,7 @@ ARG S3_ENDPOINT
 ARG PSGC_API_URL
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG TURBO_TEAMID
 
 # Install jq for parsing JSON secrets file
 RUN apk add --no-cache jq
@@ -106,6 +115,7 @@ RUN --mount=type=secret,id=web_secret_keys \
     export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' /run/secrets/web_secret_keys) && \
     export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' /run/secrets/web_secret_keys) && \
     export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' /run/secrets/web_secret_keys) && \
+    export TURBO_TOKEN=$(jq -r '.TURBO_TOKEN' /run/secrets/web_secret_keys) && \
     # Set non-sensitive vars from build args
     export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID && \
     export S3_BUCKET_IMAGES=$S3_BUCKET_IMAGES && \
@@ -120,6 +130,7 @@ RUN --mount=type=secret,id=web_secret_keys \
     export PSGC_API_URL=$PSGC_API_URL && \
     export NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL && \
     export NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY && \
+    export TURBO_TEAMID=$TURBO_TEAMID && \
     # Run the build with all environment variables available
     pnpm build:web
 
@@ -130,9 +141,7 @@ FROM node:22.21.0-alpine AS runner
 
 # Install dumb-init to handle signal forwarding and process reaping
 RUN apk add --no-cache \
-    dumb-init \
-    cairo \
-    pango 
+    dumb-init 
 
 WORKDIR /app
 
