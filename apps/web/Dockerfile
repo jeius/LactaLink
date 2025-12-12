@@ -43,13 +43,27 @@ RUN turbo prune @lactalink/web --docker
 # ====================================================================================================
 FROM base AS dependencies
 
+# Install build dependencies for native packages (canvas, sharp, etc.)
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
 # Copy pruned package.json files and lockfile from prune stage
 COPY --from=prune /app/out/json/ .
 
 # Install dependencies using frozen lockfile with build cache
 # turbo prune creates a pruned lockfile with only required dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile 
+    pnpm install --frozen-lockfile --prefer-offline
 
 # ====================================================================================================
 # Stage 4: Builder - Build the application
@@ -119,8 +133,18 @@ RUN pnpm build:web
 # ====================================================================================================
 FROM node:22-alpine AS runner
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install runtime dependencies for native packages
+# Only the runtime libraries are needed (not build tools)
+RUN apk add --no-cache \
+    dumb-init \
+    cairo \
+    jpeg \
+    pango \
+    giflib \
+    pixman \
+    pangomm \
+    libjpeg-turbo \
+    freetype
 
 WORKDIR /app
 
