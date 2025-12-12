@@ -11,7 +11,7 @@
 # ====================================================================================================
 # Stage 1: Base - Alpine base with pnpm
 # ====================================================================================================
-FROM node:22-alpine AS base
+FROM node:22.21.0-alpine AS base
 
 # Install pnpm globally with specific version
 RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
@@ -131,7 +131,7 @@ RUN --mount=type=secret,id=keys.json,target=/secrets/web/keys.json \
 # ====================================================================================================
 # Stage 5: Runner - Minimal production runtime
 # ====================================================================================================
-FROM node:22-alpine AS runner
+FROM node:22.21.0-alpine AS runner
 
 # Install runtime dependencies for native packages
 # Only the runtime libraries are needed (not build tools)
