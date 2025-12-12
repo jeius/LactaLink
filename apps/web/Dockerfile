@@ -103,14 +103,14 @@ RUN apk add --no-cache jq
 # The secrets file is mounted at /secrets/web/keys.json
 RUN --mount=type=secret,id=keys.json,target=/secrets/web/keys.json \
     # Parse secrets from JSON file
-    export PAYLOAD_SECRET=$(jq -r '.PAYLOAD_SECRET' /secrets/web/keys.json) && \
-    export DATABASE_URI=$(jq -r '.DATABASE_URI' /secrets/web/keys.json) && \
-    export GOOGLE_CLIENT_SECRET=$(jq -r '.GOOGLE_CLIENT_SECRET' /secrets/web/keys.json) && \
-    export GOOGLE_CLOUD_VISION_API_KEY=$(jq -r '.GOOGLE_CLOUD_VISION_API_KEY' /secrets/web/keys.json) && \
-    export GOOGLE_ROUTES_API_KEY=$(jq -r '.GOOGLE_ROUTES_API_KEY' /secrets/web/keys.json) && \
-    export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' /secrets/web/keys.json) && \
-    export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' /secrets/web/keys.json) && \
-    export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' /secrets/web/keys.json) && \
+    export PAYLOAD_SECRET=$(jq -r '.PAYLOAD_SECRET' keys.json) && \
+    export DATABASE_URI=$(jq -r '.DATABASE_URI' keys.json) && \
+    export GOOGLE_CLIENT_SECRET=$(jq -r '.GOOGLE_CLIENT_SECRET' keys.json) && \
+    export GOOGLE_CLOUD_VISION_API_KEY=$(jq -r '.GOOGLE_CLOUD_VISION_API_KEY' keys.json) && \
+    export GOOGLE_ROUTES_API_KEY=$(jq -r '.GOOGLE_ROUTES_API_KEY' keys.json) && \
+    export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' keys.json) && \
+    export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' keys.json) && \
+    export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' keys.json) && \
     # Set non-sensitive vars from build args
     export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID && \
     export S3_BUCKET_IMAGES=$S3_BUCKET_IMAGES && \
