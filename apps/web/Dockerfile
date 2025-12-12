@@ -100,17 +100,19 @@ ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN apk add --no-cache jq
 
 # Load secrets from Northflank JSON file and build the application
-# The secrets file is mounted at /secrets/web/keys.json
-RUN --mount=type=secret,id=keys.json,target=/secrets/web/keys.json \
-    # Parse secrets from JSON file
-    export PAYLOAD_SECRET=$(jq -r '.PAYLOAD_SECRET' keys.json) && \
-    export DATABASE_URI=$(jq -r '.DATABASE_URI' keys.json) && \
-    export GOOGLE_CLIENT_SECRET=$(jq -r '.GOOGLE_CLIENT_SECRET' keys.json) && \
-    export GOOGLE_CLOUD_VISION_API_KEY=$(jq -r '.GOOGLE_CLOUD_VISION_API_KEY' keys.json) && \
-    export GOOGLE_ROUTES_API_KEY=$(jq -r '.GOOGLE_ROUTES_API_KEY' keys.json) && \
-    export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' keys.json) && \
-    export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' keys.json) && \
-    export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' keys.json) && \
+# The secrets file is mounted at /run/secrets/web_secret_keys
+RUN --mount=type=secret,id=web_secret_keys \
+    # Debug: Check if secret file exists
+    ls -la /run/secrets/web_secret_keys && \
+    # Parse secrets from JSON file using full path
+    export PAYLOAD_SECRET=$(jq -r '.PAYLOAD_SECRET' /run/secrets/web_secret_keys) && \
+    export DATABASE_URI=$(jq -r '.DATABASE_URI' /run/secrets/web_secret_keys) && \
+    export GOOGLE_CLIENT_SECRET=$(jq -r '.GOOGLE_CLIENT_SECRET' /run/secrets/web_secret_keys) && \
+    export GOOGLE_CLOUD_VISION_API_KEY=$(jq -r '.GOOGLE_CLOUD_VISION_API_KEY' /run/secrets/web_secret_keys) && \
+    export GOOGLE_ROUTES_API_KEY=$(jq -r '.GOOGLE_ROUTES_API_KEY' /run/secrets/web_secret_keys) && \
+    export S3_ACCESS_KEY_ID=$(jq -r '.S3_ACCESS_KEY_ID' /run/secrets/web_secret_keys) && \
+    export S3_SECRET_ACCESS_KEY=$(jq -r '.S3_SECRET_ACCESS_KEY' /run/secrets/web_secret_keys) && \
+    export RESEND_API_KEY=$(jq -r '.RESEND_API_KEY' /run/secrets/web_secret_keys) && \
     # Set non-sensitive vars from build args
     export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID && \
     export S3_BUCKET_IMAGES=$S3_BUCKET_IMAGES && \
@@ -133,18 +135,9 @@ RUN --mount=type=secret,id=keys.json,target=/secrets/web/keys.json \
 # ====================================================================================================
 FROM node:22.21.0-alpine AS runner
 
-# Install runtime dependencies for native packages
-# Only the runtime libraries are needed (not build tools)
+# Install dumb-init to handle signal forwarding and process reaping
 RUN apk add --no-cache \
-    dumb-init \
-    cairo \
-    jpeg \
-    pango \
-    giflib \
-    pixman \
-    pangomm \
-    libjpeg-turbo \
-    freetype
+    dumb-init 
 
 WORKDIR /app
 
