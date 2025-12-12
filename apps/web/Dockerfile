@@ -44,8 +44,9 @@ RUN turbo prune @lactalink/web --docker
 FROM base AS dependencies
 
 # Install build dependencies for native packages (canvas, sharp, etc.)
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     python3 \
+    build-base \
     make \
     g++ \
     cairo-dev \
