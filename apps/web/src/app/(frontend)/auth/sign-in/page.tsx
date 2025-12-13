@@ -11,7 +11,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Image from '@/components/ui/image';
-import { getServerSideURL } from '@/lib/utils/getURL';
+
+import SignInImage from '../../../../../public/images/sign-in.png';
 
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function Page() {
         <Card className="relative items-end gap-0 overflow-hidden p-0 lg:flex-row">
           <div className="relative h-40 w-full overflow-clip lg:h-full">
             <Image
-              src={`${getServerSideURL()}/images/sign-in.png`}
+              src={SignInImage}
               alt="Mother Breastfeeding"
               width={1080}
               height={1080}
@@ -37,10 +38,10 @@ export default function Page() {
             />
           </div>
 
-          <div className="from-primary-100 absolute inset-0 bg-gradient-to-t opacity-30" />
-          <Logo className="absolute left-5 top-5 h-12 w-16" />
+          <div className="from-primary-100 absolute inset-0 bg-linear-to-t opacity-30" />
+          <Logo className="absolute top-5 left-5 h-12 w-16" />
 
-          <div className="lg:w-xl bg-card z-10 flex w-full flex-col gap-6 py-8">
+          <div className="bg-card z-10 flex w-full flex-col gap-6 py-8 lg:w-xl">
             <CardHeader>
               <CardTitle className="text-xl font-bold">Welcome 👋</CardTitle>
               <CardDescription className="flex flex-wrap items-center gap-x-2">
@@ -57,11 +58,11 @@ export default function Page() {
             </CardContent>
             <CardFooter className="flex flex-col items-center justify-center">
               <div className="flex w-full max-w-md items-center justify-between gap-4">
-                <div className="bg-border h-[1px] w-full"></div>
-                <span className="text-muted-foreground whitespace-nowrap text-xs">
+                <div className="bg-border h-px w-full"></div>
+                <span className="text-muted-foreground text-xs whitespace-nowrap">
                   OR CONTINUE WITH
                 </span>
-                <div className="bg-border h-[1px] w-full"></div>
+                <div className="bg-border h-px w-full"></div>
               </div>
               <GoogleSignIn />
             </CardFooter>
