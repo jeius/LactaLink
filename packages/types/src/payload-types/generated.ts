@@ -200,6 +200,9 @@ export interface Config {
     requests: Request;
     users: User;
     transactions: Transaction;
+    'transaction-events': TransactionEvent;
+    'delivery-agreements': DeliveryAgreement;
+    'delivery-details': DeliveryDetail;
     messages: Message;
     conversations: Conversation;
     'message-attachments': MessageAttachment;
@@ -267,6 +270,9 @@ export interface Config {
       addresses: 'addresses';
       deliveryPreferences: 'delivery-preferences';
     };
+    'delivery-details': {
+      agreements: 'delivery-agreements';
+    };
     messages: {
       attachments: 'message-attachments';
       reactions: 'message-reactions';
@@ -306,6 +312,9 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    'transaction-events': TransactionEventsSelect<false> | TransactionEventsSelect<true>;
+    'delivery-agreements': DeliveryAgreementsSelect1<false> | DeliveryAgreementsSelect1<true>;
+    'delivery-details': DeliveryDetailsSelect<false> | DeliveryDetailsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     'message-attachments': MessageAttachmentsSelect<false> | MessageAttachmentsSelect<true>;
@@ -2125,6 +2134,128 @@ export interface NotificationTypeTemplate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transaction-events".
+ */
+export interface TransactionEvent {
+  id: string;
+  /**
+   * The transaction this event belongs to
+   */
+  transaction: string | Transaction;
+  /**
+   * Type of event that occurred
+   */
+  type:
+    | 'TRANSACTION_CREATED'
+    | 'DELIVERY_PROPOSED'
+    | 'PROPOSAL_ACCEPTED'
+    | 'PROPOSAL_REJECTED'
+    | 'DELIVERY_SCHEDULED'
+    | 'STATUS_CHANGED'
+    | 'PREPARING_STARTED'
+    | 'READY_FOR_PICKUP'
+    | 'TRANSIT_STARTED'
+    | 'ARRIVED_AT_MEETUP'
+    | 'DELIVERED'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'CANCELLED';
+  /**
+   * Event-specific data (e.g., proposal details, status change reason)
+   */
+  payload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Who triggered this event
+   */
+  actor: string | User;
+  /**
+   * When this event occurred
+   */
+  timestamp: string;
+  /**
+   * Sequential number for ordering events (auto-generated)
+   */
+  sequenceNumber?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-agreements".
+ */
+export interface DeliveryAgreement {
+  id: string;
+  /**
+   * The delivery this agreement is for
+   */
+  deliveryDetails: string | DeliveryDetail;
+  /**
+   * The user (sender or recipient) who is agreeing
+   */
+  user: string | User;
+  /**
+   * The decision made by the user
+   */
+  decision: 'AGREED' | 'DECLINED';
+  /**
+   * When the party agreed or declined
+   */
+  decidedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-details".
+ */
+export interface DeliveryDetail {
+  id: string;
+  /**
+   * The transaction this delivery belongs to
+   */
+  transaction: string | Transaction;
+  /**
+   * Method of delivery
+   */
+  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  /**
+   * Delivery date and time
+   */
+  datetime: string;
+  /**
+   * Location for pickup/delivery/meetup
+   */
+  address?: (string | null) | Address;
+  /**
+   * Additional instructions or notes
+   */
+  instructions?: string | null;
+  createdBy: string | User;
+  /**
+   * Current status of this delivery
+   */
+  status: 'PENDING' | 'CONFIRMED';
+  /**
+   * View agreements from involved parties for this delivery proposal
+   */
+  agreements?: {
+    docs?: (string | DeliveryAgreement)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "messages".
  */
 export interface Message {
@@ -2641,6 +2772,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'transactions';
         value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'transaction-events';
+        value: string | TransactionEvent;
+      } | null)
+    | ({
+        relationTo: 'delivery-agreements';
+        value: string | DeliveryAgreement;
+      } | null)
+    | ({
+        relationTo: 'delivery-details';
+        value: string | DeliveryDetail;
       } | null)
     | ({
         relationTo: 'messages';
@@ -3445,6 +3588,48 @@ export interface ConfirmedDeliverySelect<T extends boolean = true> {
   address?: T;
   instructions?: T;
   confirmedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transaction-events_select".
+ */
+export interface TransactionEventsSelect<T extends boolean = true> {
+  transaction?: T;
+  type?: T;
+  payload?: T;
+  actor?: T;
+  timestamp?: T;
+  sequenceNumber?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-agreements_select".
+ */
+export interface DeliveryAgreementsSelect1<T extends boolean = true> {
+  deliveryDetails?: T;
+  user?: T;
+  decision?: T;
+  decidedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-details_select".
+ */
+export interface DeliveryDetailsSelect<T extends boolean = true> {
+  transaction?: T;
+  mode?: T;
+  datetime?: T;
+  address?: T;
+  instructions?: T;
+  createdBy?: T;
+  status?: T;
+  agreements?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

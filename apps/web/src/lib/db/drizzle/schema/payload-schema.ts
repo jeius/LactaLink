@@ -41,6 +41,17 @@ export const enum_days = pgEnum('enum_days', [
   'SATURDAY',
   'SUNDAY',
 ]);
+export const enum_delivery_options = pgEnum('enum_delivery_options', [
+  'PICKUP',
+  'DELIVERY',
+  'MEETUP',
+]);
+export const enum_delivery_proposal_status = pgEnum('enum_delivery_proposal_status', [
+  'pending',
+  'accepted',
+  'rejected',
+  'superseded',
+]);
 export const enum_donation_request_status = pgEnum('enum_donation_request_status', [
   'PENDING',
   'AVAILABLE',
@@ -175,6 +186,22 @@ export const enum_requests_details_storage_preference = pgEnum(
   'enum_requests_details_storage_preference',
   ['FRESH', 'FROZEN', 'OTHER', 'EITHER']
 );
+export const enum_transaction_event_types = pgEnum('enum_transaction_event_types', [
+  'TransactionCreated',
+  'DeliveryProposed',
+  'ProposalAccepted',
+  'ProposalRejected',
+  'DeliveryScheduled',
+  'StatusChanged',
+  'PreparingStarted',
+  'ReadyForPickup',
+  'TransitStarted',
+  'ArrivedAtMeetup',
+  'Delivered',
+  'Completed',
+  'Failed',
+  'Cancelled',
+]);
 export const enum_users_role = pgEnum('enum_users_role', ['AUTHENTICATED', 'ADMIN']);
 export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
   'INDIVIDUAL',
@@ -553,6 +580,84 @@ export const delivery_preferences = pgTable(
     index('delivery_preferences_address_idx').on(columns.address),
     index('delivery_preferences_updated_at_idx').on(columns.updatedAt),
     index('delivery_preferences_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const delivery_proposals = pgTable(
+  'delivery_proposals',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    transaction: uuid('transaction_id')
+      .notNull()
+      .references(() => transactions.id, {
+        onDelete: 'set null',
+      }),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    mode: enum_delivery_options('mode').notNull(),
+    datetime: timestamp('datetime', { mode: 'string', withTimezone: true, precision: 3 }).notNull(),
+    address: uuid('address_id').references(() => addresses.id, {
+      onDelete: 'set null',
+    }),
+    instructions: varchar('instructions'),
+    status: enum_delivery_proposal_status('status').notNull().default('pending'),
+    acceptedAt: timestamp('accepted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    rejectedAt: timestamp('rejected_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('delivery_proposals_transaction_idx').on(columns.transaction),
+    index('delivery_proposals_created_by_idx').on(columns.createdBy),
+    index('delivery_proposals_address_idx').on(columns.address),
+    index('delivery_proposals_updated_at_idx').on(columns.updatedAt),
+    index('delivery_proposals_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const delivery_proposals_rels = pgTable(
+  'delivery_proposals_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('delivery_proposals_rels_order_idx').on(columns.order),
+    index('delivery_proposals_rels_parent_idx').on(columns.parent),
+    index('delivery_proposals_rels_path_idx').on(columns.path),
+    index('delivery_proposals_rels_individuals_id_idx').on(columns.individualsID),
+    index('delivery_proposals_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('delivery_proposals_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [delivery_proposals.id],
+      name: 'delivery_proposals_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'delivery_proposals_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'delivery_proposals_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'delivery_proposals_rels_milk_banks_fk',
+    }).onDelete('cascade'),
   ]
 );
 
@@ -1548,6 +1653,38 @@ export const posts_rels = pgTable(
   ]
 );
 
+export const proposal_agreements = pgTable(
+  'proposal_agreements',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    proposal: uuid('proposal_id')
+      .notNull()
+      .references(() => delivery_proposals.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    agreed: boolean('agreed').notNull().default(false),
+    agreedAt: timestamp('agreed_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('proposal_agreements_proposal_idx').on(columns.proposal),
+    index('proposal_agreements_user_idx').on(columns.user),
+    index('proposal_agreements_updated_at_idx').on(columns.updatedAt),
+    index('proposal_agreements_created_at_idx').on(columns.createdAt),
+    uniqueIndex('proposal_user_idx').on(columns.proposal, columns.user),
+  ]
+);
+
 export const provinces = pgTable(
   'provinces',
   {
@@ -1712,6 +1849,46 @@ export const requests_rels = pgTable(
       foreignColumns: [delivery_preferences.id],
       name: 'requests_rels_delivery_preferences_fk',
     }).onDelete('cascade'),
+  ]
+);
+
+export const transaction_events = pgTable(
+  'transaction_events',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    transaction: uuid('transaction_id')
+      .notNull()
+      .references(() => transactions.id, {
+        onDelete: 'set null',
+      }),
+    type: enum_transaction_event_types('type').notNull(),
+    payload: jsonb('payload'),
+    actor: uuid('actor_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    timestamp: timestamp('timestamp', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    sequenceNumber: numeric('sequence_number', { mode: 'number' }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('transaction_events_transaction_idx').on(columns.transaction),
+    index('transaction_events_actor_idx').on(columns.actor),
+    index('transaction_events_timestamp_idx').on(columns.timestamp),
+    index('transaction_events_updated_at_idx').on(columns.updatedAt),
+    index('transaction_events_created_at_idx').on(columns.createdAt),
+    index('transaction_timestamp_idx').on(columns.transaction, columns.timestamp),
+    uniqueIndex('transaction_sequenceNumber_idx').on(columns.transaction, columns.sequenceNumber),
   ]
 );
 
@@ -2774,6 +2951,7 @@ export const payload_locked_documents_rels = pgTable(
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
     commentsID: uuid('comments_id'),
     'delivery-preferencesID': uuid('delivery_preferences_id'),
+    'delivery-proposalsID': uuid('delivery_proposals_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     identitiesID: uuid('identities_id'),
@@ -2788,9 +2966,11 @@ export const payload_locked_documents_rels = pgTable(
     notificationsID: uuid('notifications_id'),
     'notification-typesID': uuid('notification_types_id'),
     postsID: uuid('posts_id'),
+    'proposal-agreementsID': uuid('proposal_agreements_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
     requestsID: uuid('requests_id'),
+    'transaction-eventsID': uuid('transaction_events_id'),
     usersID: uuid('users_id'),
     transactionsID: uuid('transactions_id'),
     messagesID: uuid('messages_id'),
@@ -2823,6 +3003,9 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_delivery_preferences_id_idx').on(
       columns['delivery-preferencesID']
     ),
+    index('payload_locked_documents_rels_delivery_proposals_id_idx').on(
+      columns['delivery-proposalsID']
+    ),
     index('payload_locked_documents_rels_donations_id_idx').on(columns.donationsID),
     index('payload_locked_documents_rels_hospitals_id_idx').on(columns.hospitalsID),
     index('payload_locked_documents_rels_identities_id_idx').on(columns.identitiesID),
@@ -2843,9 +3026,15 @@ export const payload_locked_documents_rels = pgTable(
       columns['notification-typesID']
     ),
     index('payload_locked_documents_rels_posts_id_idx').on(columns.postsID),
+    index('payload_locked_documents_rels_proposal_agreements_id_idx').on(
+      columns['proposal-agreementsID']
+    ),
     index('payload_locked_documents_rels_provinces_id_idx').on(columns.provincesID),
     index('payload_locked_documents_rels_regions_id_idx').on(columns.regionsID),
     index('payload_locked_documents_rels_requests_id_idx').on(columns.requestsID),
+    index('payload_locked_documents_rels_transaction_events_id_idx').on(
+      columns['transaction-eventsID']
+    ),
     index('payload_locked_documents_rels_users_id_idx').on(columns.usersID),
     index('payload_locked_documents_rels_transactions_id_idx').on(columns.transactionsID),
     index('payload_locked_documents_rels_messages_id_idx').on(columns.messagesID),
@@ -2905,6 +3094,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['delivery-preferencesID']],
       foreignColumns: [delivery_preferences.id],
       name: 'payload_locked_documents_rels_delivery_preferences_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['delivery-proposalsID']],
+      foreignColumns: [delivery_proposals.id],
+      name: 'payload_locked_documents_rels_delivery_proposals_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['donationsID']],
@@ -2977,6 +3171,11 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_posts_fk',
     }).onDelete('cascade'),
     foreignKey({
+      columns: [columns['proposal-agreementsID']],
+      foreignColumns: [proposal_agreements.id],
+      name: 'payload_locked_documents_rels_proposal_agreements_fk',
+    }).onDelete('cascade'),
+    foreignKey({
       columns: [columns['provincesID']],
       foreignColumns: [provinces.id],
       name: 'payload_locked_documents_rels_provinces_fk',
@@ -2990,6 +3189,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['requestsID']],
       foreignColumns: [requests.id],
       name: 'payload_locked_documents_rels_requests_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['transaction-eventsID']],
+      foreignColumns: [transaction_events.id],
+      name: 'payload_locked_documents_rels_transaction_events_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['usersID']],
@@ -3326,6 +3530,48 @@ export const relations_delivery_preferences = relations(delivery_preferences, ({
   }),
   availableDays: many(delivery_preferences_available_days, {
     relationName: 'availableDays',
+  }),
+}));
+export const relations_delivery_proposals_rels = relations(delivery_proposals_rels, ({ one }) => ({
+  parent: one(delivery_proposals, {
+    fields: [delivery_proposals_rels.parent],
+    references: [delivery_proposals.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [delivery_proposals_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [delivery_proposals_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [delivery_proposals_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations_delivery_proposals = relations(delivery_proposals, ({ one, many }) => ({
+  transaction: one(transactions, {
+    fields: [delivery_proposals.transaction],
+    references: [transactions.id],
+    relationName: 'transaction',
+  }),
+  createdBy: one(users, {
+    fields: [delivery_proposals.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  address: one(addresses, {
+    fields: [delivery_proposals.address],
+    references: [addresses.id],
+    relationName: 'address',
+  }),
+  _rels: many(delivery_proposals_rels, {
+    relationName: '_rels',
   }),
 }));
 export const relations_donations_rels = relations(donations_rels, ({ one }) => ({
@@ -3777,6 +4023,18 @@ export const relations_posts = relations(posts, ({ one, many }) => ({
     relationName: '_rels',
   }),
 }));
+export const relations_proposal_agreements = relations(proposal_agreements, ({ one }) => ({
+  proposal: one(delivery_proposals, {
+    fields: [proposal_agreements.proposal],
+    references: [delivery_proposals.id],
+    relationName: 'proposal',
+  }),
+  user: one(users, {
+    fields: [proposal_agreements.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
 export const relations_provinces = relations(provinces, ({ one }) => ({
   region: one(regions, {
     fields: [provinces.region],
@@ -3846,6 +4104,18 @@ export const relations_requests = relations(requests, ({ one, many }) => ({
   }),
   _rels: many(requests_rels, {
     relationName: '_rels',
+  }),
+}));
+export const relations_transaction_events = relations(transaction_events, ({ one }) => ({
+  transaction: one(transactions, {
+    fields: [transaction_events.transaction],
+    references: [transactions.id],
+    relationName: 'transaction',
+  }),
+  actor: one(users, {
+    fields: [transaction_events.actor],
+    references: [users.id],
+    relationName: 'actor',
   }),
 }));
 export const relations_users_rels = relations(users_rels, ({ one }) => ({
@@ -4244,6 +4514,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [delivery_preferences.id],
       relationName: 'delivery-preferences',
     }),
+    'delivery-proposalsID': one(delivery_proposals, {
+      fields: [payload_locked_documents_rels['delivery-proposalsID']],
+      references: [delivery_proposals.id],
+      relationName: 'delivery-proposals',
+    }),
     donationsID: one(donations, {
       fields: [payload_locked_documents_rels.donationsID],
       references: [donations.id],
@@ -4314,6 +4589,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [posts.id],
       relationName: 'posts',
     }),
+    'proposal-agreementsID': one(proposal_agreements, {
+      fields: [payload_locked_documents_rels['proposal-agreementsID']],
+      references: [proposal_agreements.id],
+      relationName: 'proposal-agreements',
+    }),
     provincesID: one(provinces, {
       fields: [payload_locked_documents_rels.provincesID],
       references: [provinces.id],
@@ -4328,6 +4608,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.requestsID],
       references: [requests.id],
       relationName: 'requests',
+    }),
+    'transaction-eventsID': one(transaction_events, {
+      fields: [payload_locked_documents_rels['transaction-eventsID']],
+      references: [transaction_events.id],
+      relationName: 'transaction-events',
     }),
     usersID: one(users, {
       fields: [payload_locked_documents_rels.usersID],
@@ -4451,6 +4736,8 @@ type DatabaseSchema = {
   comment_status_enum: typeof comment_status_enum;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
+  enum_delivery_options: typeof enum_delivery_options;
+  enum_delivery_proposal_status: typeof enum_delivery_proposal_status;
   enum_donation_request_status: typeof enum_donation_request_status;
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
@@ -4474,6 +4761,7 @@ type DatabaseSchema = {
   enum_posts_visibility: typeof enum_posts_visibility;
   enum_posts_status: typeof enum_posts_status;
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
+  enum_transaction_event_types: typeof enum_transaction_event_types;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
   enum_transaction_status: typeof enum_transaction_status;
@@ -4495,6 +4783,8 @@ type DatabaseSchema = {
   delivery_preferences_preferred_mode: typeof delivery_preferences_preferred_mode;
   delivery_preferences_available_days: typeof delivery_preferences_available_days;
   delivery_preferences: typeof delivery_preferences;
+  delivery_proposals: typeof delivery_proposals;
+  delivery_proposals_rels: typeof delivery_proposals_rels;
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
@@ -4522,10 +4812,12 @@ type DatabaseSchema = {
   posts_tags: typeof posts_tags;
   posts: typeof posts;
   posts_rels: typeof posts_rels;
+  proposal_agreements: typeof proposal_agreements;
   provinces: typeof provinces;
   regions: typeof regions;
   requests: typeof requests;
   requests_rels: typeof requests_rels;
+  transaction_events: typeof transaction_events;
   users: typeof users;
   users_rels: typeof users_rels;
   transactions_delivery_proposed: typeof transactions_delivery_proposed;
@@ -4567,6 +4859,8 @@ type DatabaseSchema = {
   relations_delivery_preferences_preferred_mode: typeof relations_delivery_preferences_preferred_mode;
   relations_delivery_preferences_available_days: typeof relations_delivery_preferences_available_days;
   relations_delivery_preferences: typeof relations_delivery_preferences;
+  relations_delivery_proposals_rels: typeof relations_delivery_proposals_rels;
+  relations_delivery_proposals: typeof relations_delivery_proposals;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals: typeof relations_hospitals;
@@ -4594,10 +4888,12 @@ type DatabaseSchema = {
   relations_posts_tags: typeof relations_posts_tags;
   relations_posts_rels: typeof relations_posts_rels;
   relations_posts: typeof relations_posts;
+  relations_proposal_agreements: typeof relations_proposal_agreements;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
   relations_requests_rels: typeof relations_requests_rels;
   relations_requests: typeof relations_requests;
+  relations_transaction_events: typeof relations_transaction_events;
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
   relations_transactions_delivery_proposed: typeof relations_transactions_delivery_proposed;

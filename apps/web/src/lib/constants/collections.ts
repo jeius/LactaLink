@@ -8,6 +8,7 @@ export const COLLECTION_GROUP = {
   TICKET: 'Ticket Management',
   CHAT: 'Chat Management',
   MEDIA: 'Media Management',
+  TRANSACTION: 'Transactions Management',
 };
 
 export const MILK_EXPIRY_DAYS = 3;

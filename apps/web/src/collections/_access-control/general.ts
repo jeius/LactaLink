@@ -104,3 +104,32 @@ export const collectionAuthorOrAdmin: Access = ({ req }) => {
     ],
   } as Where;
 };
+
+/**
+ * Access control for collections having transactions - only sender, recipient, or admin can access
+ */
+export const involvedPartiesOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false;
+
+  if (isAdmin(user)) return true;
+
+  if (!user.profile) return false;
+
+  // Users can access proposals for transactions they're involved in
+  return {
+    or: [
+      {
+        and: [
+          { 'transaction.sender.value': { equals: user.profile.value } },
+          { 'transaction.sender.relationTo': { equals: user.profile.relationTo } },
+        ],
+      },
+      {
+        and: [
+          { 'transaction.recipient.value': { equals: user.profile.value } },
+          { 'transaction.recipient.relationTo': { equals: user.profile.relationTo } },
+        ],
+      },
+    ],
+  } as Where;
+};

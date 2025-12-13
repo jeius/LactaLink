@@ -21,7 +21,7 @@ import { Posts } from './Posts';
 import { Barangays, CitiesMunicipalities, IslandGroups, Regions } from './PSGC';
 import { Provinces } from './PSGC/Provinces';
 import { Requests } from './Requests';
-import { Transactions } from './Transactions';
+import TransactionCollections from './transactions';
 import { Users } from './Users';
 
 const Collections: CollectionConfig[] = [
@@ -49,7 +49,7 @@ const Collections: CollectionConfig[] = [
   Regions,
   Requests,
   Users,
-  Transactions,
+  ...TransactionCollections,
   ...ChatSystemCollections,
   ...MediaCollections,
 ];

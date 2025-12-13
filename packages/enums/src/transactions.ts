@@ -37,3 +37,37 @@ export const TIME_SLOTS = {
   '16:00-18:00': { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
   '18:00-20:00': { label: '6:00 PM - 8:00 PM', value: '18:00-20:00' },
 } as const;
+
+export const DELIVERY_PROPOSAL_STATUS = {
+  PENDING: { label: 'Pending', value: 'PENDING' },
+  ACCEPTED: { label: 'Accepted', value: 'ACCEPTED' },
+  REJECTED: { label: 'Rejected', value: 'REJECTED' },
+  SUPERSEDED: { label: 'Superseded', value: 'SUPERSEDED' },
+} as const;
+
+export const TRANSACTION_EVENT_TYPES = {
+  TRANSACTION_CREATED: { label: 'Transaction Created', value: 'TRANSACTION_CREATED' },
+  DELIVERY_PROPOSED: { label: 'Delivery Proposed', value: 'DELIVERY_PROPOSED' },
+  PROPOSAL_ACCEPTED: { label: 'Proposal Accepted', value: 'PROPOSAL_ACCEPTED' },
+  PROPOSAL_REJECTED: { label: 'Proposal Rejected', value: 'PROPOSAL_REJECTED' },
+  DELIVERY_SCHEDULED: { label: 'Delivery Scheduled', value: 'DELIVERY_SCHEDULED' },
+  STATUS_CHANGED: { label: 'Status Changed', value: 'STATUS_CHANGED' },
+  PREPARING_STARTED: { label: 'Preparing Started', value: 'PREPARING_STARTED' },
+  READY_FOR_PICKUP: { label: 'Ready For Pickup', value: 'READY_FOR_PICKUP' },
+  TRANSIT_STARTED: { label: 'Transit Started', value: 'TRANSIT_STARTED' },
+  ARRIVED_AT_MEETUP: { label: 'Arrived at Meetup', value: 'ARRIVED_AT_MEETUP' },
+  DELIVERED: { label: 'Delivered', value: 'DELIVERED' },
+  COMPLETED: { label: 'Completed', value: 'COMPLETED' },
+  FAILED: { label: 'Failed', value: 'FAILED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
+} as const;
+
+export const DELIVERY_DECISIONS = {
+  AGREED: { label: 'Agreed', value: 'AGREED' },
+  DECLINED: { label: 'Declined', value: 'DECLINED' },
+} as const;
+
+export const DELIVERY_DETAILS_STATUS = {
+  PENDING: { label: 'Pending Confirmation', value: 'PENDING' },
+  CONFIRMED: { label: 'Confirmed', value: 'CONFIRMED' },
+};
