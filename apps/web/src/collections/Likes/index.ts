@@ -1,5 +1,4 @@
 import { createdByProfileField } from '@/fields/createdByField';
-import { generateCreatedByProfile } from '@/hooks/collections/generateCreatedBy';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorProfileOrAdmin } from '../_access-control';
@@ -21,7 +20,7 @@ export const Likes: CollectionConfig<'likes'> = {
     defaultColumns: ['liked', 'createdBy', 'createdAt'],
   },
   hooks: {
-    beforeChange: [generateCreatedByProfile, ensureNoDuplicate],
+    beforeChange: [ensureNoDuplicate],
     afterChange: [updateDocLikesCount],
     afterDelete: [deleteDocLikesCount],
   },
