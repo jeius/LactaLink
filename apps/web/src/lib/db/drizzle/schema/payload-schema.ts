@@ -21,6 +21,7 @@ import {
   numeric,
   serial,
   jsonb,
+  text,
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { sql, relations } from '@payloadcms/db-postgres/drizzle';
@@ -40,6 +41,18 @@ export const enum_days = pgEnum('enum_days', [
   'FRIDAY',
   'SATURDAY',
   'SUNDAY',
+]);
+export const enum_screening_question_type = pgEnum('enum_screening_question_type', [
+  'text-question',
+  'textarea-question',
+  'radio-question',
+  'checkbox-question',
+]);
+export const enum_donor_screening_status = pgEnum('enum_donor_screening_status', [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'NEEDS_REVIEW',
 ]);
 export const enum_donation_request_status = pgEnum('enum_donation_request_status', [
   'PENDING',
@@ -206,6 +219,7 @@ export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_tas
   'send-email',
   'calculate-post-comment-count-task',
   'calculate-comment-reply-count-task',
+  'schedulePublish',
 ]);
 export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', [
   'failed',
@@ -220,7 +234,19 @@ export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug',
   'send-email',
   'calculate-post-comment-count-task',
   'calculate-comment-reply-count-task',
+  'schedulePublish',
 ]);
+export const enum_choice_type = pgEnum('enum_choice_type', ['PREDEFINED', 'CUSTOM']);
+export const enum_orientation = pgEnum('enum_orientation', ['vertical', 'horizontal']);
+export const enum_text_answer_length = pgEnum('enum_text_answer_length', ['SHORT', 'LONG']);
+export const enum_donor_screening_form_status = pgEnum('enum_donor_screening_form_status', [
+  'draft',
+  'published',
+]);
+export const enum__donor_screening_form_v_version_status = pgEnum(
+  'enum__donor_screening_form_v_version_status',
+  ['draft', 'published']
+);
 
 export const addresses = pgTable(
   'addresses',
@@ -553,6 +579,72 @@ export const delivery_preferences = pgTable(
     index('delivery_preferences_address_idx').on(columns.address),
     index('delivery_preferences_updated_at_idx').on(columns.updatedAt),
     index('delivery_preferences_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const donor_screenings_responses = pgTable(
+  'donor_screenings_responses',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    sectionIndex: numeric('section_index', { mode: 'number' }).notNull(),
+    questionIndex: numeric('question_index', { mode: 'number' }).notNull(),
+    questionType: enum_screening_question_type('question_type').notNull(),
+    question: varchar('question').notNull(),
+    answer: jsonb('answer').notNull(),
+  },
+  (columns) => [
+    index('donor_screenings_responses_order_idx').on(columns._order),
+    index('donor_screenings_responses_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screenings.id],
+      name: 'donor_screenings_responses_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screenings = pgTable(
+  'donor_screenings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    submittedBy: uuid('submitted_by_id')
+      .notNull()
+      .references(() => individuals.id, {
+        onDelete: 'set null',
+      }),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    status: enum_donor_screening_status('status').notNull().default('PENDING'),
+    formVersion: varchar('form_version').notNull(),
+    submittedAt: timestamp('submitted_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    reviewedAt: timestamp('reviewed_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    reviewedBy: uuid('reviewed_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    reviewNotes: varchar('review_notes'),
+    metadata_deviceInfo: varchar('metadata_device_info'),
+    metadata_ipAddress: varchar('metadata_ip_address'),
+    metadata_timeToComplete: numeric('metadata_time_to_complete', { mode: 'number' }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('donor_screenings_submitted_by_idx').on(columns.submittedBy),
+    index('donor_screenings_created_by_idx').on(columns.createdBy),
+    index('donor_screenings_reviewed_by_idx').on(columns.reviewedBy),
+    index('donor_screenings_updated_at_idx').on(columns.updatedAt),
+    index('donor_screenings_created_at_idx').on(columns.createdAt),
   ]
 );
 
@@ -2774,6 +2866,7 @@ export const payload_locked_documents_rels = pgTable(
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
     commentsID: uuid('comments_id'),
     'delivery-preferencesID': uuid('delivery_preferences_id'),
+    'donor-screeningsID': uuid('donor_screenings_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
     identitiesID: uuid('identities_id'),
@@ -2822,6 +2915,9 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_comments_id_idx').on(columns.commentsID),
     index('payload_locked_documents_rels_delivery_preferences_id_idx').on(
       columns['delivery-preferencesID']
+    ),
+    index('payload_locked_documents_rels_donor_screenings_id_idx').on(
+      columns['donor-screeningsID']
     ),
     index('payload_locked_documents_rels_donations_id_idx').on(columns.donationsID),
     index('payload_locked_documents_rels_hospitals_id_idx').on(columns.hospitalsID),
@@ -2905,6 +3001,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['delivery-preferencesID']],
       foreignColumns: [delivery_preferences.id],
       name: 'payload_locked_documents_rels_delivery_preferences_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['donor-screeningsID']],
+      foreignColumns: [donor_screenings.id],
+      name: 'payload_locked_documents_rels_donor_screenings_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['donationsID']],
@@ -3145,6 +3246,351 @@ export const payload_migrations = pgTable(
   ]
 );
 
+export const donor_screening_form_blocks_checkbox_question_options = pgTable(
+  'donor_screening_form_blocks_checkbox_question_options',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    type: enum_choice_type('type').default('PREDEFINED'),
+    label: varchar('label'),
+    value: varchar('value'),
+  },
+  (columns) => [
+    index('donor_screening_form_blocks_checkbox_question_options_order_idx').on(columns._order),
+    index('donor_screening_form_blocks_checkbox_question_options_parent_id_idx').on(
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form_blocks_checkbox_question.id],
+      name: 'donor_screening_form_blocks_checkbox_question_options_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form_blocks_checkbox_question = pgTable(
+  'donor_screening_form_blocks_checkbox_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: varchar('id').primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    layout: enum_orientation('layout').default('vertical'),
+    validation_minSelections: numeric('validation_min_selections', { mode: 'number' }),
+    validation_maxSelections: numeric('validation_max_selections', { mode: 'number' }),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('donor_screening_form_blocks_checkbox_question_order_idx').on(columns._order),
+    index('donor_screening_form_blocks_checkbox_question_parent_id_idx').on(columns._parentID),
+    index('donor_screening_form_blocks_checkbox_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form.id],
+      name: 'donor_screening_form_blocks_checkbox_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form_blocks_radio_question_options = pgTable(
+  'donor_screening_form_blocks_radio_question_options',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    type: enum_choice_type('type').default('PREDEFINED'),
+    label: varchar('label'),
+    value: varchar('value'),
+  },
+  (columns) => [
+    index('donor_screening_form_blocks_radio_question_options_order_idx').on(columns._order),
+    index('donor_screening_form_blocks_radio_question_options_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form_blocks_radio_question.id],
+      name: 'donor_screening_form_blocks_radio_question_options_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form_blocks_radio_question = pgTable(
+  'donor_screening_form_blocks_radio_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: varchar('id').primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    layout: enum_orientation('layout').default('vertical'),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('donor_screening_form_blocks_radio_question_order_idx').on(columns._order),
+    index('donor_screening_form_blocks_radio_question_parent_id_idx').on(columns._parentID),
+    index('donor_screening_form_blocks_radio_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form.id],
+      name: 'donor_screening_form_blocks_radio_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form_blocks_text_question = pgTable(
+  'donor_screening_form_blocks_text_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: varchar('id').primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    expectedAnswerLength: enum_text_answer_length('expected_answer_length').default('SHORT'),
+    placeholder: varchar('placeholder'),
+    validation_minLength: numeric('validation_min_length', { mode: 'number' }),
+    validation_maxLength: numeric('validation_max_length', { mode: 'number' }).default(500),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('donor_screening_form_blocks_text_question_order_idx').on(columns._order),
+    index('donor_screening_form_blocks_text_question_parent_id_idx').on(columns._parentID),
+    index('donor_screening_form_blocks_text_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form.id],
+      name: 'donor_screening_form_blocks_text_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form_sections = pgTable(
+  'donor_screening_form_sections',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    sectionTitle: varchar('section_title'),
+    sectionDescription: varchar('section_description'),
+  },
+  (columns) => [
+    index('donor_screening_form_sections_order_idx').on(columns._order),
+    index('donor_screening_form_sections_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [donor_screening_form.id],
+      name: 'donor_screening_form_sections_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const donor_screening_form = pgTable(
+  'donor_screening_form',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    description: varchar('description'),
+    active: boolean('active').default(true),
+    _status: enum_donor_screening_form_status('_status').default('draft'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [index('donor_screening_form__status_idx').on(columns._status)]
+);
+
+export const _donor_screening_form_v_blocks_checkbox_question_options = pgTable(
+  '_donor_screening_form_v_blocks_checkbox_question_options',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: enum_choice_type('type').default('PREDEFINED'),
+    label: varchar('label'),
+    value: varchar('value'),
+    _uuid: varchar('_uuid'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_blocks_checkbox_question_options_order_idx').on(columns._order),
+    index('_donor_screening_form_v_blocks_checkbox_question_options_parent_id_idx').on(
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v_blocks_checkbox_question.id],
+      name: '_donor_screening_form_v_blocks_checkbox_question_options_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v_blocks_checkbox_question = pgTable(
+  '_donor_screening_form_v_blocks_checkbox_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    layout: enum_orientation('layout').default('vertical'),
+    validation_minSelections: numeric('validation_min_selections', { mode: 'number' }),
+    validation_maxSelections: numeric('validation_max_selections', { mode: 'number' }),
+    _uuid: varchar('_uuid'),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_blocks_checkbox_question_order_idx').on(columns._order),
+    index('_donor_screening_form_v_blocks_checkbox_question_parent_id_idx').on(columns._parentID),
+    index('_donor_screening_form_v_blocks_checkbox_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v.id],
+      name: '_donor_screening_form_v_blocks_checkbox_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v_blocks_radio_question_options = pgTable(
+  '_donor_screening_form_v_blocks_radio_question_options',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: enum_choice_type('type').default('PREDEFINED'),
+    label: varchar('label'),
+    value: varchar('value'),
+    _uuid: varchar('_uuid'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_blocks_radio_question_options_order_idx').on(columns._order),
+    index('_donor_screening_form_v_blocks_radio_question_options_parent_id_idx').on(
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v_blocks_radio_question.id],
+      name: '_donor_screening_form_v_blocks_radio_question_options_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v_blocks_radio_question = pgTable(
+  '_donor_screening_form_v_blocks_radio_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    layout: enum_orientation('layout').default('vertical'),
+    _uuid: varchar('_uuid'),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_blocks_radio_question_order_idx').on(columns._order),
+    index('_donor_screening_form_v_blocks_radio_question_parent_id_idx').on(columns._parentID),
+    index('_donor_screening_form_v_blocks_radio_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v.id],
+      name: '_donor_screening_form_v_blocks_radio_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v_blocks_text_question = pgTable(
+  '_donor_screening_form_v_blocks_text_question',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    _path: text('_path').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    required: boolean('required').default(true),
+    question: varchar('question'),
+    helpText: varchar('help_text'),
+    expectedAnswerLength: enum_text_answer_length('expected_answer_length').default('SHORT'),
+    placeholder: varchar('placeholder'),
+    validation_minLength: numeric('validation_min_length', { mode: 'number' }),
+    validation_maxLength: numeric('validation_max_length', { mode: 'number' }).default(500),
+    _uuid: varchar('_uuid'),
+    blockName: varchar('block_name'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_blocks_text_question_order_idx').on(columns._order),
+    index('_donor_screening_form_v_blocks_text_question_parent_id_idx').on(columns._parentID),
+    index('_donor_screening_form_v_blocks_text_question_path_idx').on(columns._path),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v.id],
+      name: '_donor_screening_form_v_blocks_text_question_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v_version_sections = pgTable(
+  '_donor_screening_form_v_version_sections',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    sectionTitle: varchar('section_title'),
+    sectionDescription: varchar('section_description'),
+    _uuid: varchar('_uuid'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_version_sections_order_idx').on(columns._order),
+    index('_donor_screening_form_v_version_sections_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_form_v.id],
+      name: '_donor_screening_form_v_version_sections_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_form_v = pgTable(
+  '_donor_screening_form_v',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    version_description: varchar('version_description'),
+    version_active: boolean('version_active').default(true),
+    version__status:
+      enum__donor_screening_form_v_version_status('version__status').default('draft'),
+    version_updatedAt: timestamp('version_updated_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_createdAt: timestamp('version_created_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    latest: boolean('latest'),
+    autosave: boolean('autosave'),
+  },
+  (columns) => [
+    index('_donor_screening_form_v_version_version__status_idx').on(columns.version__status),
+    index('_donor_screening_form_v_created_at_idx').on(columns.createdAt),
+    index('_donor_screening_form_v_updated_at_idx').on(columns.updatedAt),
+    index('_donor_screening_form_v_latest_idx').on(columns.latest),
+    index('_donor_screening_form_v_autosave_idx').on(columns.autosave),
+  ]
+);
+
 export const relations_addresses = relations(addresses, ({ one }) => ({
   owner: one(users, {
     fields: [addresses.owner],
@@ -3326,6 +3772,36 @@ export const relations_delivery_preferences = relations(delivery_preferences, ({
   }),
   availableDays: many(delivery_preferences_available_days, {
     relationName: 'availableDays',
+  }),
+}));
+export const relations_donor_screenings_responses = relations(
+  donor_screenings_responses,
+  ({ one }) => ({
+    _parentID: one(donor_screenings, {
+      fields: [donor_screenings_responses._parentID],
+      references: [donor_screenings.id],
+      relationName: 'responses',
+    }),
+  })
+);
+export const relations_donor_screenings = relations(donor_screenings, ({ one, many }) => ({
+  submittedBy: one(individuals, {
+    fields: [donor_screenings.submittedBy],
+    references: [individuals.id],
+    relationName: 'submittedBy',
+  }),
+  createdBy: one(users, {
+    fields: [donor_screenings.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  reviewedBy: one(users, {
+    fields: [donor_screenings.reviewedBy],
+    references: [users.id],
+    relationName: 'reviewedBy',
+  }),
+  responses: many(donor_screenings_responses, {
+    relationName: 'responses',
   }),
 }));
 export const relations_donations_rels = relations(donations_rels, ({ one }) => ({
@@ -4244,6 +4720,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [delivery_preferences.id],
       relationName: 'delivery-preferences',
     }),
+    'donor-screeningsID': one(donor_screenings, {
+      fields: [payload_locked_documents_rels['donor-screeningsID']],
+      references: [donor_screenings.id],
+      relationName: 'donor-screenings',
+    }),
     donationsID: one(donations, {
       fields: [payload_locked_documents_rels.donationsID],
       references: [donations.id],
@@ -4445,12 +4926,174 @@ export const relations_payload_preferences = relations(payload_preferences, ({ m
   }),
 }));
 export const relations_payload_migrations = relations(payload_migrations, () => ({}));
+export const relations_donor_screening_form_blocks_checkbox_question_options = relations(
+  donor_screening_form_blocks_checkbox_question_options,
+  ({ one }) => ({
+    _parentID: one(donor_screening_form_blocks_checkbox_question, {
+      fields: [donor_screening_form_blocks_checkbox_question_options._parentID],
+      references: [donor_screening_form_blocks_checkbox_question.id],
+      relationName: 'options',
+    }),
+  })
+);
+export const relations_donor_screening_form_blocks_checkbox_question = relations(
+  donor_screening_form_blocks_checkbox_question,
+  ({ one, many }) => ({
+    _parentID: one(donor_screening_form, {
+      fields: [donor_screening_form_blocks_checkbox_question._parentID],
+      references: [donor_screening_form.id],
+      relationName: '_blocks_checkbox-question',
+    }),
+    options: many(donor_screening_form_blocks_checkbox_question_options, {
+      relationName: 'options',
+    }),
+  })
+);
+export const relations_donor_screening_form_blocks_radio_question_options = relations(
+  donor_screening_form_blocks_radio_question_options,
+  ({ one }) => ({
+    _parentID: one(donor_screening_form_blocks_radio_question, {
+      fields: [donor_screening_form_blocks_radio_question_options._parentID],
+      references: [donor_screening_form_blocks_radio_question.id],
+      relationName: 'options',
+    }),
+  })
+);
+export const relations_donor_screening_form_blocks_radio_question = relations(
+  donor_screening_form_blocks_radio_question,
+  ({ one, many }) => ({
+    _parentID: one(donor_screening_form, {
+      fields: [donor_screening_form_blocks_radio_question._parentID],
+      references: [donor_screening_form.id],
+      relationName: '_blocks_radio-question',
+    }),
+    options: many(donor_screening_form_blocks_radio_question_options, {
+      relationName: 'options',
+    }),
+  })
+);
+export const relations_donor_screening_form_blocks_text_question = relations(
+  donor_screening_form_blocks_text_question,
+  ({ one }) => ({
+    _parentID: one(donor_screening_form, {
+      fields: [donor_screening_form_blocks_text_question._parentID],
+      references: [donor_screening_form.id],
+      relationName: '_blocks_text-question',
+    }),
+  })
+);
+export const relations_donor_screening_form_sections = relations(
+  donor_screening_form_sections,
+  ({ one }) => ({
+    _parentID: one(donor_screening_form, {
+      fields: [donor_screening_form_sections._parentID],
+      references: [donor_screening_form.id],
+      relationName: 'sections',
+    }),
+  })
+);
+export const relations_donor_screening_form = relations(donor_screening_form, ({ many }) => ({
+  '_blocks_checkbox-question': many(donor_screening_form_blocks_checkbox_question, {
+    relationName: '_blocks_checkbox-question',
+  }),
+  '_blocks_radio-question': many(donor_screening_form_blocks_radio_question, {
+    relationName: '_blocks_radio-question',
+  }),
+  '_blocks_text-question': many(donor_screening_form_blocks_text_question, {
+    relationName: '_blocks_text-question',
+  }),
+  sections: many(donor_screening_form_sections, {
+    relationName: 'sections',
+  }),
+}));
+export const relations__donor_screening_form_v_blocks_checkbox_question_options = relations(
+  _donor_screening_form_v_blocks_checkbox_question_options,
+  ({ one }) => ({
+    _parentID: one(_donor_screening_form_v_blocks_checkbox_question, {
+      fields: [_donor_screening_form_v_blocks_checkbox_question_options._parentID],
+      references: [_donor_screening_form_v_blocks_checkbox_question.id],
+      relationName: 'options',
+    }),
+  })
+);
+export const relations__donor_screening_form_v_blocks_checkbox_question = relations(
+  _donor_screening_form_v_blocks_checkbox_question,
+  ({ one, many }) => ({
+    _parentID: one(_donor_screening_form_v, {
+      fields: [_donor_screening_form_v_blocks_checkbox_question._parentID],
+      references: [_donor_screening_form_v.id],
+      relationName: '_blocks_checkbox-question',
+    }),
+    options: many(_donor_screening_form_v_blocks_checkbox_question_options, {
+      relationName: 'options',
+    }),
+  })
+);
+export const relations__donor_screening_form_v_blocks_radio_question_options = relations(
+  _donor_screening_form_v_blocks_radio_question_options,
+  ({ one }) => ({
+    _parentID: one(_donor_screening_form_v_blocks_radio_question, {
+      fields: [_donor_screening_form_v_blocks_radio_question_options._parentID],
+      references: [_donor_screening_form_v_blocks_radio_question.id],
+      relationName: 'options',
+    }),
+  })
+);
+export const relations__donor_screening_form_v_blocks_radio_question = relations(
+  _donor_screening_form_v_blocks_radio_question,
+  ({ one, many }) => ({
+    _parentID: one(_donor_screening_form_v, {
+      fields: [_donor_screening_form_v_blocks_radio_question._parentID],
+      references: [_donor_screening_form_v.id],
+      relationName: '_blocks_radio-question',
+    }),
+    options: many(_donor_screening_form_v_blocks_radio_question_options, {
+      relationName: 'options',
+    }),
+  })
+);
+export const relations__donor_screening_form_v_blocks_text_question = relations(
+  _donor_screening_form_v_blocks_text_question,
+  ({ one }) => ({
+    _parentID: one(_donor_screening_form_v, {
+      fields: [_donor_screening_form_v_blocks_text_question._parentID],
+      references: [_donor_screening_form_v.id],
+      relationName: '_blocks_text-question',
+    }),
+  })
+);
+export const relations__donor_screening_form_v_version_sections = relations(
+  _donor_screening_form_v_version_sections,
+  ({ one }) => ({
+    _parentID: one(_donor_screening_form_v, {
+      fields: [_donor_screening_form_v_version_sections._parentID],
+      references: [_donor_screening_form_v.id],
+      relationName: 'version_sections',
+    }),
+  })
+);
+export const relations__donor_screening_form_v = relations(_donor_screening_form_v, ({ many }) => ({
+  '_blocks_checkbox-question': many(_donor_screening_form_v_blocks_checkbox_question, {
+    relationName: '_blocks_checkbox-question',
+  }),
+  '_blocks_radio-question': many(_donor_screening_form_v_blocks_radio_question, {
+    relationName: '_blocks_radio-question',
+  }),
+  '_blocks_text-question': many(_donor_screening_form_v_blocks_text_question, {
+    relationName: '_blocks_text-question',
+  }),
+  version_sections: many(_donor_screening_form_v_version_sections, {
+    relationName: 'version_sections',
+  }),
+}));
 
 type DatabaseSchema = {
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
   comment_status_enum: typeof comment_status_enum;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
+  enum_screening_question_type: typeof enum_screening_question_type;
+  enum_donor_screening_status: typeof enum_donor_screening_status;
   enum_donation_request_status: typeof enum_donation_request_status;
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
   enum_donations_details_collection_mode: typeof enum_donations_details_collection_mode;
@@ -4485,6 +5128,11 @@ type DatabaseSchema = {
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
   enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug;
+  enum_choice_type: typeof enum_choice_type;
+  enum_orientation: typeof enum_orientation;
+  enum_text_answer_length: typeof enum_text_answer_length;
+  enum_donor_screening_form_status: typeof enum_donor_screening_form_status;
+  enum__donor_screening_form_v_version_status: typeof enum__donor_screening_form_v_version_status;
   addresses: typeof addresses;
   blocked_users: typeof blocked_users;
   barangays: typeof barangays;
@@ -4495,6 +5143,8 @@ type DatabaseSchema = {
   delivery_preferences_preferred_mode: typeof delivery_preferences_preferred_mode;
   delivery_preferences_available_days: typeof delivery_preferences_available_days;
   delivery_preferences: typeof delivery_preferences;
+  donor_screenings_responses: typeof donor_screenings_responses;
+  donor_screenings: typeof donor_screenings;
   donations: typeof donations;
   donations_rels: typeof donations_rels;
   hospitals: typeof hospitals;
@@ -4557,6 +5207,20 @@ type DatabaseSchema = {
   payload_preferences: typeof payload_preferences;
   payload_preferences_rels: typeof payload_preferences_rels;
   payload_migrations: typeof payload_migrations;
+  donor_screening_form_blocks_checkbox_question_options: typeof donor_screening_form_blocks_checkbox_question_options;
+  donor_screening_form_blocks_checkbox_question: typeof donor_screening_form_blocks_checkbox_question;
+  donor_screening_form_blocks_radio_question_options: typeof donor_screening_form_blocks_radio_question_options;
+  donor_screening_form_blocks_radio_question: typeof donor_screening_form_blocks_radio_question;
+  donor_screening_form_blocks_text_question: typeof donor_screening_form_blocks_text_question;
+  donor_screening_form_sections: typeof donor_screening_form_sections;
+  donor_screening_form: typeof donor_screening_form;
+  _donor_screening_form_v_blocks_checkbox_question_options: typeof _donor_screening_form_v_blocks_checkbox_question_options;
+  _donor_screening_form_v_blocks_checkbox_question: typeof _donor_screening_form_v_blocks_checkbox_question;
+  _donor_screening_form_v_blocks_radio_question_options: typeof _donor_screening_form_v_blocks_radio_question_options;
+  _donor_screening_form_v_blocks_radio_question: typeof _donor_screening_form_v_blocks_radio_question;
+  _donor_screening_form_v_blocks_text_question: typeof _donor_screening_form_v_blocks_text_question;
+  _donor_screening_form_v_version_sections: typeof _donor_screening_form_v_version_sections;
+  _donor_screening_form_v: typeof _donor_screening_form_v;
   relations_addresses: typeof relations_addresses;
   relations_blocked_users: typeof relations_blocked_users;
   relations_barangays: typeof relations_barangays;
@@ -4567,6 +5231,8 @@ type DatabaseSchema = {
   relations_delivery_preferences_preferred_mode: typeof relations_delivery_preferences_preferred_mode;
   relations_delivery_preferences_available_days: typeof relations_delivery_preferences_available_days;
   relations_delivery_preferences: typeof relations_delivery_preferences;
+  relations_donor_screenings_responses: typeof relations_donor_screenings_responses;
+  relations_donor_screenings: typeof relations_donor_screenings;
   relations_donations_rels: typeof relations_donations_rels;
   relations_donations: typeof relations_donations;
   relations_hospitals: typeof relations_hospitals;
@@ -4629,6 +5295,20 @@ type DatabaseSchema = {
   relations_payload_preferences_rels: typeof relations_payload_preferences_rels;
   relations_payload_preferences: typeof relations_payload_preferences;
   relations_payload_migrations: typeof relations_payload_migrations;
+  relations_donor_screening_form_blocks_checkbox_question_options: typeof relations_donor_screening_form_blocks_checkbox_question_options;
+  relations_donor_screening_form_blocks_checkbox_question: typeof relations_donor_screening_form_blocks_checkbox_question;
+  relations_donor_screening_form_blocks_radio_question_options: typeof relations_donor_screening_form_blocks_radio_question_options;
+  relations_donor_screening_form_blocks_radio_question: typeof relations_donor_screening_form_blocks_radio_question;
+  relations_donor_screening_form_blocks_text_question: typeof relations_donor_screening_form_blocks_text_question;
+  relations_donor_screening_form_sections: typeof relations_donor_screening_form_sections;
+  relations_donor_screening_form: typeof relations_donor_screening_form;
+  relations__donor_screening_form_v_blocks_checkbox_question_options: typeof relations__donor_screening_form_v_blocks_checkbox_question_options;
+  relations__donor_screening_form_v_blocks_checkbox_question: typeof relations__donor_screening_form_v_blocks_checkbox_question;
+  relations__donor_screening_form_v_blocks_radio_question_options: typeof relations__donor_screening_form_v_blocks_radio_question_options;
+  relations__donor_screening_form_v_blocks_radio_question: typeof relations__donor_screening_form_v_blocks_radio_question;
+  relations__donor_screening_form_v_blocks_text_question: typeof relations__donor_screening_form_v_blocks_text_question;
+  relations__donor_screening_form_v_version_sections: typeof relations__donor_screening_form_v_version_sections;
+  relations__donor_screening_form_v: typeof relations__donor_screening_form_v;
 };
 
 declare module '@payloadcms/db-postgres' {
