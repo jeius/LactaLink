@@ -22,7 +22,6 @@ import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
 import { createDonation } from '@/lib/api/donation';
-import { upsertMilkBag } from '@/lib/api/upsert';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { DonationCreateSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
@@ -82,31 +81,27 @@ export default function CreateDonation() {
   //#region Handlers
   const onSubmit = useCallback(
     async (data: DonationCreateSchema) => {
-      const createPromise = createDonation(data);
+      const createPromise = createDonation(data).then(({ transaction }) => {
+        const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications', 'milkBags'];
+
+        if (transaction) {
+          router.dismissTo(`/transactions/${transaction.id}`);
+          slugsToRevalidate.push('requests', 'transactions');
+        } else {
+          router.dismissTo('/account/donations');
+        }
+
+        revalidateDonations(slugsToRevalidate);
+        deleteSavedFormData('donation-create');
+      });
 
       toast.promise(createPromise, {
         loading: `Submitting donation...`,
         success: (res: { message: string }) => res.message,
-        error: (error) => {
-          additionalState.onRefresh?.();
-          return extractErrorMessage(error);
-        },
+        error: (error) => extractErrorMessage(error),
       });
-
-      const { transaction } = await createPromise;
-      const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications', 'milkBags'];
-
-      if (transaction) {
-        router.dismissTo(`/transactions/${transaction.id}`);
-        slugsToRevalidate.push('requests', 'transactions');
-      } else {
-        router.dismissTo('/account/donations');
-      }
-
-      revalidateDonations(slugsToRevalidate);
-      deleteSavedFormData('donation-create');
     },
-    [additionalState, revalidateDonations, router]
+    [revalidateDonations, router]
   );
 
   const submit = handleSubmit(onSubmit);
@@ -114,9 +109,9 @@ export default function CreateDonation() {
   async function handleNext() {
     switch (step) {
       case detailsStep: {
-        try {
-          setValidatingDetails(true);
+        setValidatingDetails(true);
 
+        try {
           const data = getValues();
 
           const fieldsToValidate: FieldPath<DonationCreateSchema>[] = [
@@ -135,15 +130,7 @@ export default function CreateDonation() {
           }
 
           const isValid = await trigger(fieldsToValidate);
-
-          if (!isValid) {
-            throw new Error('Please fix the errors before proceeding.');
-          }
-
-          const bags = data.details.bags;
-          data.milkBags = await Promise.all(bags.map(upsertMilkBag));
-          revalidateDonations(['milkBags']);
-          reset(data);
+          if (!isValid) toast.error('Please fix the errors before proceeding.');
 
           if (tutorialDone) {
             skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
@@ -153,10 +140,9 @@ export default function CreateDonation() {
         } catch (error) {
           toast.error(extractErrorMessage(error));
           console.error('Error validating details:', error);
-        } finally {
-          setValidatingDetails(false);
         }
 
+        setValidatingDetails(false);
         return;
       }
 
@@ -174,6 +160,7 @@ export default function CreateDonation() {
     const isValid = await trigger();
 
     if (!isValid) {
+      console.log('Form validation errors:', formState.errors);
       const milkBagsError = getFieldState('milkBags').error;
       toast.error(extractErrorMessage(milkBagsError));
       throw new Error('Form validation failed');

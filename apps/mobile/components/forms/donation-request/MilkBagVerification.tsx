@@ -12,16 +12,16 @@ import { VStack } from '@/components/ui/vstack';
 
 import { MMKV_KEYS } from '@/lib/constants';
 import localStorage from '@/lib/localStorage';
+import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
 
 import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 
-import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { CameraIcon, ImageIcon } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
@@ -66,30 +66,20 @@ interface MilkBagCardProps extends React.ComponentProps<typeof Card> {
 function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const { themeColors } = useTheme();
 
-  const [capturedImage, setCapturedImage] = useState(data.bagImage);
   const [isModalOpen, setModalOpen] = useState(false);
+
+  const prevImageUriRef = useRef<string | null>(null);
 
   const { code = 'Unavailable', volume, collectedAt } = data;
 
-  const bagImage = data.bagImage || capturedImage;
+  const bagImage = data.bagImage;
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
 
   const deletePrev = useCallback(async () => {
-    try {
-      if (capturedImage) {
-        const file = new File(capturedImage.url);
-        file.delete();
-      }
-    } catch (error) {
-      console.warn('Failed to delete local file:', extractErrorMessage(error));
-    }
-  }, [capturedImage]);
-
-  useEffect(() => {
-    setCapturedImage(data.bagImage);
-    if (!data.bagImage) deletePrev();
-  }, [data.bagImage, deletePrev]);
+    const prevUri = prevImageUriRef.current;
+    if (prevUri) deleteLocalFiles([prevUri]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -100,7 +90,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
     if (!rawImage) return;
 
-    const fileExtension = rawImage.fileName?.split('.')?.[1] || 'jpeg';
+    const fileExtension = rawImage.fileName?.split('.')?.[1] || 'jpg';
     const filename = `${code}-${volume}ml-image.${fileExtension}`;
 
     const transformedImage: ImageSchema = {
@@ -114,9 +104,9 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
     };
 
     deletePrev();
-    setCapturedImage(transformedImage);
     onImageCapture?.(transformedImage);
     setModalOpen(false);
+    prevImageUriRef.current = rawImage.uri;
   }
 
   async function handleCapture() {

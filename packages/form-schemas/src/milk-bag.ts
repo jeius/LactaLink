@@ -16,7 +16,7 @@ export const milkBagSchema = z.object({
 });
 
 export const createMilkBagSchema = z.object({
-  id: z.uuid().optional(),
+  id: z.string(),
   ...milkBagSchema.omit({
     id: true,
     code: true,

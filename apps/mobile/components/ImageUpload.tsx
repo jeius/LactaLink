@@ -150,7 +150,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     await handleChange(result);
   }
 
-  async function pickFromCamera() {
+  async function captureImage() {
     const result = await ImagePicker.launchCameraAsync({
       ...basePickerOptions,
       cameraType: ImagePicker.CameraType.back,
@@ -198,7 +198,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
         <ModalContent>
           <ModalBody className="my-auto">
             <VStack space="lg">
-              <Button variant="outline" onPress={pickFromCamera}>
+              <Button variant="outline" onPress={captureImage}>
                 <ButtonIcon as={CameraIcon} />
                 <ButtonText>Camera</ButtonText>
               </Button>

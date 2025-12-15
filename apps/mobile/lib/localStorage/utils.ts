@@ -1,7 +1,7 @@
 import {
-  DonationSchema,
+  DonationCreateSchema,
   IdentitySchema,
-  RequestSchema,
+  RequestCreateSchema,
   SetupProfileSchema,
 } from '@lactalink/form-schemas';
 import { Collection } from '@lactalink/types/collections';
@@ -15,9 +15,9 @@ import { InfiniteDataMap } from '../types';
 import Storage, { formDataStorage } from './mmkv-storages';
 
 type Schemas = {
-  'donation-create': DonationSchema;
+  'donation-create': DonationCreateSchema;
   'identity-create': IdentitySchema;
-  'request-create': RequestSchema;
+  'request-create': RequestCreateSchema;
   'profile-create': SetupProfileSchema;
 };
 

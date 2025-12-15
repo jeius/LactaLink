@@ -134,7 +134,9 @@ export function NumberInput({
             isDisabled={isDisabled || (localValue ?? 0) <= min}
             className="px-3"
             onPress={() => {
-              setLocalValue((localValue ?? 0) - (step || 1));
+              const newValue = (localValue ?? 0) - (step || 1);
+              setLocalValue(newValue);
+              onChange?.(newValue);
             }}
           >
             <ButtonIcon as={MinusIcon} />
@@ -162,7 +164,9 @@ export function NumberInput({
             isDisabled={isDisabled || (localValue ?? 0) >= max}
             className="px-3"
             onPress={() => {
-              setLocalValue((localValue ?? 0) + (step || 1));
+              const newValue = (localValue ?? 0) + (step || 1);
+              setLocalValue(newValue);
+              onChange?.(newValue);
             }}
           >
             <ButtonIcon as={PlusIcon} />
