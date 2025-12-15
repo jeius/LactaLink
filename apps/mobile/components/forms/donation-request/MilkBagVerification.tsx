@@ -21,7 +21,7 @@ import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { CameraIcon, ImageIcon } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
@@ -75,20 +75,27 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
 
+  const deletePrev = useCallback(async () => {
+    try {
+      if (capturedImage) {
+        const file = new File(capturedImage.url);
+        file.delete();
+      }
+    } catch (error) {
+      console.warn('Failed to delete local file:', extractErrorMessage(error));
+    }
+  }, [capturedImage]);
+
   useEffect(() => {
     setCapturedImage(data.bagImage);
-    if (!data.bagImage) {
-      deletePrev();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.bagImage]);
+    if (!data.bagImage) deletePrev();
+  }, [data.bagImage, deletePrev]);
 
   useEffect(() => {
     return () => {
       deletePrev();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [deletePrev]);
 
   async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
     if (!rawImage) return;
@@ -130,22 +137,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
     }
   }
 
-  async function deletePrev() {
-    try {
-      if (capturedImage) {
-        const file = new File(capturedImage.url);
-        file.delete();
-      }
-    } catch (error) {
-      console.warn('Failed to delete local file:', extractErrorMessage(error));
-    }
-  }
-
   return (
     <Card {...props} style={{ maxWidth: 320 }}>
       <VStack space="md" className="items-stretch">
         <Box
-          className="bg-primary-0 relative w-full overflow-hidden rounded-xl"
+          className="relative w-full overflow-hidden rounded-xl bg-primary-0"
           style={{ aspectRatio: 1.5 }}
         >
           {imageUrl ? (
@@ -163,7 +159,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 
           <VStack className="absolute inset-x-0 bottom-0 items-start justify-between px-4 py-2">
             <Text className="font-JakartaSemiBold">{volume} mL</Text>
-            <Text size="sm" className="text-typography-800 font-JakartaMedium">
+            <Text size="sm" className="font-JakartaMedium text-typography-800">
               {formatDate(collectedAt, { shortMonth: true })}, {formatLocaleTime(collectedAt)}
             </Text>
           </VStack>
@@ -190,11 +186,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
         <ModalContent>
           <ModalBody className="my-auto">
             <VStack space="lg">
-              <Button variant="outline" onPress={handleCapture}>
+              <Button onPress={handleCapture}>
                 <ButtonIcon as={CameraIcon} />
                 <ButtonText>Open Camera</ButtonText>
               </Button>
-              <Button onPress={handleUpload}>
+              <Button variant="outline" onPress={handleUpload}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>Choose from library</ButtonText>
               </Button>

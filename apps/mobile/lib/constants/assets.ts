@@ -61,6 +61,9 @@ export const IMAGE_ASSETS = {
   'idVerification_0.75x': require('../../assets/images/0.75x/verify_identity.png'),
   emailReceived: require('../../assets/images/1x/email_received.png'),
   'emailReceived_0.75x': require('../../assets/images/0.75x/email_received.png'),
+  bagVerification: require('../../assets/images/1x/screenshot_bag_verification.png'),
+  captureBagPhoto: require('../../assets/images/1x/milkbag_capture.png'),
+  writeCode: require('../../assets/images/1x/write_code.png'),
 };
 
 export const LOGO_ASSETS = {

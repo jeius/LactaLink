@@ -1,6 +1,7 @@
+import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
+import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
-import { HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import { RecipientSearchParams } from '@/lib/types/donationRequest';
 import { UserProfile } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities/extractors';
@@ -22,13 +23,13 @@ export default function ProfileCTA({ profile }: ProfileCTAProps) {
     <HStack space="lg" className="w-full items-stretch">
       <Link asChild push href={{ pathname: `/donations/create`, params }}>
         <Button className="flex-1">
-          <ButtonIcon size="xl" as={HandBottleIcon} style={{ width: 24, height: 24 }} />
+          <ButtonIcon as={DonateMilkIcon} className="fill-primary-0" />
           <ButtonText>Donate</ButtonText>
         </Button>
       </Link>
       <Link asChild push href={{ pathname: `/requests/create`, params }}>
         <Button action="tertiary" className="flex-1">
-          <ButtonIcon size="xl" as={MilkBottlePlus2Icon} style={{ width: 24, height: 24 }} />
+          <ButtonIcon as={MilkBottlePlusIcon} className="fill-tertiary-0" />
           <ButtonText>Request</ButtonText>
         </Button>
       </Link>
