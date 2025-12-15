@@ -217,6 +217,7 @@ export interface Config {
     images: Image;
     'identity-images': IdentityImage;
     avatars: Avatar;
+    'screening-files': ScreeningFile;
     'user-search': UserSearch;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -324,6 +325,7 @@ export interface Config {
     images: ImagesSelect<false> | ImagesSelect<true>;
     'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
+    'screening-files': ScreeningFilesSelect<false> | ScreeningFilesSelect<true>;
     'user-search': UserSearchSelect<false> | UserSearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -628,9 +630,12 @@ export interface Individual {
  */
 export interface Avatar {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   owner?: (string | null) | User;
@@ -1053,9 +1058,12 @@ export interface MilkBag {
  */
 export interface MilkBagImage {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -1193,9 +1201,12 @@ export interface Donation {
  */
 export interface Image {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -1786,31 +1797,31 @@ export interface BlockedUser {
  */
 export interface DonorScreening {
   id: string;
-  /**
-   * The individual who submitted this screening response
-   */
-  submittedBy: string | Individual;
   createdBy?: (string | null) | User;
-  /**
-   * The current review status of this screening response
-   */
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVIEW';
   /**
    * Reference to the specific version of the questionnaire that was answered
    */
   formVersion: string;
   /**
+   * The current review status of this screening response
+   */
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVIEW';
+  /**
+   * The individual who submitted this screening response
+   */
+  submittedBy: string | Individual;
+  /**
    * When this screening was submitted
    */
   submittedAt: string;
   /**
-   * When this screening was reviewed by an admin
-   */
-  reviewedAt?: string | null;
-  /**
    * The admin user who reviewed this screening
    */
   reviewedBy?: (string | null) | User;
+  /**
+   * When this screening was reviewed by an admin
+   */
+  reviewedAt?: string | null;
   /**
    * Internal notes from the reviewer (not visible to user)
    */
@@ -1820,33 +1831,19 @@ export interface DonorScreening {
    */
   responses: {
     /**
-     * Index of the section this answer belongs to
+     * Section of the screening form this answer belongs to
      */
-    sectionIndex: number;
-    /**
-     * Index of the question within the section
-     */
-    questionIndex: number;
-    /**
-     * The type of question that was answered
-     */
-    questionType: 'text-question' | 'textarea-question' | 'radio-question' | 'checkbox-question';
-    /**
-     * The question text (snapshot from the form version)
-     */
+    section: string;
+    questionType: 'PREDEFINED' | 'CUSTOM';
     question: string;
     /**
-     * The user's answer (format varies by question type)
+     * The user's answer to the question
      */
-    answer:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
+    answer: string;
+    /**
+     * If the question required a file upload, this is the uploaded file
+     */
+    file?: (string | null) | ScreeningFile;
     id?: string | null;
   }[];
   /**
@@ -1858,16 +1855,49 @@ export interface DonorScreening {
      */
     deviceInfo?: string | null;
     /**
-     * IP address of the submitter
-     */
-    ipAddress?: string | null;
-    /**
      * Time taken to complete the form (in seconds)
      */
     timeToComplete?: number | null;
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "screening-files".
+ */
+export interface ScreeningFile {
+  id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image (Auto generated).
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1955,9 +1985,12 @@ export interface Identity {
  */
 export interface IdentityImage {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -2554,9 +2587,12 @@ export interface MessageAttachment {
  */
 export interface MessageMedia {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -2924,6 +2960,10 @@ export interface PayloadLockedDocument {
         value: string | Avatar;
       } | null)
     | ({
+        relationTo: 'screening-files';
+        value: string | ScreeningFile;
+      } | null)
+    | ({
         relationTo: 'user-search';
         value: string | UserSearch;
       } | null)
@@ -3089,29 +3129,28 @@ export interface DeliveryPreferencesSelect<T extends boolean = true> {
  * via the `definition` "donor-screenings_select".
  */
 export interface DonorScreeningsSelect<T extends boolean = true> {
-  submittedBy?: T;
   createdBy?: T;
-  status?: T;
   formVersion?: T;
+  status?: T;
+  submittedBy?: T;
   submittedAt?: T;
-  reviewedAt?: T;
   reviewedBy?: T;
+  reviewedAt?: T;
   reviewNotes?: T;
   responses?:
     | T
     | {
-        sectionIndex?: T;
-        questionIndex?: T;
+        section?: T;
         questionType?: T;
         question?: T;
         answer?: T;
+        file?: T;
         id?: T;
       };
   metadata?:
     | T
     | {
         deviceInfo?: T;
-        ipAddress?: T;
         timeToComplete?: T;
       };
   updatedAt?: T;
@@ -4031,6 +4070,40 @@ export interface AvatarsSelect<T extends boolean = true> {
               filename?: T;
             };
         icon?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "screening-files_select".
+ */
+export interface ScreeningFilesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
           | T
           | {
               url?: T;

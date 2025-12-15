@@ -1,36 +1,42 @@
+import { SCREENING_STATUS } from '@lactalink/enums';
+import { DonorScreening } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
-import { CollectionBeforeChangeHook } from 'payload';
-import { DONOR_SCREENING_STATUS } from '../index';
+import { CollectionBeforeChangeHook, FieldHook } from 'payload';
+
+const PENDING = SCREENING_STATUS.PENDING.value;
+const APPROVED = SCREENING_STATUS.APPROVED.value;
+const REJECTED = SCREENING_STATUS.REJECTED.value;
+const NEEDS_REVIEW = SCREENING_STATUS.NEEDS_REVIEW.value;
 
 /**
  * Auto-populate submittedBy field with the current user's individual profile
  */
-export const generateSubmittedBy: CollectionBeforeChangeHook = ({ req, operation, data }) => {
-  if (operation !== 'create' || !req.user?.profile) return data;
+export const generateSubmittedBy: FieldHook<DonorScreening> = ({ req, operation, data, value }) => {
+  if (operation !== 'create' || !req.user?.profile) return value;
+
+  if (value && value !== '') return value;
 
   // Auto-populate submittedBy from authenticated user's profile
-  if (!data.submittedBy && req.user.profile.relationTo === 'individuals') {
-    data.submittedBy = extractID(req.user.profile.value);
+  if (req.user.profile.relationTo === 'individuals') {
+    return extractID(req.user.profile.value);
   }
 
-  return data;
+  return value;
 };
 
 /**
  * Auto-populate submittedAt timestamp on creation
  */
-export const generateSubmittedAt: CollectionBeforeChangeHook = ({ operation, data }) => {
-  if (operation !== 'create') return data;
+export const generateSubmittedAt: FieldHook<DonorScreening> = ({ operation, value }) => {
+  if (operation !== 'create') return value;
 
-  data.submittedAt = new Date().toISOString();
-
-  return data;
+  return new Date().toISOString();
 };
 
 /**
  * Auto-populate reviewedBy and reviewedAt when status changes to approved/rejected
  */
-export const generateReviewDetails: CollectionBeforeChangeHook = ({
+export const generateReviewDetails: CollectionBeforeChangeHook<DonorScreening> = ({
   req,
   operation,
   data,
@@ -43,9 +49,7 @@ export const generateReviewDetails: CollectionBeforeChangeHook = ({
 
   // Check if status changed to approved or rejected
   const statusChanged =
-    (newStatus === DONOR_SCREENING_STATUS.APPROVED ||
-      newStatus === DONOR_SCREENING_STATUS.REJECTED) &&
-    previousStatus !== newStatus;
+    (newStatus === APPROVED || newStatus === REJECTED) && previousStatus !== newStatus;
 
   if (statusChanged) {
     data.reviewedBy = extractID(req.user);

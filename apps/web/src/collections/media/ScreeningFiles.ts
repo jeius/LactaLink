@@ -5,37 +5,31 @@ import { CollectionConfig } from 'payload';
 import { admin } from '../_access-control/admin';
 import { authenticated, collectionCreatorOrAdmin } from '../_access-control/general';
 
-const MessageMedia: CollectionConfig<'message-media'> = {
-  slug: 'message-media',
+const ScreeningFiles: CollectionConfig<'screening-files'> = {
+  slug: 'screening-files',
   admin: {
     group: COLLECTION_GROUP.MEDIA,
   },
   access: {
     admin: admin,
     create: authenticated,
-    read: authenticated,
+    read: collectionCreatorOrAdmin,
     update: collectionCreatorOrAdmin,
     delete: collectionCreatorOrAdmin,
   },
   fields: [...imageFields, createdByField],
   upload: {
-    mimeTypes: ['image/*', 'application/pdf', 'audio/*'],
+    mimeTypes: ['image/*', 'application/pdf'],
     adminThumbnail: 'thumbnail',
     displayPreview: true,
-    formatOptions: { format: 'webp' },
     imageSizes: [
       {
         name: 'thumbnail',
         width: 300,
         height: 300,
       },
-      {
-        name: 'preview',
-        width: 800,
-        height: 600,
-      },
     ],
   },
 };
 
-export default MessageMedia;
+export default ScreeningFiles;

@@ -4,6 +4,7 @@ import { IdentityImages } from './IdentityImages';
 import { Images } from './Images';
 import MessageMedia from './MessageMedia';
 import { MilkBagImages } from './MilkBagImages';
+import ScreeningFiles from './ScreeningFiles';
 
 export const MediaCollections: CollectionConfig[] = [
   MessageMedia,
@@ -11,6 +12,7 @@ export const MediaCollections: CollectionConfig[] = [
   Images,
   IdentityImages,
   Avatars,
+  ScreeningFiles,
 ];
 
 export default MediaCollections;

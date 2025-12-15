@@ -42,12 +42,7 @@ export const enum_days = pgEnum('enum_days', [
   'SATURDAY',
   'SUNDAY',
 ]);
-export const enum_screening_question_type = pgEnum('enum_screening_question_type', [
-  'text-question',
-  'textarea-question',
-  'radio-question',
-  'checkbox-question',
-]);
+export const enum_choice_type = pgEnum('enum_choice_type', ['PREDEFINED', 'CUSTOM']);
 export const enum_donor_screening_status = pgEnum('enum_donor_screening_status', [
   'PENDING',
   'APPROVED',
@@ -236,7 +231,6 @@ export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug',
   'calculate-comment-reply-count-task',
   'schedulePublish',
 ]);
-export const enum_choice_type = pgEnum('enum_choice_type', ['PREDEFINED', 'CUSTOM']);
 export const enum_orientation = pgEnum('enum_orientation', ['vertical', 'horizontal']);
 export const enum_text_answer_length = pgEnum('enum_text_answer_length', ['SHORT', 'LONG']);
 export const enum_donor_screening_form_status = pgEnum('enum_donor_screening_form_status', [
@@ -588,15 +582,18 @@ export const donor_screenings_responses = pgTable(
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    sectionIndex: numeric('section_index', { mode: 'number' }).notNull(),
-    questionIndex: numeric('question_index', { mode: 'number' }).notNull(),
-    questionType: enum_screening_question_type('question_type').notNull(),
+    section: varchar('section').notNull(),
+    questionType: enum_choice_type('question_type').notNull(),
     question: varchar('question').notNull(),
-    answer: jsonb('answer').notNull(),
+    answer: varchar('answer').notNull(),
+    file: uuid('file_id').references(() => screening_files.id, {
+      onDelete: 'set null',
+    }),
   },
   (columns) => [
     index('donor_screenings_responses_order_idx').on(columns._order),
     index('donor_screenings_responses_parent_id_idx').on(columns._parentID),
+    index('donor_screenings_responses_file_idx').on(columns.file),
     foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [donor_screenings.id],
@@ -609,28 +606,27 @@ export const donor_screenings = pgTable(
   'donor_screenings',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    formVersion: varchar('form_version').notNull(),
+    status: enum_donor_screening_status('status').notNull().default('PENDING'),
     submittedBy: uuid('submitted_by_id')
       .notNull()
       .references(() => individuals.id, {
         onDelete: 'set null',
       }),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    status: enum_donor_screening_status('status').notNull().default('PENDING'),
-    formVersion: varchar('form_version').notNull(),
     submittedAt: timestamp('submitted_at', {
       mode: 'string',
       withTimezone: true,
       precision: 3,
     }).notNull(),
-    reviewedAt: timestamp('reviewed_at', { mode: 'string', withTimezone: true, precision: 3 }),
     reviewedBy: uuid('reviewed_by_id').references(() => users.id, {
       onDelete: 'set null',
     }),
+    reviewedAt: timestamp('reviewed_at', { mode: 'string', withTimezone: true, precision: 3 }),
     reviewNotes: varchar('review_notes'),
     metadata_deviceInfo: varchar('metadata_device_info'),
-    metadata_ipAddress: varchar('metadata_ip_address'),
     metadata_timeToComplete: numeric('metadata_time_to_complete', { mode: 'number' }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
@@ -640,8 +636,8 @@ export const donor_screenings = pgTable(
       .notNull(),
   },
   (columns) => [
-    index('donor_screenings_submitted_by_idx').on(columns.submittedBy),
     index('donor_screenings_created_by_idx').on(columns.createdBy),
+    index('donor_screenings_submitted_by_idx').on(columns.submittedBy),
     index('donor_screenings_reviewed_by_idx').on(columns.reviewedBy),
     index('donor_screenings_updated_at_idx').on(columns.updatedAt),
     index('donor_screenings_created_at_idx').on(columns.createdAt),
@@ -2694,6 +2690,48 @@ export const avatars = pgTable(
   ]
 );
 
+export const screening_files = pgTable(
+  'screening_files',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    alt: varchar('alt'),
+    blurHash: varchar('blur_hash'),
+    createdBy: uuid('created_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    url: varchar('url'),
+    thumbnailURL: varchar('thumbnail_u_r_l'),
+    filename: varchar('filename'),
+    mimeType: varchar('mime_type'),
+    filesize: numeric('filesize', { mode: 'number' }),
+    width: numeric('width', { mode: 'number' }),
+    height: numeric('height', { mode: 'number' }),
+    focalX: numeric('focal_x', { mode: 'number' }),
+    focalY: numeric('focal_y', { mode: 'number' }),
+    sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+    sizes_thumbnail_width: numeric('sizes_thumbnail_width', { mode: 'number' }),
+    sizes_thumbnail_height: numeric('sizes_thumbnail_height', { mode: 'number' }),
+    sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+    sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', { mode: 'number' }),
+    sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+  },
+  (columns) => [
+    index('screening_files_created_by_idx').on(columns.createdBy),
+    index('screening_files_updated_at_idx').on(columns.updatedAt),
+    index('screening_files_created_at_idx').on(columns.createdAt),
+    uniqueIndex('screening_files_filename_idx').on(columns.filename),
+    index('screening_files_sizes_thumbnail_sizes_thumbnail_filename_idx').on(
+      columns.sizes_thumbnail_filename
+    ),
+  ]
+);
+
 export const user_search = pgTable(
   'user_search',
   {
@@ -2898,6 +2936,7 @@ export const payload_locked_documents_rels = pgTable(
     imagesID: uuid('images_id'),
     'identity-imagesID': uuid('identity_images_id'),
     avatarsID: uuid('avatars_id'),
+    'screening-filesID': uuid('screening_files_id'),
     'user-searchID': uuid('user_search_id'),
     'payload-kvID': uuid('payload_kv_id'),
     'payload-jobsID': uuid('payload_jobs_id'),
@@ -2964,6 +3003,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_images_id_idx').on(columns.imagesID),
     index('payload_locked_documents_rels_identity_images_id_idx').on(columns['identity-imagesID']),
     index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
+    index('payload_locked_documents_rels_screening_files_id_idx').on(columns['screening-filesID']),
     index('payload_locked_documents_rels_user_search_id_idx').on(columns['user-searchID']),
     index('payload_locked_documents_rels_payload_kv_id_idx').on(columns['payload-kvID']),
     index('payload_locked_documents_rels_payload_jobs_id_idx').on(columns['payload-jobsID']),
@@ -3161,6 +3201,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['avatarsID']],
       foreignColumns: [avatars.id],
       name: 'payload_locked_documents_rels_avatars_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['screening-filesID']],
+      foreignColumns: [screening_files.id],
+      name: 'payload_locked_documents_rels_screening_files_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['user-searchID']],
@@ -3782,18 +3827,23 @@ export const relations_donor_screenings_responses = relations(
       references: [donor_screenings.id],
       relationName: 'responses',
     }),
+    file: one(screening_files, {
+      fields: [donor_screenings_responses.file],
+      references: [screening_files.id],
+      relationName: 'file',
+    }),
   })
 );
 export const relations_donor_screenings = relations(donor_screenings, ({ one, many }) => ({
-  submittedBy: one(individuals, {
-    fields: [donor_screenings.submittedBy],
-    references: [individuals.id],
-    relationName: 'submittedBy',
-  }),
   createdBy: one(users, {
     fields: [donor_screenings.createdBy],
     references: [users.id],
     relationName: 'createdBy',
+  }),
+  submittedBy: one(individuals, {
+    fields: [donor_screenings.submittedBy],
+    references: [individuals.id],
+    relationName: 'submittedBy',
   }),
   reviewedBy: one(users, {
     fields: [donor_screenings.reviewedBy],
@@ -4642,6 +4692,13 @@ export const relations_avatars = relations(avatars, ({ one }) => ({
     relationName: 'owner',
   }),
 }));
+export const relations_screening_files = relations(screening_files, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [screening_files.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+}));
 export const relations_user_search_rels = relations(user_search_rels, ({ one }) => ({
   parent: one(user_search, {
     fields: [user_search_rels.parent],
@@ -4880,6 +4937,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [avatars.id],
       relationName: 'avatars',
     }),
+    'screening-filesID': one(screening_files, {
+      fields: [payload_locked_documents_rels['screening-filesID']],
+      references: [screening_files.id],
+      relationName: 'screening-files',
+    }),
     'user-searchID': one(user_search, {
       fields: [payload_locked_documents_rels['user-searchID']],
       references: [user_search.id],
@@ -5092,7 +5154,7 @@ type DatabaseSchema = {
   comment_status_enum: typeof comment_status_enum;
   enum_delivery_modes: typeof enum_delivery_modes;
   enum_days: typeof enum_days;
-  enum_screening_question_type: typeof enum_screening_question_type;
+  enum_choice_type: typeof enum_choice_type;
   enum_donor_screening_status: typeof enum_donor_screening_status;
   enum_donation_request_status: typeof enum_donation_request_status;
   enum_donations_details_storage_type: typeof enum_donations_details_storage_type;
@@ -5128,7 +5190,6 @@ type DatabaseSchema = {
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
   enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug;
-  enum_choice_type: typeof enum_choice_type;
   enum_orientation: typeof enum_orientation;
   enum_text_answer_length: typeof enum_text_answer_length;
   enum_donor_screening_form_status: typeof enum_donor_screening_form_status;
@@ -5197,6 +5258,7 @@ type DatabaseSchema = {
   images: typeof images;
   identity_images: typeof identity_images;
   avatars: typeof avatars;
+  screening_files: typeof screening_files;
   user_search: typeof user_search;
   user_search_rels: typeof user_search_rels;
   payload_kv: typeof payload_kv;
@@ -5285,6 +5347,7 @@ type DatabaseSchema = {
   relations_images: typeof relations_images;
   relations_identity_images: typeof relations_identity_images;
   relations_avatars: typeof relations_avatars;
+  relations_screening_files: typeof relations_screening_files;
   relations_user_search_rels: typeof relations_user_search_rels;
   relations_user_search: typeof relations_user_search;
   relations_payload_kv: typeof relations_payload_kv;
