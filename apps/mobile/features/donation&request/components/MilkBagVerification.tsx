@@ -25,6 +25,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
+const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
+  allowsEditing: true,
+  quality: 0.75,
+  aspect: [1, 1],
+  mediaTypes: 'images',
+  allowsMultipleSelection: false,
+  cameraType: ImagePicker.CameraType.back,
+};
+
 export default function MilkBagVerification() {
   const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION);
   const [showHint, setShowHint] = React.useState(!hasViewedHint);
@@ -193,14 +202,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 }
 
 async function pickFromCamera() {
-  const result = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
-    quality: 0.75,
-    aspect: [1, 1],
-    mediaTypes: 'images',
-    allowsMultipleSelection: false,
-    cameraType: ImagePicker.CameraType.back,
-  });
+  const result = await ImagePicker.launchCameraAsync(PICKER_OPTIONS);
 
   if (!result.canceled && result.assets.length > 0) {
     const image = result.assets[0]!;
@@ -210,14 +212,7 @@ async function pickFromCamera() {
 }
 
 async function pickFromLibrary() {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    allowsEditing: true,
-    quality: 0.75,
-    aspect: [1, 1],
-    mediaTypes: 'images',
-    allowsMultipleSelection: false,
-    cameraType: ImagePicker.CameraType.back,
-  });
+  const result = await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
 
   if (!result.canceled && result.assets.length > 0) {
     const image = result.assets[0]!;

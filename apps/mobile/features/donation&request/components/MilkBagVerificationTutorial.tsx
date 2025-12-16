@@ -1,9 +1,9 @@
+import { Image } from '@/components/Image';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { getImageAsset } from '@/lib/stores';
 import { Asset } from 'expo-asset';
 import React from 'react';
-import { Image } from '../Image';
-import { Text } from '../ui/text';
-import { VStack } from '../ui/vstack';
 
 const steps: { title: string; description: string; image: Asset | null }[] = [
   {

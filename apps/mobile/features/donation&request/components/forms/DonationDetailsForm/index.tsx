@@ -3,9 +3,9 @@ import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
 import { DeliveryField } from '@/components/fields/DeliveryField';
+import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
-import { FormField } from '@/components/FormField';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
@@ -13,13 +13,13 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import CreateMilkBagsField from '@/features/donation&request/components/CreateMilkBagsField';
-import { DonationCreateFormExtraData } from '@/features/donation&request/hooks/useCreateDonationForm';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { DeliveryCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { ClipboardPenIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
+import { DonationCreateFormExtraData } from '../../../hooks/useCreateDonationForm';
+import CreateMilkBagsField from './CreateMilkBagsField';
 
 interface DonationDetailsFormProps {
   isMatched?: boolean;
@@ -128,14 +128,13 @@ export function DonationDetailsForm({
       </Box>
 
       <Box className="mx-5">
-        <FormField
+        <ImageField
           control={control}
           name="details.image"
           label="Cover Image"
-          fieldType="image"
           helperText="Upload a cover image to feature your donation."
           isDisabled={isLoading || disableFields}
-          allowsMultipleSelection={false}
+          options={{ allowsMultipleSelection: false }}
         />
       </Box>
 

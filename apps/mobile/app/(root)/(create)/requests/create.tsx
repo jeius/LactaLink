@@ -1,6 +1,5 @@
 import { RequestReviewCard } from '@/components/cards/RequestReviewCard';
 import { Form } from '@/components/contexts/FormProvider';
-import { RequestDetailsForm } from '@/components/forms/donation-request/RequestDetailsForm';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
@@ -8,6 +7,7 @@ import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
+import { RequestDetailsForm } from '@/features/donation&request/components/forms/RequestDetailsForm';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 
 import { RequestCreateParams } from '@/lib/types/donationRequest';

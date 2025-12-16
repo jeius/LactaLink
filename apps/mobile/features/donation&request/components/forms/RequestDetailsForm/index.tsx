@@ -1,6 +1,5 @@
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -13,6 +12,7 @@ import { DonationListCard } from '@/components/cards/DonationListCard';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { DeliveryField } from '@/components/fields/DeliveryField';
 import { DateInputField } from '@/components/form-fields/DateInputField';
+import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { ProfileTag } from '@/components/ProfileTag';
@@ -63,7 +63,7 @@ export function RequestDetailsForm({
     <VStack space="xl" className="py-5">
       {(requestType === 'MATCHED' || isMatched) && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Donation</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Donation</Text>
           <DonationListCard
             isLoading={isLoading}
             data={matchedDonationDoc}
@@ -81,7 +81,7 @@ export function RequestDetailsForm({
 
       {recipient && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Donor</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Donor</Text>
           <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
@@ -90,7 +90,7 @@ export function RequestDetailsForm({
 
       <VStack space="lg" className="mx-5">
         <HStack space="md" className="items-center">
-          <Text size="lg" className="font-JakartaSemiBold flex-1">
+          <Text size="lg" className="flex-1 font-JakartaSemiBold">
             Milk Details
           </Text>
           <Icon as={ClipboardPenIcon} />
@@ -184,14 +184,13 @@ export function RequestDetailsForm({
       />
 
       <Box className="mx-5">
-        <FormField
+        <ImageField
           control={control}
           name="details.image"
           label="Image of Recipient"
-          fieldType="image"
-          allowsMultipleSelection={false}
           helperText="Optional, but may encourage donors to fulfill your request."
           isDisabled={isLoading || disableFields}
+          options={{ allowsMultipleSelection: false }}
         />
       </Box>
 
