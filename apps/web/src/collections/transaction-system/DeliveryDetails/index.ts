@@ -1,4 +1,4 @@
-import { createdByField } from '@/fields/createdByField';
+import { createUserProfileField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { DELIVERY_DETAILS_STATUS, DELIVERY_OPTIONS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
@@ -21,8 +21,9 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
   },
   admin: {
     group: COLLECTION_GROUP.TRANSACTION,
-    useAsTitle: 'id',
-    defaultColumns: ['transaction', 'mode', 'datetime', 'status', 'createdBy', 'createdAt'],
+    useAsTitle: 'address',
+    defaultColumns: ['transaction', 'method', 'status', 'createdBy', 'createdAt'],
+    description: 'Details for delivery, pickup, or meetup of transactions',
   },
   hooks: {
     afterChange: [afterChange],
@@ -40,7 +41,7 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
     },
 
     {
-      name: 'mode',
+      name: 'method',
       type: 'select',
       enumName: 'enum_delivery_options',
       required: true,
@@ -51,11 +52,12 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
     },
 
     {
-      name: 'datetime',
+      name: 'scheduledAt',
+      label: 'Schedule',
       type: 'date',
       required: true,
       admin: {
-        description: 'Delivery date and time',
+        description: 'Scheduled date and time',
         date: {
           displayFormat: 'd MMM yyy HH:mm a',
           pickerAppearance: 'dayAndTime',
@@ -67,13 +69,14 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
       name: 'address',
       type: 'relationship',
       relationTo: 'addresses',
+      required: true,
       admin: {
         description: 'Location for pickup/delivery/meetup',
       },
     },
 
     {
-      name: 'instructions',
+      name: 'notes',
       type: 'textarea',
       access: {
         read: () => true,
@@ -84,41 +87,18 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
       },
     },
 
-    { ...createdByField, required: true },
+    createUserProfileField({ name: 'proposedBy', required: true }),
 
     {
       name: 'status',
       type: 'select',
       required: true,
       enumName: 'enum_delivery_details_status',
-      defaultValue: DELIVERY_DETAILS_STATUS.PENDING,
+      defaultValue: DELIVERY_DETAILS_STATUS.PENDING.value,
       options: Object.values(DELIVERY_DETAILS_STATUS),
       admin: {
-        description: 'Current status of this delivery',
+        description: 'Current status of this delivery detail',
       },
-    },
-
-    {
-      type: 'tabs',
-      tabs: [
-        {
-          label: 'Agreements',
-          fields: [
-            {
-              name: 'agreements',
-              label: 'Delivery Agreements',
-              type: 'join',
-              collection: 'delivery-agreements',
-              on: 'deliveryDetails',
-              maxDepth: 3,
-              defaultLimit: 2,
-              admin: {
-                description: 'View agreements from involved parties for this delivery proposal',
-              },
-            },
-          ],
-        },
-      ],
     },
   ],
 };

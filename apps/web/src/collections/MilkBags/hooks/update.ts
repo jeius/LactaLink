@@ -100,7 +100,7 @@ export const checkExpiry: CollectionBeforeReadHook<MilkBag> = async ({ doc, req 
       collection: 'milkBags',
       id: doc.id,
       req,
-      depth: 0,
+      depth: 1,
       data: { status: MILK_BAG_STATUS.EXPIRED.value },
     });
   }

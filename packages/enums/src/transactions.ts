@@ -1,10 +1,9 @@
 export const TRANSACTION_STATUS = {
-  MATCHED: { label: 'Preparing', value: 'MATCHED' },
-  PENDING_DELIVERY_CONFIRMATION: {
+  PENDING: {
     label: 'Waiting Confirmation',
-    value: 'PENDING_DELIVERY_CONFIRMATION',
+    value: 'PENDING',
   },
-  DELIVERY_SCHEDULED: { label: 'Delivery Scheduled', value: 'DELIVERY_SCHEDULED' },
+  CONFIRMED: { label: 'Delivery Confirmed', value: 'CONFIRMED' },
   IN_TRANSIT: { label: 'In Transit', value: 'IN_TRANSIT' },
   READY_FOR_PICKUP: { label: 'Ready for Pickup', value: 'READY_FOR_PICKUP' },
   DELIVERED: { label: 'Delivered', value: 'DELIVERED' },
@@ -68,6 +67,20 @@ export const DELIVERY_DECISIONS = {
 } as const;
 
 export const DELIVERY_DETAILS_STATUS = {
-  PENDING: { label: 'Pending Confirmation', value: 'PENDING' },
-  CONFIRMED: { label: 'Confirmed', value: 'CONFIRMED' },
-};
+  PENDING: { label: 'Waiting Response', value: 'PENDING' },
+  ACCEPTED: { label: 'Accepted', value: 'ACCEPTED' },
+  REJECTED: { label: 'Rejected', value: 'REJECTED' },
+} as const;
+
+export const DELIVERY_UPDATES = {
+  WAITING: { label: 'Waiting', value: 'WAITING' },
+  PREPARING: { label: 'Preparing', value: 'PREPARING' },
+  PICKUP_READY: { label: 'Ready for Pickup', value: 'PICKUP_READY' },
+  ON_THE_WAY: { label: 'On the Way', value: 'ON_THE_WAY' },
+  ARRIVED: { label: 'Arrived', value: 'ARRIVED' },
+  DELIVERED: { label: 'Delivered', value: 'DELIVERED' },
+  COMPLETED: { label: 'Completed', value: 'COMPLETED' },
+  FAILED: { label: 'Failed', value: 'FAILED' },
+  CANCELLED: { label: 'Cancelled', value: 'CANCELLED' },
+  DELAYED: { label: 'Delayed', value: 'DELAYED' },
+} as const;

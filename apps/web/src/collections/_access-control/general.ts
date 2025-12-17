@@ -115,7 +115,6 @@ export const involvedPartiesOrAdmin: Access = ({ req: { user } }) => {
 
   if (!user.profile) return false;
 
-  // Users can access proposals for transactions they're involved in
   return {
     or: [
       {

@@ -46,34 +46,6 @@ export type MilkBagOwnershipHistory =
     }[]
   | null;
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProposedDelivery".
- */
-export type ProposedDelivery =
-  | {
-      mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-      datetime: string;
-      address: string | Address;
-      instructions?: string | null;
-      proposedBy:
-        | {
-            relationTo: 'individuals';
-            value: string | Individual;
-          }
-        | {
-            relationTo: 'hospitals';
-            value: string | Hospital;
-          }
-        | {
-            relationTo: 'milkBanks';
-            value: string | MilkBank;
-          };
-      proposedAt: string;
-      agreements?: DeliveryAgreements;
-      id?: string | null;
-    }[]
-  | null;
-/**
  * Delivery status for each notification channel (email, SMS, in-app, etc.). Tracks attempts, failures, and success.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -205,9 +177,10 @@ export interface Config {
     requests: Request;
     users: User;
     transactions: Transaction;
-    'transaction-events': TransactionEvent;
-    'delivery-agreements': DeliveryAgreement;
     'delivery-details': DeliveryDetail;
+    'delivery-updates': DeliveryUpdate;
+    'transaction-reads': TransactionRead;
+    'transaction-status-histories': TransactionStatusHistory;
     messages: Message;
     conversations: Conversation;
     'message-attachments': MessageAttachment;
@@ -276,8 +249,12 @@ export interface Config {
       addresses: 'addresses';
       deliveryPreferences: 'delivery-preferences';
     };
-    'delivery-details': {
-      agreements: 'delivery-agreements';
+    transactions: {
+      deliveryDetails: 'delivery-details';
+      deliveryPlans: 'delivery-details';
+      deliveryUpdates: 'delivery-updates';
+      'tracking.reads': 'transaction-reads';
+      'tracking.statusHistory': 'transaction-status-histories';
     };
     messages: {
       attachments: 'message-attachments';
@@ -319,9 +296,10 @@ export interface Config {
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
-    'transaction-events': TransactionEventsSelect<false> | TransactionEventsSelect<true>;
-    'delivery-agreements': DeliveryAgreementsSelect1<false> | DeliveryAgreementsSelect1<true>;
     'delivery-details': DeliveryDetailsSelect<false> | DeliveryDetailsSelect<true>;
+    'delivery-updates': DeliveryUpdatesSelect<false> | DeliveryUpdatesSelect<true>;
+    'transaction-reads': TransactionReadsSelect<false> | TransactionReadsSelect<true>;
+    'transaction-status-histories': TransactionStatusHistoriesSelect<false> | TransactionStatusHistoriesSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     'message-attachments': MessageAttachmentsSelect<false> | MessageAttachmentsSelect<true>;
@@ -1000,7 +978,10 @@ export interface MilkBag {
   id: string;
   code?: string | null;
   title?: string | null;
-  createdBy?: (string | null) | User;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  createdBy: string | User;
   /**
    * The individual donating the milk bag
    */
@@ -1014,12 +995,12 @@ export interface MilkBag {
         value: string | Individual;
       }
     | {
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      }
-    | {
         relationTo: 'milkBanks';
         value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
       };
   /**
    * Volume of milk in milliliters
@@ -1403,8 +1384,23 @@ export interface Transaction {
   /**
    * Unique transaction identifier
    */
-  transactionNumber?: string | null;
-  createdBy?: (string | null) | User;
+  txn: string;
+  /**
+   * The profile of the user who created this entry. (Automatic, safe to ignore)
+   */
+  initiatedBy:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      };
   donation?: (string | null) | Donation;
   request?: (string | null) | Request;
   sender:
@@ -1434,9 +1430,8 @@ export interface Transaction {
         value: string | MilkBank;
       };
   status:
-    | 'MATCHED'
-    | 'PENDING_DELIVERY_CONFIRMATION'
-    | 'DELIVERY_SCHEDULED'
+    | 'PENDING'
+    | 'CONFIRMED'
     | 'IN_TRANSIT'
     | 'READY_FOR_PICKUP'
     | 'DELIVERED'
@@ -1444,145 +1439,193 @@ export interface Transaction {
     | 'FAILED'
     | 'CANCELLED';
   /**
-   * Volume of milk being matched (in mL)
-   */
-  matchedVolume: number;
-  /**
    * Type of transaction (determines delivery workflow)
    */
-  transactionType: 'P2P' | 'P2O' | 'O2P';
+  type: 'P2P' | 'P2O' | 'O2P';
+  /**
+   * Total volume of milk bags (in mL). Automatically calculated.
+   */
+  volume: number;
   /**
    * Milk bags included in this transaction
    */
-  matchedBags: (string | MilkBag)[];
-  delivery?: Delivery;
+  milkBags: (string | MilkBag)[];
+  /**
+   * Delivery details of this transaction
+   */
+  deliveryDetails?: {
+    docs?: (string | DeliveryDetail)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Status updates of users regarding the delivery.
+   */
+  deliveryUpdates?: {
+    docs?: (string | DeliveryUpdate)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Delivery plans proposed by users.
+   */
+  deliveryPlans?: {
+    docs?: (string | DeliveryDetail)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   tracking?: {
-    seenStatus?:
-      | {
-          seen?: boolean | null;
-          seenAt?: string | null;
-          seenBy?:
-            | ({
-                relationTo: 'individuals';
-                value: string | Individual;
-              } | null)
-            | ({
-                relationTo: 'hospitals';
-                value: string | Hospital;
-              } | null)
-            | ({
-                relationTo: 'milkBanks';
-                value: string | MilkBank;
-              } | null);
-          id?: string | null;
-        }[]
-      | null;
+    /**
+     * Users who have read this transaction
+     */
+    reads?: {
+      docs?: (string | TransactionRead)[];
+      hasNextPage?: boolean;
+      totalDocs?: number;
+    };
     deliveredAt?: string | null;
     completedAt?: string | null;
     failedAt?: string | null;
     failureReason?: string | null;
     cancelledAt?: string | null;
     cancelReason?: string | null;
-    statusHistory?:
-      | {
-          /**
-           * Status of the transaction at this point in time
-           */
-          status:
-            | 'MATCHED'
-            | 'PENDING_DELIVERY_CONFIRMATION'
-            | 'DELIVERY_SCHEDULED'
-            | 'IN_TRANSIT'
-            | 'READY_FOR_PICKUP'
-            | 'DELIVERED'
-            | 'COMPLETED'
-            | 'FAILED'
-            | 'CANCELLED';
-          /**
-           * Timestamp when this status was recorded
-           */
-          timestamp: string;
-          /**
-           * Any additional notes related to this status change
-           */
-          notes?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    /**
+     * History of status changes for this transaction
+     */
+    statusHistory?: {
+      docs?: (string | TransactionStatusHistory)[];
+      hasNextPage?: boolean;
+      totalDocs?: number;
+    };
   };
   updatedAt: string;
   createdAt: string;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Delivery".
- */
-export interface Delivery {
-  proposed?: ProposedDelivery;
-  confirmed?: ConfirmedDelivery;
-  arrival?: {
-    senderDepartedAt?: string | null;
-    senderArrivedAt?: string | null;
-    recipientDepartedAt?: string | null;
-    recipientArrivedAt?: string | null;
-  };
-}
-/**
- * Tracks delivery proposal agreement status from both parties
+ * Details for delivery, pickup, or meetup of transactions
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "DeliveryAgreements".
+ * via the `definition` "delivery-details".
  */
-export interface DeliveryAgreements {
-  sender?: {
-    agreed?: boolean | null;
-    agreedBy?:
-      | ({
-          relationTo: 'individuals';
-          value: string | Individual;
-        } | null)
-      | ({
-          relationTo: 'hospitals';
-          value: string | Hospital;
-        } | null)
-      | ({
-          relationTo: 'milkBanks';
-          value: string | MilkBank;
-        } | null);
-    agreedAt?: string | null;
-  };
-  recipient?: {
-    agreed?: boolean | null;
-    agreedBy?:
-      | ({
-          relationTo: 'individuals';
-          value: string | Individual;
-        } | null)
-      | ({
-          relationTo: 'hospitals';
-          value: string | Hospital;
-        } | null)
-      | ({
-          relationTo: 'milkBanks';
-          value: string | MilkBank;
-        } | null);
-    agreedAt?: string | null;
-  };
+export interface DeliveryDetail {
+  id: string;
   /**
-   * Automatically checked when both sender and recipient have agreed
+   * The transaction this delivery belongs to
    */
-  bothAgreed?: boolean | null;
+  transaction: string | Transaction;
+  /**
+   * Method of delivery
+   */
+  method: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+  /**
+   * Scheduled date and time
+   */
+  scheduledAt: string;
+  /**
+   * Location for pickup/delivery/meetup
+   */
+  address: string | Address;
+  /**
+   * Additional instructions or notes
+   */
+  notes?: string | null;
+  /**
+   * The profile of the user who created this entry. (Automatic, safe to ignore)
+   */
+  proposedBy:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      };
+  /**
+   * Current status of this delivery detail
+   */
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tracks status updates for deliveries
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-updates".
+ */
+export interface DeliveryUpdate {
+  id: string;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  user: string | User;
+  /**
+   * The transaction this update belongs to
+   */
+  transaction: string | Transaction;
+  /**
+   * Status update for the delivery
+   */
+  status:
+    | 'WAITING'
+    | 'PREPARING'
+    | 'PICKUP_READY'
+    | 'ON_THE_WAY'
+    | 'ARRIVED'
+    | 'DELIVERED'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'CANCELLED'
+    | 'DELAYED';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tracks which users have read which transactions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transaction-reads".
+ */
+export interface TransactionRead {
+  id: string;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  user: string | User;
+  transaction: string | Transaction;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ConfirmedDelivery".
+ * via the `definition` "transaction-status-histories".
  */
-export interface ConfirmedDelivery {
-  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-  datetime: string;
-  address: string | Address;
-  instructions?: string | null;
-  confirmedAt: string;
+export interface TransactionStatusHistory {
+  id: string;
+  /**
+   * Status of the transaction at this point in time
+   */
+  status:
+    | 'PENDING'
+    | 'CONFIRMED'
+    | 'IN_TRANSIT'
+    | 'READY_FOR_PICKUP'
+    | 'DELIVERED'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'CANCELLED';
+  transaction: string | Transaction;
+  /**
+   * Any additional notes related to this status change
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1590,6 +1633,9 @@ export interface ConfirmedDelivery {
  */
 export interface Like {
   id: string;
+  /**
+   * The profile of the user who created this entry. (Automatic, safe to ignore)
+   */
   createdBy:
     | {
         relationTo: 'individuals';
@@ -2394,128 +2440,6 @@ export interface NotificationTypeTemplate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "transaction-events".
- */
-export interface TransactionEvent {
-  id: string;
-  /**
-   * The transaction this event belongs to
-   */
-  transaction: string | Transaction;
-  /**
-   * Type of event that occurred
-   */
-  type:
-    | 'TRANSACTION_CREATED'
-    | 'DELIVERY_PROPOSED'
-    | 'PROPOSAL_ACCEPTED'
-    | 'PROPOSAL_REJECTED'
-    | 'DELIVERY_SCHEDULED'
-    | 'STATUS_CHANGED'
-    | 'PREPARING_STARTED'
-    | 'READY_FOR_PICKUP'
-    | 'TRANSIT_STARTED'
-    | 'ARRIVED_AT_MEETUP'
-    | 'DELIVERED'
-    | 'COMPLETED'
-    | 'FAILED'
-    | 'CANCELLED';
-  /**
-   * Event-specific data (e.g., proposal details, status change reason)
-   */
-  payload?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Who triggered this event
-   */
-  actor: string | User;
-  /**
-   * When this event occurred
-   */
-  timestamp: string;
-  /**
-   * Sequential number for ordering events (auto-generated)
-   */
-  sequenceNumber?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delivery-agreements".
- */
-export interface DeliveryAgreement {
-  id: string;
-  /**
-   * The delivery this agreement is for
-   */
-  deliveryDetails: string | DeliveryDetail;
-  /**
-   * The user (sender or recipient) who is agreeing
-   */
-  user: string | User;
-  /**
-   * The decision made by the user
-   */
-  decision: 'AGREED' | 'DECLINED';
-  /**
-   * When the party agreed or declined
-   */
-  decidedAt: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delivery-details".
- */
-export interface DeliveryDetail {
-  id: string;
-  /**
-   * The transaction this delivery belongs to
-   */
-  transaction: string | Transaction;
-  /**
-   * Method of delivery
-   */
-  mode: 'PICKUP' | 'DELIVERY' | 'MEETUP';
-  /**
-   * Delivery date and time
-   */
-  datetime: string;
-  /**
-   * Location for pickup/delivery/meetup
-   */
-  address?: (string | null) | Address;
-  /**
-   * Additional instructions or notes
-   */
-  instructions?: string | null;
-  createdBy: string | User;
-  /**
-   * Current status of this delivery
-   */
-  status: 'PENDING' | 'CONFIRMED';
-  /**
-   * View agreements from involved parties for this delivery proposal
-   */
-  agreements?: {
-    docs?: (string | DeliveryAgreement)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "messages".
  */
 export interface Message {
@@ -3043,16 +2967,20 @@ export interface PayloadLockedDocument {
         value: string | Transaction;
       } | null)
     | ({
-        relationTo: 'transaction-events';
-        value: string | TransactionEvent;
-      } | null)
-    | ({
-        relationTo: 'delivery-agreements';
-        value: string | DeliveryAgreement;
-      } | null)
-    | ({
         relationTo: 'delivery-details';
         value: string | DeliveryDetail;
+      } | null)
+    | ({
+        relationTo: 'delivery-updates';
+        value: string | DeliveryUpdate;
+      } | null)
+    | ({
+        relationTo: 'transaction-reads';
+        value: string | TransactionRead;
+      } | null)
+    | ({
+        relationTo: 'transaction-status-histories';
+        value: string | TransactionStatusHistory;
       } | null)
     | ({
         relationTo: 'messages';
@@ -3792,131 +3720,31 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "transactions_select".
  */
 export interface TransactionsSelect<T extends boolean = true> {
-  transactionNumber?: T;
-  createdBy?: T;
+  txn?: T;
+  initiatedBy?: T;
   donation?: T;
   request?: T;
   sender?: T;
   recipient?: T;
   status?: T;
-  matchedVolume?: T;
-  transactionType?: T;
-  matchedBags?: T;
-  delivery?: T | DeliverySelect<T>;
+  type?: T;
+  volume?: T;
+  milkBags?: T;
+  deliveryDetails?: T;
+  deliveryUpdates?: T;
+  deliveryPlans?: T;
   tracking?:
     | T
     | {
-        seenStatus?:
-          | T
-          | {
-              seen?: T;
-              seenAt?: T;
-              seenBy?: T;
-              id?: T;
-            };
+        reads?: T;
         deliveredAt?: T;
         completedAt?: T;
         failedAt?: T;
         failureReason?: T;
         cancelledAt?: T;
         cancelReason?: T;
-        statusHistory?:
-          | T
-          | {
-              status?: T;
-              timestamp?: T;
-              notes?: T;
-              id?: T;
-            };
+        statusHistory?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Delivery_select".
- */
-export interface DeliverySelect<T extends boolean = true> {
-  proposed?: T | ProposedDeliverySelect<T>;
-  confirmed?: T | ConfirmedDeliverySelect<T>;
-  arrival?:
-    | T
-    | {
-        senderDepartedAt?: T;
-        senderArrivedAt?: T;
-        recipientDepartedAt?: T;
-        recipientArrivedAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ProposedDelivery_select".
- */
-export interface ProposedDeliverySelect<T extends boolean = true> {
-  mode?: T;
-  datetime?: T;
-  address?: T;
-  instructions?: T;
-  proposedBy?: T;
-  proposedAt?: T;
-  agreements?: T | DeliveryAgreementsSelect<T>;
-  id?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "DeliveryAgreements_select".
- */
-export interface DeliveryAgreementsSelect<T extends boolean = true> {
-  sender?:
-    | T
-    | {
-        agreed?: T;
-        agreedBy?: T;
-        agreedAt?: T;
-      };
-  recipient?:
-    | T
-    | {
-        agreed?: T;
-        agreedBy?: T;
-        agreedAt?: T;
-      };
-  bothAgreed?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ConfirmedDelivery_select".
- */
-export interface ConfirmedDeliverySelect<T extends boolean = true> {
-  mode?: T;
-  datetime?: T;
-  address?: T;
-  instructions?: T;
-  confirmedAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "transaction-events_select".
- */
-export interface TransactionEventsSelect<T extends boolean = true> {
-  transaction?: T;
-  type?: T;
-  payload?: T;
-  actor?: T;
-  timestamp?: T;
-  sequenceNumber?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delivery-agreements_select".
- */
-export interface DeliveryAgreementsSelect1<T extends boolean = true> {
-  deliveryDetails?: T;
-  user?: T;
-  decision?: T;
-  decidedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3926,13 +3754,44 @@ export interface DeliveryAgreementsSelect1<T extends boolean = true> {
  */
 export interface DeliveryDetailsSelect<T extends boolean = true> {
   transaction?: T;
-  mode?: T;
-  datetime?: T;
+  method?: T;
+  scheduledAt?: T;
   address?: T;
-  instructions?: T;
-  createdBy?: T;
+  notes?: T;
+  proposedBy?: T;
   status?: T;
-  agreements?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-updates_select".
+ */
+export interface DeliveryUpdatesSelect<T extends boolean = true> {
+  user?: T;
+  transaction?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transaction-reads_select".
+ */
+export interface TransactionReadsSelect<T extends boolean = true> {
+  user?: T;
+  transaction?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transaction-status-histories_select".
+ */
+export interface TransactionStatusHistoriesSelect<T extends boolean = true> {
+  status?: T;
+  transaction?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,6 +1,9 @@
 import { extractID } from '@lactalink/utilities/extractors';
 import { RelationshipField } from 'payload';
 
+/**
+ * @deprecated Use [createUserField](./userField.ts) instead
+ */
 export const createdByField: RelationshipField = {
   name: 'createdBy',
   type: 'relationship',
@@ -13,31 +16,6 @@ export const createdByField: RelationshipField = {
         if (operation !== 'create' || !req.user) return value;
         if (value && value !== '') return value; // If createdBy is already set, do not override
         return extractID(req.user);
-      },
-    ],
-  },
-  admin: {
-    position: 'sidebar',
-    readOnly: true,
-  },
-};
-
-export const createdByProfileField: RelationshipField = {
-  name: 'createdBy',
-  type: 'relationship',
-  relationTo: ['individuals', 'milkBanks', 'hospitals'],
-  required: true,
-  hasMany: false,
-  validate: () => true, // Validation handled in generateCreatedBy hook
-  hooks: {
-    beforeChange: [
-      ({ value, req }) => {
-        if (!req.user || !req.user.profile) return value;
-        if (value) return value; // Preserve existing value if present
-        return {
-          relationTo: req.user.profile.relationTo,
-          value: extractID(req.user.profile.value),
-        };
       },
     ],
   },

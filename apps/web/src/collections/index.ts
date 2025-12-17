@@ -22,7 +22,7 @@ import { Posts } from './Posts';
 import { Barangays, CitiesMunicipalities, IslandGroups, Regions } from './PSGC';
 import { Provinces } from './PSGC/Provinces';
 import { Requests } from './Requests';
-import TransactionCollections from './transactions';
+import TransactionCollections from './transaction-system';
 import { Users } from './Users';
 
 const Collections: CollectionConfig[] = [

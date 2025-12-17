@@ -1,4 +1,4 @@
-import { createdByProfileField } from '@/fields/createdByField';
+import { createUserProfileField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorProfileOrAdmin } from '../_access-control';
@@ -25,7 +25,7 @@ export const Likes: CollectionConfig<'likes'> = {
     afterDelete: [deleteDocLikesCount],
   },
   fields: [
-    createdByProfileField,
+    createUserProfileField({ name: 'createdBy', required: true }),
     {
       name: 'liked',
       label: 'Liked Document',

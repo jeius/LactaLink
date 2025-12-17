@@ -1,12 +1,10 @@
-import { createdByField } from '@/fields/createdByField';
+import { createUserField, createUserProfileField } from '@/fields/userField';
 import { afterDeleteMilkBags } from '@/hooks/collections/afterDelete';
-import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { MILK_BAG_OWNERSHIP_TRANSFER_REASONS, MILK_BAG_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
-import { generateCode, generateExpiry, generateTitle } from './hooks/generate';
+import { generateCode, generateExpiry } from './hooks/generate';
 import { initializeMilkBag } from './hooks/initialize';
 import { checkExpiry, deleteRemovedImage, updateStatus } from './hooks/update';
 import { updateOwnershipHistory } from './hooks/updateOwnershipHistory';
@@ -30,15 +28,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
   hooks: {
     beforeValidate: [initializeMilkBag],
     beforeRead: [checkExpiry],
-    beforeChange: [
-      generateCreatedBy,
-      generateOwner,
-      generateExpiry,
-      generateCode,
-      generateTitle,
-      updateOwnershipHistory,
-      updateStatus,
-    ],
+    beforeChange: [generateCode, updateOwnershipHistory, updateStatus],
     afterChange: [deleteRemovedImage],
     afterDelete: [afterDeleteMilkBags],
   },
@@ -64,7 +54,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       },
     },
 
-    createdByField,
+    createUserField({ name: 'createdBy', required: true }),
 
     {
       type: 'row',
@@ -80,11 +70,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
         },
 
         {
-          name: 'owner',
-          label: 'Current Owner',
-          type: 'relationship',
-          relationTo: ['individuals', 'hospitals', 'milkBanks'],
-          required: true,
+          ...createUserProfileField({ name: 'owner', label: 'Owner Profile', required: true }),
           admin: {
             description: 'Current owner of the milk bag',
           },
@@ -139,6 +125,9 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                 {
                   name: 'expiresAt',
                   type: 'date',
+                  hooks: {
+                    beforeChange: [generateExpiry],
+                  },
                   admin: {
                     description: 'Date when the milk expires',
                     width: '50%',

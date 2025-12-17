@@ -1,14 +1,16 @@
 import { CollectionConfig } from 'payload';
-import { DeliveryAgreements } from './DeliveryAgreements';
 import { DeliveryDetails } from './DeliveryDetails';
-import { TransactionEvents } from './TransactionEvents';
+import { DeliveryUpdates } from './DeliveryUpdates';
+import { TransactionReads } from './TransactionReads';
 import { Transactions } from './Transactions';
+import { TransactionStatusHistories } from './TransactionStatusHistory';
 
 const TransactionCollections: CollectionConfig[] = [
   Transactions,
-  TransactionEvents,
-  DeliveryAgreements,
   DeliveryDetails,
+  DeliveryUpdates,
+  TransactionReads,
+  TransactionStatusHistories,
 ];
 
 export default TransactionCollections;

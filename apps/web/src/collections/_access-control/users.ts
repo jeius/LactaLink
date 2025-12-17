@@ -22,6 +22,9 @@ export const userOwnerOrAdmin: Access<User> = ({ req }) => {
   return { id: { equals: user.id } }; // Allow access if the user is the owner
 };
 
+/**
+ * Access control for collections that has a `user` field with relationship to `users` collection.
+ */
 export const userOrAdmin: Access = ({ req: { user } }) => {
   if (!user) return false;
   if (isAdmin(user)) return true;
