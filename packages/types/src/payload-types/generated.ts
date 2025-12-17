@@ -173,7 +173,11 @@ export interface Config {
   auth: {
     users: UserAuthOperations;
   };
-  blocks: {};
+  blocks: {
+    'text-question': TextQuestion;
+    'radio-question': RadioQuestion;
+    'checkbox-question': CheckboxQuestion;
+  };
   collections: {
     addresses: Address;
     'blocked-users': BlockedUser;
@@ -181,6 +185,7 @@ export interface Config {
     citiesMunicipalities: CityMunicipality;
     comments: Comment;
     'delivery-preferences': DeliveryPreference;
+    'donor-screenings': DonorScreening;
     donations: Donation;
     hospitals: Hospital;
     identities: Identity;
@@ -215,6 +220,7 @@ export interface Config {
     images: Image;
     'identity-images': IdentityImage;
     avatars: Avatar;
+    'screening-files': ScreeningFile;
     'user-search': UserSearch;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -293,6 +299,7 @@ export interface Config {
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
+    'donor-screenings': DonorScreeningsSelect<false> | DonorScreeningsSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
@@ -327,6 +334,7 @@ export interface Config {
     images: ImagesSelect<false> | ImagesSelect<true>;
     'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
+    'screening-files': ScreeningFilesSelect<false> | ScreeningFilesSelect<true>;
     'user-search': UserSearchSelect<false> | UserSearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -337,8 +345,12 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'donor-screening-form': DonorScreeningForm;
+  };
+  globalsSelect: {
+    'donor-screening-form': DonorScreeningFormSelect<false> | DonorScreeningFormSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -349,6 +361,7 @@ export interface Config {
       'send-email': SendEmailTask;
       'calculate-post-comment-count-task': CalculatePostCommentCountTask;
       'calculate-comment-reply-count-task': CalculateCommentReplyCountTask;
+      schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
         output: unknown;
@@ -376,6 +389,131 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "text-question".
+ */
+export interface TextQuestion {
+  required?: boolean | null;
+  question: string;
+  /**
+   * Optional helper text for clarification
+   */
+  helpText?: string | null;
+  /**
+   * Indicate the expected length of the answer
+   */
+  expectedAnswerLength: 'SHORT' | 'LONG';
+  /**
+   * Placeholder text for the input field
+   */
+  placeholder?: string | null;
+  /**
+   * Optional validation constraints
+   */
+  validation?: {
+    /**
+     * Minimum character length. Leave blank for no minimum.
+     */
+    minLength?: number | null;
+    /**
+     * Maximum character length. Leave blank for no maximum.
+     */
+    maxLength?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text-question';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "radio-question".
+ */
+export interface RadioQuestion {
+  required?: boolean | null;
+  question: string;
+  /**
+   * Optional helper text for clarification
+   */
+  helpText?: string | null;
+  /**
+   * Define the available choices
+   */
+  options: {
+    /**
+     * Select whether this choice is predefined or a user-defined choice.
+     *                       For example, set to User Defined if the answer can be anything outside of the listed options.
+     */
+    type: 'PREDEFINED' | 'CUSTOM';
+    /**
+     * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
+     */
+    label: string;
+    /**
+     * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
+     */
+    value?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * How to display the choices
+   */
+  layout: 'vertical' | 'horizontal';
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'radio-question';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkbox-question".
+ */
+export interface CheckboxQuestion {
+  required?: boolean | null;
+  question: string;
+  /**
+   * Optional helper text for clarification
+   */
+  helpText?: string | null;
+  /**
+   * How to display the choices
+   */
+  layout: 'vertical' | 'horizontal';
+  /**
+   * Define the available choices
+   */
+  options: {
+    /**
+     * Select whether this choice is predefined or a user-defined choice.
+     *                       For example, set to User Defined if the answer can be anything outside of the listed options.
+     */
+    type: 'PREDEFINED' | 'CUSTOM';
+    /**
+     * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
+     */
+    label: string;
+    /**
+     * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
+     */
+    value?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Optional validation constraints
+   */
+  validation?: {
+    /**
+     * Minimum number of selections. Leave blank for no minimum.
+     */
+    minSelections?: number | null;
+    /**
+     * Maximum number of selections allowed. Leave blank for no limit.
+     */
+    maxSelections?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'checkbox-question';
 }
 /**
  * Addresses of users, which are used to identify locations for various purposes such as shipping and identification.
@@ -501,9 +639,12 @@ export interface Individual {
  */
 export interface Avatar {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   owner?: (string | null) | User;
@@ -926,9 +1067,12 @@ export interface MilkBag {
  */
 export interface MilkBagImage {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -1066,9 +1210,12 @@ export interface Donation {
  */
 export interface Image {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -1652,6 +1799,116 @@ export interface BlockedUser {
   createdAt: string;
 }
 /**
+ * User responses to the donor screening questionnaire
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screenings".
+ */
+export interface DonorScreening {
+  id: string;
+  createdBy?: (string | null) | User;
+  /**
+   * Reference to the specific version of the questionnaire that was answered
+   */
+  formVersion: string;
+  /**
+   * The current review status of this screening response
+   */
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVIEW';
+  /**
+   * The individual who submitted this screening response
+   */
+  submittedBy: string | Individual;
+  /**
+   * When this screening was submitted
+   */
+  submittedAt: string;
+  /**
+   * The admin user who reviewed this screening
+   */
+  reviewedBy?: (string | null) | User;
+  /**
+   * When this screening was reviewed by an admin
+   */
+  reviewedAt?: string | null;
+  /**
+   * Internal notes from the reviewer (not visible to user)
+   */
+  reviewNotes?: string | null;
+  /**
+   * The user's answers to each question
+   */
+  responses: {
+    /**
+     * Section of the screening form this answer belongs to
+     */
+    section: string;
+    questionType: 'PREDEFINED' | 'CUSTOM';
+    question: string;
+    /**
+     * The user's answer to the question
+     */
+    answer: string;
+    /**
+     * If the question required a file upload, this is the uploaded file
+     */
+    file?: (string | null) | ScreeningFile;
+    id?: string | null;
+  }[];
+  /**
+   * Additional information about the submission
+   */
+  metadata?: {
+    /**
+     * Device/platform used for submission
+     */
+    deviceInfo?: string | null;
+    /**
+     * Time taken to complete the form (in seconds)
+     */
+    timeToComplete?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "screening-files".
+ */
+export interface ScreeningFile {
+  id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image (Auto generated).
+   */
+  blurHash?: string | null;
+  createdBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "identities".
  */
@@ -1737,9 +1994,12 @@ export interface Identity {
  */
 export interface IdentityImage {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -2458,9 +2718,12 @@ export interface MessageAttachment {
  */
 export interface MessageMedia {
   id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
   alt?: string | null;
   /**
-   * A string that represents a blurred version of the image.
+   * A string that represents a blurred version of the image (Auto generated).
    */
   blurHash?: string | null;
   createdBy?: (string | null) | User;
@@ -2617,7 +2880,8 @@ export interface PayloadJob {
           | 'id-verification-task'
           | 'send-email'
           | 'calculate-post-comment-count-task'
-          | 'calculate-comment-reply-count-task';
+          | 'calculate-comment-reply-count-task'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -2658,6 +2922,7 @@ export interface PayloadJob {
         | 'send-email'
         | 'calculate-post-comment-count-task'
         | 'calculate-comment-reply-count-task'
+        | 'schedulePublish'
       )
     | null;
   queue?: string | null;
@@ -2696,6 +2961,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'delivery-preferences';
         value: string | DeliveryPreference;
+      } | null)
+    | ({
+        relationTo: 'donor-screenings';
+        value: string | DonorScreening;
       } | null)
     | ({
         relationTo: 'donations';
@@ -2832,6 +3101,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'avatars';
         value: string | Avatar;
+      } | null)
+    | ({
+        relationTo: 'screening-files';
+        value: string | ScreeningFile;
       } | null)
     | ({
         relationTo: 'user-search';
@@ -2991,6 +3264,38 @@ export interface DeliveryPreferencesSelect<T extends boolean = true> {
   availableDays?: T;
   donations?: T;
   requests?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screenings_select".
+ */
+export interface DonorScreeningsSelect<T extends boolean = true> {
+  createdBy?: T;
+  formVersion?: T;
+  status?: T;
+  submittedBy?: T;
+  submittedAt?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  reviewNotes?: T;
+  responses?:
+    | T
+    | {
+        section?: T;
+        questionType?: T;
+        question?: T;
+        answer?: T;
+        file?: T;
+        id?: T;
+      };
+  metadata?:
+    | T
+    | {
+        deviceInfo?: T;
+        timeToComplete?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3963,6 +4268,40 @@ export interface AvatarsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "screening-files_select".
+ */
+export interface ScreeningFilesSelect<T extends boolean = true> {
+  alt?: T;
+  blurHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "user-search_select".
  */
 export interface UserSearchSelect<T extends boolean = true> {
@@ -4046,6 +4385,64 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Manage the donor screening questionnaire. Only admins can modify questions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-form".
+ */
+export interface DonorScreeningForm {
+  id: string;
+  /**
+   * Brief description or instructions for the screening form
+   */
+  description?: string | null;
+  /**
+   * Whether this questionnaire is currently active
+   */
+  active?: boolean | null;
+  /**
+   * Organize questions into logical sections
+   */
+  sections: {
+    /**
+     * Title of this section (e.g., "Medical History", "Lifestyle")
+     */
+    sectionTitle: string;
+    /**
+     * Optional description or instructions for this section
+     */
+    sectionDescription?: string | null;
+    /**
+     * Add questions to this section
+     */
+    questions: (CheckboxQuestion | RadioQuestion | TextQuestion)[];
+    id?: string | null;
+  }[];
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-form_select".
+ */
+export interface DonorScreeningFormSelect<T extends boolean = true> {
+  description?: T;
+  active?: T;
+  sections?:
+    | T
+    | {
+        sectionTitle?: T;
+        sectionDescription?: T;
+        questions?: T | {};
+        id?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "IDVerficationTask".
  */
@@ -4103,6 +4500,19 @@ export interface CalculateCommentReplyCountTask {
     count: number;
     comment: string | Comment;
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    global?: 'donor-screening-form' | null;
+    user?: (string | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

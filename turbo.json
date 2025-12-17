@@ -54,6 +54,8 @@
     "@lactalink/web#generate:types": {
       "inputs": [
         "src/collections/**/*",
+        "src/blocks/**/*",
+        "src/globals/**/*",
         "src/jobs/**/*",
         "src/hooks/collections/**/*",
         "src/fields/**/*",

@@ -1,5 +1,5 @@
 import { extractID } from '@lactalink/utilities/extractors';
-import { Field, RelationshipField } from 'payload';
+import { RelationshipField } from 'payload';
 
 export const createdByField: RelationshipField = {
   name: 'createdBy',
@@ -22,13 +22,25 @@ export const createdByField: RelationshipField = {
   },
 };
 
-export const createdByProfileField: Field = {
+export const createdByProfileField: RelationshipField = {
   name: 'createdBy',
   type: 'relationship',
   relationTo: ['individuals', 'milkBanks', 'hospitals'],
   required: true,
   hasMany: false,
   validate: () => true, // Validation handled in generateCreatedBy hook
+  hooks: {
+    beforeChange: [
+      ({ value, req }) => {
+        if (!req.user || !req.user.profile) return value;
+        if (value) return value; // Preserve existing value if present
+        return {
+          relationTo: req.user.profile.relationTo,
+          value: extractID(req.user.profile.value),
+        };
+      },
+    ],
+  },
   admin: {
     position: 'sidebar',
     readOnly: true,

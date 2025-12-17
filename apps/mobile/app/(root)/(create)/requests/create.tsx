@@ -1,6 +1,5 @@
 import { RequestReviewCard } from '@/components/cards/RequestReviewCard';
 import { Form } from '@/components/contexts/FormProvider';
-import { RequestDetailsForm } from '@/components/forms/donation-request/RequestDetailsForm';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
@@ -8,6 +7,7 @@ import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
+import { RequestDetailsForm } from '@/features/donation&request/components/forms/RequestDetailsForm';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 
 import { RequestCreateParams } from '@/lib/types/donationRequest';
@@ -16,7 +16,8 @@ import { RequestCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
-import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
+import FormSaver from '@/components/forms/FormSaver';
+import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
 import { createRequest } from '@/lib/api/request';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,8 +32,8 @@ export default function CreateRequest() {
     rid: recipientID,
     rslg: recipientSlug,
   } = useLocalSearchParams<RequestCreateParams>();
-  const revalidateQueries = useRevalidateCollectionQueries();
 
+  const revalidateQueries = useRevalidateCollectionQueries();
   const router = useRouter();
 
   const form = useCreateRequestForm({
@@ -95,6 +96,7 @@ export default function CreateRequest() {
 
   return (
     <Form {...form}>
+      <FormSaver schemaName="request-create" enabled={!matchedDonation && !recipientID} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
@@ -103,7 +105,7 @@ export default function CreateRequest() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <VStack space="lg">
-            <RequestDetailsForm isMatched={!!matchedDonation} />
+            <RequestDetailsForm matchedDonation={matchedDonation} />
 
             {!isLoading && (
               <Box className="mx-5">

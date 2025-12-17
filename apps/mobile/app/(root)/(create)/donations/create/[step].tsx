@@ -1,31 +1,29 @@
 import { DonationReviewCard } from '@/components/cards/DonationReviewCard';
 import { useForm } from '@/components/contexts/FormProvider';
-import { DonationDetailsForm } from '@/components/forms/donation-request/DonationDetailsForm';
-import MilkBagVerification from '@/components/forms/donation-request/MilkBagVerification';
 import FormPreventBack from '@/components/forms/FormPreventBack';
 import { ActionModal } from '@/components/modals';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
-import MilkBagVerificationTutorial from '@/components/tutorials/MilkBagVerification';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
+import { DonationDetailsForm } from '@/features/donation&request/components/forms/DonationDetailsForm';
+import MilkBagVerification from '@/features/donation&request/components/MilkBagVerification';
+import MilkBagVerificationTutorial from '@/features/donation&request/components/MilkBagVerificationTutorial';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { usePagination } from '@/hooks/forms';
 
+import { createDonation } from '@/lib/api/donation';
 import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
+import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { useTutorialStore } from '@/lib/stores/tutorialStore';
-
 import { DonationCreateParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
-
-import { createDonation } from '@/lib/api/donation';
-import { upsertMilkBag } from '@/lib/api/upsert';
-import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { DonationCreateSchema } from '@lactalink/form-schemas';
 import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ReactNode, useCallback, useState } from 'react';
 import { FieldPath } from 'react-hook-form';
@@ -60,7 +58,7 @@ export default function CreateDonation() {
   const { completed: tutorialDone } = useTutorialStore((s) => s.donation);
   const setDonationTutorialState = useTutorialStore((s) => s.setters.setDonationState);
 
-  const { getValues, additionalState, formState, getFieldState, trigger, handleSubmit, reset } =
+  const { getValues, additionalState, formState, getFieldState, trigger, handleSubmit } =
     useForm<DonationCreateSchema>();
 
   const [isValidatingDetails, setValidatingDetails] = useState(false);
@@ -73,7 +71,7 @@ export default function CreateDonation() {
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
     [detailsStep]: (
-      <DonationDetailsForm disableFields={isValidatingDetails} isMatched={!!matchedRequest} />
+      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequest} />
     ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,
@@ -82,31 +80,28 @@ export default function CreateDonation() {
   //#region Handlers
   const onSubmit = useCallback(
     async (data: DonationCreateSchema) => {
-      const createPromise = createDonation(data);
+      const createPromise = createDonation(data).then(({ transaction, message }) => {
+        const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications', 'milkBags'];
+
+        if (transaction) {
+          router.dismissTo(`/transactions/${transaction.id}`);
+          slugsToRevalidate.push('requests', 'transactions');
+        } else {
+          router.dismissTo('/account/donations');
+        }
+
+        revalidateDonations(slugsToRevalidate);
+        deleteSavedFormData('donation-create');
+        return { message };
+      });
 
       toast.promise(createPromise, {
         loading: `Submitting donation...`,
         success: (res: { message: string }) => res.message,
-        error: (error) => {
-          additionalState.onRefresh?.();
-          return extractErrorMessage(error);
-        },
+        error: (error) => extractErrorMessage(error),
       });
-
-      const { transaction } = await createPromise;
-      const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications', 'milkBags'];
-
-      if (transaction) {
-        router.dismissTo(`/transactions/${transaction.id}`);
-        slugsToRevalidate.push('requests', 'transactions');
-      } else {
-        router.dismissTo('/account/donations');
-      }
-
-      revalidateDonations(slugsToRevalidate);
-      deleteSavedFormData('donation-create');
     },
-    [additionalState, revalidateDonations, router]
+    [revalidateDonations, router]
   );
 
   const submit = handleSubmit(onSubmit);
@@ -114,11 +109,10 @@ export default function CreateDonation() {
   async function handleNext() {
     switch (step) {
       case detailsStep: {
+        setValidatingDetails(true);
+        const data = getValues();
+
         try {
-          setValidatingDetails(true);
-
-          const data = getValues();
-
           const fieldsToValidate: FieldPath<DonationCreateSchema>[] = [
             'details',
             'donor',
@@ -135,28 +129,21 @@ export default function CreateDonation() {
           }
 
           const isValid = await trigger(fieldsToValidate);
-
-          if (!isValid) {
-            throw new Error('Please fix the errors before proceeding.');
-          }
-
-          const bags = data.details.bags;
-          data.milkBags = await Promise.all(bags.map(upsertMilkBag));
-          revalidateDonations(['milkBags']);
-          reset(data);
+          if (!isValid) toast.error('Please fix the errors before proceeding.');
 
           if (tutorialDone) {
-            skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
+            const verificationPage =
+              currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1);
+            skipToPage(verificationPage);
           } else {
             nextPage();
           }
         } catch (error) {
           toast.error(extractErrorMessage(error));
           console.error('Error validating details:', error);
-        } finally {
-          setValidatingDetails(false);
         }
 
+        setValidatingDetails(false);
         return;
       }
 
@@ -175,7 +162,7 @@ export default function CreateDonation() {
 
     if (!isValid) {
       const milkBagsError = getFieldState('milkBags').error;
-      toast.error(extractErrorMessage(milkBagsError));
+      if (milkBagsError) toast.error(extractErrorMessage(milkBagsError));
       throw new Error('Form validation failed');
     }
   }
@@ -192,10 +179,12 @@ export default function CreateDonation() {
           contentContainerClassName="grow pb-4"
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={additionalState.refreshing}
-              onRefresh={additionalState.onRefresh}
-            />
+            step === detailsStep ? (
+              <RefreshControl
+                refreshing={additionalState.refreshing}
+                onRefresh={additionalState.onRefresh}
+              />
+            ) : undefined
           }
         >
           <VStack space="lg" className="flex-1 items-stretch justify-between">

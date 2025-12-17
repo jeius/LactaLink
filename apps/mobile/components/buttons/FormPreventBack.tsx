@@ -7,8 +7,8 @@ import { HeaderBackButton } from '../HeaderBackButton';
 import { LeaveToastAction } from '../toasts';
 
 export function FormPreventBack() {
-  const { formState, reset } = useFormContext();
-  useFormPreventBack(<LeaveToastAction id={BACK_TOAST_ID} onConfirm={reset} />);
+  const { formState } = useFormContext();
+  useFormPreventBack(<LeaveToastAction id={BACK_TOAST_ID} />);
 
   const isDirty = formState.isDirty;
   const message = 'You have unsaved changes. Are you sure you want to leave?';

@@ -12,8 +12,10 @@ import path from 'path';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
+import Blocks from './blocks';
 import Collections, { Users } from './collections';
 import { Endpoints } from './endpoints';
+import GlobalConfigs from './globals';
 import { jobs } from './jobs';
 import { views } from './lib/db/drizzle/schema';
 import { logger } from './lib/logger';
@@ -43,9 +45,11 @@ export default buildConfig({
     meta: baseAdminMeta,
   },
   serverURL: getServerSideURL(),
+  blocks: Blocks,
   collections: Collections,
-  jobs: jobs,
   endpoints: Endpoints,
+  globals: GlobalConfigs,
+  jobs: jobs,
   sharp,
   plugins,
   maxDepth: 5,

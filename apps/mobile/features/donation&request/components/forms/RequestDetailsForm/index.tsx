@@ -1,6 +1,5 @@
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import { FormField } from '@/components/FormField';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -13,30 +12,32 @@ import { DonationListCard } from '@/components/cards/DonationListCard';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { DeliveryField } from '@/components/fields/DeliveryField';
 import { DateInputField } from '@/components/form-fields/DateInputField';
+import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { RequestCreateFormExtraData } from '@/hooks/forms/useCreateRequestForm';
+import { useDonation } from '@/features/donation&request/hooks/queries';
 import { CalendarDaysIcon, ClipboardPenIcon, ClockIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
-  isMatched?: boolean;
   disableFields?: boolean;
+  matchedDonation?: string;
 }
 
 export function RequestDetailsForm({
-  isMatched,
   disableFields: disableProp,
+  matchedDonation,
 }: RequestDetailsFormProps) {
   const { getValues, additionalState, watch, control, formState, setValue } =
     useForm<RequestCreateSchema>();
-  const { matchedDonation: matchedDonationDoc }: RequestCreateFormExtraData =
-    additionalState.extraData;
+
+  const isMatched = !!matchedDonation;
+  const { data: matchedDonationDoc, ...donationQuery } = useDonation(matchedDonation);
 
   const recipient = useMemo(() => {
     const values = getValues();
@@ -63,9 +64,9 @@ export function RequestDetailsForm({
     <VStack space="xl" className="py-5">
       {(requestType === 'MATCHED' || isMatched) && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Donation</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Donation</Text>
           <DonationListCard
-            isLoading={isLoading}
+            isLoading={donationQuery.isLoading}
             data={matchedDonationDoc}
             footerAction={
               matchedDonationDoc && (
@@ -81,7 +82,7 @@ export function RequestDetailsForm({
 
       {recipient && (
         <Box className="mx-5 mb-4">
-          <Text className="font-JakartaSemiBold mb-1">Selected Donor</Text>
+          <Text className="mb-1 font-JakartaSemiBold">Selected Donor</Text>
           <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
@@ -90,7 +91,7 @@ export function RequestDetailsForm({
 
       <VStack space="lg" className="mx-5">
         <HStack space="md" className="items-center">
-          <Text size="lg" className="font-JakartaSemiBold flex-1">
+          <Text size="lg" className="flex-1 font-JakartaSemiBold">
             Milk Details
           </Text>
           <Icon as={ClipboardPenIcon} />
@@ -102,7 +103,7 @@ export function RequestDetailsForm({
             name="details.storagePreference"
             label="Select how you would like the milk to be stored/preserved."
             selectInputProps={{ placeholder: 'Select storage type' }}
-            items={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
+            items={[...Object.values(STORAGE_TYPES), { label: 'Any method', value: 'EITHER' }]}
             isDisabled={isLoading || disableFields}
           />
         )}
@@ -184,14 +185,13 @@ export function RequestDetailsForm({
       />
 
       <Box className="mx-5">
-        <FormField
+        <ImageField
           control={control}
           name="details.image"
           label="Image of Recipient"
-          fieldType="image"
-          allowsMultipleSelection={false}
           helperText="Optional, but may encourage donors to fulfill your request."
           isDisabled={isLoading || disableFields}
+          options={{ allowsMultipleSelection: false }}
         />
       </Box>
 

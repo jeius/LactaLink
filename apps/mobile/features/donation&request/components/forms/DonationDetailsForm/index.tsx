@@ -2,11 +2,10 @@ import { RequestListCard } from '@/components/cards';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import CreateMilkBagsField from '@/components/fields/CreateMilkBagsField';
 import { DeliveryField } from '@/components/fields/DeliveryField';
+import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
-import { FormField } from '@/components/FormField';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
@@ -14,27 +13,28 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { DonationCreateFormExtraData } from '@/hooks/forms/useCreateDonationForm';
+import { useRequest } from '@/features/donation&request/hooks/queries';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { DeliveryCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { ClipboardPenIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
+import CreateMilkBagsField from './CreateMilkBagsField';
 
 interface DonationDetailsFormProps {
-  isMatched?: boolean;
   disableFields?: boolean;
+  matchedRequest?: string | null;
 }
 
 export function DonationDetailsForm({
-  isMatched,
   disableFields: disableProp,
+  matchedRequest,
 }: DonationDetailsFormProps) {
+  const isMatched = !!matchedRequest;
+  const { data: matchedRequestDoc, ...requestQuery } = useRequest(matchedRequest ?? undefined);
+
   const { getValues, additionalState, watch, control, formState, setValue } =
     useForm<DonationCreateSchema>();
-
-  const { matchedRequest: matchedRequestDoc }: DonationCreateFormExtraData =
-    additionalState.extraData;
 
   const recipient = useMemo(() => {
     const values = getValues();
@@ -63,7 +63,7 @@ export function DonationDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="mb-1 font-JakartaSemiBold">Selected Request</Text>
           <RequestListCard
-            isLoading={isLoading}
+            isLoading={requestQuery.isLoading}
             data={matchedRequestDoc}
             footerAction={
               matchedRequestDoc && (
@@ -128,14 +128,13 @@ export function DonationDetailsForm({
       </Box>
 
       <Box className="mx-5">
-        <FormField
+        <ImageField
           control={control}
           name="details.image"
           label="Cover Image"
-          fieldType="image"
           helperText="Upload a cover image to feature your donation."
           isDisabled={isLoading || disableFields}
-          allowsMultipleSelection={false}
+          options={{ allowsMultipleSelection: false }}
         />
       </Box>
 

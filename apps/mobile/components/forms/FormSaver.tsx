@@ -8,7 +8,13 @@ import { useWatch } from 'react-hook-form';
  * Uses debouncing to limit the frequency of saves. Access the saved data via `getSavedFormData`.
  * @param schemaName - The name of the schema to save the form data under.
  */
-export default function FormSaver({ schemaName }: { schemaName: SchemaName }) {
+export default function FormSaver({
+  schemaName,
+  enabled = true,
+}: {
+  schemaName: SchemaName;
+  enabled?: boolean;
+}) {
   const values = useWatch();
   const debouncedSave = useMemo(
     () => debounce((value) => saveFormData(schemaName, value)),
@@ -16,11 +22,11 @@ export default function FormSaver({ schemaName }: { schemaName: SchemaName }) {
   );
 
   useEffect(() => {
-    debouncedSave(values);
+    if (enabled) debouncedSave(values);
     return () => {
       debouncedSave.cancel();
     };
-  }, [debouncedSave, values]);
+  }, [debouncedSave, enabled, values]);
 
   return null;
 }

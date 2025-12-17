@@ -1,6 +1,7 @@
 import { FormField } from '@/components/FormField';
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { MilkBagCard } from '@/components/cards/MilkBagCard';
+import { NumberInputField } from '@/components/form-fields/NumberInputField';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -24,11 +25,17 @@ import { RequestCreateSchema, RequestSchema } from '@lactalink/form-schemas';
 import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import {
+  extractCollection,
+  extractErrorMessage,
+  extractID,
+  listKeyExtractor,
+} from '@lactalink/utilities/extractors';
 import { AlertCircleIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useFormContext, useFormState, useWatch } from 'react-hook-form';
+import { ListRenderItem } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import { FadeIn } from 'react-native-reanimated';
 
 interface VolumeFieldProps {
@@ -45,13 +52,17 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
     setIsCustomVolume((prev) => !prev);
   }
 
-  return matchedDonation ? (
-    <MilkBagsField
-      matchedDonation={matchedDonation}
-      isLoading={isLoading}
-      isDisabled={isDisabled}
-    />
-  ) : (
+  if (matchedDonation) {
+    return (
+      <MilkBagsField
+        matchedDonation={matchedDonation}
+        isLoading={isLoading}
+        isDisabled={isDisabled}
+      />
+    );
+  }
+
+  return (
     <VStack space="sm" className="mx-5">
       <Text className="font-JakartaMedium">How much milk do you need?</Text>
       <Card variant="filled" className="flex-col gap-5" isDisabled={isDisabled}>
@@ -74,14 +85,14 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
           </Button>
 
           {isCustomVolume && (
-            <FormField
+            <NumberInputField
               control={control}
               name="volumeNeeded"
-              fieldType="number"
-              placeholder="Enter volume in mL"
-              variant="underlined"
-              className="w-full max-w-48"
-              containerClassName="flex-1"
+              inputProps={{
+                placeholder: 'Enter volume in mL',
+                variant: 'underlined',
+                containerClassName: 'w-48',
+              }}
             />
           )}
         </HStack>
@@ -123,8 +134,7 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
 
       setValue('volumeNeeded', totalVolume);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedBags, bagsMap]);
+  }, [selectedBags, bagsMap, setValue]);
 
   const renderItem: ListRenderItem<MilkBag> = ({ item, index }) => {
     const isPlaceholder = isPlaceHolderData(item);
@@ -159,7 +169,7 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
         <MilkBagCard
           disableViewThumbnail
           data={item}
-          className={isSelected ? 'border-primary-500 border-2' : undefined}
+          className={isSelected ? 'border-2 border-primary-500' : undefined}
         />
       </AnimatedPressable>
     );
@@ -185,13 +195,13 @@ function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsField
       )}
 
       <Box className="mt-2">
-        <FlashList
+        <FlatList
           horizontal
           data={isLoading ? placeholder : bags}
-          keyExtractor={(item) => item.id}
+          keyExtractor={listKeyExtractor}
           renderItem={renderItem}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
-          ItemSeparatorComponent={() => <Box className="w-4" />}
+          ItemSeparatorComponent={() => <Box className="w-3" />}
         />
       </Box>
     </FormControl>

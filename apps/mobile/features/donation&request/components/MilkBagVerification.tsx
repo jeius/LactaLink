@@ -11,22 +11,33 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { MMKV_KEYS } from '@/lib/constants';
-import localStorage from '@/lib/localStorage';
+import Storage from '@/lib/localStorage';
+import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
+import { transformImage } from '@/lib/utils/imageProcessors';
 
 import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 
-import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { CameraIcon, ImageIcon } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
+const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
+  allowsEditing: true,
+  aspect: [1, 1],
+  mediaTypes: 'images',
+  allowsMultipleSelection: false,
+  cameraType: ImagePicker.CameraType.back,
+};
+
+const STORAGE_KEY = MMKV_KEYS.ALERT.MILKBAG_VERIFICATION;
+
 export default function MilkBagVerification() {
-  const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION);
+  const hasViewedHint = Storage.getBoolean(STORAGE_KEY);
   const [showHint, setShowHint] = React.useState(!hasViewedHint);
 
   const { setValue, control } = useForm<DonationSchema>();
@@ -34,7 +45,7 @@ export default function MilkBagVerification() {
   const milkBags = useWatch({ control, name: 'milkBags' }) || [];
 
   function handleHintClose() {
-    localStorage.set(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION, true);
+    Storage.set(STORAGE_KEY, true);
     setShowHint(true);
   }
 
@@ -66,56 +77,46 @@ interface MilkBagCardProps extends React.ComponentProps<typeof Card> {
 function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
   const { themeColors } = useTheme();
 
-  const [capturedImage, setCapturedImage] = useState(data.bagImage);
   const [isModalOpen, setModalOpen] = useState(false);
+
+  const prevImageUriRef = useRef<string | null>(null);
 
   const { code = 'Unavailable', volume, collectedAt } = data;
 
-  const bagImage = data.bagImage || capturedImage;
+  const bagImage = data.bagImage;
   const imageUrl = bagImage?.url;
   const imageAlt = bagImage?.alt || 'Milk Bag Image';
 
-  useEffect(() => {
-    setCapturedImage(data.bagImage);
-    if (!data.bagImage) {
-      deletePrev();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.bagImage]);
+  const deletePrev = useCallback(async () => {
+    const prevUri = prevImageUriRef.current;
+    if (prevUri) deleteLocalFiles([prevUri]);
+  }, []);
 
   useEffect(() => {
     return () => {
       deletePrev();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [deletePrev]);
 
-  async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
+  async function handleChange(result: ImagePicker.ImagePickerResult) {
+    if (result.canceled || result.assets.length === 0) return;
+
+    const rawImage = result.assets[0];
     if (!rawImage) return;
 
-    const fileExtension = rawImage.fileName?.split('.')?.[1] || 'jpeg';
-    const filename = `${code}-${volume}ml-image.${fileExtension}`;
-
-    const transformedImage: ImageSchema = {
-      url: rawImage.uri,
-      filename,
-      mimeType: rawImage.mimeType || 'image/jpeg',
-      width: rawImage.width,
-      height: rawImage.height,
-      alt: 'Milk Bag Image',
-      filesize: rawImage.fileSize,
-    };
+    const filename = `${code}-${volume}ml-image`;
+    const transformed = await transformImage(rawImage, filename);
 
     deletePrev();
-    setCapturedImage(transformedImage);
-    onImageCapture?.(transformedImage);
+    onImageCapture?.({ ...transformed, alt: 'Milk Bag Image' });
     setModalOpen(false);
+    prevImageUriRef.current = rawImage.uri;
   }
 
   async function handleCapture() {
     try {
-      const image = await pickFromCamera();
-      handleChange(image);
+      const result = await ImagePicker.launchCameraAsync(PICKER_OPTIONS);
+      handleChange(result);
     } catch (error) {
       toast.error(extractErrorMessage(error));
     }
@@ -123,21 +124,10 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 
   async function handleUpload() {
     try {
-      const image = await pickFromLibrary();
-      handleChange(image);
+      const result = await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
+      handleChange(result);
     } catch (error) {
       toast.error(extractErrorMessage(error));
-    }
-  }
-
-  async function deletePrev() {
-    try {
-      if (capturedImage) {
-        const file = new File(capturedImage.url);
-        file.delete();
-      }
-    } catch (error) {
-      console.warn('Failed to delete local file:', extractErrorMessage(error));
     }
   }
 
@@ -145,7 +135,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
     <Card {...props} style={{ maxWidth: 320 }}>
       <VStack space="md" className="items-stretch">
         <Box
-          className="bg-primary-0 relative w-full overflow-hidden rounded-xl"
+          className="relative w-full overflow-hidden rounded-xl bg-primary-0"
           style={{ aspectRatio: 1.5 }}
         >
           {imageUrl ? (
@@ -163,7 +153,7 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 
           <VStack className="absolute inset-x-0 bottom-0 items-start justify-between px-4 py-2">
             <Text className="font-JakartaSemiBold">{volume} mL</Text>
-            <Text size="sm" className="text-typography-800 font-JakartaMedium">
+            <Text size="sm" className="font-JakartaMedium text-typography-800">
               {formatDate(collectedAt, { shortMonth: true })}, {formatLocaleTime(collectedAt)}
             </Text>
           </VStack>
@@ -190,11 +180,11 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
         <ModalContent>
           <ModalBody className="my-auto">
             <VStack space="lg">
-              <Button variant="outline" onPress={handleCapture}>
+              <Button onPress={handleCapture}>
                 <ButtonIcon as={CameraIcon} />
                 <ButtonText>Open Camera</ButtonText>
               </Button>
-              <Button onPress={handleUpload}>
+              <Button variant="outline" onPress={handleUpload}>
                 <ButtonIcon as={ImageIcon} />
                 <ButtonText>Choose from library</ButtonText>
               </Button>
@@ -204,38 +194,4 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
       </Modal>
     </Card>
   );
-}
-
-async function pickFromCamera() {
-  const result = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
-    quality: 0.75,
-    aspect: [1, 1],
-    mediaTypes: 'images',
-    allowsMultipleSelection: false,
-    cameraType: ImagePicker.CameraType.back,
-  });
-
-  if (!result.canceled && result.assets.length > 0) {
-    const image = result.assets[0]!;
-    return image;
-  }
-  return null;
-}
-
-async function pickFromLibrary() {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    allowsEditing: true,
-    quality: 0.75,
-    aspect: [1, 1],
-    mediaTypes: 'images',
-    allowsMultipleSelection: false,
-    cameraType: ImagePicker.CameraType.back,
-  });
-
-  if (!result.canceled && result.assets.length > 0) {
-    const image = result.assets[0]!;
-    return image;
-  }
-  return null;
 }

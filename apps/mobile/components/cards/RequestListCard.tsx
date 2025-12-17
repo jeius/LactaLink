@@ -1,10 +1,10 @@
+import { useRequest } from '@/features/donation&request/hooks/queries';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Request } from '@lactalink/types/payload-generated-types';
-import { MarkKeyRequired } from '@lactalink/types/utils';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,7 @@ import { BasicBadge } from '../badges';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
 import { Button, ButtonText } from '../ui/button';
-import { Card } from '../ui/card';
+import { Card, CardProps } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -30,9 +30,8 @@ const cardDefaultStyle = tva({
   base: 'rounded-xl p-0',
 });
 
-export interface RequestListCardProps extends React.ComponentProps<typeof Card> {
-  data?: Request;
-  isLoading?: boolean;
+interface CardContentProps extends CardProps {
+  data: Request;
   action?: ReactNode;
   onPress?: (data: Request) => void;
   showAvatar?: boolean;
@@ -44,12 +43,24 @@ export interface RequestListCardProps extends React.ComponentProps<typeof Card> 
   disableLinks?: boolean;
 }
 
+interface RequestListCardProps extends Omit<CardContentProps, 'data'> {
+  data?: string | Request;
+  isLoading?: boolean;
+}
+
 export function RequestListCard(props: RequestListCardProps) {
-  const { data, isLoading, onPress, size = 'sm', ...cardProps } = props;
+  const { onPress, size = 'sm', ...cardProps } = props;
+
+  const { data, ...query } = useRequest(props.data);
+  const isLoading = props.isLoading || query.isLoading;
 
   if (isLoading || data === undefined) {
     return (
-      <Card {...props} size={size} className={cardDefaultStyle({ className: cardProps.className })}>
+      <Card
+        {...cardProps}
+        size={size}
+        className={cardDefaultStyle({ className: cardProps.className })}
+      >
         <CardSkeleton />
       </Card>
     );
@@ -85,7 +96,7 @@ function CardContent({
   hideFooter,
   showProgressBar,
   disableLinks = false,
-}: MarkKeyRequired<RequestListCardProps, 'data'>) {
+}: CardContentProps) {
   const router = useRouter();
   const { themeColors } = useTheme();
   const locationCoords = useLocationStore((s) => s.coordinates);

@@ -1,23 +1,21 @@
+import { imageFields } from '@/fields/imageFields';
 import { ownerField } from '@/fields/ownerField';
-import { generateBlurHash } from '@/hooks/collections/generateBlurHash';
 import { generateOwner } from '@/hooks/collections/generateOwner';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import type { CollectionConfig } from 'payload';
 import {
   admin,
-  anyone,
   authenticated,
   collectionOwner,
   collectionOwnerOrAdmin,
 } from '../../_access-control';
-import { generateAlt } from './hooks/generateAlt';
 
 export const Avatars: CollectionConfig<'avatars'> = {
   slug: 'avatars',
   access: {
     admin: admin,
     create: authenticated,
-    read: anyone,
+    read: authenticated,
     update: collectionOwner,
     delete: collectionOwnerOrAdmin,
   },
@@ -29,24 +27,9 @@ export const Avatars: CollectionConfig<'avatars'> = {
     defaultColumns: ['filename', 'alt', 'owner'],
   },
   hooks: {
-    beforeChange: [generateAlt, generateOwner, generateBlurHash],
+    beforeChange: [generateOwner],
   },
-  fields: [
-    {
-      name: 'alt',
-      type: 'text',
-    },
-    {
-      name: 'blurHash',
-      type: 'text',
-      admin: {
-        description: 'A string that represents a blurred version of the image.',
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
-    ownerField,
-  ],
+  fields: [...imageFields, ownerField],
   upload: {
     adminThumbnail: 'thumbnail',
     mimeTypes: ['image/*'],

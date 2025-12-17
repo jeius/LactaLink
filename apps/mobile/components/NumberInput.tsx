@@ -89,16 +89,10 @@ export function NumberInput({
 
   const handleChange = useMemo(
     () =>
-      debounce((val: string) => {
-        let numVal: number | undefined = Number(val);
-
-        if (val === '') numVal = undefined;
-        else if (isNaN(numVal)) numVal = 0;
-
-        setLocalValue(numVal);
+      debounce((numVal?: number) => {
         onChange?.(numVal);
       }, 100),
-    [onChange, setLocalValue]
+    [onChange]
   );
 
   useEffect(() => {
@@ -134,7 +128,9 @@ export function NumberInput({
             isDisabled={isDisabled || (localValue ?? 0) <= min}
             className="px-3"
             onPress={() => {
-              setLocalValue((localValue ?? 0) - (step || 1));
+              const newValue = (localValue ?? 0) - (step || 1);
+              setLocalValue(newValue);
+              handleChange(newValue);
             }}
           >
             <ButtonIcon as={MinusIcon} />
@@ -146,12 +142,19 @@ export function NumberInput({
         {...props}
         className={inputFieldStyle({ isStepButtonsVisible: showStepButtons })}
         value={localValue === undefined ? undefined : String(localValue)}
-        onChangeText={handleChange}
+        onChangeText={(text) => {
+          let numVal: number | undefined = Number(text);
+          if (text === '') numVal = undefined;
+          else if (isNaN(numVal)) numVal = 0;
+          handleChange(numVal);
+          setLocalValue(numVal);
+        }}
         aria-disabled={isDisabled}
         placeholder={placeholder}
         recyclingKey={recyclingKey}
         type="text"
         secureTextEntry={false}
+        keyboardType="numeric"
       />
 
       {showStepButtons && (
@@ -162,7 +165,9 @@ export function NumberInput({
             isDisabled={isDisabled || (localValue ?? 0) >= max}
             className="px-3"
             onPress={() => {
-              setLocalValue((localValue ?? 0) + (step || 1));
+              const newValue = (localValue ?? 0) + (step || 1);
+              setLocalValue(newValue);
+              handleChange(newValue);
             }}
           >
             <ButtonIcon as={PlusIcon} />

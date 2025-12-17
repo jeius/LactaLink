@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { MAX_IMAGE_SIZE } from '@/lib/constants';
 import { ImageSchema } from '@lactalink/form-schemas';
 import { CameraIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
-import React, { forwardRef, Ref, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, Ref, useImperativeHandle, useMemo, useState } from 'react';
 import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
 import { Icon } from './ui/icon';
@@ -42,8 +42,9 @@ type ImageUploadOptions = Omit<ImagePicker.ImagePickerOptions, 'mediaTypes'> & {
 interface ImageUploadProps extends ImageUploadOptions {
   value?: ImageSchema[] | null;
   onChange?: (val: ImageSchema[]) => void;
+  onBlur?: () => void;
   containerClassName?: string;
-  render?: (value: ImageSchema[]) => React.ReactNode;
+  render: (value: ImageSchema[]) => React.ReactNode;
   isDisabled?: boolean;
 }
 
@@ -52,6 +53,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     containerClassName,
     onChange,
     value,
+    onBlur,
     allowsMultipleSelection = false,
     selectionLimit = 1,
     render,
@@ -68,11 +70,10 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   const [isPressed, setIsPressed] = useState(false);
   const [isModalOpen, showModal] = useState(false);
 
-  const Render = value && render ? render(value) : null;
-
-  const lastImageUri = useRef<string[]>(
-    value?.map((v) => v.url).filter((url) => typeof url === 'string') || []
-  );
+  const RenderComponent = useMemo(() => {
+    if (!value) return null;
+    return render(value);
+  }, [render, value]);
 
   const basePickerOptions: ImagePicker.ImagePickerOptions = {
     ...props,
@@ -80,7 +81,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     quality,
     aspect,
     mediaTypes: 'images',
-    selectionLimit: selectionLimit,
+    selectionLimit: Math.max(0, selectionLimit - (value?.length ?? 0)),
     allowsMultipleSelection: allowsMultipleSelection,
     orderedSelection,
   };
@@ -90,13 +91,15 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   }
 
   async function handleRemove(index?: number) {
-    // Delete the previously stored image URI if it's a file stored locally
-    if (index && lastImageUri.current[index]) {
-      deleteLocalFiles([lastImageUri.current[index]]);
+    if (!value) return;
+    if (index) {
+      onChange?.(value.filter((_, i) => i !== index));
+      const valToDelete = value[index];
+      if (valToDelete) deleteLocalFiles([valToDelete.url]);
     } else {
-      deleteLocalFiles(lastImageUri.current);
+      onChange?.([]);
+      deleteLocalFiles(value.map((img) => img.url));
     }
-    lastImageUri.current = [];
   }
 
   // Expose methods via ref
@@ -108,37 +111,35 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   async function handleTransform(
     pickedImage: ImagePicker.ImagePickerAsset,
     fileName?: string
-  ): Promise<ImageSchema | undefined> {
-    const transformedImage = await transformImage(pickedImage, fileName).catch((err) => {
+  ): Promise<ImageSchema | null> {
+    return transformImage(pickedImage, fileName).catch((err) => {
       toast.error(extractErrorMessage(err));
       return null;
     });
-
-    if (!transformedImage) return undefined;
-
-    // Delete the previously stored image URI if it's a file stored locally
-    deleteLocalFiles(lastImageUri.current);
-
-    // Save the current URI for possible future deletion
-    lastImageUri.current.push(transformedImage.url);
-
-    return transformedImage;
   }
 
   async function handleChange(result: ImagePicker.ImagePickerResult) {
     if (!result.canceled && result.assets.length > 0) {
       showModal(false);
+      onBlur?.();
+
       const images = await Promise.all(
         result.assets.map((asset, i) => {
           // If allowsMultipleSelection is false, we only take the first image
           if (!allowsMultipleSelection && i > 0) return undefined;
-
           return handleTransform(asset, Array.isArray(filename) ? filename[i] : filename);
         })
       );
-      // Filter out any undefined results
-      const validImages = images.filter((img) => img !== undefined);
-      onChange?.(validImages);
+
+      // Filter out any falsy results
+      const validImages = images.filter((img) => !!img);
+
+      if (allowsMultipleSelection) {
+        if (value) onChange?.(value.concat(validImages));
+        else onChange?.(validImages);
+      } else {
+        onChange?.(validImages);
+      }
     }
   }
 
@@ -150,7 +151,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
     await handleChange(result);
   }
 
-  async function pickFromCamera() {
+  async function captureImage() {
     const result = await ImagePicker.launchCameraAsync({
       ...basePickerOptions,
       cameraType: ImagePicker.CameraType.back,
@@ -185,7 +186,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
         </Box>
       )}
 
-      {Render}
+      {RenderComponent}
 
       <Modal
         isOpen={isModalOpen}
@@ -198,7 +199,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
         <ModalContent>
           <ModalBody className="my-auto">
             <VStack space="lg">
-              <Button variant="outline" onPress={pickFromCamera}>
+              <Button variant="outline" onPress={captureImage}>
                 <ButtonIcon as={CameraIcon} />
                 <ButtonText>Camera</ButtonText>
               </Button>
