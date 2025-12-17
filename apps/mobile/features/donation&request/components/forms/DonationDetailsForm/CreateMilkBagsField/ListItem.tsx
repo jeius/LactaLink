@@ -81,7 +81,7 @@ export default function ListItem({
     },
   });
 
-  const isPending = isUpdating || isDeleting;
+  const isPending = isUpdating || isDeleting || isTemp;
 
   function handleOpen() {
     setOpen(true);
@@ -105,8 +105,8 @@ export default function ListItem({
       ref={containerRef}
       layout={LinearTransition}
       className="flex-row items-center gap-2"
-      pointerEvents={isTemp || isPending ? 'none' : 'auto'}
-      style={{ opacity: isTemp || isPending ? 0.6 : 1 }}
+      pointerEvents={isPending ? 'none' : 'auto'}
+      style={{ opacity: isPending ? 0.6 : 1 }}
     >
       <Animated.View entering={FadeIn}>
         <Button

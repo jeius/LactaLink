@@ -16,7 +16,8 @@ import { RequestCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 
-import { useCreateRequestForm } from '@/hooks/forms/useCreateRequestForm';
+import FormSaver from '@/components/forms/FormSaver';
+import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
 import { createRequest } from '@/lib/api/request';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,8 +32,8 @@ export default function CreateRequest() {
     rid: recipientID,
     rslg: recipientSlug,
   } = useLocalSearchParams<RequestCreateParams>();
-  const revalidateQueries = useRevalidateCollectionQueries();
 
+  const revalidateQueries = useRevalidateCollectionQueries();
   const router = useRouter();
 
   const form = useCreateRequestForm({
@@ -95,6 +96,7 @@ export default function CreateRequest() {
 
   return (
     <Form {...form}>
+      <FormSaver schemaName="request-create" enabled={!matchedDonation && !recipientID} />
       <FormPreventBack />
 
       <SafeArea safeTop={false}>
@@ -103,7 +105,7 @@ export default function CreateRequest() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <VStack space="lg">
-            <RequestDetailsForm isMatched={!!matchedDonation} />
+            <RequestDetailsForm matchedDonation={matchedDonation} />
 
             {!isLoading && (
               <Box className="mx-5">

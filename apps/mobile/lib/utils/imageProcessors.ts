@@ -22,14 +22,15 @@ export async function compressImage(uri: string) {
       throw new Error('Image compression failed', { cause: extractErrorMessage(error) });
     });
 
+    imageFile = new File(result);
+
+    // Delete the original image file to save space
     try {
       const file = new File(uri);
       file.delete();
     } catch (error) {
       console.error('Failed to delete original image: ', extractErrorMessage(error));
     }
-
-    imageFile = new File(result);
   }
 
   const { ImageHeight, ImageWidth, Orientation, ...resultDetails } = await getImageMetaData(

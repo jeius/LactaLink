@@ -13,28 +13,28 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useRequest } from '@/features/donation&request/hooks/queries';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { DeliveryCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { ClipboardPenIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { DonationCreateFormExtraData } from '../../../hooks/useCreateDonationForm';
 import CreateMilkBagsField from './CreateMilkBagsField';
 
 interface DonationDetailsFormProps {
-  isMatched?: boolean;
   disableFields?: boolean;
+  matchedRequest?: string | null;
 }
 
 export function DonationDetailsForm({
-  isMatched,
   disableFields: disableProp,
+  matchedRequest,
 }: DonationDetailsFormProps) {
+  const isMatched = !!matchedRequest;
+  const { data: matchedRequestDoc, ...requestQuery } = useRequest(matchedRequest ?? undefined);
+
   const { getValues, additionalState, watch, control, formState, setValue } =
     useForm<DonationCreateSchema>();
-
-  const { matchedRequest: matchedRequestDoc }: DonationCreateFormExtraData =
-    additionalState.extraData;
 
   const recipient = useMemo(() => {
     const values = getValues();
@@ -63,7 +63,7 @@ export function DonationDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="mb-1 font-JakartaSemiBold">Selected Request</Text>
           <RequestListCard
-            isLoading={isLoading}
+            isLoading={requestQuery.isLoading}
             data={matchedRequestDoc}
             footerAction={
               matchedRequestDoc && (

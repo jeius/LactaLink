@@ -1,19 +1,19 @@
 import { getApiClient } from '@lactalink/api';
-import { Request } from '@lactalink/types/payload-generated-types';
+import { Donation } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { queryOptions } from '@tanstack/react-query';
 
-export function createRequestQuery(doc: string | Request | undefined) {
+export function createDonationQuery(doc: string | Donation | undefined) {
   const docID = extractID(doc);
   return queryOptions({
     enabled: !!doc,
-    queryKey: ['requests', docID],
+    queryKey: ['donations', docID],
     queryFn: () => {
-      if (!docID) throw new Error('Request ID is required to fetch request.');
+      if (!docID) throw new Error('Donation ID is required to fetch donation.');
 
       const apiClient = getApiClient();
       return apiClient.findByID({
-        collection: 'requests',
+        collection: 'donations',
         id: docID,
         depth: 3,
         joins: { transactions: { count: true, limit: 0 } },

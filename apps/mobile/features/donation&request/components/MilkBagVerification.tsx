@@ -11,8 +11,9 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { MMKV_KEYS } from '@/lib/constants';
-import localStorage from '@/lib/localStorage';
+import Storage from '@/lib/localStorage';
 import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
+import { transformImage } from '@/lib/utils/imageProcessors';
 
 import { DonationSchema, ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
@@ -27,15 +28,16 @@ import { toast } from 'sonner-native';
 
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   allowsEditing: true,
-  quality: 0.75,
   aspect: [1, 1],
   mediaTypes: 'images',
   allowsMultipleSelection: false,
   cameraType: ImagePicker.CameraType.back,
 };
 
+const STORAGE_KEY = MMKV_KEYS.ALERT.MILKBAG_VERIFICATION;
+
 export default function MilkBagVerification() {
-  const hasViewedHint = localStorage.getBoolean(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION);
+  const hasViewedHint = Storage.getBoolean(STORAGE_KEY);
   const [showHint, setShowHint] = React.useState(!hasViewedHint);
 
   const { setValue, control } = useForm<DonationSchema>();
@@ -43,7 +45,7 @@ export default function MilkBagVerification() {
   const milkBags = useWatch({ control, name: 'milkBags' }) || [];
 
   function handleHintClose() {
-    localStorage.set(MMKV_KEYS.ALERT.MILKBAG_VERIFICATION, true);
+    Storage.set(STORAGE_KEY, true);
     setShowHint(true);
   }
 
@@ -96,32 +98,25 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
     };
   }, [deletePrev]);
 
-  async function handleChange(rawImage: ImagePicker.ImagePickerAsset | null) {
+  async function handleChange(result: ImagePicker.ImagePickerResult) {
+    if (result.canceled || result.assets.length === 0) return;
+
+    const rawImage = result.assets[0];
     if (!rawImage) return;
 
-    const fileExtension = rawImage.fileName?.split('.')?.[1] || 'jpg';
-    const filename = `${code}-${volume}ml-image.${fileExtension}`;
-
-    const transformedImage: ImageSchema = {
-      url: rawImage.uri,
-      filename,
-      mimeType: rawImage.mimeType || 'image/jpeg',
-      width: rawImage.width,
-      height: rawImage.height,
-      alt: 'Milk Bag Image',
-      filesize: rawImage.fileSize,
-    };
+    const filename = `${code}-${volume}ml-image`;
+    const transformed = await transformImage(rawImage, filename);
 
     deletePrev();
-    onImageCapture?.(transformedImage);
+    onImageCapture?.({ ...transformed, alt: 'Milk Bag Image' });
     setModalOpen(false);
     prevImageUriRef.current = rawImage.uri;
   }
 
   async function handleCapture() {
     try {
-      const image = await pickFromCamera();
-      handleChange(image);
+      const result = await ImagePicker.launchCameraAsync(PICKER_OPTIONS);
+      handleChange(result);
     } catch (error) {
       toast.error(extractErrorMessage(error));
     }
@@ -129,8 +124,8 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
 
   async function handleUpload() {
     try {
-      const image = await pickFromLibrary();
-      handleChange(image);
+      const result = await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
+      handleChange(result);
     } catch (error) {
       toast.error(extractErrorMessage(error));
     }
@@ -199,24 +194,4 @@ function MilkBagCard({ data, onImageCapture, ...props }: MilkBagCardProps) {
       </Modal>
     </Card>
   );
-}
-
-async function pickFromCamera() {
-  const result = await ImagePicker.launchCameraAsync(PICKER_OPTIONS);
-
-  if (!result.canceled && result.assets.length > 0) {
-    const image = result.assets[0]!;
-    return image;
-  }
-  return null;
-}
-
-async function pickFromLibrary() {
-  const result = await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
-
-  if (!result.canceled && result.assets.length > 0) {
-    const image = result.assets[0]!;
-    return image;
-  }
-  return null;
 }

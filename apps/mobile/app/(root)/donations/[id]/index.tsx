@@ -18,8 +18,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
+import { useDonation } from '@/features/donation&request/hooks/queries';
 import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getTypographyColor } from '@/lib/colors/getColor';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
@@ -60,10 +60,7 @@ export default function DonationDetailsPage() {
   const isMobile = screen.width <= DEVICE_BREAKPOINTS.phone;
   const [ctaHeight, setCTAHeight] = useState(0);
 
-  const { data, ...query } = useFetchById(!!id, {
-    collection: 'donations',
-    id,
-  });
+  const { data, ...query } = useDonation(id);
   const isLoading = query.isLoading;
   const volume = data?.volume || 0;
   const remainingVolume = data?.remainingVolume || 0;

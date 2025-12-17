@@ -71,7 +71,7 @@ export default function CreateDonation() {
 
   const renderFormMap: Record<DonationCreateSteps, ReactNode> = {
     [detailsStep]: (
-      <DonationDetailsForm disableFields={isValidatingDetails} isMatched={!!matchedRequest} />
+      <DonationDetailsForm disableFields={isValidatingDetails} matchedRequest={matchedRequest} />
     ),
     [tutorialStep]: <MilkBagVerificationTutorial />,
     [verificationStep]: <MilkBagVerification />,
@@ -80,7 +80,7 @@ export default function CreateDonation() {
   //#region Handlers
   const onSubmit = useCallback(
     async (data: DonationCreateSchema) => {
-      const createPromise = createDonation(data).then(({ transaction }) => {
+      const createPromise = createDonation(data).then(({ transaction, message }) => {
         const slugsToRevalidate: CollectionSlug[] = ['donations', 'notifications', 'milkBags'];
 
         if (transaction) {
@@ -92,6 +92,7 @@ export default function CreateDonation() {
 
         revalidateDonations(slugsToRevalidate);
         deleteSavedFormData('donation-create');
+        return { message };
       });
 
       toast.promise(createPromise, {
@@ -109,10 +110,9 @@ export default function CreateDonation() {
     switch (step) {
       case detailsStep: {
         setValidatingDetails(true);
+        const data = getValues();
 
         try {
-          const data = getValues();
-
           const fieldsToValidate: FieldPath<DonationCreateSchema>[] = [
             'details',
             'donor',
@@ -132,7 +132,9 @@ export default function CreateDonation() {
           if (!isValid) toast.error('Please fix the errors before proceeding.');
 
           if (tutorialDone) {
-            skipToPage(currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1));
+            const verificationPage =
+              currentPageIndex + Math.min(2, routes.length - currentPageIndex - 1);
+            skipToPage(verificationPage);
           } else {
             nextPage();
           }
@@ -159,9 +161,8 @@ export default function CreateDonation() {
     const isValid = await trigger();
 
     if (!isValid) {
-      console.log('Form validation errors:', formState.errors);
       const milkBagsError = getFieldState('milkBags').error;
-      toast.error(extractErrorMessage(milkBagsError));
+      if (milkBagsError) toast.error(extractErrorMessage(milkBagsError));
       throw new Error('Form validation failed');
     }
   }
@@ -178,10 +179,12 @@ export default function CreateDonation() {
           contentContainerClassName="grow pb-4"
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={additionalState.refreshing}
-              onRefresh={additionalState.onRefresh}
-            />
+            step === detailsStep ? (
+              <RefreshControl
+                refreshing={additionalState.refreshing}
+                onRefresh={additionalState.onRefresh}
+              />
+            ) : undefined
           }
         >
           <VStack space="lg" className="flex-1 items-stretch justify-between">

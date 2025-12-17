@@ -77,7 +77,7 @@ function ItemCard({ item }: { item: Donation | Request }) {
   const donationData = isDonation(item);
   const volume = donationData ? item.remainingVolume : item.volumeNeeded;
   const title = donationData ? 'Donation' : 'Request';
-  const profile = extractCollection(donationData ? item.donor : item.requester);
+  const profile = donationData ? item.donor : item.requester;
   const image = extractCollection(donationData ? item.details.milkSample : item.details.image);
   const imageData = image && extractOneImageData(image);
   const bgColor = donationData ? getColor('primary', '500') : getColor('tertiary', '500');
@@ -91,10 +91,7 @@ function ItemCard({ item }: { item: Donation | Request }) {
 
       <Box className="self-start p-2">
         <Box className="rounded-full border-2" style={{ borderColor: bgColor, padding: 1 }}>
-          <ProfileAvatar
-            size="xs"
-            profile={profile && { relationTo: 'individuals', value: profile }}
-          />
+          <ProfileAvatar size="xs" profile={{ relationTo: 'individuals', value: profile }} />
         </Box>
       </Box>
 

@@ -19,24 +19,25 @@ import { ProfileTag } from '@/components/ProfileTag';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { RequestCreateFormExtraData } from '@/hooks/forms/useCreateRequestForm';
+import { useDonation } from '@/features/donation&request/hooks/queries';
 import { CalendarDaysIcon, ClipboardPenIcon, ClockIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
-  isMatched?: boolean;
   disableFields?: boolean;
+  matchedDonation?: string;
 }
 
 export function RequestDetailsForm({
-  isMatched,
   disableFields: disableProp,
+  matchedDonation,
 }: RequestDetailsFormProps) {
   const { getValues, additionalState, watch, control, formState, setValue } =
     useForm<RequestCreateSchema>();
-  const { matchedDonation: matchedDonationDoc }: RequestCreateFormExtraData =
-    additionalState.extraData;
+
+  const isMatched = !!matchedDonation;
+  const { data: matchedDonationDoc, ...donationQuery } = useDonation(matchedDonation);
 
   const recipient = useMemo(() => {
     const values = getValues();
@@ -65,7 +66,7 @@ export function RequestDetailsForm({
         <Box className="mx-5 mb-4">
           <Text className="mb-1 font-JakartaSemiBold">Selected Donation</Text>
           <DonationListCard
-            isLoading={isLoading}
+            isLoading={donationQuery.isLoading}
             data={matchedDonationDoc}
             footerAction={
               matchedDonationDoc && (
@@ -102,7 +103,7 @@ export function RequestDetailsForm({
             name="details.storagePreference"
             label="Select how you would like the milk to be stored/preserved."
             selectInputProps={{ placeholder: 'Select storage type' }}
-            items={[...Object.values(STORAGE_TYPES), { label: 'Either', value: 'EITHER' }]}
+            items={[...Object.values(STORAGE_TYPES), { label: 'Any method', value: 'EITHER' }]}
             isDisabled={isLoading || disableFields}
           />
         )}

@@ -19,8 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
+import { useRequest } from '@/features/donation&request/hooks/queries';
 import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
@@ -64,10 +64,7 @@ export default function RequestDetailsPage() {
 
   const [ctaHeight, setCTAHeight] = useState(0);
 
-  const { data, ...query } = useFetchById(!!id, {
-    collection: 'requests',
-    id,
-  });
+  const { data, ...query } = useRequest(id);
 
   const isLoading = query.isLoading;
   const volume = data?.initialVolumeNeeded || 0;

@@ -1,10 +1,10 @@
+import { useDonation } from '@/features/donation&request/hooks/queries';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { useLocationStore } from '@/lib/stores/locationStore';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
-import { MarkKeyRequired } from '@lactalink/types/utils';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,7 @@ import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
 import { Button, ButtonText } from '../ui/button';
-import { Card } from '../ui/card';
+import { Card, CardProps } from '../ui/card';
 import { Divider } from '../ui/divider';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -30,9 +30,8 @@ const cardDefaultStyle = tva({
   base: 'rounded-xl p-0',
 });
 
-export interface DonationListCardProps extends React.ComponentProps<typeof Card> {
-  data?: Donation;
-  isLoading?: boolean;
+interface CardContentProps extends CardProps {
+  data: Donation;
   action?: ReactNode;
   onPress?: (data: Donation) => void;
   showAvatar?: boolean;
@@ -44,12 +43,24 @@ export interface DonationListCardProps extends React.ComponentProps<typeof Card>
   disableLinks?: boolean;
 }
 
+interface DonationListCardProps extends Omit<CardContentProps, 'data'> {
+  data?: string | Donation;
+  isLoading?: boolean;
+}
+
 export function DonationListCard(props: DonationListCardProps) {
-  const { data, isLoading, onPress, size = 'sm', ...cardProps } = props;
+  const { onPress, size = 'sm', ...cardProps } = props;
+
+  const { data, ...query } = useDonation(props.data);
+  const isLoading = props.isLoading || query.isLoading;
 
   if (isLoading || data === undefined) {
     return (
-      <Card {...props} size={size} className={cardDefaultStyle({ className: cardProps.className })}>
+      <Card
+        {...cardProps}
+        size={size}
+        className={cardDefaultStyle({ className: cardProps.className })}
+      >
         <CardSkeleton />
       </Card>
     );
@@ -86,7 +97,7 @@ function CardContent({
   canViewThumbnail = true,
   disableLinks = false,
   showProgressBar,
-}: MarkKeyRequired<DonationListCardProps, 'data'>) {
+}: CardContentProps) {
   const router = useRouter();
   const { themeColors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();

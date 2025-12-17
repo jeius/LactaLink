@@ -6,7 +6,7 @@ import {
   MilkBagCreateSchema,
   MilkBagSchema,
 } from '@lactalink/form-schemas';
-import { MilkBag, Request, User } from '@lactalink/types/payload-generated-types';
+import { MilkBag, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
@@ -21,14 +21,8 @@ import { FormProps } from '@/components/contexts/FormProvider';
 import { useDraftMilkbags, useRequest } from '@/features/donation&request/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 
-import isEqual from 'lodash/isEqual';
 import { useEffect, useMemo } from 'react';
 import { DeepPartial, useForm } from 'react-hook-form';
-
-export type DonationCreateFormExtraData = {
-  milkBags: MilkBag[] | undefined;
-  matchedRequest: Request | undefined;
-};
 
 type Params = {
   matchedRequest: string | undefined;
@@ -54,7 +48,7 @@ export function useCreateDonationForm({
     defaultValues: createDefaultValues(user, !!matchedRequest, !!recipient),
   });
 
-  const { reset, getValues, formState } = form;
+  const { reset, getValues, formState, setValue } = form;
   const isSubmitSuccessful = formState.isSubmitSuccessful;
   // #endregion
 
@@ -64,46 +58,30 @@ export function useCreateDonationForm({
     if (!draftMilkBags) return;
 
     const { newDetailsBags, newMilkBags } = updateDataOnDraftBagsExist(draftMilkBags);
-
-    const newValues = getValues();
-    newValues.details.bags = newDetailsBags;
-    newValues.milkBags = newMilkBags;
-
-    if (!isEqual(newValues, getValues())) {
-      reset(newValues);
-    }
-  }, [draftMilkBags, getValues, reset]);
+    setValue('details.bags', newDetailsBags, { shouldDirty: true, shouldTouch: true });
+    setValue('milkBags', newMilkBags, { shouldDirty: true, shouldTouch: true });
+  }, [draftMilkBags, getValues, reset, setValue]);
 
   // When matched request and recipient prop changes, update the form values.
   useEffect(() => {
-    const defaults = getValues();
-
     if (matchedRequestDoc) {
       const transformedRequest = transformToRequestSchema(matchedRequestDoc);
       const preferredStorage = transformedRequest.details.storagePreference;
-      reset({
-        ...defaults,
-        type: 'MATCHED',
-        matchedRequest: transformedRequest,
-        details: {
-          ...defaults.details,
-          storageType: preferredStorage === 'EITHER' ? undefined : preferredStorage,
-        },
-      });
+      setValue('matchedRequest', transformedRequest);
+      setValue('type', 'MATCHED');
+      if (preferredStorage !== 'EITHER') setValue('details.storageType', preferredStorage);
     } else if (recipient) {
-      reset({ ...defaults, type: 'DIRECT', recipient });
+      setValue('recipient', recipient);
+      setValue('type', 'DIRECT');
     } else {
-      if (!defaults.deliveryPreferences?.length) {
-        defaults.deliveryPreferences = preferences
+      if (!getValues('deliveryPreferences')?.length) {
+        const defaultPrefs = preferences
           .map((pref) => transformToDeliveryPreferenceSchema(pref))
           .filter((v) => v !== null);
-      }
-
-      if (!isEqual(defaults, getValues())) {
-        reset({ ...defaults, type: 'OPEN' });
+        setValue('deliveryPreferences', defaultPrefs);
       }
     }
-  }, [getValues, matchedRequestDoc, preferences, recipient, reset]);
+  }, [getValues, matchedRequestDoc, preferences, recipient, reset, setValue]);
 
   // When the form is successfully submitted, save preferred values to local storage and clear old data.
   useEffect(() => {
@@ -127,19 +105,14 @@ export function useCreateDonationForm({
 
   return {
     ...form,
-    isLoading: bagsQuery.isLoading || userQuery.isLoading || requestQuery.isLoading,
-    isFetching: bagsQuery.isFetching || userQuery.isFetching || requestQuery.isFetching,
+    isLoading: bagsQuery.isLoading,
+    isFetching: bagsQuery.isFetching,
     fetchError: bagsQuery.error || userQuery.error || requestQuery.error,
-    refreshing: bagsQuery.isRefetching || userQuery.isRefetching || requestQuery.isRefetching,
+    refreshing: bagsQuery.isRefetching,
     onRefresh: () => {
       bagsQuery.refetch();
-      userQuery.refetch();
       requestQuery.refetch();
     },
-    extraData: {
-      milkBags: draftMilkBags,
-      matchedRequest: matchedRequestDoc,
-    } as DonationCreateFormExtraData,
   };
 }
 
