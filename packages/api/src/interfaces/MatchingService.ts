@@ -3,15 +3,6 @@ import { MatchCriteria } from '@lactalink/form-schemas/validators';
 
 import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { FindManyResult, FindOptions } from '@lactalink/types/api';
-import type {
-  Address,
-  Delivery,
-  Donation,
-  MilkBag,
-  Request,
-  Transaction,
-  User,
-} from '@lactalink/types/payload-generated-types';
 import type { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 type Options<
@@ -95,116 +86,6 @@ export interface RequestMatchCriteria {
   prioritizeUrgent?: boolean;
 }
 
-/**
- * Result of a matching operation.
- */
-export interface MatchResult {
-  /**
-   * The created transaction
-   */
-  transaction: Transaction;
-
-  /**
-   * Updated donation
-   */
-  donation: Donation;
-
-  /**
-   * Updated request
-   */
-  request: Request;
-
-  /**
-   * Milk bags that were matched
-   */
-  matchedBags: MilkBag[];
-
-  /**
-   * Whether the request was fully fulfilled
-   */
-  fullyFulfilled: boolean;
-}
-
-/**
- * Options for creating a P2O match.
- */
-export interface P2OMatchOptions {
-  /**
-   * IDs of specific milk bags to match
-   */
-  milkBagIDs?: string[];
-  address: string | Address;
-  deliveryDate: string;
-}
-
-/**
- * Result of a P2O match operation.
- */
-export interface P2OMatchResult {
-  /**
-   * The created transaction
-   */
-  transaction: Transaction;
-
-  /**
-   * Updated donation
-   */
-  donation: Donation;
-}
-
-/**
- * Options for creating an O2P match.
- */
-export interface O2PMatchOptions {
-  /**
-   * IDs of milk bags to match (required for O2P matches)
-   */
-  milkBagIds: string[];
-
-  address: string | Address;
-  deliveryDate: string;
-}
-
-/**
- * Result of an O2P match operation.
- */
-export interface O2PMatchResult {
-  /**
-   * The created transaction
-   */
-  transaction: Transaction;
-
-  /**
-   * Updated request
-   */
-  request: Request;
-}
-
-/**
- * Options for creating a P2P match.
- */
-export interface CreateMatchOptions {
-  /**
-   * IDs of specific milk bags to match
-   */
-  milkBagIDs?: string[];
-
-  /**
-   * Preferred delivery mode
-   */
-  delivery: NonNullable<Delivery['confirmed']>;
-
-  /**
-   * Proposed delivery details
-   */
-  proposedDelivery?: NonNullable<Delivery['proposed']>[number];
-
-  /**
-   * Instructions for the match
-   */
-  instructions?: string;
-}
-
 export type FindMatchOptions<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
@@ -243,45 +124,6 @@ export interface IMatchingService {
     donationId: string,
     options?: FindMatchOptions<'requests', TSelect>
   ): Promise<FindManyResult<'requests', TSelect, true>>;
-
-  /**
-   * Creates a match between a donation and request, with optional milk bag selection.
-   * @param donationID - ID of the donation
-   * @param requestID - ID of the request
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction and updated donation/request
-   */
-  createMatch(
-    donationID: string,
-    requestID: string,
-    options: CreateMatchOptions
-  ): Promise<Transaction>;
-
-  /**
-   * Creates a P2O match (donation to organization).
-   * @param donationId - ID of the donation
-   * @param organization - Organization details (ID and type)
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction
-   */
-  createP2OMatch(
-    donationId: string,
-    organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
-    options: P2OMatchOptions
-  ): Promise<Transaction>;
-
-  /**
-   * Creates an O2P match (organization to request).
-   * @param requestId - ID of the request
-   * @param organization - Organization details (ID and type)
-   * @param options - Optional parameters like specific milk bags to match
-   * @returns Match result including transaction and updated request
-   */
-  createO2PMatch(
-    requestId: string,
-    organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>,
-    options: O2PMatchOptions
-  ): Promise<Transaction>;
 
   /**
    * Gets the best matching donations for a request.

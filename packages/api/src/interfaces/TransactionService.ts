@@ -1,30 +1,21 @@
-import { TransactionStatus } from '@lactalink/types';
-import type { FindMany, FindManyResult } from '@lactalink/types/api';
+import { TransactionStatus, UserProfile } from '@lactalink/types';
 import type {
-  ConfirmedDelivery,
-  DeliveryAgreements,
+  DeliveryDetail,
+  DeliveryUpdate,
   Donation,
   MilkBag,
-  ProposedDelivery,
   Request,
   Transaction,
   User,
 } from '@lactalink/types/payload-generated-types';
-import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 /**
  * Parameters for updating delivery details.
  */
-export interface DeliveryDetailsParams
-  extends Omit<
-    NonNullable<ProposedDelivery>[number],
-    'address' | 'agreements' | 'proposedAt' | 'id'
-  > {
-  /**
-   * Address ID for the delivery
-   */
-  address: string;
-}
+export type DeliveryDetailsParams = Pick<
+  DeliveryDetail,
+  'address' | 'scheduledAt' | 'notes' | 'method'
+>;
 
 type BaseTransactionParams = {
   milkBags: (string | MilkBag)[];
@@ -32,19 +23,15 @@ type BaseTransactionParams = {
   request: string | Request;
 };
 
-type OrganizationTransactionParams = Pick<
-  DeliveryDetailsParams,
-  'datetime' | 'address' | 'instructions'
-> & {
-  organization: Exclude<NonNullable<User['profile']>, { relationTo: 'individuals' }>;
+type OrganizationTransactionParams = {
+  organization: Exclude<UserProfile, { relationTo: 'individuals' }>;
+  delivery: Omit<DeliveryDetailsParams, 'method'>;
 };
 
 /**
  * Parameters for creating a P2P transaction.
  */
-export type CreateP2PTransactionParams = BaseTransactionParams & {
-  delivery?: Omit<ConfirmedDelivery, 'address'> & { address: string };
-};
+export type CreateP2PTransactionParams = BaseTransactionParams;
 
 /**
  * Parameters for creating a P2O transaction.
@@ -88,52 +75,45 @@ export interface ITransactionService {
 
   /**
    * Proposes delivery option for a transaction, initiating the negotiation process.
-   * @param transactionId - ID of the transaction
+   * @param transaction - The transaction document
    * @param details - Delivery details
    * @returns Updated transaction
    */
   proposeDeliveryOption(
-    transactionId: string,
+    transaction: Transaction,
     details: DeliveryDetailsParams
   ): Promise<Transaction>;
 
   /**
    * Accepts proposed delivery proposal and schedules the delivery.
-   * @param transactionID - ID of the transaction
-   * @param proposalID - ID of the proposal
-   * @param acceptedBy - User profile accepting the proposal
+   * @param transaction - The transaction document
+   * @param deliveryDetail - The delivery detail to accept
    * @returns Updated transaction
    */
   acceptDeliveryProposal(
-    transactionID: string,
-    proposalID: string,
-    acceptedBy: NonNullable<User['profile']>
+    transaction: Transaction,
+    deliveryDetail: string | DeliveryDetail
   ): Promise<Transaction>;
 
   /**
    * Rejects proposed delivery proposal.
-   * @param transactionID - ID of the transaction
-   * @param proposalID - ID of the proposal
-   * @param rejectedBy - User profile rejecting the proposal
+   * @param transaction - The transaction document
+   * @param deliveryDetail - The delivery detail to reject
    * @returns Updated transaction
    */
   rejectDeliveryProposal(
-    transactionID: string,
-    proposalID: string,
-    rejectedBy: NonNullable<User['profile']>
+    transaction: Transaction,
+    deliveryDetail: string | DeliveryDetail
   ): Promise<Transaction>;
 
   /**
    * Updates the transaction status to READY_FOR_PICKUP (donor confirms milk is ready).
    * Only applicable for PICKUP mode transactions.
-   * @param transactionId - ID of the transaction
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as ready
    * @returns Updated transaction
    */
-  readyForPickup(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
+  readyForPickup(transaction: Transaction, markedBy: User): Promise<Transaction>;
 
   /**
    * Updates the transaction status to PREPARING (sender starts preparing milk for transfer).
@@ -141,103 +121,71 @@ export interface ITransactionService {
    * @param markedBy User marking the transaction as preparing
    * @returns Updated transaction
    */
-  startPreparing(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
+  startPreparing(transaction: Transaction, markedBy: User): Promise<Transaction>;
 
   /**
    * Updates the transaction status to IN_TRANSIT (donor starts delivery journey).
    * Only applicable for DELIVERY mode transactions.
-   * @param transactionId - ID of the transaction
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as in transit
    * @returns Updated transaction
    */
-  startTransit(transactionId: string, markedBy: NonNullable<User['profile']>): Promise<Transaction>;
-
-  /**
-   * Applicable for MEETUP mode transactions when involved parties arrive at meetup point.
-   * @param transactionId - ID of the transaction
-   * @param markedBy - User that arrived at the location.
-   * @returns Updated transaction
-   */
-  markArrived(transactionId: string, markedBy: NonNullable<User['profile']>): Promise<Transaction>;
+  startTransit(transaction: Transaction, markedBy: User): Promise<Transaction>;
 
   /**
    * Marks the transaction as DELIVERED (milk physically transferred).
-   * @param transactionId - ID of the transaction
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as delivered
    * @returns Updated transaction
    */
-  markDelivered(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
+  markDelivered(transaction: Transaction, markedBy: User): Promise<Transaction>;
+
+  /**
+   * Marks the transaction as READ by the user.
+   * @param transaction The transaction document
+   * @param markedBy User marking the transaction as read
+   */
+  markAsRead(transaction: Transaction, markedBy: User): Promise<Transaction>;
+
+  /**
+   * Updates the delivery status of a transaction for a specific user.
+   * @param transaction The transaction document
+   * @param markedBy `User` marking the delivery status
+   * @param status New delivery status
+   * @returns `DeliveryUpdate` document
+   */
+  updateDeliveryStatus(
+    transaction: Transaction,
+    markedBy: User,
+    status: DeliveryUpdate['status']
+  ): Promise<DeliveryUpdate>;
 
   /**
    * Completes the transaction (recipient verifies receipt and quality).
    * Only the recipient can complete a transaction.
-   * @param transactionId - ID of the transaction
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as complete
    * @returns Updated transaction
    */
-  completeTransaction(
-    transactionId: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
+  completeTransaction(transaction: Transaction, markedBy: User): Promise<Transaction>;
 
   /**
    * Marks a transaction as failed with a reason.
-   * @param transactionId - ID of the transaction
-   * @param reason - Reason for failure
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as failed
+   * @param reason - Reason for failure
    * @returns Updated transaction
    */
-  failTransaction(
-    transactionId: string,
-    reason: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
+  failTransaction(transaction: Transaction, markedBy: User, reason: string): Promise<Transaction>;
 
   /**
    * Cancels a transaction with a reason.
-   * @param transactionId - ID of the transaction
-   * @param reason - Reason for cancellation
+   * @param transaction - The transaction document
    * @param markedBy - User marking the transaction as cancelled
+   * @param reason - Reason for cancellation
    * @returns Updated transaction
    */
-  cancelTransaction(
-    transactionId: string,
-    reason: string,
-    markedBy: NonNullable<User['profile']>
-  ): Promise<Transaction>;
-
-  /**
-   * Gets all paginated transactions for a user (as donor or requester).
-   * @param profile - User profile (Individual, Hospital, or Milk Bank)
-   * @param options - Optional query parameters
-   * @returns List of paginated transactions
-   */
-  getUserTransactions<
-    TSelect extends
-      SelectFromCollectionSlug<'transactions'> = SelectFromCollectionSlug<'transactions'>,
-    TPaginate extends boolean = boolean,
-  >(
-    options?: FindMany<'transactions', TSelect, TPaginate>
-  ): Promise<FindManyResult<'transactions', TSelect, TPaginate>>;
-
-  /**
-   *
-   * @param transaction - Transaction document
-   * @param proposalID - ID of the proposal
-   * @param agreement - Agreement details
-   * @returns Updated proposed delivery
-   */
-  optimisticAgreementsUpdate(
-    transaction: Transaction,
-    proposalID: string,
-    agreement: DeliveryAgreements['sender']
-  ): NonNullable<ProposedDelivery>;
+  cancelTransaction(transaction: Transaction, markedBy: User, reason: string): Promise<Transaction>;
 
   /**
    * Optimistically updates the transaction status in the local cache.

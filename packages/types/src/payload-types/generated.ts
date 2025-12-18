@@ -1474,7 +1474,10 @@ export interface Transaction {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  tracking?: {
+  /**
+   * Tracks the status and reads of the transaction
+   */
+  tracking: {
     /**
      * Users who have read this transaction
      */

@@ -19,6 +19,10 @@ export const trackingField: Field = {
   name: 'tracking',
   label: 'Tracking & Status',
   type: 'group',
+  required: true,
+  admin: {
+    description: 'Tracks the status and reads of the transaction',
+  },
   fields: [
     {
       name: 'reads',
