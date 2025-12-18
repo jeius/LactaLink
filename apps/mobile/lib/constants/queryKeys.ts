@@ -27,6 +27,11 @@ interface QueryKeys {
     ALL: QueryKey;
     ONE: QueryKey;
   };
+  TRANSACTIONS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -55,6 +60,11 @@ export const QUERY_KEYS: QueryKeys = {
   PROFILE: {
     ALL: ['profiles'],
     ONE: ['profiles', 'one'],
+  },
+  TRANSACTIONS: {
+    ALL: ['transactions'],
+    INFINITE: ['transactions', 'infinite'],
+    ONE: ['transactions', 'one'],
   },
 };
 

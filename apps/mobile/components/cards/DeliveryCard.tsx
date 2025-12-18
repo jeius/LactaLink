@@ -2,7 +2,7 @@ import { getDeliveryPreferenceIcon } from '@/lib/utils/getDeliveryPreferenceIcon
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DeliverySchema } from '@lactalink/form-schemas';
-import { ConfirmedDelivery } from '@lactalink/types/payload-generated-types';
+import { DeliveryDetail } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { CalendarDaysIcon, ClockIcon, MapPinIcon } from 'lucide-react-native';
@@ -21,7 +21,7 @@ const cardStyle = tva({
 });
 
 interface DeliveryCardProps extends CardProps {
-  data: DeliverySchema | Omit<ConfirmedDelivery, 'confirmedAt'> | undefined;
+  data: DeliverySchema | DeliveryDetail | undefined;
   isLoading?: boolean;
 }
 
@@ -46,12 +46,14 @@ export function DeliveryCard({
     );
   }
 
-  const label = data ? DELIVERY_OPTIONS[data.mode]?.label || 'Unknown' : 'No Data';
-  const iconSource = data ? getDeliveryPreferenceIcon(data.mode) : null;
-  const time = data ? formatLocaleTime(isDeliverySchema(data) ? data.time : data.datetime) : '-';
-  const date = data ? formatDate(isDeliverySchema(data) ? data.date : data.datetime) : '-';
+  const deliveryMethod = data && (isDeliverySchema(data) ? data.mode : data.method);
+
+  const label = deliveryMethod ? DELIVERY_OPTIONS[deliveryMethod].label : 'No Data';
+  const iconSource = deliveryMethod ? getDeliveryPreferenceIcon(deliveryMethod) : null;
+  const time = data ? formatLocaleTime(isDeliverySchema(data) ? data.time : data.scheduledAt) : '-';
+  const date = data ? formatDate(isDeliverySchema(data) ? data.date : data.scheduledAt) : '-';
   const address = data ? extractCollection(data.address)?.displayName || 'Unknown Address' : '-';
-  const instructions = data && (isDeliverySchema(data) ? data.note : data.instructions);
+  const instructions = data && (isDeliverySchema(data) ? data.note : data.notes);
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className })}>
@@ -61,7 +63,7 @@ export function DeliveryCard({
         <Box className="rounded-full border border-primary-500 p-1">
           <Image
             source={iconSource}
-            alt={`${data?.mode || 'Unknown'}-icon`}
+            alt={`${deliveryMethod || 'Unknown'}-icon`}
             style={{ width: 16, height: 16 }}
           />
         </Box>

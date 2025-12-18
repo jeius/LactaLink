@@ -1,4 +1,4 @@
-import React, { ComponentProps, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { DonationListCard, RequestListCard } from '@/components/cards';
 import { MilkBagList } from '@/components/lists/horizontal-flatlists';
@@ -13,46 +13,38 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useDeliveryMutations } from '@/hooks/mutations/useDeliveryMutations';
-import { useTransactionQuery } from '@/hooks/transactions/fetcher';
-import { getLatestDeliveryProposal } from '@/lib/utils/getLatestDeliveryProposal';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { DELIVERY_OPTIONS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
-import {
-  ConfirmedDelivery,
-  ProposedDelivery,
-  Transaction,
-} from '@lactalink/types/payload-generated-types';
+import { DeliveryDetail, Transaction } from '@lactalink/types/payload-generated-types';
 import { MarkKeyRequired } from '@lactalink/types/utils';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
 import isEqual from 'lodash/isEqual';
 import { CheckIcon, XIcon } from 'lucide-react-native';
+import { TransactionMessageCard } from '../../features/transactions/components/TransactionMessageCard';
 import { ProfileAvatar } from '../Avatar';
 import { TransactionCTA } from '../buttons/TransactionCTA';
 import { DeliveryCard } from '../cards/DeliveryCard';
-import { TransactionSendMessageCard } from '../cards/TransactionSendMessageCard';
 import { ActionModal } from '../modals/ActionModal';
+import { BottomSheetPortalProps, BottomSheetProps } from '../ui/bottom-sheet/types';
 import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
 
-const MATCHED = TRANSACTION_STATUS.MATCHED.value;
-const PENDING = TRANSACTION_STATUS.PENDING_DELIVERY_CONFIRMATION.value;
-const SCHEDULED = TRANSACTION_STATUS.DELIVERY_SCHEDULED.value;
+const PENDING = TRANSACTION_STATUS.PENDING.value;
+const SCHEDULED = TRANSACTION_STATUS.CONFIRMED.value;
 
 interface TransactionBottomSheetProps
-  extends Pick<
-    ComponentProps<typeof BottomSheetPortal>,
-    'snapPoints' | 'animatedPosition' | 'snapToIndex'
-  > {
-  transactionID: string;
+  extends Pick<BottomSheetPortalProps, 'animatedPosition' | 'snapPoints'>,
+    Pick<BottomSheetProps, 'snapToIndex'> {
+  transaction: Transaction;
 }
-export function TransactionBottomSheet({ transactionID, ...props }: TransactionBottomSheetProps) {
-  const { data, isLoading, queryKey } = useTransactionQuery(transactionID);
-
-  const { donation, request, type, volumeLabel, milkBags, latestProposal, confirmedDelivery } =
-    useMemo(() => extractData(data), [data]);
+export function TransactionBottomSheet({
+  transaction: data,
+  ...props
+}: TransactionBottomSheetProps) {
+  const { donation, request, milkBags } = useMemo(() => extractData(data), [data]);
 
   const sender = data?.sender;
   const recipient = data?.recipient;
@@ -81,13 +73,6 @@ export function TransactionBottomSheet({ transactionID, ...props }: TransactionB
           </>
         );
       }
-      case MATCHED:
-        return (
-          <>
-            <DeliveryInformation delivery={confirmedDelivery} />
-            <TransactionCTA queryKey={queryKey} transaction={data} />
-          </>
-        );
       default:
         return <Propose transactionID={transactionID} />;
     }
@@ -110,7 +95,7 @@ export function TransactionBottomSheet({ transactionID, ...props }: TransactionB
         >
           {renderContent()}
 
-          <TransactionSendMessageCard transactionID={transactionID} className="mx-5 my-2" />
+          <TransactionMessageCard transaction={data} className="mx-5 my-2" />
 
           <Divider />
 
@@ -121,28 +106,18 @@ export function TransactionBottomSheet({ transactionID, ...props }: TransactionB
           {donation !== null && (
             <VStack space="xs" className="px-5">
               <Text className="mb-1 font-JakartaSemiBold">Donation</Text>
-              <DonationListCard
-                className="border-primary-500"
-                hideFooter
-                data={donation}
-                isLoading={isLoading}
-              />
+              <DonationListCard className="border-primary-500" hideFooter data={donation} />
             </VStack>
           )}
 
           {request !== null && (
             <VStack space="xs" className="px-5">
               <Text className="mb-1 font-JakartaSemiBold">Request</Text>
-              <RequestListCard
-                className="border-tertiary-500"
-                hideFooter
-                data={request}
-                isLoading={isLoading}
-              />
+              <RequestListCard className="border-tertiary-500" hideFooter data={request} />
             </VStack>
           )}
 
-          {milkBags && <MilkBagList data={milkBags} isLoading={isLoading} label="Milk Bags" />}
+          {milkBags && <MilkBagList data={milkBags} label="Milk Bags" />}
         </BottomSheetScrollView>
       </BottomSheetPortal>
     </BottomSheet>
@@ -152,20 +127,17 @@ export function TransactionBottomSheet({ transactionID, ...props }: TransactionB
 function extractData(data: Transaction | undefined) {
   if (!data) return {};
   return {
-    transactionNo: data.transactionNumber,
-    volumeLabel: displayVolume(data.matchedVolume),
+    transactionNo: data.txn,
+    volumeLabel: displayVolume(data.volume),
     donation: extractCollection(data.donation),
     request: extractCollection(data.request),
-    milkBags: extractCollection(data.matchedBags),
-    type: TRANSACTION_TYPE[data.transactionType].label,
-    latestProposal: getLatestDeliveryProposal(data.delivery?.proposed),
-    confirmedDelivery: data.delivery?.confirmed,
+    milkBags: extractCollection(data.milkBags),
+    type: TRANSACTION_TYPE[data.type].label,
   };
 }
 
-function DeliveryInformation({ delivery }: { delivery?: ConfirmedDelivery }) {
-  if (!delivery) return null;
-  const deliveryMode = DELIVERY_OPTIONS[delivery.mode].label;
+function DeliveryInformation({ delivery }: { delivery: DeliveryDetail }) {
+  const deliveryMode = DELIVERY_OPTIONS[delivery.method].label;
   return (
     <VStack space="xs" className="items-stretch px-5">
       <Text bold size="lg">
@@ -177,7 +149,7 @@ function DeliveryInformation({ delivery }: { delivery?: ConfirmedDelivery }) {
 }
 
 interface ProposalInformationProps {
-  proposal: NonNullable<ProposedDelivery>[number];
+  proposal: DeliveryDetail;
   transaction?: Transaction;
   queryKey: unknown[];
   isLoading?: boolean;

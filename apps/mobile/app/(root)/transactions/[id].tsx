@@ -4,15 +4,16 @@ import React, { useMemo, useState } from 'react';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { TransactionBottomSheet } from '@/components/bottom-sheets/TransactionBottomSheet';
 import { LocateButton } from '@/components/buttons/LocateButton';
-import { TransactionStatusCard } from '@/components/cards/TransactionDeliveryCard';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
+import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import MapView from '@/components/map/MapView';
 import SafeArea from '@/components/SafeArea';
 import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useTransactionQuery } from '@/hooks/transactions/fetcher';
+import TransactionStatusCard from '@/features/transactions/components/TransactionStatusCard';
+import { useTransaction } from '@/features/transactions/hooks/queries';
 import { shadow } from '@/lib/utils/shadows';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -68,15 +69,19 @@ export default function TransactionPage() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { data, isLoading, error } = useTransactionQuery(id);
+  const { data, isLoading, error } = useTransaction(id);
 
-  if (!isLoading && error) {
+  if (error) {
     const params: ErrorSearchParams = {
       title: 'Transaction Not Found',
       message: error.message,
       action: 'go-back',
     };
     return <Redirect href={{ pathname: '/error', params }} />;
+  }
+
+  if (isLoading || !data) {
+    return <LoadingSpinner />;
   }
 
   return (
@@ -93,7 +98,7 @@ export default function TransactionPage() {
                 >
                   <LocateButton disableFollowUser />
                 </Box>
-                <TransactionStatusCard transactionID={id} />
+                <TransactionStatusCard transaction={data} />
               </Box>
             </Animated.View>
 
@@ -124,10 +129,10 @@ export default function TransactionPage() {
                 {/* Header Title */}
                 <Animated.View className="flex-col" style={animatedHeaderInStyle}>
                   <Text bold size="lg">
-                    {displayVolume(data?.matchedVolume || 0)}
+                    {displayVolume(data.volume || 0)}
                   </Text>
                   <Text size="xs" className="font-JakartaMedium">
-                    {data && TRANSACTION_STATUS[data.status].label}
+                    {TRANSACTION_STATUS[data.status].label}
                   </Text>
                 </Animated.View>
               </Box>

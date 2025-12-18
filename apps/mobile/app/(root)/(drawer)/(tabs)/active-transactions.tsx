@@ -1,8 +1,6 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 
-import TransactionListCard from '@/components/cards/TransactionListCard';
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
 import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
@@ -11,9 +9,13 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
+import TransactionListItem, {
+  TransactionListItemSkeleton,
+} from '@/features/transactions/components/TransactionListItem';
+import { useInfiniteTransactions } from '@/features/transactions/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { useTransactions } from '@/hooks/transactions';
 import { Transaction } from '@lactalink/types/payload-generated-types';
+import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
 import { ChevronRightIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
@@ -23,24 +25,18 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
 >;
 
 export default function TransactionsTab() {
-  const meUser = useMeUser();
+  const { data: meUser = null } = useMeUser();
 
-  const { transactions: data, queryMethods: query, markAsSeen } = useTransactions();
+  const { data, ...query } = useInfiniteTransactions();
 
   const scrollHandler = useHeaderScrollHandler();
 
   const { height: headerHeight } = useHeaderSize();
 
   const renderItem: ListRenderItem<Transaction> = ({ item }) => {
-    const isLoading = item.id.includes('placeholder');
-    return <TransactionListCard data={item} showBadge user={meUser.data} isLoading={isLoading} />;
+    if (isPlaceHolderData(item)) return <TransactionListItemSkeleton />;
+    return <TransactionListItem data={item} showBadge user={meUser} />;
   };
-
-  useEffect(() => {
-    return () => {
-      markAsSeen();
-    };
-  }, []);
 
   function EmptyComponent() {
     return !query.isLoading && <NoData title="You have no active transactions" />;
@@ -99,7 +95,6 @@ export default function TransactionsTab() {
         onEndReachedThreshold={0.25}
         onEndReached={handleFetchNextPage}
       />
-      <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>
   );
 }

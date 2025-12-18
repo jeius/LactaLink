@@ -33,6 +33,318 @@ export type Database = {
   };
   public: {
     Tables: {
+      _donor_screening_form_v: {
+        Row: {
+          autosave: boolean | null;
+          created_at: string;
+          id: string;
+          latest: boolean | null;
+          updated_at: string;
+          version__status:
+            | Database['public']['Enums']['enum__donor_screening_form_v_version_status']
+            | null;
+          version_active: boolean | null;
+          version_created_at: string | null;
+          version_description: string | null;
+          version_updated_at: string | null;
+        };
+        Insert: {
+          autosave?: boolean | null;
+          created_at?: string;
+          id?: string;
+          latest?: boolean | null;
+          updated_at?: string;
+          version__status?:
+            | Database['public']['Enums']['enum__donor_screening_form_v_version_status']
+            | null;
+          version_active?: boolean | null;
+          version_created_at?: string | null;
+          version_description?: string | null;
+          version_updated_at?: string | null;
+        };
+        Update: {
+          autosave?: boolean | null;
+          created_at?: string;
+          id?: string;
+          latest?: boolean | null;
+          updated_at?: string;
+          version__status?:
+            | Database['public']['Enums']['enum__donor_screening_form_v_version_status']
+            | null;
+          version_active?: boolean | null;
+          version_created_at?: string | null;
+          version_description?: string | null;
+          version_updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      _donor_screening_form_v_blocks_checkbox_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid: string | null;
+          block_name: string | null;
+          help_text: string | null;
+          id: string;
+          layout: Database['public']['Enums']['enum_orientation'] | null;
+          question: string | null;
+          required: boolean | null;
+          validation_max_selections: number | null;
+          validation_min_selections: number | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_selections?: number | null;
+          validation_min_selections?: number | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_selections?: number | null;
+          validation_min_selections?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_blocks_checkbox_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      _donor_screening_form_v_blocks_checkbox_question_options: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _uuid: string | null;
+          id: string;
+          label: string | null;
+          type: Database['public']['Enums']['enum_choice_type'] | null;
+          value: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _uuid?: string | null;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _uuid?: string | null;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_blocks_checkbox_question_options_parent';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v_blocks_checkbox_question';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      _donor_screening_form_v_blocks_radio_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid: string | null;
+          block_name: string | null;
+          help_text: string | null;
+          id: string;
+          layout: Database['public']['Enums']['enum_orientation'] | null;
+          question: string | null;
+          required: boolean | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_blocks_radio_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      _donor_screening_form_v_blocks_radio_question_options: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _uuid: string | null;
+          id: string;
+          label: string | null;
+          type: Database['public']['Enums']['enum_choice_type'] | null;
+          value: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _uuid?: string | null;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _uuid?: string | null;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_blocks_radio_question_options_parent_id';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v_blocks_radio_question';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      _donor_screening_form_v_blocks_text_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid: string | null;
+          block_name: string | null;
+          expected_answer_length: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text: string | null;
+          id: string;
+          placeholder: string | null;
+          question: string | null;
+          required: boolean | null;
+          validation_max_length: number | null;
+          validation_min_length: number | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          expected_answer_length?: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text?: string | null;
+          id?: string;
+          placeholder?: string | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_length?: number | null;
+          validation_min_length?: number | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          _uuid?: string | null;
+          block_name?: string | null;
+          expected_answer_length?: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text?: string | null;
+          id?: string;
+          placeholder?: string | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_length?: number | null;
+          validation_min_length?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_blocks_text_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      _donor_screening_form_v_version_sections: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _uuid: string | null;
+          id: string;
+          section_description: string | null;
+          section_title: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _uuid?: string | null;
+          id?: string;
+          section_description?: string | null;
+          section_title?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _uuid?: string | null;
+          id?: string;
+          section_description?: string | null;
+          section_title?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: '_donor_screening_form_v_version_sections_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: '_donor_screening_form_v';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       addresses: {
         Row: {
           barangay_id: string | null;
@@ -622,9 +934,56 @@ export type Database = {
           },
         ];
       };
-      conversations: {
+      conversation_statuses: {
         Row: {
           archived: boolean | null;
+          conversation_id: string;
+          created_at: string;
+          id: string;
+          muted_until: string | null;
+          permanent_mute: boolean | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          archived?: boolean | null;
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+          muted_until?: string | null;
+          permanent_mute?: boolean | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          archived?: boolean | null;
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+          muted_until?: string | null;
+          permanent_mute?: boolean | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversation_statuses_conversation_id_conversations_id_fk';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversation_statuses_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      conversations: {
+        Row: {
           avatar_id: string | null;
           created_at: string;
           created_by_id: string;
@@ -636,7 +995,6 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          archived?: boolean | null;
           avatar_id?: string | null;
           created_at?: string;
           created_by_id: string;
@@ -648,7 +1006,6 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          archived?: boolean | null;
           avatar_id?: string | null;
           created_at?: string;
           created_by_id?: string;
@@ -672,6 +1029,116 @@ export type Database = {
             columns: ['created_by_id'];
             isOneToOne: false;
             referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      delivery_details: {
+        Row: {
+          address_id: string;
+          created_at: string;
+          id: string;
+          method: Database['public']['Enums']['enum_delivery_options'];
+          notes: string | null;
+          scheduled_at: string;
+          status: Database['public']['Enums']['enum_delivery_details_status'];
+          transaction_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          address_id: string;
+          created_at?: string;
+          id?: string;
+          method: Database['public']['Enums']['enum_delivery_options'];
+          notes?: string | null;
+          scheduled_at: string;
+          status?: Database['public']['Enums']['enum_delivery_details_status'];
+          transaction_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          address_id?: string;
+          created_at?: string;
+          id?: string;
+          method?: Database['public']['Enums']['enum_delivery_options'];
+          notes?: string | null;
+          scheduled_at?: string;
+          status?: Database['public']['Enums']['enum_delivery_details_status'];
+          transaction_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'delivery_details_address_id_addresses_id_fk';
+            columns: ['address_id'];
+            isOneToOne: false;
+            referencedRelation: 'addresses';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'delivery_details_transaction_id_transactions_id_fk';
+            columns: ['transaction_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      delivery_details_rels: {
+        Row: {
+          hospitals_id: string | null;
+          id: number;
+          individuals_id: string | null;
+          milk_banks_id: string | null;
+          order: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Insert: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id: string;
+          path: string;
+        };
+        Update: {
+          hospitals_id?: string | null;
+          id?: number;
+          individuals_id?: string | null;
+          milk_banks_id?: string | null;
+          order?: number | null;
+          parent_id?: string;
+          path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'delivery_details_rels_hospitals_fk';
+            columns: ['hospitals_id'];
+            isOneToOne: false;
+            referencedRelation: 'hospitals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'delivery_details_rels_individuals_fk';
+            columns: ['individuals_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'delivery_details_rels_milk_banks_fk';
+            columns: ['milk_banks_id'];
+            isOneToOne: false;
+            referencedRelation: 'milk_banks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'delivery_details_rels_parent_fk';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'delivery_details';
             referencedColumns: ['id'];
           },
         ];
@@ -782,6 +1249,48 @@ export type Database = {
             columns: ['parent_id'];
             isOneToOne: false;
             referencedRelation: 'delivery_preferences';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      delivery_updates: {
+        Row: {
+          created_at: string;
+          id: string;
+          status: Database['public']['Enums']['enum_delivery_updates_status'];
+          transaction_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          status: Database['public']['Enums']['enum_delivery_updates_status'];
+          transaction_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          status?: Database['public']['Enums']['enum_delivery_updates_status'];
+          transaction_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'delivery_updates_transaction_id_transactions_id_fk';
+            columns: ['transaction_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'delivery_updates_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
             referencedColumns: ['id'];
           },
         ];
@@ -957,6 +1466,400 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'matched_donations_requests_view';
             referencedColumns: ['donation_id'];
+          },
+        ];
+      };
+      donor_screening_form: {
+        Row: {
+          _status: Database['public']['Enums']['enum_donor_screening_form_status'] | null;
+          active: boolean | null;
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          _status?: Database['public']['Enums']['enum_donor_screening_form_status'] | null;
+          active?: boolean | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          _status?: Database['public']['Enums']['enum_donor_screening_form_status'] | null;
+          active?: boolean | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      donor_screening_form_blocks_checkbox_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name: string | null;
+          help_text: string | null;
+          id: string;
+          layout: Database['public']['Enums']['enum_orientation'] | null;
+          question: string | null;
+          required: boolean | null;
+          validation_max_selections: number | null;
+          validation_min_selections: number | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name?: string | null;
+          help_text?: string | null;
+          id: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_selections?: number | null;
+          validation_min_selections?: number | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_selections?: number | null;
+          validation_min_selections?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_blocks_checkbox_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screening_form_blocks_checkbox_question_options: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          label: string | null;
+          type: Database['public']['Enums']['enum_choice_type'] | null;
+          value: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_blocks_checkbox_question_options_parent_id';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form_blocks_checkbox_question';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screening_form_blocks_radio_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name: string | null;
+          help_text: string | null;
+          id: string;
+          layout: Database['public']['Enums']['enum_orientation'] | null;
+          question: string | null;
+          required: boolean | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name?: string | null;
+          help_text?: string | null;
+          id: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          block_name?: string | null;
+          help_text?: string | null;
+          id?: string;
+          layout?: Database['public']['Enums']['enum_orientation'] | null;
+          question?: string | null;
+          required?: boolean | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_blocks_radio_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screening_form_blocks_radio_question_options: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          label: string | null;
+          type: Database['public']['Enums']['enum_choice_type'] | null;
+          value: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          label?: string | null;
+          type?: Database['public']['Enums']['enum_choice_type'] | null;
+          value?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_blocks_radio_question_options_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form_blocks_radio_question';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screening_form_blocks_text_question: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name: string | null;
+          expected_answer_length: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text: string | null;
+          id: string;
+          placeholder: string | null;
+          question: string | null;
+          required: boolean | null;
+          validation_max_length: number | null;
+          validation_min_length: number | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          _path: string;
+          block_name?: string | null;
+          expected_answer_length?: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text?: string | null;
+          id: string;
+          placeholder?: string | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_length?: number | null;
+          validation_min_length?: number | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          _path?: string;
+          block_name?: string | null;
+          expected_answer_length?: Database['public']['Enums']['enum_text_answer_length'] | null;
+          help_text?: string | null;
+          id?: string;
+          placeholder?: string | null;
+          question?: string | null;
+          required?: boolean | null;
+          validation_max_length?: number | null;
+          validation_min_length?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_blocks_text_question_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screening_form_sections: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          section_description: string | null;
+          section_title: string | null;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          id: string;
+          section_description?: string | null;
+          section_title?: string | null;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          id?: string;
+          section_description?: string | null;
+          section_title?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screening_form_sections_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screening_form';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screenings: {
+        Row: {
+          created_at: string;
+          created_by_id: string | null;
+          form_version: string;
+          id: string;
+          metadata_device_info: string | null;
+          metadata_time_to_complete: number | null;
+          review_notes: string | null;
+          reviewed_at: string | null;
+          reviewed_by_id: string | null;
+          status: Database['public']['Enums']['enum_donor_screening_status'];
+          submitted_at: string;
+          submitted_by_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by_id?: string | null;
+          form_version: string;
+          id?: string;
+          metadata_device_info?: string | null;
+          metadata_time_to_complete?: number | null;
+          review_notes?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by_id?: string | null;
+          status?: Database['public']['Enums']['enum_donor_screening_status'];
+          submitted_at: string;
+          submitted_by_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by_id?: string | null;
+          form_version?: string;
+          id?: string;
+          metadata_device_info?: string | null;
+          metadata_time_to_complete?: number | null;
+          review_notes?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by_id?: string | null;
+          status?: Database['public']['Enums']['enum_donor_screening_status'];
+          submitted_at?: string;
+          submitted_by_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screenings_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'donor_screenings_reviewed_by_id_users_id_fk';
+            columns: ['reviewed_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'donor_screenings_submitted_by_id_individuals_id_fk';
+            columns: ['submitted_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'individuals';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      donor_screenings_responses: {
+        Row: {
+          _order: number;
+          _parent_id: string;
+          answer: string;
+          file_id: string | null;
+          id: string;
+          question: string;
+          question_type: Database['public']['Enums']['enum_choice_type'];
+          section: string;
+        };
+        Insert: {
+          _order: number;
+          _parent_id: string;
+          answer: string;
+          file_id?: string | null;
+          id: string;
+          question: string;
+          question_type: Database['public']['Enums']['enum_choice_type'];
+          section: string;
+        };
+        Update: {
+          _order?: number;
+          _parent_id?: string;
+          answer?: string;
+          file_id?: string | null;
+          id?: string;
+          question?: string;
+          question_type?: Database['public']['Enums']['enum_choice_type'];
+          section?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'donor_screenings_responses_file_id_screening_files_id_fk';
+            columns: ['file_id'];
+            isOneToOne: false;
+            referencedRelation: 'screening_files';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'donor_screenings_responses_parent_id_fk';
+            columns: ['_parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screenings';
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -1698,21 +2601,21 @@ export type Database = {
           created_at: string;
           created_by_id: string;
           id: string;
-          message_id: string | null;
+          message_id: string;
           updated_at: string;
         };
         Insert: {
           created_at?: string;
           created_by_id: string;
           id?: string;
-          message_id?: string | null;
+          message_id: string;
           updated_at?: string;
         };
         Update: {
           created_at?: string;
           created_by_id?: string;
           id?: string;
-          message_id?: string | null;
+          message_id?: string;
           updated_at?: string;
         };
         Relationships: [
@@ -2229,7 +3132,7 @@ export type Database = {
           code: string | null;
           collected_at: string;
           created_at: string;
-          created_by_id: string | null;
+          created_by_id: string;
           donor_id: string;
           expires_at: string | null;
           id: string;
@@ -2243,7 +3146,7 @@ export type Database = {
           code?: string | null;
           collected_at: string;
           created_at?: string;
-          created_by_id?: string | null;
+          created_by_id: string;
           donor_id: string;
           expires_at?: string | null;
           id?: string;
@@ -2257,7 +3160,7 @@ export type Database = {
           code?: string | null;
           collected_at?: string;
           created_at?: string;
-          created_by_id?: string | null;
+          created_by_id?: string;
           donor_id?: string;
           expires_at?: string | null;
           id?: string;
@@ -2432,48 +3335,6 @@ export type Database = {
           {
             foreignKeyName: 'milk_banks_owner_id_users_id_fk';
             columns: ['owner_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      muted_conversations: {
-        Row: {
-          conversation_id: string;
-          created_at: string;
-          id: string;
-          muted_until: string | null;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          conversation_id: string;
-          created_at?: string;
-          id?: string;
-          muted_until?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          conversation_id?: string;
-          created_at?: string;
-          id?: string;
-          muted_until?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'muted_conversations_conversation_id_conversations_id_fk';
-            columns: ['conversation_id'];
-            isOneToOne: false;
-            referencedRelation: 'conversations';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'muted_conversations_user_id_users_id_fk';
-            columns: ['user_id'];
             isOneToOne: false;
             referencedRelation: 'users';
             referencedColumns: ['id'];
@@ -3154,9 +4015,13 @@ export type Database = {
           cities_municipalities_id: string | null;
           comments_id: string | null;
           conversation_participants_id: string | null;
+          conversation_statuses_id: string | null;
           conversations_id: string | null;
+          delivery_details_id: string | null;
           delivery_preferences_id: string | null;
+          delivery_updates_id: string | null;
           donations_id: string | null;
+          donor_screenings_id: string | null;
           hospitals_id: string | null;
           id: number;
           identities_id: string | null;
@@ -3174,7 +4039,6 @@ export type Database = {
           milk_bag_images_id: string | null;
           milk_bags_id: string | null;
           milk_banks_id: string | null;
-          muted_conversations_id: string | null;
           notification_categories_id: string | null;
           notification_channels_id: string | null;
           notification_types_id: string | null;
@@ -3188,6 +4052,9 @@ export type Database = {
           provinces_id: string | null;
           regions_id: string | null;
           requests_id: string | null;
+          screening_files_id: string | null;
+          transaction_reads_id: string | null;
+          transaction_status_histories_id: string | null;
           transactions_id: string | null;
           user_search_id: string | null;
           users_id: string | null;
@@ -3200,9 +4067,13 @@ export type Database = {
           cities_municipalities_id?: string | null;
           comments_id?: string | null;
           conversation_participants_id?: string | null;
+          conversation_statuses_id?: string | null;
           conversations_id?: string | null;
+          delivery_details_id?: string | null;
           delivery_preferences_id?: string | null;
+          delivery_updates_id?: string | null;
           donations_id?: string | null;
+          donor_screenings_id?: string | null;
           hospitals_id?: string | null;
           id?: number;
           identities_id?: string | null;
@@ -3220,7 +4091,6 @@ export type Database = {
           milk_bag_images_id?: string | null;
           milk_bags_id?: string | null;
           milk_banks_id?: string | null;
-          muted_conversations_id?: string | null;
           notification_categories_id?: string | null;
           notification_channels_id?: string | null;
           notification_types_id?: string | null;
@@ -3234,6 +4104,9 @@ export type Database = {
           provinces_id?: string | null;
           regions_id?: string | null;
           requests_id?: string | null;
+          screening_files_id?: string | null;
+          transaction_reads_id?: string | null;
+          transaction_status_histories_id?: string | null;
           transactions_id?: string | null;
           user_search_id?: string | null;
           users_id?: string | null;
@@ -3246,9 +4119,13 @@ export type Database = {
           cities_municipalities_id?: string | null;
           comments_id?: string | null;
           conversation_participants_id?: string | null;
+          conversation_statuses_id?: string | null;
           conversations_id?: string | null;
+          delivery_details_id?: string | null;
           delivery_preferences_id?: string | null;
+          delivery_updates_id?: string | null;
           donations_id?: string | null;
+          donor_screenings_id?: string | null;
           hospitals_id?: string | null;
           id?: number;
           identities_id?: string | null;
@@ -3266,7 +4143,6 @@ export type Database = {
           milk_bag_images_id?: string | null;
           milk_bags_id?: string | null;
           milk_banks_id?: string | null;
-          muted_conversations_id?: string | null;
           notification_categories_id?: string | null;
           notification_channels_id?: string | null;
           notification_types_id?: string | null;
@@ -3280,6 +4156,9 @@ export type Database = {
           provinces_id?: string | null;
           regions_id?: string | null;
           requests_id?: string | null;
+          screening_files_id?: string | null;
+          transaction_reads_id?: string | null;
+          transaction_status_histories_id?: string | null;
           transactions_id?: string | null;
           user_search_id?: string | null;
           users_id?: string | null;
@@ -3335,6 +4214,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_conversation_statuses_fk';
+            columns: ['conversation_statuses_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversation_statuses';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_conversations_fk';
             columns: ['conversations_id'];
             isOneToOne: false;
@@ -3342,10 +4228,24 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'payload_locked_documents_rels_delivery_details_fk';
+            columns: ['delivery_details_id'];
+            isOneToOne: false;
+            referencedRelation: 'delivery_details';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'payload_locked_documents_rels_delivery_preferences_fk';
             columns: ['delivery_preferences_id'];
             isOneToOne: false;
             referencedRelation: 'delivery_preferences';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_delivery_updates_fk';
+            columns: ['delivery_updates_id'];
+            isOneToOne: false;
+            referencedRelation: 'delivery_updates';
             referencedColumns: ['id'];
           },
           {
@@ -3361,6 +4261,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'matched_donations_requests_view';
             referencedColumns: ['donation_id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_donor_screenings_fk';
+            columns: ['donor_screenings_id'];
+            isOneToOne: false;
+            referencedRelation: 'donor_screenings';
+            referencedColumns: ['id'];
           },
           {
             foreignKeyName: 'payload_locked_documents_rels_hospitals_fk';
@@ -3475,13 +4382,6 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'payload_locked_documents_rels_muted_conversations_fk';
-            columns: ['muted_conversations_id'];
-            isOneToOne: false;
-            referencedRelation: 'muted_conversations';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'payload_locked_documents_rels_notification_categories_fk';
             columns: ['notification_categories_id'];
             isOneToOne: false;
@@ -3563,6 +4463,27 @@ export type Database = {
             columns: ['requests_id'];
             isOneToOne: false;
             referencedRelation: 'requests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_screening_files_fk';
+            columns: ['screening_files_id'];
+            isOneToOne: false;
+            referencedRelation: 'screening_files';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_transaction_reads_fk';
+            columns: ['transaction_reads_id'];
+            isOneToOne: false;
+            referencedRelation: 'transaction_reads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'payload_locked_documents_rels_transaction_status_historie_fk';
+            columns: ['transaction_status_histories_id'];
+            isOneToOne: false;
+            referencedRelation: 'transaction_status_histories';
             referencedColumns: ['id'];
           },
           {
@@ -4177,6 +5098,86 @@ export type Database = {
           },
         ];
       };
+      screening_files: {
+        Row: {
+          alt: string | null;
+          blur_hash: string | null;
+          created_at: string;
+          created_by_id: string | null;
+          filename: string | null;
+          filesize: number | null;
+          focal_x: number | null;
+          focal_y: number | null;
+          height: number | null;
+          id: string;
+          mime_type: string | null;
+          sizes_thumbnail_filename: string | null;
+          sizes_thumbnail_filesize: number | null;
+          sizes_thumbnail_height: number | null;
+          sizes_thumbnail_mime_type: string | null;
+          sizes_thumbnail_url: string | null;
+          sizes_thumbnail_width: number | null;
+          thumbnail_u_r_l: string | null;
+          updated_at: string;
+          url: string | null;
+          width: number | null;
+        };
+        Insert: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Update: {
+          alt?: string | null;
+          blur_hash?: string | null;
+          created_at?: string;
+          created_by_id?: string | null;
+          filename?: string | null;
+          filesize?: number | null;
+          focal_x?: number | null;
+          focal_y?: number | null;
+          height?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          sizes_thumbnail_filename?: string | null;
+          sizes_thumbnail_filesize?: number | null;
+          sizes_thumbnail_height?: number | null;
+          sizes_thumbnail_mime_type?: string | null;
+          sizes_thumbnail_url?: string | null;
+          sizes_thumbnail_width?: number | null;
+          thumbnail_u_r_l?: string | null;
+          updated_at?: string;
+          url?: string | null;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'screening_files_created_by_id_users_id_fk';
+            columns: ['created_by_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       spatial_ref_sys: {
         Row: {
           auth_name: string | null;
@@ -4201,22 +5202,85 @@ export type Database = {
         };
         Relationships: [];
       };
+      transaction_reads: {
+        Row: {
+          created_at: string;
+          id: string;
+          transaction_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          transaction_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          transaction_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transaction_reads_transaction_id_transactions_id_fk';
+            columns: ['transaction_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transaction_reads_user_id_users_id_fk';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      transaction_status_histories: {
+        Row: {
+          created_at: string;
+          id: string;
+          notes: string | null;
+          status: Database['public']['Enums']['enum_transaction_status'];
+          transaction_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          status: Database['public']['Enums']['enum_transaction_status'];
+          transaction_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          status?: Database['public']['Enums']['enum_transaction_status'];
+          transaction_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'transaction_status_histories_transaction_id_transactions_id_fk';
+            columns: ['transaction_id'];
+            isOneToOne: false;
+            referencedRelation: 'transactions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       transactions: {
         Row: {
           created_at: string;
-          created_by_id: string | null;
-          delivery_arrival_recipient_arrived_at: string | null;
-          delivery_arrival_recipient_departed_at: string | null;
-          delivery_arrival_sender_arrived_at: string | null;
-          delivery_arrival_sender_departed_at: string | null;
-          delivery_confirmed_address_id: string | null;
-          delivery_confirmed_confirmed_at: string | null;
-          delivery_confirmed_datetime: string | null;
-          delivery_confirmed_instructions: string | null;
-          delivery_confirmed_mode: Database['public']['Enums']['enum_delivery_modes'] | null;
           donation_id: string | null;
           id: string;
-          matched_volume: number;
           request_id: string | null;
           status: Database['public']['Enums']['enum_transaction_status'];
           tracking_cancel_reason: string | null;
@@ -4225,25 +5289,15 @@ export type Database = {
           tracking_delivered_at: string | null;
           tracking_failed_at: string | null;
           tracking_failure_reason: string | null;
-          transaction_number: string | null;
-          transaction_type: Database['public']['Enums']['enum_transaction_type'];
+          txn: string;
+          type: Database['public']['Enums']['enum_transaction_type'];
           updated_at: string;
+          volume: number;
         };
         Insert: {
           created_at?: string;
-          created_by_id?: string | null;
-          delivery_arrival_recipient_arrived_at?: string | null;
-          delivery_arrival_recipient_departed_at?: string | null;
-          delivery_arrival_sender_arrived_at?: string | null;
-          delivery_arrival_sender_departed_at?: string | null;
-          delivery_confirmed_address_id?: string | null;
-          delivery_confirmed_confirmed_at?: string | null;
-          delivery_confirmed_datetime?: string | null;
-          delivery_confirmed_instructions?: string | null;
-          delivery_confirmed_mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
           donation_id?: string | null;
           id?: string;
-          matched_volume?: number;
           request_id?: string | null;
           status?: Database['public']['Enums']['enum_transaction_status'];
           tracking_cancel_reason?: string | null;
@@ -4252,25 +5306,15 @@ export type Database = {
           tracking_delivered_at?: string | null;
           tracking_failed_at?: string | null;
           tracking_failure_reason?: string | null;
-          transaction_number?: string | null;
-          transaction_type?: Database['public']['Enums']['enum_transaction_type'];
+          txn: string;
+          type?: Database['public']['Enums']['enum_transaction_type'];
           updated_at?: string;
+          volume?: number;
         };
         Update: {
           created_at?: string;
-          created_by_id?: string | null;
-          delivery_arrival_recipient_arrived_at?: string | null;
-          delivery_arrival_recipient_departed_at?: string | null;
-          delivery_arrival_sender_arrived_at?: string | null;
-          delivery_arrival_sender_departed_at?: string | null;
-          delivery_confirmed_address_id?: string | null;
-          delivery_confirmed_confirmed_at?: string | null;
-          delivery_confirmed_datetime?: string | null;
-          delivery_confirmed_instructions?: string | null;
-          delivery_confirmed_mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
           donation_id?: string | null;
           id?: string;
-          matched_volume?: number;
           request_id?: string | null;
           status?: Database['public']['Enums']['enum_transaction_status'];
           tracking_cancel_reason?: string | null;
@@ -4279,25 +5323,12 @@ export type Database = {
           tracking_delivered_at?: string | null;
           tracking_failed_at?: string | null;
           tracking_failure_reason?: string | null;
-          transaction_number?: string | null;
-          transaction_type?: Database['public']['Enums']['enum_transaction_type'];
+          txn?: string;
+          type?: Database['public']['Enums']['enum_transaction_type'];
           updated_at?: string;
+          volume?: number;
         };
         Relationships: [
-          {
-            foreignKeyName: 'transactions_created_by_id_users_id_fk';
-            columns: ['created_by_id'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'transactions_delivery_confirmed_address_id_addresses_id_fk';
-            columns: ['delivery_confirmed_address_id'];
-            isOneToOne: false;
-            referencedRelation: 'addresses';
-            referencedColumns: ['id'];
-          },
           {
             foreignKeyName: 'transactions_donation_id_donations_id_fk';
             columns: ['donation_id'];
@@ -4324,69 +5355,6 @@ export type Database = {
             columns: ['request_id'];
             isOneToOne: false;
             referencedRelation: 'requests';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      transactions_delivery_proposed: {
-        Row: {
-          _order: number;
-          _parent_id: string;
-          address_id: string | null;
-          agreements_both_agreed: boolean | null;
-          agreements_recipient_agreed: boolean | null;
-          agreements_recipient_agreed_at: string | null;
-          agreements_sender_agreed: boolean | null;
-          agreements_sender_agreed_at: string | null;
-          datetime: string | null;
-          id: string;
-          instructions: string | null;
-          mode: Database['public']['Enums']['enum_delivery_modes'] | null;
-          proposed_at: string | null;
-        };
-        Insert: {
-          _order: number;
-          _parent_id: string;
-          address_id?: string | null;
-          agreements_both_agreed?: boolean | null;
-          agreements_recipient_agreed?: boolean | null;
-          agreements_recipient_agreed_at?: string | null;
-          agreements_sender_agreed?: boolean | null;
-          agreements_sender_agreed_at?: string | null;
-          datetime?: string | null;
-          id: string;
-          instructions?: string | null;
-          mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
-          proposed_at?: string | null;
-        };
-        Update: {
-          _order?: number;
-          _parent_id?: string;
-          address_id?: string | null;
-          agreements_both_agreed?: boolean | null;
-          agreements_recipient_agreed?: boolean | null;
-          agreements_recipient_agreed_at?: string | null;
-          agreements_sender_agreed?: boolean | null;
-          agreements_sender_agreed_at?: string | null;
-          datetime?: string | null;
-          id?: string;
-          instructions?: string | null;
-          mode?: Database['public']['Enums']['enum_delivery_modes'] | null;
-          proposed_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'transactions_delivery_proposed_address_id_addresses_id_fk';
-            columns: ['address_id'];
-            isOneToOne: false;
-            referencedRelation: 'addresses';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'transactions_delivery_proposed_parent_id_fk';
-            columns: ['_parent_id'];
-            isOneToOne: false;
-            referencedRelation: 'transactions';
             referencedColumns: ['id'];
           },
         ];
@@ -4454,73 +5422,6 @@ export type Database = {
           {
             foreignKeyName: 'transactions_rels_parent_fk';
             columns: ['parent_id'];
-            isOneToOne: false;
-            referencedRelation: 'transactions';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      transactions_tracking_seen_status: {
-        Row: {
-          _order: number;
-          _parent_id: string;
-          id: string;
-          seen: boolean | null;
-          seen_at: string | null;
-        };
-        Insert: {
-          _order: number;
-          _parent_id: string;
-          id: string;
-          seen?: boolean | null;
-          seen_at?: string | null;
-        };
-        Update: {
-          _order?: number;
-          _parent_id?: string;
-          id?: string;
-          seen?: boolean | null;
-          seen_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'transactions_tracking_seen_status_parent_id_fk';
-            columns: ['_parent_id'];
-            isOneToOne: false;
-            referencedRelation: 'transactions';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      transactions_tracking_status_history: {
-        Row: {
-          _order: number;
-          _parent_id: string;
-          id: string;
-          notes: string | null;
-          status: Database['public']['Enums']['enum_transaction_status'];
-          timestamp: string;
-        };
-        Insert: {
-          _order: number;
-          _parent_id: string;
-          id: string;
-          notes?: string | null;
-          status: Database['public']['Enums']['enum_transaction_status'];
-          timestamp: string;
-        };
-        Update: {
-          _order?: number;
-          _parent_id?: string;
-          id?: string;
-          notes?: string | null;
-          status?: Database['public']['Enums']['enum_transaction_status'];
-          timestamp?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'transactions_tracking_status_history_parent_id_fk';
-            columns: ['_parent_id'];
             isOneToOne: false;
             referencedRelation: 'transactions';
             referencedColumns: ['id'];
@@ -4875,29 +5776,6 @@ export type Database = {
       addgeometrycolumn:
         | {
             Args: {
-              column_name: string;
-              new_dim: number;
-              new_srid: number;
-              new_type: string;
-              schema_name: string;
-              table_name: string;
-              use_typmod?: boolean;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              column_name: string;
-              new_dim: number;
-              new_srid: number;
-              new_type: string;
-              table_name: string;
-              use_typmod?: boolean;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
               catalog_name: string;
               column_name: string;
               new_dim: number;
@@ -4908,9 +5786,41 @@ export type Database = {
               use_typmod?: boolean;
             };
             Returns: string;
+          }
+        | {
+            Args: {
+              column_name: string;
+              new_dim: number;
+              new_srid: number;
+              new_type: string;
+              schema_name: string;
+              table_name: string;
+              use_typmod?: boolean;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              column_name: string;
+              new_dim: number;
+              new_srid: number;
+              new_type: string;
+              table_name: string;
+              use_typmod?: boolean;
+            };
+            Returns: string;
           };
       disablelongtransactions: { Args: never; Returns: string };
       dropgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string;
+              column_name: string;
+              schema_name: string;
+              table_name: string;
+            };
+            Returns: string;
+          }
         | {
             Args: {
               column_name: string;
@@ -4919,19 +5829,8 @@ export type Database = {
             };
             Returns: string;
           }
-        | { Args: { column_name: string; table_name: string }; Returns: string }
-        | {
-            Args: {
-              catalog_name: string;
-              column_name: string;
-              schema_name: string;
-              table_name: string;
-            };
-            Returns: string;
-          };
+        | { Args: { column_name: string; table_name: string }; Returns: string };
       dropgeometrytable:
-        | { Args: { schema_name: string; table_name: string }; Returns: string }
-        | { Args: { table_name: string }; Returns: string }
         | {
             Args: {
               catalog_name: string;
@@ -4939,7 +5838,9 @@ export type Database = {
               table_name: string;
             };
             Returns: string;
-          };
+          }
+        | { Args: { schema_name: string; table_name: string }; Returns: string }
+        | { Args: { table_name: string }; Returns: string };
       enablelongtransactions: { Args: never; Returns: string };
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       geometry: { Args: { '': string }; Returns: unknown };
@@ -5043,8 +5944,8 @@ export type Database = {
       gettransactionid: { Args: never; Returns: unknown };
       longtransactionsenabled: { Args: never; Returns: boolean };
       populate_geometry_columns:
-        | { Args: { use_typmod?: boolean }; Returns: string }
-        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number };
+        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
+        | { Args: { use_typmod?: boolean }; Returns: string };
       postgis_constraint_dims: {
         Args: { geomcolumn: string; geomschema: string; geomtable: string };
         Returns: number;
@@ -5130,6 +6031,14 @@ export type Database = {
       st_asewkt: { Args: { '': string }; Returns: string };
       st_asgeojson:
         | {
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number };
+            Returns: string;
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
+            Returns: string;
+          }
+        | {
             Args: {
               geom_column?: string;
               maxdecimaldigits?: number;
@@ -5138,16 +6047,34 @@ export type Database = {
             };
             Returns: string;
           }
+        | { Args: { '': string }; Returns: string };
+      st_asgml:
+        | {
+            Args: {
+              geog: unknown;
+              id?: string;
+              maxdecimaldigits?: number;
+              nprefix?: string;
+              options?: number;
+            };
+            Returns: string;
+          }
         | {
             Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
             Returns: string;
           }
+        | { Args: { '': string }; Returns: string }
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; options?: number };
+            Args: {
+              geog: unknown;
+              id?: string;
+              maxdecimaldigits?: number;
+              nprefix?: string;
+              options?: number;
+              version: number;
+            };
             Returns: string;
           }
-        | { Args: { '': string }; Returns: string };
-      st_asgml:
         | {
             Args: {
               geom: unknown;
@@ -5158,40 +6085,14 @@ export type Database = {
               version: number;
             };
             Returns: string;
-          }
-        | {
-            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
-            Returns: string;
-          }
-        | {
-            Args: {
-              geog: unknown;
-              id?: string;
-              maxdecimaldigits?: number;
-              nprefix?: string;
-              options?: number;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              geog: unknown;
-              id?: string;
-              maxdecimaldigits?: number;
-              nprefix?: string;
-              options?: number;
-              version: number;
-            };
-            Returns: string;
-          }
-        | { Args: { '': string }; Returns: string };
+          };
       st_askml:
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string };
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string };
             Returns: string;
           }
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string };
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string };
             Returns: string;
           }
         | { Args: { '': string }; Returns: string };
@@ -5212,11 +6113,11 @@ export type Database = {
       };
       st_assvg:
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number };
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number };
             Returns: string;
           }
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number };
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number };
             Returns: string;
           }
         | { Args: { '': string }; Returns: string };
@@ -5224,8 +6125,7 @@ export type Database = {
       st_astwkb:
         | {
             Args: {
-              geom: unknown[];
-              ids: number[];
+              geom: unknown;
               prec?: number;
               prec_m?: number;
               prec_z?: number;
@@ -5236,7 +6136,8 @@ export type Database = {
           }
         | {
             Args: {
-              geom: unknown;
+              geom: unknown[];
+              ids: number[];
               prec?: number;
               prec_m?: number;
               prec_z?: number;
@@ -5250,8 +6151,8 @@ export type Database = {
         Returns: string;
       };
       st_azimuth:
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
-        | { Args: { geog1: unknown; geog2: unknown }; Returns: number };
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: number }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number };
       st_boundingdiagonal: {
         Args: { fits?: boolean; geom: unknown };
         Returns: unknown;
@@ -5316,11 +6217,11 @@ export type Database = {
         Returns: boolean;
       };
       st_distance:
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
         | {
             Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean };
             Returns: number;
-          };
+          }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number };
       st_distancesphere:
         | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
         | {
@@ -5342,6 +6243,11 @@ export type Database = {
       };
       st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       st_expand:
+        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown }
+        | {
+            Args: { box: unknown; dx: number; dy: number; dz?: number };
+            Returns: unknown;
+          }
         | {
             Args: {
               dm?: number;
@@ -5351,12 +6257,7 @@ export type Database = {
               geom: unknown;
             };
             Returns: unknown;
-          }
-        | {
-            Args: { box: unknown; dx: number; dy: number; dz?: number };
-            Returns: unknown;
-          }
-        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown };
+          };
       st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown };
       st_force3dm: {
         Args: { geom: unknown; mvalue?: number };
@@ -5371,11 +6272,11 @@ export type Database = {
         Returns: unknown;
       };
       st_generatepoints:
+        | { Args: { area: unknown; npoints: number }; Returns: unknown }
         | {
             Args: { area: unknown; npoints: number; seed: number };
             Returns: unknown;
-          }
-        | { Args: { area: unknown; npoints: number }; Returns: unknown };
+          };
       st_geogfromtext: { Args: { '': string }; Returns: unknown };
       st_geographyfromtext: { Args: { '': string }; Returns: unknown };
       st_geohash:
@@ -5424,8 +6325,8 @@ export type Database = {
         Returns: unknown;
       };
       st_intersects:
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
-        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean };
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       st_isvaliddetail: {
         Args: { flags?: number; geom: unknown };
         Returns: Database['public']['CompositeTypes']['valid_detail'];
@@ -5578,8 +6479,8 @@ export type Database = {
         Returns: unknown;
       };
       st_setsrid:
-        | { Args: { geom: unknown; srid: number }; Returns: unknown }
-        | { Args: { geog: unknown; srid: number }; Returns: unknown };
+        | { Args: { geog: unknown; srid: number }; Returns: unknown }
+        | { Args: { geom: unknown; srid: number }; Returns: unknown };
       st_sharedpaths: {
         Args: { geom1: unknown; geom2: unknown };
         Returns: unknown;
@@ -5632,22 +6533,22 @@ export type Database = {
       };
       st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
       st_transform:
-        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+        | {
+            Args: { from_proj: string; geom: unknown; to_proj: string };
+            Returns: unknown;
+          }
         | {
             Args: { from_proj: string; geom: unknown; to_srid: number };
             Returns: unknown;
           }
-        | {
-            Args: { from_proj: string; geom: unknown; to_proj: string };
-            Returns: unknown;
-          };
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown };
       st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown };
       st_union:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
         | {
             Args: { geom1: unknown; geom2: unknown; gridsize: number };
             Returns: unknown;
-          }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
+          };
       st_voronoilines: {
         Args: { extend_to?: unknown; g1: unknown; tolerance?: number };
         Returns: unknown;
@@ -5678,11 +6579,26 @@ export type Database = {
     };
     Enums: {
       comment_status_enum: 'PUBLISHED' | 'EDITED';
+      enum__donor_screening_form_v_version_status: 'draft' | 'published';
+      enum_choice_type: 'PREDEFINED' | 'CUSTOM';
       enum_cities_municipalities_type: 'NONE' | 'CITY' | 'MUNICIPALITY';
       enum_conversation_participants_role: 'ADMIN' | 'MODERATOR' | 'MEMBER';
       enum_conversation_type: 'DIRECT' | 'GROUP';
       enum_days: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+      enum_delivery_details_status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
       enum_delivery_modes: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+      enum_delivery_options: 'PICKUP' | 'DELIVERY' | 'MEETUP';
+      enum_delivery_updates_status:
+        | 'WAITING'
+        | 'PREPARING'
+        | 'PICKUP_READY'
+        | 'ON_THE_WAY'
+        | 'ARRIVED'
+        | 'DELIVERED'
+        | 'COMPLETED'
+        | 'FAILED'
+        | 'CANCELLED'
+        | 'DELAYED';
       enum_donation_request_status:
         | 'PENDING'
         | 'AVAILABLE'
@@ -5693,6 +6609,8 @@ export type Database = {
         | 'REJECTED';
       enum_donations_details_collection_mode: 'MANUAL' | 'MANUAL_PUMP' | 'ELECTRIC_PUMP';
       enum_donations_details_storage_type: 'FRESH' | 'FROZEN' | 'OTHER';
+      enum_donor_screening_form_status: 'draft' | 'published';
+      enum_donor_screening_status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVIEW';
       enum_hospitals_type: 'GOVERNMENT' | 'PRIVATE' | 'OTHER';
       enum_identities_id_type:
         | 'PASSPORT'
@@ -5736,19 +6654,22 @@ export type Database = {
       enum_notification_retry_strategy: 'FIXED' | 'EXPONENTIAL' | 'LINEAR';
       enum_notification_trigger_collection: 'requests' | 'donations' | 'transactions';
       enum_notification_trigger_event: 'CREATE' | 'UPDATE' | 'DELETE';
+      enum_orientation: 'vertical' | 'horizontal';
       enum_payload_jobs_log_state: 'failed' | 'succeeded';
       enum_payload_jobs_log_task_slug:
         | 'inline'
         | 'id-verification-task'
         | 'send-email'
         | 'calculate-post-comment-count-task'
-        | 'calculate-comment-reply-count-task';
+        | 'calculate-comment-reply-count-task'
+        | 'schedulePublish';
       enum_payload_jobs_task_slug:
         | 'inline'
         | 'id-verification-task'
         | 'send-email'
         | 'calculate-post-comment-count-task'
-        | 'calculate-comment-reply-count-task';
+        | 'calculate-comment-reply-count-task'
+        | 'schedulePublish';
       enum_payload_jobs_workflow_slug: 'id-verification-workflow';
       enum_posts_status: 'DRAFT' | 'PUBLISHED' | 'REMOVED';
       enum_posts_visibility: 'PUBLIC' | 'PRIVATE';
@@ -5764,10 +6685,10 @@ export type Database = {
         | 'INFO'
         | 'MUTED'
         | 'DEFAULT';
+      enum_text_answer_length: 'SHORT' | 'LONG';
       enum_transaction_status:
-        | 'MATCHED'
-        | 'PENDING_DELIVERY_CONFIRMATION'
-        | 'DELIVERY_SCHEDULED'
+        | 'PENDING'
+        | 'CONFIRMED'
         | 'IN_TRANSIT'
         | 'READY_FOR_PICKUP'
         | 'DELIVERED'
@@ -5915,11 +6836,27 @@ export const Constants = {
   public: {
     Enums: {
       comment_status_enum: ['PUBLISHED', 'EDITED'],
+      enum__donor_screening_form_v_version_status: ['draft', 'published'],
+      enum_choice_type: ['PREDEFINED', 'CUSTOM'],
       enum_cities_municipalities_type: ['NONE', 'CITY', 'MUNICIPALITY'],
       enum_conversation_participants_role: ['ADMIN', 'MODERATOR', 'MEMBER'],
       enum_conversation_type: ['DIRECT', 'GROUP'],
       enum_days: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'],
+      enum_delivery_details_status: ['PENDING', 'ACCEPTED', 'REJECTED'],
       enum_delivery_modes: ['PICKUP', 'DELIVERY', 'MEETUP'],
+      enum_delivery_options: ['PICKUP', 'DELIVERY', 'MEETUP'],
+      enum_delivery_updates_status: [
+        'WAITING',
+        'PREPARING',
+        'PICKUP_READY',
+        'ON_THE_WAY',
+        'ARRIVED',
+        'DELIVERED',
+        'COMPLETED',
+        'FAILED',
+        'CANCELLED',
+        'DELAYED',
+      ],
       enum_donation_request_status: [
         'PENDING',
         'AVAILABLE',
@@ -5931,6 +6868,8 @@ export const Constants = {
       ],
       enum_donations_details_collection_mode: ['MANUAL', 'MANUAL_PUMP', 'ELECTRIC_PUMP'],
       enum_donations_details_storage_type: ['FRESH', 'FROZEN', 'OTHER'],
+      enum_donor_screening_form_status: ['draft', 'published'],
+      enum_donor_screening_status: ['PENDING', 'APPROVED', 'REJECTED', 'NEEDS_REVIEW'],
       enum_hospitals_type: ['GOVERNMENT', 'PRIVATE', 'OTHER'],
       enum_identities_id_type: [
         'PASSPORT',
@@ -5964,6 +6903,7 @@ export const Constants = {
       enum_notification_retry_strategy: ['FIXED', 'EXPONENTIAL', 'LINEAR'],
       enum_notification_trigger_collection: ['requests', 'donations', 'transactions'],
       enum_notification_trigger_event: ['CREATE', 'UPDATE', 'DELETE'],
+      enum_orientation: ['vertical', 'horizontal'],
       enum_payload_jobs_log_state: ['failed', 'succeeded'],
       enum_payload_jobs_log_task_slug: [
         'inline',
@@ -5971,6 +6911,7 @@ export const Constants = {
         'send-email',
         'calculate-post-comment-count-task',
         'calculate-comment-reply-count-task',
+        'schedulePublish',
       ],
       enum_payload_jobs_task_slug: [
         'inline',
@@ -5978,6 +6919,7 @@ export const Constants = {
         'send-email',
         'calculate-post-comment-count-task',
         'calculate-comment-reply-count-task',
+        'schedulePublish',
       ],
       enum_payload_jobs_workflow_slug: ['id-verification-workflow'],
       enum_posts_status: ['DRAFT', 'PUBLISHED', 'REMOVED'],
@@ -5995,10 +6937,10 @@ export const Constants = {
         'MUTED',
         'DEFAULT',
       ],
+      enum_text_answer_length: ['SHORT', 'LONG'],
       enum_transaction_status: [
-        'MATCHED',
-        'PENDING_DELIVERY_CONFIRMATION',
-        'DELIVERY_SCHEDULED',
+        'PENDING',
+        'CONFIRMED',
         'IN_TRANSIT',
         'READY_FOR_PICKUP',
         'DELIVERED',

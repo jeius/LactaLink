@@ -1,10 +1,10 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { DrawerHeader } from '@/components/drawer/DrawerHeader';
+import { useUnseenTransactions } from '@/features/transactions/lib/zustandStores/unseenTransactionsStore';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
-import { useTransactions } from '@/hooks/transactions';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -13,7 +13,7 @@ export default function Layout() {
   useLiveNotifications();
 
   const { unSeenCount: notifUnseenCount } = useNotification();
-  const { unSeenCount: transUnseenCount } = useTransactions();
+  const unseenTransactions = useUnseenTransactions();
 
   const { themeColors } = useTheme();
   const bgColor = themeColors.background[50];
@@ -35,7 +35,10 @@ export default function Layout() {
         }}
       >
         <Tabs.Screen name="feed" />
-        <Tabs.Screen name="active-transactions" options={{ tabBarBadge: transUnseenCount }} />
+        <Tabs.Screen
+          name="active-transactions"
+          options={{ tabBarBadge: unseenTransactions.size }}
+        />
         <Tabs.Screen name="notifications" options={{ tabBarBadge: notifUnseenCount }} />
         <Tabs.Screen name="messages" />
       </Tabs>
