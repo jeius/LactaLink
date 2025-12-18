@@ -4,9 +4,19 @@ import { extractID } from '@lactalink/utilities/extractors';
 
 export function createChatChannel(conversation: string | Conversation) {
   const conversationId = extractID(conversation);
-  return supabase.channel(`chat-${conversationId}`);
+  const channelName = `chat:${conversationId}`;
+  const existingChannel = supabase.getChannels().find((ch) => ch.topic === channelName);
+  return {
+    isSubscribed: !!existingChannel,
+    channel: existingChannel ?? supabase.channel(channelName),
+  };
 }
 
 export function createGeneralChatsChannel() {
-  return supabase.channel('chats-general');
+  const channelName = `chats:general`;
+  const existingChannel = supabase.getChannels().find((ch) => ch.topic === channelName);
+  return {
+    isSubscribed: !!existingChannel,
+    channel: existingChannel ?? supabase.channel(channelName),
+  };
 }

@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import { getApiClient } from '@lactalink/api';
 import { DBMessage } from '@lactalink/types/database';
 import { Conversation } from '@lactalink/types/payload-generated-types';
@@ -11,7 +12,9 @@ import { createGeneralChatsChannel } from '../../lib/realtime/channels';
 export function useChatsChannel(conversations: Conversation[]) {
   const queryClient = useQueryClient();
 
-  const isSubscribedRef = useRef(false);
+  const { channel, isSubscribed } = createGeneralChatsChannel();
+
+  const isSubscribedRef = useRef(isSubscribed);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const conversationMap = useMemo(() => {
@@ -24,13 +27,14 @@ export function useChatsChannel(conversations: Conversation[]) {
 
     // Cleanup previous channel if conversation changed
     if (channelRef.current) {
-      channelRef.current.unsubscribe();
+      supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       isSubscribedRef.current = false;
     }
 
-    const channel = createGeneralChatsChannel();
+    // Assign new channel and subscription status
     channelRef.current = channel;
+    isSubscribedRef.current = isSubscribed;
 
     // Listen for new messages
     channel.on<DBMessage>(
@@ -71,9 +75,9 @@ export function useChatsChannel(conversations: Conversation[]) {
 
     // Cleanup on unmount or conversation change
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       channelRef.current = null;
       isSubscribedRef.current = false;
     };
-  }, [conversationMap, conversations, queryClient]);
+  }, [channel, conversationMap, conversations, isSubscribed, queryClient]);
 }

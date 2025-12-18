@@ -1,6 +1,5 @@
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { getApiClient } from '@lactalink/api';
-import { DBMessage } from '@lactalink/types/database';
+import { supabase } from '@/lib/supabase';
 import { Conversation, Message, User } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
@@ -11,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
 import { addMessageToInfiniteCache } from '../../lib/chatCacheUtils';
 import { createChatChannel } from '../../lib/realtime/channels';
+import { receiveRealtimeMessage } from '../../lib/realtime/message';
 
 type TypingTracker = {
   user_id: string;
@@ -20,7 +20,9 @@ type TypingTracker = {
 export function useConversationChannel(conversation: Conversation) {
   const queryClient = useQueryClient();
 
-  const isSubscribedRef = useRef(false);
+  const { channel, isSubscribed } = useMemo(() => createChatChannel(conversation), [conversation]);
+
+  const isSubscribedRef = useRef(isSubscribed);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const [newMessage, setNewMessage] = useState<Message | null>(null);
@@ -68,17 +70,15 @@ export function useConversationChannel(conversation: Conversation) {
 
   // Setup channel subscription
   useEffect(() => {
-    const conversationId = extractID(conversation);
-
     // Cleanup previous channel if conversation changed
     if (channelRef.current) {
-      channelRef.current.unsubscribe();
+      supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       isSubscribedRef.current = false;
     }
 
-    const channel = createChatChannel(conversationId);
     channelRef.current = channel;
+    isSubscribedRef.current = isSubscribed;
 
     // Presence tracking for typing indicators
     channel.on('presence', { event: 'sync' }, () => {
@@ -96,37 +96,12 @@ export function useConversationChannel(conversation: Conversation) {
       setTypingUsersMap(newTypingMap);
     });
 
-    // Listen for new messages
-    channel.on<DBMessage>(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      ({ new: message }) => {
-        getApiClient()
-          .findByID({
-            id: message.id,
-            collection: 'messages',
-            depth: 4,
-          })
-          .catch((error) => {
-            console.warn(`[Chat] Failed to fetch new message ID-${message.id}:`, error);
-            return null;
-          })
-          .then((messageDoc) => {
-            if (!messageDoc) return;
-
-            setNewMessage(messageDoc);
-
-            // Avoid duplicating own messages
-            if (isEqualProfiles(messageDoc.sender, getMeUser()?.profile)) return;
-            addMessageToInfiniteCache(queryClient, messageDoc, conversation);
-          });
-      }
-    );
+    receiveRealtimeMessage(channel, (newMessage) => {
+      setNewMessage(newMessage);
+      // Avoid duplicating own messages
+      if (isEqualProfiles(newMessage.sender, getMeUser()?.profile)) return;
+      addMessageToInfiniteCache(queryClient, newMessage, conversation);
+    });
 
     // Subscribe to channel
     channel.subscribe((status) => {
@@ -136,11 +111,11 @@ export function useConversationChannel(conversation: Conversation) {
 
     // Cleanup on unmount or conversation change
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       channelRef.current = null;
       isSubscribedRef.current = false;
     };
-  }, [conversation, queryClient, typingMap]);
+  }, [channel, conversation, isSubscribed, queryClient, typingMap]);
 
   // Handle focus/blur for subscription management
   useFocusEffect(
@@ -155,7 +130,7 @@ export function useConversationChannel(conversation: Conversation) {
       return () => {
         // Unsubscribe when screen loses focus
         if (channelRef.current && isSubscribedRef.current) {
-          channelRef.current.unsubscribe();
+          supabase.removeChannel(channelRef.current);
           isSubscribedRef.current = false;
         }
       };
