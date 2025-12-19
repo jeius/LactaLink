@@ -10,9 +10,11 @@ import type {
   SignOut,
   SignUpWithPasswordCredentials,
   Subscription,
+  SupabaseClient,
   VerifyOtpParams,
 } from '@supabase/supabase-js';
-import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
+
+type SupabaseAuthClient = SupabaseClient['auth'];
 
 /**
  * Interface defining the contract for authentication client implementations.

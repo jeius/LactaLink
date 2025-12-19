@@ -16,7 +16,6 @@ import {
   type SupabaseClient,
   type VerifyOtpParams,
 } from '@supabase/supabase-js';
-import type { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
 import status from 'http-status';
 import { stringify } from 'qs';
 import type { ApiClientConfig, IAuthClient } from '../interfaces';
@@ -26,6 +25,8 @@ import { isServerEnvironment } from '../utils/getEnvironment';
 type BaseApiFetchArgsWithoutToken = Omit<BaseApiFetchArgs, 'token'>;
 type UsersUpdate = Database['public']['Tables']['users']['Update'];
 type UserTable = Database['public']['Tables']['users']['Row'];
+
+type SupabaseAuthClient = SupabaseClient['auth'];
 
 export class AuthClient implements IAuthClient {
   private baseFetchOptions: () => BaseApiFetchArgsWithoutToken;
