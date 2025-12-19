@@ -9,6 +9,7 @@ export const COLLECTION_GROUP = {
   CHAT: 'Chat Management',
   MEDIA: 'Media Management',
   TRANSACTION: 'Transactions Management',
+  SCREENING: 'Donor Screening Management',
 };
 
 export const MILK_EXPIRY_DAYS = 3;

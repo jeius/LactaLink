@@ -87,7 +87,7 @@ export default async function Page({ searchParams }: Props) {
 
           <div className="from-primary-100 absolute inset-0 bg-gradient-to-t opacity-30" />
 
-          <div className="lg:w-xl bg-card z-10 flex w-full flex-col gap-6 py-8">
+          <div className="bg-card z-10 flex w-full flex-col gap-6 py-8 lg:w-xl">
             <CardHeader>
               <CardTitle className="text-xl font-bold">Verify your account</CardTitle>
               <CardDescription>

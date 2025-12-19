@@ -52,9 +52,9 @@ export default async function Page() {
           </div>
 
           <div className="from-primary-100 absolute inset-0 bg-gradient-to-t opacity-30" />
-          <Logo className="absolute left-5 top-5 h-12 w-16" />
+          <Logo className="absolute top-5 left-5 h-12 w-16" />
 
-          <div className="lg:w-xl bg-card z-10 flex w-full flex-col gap-6 py-8">
+          <div className="bg-card z-10 flex w-full flex-col gap-6 py-8 lg:w-xl">
             <CardHeader className="bg-card">
               <CardTitle className="text-xl font-bold">Welcome to LactaLink!👋</CardTitle>
               <CardDescription>Let&apos;s create the first admin user.</CardDescription>
@@ -67,7 +67,7 @@ export default async function Page() {
             <CardFooter className="bg-card flex flex-col items-center justify-center">
               <div className="flex w-full max-w-md items-center justify-between gap-4">
                 <div className="bg-border h-[1px] w-full"></div>
-                <span className="text-muted-foreground whitespace-nowrap text-xs">
+                <span className="text-muted-foreground text-xs whitespace-nowrap">
                   OR CONTINUE WITH
                 </span>
                 <div className="bg-border h-[1px] w-full"></div>

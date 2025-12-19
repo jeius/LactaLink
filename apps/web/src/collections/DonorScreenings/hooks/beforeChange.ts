@@ -3,15 +3,13 @@ import { DonorScreening } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeChangeHook, FieldHook } from 'payload';
 
-const PENDING = SCREENING_STATUS.PENDING.value;
 const APPROVED = SCREENING_STATUS.APPROVED.value;
 const REJECTED = SCREENING_STATUS.REJECTED.value;
-const NEEDS_REVIEW = SCREENING_STATUS.NEEDS_REVIEW.value;
 
 /**
  * Auto-populate submittedBy field with the current user's individual profile
  */
-export const generateSubmittedBy: FieldHook<DonorScreening> = ({ req, operation, data, value }) => {
+export const generateSubmittedBy: FieldHook<DonorScreening> = ({ req, operation, value }) => {
   if (operation !== 'create' || !req.user?.profile) return value;
 
   if (value && value !== '') return value;

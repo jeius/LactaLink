@@ -42,8 +42,10 @@ export type AutoCreateNotificationOverrides = {
   priority?: Notification['priority'];
 };
 
-export interface CreateNotificationParams
-  extends Pick<Notification, 'title' | 'message' | 'recipient' | 'priority'> {
+export interface CreateNotificationParams extends Pick<
+  Notification,
+  'title' | 'message' | 'recipient' | 'priority'
+> {
   /**
    * Schedule delivery date for the notification
    */

@@ -41,7 +41,7 @@ export async function calculateVolumes<T extends Donation>(
   doc.remainingVolume = result.remainingVolume;
 
   // Check if all bags are expired
-  const allExpired =
+  const _allExpired =
     bags.length > 0 && bags.every((bag) => bag.status === MILK_BAG_STATUS.EXPIRED.value);
 
   // if (allExpired) {
@@ -52,7 +52,7 @@ export async function calculateVolumes<T extends Donation>(
   return doc;
 }
 
-async function updateStatusOnBagsExpired<T extends Donation>(
+async function _updateStatusOnBagsExpired<T extends Donation>(
   doc: T | Partial<T>,
   req: PayloadRequest
 ) {
