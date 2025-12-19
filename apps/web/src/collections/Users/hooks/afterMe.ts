@@ -1,8 +1,13 @@
 import { User } from '@lactalink/types/payload-generated-types';
-import { CollectionAfterMeHook, getAccessResults, MeOperationResult } from 'payload';
+import { CollectionAfterMeHook, MeOperationResult } from 'payload';
 
-export const appendPermissions: CollectionAfterMeHook<User> = async ({ req, response }) => {
-  const permissions = await getAccessResults({ req });
+export const afterMe: CollectionAfterMeHook<User> = async ({ req, response }) => {
+  if (!req.user) return response;
 
-  return { ...(response as MeOperationResult), permissions };
+  const now = new Date().toISOString();
+  await req.payload.update({ collection: 'users', id: req.user.id, data: { onlineAt: now } });
+
+  const res = response as MeOperationResult;
+
+  return { ...res, user: { ...res.user, onlineAt: now } } as MeOperationResult;
 };

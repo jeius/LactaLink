@@ -4,6 +4,7 @@ import { COLLECTION_GROUP, DOC_LOCK_DURATION } from '@/lib/constants';
 import { PROFILE_TYPES } from '@lactalink/enums';
 import type { CollectionConfig } from 'payload';
 import { admin, anyone, authenticated, userOwnerOrAdmin } from '../_access-control';
+import { afterMe } from './hooks/afterMe';
 
 export const Users: CollectionConfig<'users'> = {
   slug: 'users',
@@ -14,6 +15,7 @@ export const Users: CollectionConfig<'users'> = {
   },
   hooks: {
     afterLogout: [signOut],
+    afterMe: [afterMe],
   },
   auth: {
     disableLocalStrategy: true,
