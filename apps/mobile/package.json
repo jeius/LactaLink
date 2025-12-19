@@ -6,7 +6,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "expo start --dev-client -c",
+    "dev": "adb reverse tcp:3000 tcp:3000 && expo start --dev-client -c",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
     "build": "expo export --output-dir ./build --platform all",

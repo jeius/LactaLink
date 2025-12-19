@@ -6,7 +6,9 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { getColor, getPrimaryColor } from '@/lib/colors';
+import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractImageData } from '@lactalink/utilities/extractors';
 import { CameraIcon, CheckCheckIcon, CheckIcon, ImageIcon } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
@@ -107,8 +109,13 @@ function ChatActions() {
 }
 
 function ChatBubble(props: BubbleProps<ChatMessage>) {
+  const { data: meUser } = useMeUser();
+  const {
+    currentMessage: { sender },
+  } = props;
+  const isMeSender = isEqualProfiles(sender, meUser?.profile);
   return (
-    <VStack className="items-end">
+    <VStack style={{ alignItems: isMeSender ? 'flex-end' : 'flex-start' }}>
       <ChatReplyMessage {...props} />
       <Bubble
         {...props}

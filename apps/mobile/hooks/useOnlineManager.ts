@@ -1,74 +1,46 @@
-import { meUserQueryOptions, sessionQueryOptions } from '@/lib/queries/authQueryOptions';
-import { getMeUser, setMeUser } from '@/lib/stores/meUserStore';
-import { getApiClient } from '@lactalink/api';
+import { setMeOnline } from '@/lib/stores/presenceStore';
 import NetInfo from '@react-native-community/netinfo';
-import { onlineManager, QueryClient, useQuery } from '@tanstack/react-query';
-import { produce } from 'immer';
-import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { onlineManager } from '@tanstack/react-query';
+import { useCallback, useEffect } from 'react';
+import { AppState, Platform } from 'react-native';
+import { useAppState } from './useAppState';
 
+/**
+ * Manages the `online`/`offline` status of the app and updates the presence store accordingly.
+ * This hook sets the user as online when the app is in the foreground and offline when it goes to the background.
+ *
+ * @description This hook should be used at the root level of the app to ensure proper tracking of online status.
+ */
 export function useOnlineManager() {
-  const [isOnline, setIsOnline] = useState(true);
-
-  useQuery({
-    enabled: isOnline,
-    queryKey: ['user-presence'],
-    queryFn: updateMyPresence,
-    refetchOnReconnect: 'always',
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: 'always',
-    refetchInterval: 1000 * 10, // every 10 seconds
-    staleTime: Infinity,
-  });
-
+  // Initialize online status on mount
   useEffect(() => {
-    // React Query already supports on reconnect auto refetch in web browser
-    if (Platform.OS !== 'web') {
-      return NetInfo.addEventListener((state) => {
-        const isOnline = !!state.isConnected && !!state.isInternetReachable;
-        onlineManager.setOnline(isOnline);
-        setIsOnline(isOnline);
-      });
+    const currentState = AppState.currentState;
+    if (currentState === 'active') {
+      setMeOnline(true).catch((err) => console.error('Failed to set online:', err));
     }
-    return undefined;
   }, []);
-}
 
-async function updateMyPresence({ client }: { client: QueryClient }) {
-  const meUser = getMeUser();
-  if (!meUser) return false;
-
-  const apiClient = getApiClient();
-
-  const now = new Date().toISOString();
-
-  const updatedUser = await apiClient.updateByID({
-    collection: 'users',
-    id: meUser.id,
-    data: { onlineAt: now },
-  });
-
-  // Update meUser in store and cache
-  setMeUser(
-    produce(meUser, (draft) => {
-      draft.onlineAt = now;
-    })
+  // Listen for app state changes
+  useAppState(
+    useCallback((state) => {
+      switch (state) {
+        case 'active':
+          setMeOnline(true).catch((err) => console.error('Failed to set online:', err));
+          break;
+        case 'background':
+        case 'inactive':
+        default:
+          setMeOnline(false).catch((err) => console.error('Failed to set offline:', err));
+          break;
+      }
+    }, [])
   );
 
-  client.setQueryData(meUserQueryOptions.queryKey, (old) => {
-    if (!old) return old;
-    return produce(old, (draft) => {
-      draft.onlineAt = now;
+  // Handle network changes
+  useEffect(() => {
+    return NetInfo.addEventListener((state) => {
+      const isOnline = !!state.isConnected && !!state.isInternetReachable;
+      if (Platform.OS !== 'web') onlineManager.setOnline(isOnline);
     });
-  });
-
-  client.setQueryData(sessionQueryOptions.queryKey, (old) => {
-    if (!old) return old;
-    return produce(old, (draft) => {
-      if (!draft.user) return;
-      draft.user.onlineAt = now;
-    });
-  });
-
-  return !!updatedUser;
+  }, []);
 }

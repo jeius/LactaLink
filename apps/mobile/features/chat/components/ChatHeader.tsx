@@ -26,7 +26,10 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
   const isDirect = conversation.type === CONVERSATION_TYPE.DIRECT.value;
 
   const otherUser = isDirect ? getOtherUserFromDirectChat(conversation) : null;
-  const { isOnline, lastOnlineAt } = useUserPresence(otherUser);
+  const userPresence = useUserPresence(otherUser);
+
+  const isOnline = userPresence?.isOnline ?? false;
+  const lastOnlineAt = otherUser ? userPresence?.offlineAt || userPresence?.onlineAt : null;
 
   const participants = useMemo(
     () => extractCollection(conversation.participants?.docs) || [],
