@@ -2,6 +2,7 @@ import LoadingSpinner from '@/components/loaders/LoadingSpinner';
 import SafeArea from '@/components/SafeArea';
 import ChatBox from '@/features/chat/components/ChatBox';
 import ChatHeader from '@/features/chat/components/ChatHeader';
+import ChatProvider from '@/features/chat/components/context';
 import { useConversation } from '@/features/chat/hooks/queries';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
@@ -16,8 +17,10 @@ export default function ConversationPage() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <ChatHeader conversation={conversation} />
-      <ChatBox conversation={conversation} />
+      <ChatProvider key={conversation.id} conversation={conversation}>
+        <ChatHeader conversation={conversation} />
+        <ChatBox conversation={conversation} />
+      </ChatProvider>
     </SafeArea>
   );
 }

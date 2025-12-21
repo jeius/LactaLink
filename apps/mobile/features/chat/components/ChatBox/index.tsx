@@ -19,8 +19,8 @@ import { TypingIndicator } from 'react-native-gifted-chat/src/TypingIndicator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMarkReadConversation, useSendMessage } from '../../hooks/mutations';
 import { useInfiniteMessages } from '../../hooks/queries';
-import { useConversationChannel } from '../../hooks/realtime-channels';
 import { ChatMessage, CreateChatMessage } from '../../lib/types';
+import { useTypingUsers } from '../context';
 import ChatMessageBox from './ChatMessageBox';
 import ChatSendButton from './ChatSendButton';
 import MediaList from './MediaList';
@@ -50,7 +50,7 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
 
   const swipeableMapRef = useRef(new Map<string, SwipeableMethods>());
 
-  const { typingUsers } = useConversationChannel(conversation);
+  const typingUsers = useTypingUsers();
 
   const { mutate: sendMessage } = useSendMessage(conversation);
   const { mutate: markAsRead } = useMarkReadConversation(conversation);

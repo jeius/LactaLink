@@ -1,5 +1,6 @@
 import { Conversation } from '@lactalink/types/payload-generated-types';
 import { useMutation } from '@tanstack/react-query';
+import { useChatActions } from '../components/context';
 import {
   createDeleteConversationMutation,
   createDirectChatCreationMutation,
@@ -25,5 +26,6 @@ export function useCreateGroupChat() {
 }
 
 export function useSendMessage(conversation: Conversation) {
-  return useMutation(createSendMessageMutation(conversation));
+  const { sendMessage } = useChatActions();
+  return useMutation(createSendMessageMutation(conversation, sendMessage));
 }
