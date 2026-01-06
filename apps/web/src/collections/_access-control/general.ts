@@ -119,13 +119,13 @@ export const involvedPartiesOrAdmin: Access = ({ req: { user } }) => {
     or: [
       {
         and: [
-          { 'transaction.sender.value': { equals: user.profile.value } },
+          { 'transaction.sender.value': { equals: extractID(user.profile.value) } },
           { 'transaction.sender.relationTo': { equals: user.profile.relationTo } },
         ],
       },
       {
         and: [
-          { 'transaction.recipient.value': { equals: user.profile.value } },
+          { 'transaction.recipient.value': { equals: extractID(user.profile.value) } },
           { 'transaction.recipient.relationTo': { equals: user.profile.relationTo } },
         ],
       },
