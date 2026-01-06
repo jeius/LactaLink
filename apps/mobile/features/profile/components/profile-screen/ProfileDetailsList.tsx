@@ -6,12 +6,12 @@ import { PopulatedUserProfile } from '@lactalink/types';
 import { extractCollection, extractDefaultAddress } from '@lactalink/utilities/extractors';
 import { isHospital, isIndividual } from '@lactalink/utilities/type-guards';
 import {
+  FileDigitIcon,
   LucideIcon,
   MailIcon,
   MapPinIcon,
   PhoneIcon,
   SquareUserIcon,
-  StethoscopeIcon,
 } from 'lucide-react-native';
 import React from 'react';
 
@@ -30,8 +30,8 @@ export default function ProfileDetailsList({ profile }: ProfileDetailsListProps)
   const fullAddress = extractDefaultAddress(user)?.displayName || 'No address';
 
   const details: ({ label: string; icon: LucideIcon } | null)[] = [
-    hospitalID ? { label: 'ID: ' + hospitalID, icon: StethoscopeIcon } : null,
-    orgHead ? { label: 'Head: ' + orgHead, icon: SquareUserIcon } : null,
+    hospitalID ? { label: 'Hospital ID: ' + hospitalID, icon: FileDigitIcon } : null,
+    orgHead ? { label: orgHead, icon: SquareUserIcon } : null,
     { label: email, icon: MailIcon },
     { label: phone, icon: PhoneIcon },
     { label: fullAddress, icon: MapPinIcon },

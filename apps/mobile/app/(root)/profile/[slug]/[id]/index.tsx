@@ -13,7 +13,7 @@ import React, { useCallback } from 'react';
 
 type ProfileSlug = Extract<CollectionSlug, 'hospitals' | 'milkBanks' | 'individuals'>;
 
-export default function OrganizationProfilePage() {
+export default function ProfilePage() {
   const { id, slug } = useLocalSearchParams<{ slug: ProfileSlug; id: string }>();
 
   const { data: user, ...meUserQuery } = useMeUser();

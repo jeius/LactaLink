@@ -15,6 +15,7 @@ import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { BasicLocationPin, HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
+import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
@@ -24,7 +25,7 @@ import { useNotification } from '@/hooks/notifications';
 import { useTransactions } from '@/hooks/transactions';
 import { User } from '@lactalink/types/payload-generated-types';
 import constants from 'expo-constants';
-import { Href, Link } from 'expo-router';
+import { Href, Link, useRouter } from 'expo-router';
 import {
   BellIcon,
   ChevronRightIcon,
@@ -44,7 +45,9 @@ import { SvgProps } from 'react-native-svg';
 export default function ProfilePage() {
   useLiveNotifications();
 
-  const { data: user, refetch, isRefetching, isLoading } = useMeUser();
+  const router = useRouter();
+
+  const { data: user = null, refetch, isRefetching, isLoading } = useMeUser();
   const revalidate = useRevalidateCollectionQueries();
 
   const actionLinks = createActionCardLinks(user);
@@ -65,21 +68,20 @@ export default function ProfilePage() {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefetch} />}
         className="flex-1"
         contentContainerClassName="grow flex-col items-stretch bg-background-50"
+        showsVerticalScrollIndicator={false}
       >
         <VStack className="items-stretch">
           {user?.profile && (
-            <ProfileCard className="p-5 pb-0" profile={user.profile} isLoading={isLoading} />
+            <Pressable className="p-5" onPress={() => router.push('/profile')}>
+              <ProfileCard
+                className="p-0"
+                profile={user.profile}
+                isLoading={isLoading}
+                hideBadge
+                disableNavigation
+              />
+            </Pressable>
           )}
-
-          <Link href={`/profile`} push asChild>
-            <Button
-              variant="link"
-              action="default"
-              className="mx-2 mt-2 h-fit w-fit self-start px-5"
-            >
-              <ButtonText>View Profile</ButtonText>
-            </Button>
-          </Link>
 
           <HStack space="md" className="flex-wrap justify-center p-5">
             {actionLinks.map((link, i) => (

@@ -1,9 +1,9 @@
 import { VerificationAlert } from '@/components/alerts/VerificationAlert';
+import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { BasicBadge } from '@/components/badges';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -17,6 +17,7 @@ import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { Individual } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
+import { Link } from 'expo-router';
 import { BadgeCheckIcon, Edit2Icon } from 'lucide-react-native';
 import ProfileCTA from './ProfileCTA';
 import ProfileDetailsCard from './ProfileDetailsCard';
@@ -107,10 +108,12 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
         </VStack>
 
         {isOwner && (
-          <Box className="absolute right-5 top-4">
-            <Button variant="link" action="default" className="h-fit w-fit rounded-full p-2">
-              <ButtonIcon as={Edit2Icon} />
-            </Button>
+          <Box className="absolute" style={{ top: 8, right: 8 }}>
+            <Link href={`/profile/${profile.relationTo}/${profile.value.id}/edit`} asChild>
+              <AnimatedPressable className="overflow-hidden rounded-full p-4">
+                <Icon as={Edit2Icon} />
+              </AnimatedPressable>
+            </Link>
           </Box>
         )}
 

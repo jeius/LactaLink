@@ -1,4 +1,3 @@
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { ProfileAvatar } from '@/components/Avatar';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,19 +7,22 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
+import { getColor } from '@/lib/colors';
 import { User } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
-import { capitalizeFirst } from '@lactalink/utilities/formatters';
-import { Link } from 'expo-router';
+import { extractCollection, extractDisplayName, extractID } from '@lactalink/utilities/extractors';
+import { useRouter } from 'expo-router';
 import { MailIcon, PhoneIcon } from 'lucide-react-native';
 import React, { ComponentProps, ReactNode } from 'react';
 import { Box } from '../ui/box';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 
 interface ProfileCardProps extends ComponentProps<typeof Card> {
   profile: NonNullable<User['profile']>;
   isLoading?: boolean;
   action?: ReactNode;
+  hideBadge?: boolean;
+  disableNavigation?: boolean;
 }
 
 export default function ProfileCard({
@@ -28,10 +30,11 @@ export default function ProfileCard({
   isLoading: isLoadingProp,
   variant = 'ghost',
   action,
+  hideBadge = false,
+  disableNavigation = false,
   ...cardProps
 }: ProfileCardProps) {
-  const { themeColors } = useTheme();
-
+  const router = useRouter();
   const profileSlug = profileProp.relationTo;
 
   const { data, ...rest } = useProfileData(profileProp);
@@ -40,46 +43,55 @@ export default function ProfileCard({
 
   const user = extractCollection(profile?.owner) || null;
 
-  const name = (profile && ('name' in profile ? profile.name : profile.displayName)) || 'No name';
+  const name = (data && extractDisplayName({ profile: data })) || 'User';
   const email = user?.email || 'No email';
-  const phone = user?.phone || 'No phone number';
-  const profileType = user?.profileType && capitalizeFirst(user.profileType.toLowerCase());
+  const phone = profile?.phone || 'No phone number';
   const profileIcon =
     (user?.profileType && PROFILE_TYPE_ICONS[user.profileType]) || PROFILE_TYPE_ICONS.INDIVIDUAL;
 
+  const navigateToProfile = () => {
+    if (disableNavigation) return;
+    router.push(`/profile/${profileSlug}/${extractID(profileProp.value)}`);
+  };
+
   return (
     <Card variant={variant} {...cardProps}>
-      {isLoading || profile === undefined ? (
+      {isLoading ? (
         <ProfileCardSkeleton />
       ) : (
         <HStack space="lg" className="w-full items-center">
-          <Box className="relative h-full">
-            <ProfileAvatar profile={profileProp} size="xl" className="aspect-square w-auto" />
-            {profileType && (
+          <Pressable
+            className="relative overflow-hidden rounded-full"
+            pointerEvents={disableNavigation ? 'none' : 'auto'}
+            onPress={navigateToProfile}
+          >
+            <ProfileAvatar profile={profileProp} size="xl" />
+            {profileIcon && !hideBadge && (
               <Box className="absolute right-1 top-0 rounded-full bg-background-0 p-1.5">
-                <Icon as={profileIcon} size="xs" color={themeColors.typography[700]} />
+                <Icon as={profileIcon} size="xs" color={getColor('typography', '700')} />
               </Box>
             )}
-          </Box>
+          </Pressable>
 
           <VStack space="sm" className="flex-1 items-start">
-            <Link href={`/profile/${profileSlug}/${profile.id}`} push asChild>
-              <Button
-                disablePressAnimation
-                variant="link"
-                action="default"
-                className="h-fit w-fit p-0"
+            <Button
+              disablePressAnimation
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-0"
+              onPress={navigateToProfile}
+              pointerEvents={disableNavigation ? 'none' : 'auto'}
+            >
+              <ButtonText
+                underlineOnPress
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                className="flex-1"
+                size="md"
               >
-                <ButtonText
-                  underlineOnPress
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  className="flex-1"
-                >
-                  {name}
-                </ButtonText>
-              </Button>
-            </Link>
+                {name}
+              </ButtonText>
+            </Button>
             <HStack space="sm" className="items-center">
               <Icon as={MailIcon} size="sm" />
               <Text size="sm" ellipsizeMode="tail" numberOfLines={1} className="flex-1">

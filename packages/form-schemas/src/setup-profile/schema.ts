@@ -66,3 +66,11 @@ export const milkBankSchema = z.object({
 export const setupProfileSchema = z
   .discriminatedUnion('profileType', [individualSchema, hospitalSchema, milkBankSchema])
   .and(baseSchema);
+
+export const editProfileSchema = setupProfileSchema.and(
+  z.object({
+    id: z.uuid('Invalid profile ID'),
+    slug: z.enum(['individuals', 'hospitals', 'milkBanks']),
+    ...baseSchema.shape,
+  })
+);

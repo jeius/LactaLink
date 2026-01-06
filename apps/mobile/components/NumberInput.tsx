@@ -101,6 +101,10 @@ export function NumberInput({
     };
   }, [handleChange]);
 
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value, setLocalValue]);
+
   return isLoading ? (
     <Skeleton className="h-9" />
   ) : (
