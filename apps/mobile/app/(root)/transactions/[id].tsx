@@ -2,7 +2,6 @@ import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { TransactionBottomSheet } from '@/components/bottom-sheets/TransactionBottomSheet';
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
@@ -12,6 +11,7 @@ import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { TransactionSheet } from '@/features/transactions/components/TransactionSheet';
 import TransactionStatusCard from '@/features/transactions/components/TransactionStatusCard';
 import { useTransaction } from '@/features/transactions/hooks/queries';
 import { shadow } from '@/lib/utils/shadows';
@@ -104,46 +104,42 @@ export default function TransactionPage() {
 
             {/* Header */}
             <Box
-              className="absolute inset-x-0 top-0 z-10"
+              className="absolute inset-x-0 z-10 flex-row items-center gap-2 px-4"
+              style={{ top: insets.top, paddingVertical: 8 }}
               onLayout={(e) => setHeaderSize(e.nativeEvent.layout)}
             >
-              <Box
-                className="flex-row items-center gap-2 px-4"
-                style={{ paddingTop: insets.top + 8, paddingBottom: 8 }}
-              >
-                {/* Header Background */}
+              {/* Header Background */}
+              <Animated.View
+                className="absolute inset-0 border-b border-outline-100 bg-background-0"
+                style={[shadow.md, animatedHeaderInStyle]}
+              />
+
+              {/* Header Back Button */}
+              <Box className="overflow-hidden rounded-full p-0">
                 <Animated.View
-                  className="absolute inset-0 border-b border-outline-100 bg-background-0"
-                  style={[shadow.md, animatedHeaderInStyle]}
+                  className="rounded-full border border-outline-200 bg-background-100"
+                  style={[StyleSheet.absoluteFillObject, animatedHeaderOutStyle]}
                 />
-
-                {/* Header Back Button */}
-                <Box className="overflow-hidden rounded-full p-0">
-                  <Animated.View
-                    className="rounded-full border border-outline-200 bg-background-100"
-                    style={[StyleSheet.absoluteFillObject, animatedHeaderOutStyle]}
-                  />
-                  <HeaderBackButton />
-                </Box>
-
-                {/* Header Title */}
-                <Animated.View className="flex-col" style={animatedHeaderInStyle}>
-                  <Text bold size="lg">
-                    {displayVolume(data.volume || 0)}
-                  </Text>
-                  <Text size="xs" className="font-JakartaMedium">
-                    {TRANSACTION_STATUS[data.status].label}
-                  </Text>
-                </Animated.View>
+                <HeaderBackButton />
               </Box>
+
+              {/* Header Title */}
+              <Animated.View className="flex-col" style={animatedHeaderInStyle}>
+                <Text bold size="lg">
+                  {displayVolume(data.volume || 0)}
+                </Text>
+                <Text size="xs" className="font-JakartaMedium">
+                  {TRANSACTION_STATUS[data.status].label}
+                </Text>
+              </Animated.View>
             </Box>
 
             <Box
               style={{ flex: 1, marginTop: headerSize.height - HANDLEHEIGHT }}
               onLayout={(e) => setSheetSize(e.nativeEvent.layout)}
             >
-              <TransactionBottomSheet
-                transactionID={id}
+              <TransactionSheet
+                transaction={data}
                 snapPoints={snapPoints}
                 snapToIndex={1}
                 animatedPosition={scrollY}

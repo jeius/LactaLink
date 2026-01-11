@@ -6,7 +6,6 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useEffect, useMemo } from 'react';
 import { addTransactionToCache } from '../lib/cacheUtils';
 import { createTransactionInfiniteQuery, createTransactionQuery } from '../lib/queryOptions';
-import { updateUnseenTransactionStore } from '../lib/zustandStores/unseenTransactionsStore';
 
 export function useTransaction(transaction: string | Transaction | undefined) {
   return useQuery(createTransactionQuery(transaction));
@@ -20,10 +19,15 @@ export function useInfiniteTransactions(options?: {
   const queryOptions = createTransactionInfiniteQuery(options);
   const { data, ...query } = useInfiniteQuery(queryOptions);
 
-  const dataArray = useMemo(() => {
-    if (!data) return generatePlaceHoldersWithID(10, {} as Transaction);
+  const { docs, unseen } = useMemo(() => {
+    if (!data)
+      return {
+        docs: generatePlaceHoldersWithID(10, {} as Transaction),
+        unseen: [],
+      };
 
     const docs: Transaction[] = [];
+    const unseen: Transaction[] = [];
 
     for (const page of data.pages) {
       page.docs.forEach((doc) => {
@@ -32,12 +36,12 @@ export function useInfiniteTransactions(options?: {
         // Add to cache
         addTransactionToCache(queryClient, doc);
 
-        // Update unseen transactions store
-        updateUnseenTransactionStore(doc);
+        const isUnseen = doc.tracking?.reads?.docs?.length === 0;
+        if (isUnseen) unseen.push(doc);
       });
     }
 
-    return docs;
+    return { docs, unseen };
   }, [data, queryClient]);
 
   useEffect(() => {
@@ -45,5 +49,5 @@ export function useInfiniteTransactions(options?: {
     if (data) storeInfiniteDocuments(data, storageKey);
   }, [data, queryOptions.queryKey]);
 
-  return { ...query, data: dataArray, dataMap: data };
+  return { ...query, data: docs, dataMap: data, unseen };
 }

@@ -7,7 +7,6 @@ import { useRecyclingState } from '@shopify/flash-list';
 import { useMutation } from '@tanstack/react-query';
 import { produce } from 'immer';
 import { addTransactionToAllCache } from '../lib/cacheUtils';
-import { getUnseenTransactionsActions } from '../lib/zustandStores/unseenTransactionsStore';
 
 export function useTransactionState(transaction: Transaction) {
   const unread = transaction.tracking?.reads?.docs?.length === 0;
@@ -21,8 +20,6 @@ export function useTransactionState(transaction: Transaction) {
     },
     onMutate: (_, { client }) => {
       setIsUnseen(false);
-      // Update unseen transactions store
-      getUnseenTransactionsActions().remove(transaction.id);
 
       // Optimistic update
       const optimisticTransaction = produce(transaction, (draft) => {
@@ -46,8 +43,6 @@ export function useTransactionState(transaction: Transaction) {
     },
     onError: (_err, _var, _ctx, { client }) => {
       setIsUnseen(true);
-      // Revert unseen transactions store
-      getUnseenTransactionsActions().add(transaction);
       // Revert the transaction cache
       addTransactionToAllCache(client, transaction);
     },
