@@ -100,7 +100,7 @@ export class TransactionService implements ITransactionService {
         milkBags: extractID(milkBags),
         volume: volume,
         // @ts-expect-error Safe to ignore.
-        initiatedBy: {}, // Auto-generated field
+        initiatedBy: undefined, // Auto-generated field
       },
     });
   }
@@ -130,7 +130,7 @@ export class TransactionService implements ITransactionService {
         milkBags: extractID(milkBags),
         volume: volume,
         // @ts-expect-error Safe to ignore.
-        initiatedBy: {}, // Auto-generated field
+        initiatedBy: undefined, // Auto-generated field
       },
     });
 
@@ -143,7 +143,7 @@ export class TransactionService implements ITransactionService {
           status: DELIVERY_ACCEPTED,
           method: DELIVERY_OPTIONS.DELIVERY.value,
           // @ts-expect-error Safe to ignore.
-          proposedBy: {}, // Auto-generated field
+          proposedBy: undefined, // Auto-generated field
         },
       })
       .catch(async (err) => {
@@ -182,7 +182,7 @@ export class TransactionService implements ITransactionService {
         milkBags: extractID(milkBags),
         volume: volume,
         // @ts-expect-error Safe to ignore.
-        initiatedBy: {}, // Auto-generated field
+        initiatedBy: undefined, // Auto-generated field
       },
     });
 
@@ -195,7 +195,7 @@ export class TransactionService implements ITransactionService {
           status: DELIVERY_ACCEPTED,
           method: DELIVERY_OPTIONS.PICKUP.value,
           // @ts-expect-error Safe to ignore.
-          proposedBy: {}, // Auto-generated field
+          proposedBy: undefined, // Auto-generated field
         },
       })
       .catch(async (err) => {
@@ -230,7 +230,7 @@ export class TransactionService implements ITransactionService {
         transaction: transaction.id,
         status: DELIVERY_PROPOSED,
         // @ts-expect-error Safe to ignore.
-        proposedBy: {}, // Auto-generated field
+        proposedBy: undefined, // Auto-generated field
       },
     });
 
