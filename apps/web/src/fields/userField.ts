@@ -1,5 +1,5 @@
 import { extractID } from '@lactalink/utilities/extractors';
-import { RelationshipField } from 'payload';
+import { CollectionSlug, RelationshipField } from 'payload';
 
 type Overrides = Partial<
   Pick<RelationshipField, 'name' | 'required' | 'label' | 'index' | 'unique' | 'access'>
@@ -15,7 +15,10 @@ const userField: RelationshipField = {
     beforeChange: [
       ({ value, req, operation }) => {
         if (operation !== 'create' || !req.user) return value;
-        if (value && value !== '') return value; // Preserve existing value if present
+
+        // Preserve existing value if valid string
+        if (typeof value === 'string' && value.trim() !== '') return value;
+
         return extractID(req.user);
       },
     ],
@@ -27,17 +30,32 @@ const userField: RelationshipField = {
   },
 };
 
+const profileRelations: CollectionSlug[] = ['individuals', 'milkBanks', 'hospitals'];
+
 const userProfileField: RelationshipField = {
   name: 'user',
   type: 'relationship',
-  relationTo: ['individuals', 'milkBanks', 'hospitals'],
+  relationTo: profileRelations,
   hasMany: false,
   validate: () => true, // Validation handled in generateCreatedBy hook
   hooks: {
     beforeChange: [
       ({ value, req }) => {
         if (!req.user || !req.user.profile) return value;
-        if (value) return value; // Preserve existing value if present
+
+        // Preserve existing value if valid object
+        if (
+          typeof value === 'object' &&
+          Object.keys(value).length === 2 &&
+          Object.hasOwn(value, 'relationTo') &&
+          Object.hasOwn(value, 'value') &&
+          profileRelations.includes(value.relationTo) &&
+          typeof value.value === 'string' &&
+          value.value.trim() !== ''
+        ) {
+          return value;
+        }
+
         return {
           relationTo: req.user.profile.relationTo,
           value: extractID(req.user.profile.value),
