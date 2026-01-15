@@ -8,7 +8,14 @@ import { extractID } from '../extractors/extractID';
  * @returns true if profiles are equal, false otherwise
  */
 export function isEqualProfiles(profileA?: User['profile'], profileB?: User['profile']) {
-  if (!profileA || !profileB) return false;
+  if (!profileA) {
+    console.error('Error in isEqualProfiles: profileA is undefined or null');
+    return false;
+  }
+  if (!profileB) {
+    console.error('Error in isEqualProfiles: profileB is undefined or null');
+    return false;
+  }
   return (
     profileA.relationTo === profileB.relationTo &&
     extractID(profileA.value) === extractID(profileB.value)
