@@ -1,3 +1,4 @@
+import { useMeUserStore } from '@/lib/stores/meUserStore';
 import { setMeOnline } from '@/lib/stores/presenceStore';
 import NetInfo from '@react-native-community/netinfo';
 import { onlineManager } from '@tanstack/react-query';
@@ -12,28 +13,34 @@ import { useAppState } from './useAppState';
  * @description This hook should be used at the root level of the app to ensure proper tracking of online status.
  */
 export function useOnlineManager() {
+  const user = useMeUserStore((s) => s.meUser);
+
   // Initialize online status on mount
   useEffect(() => {
     const currentState = AppState.currentState;
-    if (currentState === 'active') {
-      setMeOnline(true).catch((err) => console.error('Failed to set online:', err));
+    if (currentState === 'active' && user) {
+      setMeOnline(true, user).catch((err) => console.error('Failed to set online:', err));
     }
-  }, []);
+  }, [user]);
 
   // Listen for app state changes
   useAppState(
-    useCallback((state) => {
-      switch (state) {
-        case 'active':
-          setMeOnline(true).catch((err) => console.error('Failed to set online:', err));
-          break;
-        case 'background':
-        case 'inactive':
-        default:
-          setMeOnline(false).catch((err) => console.error('Failed to set offline:', err));
-          break;
-      }
-    }, [])
+    useCallback(
+      (state) => {
+        if (!user) return;
+        switch (state) {
+          case 'active':
+            setMeOnline(true, user).catch((err) => console.error('Failed to set online:', err));
+            break;
+          case 'background':
+          case 'inactive':
+          default:
+            setMeOnline(false, user).catch((err) => console.error('Failed to set offline:', err));
+            break;
+        }
+      },
+      [user]
+    )
   );
 
   // Handle network changes
