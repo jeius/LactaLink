@@ -56,7 +56,7 @@ export function DeliveryField({ control, ...props }: DeliveryFieldProps) {
   return (
     <FormControl isInvalid={!!error} className="px-5">
       <FormControlLabel>
-        <FormControlLabelText size="lg" className="font-JakartaSemiBold flex-1">
+        <FormControlLabelText size="lg" className="flex-1 font-JakartaSemiBold">
           Delivery Details
         </FormControlLabelText>
         <Icon as={TruckIcon} />

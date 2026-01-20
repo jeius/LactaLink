@@ -21,7 +21,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PressableProps, TextProps, ViewProps } from 'react-native';
+import type { FlatListProps, PressableProps, TextProps, ViewProps } from 'react-native';
 import { Platform } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -416,6 +416,22 @@ export function BottomSheetFlashList<TItem>({
   );
 }
 
+type IBottomSheetFlatListProps<TItem> = Omit<FlatListProps<TItem>, 'renderScrollComponent'>;
+
+export function BottomSheetFlatList<TItem>({
+  showsVerticalScrollIndicator = false,
+  showsHorizontalScrollIndicator = false,
+  ...props
+}: IBottomSheetFlatListProps<TItem>) {
+  return (
+    <GorhomBottomSheetFlatList
+      {...props}
+      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+      showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+    />
+  );
+}
+
 type IBottomSheetScrollViewProps = React.ComponentProps<typeof GorhomBottomSheetScrollView>;
 
 export function BottomSheetScrollView({
@@ -433,7 +449,6 @@ export function BottomSheetScrollView({
   );
 }
 
-export const BottomSheetFlatList = GorhomBottomSheetFlatList;
 export const BottomSheetSectionList = GorhomBottomSheetSectionList;
 export const BottomSheetModalProvider = GorhomBottomSheetModalProvider;
 

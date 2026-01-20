@@ -1,6 +1,7 @@
 import {
   AddressSchema,
   DeliveryPreferenceSchema,
+  DeliverySchema,
   DonationSchema,
   IdentitySchema,
   ImageSchema,
@@ -11,6 +12,7 @@ import {
 import { FileCollection } from '@lactalink/types/collections';
 import {
   Address,
+  DeliveryDetail,
   DeliveryPreference,
   Donation,
   Identity,
@@ -89,6 +91,10 @@ type TransformedRequest<T, B extends boolean> = T extends Request
 
 type TransformedIdentity<T, B extends boolean> = T extends Identity
   ? IdentitySchema
+  : BaseReturn<T, B>;
+
+type TransformedDeliveryDetail<T, B extends boolean> = T extends DeliveryDetail
+  ? DeliverySchema
   : BaseReturn<T, B>;
 
 /**
@@ -335,4 +341,22 @@ export function transformToIdentitySchema<T extends Identity | BaseInput, B exte
     options,
     'Identity into IdentitySchema'
   ) as TransformedIdentity<T, B>;
+}
+
+export function transformToDeliverySchema<T extends DeliveryDetail | BaseInput, B extends boolean>(
+  deliveryDetail: T,
+  options: BaseOptions<B> = { throwOnShallowCollection: true } as BaseOptions<B>
+): TransformedDeliveryDetail<T, B> {
+  return baseTransformer<DeliveryDetail, DeliverySchema, B>(
+    deliveryDetail,
+    (data) => ({
+      date: data.scheduledAt,
+      mode: data.method,
+      note: data.notes,
+      address: transformToAddressSchema(data.address, { throwOnShallowCollection: true }),
+      time: data.scheduledAt,
+    }),
+    options,
+    'DeliveryDetail into DeliverySchema'
+  ) as TransformedDeliveryDetail<T, B>;
 }

@@ -33,12 +33,12 @@ import { extractCollection } from '@lactalink/utilities/extractors';
 import isEqual from 'lodash/isEqual';
 import { AlertCircleIcon, CalendarDaysIcon, ClockIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo } from 'react';
-import { Control, useController, useForm } from 'react-hook-form';
+import { Control, useController, useForm, useWatch } from 'react-hook-form';
 import { FlatList } from 'react-native-gesture-handler';
 
 const dpCardStyle = tva({
   base: 'w-52 flex-1 p-4',
-  variants: { isSelected: { true: 'border-primary-500 border-2' } },
+  variants: { isSelected: { true: 'border-2 border-primary-500' } },
 });
 
 export interface DeliveryFormProps extends VStackProps {
@@ -61,7 +61,7 @@ export function DeliveryForm({
   insideBottomSheet = false,
   ...props
 }: DeliveryFormProps) {
-  const { control, watch, reset, getValues, handleSubmit } = useForm<DeliverySchema>({
+  const { control, reset, getValues, handleSubmit } = useForm<DeliverySchema>({
     resolver: zodResolver(deliverySchema),
     defaultValues: { note: '' },
     values: values,
@@ -72,7 +72,7 @@ export function DeliveryForm({
     [deliveryPreferences]
   );
 
-  const selectedDP = watch('deliveryPreference');
+  const selectedDP = useWatch({ control, name: 'deliveryPreference' });
   const address = selectedDP && extractCollection(dpMap.get(selectedDP.id)?.address);
   const deliveryModes = selectedDP?.preferredMode.map((mode) => DELIVERY_OPTIONS[mode]);
 
@@ -92,6 +92,11 @@ export function DeliveryForm({
         reset(newValues);
       }
     } else {
+      if (values) {
+        reset(values);
+        return;
+      }
+
       const currentValues = getValues();
       const hasAddressOrMode = currentValues.address || currentValues.mode;
 
@@ -99,7 +104,7 @@ export function DeliveryForm({
         reset({ ...currentValues, address: undefined, mode: undefined });
       }
     }
-  }, [getValues, reset, selectedDP]);
+  }, [getValues, reset, selectedDP, values]);
 
   async function onSubmit(data: DeliverySchema) {
     if (data.deliveryPreference) {
@@ -224,7 +229,7 @@ function AddressesField({
 
   const cardStyle = tva({
     base: 'w-64 flex-1',
-    variants: { isSelected: { true: 'border-primary-500 border-2' } },
+    variants: { isSelected: { true: 'border-2 border-primary-500' } },
   });
 
   const {

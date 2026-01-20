@@ -11,6 +11,7 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import { toRad } from 'react-native-redash';
+import { Box } from './box';
 
 export const HANDLEHEIGHT = 30;
 
@@ -100,6 +101,7 @@ export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex 
   // render
   return (
     <Animated.View style={[topShadow, { borderTopLeftRadius: 20, borderTopRightRadius: 20 }]}>
+      <Box className="absolute inset-x-0 bottom-0 h-1 bg-background-0" />
       <Animated.View
         style={[containerStyle, containerAnimatedStyle]}
         renderToHardwareTextureAndroid={true}

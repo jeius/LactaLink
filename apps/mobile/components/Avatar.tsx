@@ -1,5 +1,6 @@
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useUserPresence } from '@/hooks/live-updates/useUserPresence';
 import { isMeUser } from '@/lib/utils/isMeUser';
 import { UserProfile } from '@lactalink/types';
 import { Avatar as AvatarType } from '@lactalink/types/payload-generated-types';
@@ -81,7 +82,7 @@ export function ProfileAvatar({
   profile: profileProp,
   enablePress = false,
   showBadge = false,
-  status: badgeStatus,
+  status,
   onLoad,
   fadeDuration,
   isLoading: isLoadingProp,
@@ -91,6 +92,9 @@ export function ProfileAvatar({
 
   const { data, ...query } = useProfileData(profileProp);
   const profile = data?.value;
+
+  const presence = useUserPresence(profile?.owner);
+  const badgeStatus = status ?? (presence?.isOnline ? 'online' : 'offline');
 
   const isLoading = isLoadingProp || query.isLoading;
 

@@ -46,14 +46,16 @@ export function DeliveryCard({
     );
   }
 
-  const deliveryMethod = data && (isDeliverySchema(data) ? data.mode : data.method);
+  if (!data) return null;
 
-  const label = deliveryMethod ? DELIVERY_OPTIONS[deliveryMethod].label : 'No Data';
-  const iconSource = deliveryMethod ? getDeliveryPreferenceIcon(deliveryMethod) : null;
-  const time = data ? formatLocaleTime(isDeliverySchema(data) ? data.time : data.scheduledAt) : '-';
-  const date = data ? formatDate(isDeliverySchema(data) ? data.date : data.scheduledAt) : '-';
-  const address = data ? extractCollection(data.address)?.displayName || 'Unknown Address' : '-';
-  const instructions = data && (isDeliverySchema(data) ? data.note : data.notes);
+  const deliveryMethod = isDeliverySchema(data) ? data.mode : data.method;
+
+  const label = DELIVERY_OPTIONS[deliveryMethod].label;
+  const iconSource = getDeliveryPreferenceIcon(deliveryMethod);
+  const time = formatLocaleTime(isDeliverySchema(data) ? data.time : data.scheduledAt);
+  const date = formatDate(isDeliverySchema(data) ? data.date : data.scheduledAt);
+  const address = extractCollection(data.address)?.displayName || 'Unknown Address';
+  const instructions = isDeliverySchema(data) ? data.note : data.notes;
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className })}>
