@@ -6,6 +6,8 @@ export type Collections = Config['collections'][keyof Config['collections']];
 
 type CollectionBySlug<Slug extends CollectionSlug> = Config['collections'][Slug];
 
+export type CollectionsJoins = Config['collectionsJoins'];
+
 export type Collection<Slug extends CollectionSlug | unknown = unknown> =
   Slug extends CollectionSlug ? CollectionBySlug<Slug> : Collections;
 

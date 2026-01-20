@@ -545,10 +545,10 @@ export class TransactionService implements ITransactionService {
       id: transactionId,
       depth,
       joins: {
-        deliveryDetails: { count: true, limit: 0 },
-        deliveryUpdates: { count: true, limit: 0 },
-        deliveryPlans: { count: true, limit: 5, sort: '-createdAt' },
-        'tracking.reads': { count: true, limit: 0 },
+        deliveryDetails: { count: true },
+        deliveryUpdates: { count: true },
+        deliveryPlans: { count: true, limit: 1, sort: '-updatedAt' },
+        'tracking.reads': { count: true, limit: 2 },
         'tracking.statusHistory': false,
       },
     });
