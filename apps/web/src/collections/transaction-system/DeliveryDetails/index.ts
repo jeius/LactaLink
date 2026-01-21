@@ -21,7 +21,7 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
   },
   admin: {
     group: COLLECTION_GROUP.TRANSACTION,
-    useAsTitle: 'address',
+    useAsTitle: 'method',
     defaultColumns: ['transaction', 'method', 'status', 'createdBy', 'createdAt'],
     description: 'Details for delivery, pickup, or meetup of transactions',
   },
@@ -30,6 +30,18 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
   },
   fields: [
     {
+      name: 'status',
+      type: 'select',
+      required: true,
+      enumName: 'enum_delivery_details_status',
+      defaultValue: DELIVERY_DETAILS_STATUS.PENDING.value,
+      options: Object.values(DELIVERY_DETAILS_STATUS),
+      admin: {
+        description: 'Current status of this delivery detail',
+      },
+    },
+
+    {
       name: 'transaction',
       type: 'relationship',
       relationTo: 'transactions',
@@ -37,32 +49,40 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
       index: true,
       admin: {
         description: 'The transaction this delivery belongs to',
+        position: 'sidebar',
       },
     },
 
     {
-      name: 'method',
-      type: 'select',
-      enumName: 'enum_delivery_options',
-      required: true,
-      options: Object.values(DELIVERY_OPTIONS),
-      admin: {
-        description: 'Method of delivery',
-      },
-    },
-
-    {
-      name: 'scheduledAt',
-      label: 'Schedule',
-      type: 'date',
-      required: true,
-      admin: {
-        description: 'Scheduled date and time',
-        date: {
-          displayFormat: 'd MMM yyy HH:mm a',
-          pickerAppearance: 'dayAndTime',
+      type: 'row',
+      fields: [
+        {
+          name: 'method',
+          type: 'select',
+          enumName: 'enum_delivery_options',
+          required: true,
+          options: Object.values(DELIVERY_OPTIONS),
+          admin: {
+            description: 'Method of delivery',
+            width: '50%',
+          },
         },
-      },
+
+        {
+          name: 'scheduledAt',
+          label: 'Schedule',
+          type: 'date',
+          required: true,
+          admin: {
+            description: 'Scheduled date and time',
+            width: '50%',
+            date: {
+              displayFormat: 'd MMM yyy HH:mm a',
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+      ],
     },
 
     {
@@ -88,17 +108,5 @@ export const DeliveryDetails: CollectionConfig<'delivery-details'> = {
     },
 
     createUserProfileField({ name: 'proposedBy', required: true }),
-
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      enumName: 'enum_delivery_details_status',
-      defaultValue: DELIVERY_DETAILS_STATUS.PENDING.value,
-      options: Object.values(DELIVERY_DETAILS_STATUS),
-      admin: {
-        description: 'Current status of this delivery detail',
-      },
-    },
   ],
 };

@@ -323,6 +323,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+  fallbackLocale: null;
   globals: {
     'donor-screening-form': DonorScreeningForm;
   };
@@ -1513,6 +1514,10 @@ export interface Transaction {
 export interface DeliveryDetail {
   id: string;
   /**
+   * Current status of this delivery detail
+   */
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  /**
    * The transaction this delivery belongs to
    */
   transaction: string | Transaction;
@@ -1548,10 +1553,6 @@ export interface DeliveryDetail {
         relationTo: 'hospitals';
         value: string | Hospital;
       };
-  /**
-   * Current status of this delivery detail
-   */
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   updatedAt: string;
   createdAt: string;
 }
@@ -3040,14 +3041,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'user-search';
         value: string | UserSearch;
-      } | null)
-    | ({
-        relationTo: 'payload-kv';
-        value: string | PayloadKv;
-      } | null)
-    | ({
-        relationTo: 'payload-jobs';
-        value: string | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3756,13 +3749,13 @@ export interface TransactionsSelect<T extends boolean = true> {
  * via the `definition` "delivery-details_select".
  */
 export interface DeliveryDetailsSelect<T extends boolean = true> {
+  status?: T;
   transaction?: T;
   method?: T;
   scheduledAt?: T;
   address?: T;
   notes?: T;
   proposedBy?: T;
-  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -16,43 +16,49 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   const { user } = req;
   if (!user?.profile) return doc;
 
-  // On update operations
-  if (operation === 'update') {
-    // Update read records
-    const { docs } = await req.payload.delete({
-      collection: 'transaction-reads',
-      where: { transaction: { equals: doc.id } },
-      req,
-    });
-
-    req.payload.logger.info(
-      `Deleted ${docs.length} transaction read records for transaction ${doc.id}`
-    );
-
-    // Add record in status history if status changed
-    if (previousDoc?.status !== doc.status) {
-      const isSender = isEqualProfiles(user.profile, doc.sender);
-      const isReceiver = isEqualProfiles(user.profile, doc.recipient);
-      const notes = `Status changed by ${isSender ? 'sender' : isReceiver ? 'receiver' : 'system'}.`;
-
-      const history = await req.payload.create({
-        collection: 'transaction-status-histories',
-        data: { status: doc.status, transaction: doc.id, notes: notes },
+  try {
+    // On update operations
+    if (operation === 'update') {
+      // Update read records
+      const { docs } = await req.payload.delete({
+        collection: 'transaction-reads',
+        where: { transaction: { equals: doc.id } },
+        req,
       });
 
       req.payload.logger.info(
-        `Created status history record ${history.id} for transaction ${doc.id} with status ${doc.status}`
+        `Deleted ${docs.length} transaction read records for transaction ${doc.id}`
       );
-    }
-  }
 
-  // On create operations
-  if (operation === 'create') {
-    await Promise.all([
-      updateDonation(extractID(doc.donation), req),
-      updateRequest(extractID(doc.request), req),
-      updateMilkBagsStatus(extractID(doc.milkBags), req),
-    ]);
+      // Add record in status history if status changed
+      if (previousDoc?.status !== doc.status) {
+        const isSender = isEqualProfiles(user.profile, doc.sender);
+        const isReceiver = isEqualProfiles(user.profile, doc.recipient);
+        const notes = `Status changed by ${isSender ? 'sender' : isReceiver ? 'receiver' : 'system'}.`;
+
+        const history = await req.payload.create({
+          collection: 'transaction-status-histories',
+          data: { status: doc.status, transaction: doc.id, notes: notes },
+          req,
+        });
+
+        req.payload.logger.info(
+          `Created status history record ${history.id} for transaction ${doc.id} with status ${doc.status}`
+        );
+      }
+    }
+
+    // On create operations
+    if (operation === 'create') {
+      await Promise.all([
+        updateDonation(extractID(doc.donation), req),
+        updateRequest(extractID(doc.request), req),
+        updateMilkBagsStatus(extractID(doc.milkBags), req),
+      ]);
+    }
+  } catch (error) {
+    req.payload.logger.error(error, 'Error in Transactions afterChange hook:');
+    throw error;
   }
 
   return doc;

@@ -166,6 +166,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
               on: 'transaction',
               defaultLimit: 1,
               maxDepth: 3,
+              defaultSort: '-updatedAt',
               where: { status: { equals: DELIVERY_DETAILS_STATUS.ACCEPTED.value } },
               admin: {
                 description: 'Delivery details of this transaction',
@@ -198,7 +199,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
               on: 'transaction',
               maxDepth: 3,
               defaultLimit: 5,
-              defaultSort: '-createdAt',
+              defaultSort: '-updatedAt',
               admin: {
                 description: 'Delivery plans proposed by users.',
                 defaultColumns: ['method', 'scheduledAt', 'address', 'notes'],

@@ -18,30 +18,34 @@ export const afterChange: CollectionAfterChangeHook<DeliveryDetail> = async ({
 }) => {
   const { payload } = req;
 
-  const updateTxnToConfirmed = () =>
-    payload.update({
-      req,
-      collection: 'transactions',
-      id: extractID(doc.transaction),
-      data: { status: TXN_CONFIRMED },
-    });
+  try {
+    const updateTxnToConfirmed = () =>
+      payload.update({
+        req,
+        collection: 'transactions',
+        id: extractID(doc.transaction),
+        data: { status: TXN_CONFIRMED },
+      });
 
-  // If delivery is created with ACCEPTED status, update transaction status to CONFIRMED
-  if (operation === 'create' && doc.status === ACCEPTED) {
-    const updatedTxn = await updateTxnToConfirmed();
-    payload.logger.info(
-      `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after confirmed delivery details creation`
-    );
+    // If delivery is created with ACCEPTED status, update transaction status to CONFIRMED
+    if (operation === 'create' && doc.status === ACCEPTED) {
+      const updatedTxn = await updateTxnToConfirmed();
+      payload.logger.info(
+        `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after confirmed delivery details creation`
+      );
+    }
+
+    // If status have changed from PENDING to ACCEPTED, update transaction status
+    // to CONFIRMED
+    if (operation === 'update' && previousDoc?.status === PENDING && doc.status === ACCEPTED) {
+      const updatedTxn = await updateTxnToConfirmed();
+      payload.logger.info(
+        `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after delivery proposal accepted`
+      );
+    }
+  } catch (error) {
+    payload.logger.error(error, 'Error in DeliveryDetails afterChange hook:');
+    throw error;
   }
-
-  // If status have changed from PENDING to ACCEPTED, update transaction status
-  // to CONFIRMED
-  if (operation === 'update' && previousDoc?.status === PENDING && doc.status === ACCEPTED) {
-    const updatedTxn = await updateTxnToConfirmed();
-    payload.logger.info(
-      `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after delivery proposal accepted`
-    );
-  }
-
   return doc;
 };

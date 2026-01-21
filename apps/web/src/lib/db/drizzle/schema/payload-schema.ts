@@ -200,15 +200,15 @@ export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'CANCELLED',
 ]);
 export const enum_transaction_type = pgEnum('enum_transaction_type', ['P2P', 'P2O', 'O2P']);
-export const enum_delivery_options = pgEnum('enum_delivery_options', [
-  'PICKUP',
-  'DELIVERY',
-  'MEETUP',
-]);
 export const enum_delivery_details_status = pgEnum('enum_delivery_details_status', [
   'PENDING',
   'ACCEPTED',
   'REJECTED',
+]);
+export const enum_delivery_options = pgEnum('enum_delivery_options', [
+  'PICKUP',
+  'DELIVERY',
+  'MEETUP',
 ]);
 export const enum_delivery_updates_status = pgEnum('enum_delivery_updates_status', [
   'WAITING',
@@ -2012,6 +2012,7 @@ export const delivery_details = pgTable(
   'delivery_details',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    status: enum_delivery_details_status('status').notNull().default('PENDING'),
     transaction: uuid('transaction_id')
       .notNull()
       .references(() => transactions.id, {
@@ -2029,7 +2030,6 @@ export const delivery_details = pgTable(
         onDelete: 'set null',
       }),
     notes: varchar('notes'),
-    status: enum_delivery_details_status('status').notNull().default('PENDING'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -3000,8 +3000,6 @@ export const payload_locked_documents_rels = pgTable(
     avatarsID: uuid('avatars_id'),
     'screening-filesID': uuid('screening_files_id'),
     'user-searchID': uuid('user_search_id'),
-    'payload-kvID': uuid('payload_kv_id'),
-    'payload-jobsID': uuid('payload_jobs_id'),
   },
   (columns) => [
     index('payload_locked_documents_rels_order_idx').on(columns.order),
@@ -3079,8 +3077,6 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
     index('payload_locked_documents_rels_screening_files_id_idx').on(columns['screening-filesID']),
     index('payload_locked_documents_rels_user_search_id_idx').on(columns['user-searchID']),
-    index('payload_locked_documents_rels_payload_kv_id_idx').on(columns['payload-kvID']),
-    index('payload_locked_documents_rels_payload_jobs_id_idx').on(columns['payload-jobsID']),
     foreignKey({
       columns: [columns['parent']],
       foreignColumns: [payload_locked_documents.id],
@@ -3305,16 +3301,6 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['user-searchID']],
       foreignColumns: [user_search.id],
       name: 'payload_locked_documents_rels_user_search_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['payload-kvID']],
-      foreignColumns: [payload_kv.id],
-      name: 'payload_locked_documents_rels_payload_kv_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['payload-jobsID']],
-      foreignColumns: [payload_jobs.id],
-      name: 'payload_locked_documents_rels_payload_jobs_fk',
     }).onDelete('cascade'),
   ]
 );
@@ -5078,16 +5064,6 @@ export const relations_payload_locked_documents_rels = relations(
       references: [user_search.id],
       relationName: 'user-search',
     }),
-    'payload-kvID': one(payload_kv, {
-      fields: [payload_locked_documents_rels['payload-kvID']],
-      references: [payload_kv.id],
-      relationName: 'payload-kv',
-    }),
-    'payload-jobsID': one(payload_jobs, {
-      fields: [payload_locked_documents_rels['payload-jobsID']],
-      references: [payload_jobs.id],
-      relationName: 'payload-jobs',
-    }),
   })
 );
 export const relations_payload_locked_documents = relations(
@@ -5314,8 +5290,8 @@ type DatabaseSchema = {
   enum_users_profile_type: typeof enum_users_profile_type;
   enum_transaction_status: typeof enum_transaction_status;
   enum_transaction_type: typeof enum_transaction_type;
-  enum_delivery_options: typeof enum_delivery_options;
   enum_delivery_details_status: typeof enum_delivery_details_status;
+  enum_delivery_options: typeof enum_delivery_options;
   enum_delivery_updates_status: typeof enum_delivery_updates_status;
   enum_message_type: typeof enum_message_type;
   enum_conversation_type: typeof enum_conversation_type;

@@ -2,9 +2,11 @@ import { Transaction } from '@lactalink/types/payload-generated-types';
 import { randomBytes } from 'crypto';
 import { FieldHook } from 'payload';
 
-export const generateTransactionNumber: FieldHook<Transaction> = ({ data, value }) => {
+export const generateTransactionNumber: FieldHook<Transaction> = ({ value, operation }) => {
+  if (operation !== 'create') return value;
+
   if (value && value.trim() !== '') {
-    return data;
+    return value;
   }
 
   const prefix = 'TXN';
