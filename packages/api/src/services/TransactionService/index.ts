@@ -373,23 +373,16 @@ export class TransactionService implements ITransactionService {
   }
 
   async markAsRead(transaction: Transaction): Promise<Transaction> {
-    const readDoc = await this.apiClient.create({
+    await this.apiClient.create({
       collection: 'transaction-reads',
       data: {
         transaction: transaction.id,
-        user: '', // Auto-generated field
+        // @ts-expect-error Safe to ignore.
+        user: undefined, // Auto-generated field
       },
     });
 
-    const reads = transaction.tracking?.reads?.docs || [];
-    reads.push(readDoc);
-    const totalDocs = reads.length;
-    const hasNextPage = transaction.tracking?.reads?.hasNextPage || false;
-
-    return {
-      ...transaction,
-      tracking: { ...transaction.tracking, reads: { docs: reads, totalDocs, hasNextPage } },
-    };
+    return this.getTransaction(transaction.id, 3);
   }
 
   async updateDeliveryStatus(

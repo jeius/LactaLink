@@ -1,4 +1,3 @@
-import { TransactionStatusBadge } from '@/components/badges/TransactionStatusBadge';
 import { Card, CardProps } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -7,6 +6,7 @@ import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import React from 'react';
+import { TransactionStatusBadge } from './TransactionStatusBadge';
 
 interface TransactionStatusCardProps extends CardProps {
   transaction: Transaction;

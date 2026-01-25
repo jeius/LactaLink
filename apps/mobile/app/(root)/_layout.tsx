@@ -50,15 +50,6 @@ export default function Layout() {
       />
 
       <Stack.Screen name="(create)/conversations/create" />
-
-      <Stack.Screen
-        name="(create)/delivery-proposal"
-        options={{
-          presentation: 'transparentModal',
-          contentStyle: { backgroundColor: 'transparent' },
-          animation: 'slide_from_bottom',
-        }}
-      />
     </Stack>
   );
 }

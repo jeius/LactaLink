@@ -1,11 +1,15 @@
-import { Transaction } from '@lactalink/types/payload-generated-types';
+import { DeliveryDetail, Transaction } from '@lactalink/types/payload-generated-types';
 import { QueryClient } from '@tanstack/react-query';
 import { produce } from 'immer';
-import { createTransactionInfiniteQuery, createTransactionQuery } from './queryOptions';
+import {
+  createDeliveryDetailQuery,
+  createTransactionInfiniteQuery,
+  createTransactionQuery,
+} from './queryOptions';
 
 export function addTransactionToAllCache(client: QueryClient, transaction: Transaction) {
-  addTransactionToCache(client, transaction);
   addTransactionToInfiniteCache(client, transaction);
+  addTransactionToCache(client, transaction);
 }
 
 export function addTransactionToCache(client: QueryClient, transaction: Transaction) {
@@ -35,4 +39,12 @@ export function addTransactionToInfiniteCache(client: QueryClient, transaction: 
       }
     });
   });
+}
+
+export function addDeliveryDetailToCache(
+  client: QueryClient,
+  deliveryDetail: DeliveryDetail | undefined
+) {
+  const queryKey = createDeliveryDetailQuery(deliveryDetail).queryKey;
+  client.setQueryData(queryKey, deliveryDetail);
 }

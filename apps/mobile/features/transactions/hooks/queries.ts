@@ -1,14 +1,22 @@
 import { storeInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { Transaction } from '@lactalink/types/payload-generated-types';
+import { DeliveryDetail, Transaction } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser, generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { addTransactionToCache } from '../lib/cacheUtils';
-import { createTransactionInfiniteQuery, createTransactionQuery } from '../lib/queryOptions';
+import {
+  createDeliveryDetailQuery,
+  createTransactionInfiniteQuery,
+  createTransactionQuery,
+} from '../lib/queryOptions';
 
 export function useTransaction(transaction: string | Transaction | undefined) {
   return useQuery(createTransactionQuery(transaction));
+}
+
+export function useDeliveryDetail(deliveryDetail: string | DeliveryDetail | null | undefined) {
+  return useQuery(createDeliveryDetailQuery(deliveryDetail));
 }
 
 export function useInfiniteTransactions(options?: {

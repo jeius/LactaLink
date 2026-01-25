@@ -6,7 +6,6 @@ import FormPreventBack from '@/components/forms/FormPreventBack';
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
 import { useAddAddressMutation } from '@/features/address/hooks/useAddAddressMutation';
-import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useAddressForm } from '@/hooks/forms/useAddressForm';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -18,8 +17,6 @@ import { toast } from 'sonner-native';
 
 export default function CreatePage() {
   const router = useRouter();
-
-  const revalidateQueries = useRevalidateCollectionQueries();
   const { mutateAsync } = useAddAddressMutation();
 
   const form = useAddressForm(undefined);
@@ -36,7 +33,6 @@ export default function CreatePage() {
 
     await promise;
 
-    revalidateQueries(['addresses', 'users']);
     form.reset(formData);
     router.back();
   }

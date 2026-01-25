@@ -1,13 +1,12 @@
+import { Box, BoxProps } from '@/components/ui/box';
 import { getLottieAsset } from '@/lib/stores/assetsStore';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import LottieView, { AnimationObject } from 'lottie-react-native';
-import { Box, BoxProps } from '../ui/box';
 
 const ANIMATED_ICON: Record<Transaction['status'], { source: AnimationObject }> = {
-  PENDING_DELIVERY_CONFIRMATION: { source: getLottieAsset('timeLoader') },
-  DELIVERY_SCHEDULED: { source: getLottieAsset('timeLoader') },
-  MATCHED: { source: getLottieAsset('orderPacked') },
+  PENDING: { source: getLottieAsset('timeLoader') },
+  CONFIRMED: { source: getLottieAsset('orderPacked') },
   COMPLETED: { source: getLottieAsset('success') },
   CANCELLED: { source: getLottieAsset('success') },
   DELIVERED: { source: getLottieAsset('receivePackage') },

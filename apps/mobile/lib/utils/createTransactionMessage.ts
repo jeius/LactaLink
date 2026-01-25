@@ -1,17 +1,9 @@
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
-import { Delivery, Transaction, User } from '@lactalink/types/payload-generated-types';
-import { isEqualProfiles } from '@lactalink/utilities/checkers';
-import { extractName, extractTransactionData } from '@lactalink/utilities/extractors';
-import { getMeUser } from '../stores/meUserStore';
+import { PopulatedUserProfile } from '@lactalink/types';
+import { DeliveryDetail, DeliveryUpdate, User } from '@lactalink/types/payload-generated-types';
+import { extractName } from '@lactalink/utilities/extractors';
 
-type UserRole = 'sender' | 'recipient' | 'other';
-type DeliveryMode = 'MEETUP' | 'DELIVERY' | 'PICKUP';
-type ExtractedTransactionData = NonNullable<ReturnType<typeof extractTransactionData>>;
-
-interface TransactionMessageParams {
-  otherPartyProfile: User['profile'];
-  transaction?: Transaction;
-}
+type DeliveryMode = DeliveryDetail['method'];
 
 // Constants for common messages
 const MESSAGES = {
@@ -33,42 +25,49 @@ const MESSAGES = {
       `The transaction has been cancelled. You may want to reach out to ${name} for more details.`,
     FAILED: (name: string) =>
       `The transaction has failed. You may want to reach out to ${name} for more details.`,
+    DELAYED: (name: string) =>
+      `${name} is experiencing a delay. Please check in with them for updates.`,
   },
 } as const;
 
-export function createTransactionMessage(params: TransactionMessageParams): string {
-  const { otherPartyProfile, transaction } = params;
-  const meUserProfile = getMeUser()?.profile;
-  const data = extractTransactionData(transaction);
+export function createTransactionMessage(
+  otherParty: PopulatedUserProfile,
+  deliveryDetail: DeliveryDetail,
+  deliveryUpdate?: DeliveryUpdate | null
+): string {
+  const otherPartyName = getOtherPartyName(otherParty);
+  const defaultMessage = `No updates from ${otherPartyName}.`;
 
-  if (!data) {
-    return getDefaultMessage(otherPartyProfile);
-  }
+  if (!deliveryUpdate) return defaultMessage;
 
-  const userRole = getUserRole(meUserProfile, data);
-  const otherPartyName = getOtherPartyName(otherPartyProfile);
+  const { status } = deliveryUpdate;
+  const { method } = deliveryDetail;
+  const deliveryMode = getDeliveryModeLabel(method);
 
-  switch (data.status.value) {
-    case 'PENDING_DELIVERY_CONFIRMATION':
-      return handlePendingDeliveryConfirmation(data, otherPartyName, userRole);
+  switch (status) {
+    case 'WAITING':
+      return `${otherPartyName} is waiting for further updates.`;
 
-    case 'DELIVERY_SCHEDULED':
-      return handleDeliveryScheduled(data, otherPartyName, userRole);
+    case 'PREPARING':
+      return `${otherPartyName} is preparing the milk.`;
 
-    case 'MATCHED':
-      return handleMatched(data, otherPartyName, userRole);
+    case 'ON_THE_WAY':
+      return `${otherPartyName} is on the way to the ${deliveryMode} location.`;
 
-    case 'IN_TRANSIT':
-      return handleInTransit(data, otherPartyName, userRole, transaction);
+    case 'PICKUP_READY':
+      return `The milk is ready for pickup.`;
 
-    case 'READY_FOR_PICKUP':
-      return handleReadyForPickup(otherPartyName, userRole);
+    case 'ARRIVED':
+      return `${otherPartyName} has arrived at the ${deliveryMode} location.`;
 
     case 'DELIVERED':
-      return handleDelivered(data, otherPartyName, userRole);
+      return handleDelivered(method, otherPartyName);
 
     case 'COMPLETED':
       return MESSAGES.COMPLETION.SUCCESS;
+
+    case 'DELAYED':
+      return MESSAGES.ISSUES.DELAYED(otherPartyName);
 
     case 'CANCELLED':
       return MESSAGES.ISSUES.CANCELLED(otherPartyName);
@@ -77,24 +76,13 @@ export function createTransactionMessage(params: TransactionMessageParams): stri
       return MESSAGES.ISSUES.FAILED(otherPartyName);
 
     default:
-      return getDefaultMessage(otherPartyProfile);
+      return defaultMessage;
   }
 }
 
 // Helper functions
-function getUserRole(meUserProfile: User['profile'], data: ExtractedTransactionData): UserRole {
-  if (isEqualProfiles(meUserProfile, data.sender)) return 'sender';
-  if (isEqualProfiles(meUserProfile, data.recipient)) return 'recipient';
-  return 'other';
-}
-
 function getOtherPartyName(otherPartyProfile: User['profile']): string {
   return extractName({ profile: otherPartyProfile }) || 'The other user';
-}
-
-function getDefaultMessage(otherPartyProfile: User['profile']): string {
-  const otherPartyName = getOtherPartyName(otherPartyProfile);
-  return `Transaction with ${otherPartyName}.`;
 }
 
 function getDeliveryModeLabel(mode: DeliveryMode, lowercase = false): string {
@@ -102,145 +90,14 @@ function getDeliveryModeLabel(mode: DeliveryMode, lowercase = false): string {
   return lowercase ? label.toLowerCase() : label;
 }
 
-function handlePendingDeliveryConfirmation(
-  data: ExtractedTransactionData,
-  otherPartyName: string,
-  userRole: UserRole
-): string {
-  if (!data.proposed) {
-    return `${otherPartyName} has not proposed a transaction method yet. You may want to suggest one.`;
-  }
-
-  const { agreements, mode } = data.proposed;
-  const proposedMode = getDeliveryModeLabel(mode, true);
-
-  const userAgreement = userRole === 'sender' ? agreements?.sender : agreements?.recipient;
-
-  if (userAgreement && !userAgreement.agreed) {
-    return `${otherPartyName} has been waiting for you to respond on the proposed ${proposedMode} details.`;
-  }
-
-  return `You have rejected the proposed ${proposedMode} details of ${otherPartyName}.`;
-}
-
-function handleDeliveryScheduled(
-  data: ExtractedTransactionData,
-  otherPartyName: string,
-  userRole: UserRole
-): string {
-  if (!data.delivery) return MESSAGES.NO_DELIVERY;
-
-  const mode = getDeliveryModeLabel(data.delivery.mode);
-  const baseMessage = `${mode} date and location have been confirmed.`;
-
-  switch (userRole) {
-    case 'sender':
-      return `${baseMessage} ${MESSAGES.MILK_PREPARATION.SENDER}`;
-    case 'recipient':
-      return `${baseMessage} ${MESSAGES.MILK_PREPARATION.RECIPIENT(otherPartyName)}`;
-    default:
-      return baseMessage;
-  }
-}
-
-function handleMatched(
-  data: ExtractedTransactionData,
-  otherPartyName: string,
-  userRole: UserRole
-): string {
-  if (!data.delivery) return MESSAGES.NO_DELIVERY;
-
-  const mode = getDeliveryModeLabel(data.delivery.mode, true);
-
-  switch (userRole) {
-    case 'sender':
-      return `${otherPartyName} is patiently waiting for you in preparing the milk.`;
-    case 'recipient':
-      return `${otherPartyName} is currently preparing the milk. Please wait for it to be ready.`;
-    default:
-      return `The milk is currently being prepared for ${mode}.`;
-  }
-}
-
-function handleInTransit(
-  data: ExtractedTransactionData,
-  otherPartyName: string,
-  userRole: UserRole,
-  transaction?: Transaction
-): string {
-  if (!data.delivery) return MESSAGES.NO_DELIVERY;
-
-  const deliveryMode = data.delivery.mode as DeliveryMode;
-  const arrivalState = transaction?.delivery?.arrival;
-
-  switch (deliveryMode) {
-    case 'MEETUP':
-      return handleMeetupInTransit(arrivalState, otherPartyName, userRole);
-    case 'DELIVERY':
-      return handleDeliveryInTransit(otherPartyName, userRole);
-    default:
-      return 'The milk is on the way to the confirmed location.';
-  }
-}
-
-function handleMeetupInTransit(
-  arrivalState: Delivery['arrival'],
-  otherPartyName: string,
-  userRole: UserRole
-): string {
-  const senderDeparted = !!arrivalState?.senderDepartedAt;
-  const recipientDeparted = !!arrivalState?.recipientDepartedAt;
-
-  const otherPartyDeparted = userRole === 'sender' ? recipientDeparted : senderDeparted;
-
-  if (otherPartyDeparted) {
-    return `${otherPartyName} have departed for the meetup. ${MESSAGES.SAFETY.STAY_SAFE}`;
-  }
-
-  return `${otherPartyName} did not depart for the meetup yet. You may want to check in with them.`;
-}
-
-function handleDeliveryInTransit(otherPartyName: string, userRole: UserRole): string {
-  switch (userRole) {
-    case 'sender':
-      return `Please stay safe on the way. ${MESSAGES.SAFETY.CHECK_IN(otherPartyName)}`;
-    case 'recipient':
-      return `${otherPartyName} is on the way to the delivery location. Please be prepared to receive it.`;
-    default:
-      return 'The milk is on the way to the confirmed location.';
-  }
-}
-
-function handleReadyForPickup(otherPartyName: string, userRole: UserRole): string {
-  switch (userRole) {
-    case 'sender':
-      return `${otherPartyName} is on the way to pick up the milk. Please be prepared to hand it over.`;
-    case 'recipient':
-      return `Please stay safe on the way to pick up the milk from ${otherPartyName}.`;
-    default:
-      return 'The milk is being picked up by the recipient.';
-  }
-}
-
-function handleDelivered(
-  data: ExtractedTransactionData,
-  otherPartyName: string,
-  userRole: UserRole
-): string {
-  if (!data.delivery) return MESSAGES.NO_DELIVERY;
-
-  const deliveryMode = data.delivery.mode as DeliveryMode;
-
-  switch (deliveryMode) {
+function handleDelivered(method: DeliveryMode, otherPartyName: string): string {
+  switch (method) {
     case 'MEETUP':
       return 'The milk has been handed over at the meetup location.';
-    case 'DELIVERY':
-      return 'The milk has been delivered to the confirmed location.';
     case 'PICKUP':
-      return userRole === 'sender'
-        ? `${otherPartyName} has picked up the milk. ${MESSAGES.COMPLETION.THANK_YOU}`
-        : 'The milk has been picked up at the confirmed location.';
+      return `${otherPartyName} has picked up the milk.`;
+    case 'DELIVERY':
     default:
-      return 'The milk has been delivered to the confirmed location.';
+      return 'The milk has been delivered.';
   }
 }

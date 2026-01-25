@@ -1,33 +1,38 @@
-import { QUERY_KEYS } from '@/lib/constants/queryKeys';
+import { QUERY_KEYS } from '@/lib/constants';
 import { getTransactionService } from '@/lib/services';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { createTempID } from '@/lib/utils/tempID';
 import { Transaction } from '@lactalink/types/payload-generated-types';
-import { useRecyclingState } from '@shopify/flash-list';
 import { useMutation } from '@tanstack/react-query';
 import { produce } from 'immer';
 import { addTransactionToAllCache } from '../lib/cacheUtils';
 
 export function useTransactionState(transaction: Transaction) {
   const unread = transaction.tracking?.reads?.docs?.length === 0;
-  const [isUnseen, setIsUnseen] = useRecyclingState(unread, [unread]);
+  const meUser = getMeUser();
 
   const mutation = useMutation({
-    mutationKey: ['transactions', 'mark-read'],
+    mutationKey: ['transactions', 'mark-read', transaction.id],
     mutationFn: () => {
+      if (!unread) return Promise.resolve(null);
       const service = getTransactionService();
       return service.markAsRead(transaction);
     },
     onMutate: (_, { client }) => {
-      setIsUnseen(false);
+      if (!unread || !meUser) return;
+
+      const oldTransaction = transaction;
+
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      client.cancelQueries({ queryKey: QUERY_KEYS.TRANSACTIONS.ALL });
 
       // Optimistic update
       const optimisticTransaction = produce(transaction, (draft) => {
         const readDocs = draft.tracking?.reads?.docs || [];
         readDocs.push({
           id: createTempID(),
-          transaction: draft,
-          user: getMeUser()!,
+          transaction: transaction,
+          user: meUser,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -40,21 +45,21 @@ export function useTransactionState(transaction: Transaction) {
       });
 
       addTransactionToAllCache(client, optimisticTransaction);
+
+      return { oldTransaction };
     },
-    onError: (_err, _var, _ctx, { client }) => {
-      setIsUnseen(true);
-      // Revert the transaction cache
-      addTransactionToAllCache(client, transaction);
+    onError: (_err, _var, ctx, { client }) => {
+      if (ctx?.oldTransaction) addTransactionToAllCache(client, ctx.oldTransaction);
     },
-    onSuccess: (_data, _vars, _ctx, { client }) => {
+    onSuccess: (data, _vars, _ctx, { client }) => {
       // Only refetch the infinite transactions query since it will update the single
       // transaction query as well
-      client.refetchQueries({ queryKey: QUERY_KEYS.TRANSACTIONS.INFINITE });
+      if (data) addTransactionToAllCache(client, data);
     },
   });
 
   return {
-    isUnseen,
+    isUnseen: unread,
     markAsSeen: () => mutation.mutate(),
     isPending: mutation.isPending,
   };

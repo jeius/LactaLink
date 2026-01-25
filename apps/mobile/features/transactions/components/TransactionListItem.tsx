@@ -1,18 +1,18 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
 import { BasicBadge } from '@/components/badges';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card, CardProps } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useTransactionState } from '@/features/transactions/hooks/useTransactionState';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction, User } from '@lactalink/types/payload-generated-types';
+import { displayVolume } from '@lactalink/utilities';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
-import { Link } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRightIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
 
 interface TransactionListItemProps extends CardProps {
@@ -40,7 +40,7 @@ export default function TransactionListItem({
   const otherUserProfile = isMeSender ? recipient : isMeRecipient ? sender : null;
   const otherUserProfileLabel = isMeSender ? 'Requester' : isMeRecipient ? 'Donor' : undefined;
 
-  const title = matchedVolume ? `${matchedVolume} mL` : 'N/A';
+  const title = matchedVolume ? displayVolume(matchedVolume) : 'N/A';
   const badgeText = isMeSender ? 'Donation' : isMeRecipient ? 'Request' : null;
 
   const handlePress = useCallback(() => {
@@ -48,11 +48,16 @@ export default function TransactionListItem({
   }, [onPress, data]);
 
   return (
-    <Card {...cardProps}>
-      <VStack space="sm" className="items-stretch">
-        <HStack space="md" className="items-center">
-          <HStack space="sm" className="flex-1 items-start">
-            <Text bold size="xl" className="shrink" ellipsizeMode="tail" numberOfLines={1}>
+    <AnimatedPressable onPress={handlePress} className="overflow-hidden rounded-2xl">
+      <Card {...cardProps}>
+        <VStack className="items-stretch">
+          <HStack space="sm" className="items-center">
+            <Text
+              size="xl"
+              className="flex-1 font-JakartaExtraBold"
+              ellipsizeMode="tail"
+              numberOfLines={1}
+            >
               {title}
             </Text>
             {badgeText && (
@@ -64,55 +69,28 @@ export default function TransactionListItem({
               />
             )}
           </HStack>
-          <Text size="xs" numberOfLines={1} className="shrink">
+
+          <Text size="xs" numberOfLines={1} className="shrink font-JakartaMedium">
             {TRANSACTION_STATUS[data?.status || 'PENDING'].label}
           </Text>
-        </HStack>
-        <HStack space="sm" className="items-stretch">
-          <VStack space="sm" className="flex-1 items-stretch justify-start">
-            <Text size="xs">Sent to:</Text>
-            {otherUserProfile && (
-              <ProfileTag label={otherUserProfileLabel} profile={otherUserProfile} />
-            )}
-          </VStack>
-          <Link href={`/transactions/${data.id}`} asChild>
-            <Button onPress={handlePress} className="h-fit w-fit self-center rounded-full p-3">
-              <ButtonIcon as={ChevronRight} />
-            </Button>
-          </Link>
-        </HStack>
 
-        {showBadge && isUnseen && (
-          <Box
-            className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary-500"
-            style={{ transform: [{ translateY: -4 }, { translateX: 4 }] }}
-          />
-        )}
-      </VStack>
-    </Card>
-  );
-}
+          <HStack space="sm" className="mt-2 items-stretch">
+            <VStack space="sm" className="flex-1 items-stretch justify-start">
+              {otherUserProfile && (
+                <ProfileTag label={otherUserProfileLabel} profile={otherUserProfile} />
+              )}
+            </VStack>
+            <Icon as={ChevronRightIcon} />
+          </HStack>
 
-export function TransactionListItemSkeleton(props: CardProps) {
-  return (
-    <Card {...props}>
-      <VStack space="sm" className="items-stretch">
-        <Skeleton variant="rounded" className="h-6 w-40" />
-        <HStack space="sm" className="justify-stretch">
-          <VStack space="sm" className="flex-1 items-stretch justify-start">
-            <Skeleton variant="circular" className="h-4 w-16" />
-            <HStack space="sm" className="items-center">
-              <Skeleton variant="circular" className="h-8 w-8" />
-              <VStack space="xs">
-                <Skeleton variant="circular" className="h-3 w-32" />
-                <Skeleton variant="circular" className="h-3 w-16" />
-              </VStack>
-            </HStack>
-          </VStack>
-
-          <Skeleton variant="circular" className="h-10 w-10" />
-        </HStack>
-      </VStack>
-    </Card>
+          {showBadge && isUnseen && (
+            <Box
+              className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary-500"
+              style={{ transform: [{ translateY: -4 }, { translateX: 4 }] }}
+            />
+          )}
+        </VStack>
+      </Card>
+    </AnimatedPressable>
   );
 }

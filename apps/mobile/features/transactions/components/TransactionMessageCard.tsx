@@ -9,10 +9,11 @@ import { useTransaction } from '@/features/transactions/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { createTransactionMessage } from '@/lib/utils/createTransactionMessage';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { PopulatedUserProfile } from '@lactalink/types';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
-import { extractTransactionData } from '@lactalink/utilities/extractors';
-import React, { useMemo } from 'react';
+import { extractCollection, extractName } from '@lactalink/utilities/extractors';
+import React from 'react';
 
 const cardStyle = tva({
   base: 'flex-col items-stretch gap-4 p-4',
@@ -29,50 +30,69 @@ export function TransactionMessageCard({
   size = 'lg',
   ...props
 }: TransactionMessageCardProps) {
-  const { data: meUser } = useMeUser();
-  const { isLoading, ...query } = useTransaction(transaction);
+  const { data, isLoading } = useTransaction(transaction);
 
-  const data = useMemo(() => extractTransactionData(query.data), [query.data]);
-
-  const isMeSender = isEqualProfiles(meUser?.profile, data?.sender);
-  const isMeRecipient = isEqualProfiles(meUser?.profile, data?.recipient);
-  const otherPartyProfile = isMeSender ? data?.recipient : isMeRecipient ? data?.sender : null;
-
-  const message = useMemo(
-    () =>
-      createTransactionMessage({
-        transaction: query.data,
-        otherPartyProfile: otherPartyProfile,
-      }),
-    [query.data, otherPartyProfile]
-  );
+  if (isLoading || !data) {
+    return (
+      <Card {...props} size={size} variant={variant} className={cardStyle({ className })}>
+        <LoadingSkeleton />
+      </Card>
+    );
+  }
 
   return (
     <Card {...props} size={size} variant={variant} className={cardStyle({ className })}>
-      {isLoading ? (
-        <>
-          <HStack space="md" className="items-start">
-            <Skeleton variant="circular" className="h-12 w-12" />
-            <VStack className="flex-1">
-              <Skeleton variant="rounded" className="h-5" />
-              <Skeleton variant="rounded" className="mt-1 h-5 w-2/3" />
-            </VStack>
-          </HStack>
-          <Skeleton variant="rounded" className="h-10 w-full" />
-        </>
-      ) : (
-        otherPartyProfile && (
-          <>
-            <HStack space="md" className="items-start">
-              <ProfileAvatar profile={otherPartyProfile} size="md" />
-              <Text className="flex-1" numberOfLines={2}>
-                {message}
-              </Text>
-            </HStack>
-            <MessageInputButton recipient={otherPartyProfile} />
-          </>
-        )
-      )}
+      <Content transaction={data} />
     </Card>
+  );
+}
+
+function Content({ transaction: data }: { transaction: Transaction }) {
+  const { data: meUser } = useMeUser();
+
+  const deliveryDetail = extractCollection(data.deliveryDetails?.docs || [])[0];
+
+  const isMeSender = isEqualProfiles(meUser?.profile, data?.sender);
+  const otherParty = isMeSender ? data.recipient : data.sender;
+  const otherPartyDoc = extractCollection(otherParty.value);
+
+  if (!otherPartyDoc) throw new Error('Transaction sender/receiver not populated.');
+
+  const otherPartyProfile = {
+    relationTo: otherParty.relationTo,
+    value: otherPartyDoc,
+  } as PopulatedUserProfile;
+
+  const message = deliveryDetail
+    ? createTransactionMessage(otherPartyProfile, deliveryDetail)
+    : `Communicate with ${extractName({ profile: otherParty })} regarding the delivery.`;
+
+  return (
+    <>
+      <HStack space="md" className="items-start">
+        <ProfileAvatar profile={otherPartyProfile} size="md" showBadge />
+        <Text className="flex-1" numberOfLines={2}>
+          {message}
+        </Text>
+      </HStack>
+      {otherPartyProfile.value.owner && (
+        <MessageInputButton recipient={otherPartyProfile.value.owner} />
+      )}
+    </>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <>
+      <HStack space="md" className="items-start">
+        <Skeleton variant="circular" className="h-12 w-12" />
+        <VStack className="flex-1">
+          <Skeleton variant="rounded" className="h-5" />
+          <Skeleton variant="rounded" className="mt-1 h-5 w-2/3" />
+        </VStack>
+      </HStack>
+      <Skeleton variant="rounded" className="h-10 w-full" />
+    </>
   );
 }
