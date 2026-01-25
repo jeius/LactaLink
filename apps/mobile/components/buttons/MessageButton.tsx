@@ -1,7 +1,9 @@
-import { useMeUser } from '@/hooks/auth/useAuth';
+import { useFindDirectChat } from '@/features/chat/hooks/queries';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { User } from '@lactalink/types/payload-generated-types';
+import { useRouter } from 'expo-router';
 import { MessageCircleIcon, SendIcon } from 'lucide-react-native';
+import { useCallback } from 'react';
 import { Input, InputField, InputIcon, InputProps } from '../ui/input';
 import { Pressable, PressableProps } from '../ui/pressable';
 
@@ -10,7 +12,7 @@ const baseStyle = tva({
 });
 
 interface MessageButtonProps extends PressableProps {
-  recipient: User['profile'];
+  recipient: string | User;
   label?: string;
   size?: InputProps['size'];
 }
@@ -22,10 +24,27 @@ export function MessageInputButton({
   className,
   ...props
 }: MessageButtonProps) {
-  const { data: meUser } = useMeUser();
-  const sender = meUser?.profile;
+  const router = useRouter();
+
+  const { data: conversation } = useFindDirectChat(recipient);
+
+  const handlePress = useCallback(() => {
+    if (conversation) {
+      router.push(`/chat/${conversation.id}`);
+    }
+  }, [router, conversation]);
+
+  if (conversation === null) {
+    return null;
+  }
+
   return (
-    <Pressable {...props} className={baseStyle({ className })}>
+    <Pressable
+      {...props}
+      disabled={props.disabled ?? !conversation}
+      className={baseStyle({ className })}
+      onPress={handlePress}
+    >
       <Input size={size} pointerEvents="none" role="button">
         <InputIcon as={MessageCircleIcon} className="ml-3" />
         <InputField editable={false} placeholder={label} />

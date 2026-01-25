@@ -1,16 +1,17 @@
 import { QUERY_KEYS } from '@/lib/constants/queryKeys';
 import { storeInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { Conversation, Message } from '@lactalink/types/payload-generated-types';
+import { Conversation, Message, User } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import isString from 'lodash/isString';
 import { useEffect, useMemo } from 'react';
-import { addConversationToCache } from '../lib/chatCacheUtils';
+import { addConversationToAllCaches, addConversationToCache } from '../lib/chatCacheUtils';
 import {
   conversationsInfiniteOptions,
   createConversationQueryOptions,
+  createFindDirectChatQueryOptions,
   createInfiniteMessagesOptions,
 } from '../lib/queryOptions';
 import { getConversationStatus, transformToChatMessage } from '../lib/transformUtils';
@@ -75,4 +76,15 @@ export function useInfiniteConversations() {
   }, [data]);
 
   return { ...query, data: dataArray, dataMap: data };
+}
+
+export function useFindDirectChat(participant: string | User | null | undefined, enabled = true) {
+  const queryClient = useQueryClient();
+  const { data, ...query } = useQuery(createFindDirectChatQueryOptions(participant, enabled));
+
+  useEffect(() => {
+    if (data) addConversationToAllCaches(queryClient, data);
+  }, [data, queryClient]);
+
+  return { ...query, data };
 }

@@ -38,15 +38,44 @@ export function addConversationToInfiniteCache(client: QueryClient, data: Conver
   });
 }
 
+export function removeConversationFromInfiniteCache(client: QueryClient, data: Conversation) {
+  const infiniteQueryKey = conversationsInfiniteOptions.queryKey;
+
+  // Update the infinite conversations cache
+  client.setQueryData(infiniteQueryKey, (oldData) => {
+    if (!oldData) return oldData;
+    return produce(oldData, (draft) => {
+      // Remove existing instance of the conversation if it exists
+      draft.pages.forEach((page) => {
+        if (page.docs.has(data.id)) {
+          page.docs.delete(data.id);
+          page.totalDocs -= 1;
+        }
+      });
+    });
+  });
+}
+
 export function addConversationToCache(client: QueryClient, data: Conversation) {
   const singleQueryKey = createConversationQueryOptions(data.id).queryKey;
   // Update the single conversation cache
   client.setQueryData(singleQueryKey, data);
 }
 
+export function removeConversationFromCache(client: QueryClient, data: Conversation) {
+  const singleQueryKey = createConversationQueryOptions(data.id).queryKey;
+  // Remove the single conversation cache
+  client.removeQueries({ queryKey: singleQueryKey, exact: true });
+}
+
 export function addConversationToAllCaches(client: QueryClient, data: Conversation) {
   addConversationToCache(client, data);
   addConversationToInfiniteCache(client, data);
+}
+
+export function removeConversationFromAllCaches(client: QueryClient, data: Conversation) {
+  removeConversationFromCache(client, data);
+  removeConversationFromInfiniteCache(client, data);
 }
 
 export function updateMessageInInfiniteCache(

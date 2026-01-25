@@ -428,6 +428,7 @@ export function BottomSheetFlatList<TItem>({
       {...props}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}
       showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+      focusHook={useFocusEffect}
     />
   );
 }

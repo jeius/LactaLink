@@ -66,7 +66,7 @@ export function DeliveryCard({
           <Image
             source={iconSource}
             alt={`${deliveryMethod || 'Unknown'}-icon`}
-            style={{ width: 16, height: 16 }}
+            style={{ width: 18, height: 18 }}
           />
         </Box>
       </HStack>

@@ -18,6 +18,8 @@ import {
   FormControlLabelText,
   FormControlProps,
 } from '@/components/ui/form-control';
+import { Icon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
 import { VStack, VStackProps } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import {
@@ -29,9 +31,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DELIVERY_OPTIONS } from '@lactalink/enums';
 import { DeliveryCreateSchema, DeliverySchema, deliverySchema } from '@lactalink/form-schemas';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { extractCollection, listKeyExtractor } from '@lactalink/utilities/extractors';
+import { Link } from 'expo-router';
 import isEqual from 'lodash/isEqual';
-import { AlertCircleIcon, CalendarDaysIcon, ClockIcon } from 'lucide-react-native';
+import { AlertCircleIcon, CalendarDaysIcon, ClockIcon, PlusCircleIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo } from 'react';
 import { Control, useController, useForm, useWatch } from 'react-hook-form';
 import { FlatList } from 'react-native-gesture-handler';
@@ -63,7 +66,7 @@ export function DeliveryForm({
 }: DeliveryFormProps) {
   const { control, reset, getValues, handleSubmit } = useForm<DeliverySchema>({
     resolver: zodResolver(deliverySchema),
-    defaultValues: { note: '' },
+    defaultValues: { note: '', deliveryPreference: null },
     values: values,
   });
 
@@ -222,10 +225,12 @@ function AddressesField({
 }: AddressesFieldProps) {
   const { data: meUser } = useMeUser();
 
-  const selections = useMemo(
-    () => addresses || extractCollection(meUser?.addresses?.docs) || [],
-    [addresses, meUser?.addresses?.docs]
-  );
+  const deliveryPreference = useWatch({ control, name: 'deliveryPreference' });
+
+  const selections = useMemo(() => {
+    const userAddresses = addresses || extractCollection(meUser?.addresses?.docs) || [];
+    return userAddresses.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? 1 : -1));
+  }, [addresses, meUser?.addresses?.docs]);
 
   const cardStyle = tva({
     base: 'w-64 flex-1',
@@ -257,7 +262,7 @@ function AddressesField({
       <FlatList
         horizontal
         data={selections}
-        keyExtractor={(item, idx) => `address-${item.id}-${idx}`}
+        keyExtractor={listKeyExtractor}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <Box className="w-3" />}
         contentContainerClassName="px-5"
@@ -287,6 +292,21 @@ function AddressesField({
                 variant="filled"
               />
             </AnimatedPressable>
+          );
+        }}
+        ListFooterComponentClassName="px-2 items-stretch"
+        ListFooterComponent={() => {
+          if (deliveryPreference) return null;
+          return (
+            <Link href={'/addresses/create'} asChild push>
+              <AnimatedPressable
+                className="flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl"
+                style={{ width: 200 }}
+              >
+                <Icon as={PlusCircleIcon} size="2xl" />
+                <Text className="font-JakartaSemiBold">New Address</Text>
+              </AnimatedPressable>
+            </Link>
           );
         }}
       />

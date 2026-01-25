@@ -8,15 +8,15 @@ import { VStack } from '@/components/ui/vstack';
 
 import { Address } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { isString } from '@lactalink/utilities/type-guards';
 
 import { ComponentProps, ReactNode, useMemo } from 'react';
 
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { isTempID } from '@/lib/utils/tempID';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useRouter } from 'expo-router';
-import { GestureResponderEvent } from 'react-native';
+import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { ThumbnailMap } from '../map/ThumbnailMap';
 import { Button, ButtonText } from '../ui/button';
 import { BasicLocationPin } from '../ui/icon/custom';
@@ -50,9 +50,9 @@ export function AddressCard({
   ...props
 }: AddressCardProps) {
   const router = useRouter();
-  const shouldFetch = isString(dataProp);
+  const dataDoc = extractCollection(dataProp);
 
-  const { data: fetchedData, isLoading: isDataLoading } = useFetchById(shouldFetch, {
+  const { data: fetchedData, isLoading: isDataLoading } = useFetchById(!dataDoc, {
     collection: 'addresses',
     id: extractID(dataProp),
     depth: 0,
@@ -61,7 +61,7 @@ export function AddressCard({
 
   const isLoading = isLoadingProp || isDataLoading;
 
-  const data = shouldFetch ? fetchedData : extractCollection(dataProp);
+  const data = dataDoc ?? fetchedData;
   const { name, displayName, isDefault } = data || {};
 
   const center = useMemo(() => pointToLatLng(data?.coordinates), [data?.coordinates]);
@@ -72,7 +72,7 @@ export function AddressCard({
     router.push(`/map/explore/address/${data.id}`);
   }
 
-  if (isLoading) {
+  if (isLoading || data === undefined) {
     return (
       <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
         <VStack>
@@ -91,7 +91,17 @@ export function AddressCard({
   }
 
   return (
-    <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
+    <Card
+      {...props}
+      className={cardStyle({ mapVisible: showMap, className })}
+      style={StyleSheet.flatten([
+        {
+          opacity: isTempID(data.id) ? 0.6 : 1,
+          pointerEvents: isTempID(data.id) ? 'none' : 'auto',
+        },
+        props.style,
+      ])}
+    >
       {isDefault && (
         <BasicBadge
           size="md"

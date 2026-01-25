@@ -34,8 +34,6 @@ import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { MapProvider, useIsFollowingUser, useMap, useMapActions } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
-import { Spinner } from '../ui/spinner';
-import { Text } from '../ui/text';
 
 type Props = Pick<ViewProps, 'style'> &
   RNGoogleMapsPlusViewProps &
@@ -227,12 +225,12 @@ function MapView({
 
       {children}
 
-      {!mapLoaded && (
+      {/* {!mapLoaded && (
         <Box className="absolute inset-0 flex-col items-center justify-center gap-1 bg-primary-0">
           <Spinner size={'large'} />
           <Text size="md">Loading google maps...</Text>
         </Box>
-      )}
+      )} */}
     </Box>
   );
 }

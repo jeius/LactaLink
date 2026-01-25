@@ -20,7 +20,6 @@ import { Image } from '../Image';
 import { ThumbnailMap } from '../map/ThumbnailMap';
 import { Box } from '../ui/box';
 import { Button, ButtonText } from '../ui/button';
-import { Divider } from '../ui/divider';
 import GradientBackground from '../ui/gradient-bg';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
@@ -222,12 +221,17 @@ function ListCard({
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
       <VStack space="sm">
+        <HStack space="md" className="flex-wrap items-center">
+          <DeliveryModeIcons modes={preferredMode} size={size} hideLabels={hideIconLabels} />
+        </HStack>
+
         <HStack space="md">
           <Link asChild href={`/delivery-preferences/${prefID}`}>
             <Button
               size={size}
               disablePressAnimation
               variant="link"
+              action="default"
               className="h-fit w-fit self-start p-0"
             >
               <ButtonText underlineOnPress>{preferenceName}</ButtonText>
@@ -237,12 +241,7 @@ function ListCard({
         </HStack>
 
         <HStack space="xs" className="items-start">
-          <Icon
-            size="sm"
-            as={CalendarDaysIcon}
-            className="fill-primary-50 text-primary-500"
-            style={{ marginTop: 2 }}
-          />
+          <Icon size="sm" as={CalendarDaysIcon} className="text-primary-500" />
           <Text
             size={textSize}
             ellipsizeMode="tail"
@@ -254,12 +253,7 @@ function ListCard({
         </HStack>
 
         <HStack space="xs" className="items-start">
-          <Icon
-            size="sm"
-            as={MapPinIcon}
-            className="fill-primary-50 text-primary-500"
-            style={{ marginTop: 2 }}
-          />
+          <Icon size="sm" as={MapPinIcon} className="text-primary-500" />
           <VStack className="flex-1">
             <Text
               size={textSize}
@@ -270,12 +264,6 @@ function ListCard({
               {fullAddress}
             </Text>
           </VStack>
-        </HStack>
-
-        <Divider />
-
-        <HStack space="md" className="mt-1 flex-wrap items-center">
-          <DeliveryModeIcons modes={preferredMode} size={size} hideLabels={hideIconLabels} />
         </HStack>
       </VStack>
     </Card>

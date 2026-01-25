@@ -22,11 +22,9 @@ import { UsersRoundIcon, XIcon } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput } from 'react-native';
 import { useCreateDirectChat } from '../hooks/mutations';
+import { useFindDirectChat } from '../hooks/queries';
 import { createDirectChatCreationMutation } from '../lib/mutationOptions';
-import {
-  createFindDirectChatQueryOptions,
-  createNearestUsersQueryOptions,
-} from '../lib/queryOptions';
+import { createNearestUsersQueryOptions } from '../lib/queryOptions';
 import { CreateConvoSearchParams } from '../lib/types';
 import UserProfileItem from './UserProfileItem';
 
@@ -151,7 +149,7 @@ function ListHeader({ isLoading }: { isLoading?: boolean }) {
 function ListItem({ data }: { data: UserProfile }) {
   const router = useRouter();
   const owner = extractCollection(data.value)?.owner;
-  const { data: conversation } = useQuery(createFindDirectChatQueryOptions(owner));
+  const { data: conversation } = useFindDirectChat(owner);
   const { mutateAsync: createChat } = useCreateDirectChat();
 
   const handlePress = async () => {
