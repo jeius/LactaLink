@@ -6,7 +6,6 @@ import { GestureResponderEvent, Text, TextProps, View, ViewProps } from 'react-n
 import Animated, {
   SharedValue,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -86,7 +85,11 @@ const accordionTriggerStyle = tva({
 type IAccordionProps = ViewProps & VariantProps<typeof accordionStyle>;
 
 type IAccordionItemProps = React.ComponentPropsWithoutRef<typeof View> &
-  VariantProps<typeof accordionItemStyle> & { value: string | number };
+  VariantProps<typeof accordionItemStyle> & {
+    value: string | number;
+    expandProgress?: SharedValue<boolean>;
+    heightProgress?: SharedValue<number>;
+  };
 
 type IAccordionContentProps = ViewProps &
   VariantProps<typeof accordionContentStyle> & {
@@ -110,11 +113,16 @@ type IStyleContext = {
   size: IAccordionProps['size'];
 };
 
-type AccordionStore = {
+type StoreState = {
   isExpanded: SharedValue<boolean>;
+  height: SharedValue<number>;
   value: string | number;
+};
+
+type AccordionStore = StoreState & {
   actions: {
     toggleExpanded: () => void;
+    reset: (state?: Partial<StoreState>) => void;
   };
 };
 
@@ -136,6 +144,7 @@ function useAccordionStore<T>(selector: (state: AccordionStore) => T) {
 }
 
 const useExpanded = () => useAccordionStore((state) => state.isExpanded);
+const useHeight = () => useAccordionStore((state) => state.height);
 const useValue = () => useAccordionStore((state) => state.value);
 const useActions = () => useAccordionStore((state) => state.actions);
 
@@ -152,17 +161,25 @@ const Accordion = React.forwardRef<React.ComponentRef<typeof View>, IAccordionPr
 );
 
 const AccordionItem = React.forwardRef<React.ComponentRef<typeof View>, IAccordionItemProps>(
-  ({ className, value, ...props }, ref) => {
+  ({ className, value, expandProgress, heightProgress, ...props }, ref) => {
     const { variant } = useStyleContext();
-    const isExpanded = useSharedValue(false);
+    const localExpandProgress = useSharedValue(false);
+    const localHeightProgress = useSharedValue(0);
 
     const [store] = useState(() =>
-      createStore<AccordionStore>((_, get) => ({
-        isExpanded,
+      createStore<AccordionStore>((set, get) => ({
+        isExpanded: expandProgress ?? localExpandProgress,
+        height: heightProgress ?? localHeightProgress,
         value,
         actions: {
           toggleExpanded: () => {
-            get().isExpanded.value = !isExpanded.value;
+            get().isExpanded.set((prev) => !prev);
+          },
+          reset: (val) => {
+            if (val !== undefined) set(val);
+            else {
+              get().isExpanded.set(false);
+            }
           },
         },
       }))
@@ -170,9 +187,11 @@ const AccordionItem = React.forwardRef<React.ComponentRef<typeof View>, IAccordi
 
     // Reset states on value change for recycling
     useEffect(() => {
-      isExpanded.value = false;
-      store.setState({ isExpanded, value });
-    }, [isExpanded, store, value]);
+      const { reset } = store.getState().actions;
+      if (expandProgress) reset({ isExpanded: expandProgress });
+      if (heightProgress) reset({ height: heightProgress });
+      reset({ value });
+    }, [store, value, expandProgress, heightProgress]);
 
     return (
       <AccordionStoreContext.Provider value={store}>
@@ -190,20 +209,13 @@ const AccordionItem = React.forwardRef<React.ComponentRef<typeof View>, IAccordi
 );
 
 const AccordionContent = React.forwardRef<React.ComponentRef<typeof View>, IAccordionContentProps>(
-  function AccordionContent({ className, animationDuration = 500, ...props }, ref) {
+  function AccordionContent({ className, animationDuration: duration = 300, ...props }, ref) {
     const isExpanded = useExpanded();
     const value = useValue();
-
-    const height = useSharedValue(0);
-
-    const derivedHeight = useDerivedValue(() =>
-      withTiming(height.value * Number(isExpanded.value), {
-        duration: animationDuration,
-      })
-    );
+    const height = useHeight();
 
     const bodyStyle = useAnimatedStyle(() => ({
-      height: derivedHeight.value,
+      height: withTiming(isExpanded.value ? height.value : 0, { duration }),
     }));
 
     return (
@@ -215,11 +227,11 @@ const AccordionContent = React.forwardRef<React.ComponentRef<typeof View>, IAcco
         <View
           {...props}
           ref={ref}
-          className={accordionContentStyle({
-            class: className,
-          })}
+          className={accordionContentStyle({ className })}
+          style={[props.style]}
           onLayout={(e) => {
-            height.value = e.nativeEvent.layout.height;
+            const newHeight = e.nativeEvent.layout.height;
+            if (height.value !== newHeight) height.set(newHeight);
           }}
         >
           {props.children}
