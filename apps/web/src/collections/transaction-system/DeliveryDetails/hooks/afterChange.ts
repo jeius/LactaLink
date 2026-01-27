@@ -1,6 +1,6 @@
-import { DELIVERY_DETAILS_STATUS, TRANSACTION_STATUS } from '@lactalink/enums';
-import { DeliveryDetail } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { DELIVERY_DETAILS_STATUS, DELIVERY_UPDATES, TRANSACTION_STATUS } from '@lactalink/enums';
+import { DeliveryDetail, Transaction } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
 
 const PENDING = DELIVERY_DETAILS_STATUS.PENDING.value;
@@ -18,30 +18,67 @@ export const afterChange: CollectionAfterChangeHook<DeliveryDetail> = async ({
 }) => {
   const { payload } = req;
 
-  try {
-    const updateTxnToConfirmed = () =>
-      payload.update({
-        req,
-        collection: 'transactions',
-        id: extractID(doc.transaction),
-        data: { status: TXN_CONFIRMED },
-      });
+  const updateTxnToConfirmed = () =>
+    payload.update({
+      req,
+      collection: 'transactions',
+      id: extractID(doc.transaction),
+      data: { status: TXN_CONFIRMED },
+      depth: 3,
+    });
 
+  const createDeliveryUpdates = (transaction: Transaction) => {
+    const { id, sender, recipient } = transaction;
+    return Promise.all(
+      [sender, recipient].map(async ({ value }) => {
+        const user = extractCollection(value)?.owner;
+
+        if (!user) {
+          payload.logger.warn('Cannot create delivery update: sender/recipient owner not found');
+          return Promise.resolve(null);
+        }
+
+        return payload.create({
+          req,
+          collection: 'delivery-updates',
+          data: {
+            transaction: id,
+            status: DELIVERY_UPDATES.WAITING.value,
+            user: extractID(user),
+          },
+        });
+      })
+    );
+  };
+
+  const executeHook = async () => {
+    const updatedTxn = await updateTxnToConfirmed();
+    payload.logger.info(
+      `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after confirmed delivery details creation`
+    );
+
+    // Create delivery updates for both sender and recipient
+    const deliveryUpdates = (await createDeliveryUpdates(updatedTxn)).filter((v) => v !== null);
+
+    if (deliveryUpdates.length === 0) {
+      payload.logger.warn(`No delivery updates were created for transaction ${updatedTxn.id}`);
+    } else {
+      payload.logger.info(
+        `Delivery updates created for transaction ${updatedTxn.id} after confirmed delivery details creation`
+      );
+    }
+  };
+
+  try {
     // If delivery is created with ACCEPTED status, update transaction status to CONFIRMED
     if (operation === 'create' && doc.status === ACCEPTED) {
-      const updatedTxn = await updateTxnToConfirmed();
-      payload.logger.info(
-        `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after confirmed delivery details creation`
-      );
+      await executeHook();
     }
 
     // If status have changed from PENDING to ACCEPTED, update transaction status
     // to CONFIRMED
     if (operation === 'update' && previousDoc?.status === PENDING && doc.status === ACCEPTED) {
-      const updatedTxn = await updateTxnToConfirmed();
-      payload.logger.info(
-        `Transaction ${updatedTxn.id} status updated to ${TXN_CONFIRMED} after delivery proposal accepted`
-      );
+      await executeHook();
     }
   } catch (error) {
     payload.logger.error(error, 'Error in DeliveryDetails afterChange hook:');
