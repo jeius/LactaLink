@@ -23,10 +23,10 @@ import { DeliveryPreference, Transaction } from '@lactalink/types/payload-genera
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import React, { useEffect, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
+import KeyboardAvoidingScrollView from '../KeyboardAvoider';
 import { BottomSheetDragIndicator } from '../ui/bottom-sheet';
 
 export default function DeliveryProposalScreen() {
@@ -80,7 +80,7 @@ function MainComponent({ transaction, isRefetching, onRefetch: refetch, canEdit 
   const router = useRouter();
   const broadcastTxn = useBroadcastTransaction();
 
-  const deliveryPreferences = getDeliveryPreferences(transaction);
+  const deliveryPreferences = useMemo(() => getDeliveryPreferences(transaction), [transaction]);
   const deliveryPlan = extractCollection(transaction.deliveryPlans?.docs?.[0]);
   const deliverySchema = deliveryPlan ? transformToDeliverySchema(deliveryPlan) : undefined;
 
@@ -108,7 +108,7 @@ function MainComponent({ transaction, isRefetching, onRefetch: refetch, canEdit 
   }
 
   return (
-    <KeyboardAwareScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1 flex-col"
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
@@ -125,7 +125,7 @@ function MainComponent({ transaction, isRefetching, onRefetch: refetch, canEdit 
         onChange={handleSubmit}
         className="px-5"
       />
-    </KeyboardAwareScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }
 

@@ -1,7 +1,8 @@
+import { isTempID } from '@/lib/utils/tempID';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { extractID } from '@lactalink/utilities/extractors';
+import { extractID, listKeyExtractor } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { FlatListProps } from 'react-native';
@@ -72,8 +73,9 @@ export function SelectListField<
     >
       <FlatList
         {...listProps}
+        key={`list-select-field-${name}`}
         data={isLoading ? placeholder : items}
-        keyExtractor={(item, idx) => `${item.id}-${idx}`}
+        keyExtractor={listKeyExtractor}
         showsHorizontalScrollIndicator={listProps?.showsHorizontalScrollIndicator || false}
         className={flatlistStyle({ className: listProps?.className })}
         contentContainerClassName={contentContainerClassName({
@@ -83,7 +85,7 @@ export function SelectListField<
           <Box style={listProps?.horizontal ? { width: itemGap } : { height: itemGap }} />
         )}
         renderItem={({ item, index }) => {
-          const isPlaceholder = isPlaceHolderData(item);
+          const isPlaceholder = isPlaceHolderData(item) || isTempID(item.id);
           const isSelected = !isPlaceholder && extractID(value) === item.id;
           return (
             <AnimatedPressable

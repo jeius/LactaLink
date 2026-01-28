@@ -76,6 +76,10 @@ export function DeliveryForm({
   );
 
   const selectedDP = useWatch({ control, name: 'deliveryPreference' });
+  const dpSelectItems = useMemo(
+    () => deliveryPreferences?.map((dp) => transformToDeliveryPreferenceSchema(dp)),
+    [deliveryPreferences]
+  );
   const address = selectedDP && extractCollection(dpMap.get(selectedDP.id)?.address);
   const deliveryModes = selectedDP?.preferredMode.map((mode) => DELIVERY_OPTIONS[mode]);
 
@@ -119,27 +123,25 @@ export function DeliveryForm({
 
   return (
     <VStack {...props} space="lg">
-      {deliveryPreferences && (
-        <SelectListField
-          control={control}
-          name="deliveryPreference"
-          label="Delivery Preference (Optional)"
-          helperText="You can choose from the delivery preferences when setting up the delivery details."
-          listProps={{ horizontal: true, className: '-mx-5' }}
-          items={deliveryPreferences.map((dp) => transformToDeliveryPreferenceSchema(dp))}
-          renderItem={(item, _, { isSelected, isLoading }) => (
-            <DeliveryPreferenceCard
-              preference={item}
-              size="sm"
-              appearance="list-item"
-              hideIconLabels
-              className={dpCardStyle({ isSelected })}
-              variant="filled"
-              isLoading={isLoading}
-            />
-          )}
-        />
-      )}
+      <SelectListField
+        control={control}
+        name="deliveryPreference"
+        label="Delivery Preference (Optional)"
+        helperText="You can choose from the delivery preferences when setting up the delivery details."
+        listProps={{ horizontal: true, className: '-mx-5' }}
+        items={dpSelectItems ?? []}
+        renderItem={(item, _, { isSelected, isLoading }) => (
+          <DeliveryPreferenceCard
+            preference={item}
+            size="sm"
+            appearance="list-item"
+            hideIconLabels
+            className={dpCardStyle({ isSelected })}
+            variant="filled"
+            isLoading={isLoading}
+          />
+        )}
+      />
 
       <SelectInputField
         control={control}
