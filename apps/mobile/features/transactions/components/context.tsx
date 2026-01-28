@@ -94,7 +94,7 @@ function createTxnStore(transaction: Transaction, queryClient: QueryClient) {
         // Subscribe to channel
         channel.subscribe((status) => {
           if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
-            console.log('Subscribed to transaction channel:', transaction.id);
+            // console.log('Subscribed to transaction channel:', transaction.id);
           }
         });
       },
@@ -105,7 +105,7 @@ function createTxnStore(transaction: Transaction, queryClient: QueryClient) {
         // Unsubscribe from channel
         supabase.removeChannel(channel).then((result) => {
           if (result === 'ok') {
-            console.log('Unsubscribed from transaction channel:', transaction.id);
+            // console.log('Unsubscribed from transaction channel:', transaction.id);
             set({ channel: null });
           }
         });
