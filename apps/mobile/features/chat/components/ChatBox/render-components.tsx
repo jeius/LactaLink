@@ -1,5 +1,7 @@
+import { ProfileAvatar } from '@/components/Avatar';
 import { ImageViewer, SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
@@ -8,9 +10,16 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { getColor, getPrimaryColor } from '@/lib/colors';
+import { User } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractImageData } from '@lactalink/utilities/extractors';
-import { CameraIcon, CheckCheckIcon, CheckIcon, ImageIcon } from 'lucide-react-native';
+import {
+  CameraIcon,
+  CheckCheckIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ImageIcon,
+} from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import {
@@ -24,6 +33,7 @@ import {
   SystemMessage,
   SystemMessageProps,
 } from 'react-native-gifted-chat';
+import { TypingIndicator } from 'react-native-gifted-chat/src/TypingIndicator';
 import { pickImage, takePhoto } from '../../lib/mediaUtils';
 import { ChatActionType, ChatMessage, CreateChatMessage } from '../../lib/types';
 import styles from './styles';
@@ -34,7 +44,7 @@ function ChatDay(props: DayProps) {
     <Day
       {...props}
       wrapperStyle={{ backgroundColor: bgColor, borderRadius: 16 }}
-      textStyle={[styles.dayText]}
+      textProps={{ style: [styles.dayText] }}
     />
   );
 }
@@ -180,4 +190,39 @@ function ChatReplyMessage(props: BubbleProps<ChatMessage>) {
   );
 }
 
-export { ChatActions, ChatBubble, ChatDay, ChatInputToolbar, ChatSystemMessage };
+function ChatTypingIndicator({ typingUsers }: { typingUsers: User[] }) {
+  if (typingUsers.length === 0) return null;
+  const typingUserProfiles = typingUsers.map((user) => user.profile).filter((p) => !!p);
+  return (
+    <HStack className="px-3">
+      {typingUserProfiles.map((profile, index) => (
+        <Box
+          key={index}
+          className="self-center rounded-full bg-background-50"
+          style={{ padding: 2, marginLeft: index === 0 ? 0 : -10 }}
+        >
+          <ProfileAvatar profile={profile} size="sm" />
+        </Box>
+      ))}
+      <TypingIndicator isTyping />
+    </HStack>
+  );
+}
+
+function ChatScrollToBottom() {
+  return (
+    <Button action="secondary" size="xl" className="h-fit w-fit self-center rounded-full p-3">
+      <ButtonIcon as={ChevronDownIcon} />
+    </Button>
+  );
+}
+
+export {
+  ChatActions,
+  ChatBubble,
+  ChatDay,
+  ChatInputToolbar,
+  ChatScrollToBottom,
+  ChatSystemMessage,
+  ChatTypingIndicator,
+};

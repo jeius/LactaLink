@@ -1,8 +1,4 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { ProfileAvatar } from '@/components/Avatar';
-import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { getPrimaryColor } from '@/lib/colors';
 import { createTempID } from '@/lib/utils/tempID';
@@ -10,12 +6,10 @@ import { Conversation } from '@lactalink/types/payload-generated-types';
 import { extractDisplayName, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useIsFocused } from '@react-navigation/native';
 import { produce } from 'immer';
-import { ChevronDownIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SwipeableMethods } from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 import { GiftedChat, User as GiftedUser, MessageProps, SendProps } from 'react-native-gifted-chat';
-import { TypingIndicator } from 'react-native-gifted-chat/src/TypingIndicator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMarkReadConversation, useSendMessage } from '../../hooks/mutations';
 import { useInfiniteMessages } from '../../hooks/queries';
@@ -24,13 +18,31 @@ import { useTypingUsers } from '../context';
 import ChatMessageBox from './ChatMessageBox';
 import ChatSendButton from './ChatSendButton';
 import MediaList from './MediaList';
-import { ChatActions, ChatBubble, ChatInputToolbar, ChatSystemMessage } from './render-components';
+import {
+  ChatActions,
+  ChatBubble,
+  ChatInputToolbar,
+  ChatScrollToBottom,
+  ChatSystemMessage,
+  ChatTypingIndicator,
+} from './render-components';
 import ReplyMessageBar from './ReplyMessageBar';
 import styles from './styles';
 
 interface ChatBoxProps {
   conversation: Conversation;
 }
+
+const MemoizedChatMessageBox = React.memo(ChatMessageBox);
+const MemoizedChatBubble = React.memo(ChatBubble);
+const MemoizedChatSystemMessage = React.memo(ChatSystemMessage);
+const MemoizedChatInputToolbar = React.memo(ChatInputToolbar);
+const MemoizedChatActions = React.memo(ChatActions);
+const MemoizedMediaList = React.memo(MediaList);
+const MemoizedChatSendButton = React.memo(ChatSendButton);
+const MemoizedReplyMessageBar = React.memo(ReplyMessageBar);
+const MemoizedTypingIndicator = React.memo(ChatTypingIndicator);
+const MemoizedChatScrollToBottom = React.memo(ChatScrollToBottom);
 
 export default function ChatBox({ conversation }: ChatBoxProps) {
   const { data: meUser } = useMeUser();
@@ -101,54 +113,35 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
   }, [replyTo]);
 
   //#region Render Methods
-  const renderAccessory = useCallback(() => <MediaList />, []);
+  const renderChatFooter = useCallback(() => {
+    if (!replyTo) return null;
+    return <MemoizedReplyMessageBar message={replyTo} onCancelReply={() => setReplyTo(null)} />;
+  }, [replyTo]);
 
-  const renderActions = useCallback(() => <ChatActions />, []);
+  const renderScrollToBottomComponent = useCallback(() => <MemoizedChatScrollToBottom />, []);
+
+  const renderTypingIndicator = useCallback(
+    () => <MemoizedTypingIndicator typingUsers={typingUsers} />,
+    [typingUsers]
+  );
 
   const renderMessage = useCallback(
     (props: MessageProps<ChatMessage>) => (
-      <ChatMessageBox {...props} updateRowRef={updateRowRef} setReplyOnSwipeOpen={setReplyTo} />
+      <MemoizedChatMessageBox
+        {...props}
+        updateRowRef={updateRowRef}
+        setReplyOnSwipeOpen={setReplyTo}
+      />
     ),
     [updateRowRef]
   );
 
-  const renderChatFooter = useCallback(() => {
-    if (!replyTo) return null;
-    return <ReplyMessageBar message={replyTo} onCancelReply={() => setReplyTo(null)} />;
-  }, [replyTo]);
-
   const renderSend = useCallback(
-    (props: SendProps<ChatMessage>) => <ChatSendButton {...props} conversation={conversation} />,
+    (props: SendProps<ChatMessage>) => (
+      <MemoizedChatSendButton {...props} conversation={conversation} />
+    ),
     [conversation]
   );
-
-  const renderScrollToBottomComponent = useCallback(
-    () => (
-      <Button action="secondary" size="xl" className="h-fit w-fit self-center rounded-full p-3">
-        <ButtonIcon as={ChevronDownIcon} />
-      </Button>
-    ),
-    []
-  );
-
-  const renderTypingIndicator = useCallback(() => {
-    if (typingUsers.length === 0) return null;
-    const typingUserProfiles = typingUsers.map((user) => user.profile).filter((p) => !!p);
-    return (
-      <HStack className="px-3">
-        {typingUserProfiles.map((profile, index) => (
-          <Box
-            key={index}
-            className="self-center rounded-full bg-background-50"
-            style={{ padding: 2, marginLeft: index === 0 ? 0 : -10 }}
-          >
-            <ProfileAvatar profile={profile} size="sm" />
-          </Box>
-        ))}
-        <TypingIndicator isTyping />
-      </HStack>
-    );
-  }, [typingUsers]);
 
   //#endregion Render Methods
 
@@ -163,19 +156,19 @@ export default function ChatBox({ conversation }: ChatBoxProps) {
         isScrollToBottomEnabled
         onSend={handleSend}
         messageIdGenerator={createTempID}
+        textInputProps={{ style: styles.input }}
+        keyboardAvoidingViewProps={{ keyboardVerticalOffset }}
+        messageTextProps={{ customTextStyle: styles.messageText }}
         renderSend={renderSend}
-        renderBubble={ChatBubble}
-        renderActions={renderActions}
-        renderAccessory={renderAccessory}
-        renderSystemMessage={ChatSystemMessage}
-        renderInputToolbar={ChatInputToolbar}
         renderMessage={renderMessage}
         renderChatFooter={renderChatFooter}
         renderTypingIndicator={renderTypingIndicator}
         scrollToBottomComponent={renderScrollToBottomComponent}
-        textInputProps={{ style: styles.input }}
-        keyboardAvoidingViewProps={{ keyboardVerticalOffset }}
-        messageTextProps={{ customTextStyle: styles.messageText }}
+        renderBubble={MemoizedChatBubble}
+        renderActions={MemoizedChatActions}
+        renderAccessory={MemoizedMediaList}
+        renderSystemMessage={MemoizedChatSystemMessage}
+        renderInputToolbar={MemoizedChatInputToolbar}
         listProps={{
           keyExtractor: (item, idx) => `${item._id}-${idx}`,
           showsVerticalScrollIndicator: false,
