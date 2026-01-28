@@ -57,7 +57,7 @@ export const BottomTabBar = ({ navigation, state, descriptors }: BottomTabBarPro
       stiffness: 700,
     });
     return { transform: [{ translateX: translateX }] };
-  }, [state.index, itemWidth]);
+  });
 
   const onItemLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
