@@ -7,6 +7,7 @@ declare global {
       DATABASE_URI: string;
       NEXT_PUBLIC_SERVER_URL: string;
       VERCEL_PROJECT_PRODUCTION_URL: string;
+      COOLIFY_URL: string;
       VERCEL_ENV: 'production' | 'preview' | 'development';
       S3_BUCKET_IMAGES: string;
       S3_BUCKET_MEDIA: string;

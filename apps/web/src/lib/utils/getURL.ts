@@ -1,7 +1,7 @@
 import canUseDOM from './canUseDOM';
 
 const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? process.env.COOLIFY_URL;
 
 export const getClientSideURL = (): string | 'http://localhost:3000' => {
   let url = serverUrl;

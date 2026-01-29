@@ -84,34 +84,6 @@ COPY --from=dependencies /app/ .
 # This includes only web app and its workspace dependencies
 COPY --from=prepare /app/out/full/ .
 
-# # Build arguments - ONLY non-sensitive variables that are safe to embed in image
-# ARG GOOGLE_CLIENT_ID
-# ARG S3_BUCKET_IMAGES
-# ARG S3_BUCKET_MILK_BAG_IMAGES
-# ARG S3_BUCKET_ID_IMAGES
-# ARG S3_BUCKET_MESSAGE_MEDIA
-# ARG S3_BUCKET_MEDIA
-# ARG S3_BUCKET_FILES
-# ARG S3_BUCKET_AVATARS
-# ARG S3_REGION
-# ARG S3_ENDPOINT
-# ARG PSGC_API_URL
-# ARG NEXT_PUBLIC_SUPABASE_URL
-# ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-# ARG TURBO_TEAMID
-
-# # Build the application using Docker Build Secrets for sensitive data (cleaner approach)
-# RUN --mount=type=secret,id=payload_secret,env=PAYLOAD_SECRET \
-#     --mount=type=secret,id=database_uri,env=DATABASE_URI \
-#     --mount=type=secret,id=google_client_secret,env=GOOGLE_CLIENT_SECRET \
-#     --mount=type=secret,id=google_cloud_vision_api_key,env=GOOGLE_CLOUD_VISION_API_KEY \
-#     --mount=type=secret,id=google_routes_api_key,env=GOOGLE_ROUTES_API_KEY \
-#     --mount=type=secret,id=s3_access_key_id,env=S3_ACCESS_KEY_ID \
-#     --mount=type=secret,id=s3_secret_access_key,env=S3_SECRET_ACCESS_KEY \
-#     --mount=type=secret,id=resend_api_key,env=RESEND_API_KEY \
-#     --mount=type=secret,id=turbo_token,env=TURBO_TOKEN \
-#     pnpm build:web
-
 # Build the application
 RUN pnpm build:web
 
