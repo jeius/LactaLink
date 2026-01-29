@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This guide covers the production Dockerfile for deploying the LactaLink Next.js app to Northflank from a pnpm + Turborepo monorepo.
+This guide covers the production Dockerfile for deploying the LactaLink Next.js app to Coolify from a pnpm + Turborepo monorepo.
 
 ---
 
@@ -10,32 +10,32 @@ This guide covers the production Dockerfile for deploying the LactaLink Next.js 
 
 ### Multi-Stage Build Explanation
 
-#### **Stage 1: Base** (`node:22-alpine`)
+#### **Stage 1: Base** (`node:22.21.0`)
 
 ```dockerfile
-FROM node:22-alpine AS base
+FROM node:22.21.0 AS base
 ```
 
 **Purpose**: Establish the foundation for all subsequent stages.
 
 **Key Actions**:
 
-- Uses Alpine Linux for minimal image size (~5MB base vs ~100MB for Debian)
+- Uses Ubuntu-based Node.js image for reliable dependency support
 - Installs pnpm v10.20.0 via Corepack (matches `package.json` requirement)
-- Sets up `PNPM_HOME` and adds it to `PATH` for global pnpm access
+- Sets up `PNMP_HOME` and adds it to `PATH` for global pnpm access
 
-**Why Alpine?**:
+**Why Ubuntu?**:
 
-- Smallest possible image size
-- Security-focused (fewer attack vectors)
-- Perfect for production deployments
+- Better native dependency support (canvas, sharp)
+- More predictable build environment
+- Excellent compatibility with CI/CD platforms
 
 ---
 
-#### **Stage 2: Prune** (`prune`)
+#### **Stage 2: Prepare** (`prepare`)
 
 ```dockerfile
-FROM base AS prune
+FROM base AS prepare
 ```
 
 **Purpose**: Extract only the web app and its dependencies using Turborepo's intelligent pruning.
@@ -45,7 +45,7 @@ FROM base AS prune
 1. **Install Turbo globally**:
 
    ```dockerfile
-   RUN pnpm add -g turbo@2.5.8
+   RUN pnpm add -g turbo@2.8.0
    ```
 
 2. **Copy entire monorepo**:
@@ -80,15 +80,30 @@ FROM base AS dependencies
 
 **Key Actions**:
 
-1. **Copy pruned package files**:
+1. **Install build dependencies**:
 
    ```dockerfile
-   COPY --from=prune /app/out/json/ .
+   RUN apt-get update && apt-get install -y \
+       build-essential \
+       g++ \
+       libcairo2-dev \
+       libjpeg-dev \
+       libpango1.0-dev \
+       libgif-dev \
+       && rm -rf /var/lib/apt/lists/*
+   ```
+
+   Required for native dependencies like canvas and sharp.
+
+2. **Copy pruned package files**:
+
+   ```dockerfile
+   COPY --from=prepare /app/out/json/ .
    ```
 
    Uses the pruned lockfile from turbo prune.
 
-2. **Install with build cache**:
+3. **Install with build cache**:
 
    ```dockerfile
    RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
@@ -113,14 +128,27 @@ FROM base AS builder
 
 **Key Actions**:
 
-1. **Copy installed dependencies** from previous stage
+1. **Install build dependencies**:
+
+   ```dockerfile
+   RUN apt-get update && apt-get install -y \
+       build-essential \
+       g++ \
+       libcairo2-dev \
+       libjpeg-dev \
+       libpango1.0-dev \
+       libgif-dev \
+       && rm -rf /var/lib/apt/lists/*
+   ```
+
+2. **Copy installed dependencies** from previous stage
    - Preserves `node_modules` structure
    - Includes all workspace package dependencies
 
-2. **Copy pruned source code**:
+3. **Copy pruned source code**:
 
    ```dockerfile
-   COPY --from=prune /app/out/full/ .
+   COPY --from=prepare /app/out/full/ .
    ```
 
    Only copies web app + its workspace dependencies (automatically detected by turbo prune):
@@ -129,11 +157,6 @@ FROM base AS builder
    - `@lactalink/form-schemas`
    - `@lactalink/types`
    - `@lactalink/utilities`
-
-3. **Build arguments & environment variables**:
-   - All build-time env vars are passed as ARGs
-   - Required by Next.js for static optimization
-   - Required by Payload CMS for build-time configuration
 
 4. **Execute Turborepo build**:
 
@@ -157,20 +180,27 @@ FROM base AS builder
 #### **Stage 5: Runner** (`runner`)
 
 ```dockerfile
-FROM node:22-alpine AS runner
+FROM node:22.21.0 AS runner
 ```
 
 **Purpose**: Minimal production runtime with only essential files.
 
 **Key Actions**:
 
-1. **Install system dependencies**:
+1. **Install runtime dependencies**:
 
    ```dockerfile
-   RUN apk add --no-cache dumb-init
+   RUN apt-get update && apt-get install -y \
+       dumb-init \
+       libcairo2 \
+       libjpeg62-turbo \
+       libpango-1.0-0 \
+       libgif7 \
+       && rm -rf /var/lib/apt/lists/*
    ```
 
    - `dumb-init`: Proper PID 1 init system for containers
+   - Runtime libraries for canvas and image processing
    - Handles SIGTERM/SIGINT correctly (graceful shutdown)
    - Reaps zombie processes
 
@@ -226,44 +256,26 @@ FROM node:22-alpine AS runner
    - Runs `server.js` from standalone output
    - `dumb-init` ensures proper signal handling
 
-**Image Size**: ~150-200MB (vs ~1GB+ without multi-stage)
+**Image Size**: ~300-400MB (vs ~1GB+ without multi-stage)
 
 ---
 
-## 🚀 Northflank Deployment Configuration
+## 🚀 Coolify Deployment Configuration
 
 ### 1. Build Settings
 
 **Build Context**: `/` (repository root)  
-**Dockerfile Path**: `./apps/web/Dockerfile`
+**Dockerfile Path**: `./apps/web/Dockerfile`  
+**Enable BuildKit**: ✅ (Required for cache mounts)  
+**Docker Build Secrets**: ✅ (For sensitive build-time variables)
 
-**Build Arguments** (set in Northflank Build Arguments):
+**Environment Variables Configuration**:
 
-```bash
-PAYLOAD_SECRET=<your-secret>
-DATABASE_URI=<postgres-connection-string>
-GOOGLE_CLIENT_ID=<client-id>
-GOOGLE_CLIENT_SECRET=<client-secret>
-GOOGLE_CLOUD_VISION_API_KEY=<api-key>
-GOOGLE_ROUTES_API_KEY=<api-key>
-S3_BUCKET_IMAGES=<bucket-name>
-S3_BUCKET_MILK_BAG_IMAGES=<bucket-name>
-S3_BUCKET_ID_IMAGES=<bucket-name>
-S3_BUCKET_MESSAGE_MEDIA=<bucket-name>
-S3_BUCKET_MEDIA=<bucket-name>
-S3_BUCKET_FILES=<bucket-name>
-S3_BUCKET_AVATARS=<bucket-name>
-S3_ACCESS_KEY_ID=<access-key>
-S3_SECRET_ACCESS_KEY=<secret-key>
-S3_REGION=<region>
-S3_ENDPOINT=<endpoint-url>
-PSGC_API_URL=<api-url>
-NEXT_PUBLIC_SUPABASE_URL=<supabase-url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-RESEND_API_KEY=<api-key>
-```
+1. **Build Arguments** - Non-sensitive public variables (see `.env.example`)
+2. **Build Secrets** - Sensitive build-time variables
+3. **Runtime Environment Variables** - Runtime configuration
 
-**Enable BuildKit**: ✅ (Required for cache mounts)
+> ⚠️ Variables prefixed with `NEXT_PUBLIC_` must be set at build time!
 
 ---
 
@@ -272,7 +284,7 @@ RESEND_API_KEY=<api-key>
 **Port**: `3000` (matches `EXPOSE 3000` in Dockerfile)
 
 **Start Command**: Not needed (uses `CMD` from Dockerfile)  
-If Northflank requires explicit command:
+If Coolify requires explicit command:
 
 ```bash
 node apps/web/server.js
@@ -288,10 +300,10 @@ node apps/web/server.js
 
 ### 3. Environment Variables (Runtime)
 
-Set these in Northflank's **Environment Variables** section:
+Set these in Coolify's **Environment Variables** section (see `.env.example` for complete list):
 
 ```bash
-# Required at runtime (different from build-time)
+# Required at runtime
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 PORT=3000
@@ -303,35 +315,7 @@ DATABASE_URI=<postgres-connection-string>
 # Payload CMS
 PAYLOAD_SECRET=<your-secret>
 
-# Google Services
-GOOGLE_CLIENT_ID=<client-id>
-GOOGLE_CLIENT_SECRET=<client-secret>
-GOOGLE_CLOUD_VISION_API_KEY=<api-key>
-GOOGLE_ROUTES_API_KEY=<api-key>
-
-# S3 / Supabase Storage
-S3_BUCKET_IMAGES=<bucket-name>
-S3_BUCKET_MILK_BAG_IMAGES=<bucket-name>
-S3_BUCKET_ID_IMAGES=<bucket-name>
-S3_BUCKET_MESSAGE_MEDIA=<bucket-name>
-S3_BUCKET_MEDIA=<bucket-name>
-S3_BUCKET_FILES=<bucket-name>
-S3_BUCKET_AVATARS=<bucket-name>
-S3_ACCESS_KEY_ID=<access-key>
-S3_SECRET_ACCESS_KEY=<secret-key>
-S3_REGION=<region>
-S3_ENDPOINT=<endpoint-url>
-
-# APIs
-PSGC_API_URL=<api-url>
-RESEND_API_KEY=<api-key>
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=<supabase-url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-
-# Server URL (auto-set by Northflank or custom domain)
-NEXT_PUBLIC_SERVER_URL=https://your-app.northflank.app
+# All other variables from .env.example...
 ```
 
 **Important**: Environment variables with `NEXT_PUBLIC_` prefix must be set at **build time** (as build args) to be embedded in the client bundle.
@@ -355,7 +339,7 @@ NEXT_PUBLIC_SERVER_URL=https://your-app.northflank.app
 
 ### 5. Custom Domain & SSL
 
-1. Add your domain in Northflank
+1. Add your domain in Coolify
 2. Update DNS records
 3. Update `NEXT_PUBLIC_SERVER_URL` environment variable
 4. Rebuild to embed new URL in client bundle
@@ -373,7 +357,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 **Benefit**: Reduces build time by 40-60% on subsequent builds.
 
-**Note**: Northflank supports BuildKit cache mounts automatically.
+**Note**: Coolify supports BuildKit cache mounts automatically.
 
 ---
 
@@ -516,10 +500,16 @@ curl http://localhost:3000/api/health
 
 **Cause**: Native dependencies need build tools.
 
-**Solution**: Add build dependencies to `dependencies` stage:
+**Solution**: Build dependencies are already included in the Dockerfile:
 
 ```dockerfile
-RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    libcairo2-dev \
+    libjpeg-dev \
+    libpango1.0-dev \
+    libgif-dev
 ```
 
 ---
@@ -542,9 +532,13 @@ export async function GET() {
 
 ### Issue: Environment variables not available at runtime
 
-**Cause**: Variables need to be set in Northflank's runtime config, not just build args.
+**Cause**: Variables need to be set in Coolify's runtime config, not just build args.
 
-**Solution**: Duplicate all necessary env vars in both Build Arguments AND Environment Variables.
+**Solution**: Configure variables in Coolify dashboard:
+
+- **Build Arguments**: Public variables (NEXT*PUBLIC*\*)
+- **Build Secrets**: Sensitive build-time variables
+- **Environment Variables**: Runtime variables
 
 ---
 
@@ -570,7 +564,7 @@ ls -lah apps/web/.next/standalone
 
 **Image Size**:
 
-- Final image: 150-250MB
+- Final image: 300-400MB
 - Without multi-stage: 1-2GB
 
 **Memory Usage**:
@@ -598,8 +592,8 @@ ls -lah apps/web/.next/standalone
 ## 🔒 Security Checklist
 
 - ✅ Non-root user (`nextjs:nodejs`)
-- ✅ Minimal base image (Alpine)
-- ✅ No secrets in Dockerfile (use build args)
+- ✅ Ubuntu base with security updates
+- ✅ Docker Build Secrets for sensitive data
 - ✅ Health checks enabled
 - ✅ Proper signal handling (dumb-init)
 - ✅ Minimal attack surface (only necessary files)
@@ -624,4 +618,4 @@ docker tag lactalink-web:latest lactalink-web:sha-$(git rev-parse --short HEAD)
 
 ---
 
-**Need help?** Check the Northflank logs for detailed error messages during deployment.
+**Need help?** Check the Coolify logs for detailed error messages during deployment.

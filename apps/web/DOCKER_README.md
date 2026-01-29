@@ -1,6 +1,6 @@
 # 🐳 Docker Deployment for LactaLink Web
 
-Production-ready Docker configuration for deploying the LactaLink Next.js application from a Turborepo monorepo to Northflank or any container platform.
+Production-ready Docker configuration for deploying the LactaLink Next.js application from a Turborepo monorepo to Coolify or any container platform.
 
 ## 📋 What's Included
 
@@ -12,7 +12,7 @@ This Docker setup provides:
 - ✅ **Non-root user** - Security best practices
 - ✅ **Health checks** - Container orchestration ready
 - ✅ **BuildKit caching** - 40-60% faster builds
-- ✅ **Alpine-based** - Minimal attack surface (~150-250MB final image)
+- ✅ **Ubuntu-based** - Reliable dependency support (~300-400MB final image)
 
 ## 🚀 Quick Start
 
@@ -32,41 +32,29 @@ cd ../.. # if you're in apps/web/
 docker build -f apps/web/Dockerfile -t lactalink-web:latest .
 ```
 
-### 3. Run locally
-
-**From apps/web directory:**
-
-```bash
-docker-compose up
-```
-
-Access at: http://localhost:3000
-
 ## 📁 Files Overview
 
 | File                           | Purpose                                       |
 | ------------------------------ | --------------------------------------------- |
 | `Dockerfile`                   | Multi-stage production build configuration    |
-| `docker-compose.yml`           | Local testing setup                           |
 | `../../.dockerignore`          | Excludes unnecessary files from build context |
 | `.env.example`                 | Template for environment variables            |
 | `DOCKER_README.md` (this file) | Quick start guide                             |
-| `DOCKER_COMMANDS.md`           | Quick reference for common commands           |
 | `src/app/api/health/route.ts`  | Health check endpoint                         |
 
 ## 🏗️ Architecture
 
 ### Build Stages
 
-1. **Base** - Alpine Linux + pnpm setup
-2. **Prune** - Extract web app + dependencies using `turbo prune`
+1. **Base** - Ubuntu + Node.js + pnpm setup
+2. **Prepare** - Extract web app + dependencies using `turbo prune`
 3. **Dependencies** - Install only required dependencies with caching
 4. **Builder** - Build Next.js app via Turborepo
 5. **Runner** - Minimal runtime with standalone output
 
 ### Image Sizes
 
-- Final production image: **150-250 MB**
+- Final production image: **300-400 MB**
 - Without multi-stage: 1-2 GB ❌
 
 ### Build Performance
@@ -74,13 +62,14 @@ Access at: http://localhost:3000
 - First build: 5-8 minutes
 - Cached builds: 30-90 seconds ⚡
 
-## 🔧 Northflank Configuration
+## 🔧 Coolify Configuration
 
 ### Build Settings
 
 - **Build Context**: `/` (monorepo root)
 - **Dockerfile Path**: `./apps/web/Dockerfile`
 - **Enable BuildKit**: ✅
+- **Docker Build Secrets**: Enabled for sensitive variables
 
 > 💡 The build context must be the monorepo root, not `apps/web/`
 
@@ -92,10 +81,11 @@ Access at: http://localhost:3000
 
 ### Environment Variables
 
-Set ALL variables from `.env.example` in both:
+Configure in Coolify:
 
-1. **Build Arguments** (for build-time)
-2. **Environment Variables** (for runtime)
+1. **Build Arguments** - Non-sensitive public variables
+2. **Build Secrets** - Sensitive build-time variables
+3. **Environment Variables** - Runtime variables
 
 > ⚠️ Variables prefixed with `NEXT_PUBLIC_` must be set at build time!
 
@@ -110,21 +100,6 @@ Set ALL variables from `.env.example` in both:
 - **[DOCKER_COMMANDS.md](./DOCKER_COMMANDS.md)** - Quick command reference
 
 ## 🧪 Local Testing
-
-### Using Docker Compose
-
-```bash
-# Start the application
-docker-compose up --build
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-```
-
-### Using Docker directly
 
 **From monorepo root:**
 
@@ -157,10 +132,16 @@ docker build -f apps/web/Dockerfile --no-cache -t lactalink-web:latest .
 
 ### "canvas" or "sharp" errors
 
-**Solution**: Add build dependencies to Dockerfile:
+**Solution**: Build dependencies are already included in the Dockerfile:
 
 ```dockerfile
-RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    libcairo2-dev \
+    libjpeg-dev \
+    libpango1.0-dev \
+    libgif-dev
 ```
 
 ### Large image size
@@ -175,8 +156,8 @@ ls -lah apps/web/.next/standalone
 ## 🔐 Security
 
 - ✅ Non-root user (`nextjs:nodejs`)
-- ✅ Minimal Alpine base image
-- ✅ No secrets in Dockerfile
+- ✅ Ubuntu base with security updates
+- ✅ Docker Build Secrets for sensitive data
 - ✅ `.dockerignore` excludes sensitive files
 - ✅ Health checks for monitoring
 
@@ -189,8 +170,8 @@ ls -lah apps/web/.next/standalone
 
 ## 🚢 Deployment Checklist
 
-- [ ] Environment variables configured in Northflank
-- [ ] Build arguments set correctly
+- [ ] Environment variables configured in Coolify
+- [ ] Build arguments and secrets set correctly
 - [ ] Health check endpoint accessible
 - [ ] Database connection tested
 - [ ] S3/Supabase storage configured
@@ -199,11 +180,11 @@ ls -lah apps/web/.next/standalone
 
 ## 🆘 Support
 
-**Issues?** Check the troubleshooting section in [DEPLOYMENT.md](./DEPLOYMENT.md)
+**Issues?** Check the troubleshooting section in [DEPLOYMENT.md](../../docs/deployment/WEB_DEPLOYMENT.md)
 
 **Need help?** Review:
 
-- Container logs in Northflank
+- Container logs in Coolify
 - Docker build output
 - Health check endpoint response
 
@@ -211,8 +192,9 @@ ls -lah apps/web/.next/standalone
 
 - [Turborepo Docker Guide](https://turbo.build/repo/docs/handbook/deploying-with-docker)
 - [Next.js Standalone Output](https://nextjs.org/docs/advanced-features/output-file-tracing)
-- [Northflank Documentation](https://northflank.com/docs)
+- [Coolify Documentation](https://coolify.io/docs)
 - [pnpm Docker Guide](https://pnpm.io/docker)
+- [Docker Build Secrets](https://docs.docker.com/build/building/secrets/)
 
 ---
 
