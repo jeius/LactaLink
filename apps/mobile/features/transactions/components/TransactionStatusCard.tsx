@@ -46,9 +46,9 @@ export default function TransactionStatusCard({
     : null;
 
   const descriptionPrefix: Record<DeliveryDetail['method'], string> = {
-    DELIVERY: 'Will be delivered on',
-    PICKUP: 'Ready for pickup on',
-    MEETUP: 'Meet-up on',
+    DELIVERY: 'Scheduled for delivery on',
+    PICKUP: 'Scheduled for pickup on',
+    MEETUP: 'Scheduled for meetup on',
   };
 
   return (

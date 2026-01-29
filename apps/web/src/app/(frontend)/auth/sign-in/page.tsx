@@ -17,13 +17,27 @@ import SignInImage from '../../../../../public/images/sign-in.png';
 import { Metadata } from 'next';
 import Link from 'next/link';
 
+import { encodedRedirect } from '@/lib/utils/encodedRedirect';
+import payloadConfig from '@/payload.config';
+import { RedirectType } from 'next/navigation';
+import { getPayload } from 'payload';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Sign In | LactaLink',
 };
 
-export default function Page() {
+export default async function Page() {
+  const payload = await getPayload({ config: payloadConfig });
+  const userCount = await payload.count({
+    collection: 'users',
+    where: { role: { equals: 'ADMIN' } },
+  });
+
+  if (userCount.totalDocs === 0) {
+    return encodedRedirect('/auth/create-first-admin', undefined, undefined, RedirectType.replace);
+  }
+
   return (
     <main className="min-h-[calc(100vh - 2rem)] p-5">
       <div className="container mx-auto mt-5 max-w-lg lg:mt-10 lg:max-w-4xl">

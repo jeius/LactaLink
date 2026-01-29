@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect, RedirectType } from 'next/navigation';
 import { SEARCH_PARAMS_KEYS } from '../constants/routes';
 import { getServerSideURL } from './getURL';
 
@@ -28,7 +28,8 @@ import { getServerSideURL } from './getURL';
 export function encodedRedirect(
   path: string,
   message?: string,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
+  redirectType?: RedirectType
 ) {
   const url = new URL(path, getServerSideURL());
 
@@ -42,5 +43,5 @@ export function encodedRedirect(
     }
   }
 
-  return redirect(`${url.pathname}${url.search}`);
+  return redirect(url.toString(), redirectType);
 }
