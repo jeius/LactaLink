@@ -32,7 +32,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://preview.lactalink.com"
+        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com"
       }
     },
     "production": {
@@ -45,7 +45,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://www.lactalink.com"
+        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com"
       }
     }
   },
