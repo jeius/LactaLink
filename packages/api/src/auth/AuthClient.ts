@@ -263,14 +263,24 @@ export class AuthClient implements IAuthClient {
   createAdminUser = async (credentials: SignUpWithPasswordCredentials): Promise<User> => {
     const sbAuth = this._ensureSbAuthAvailable('createAdminUser');
     const sb = this._getSbDatabaseClient();
+
     const {
       data: { user: sbUser },
       error: signUpError,
-    } = await sbAuth.signUp(credentials);
-    if (!sbUser || signUpError) {
+    } = await sbAuth.signUp(credentials).catch((error) => {
+      console.error('Error during admin user sign up:', error);
+      throw error;
+    });
+
+    if (signUpError) {
       const code: ErrorCodes = signUpError?.code || 'admin_creation_failed';
       const message = signUpError?.message || 'Failed to create admin user';
       throw new AuthError(message, status.INTERNAL_SERVER_ERROR, code);
+    }
+
+    if (!sbUser) {
+      const code: ErrorCodes = 'admin_creation_failed';
+      throw new AuthError('Failed to create admin user', status.INTERNAL_SERVER_ERROR, code);
     }
 
     const { error } = await sb

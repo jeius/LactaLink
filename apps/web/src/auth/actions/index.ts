@@ -31,7 +31,11 @@ export const signUp = async (credentials: SignUpSchema, role: User['role']) => {
   const apiClient = await getServerApi();
 
   if (role === 'ADMIN') {
-    return await apiClient.auth.createAdminUser(credentials);
+    return apiClient.auth.createAdminUser(credentials).catch((error) => {
+      const msg = extractErrorMessage(error);
+      console.error('Error creating admin user:', error);
+      throw new Error(`Error creating admin user: ${msg}`);
+    });
   }
   return await apiClient.auth.signUp(credentials);
 };
