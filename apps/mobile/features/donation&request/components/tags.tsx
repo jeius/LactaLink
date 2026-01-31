@@ -1,17 +1,17 @@
-import { getPriorityColor } from '@/lib/utils/getPriorityColor';
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import FastTimerIcon from '@/components/icons/FastTimerIcon';
+import { Card } from '@/components/ui/card';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
+import { getUrgencyColor } from '@/lib/utils/getUrgencyAction';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { formatDate } from '@lactalink/utilities/formatters';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import { ClipboardClockIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { useTheme } from './AppProvider/ThemeProvider';
-import FastTimerIcon from './icons/FastTimerIcon';
-import { Card } from './ui/card';
-import { HStack } from './ui/hstack';
-import { Icon } from './ui/icon';
-import { Skeleton } from './ui/skeleton';
-import { Text } from './ui/text';
 
 interface BaseProps {
   isLoading?: boolean;
@@ -58,11 +58,9 @@ export function StorageTypeTag({ data, isLoading }: StorageTypeTagProps) {
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={PackageIcon} size="sm" stroke={strokeColor} />
+            <Icon as={PackageIcon} />
           </Card>
-          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
-            {storage}
-          </Text>
+          <Text className="font-JakartaMedium">{storage}</Text>
         </>
       )}
     </HStack>
@@ -74,9 +72,6 @@ interface CollectionMethodTagProps extends BaseProps {
 }
 
 export function CollectionMethodTag({ data, isLoading }: CollectionMethodTagProps) {
-  const { themeColors } = useTheme();
-  const strokeColor = themeColors.primary[700];
-
   const method = COLLECTION_MODES[data?.details.collectionMode || 'MANUAL'].label;
 
   return (
@@ -89,11 +84,9 @@ export function CollectionMethodTag({ data, isLoading }: CollectionMethodTagProp
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={DropletIcon} size="sm" stroke={strokeColor} />
+            <Icon as={DropletIcon} />
           </Card>
-          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
-            {method}
-          </Text>
+          <Text className="font-JakartaMedium">{method}</Text>
         </>
       )}
     </HStack>
@@ -105,12 +98,7 @@ interface UrgencyTagProps extends BaseProps {
 }
 
 export function UrgencyTag({ data, isLoading }: UrgencyTagProps) {
-  const { theme } = useTheme();
-
   const urgency = data?.details?.urgency || URGENCY_LEVELS.LOW.value;
-
-  const fillColor = getPriorityColor(theme, urgency, 600).toString();
-
   const urgencyLabel = URGENCY_LEVELS[urgency].label;
 
   return (
@@ -123,11 +111,9 @@ export function UrgencyTag({ data, isLoading }: UrgencyTagProps) {
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={FastTimerIcon} size="sm" fill={fillColor} />
+            <Icon as={FastTimerIcon} />
           </Card>
-          <Text size="sm" className="font-JakartaMedium" style={{ color: fillColor }}>
-            {urgencyLabel}
-          </Text>
+          <Text className="font-JakartaMedium">{urgencyLabel}</Text>
         </>
       )}
     </HStack>
@@ -139,12 +125,10 @@ interface DueDateTagProps extends BaseProps {
 }
 
 export function DueDateTag({ data, isLoading }: DueDateTagProps) {
-  const { themeColors } = useTheme();
-
   const neededAt =
     data?.details?.neededAt && formatDate(data.details.neededAt, { shortMonth: true });
 
-  const strokeColor = themeColors.tertiary[700];
+  const strokeColor = getUrgencyColor(data?.details.urgency || 'LOW', '700');
 
   return (
     <HStack space="sm" className="items-center">
@@ -156,9 +140,9 @@ export function DueDateTag({ data, isLoading }: DueDateTagProps) {
       ) : (
         <>
           <Card className="rounded-full border-0 p-2">
-            <Icon as={ClipboardClockIcon} size="sm" stroke={strokeColor} />
+            <Icon as={ClipboardClockIcon} stroke={strokeColor} />
           </Card>
-          <Text size="sm" className="font-JakartaMedium" style={{ color: strokeColor }}>
+          <Text className="font-JakartaMedium" style={{ color: strokeColor }}>
             {neededAt}
           </Text>
         </>

@@ -1,7 +1,9 @@
-import { getApiClient } from '@lactalink/api';
-import { Request } from '@lactalink/types/payload-generated-types';
+import { QUERY_KEYS } from '@/lib/constants/queryKeys';
+import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
+import { Request, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
+import { findPaginatedIncomingRequests, findRequest } from '../api/find';
 
 export function createRequestQuery(doc: string | Request | undefined) {
   const docID = extractID(doc);
@@ -10,17 +12,35 @@ export function createRequestQuery(doc: string | Request | undefined) {
     queryKey: ['requests', docID],
     queryFn: () => {
       if (!docID) throw new Error('Request ID is required to fetch request.');
-
-      const apiClient = getApiClient();
-      return apiClient.findByID({
-        collection: 'requests',
-        id: docID,
-        depth: 3,
-        joins: { transactions: { count: true, limit: 0 } },
-      });
+      return findRequest(docID);
     },
     initialData: extractCollection(doc) || undefined,
-    staleTime: 1000 * 60 * 3, // 3 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+export function createIncomingRequestsInfQuery(user: User | null | undefined) {
+  return infiniteQueryOptions({
+    enabled: !!user,
+    queryKey: [...QUERY_KEYS.DONATIONS.INFINITE, 'incoming', extractID(user)],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      if (!user) throw new Error('User is not logged in.');
+
+      const userProfile = user.profile;
+
+      if (!userProfile) throw new Error('User profile is required to fetch incoming donations.');
+
+      const { docs, ...rest } = await findPaginatedIncomingRequests(userProfile, {
+        page: pageParam,
+        limit: 15,
+      });
+
+      return { docs: new Map(docs.map((doc) => [doc.id, doc])), ...rest };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getPreviousPageParam: (firstPage) => firstPage.prevPage,
+    placeholderData: generatePlaceHoldersForInfQueries<Request>(10),
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
   });
 }

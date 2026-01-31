@@ -12,19 +12,19 @@ import { extractCollection } from '@lactalink/utilities/extractors';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { useRouter } from 'expo-router';
 import {
+  CheckCircle,
   EditIcon,
   HandHeartIcon,
   LucideProps,
   MessageCircleIcon,
-  ShareIcon,
   Trash2Icon,
   XCircleIcon,
 } from 'lucide-react-native';
 import React, { FC } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Box } from '../ui/box';
-import { MilkBottlePlus2Icon } from '../ui/icon/custom';
+import { Box } from '../../../components/ui/box';
+import { MilkBottlePlus2Icon } from '../../../components/ui/icon/custom';
 
 interface DonationRequestCTAProps {
   data?: Donation | Request;
@@ -60,10 +60,6 @@ export function DonationRequestCTA({
     <HStack space="md" className="items-center justify-end">
       <Button action="muted" variant={variant} className="h-fit w-fit rounded-full p-3">
         <ButtonIcon as={MessageCircleIcon} />
-      </Button>
-
-      <Button action="muted" variant={variant} className="h-fit w-fit rounded-full p-3">
-        <ButtonIcon as={ShareIcon} />
       </Button>
 
       {isOwner && (isEditable || isDeletable) && (
@@ -117,41 +113,54 @@ export function DonationRequestCTA({
 
 export function DonationRequestBottomCTA({ data, isLoading, onLayout }: DonationRequestCTAProps) {
   const router = useRouter();
-
   const { data: meUser } = useMeUser();
-  const meUserProfile = extractCollection(meUser?.profile?.value);
   const insets = useSafeAreaInsets();
+
+  if (!data) return null;
+
+  const meUserProfile = extractCollection(meUser?.profile?.value);
 
   const profile = extractCollection(data && isDonation(data) ? data?.donor : data?.requester);
   const isOwner = meUserProfile?.id === profile?.id;
 
-  let label = 'Make a Donation';
-  let icon: FC<LucideProps> = HandHeartIcon;
+  const isPending = data?.status === DONATION_REQUEST_STATUS.PENDING.value;
 
-  if (data && isRequest(data)) {
+  let label: string;
+  let icon: FC<LucideProps> | null = null;
+
+  if (isRequest(data)) {
     if (isOwner) {
       label = 'Edit Request';
       icon = EditIcon;
+    } else if (isPending) {
+      label = 'Approve and Donate';
+      icon = CheckCircle;
+    } else {
+      label = 'Make a Donation';
+      icon = HandHeartIcon;
     }
-  } else if (data && isDonation(data)) {
+  } else {
     if (isOwner) {
       label = 'Edit Donation';
       icon = EditIcon;
+    } else if (isPending) {
+      label = 'Accept Donation';
+      icon = CheckCircle;
     } else {
       label = 'Make a Request';
       icon = MilkBottlePlus2Icon;
     }
   }
 
-  function handlePress() {
-    if (data && isRequest(data)) {
+  const handlePress = () => {
+    if (isRequest(data)) {
       if (isOwner) {
         router.push(`/requests/${data.id}/edit`);
       } else {
         const params: DonationCreateParams = { mrid: data.id };
         router.push({ pathname: '/donations/create', params });
       }
-    } else if (data && isDonation(data)) {
+    } else {
       if (isOwner) {
         router.push(`/donations/${data.id}/edit`);
       } else {
@@ -159,7 +168,7 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
         router.push({ pathname: '/requests/create', params });
       }
     }
-  }
+  };
 
   return isLoading ? null : (
     <Box
@@ -167,8 +176,8 @@ export function DonationRequestBottomCTA({ data, isLoading, onLayout }: Donation
       className="absolute inset-x-0 bottom-0 rounded-t-2xl border border-outline-300 bg-background-0 p-4"
       style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
-      <Button onPress={handlePress}>
-        <ButtonIcon as={icon} />
+      <Button onPress={handlePress} action={isPending ? 'info' : 'primary'}>
+        {icon && <ButtonIcon as={icon} />}
         <ButtonText>{label}</ButtonText>
       </Button>
     </Box>
