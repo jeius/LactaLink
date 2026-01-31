@@ -2,11 +2,12 @@ import React, { ComponentProps } from 'react';
 import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   AnimatedStyle,
+  Easing,
   isSharedValue,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  WithSpringConfig,
+  withTiming,
+  WithTimingConfig,
 } from 'react-native-reanimated';
 import { Pressable } from '../ui/pressable';
 
@@ -16,13 +17,14 @@ export interface AnimatedPressableProps extends ComponentProps<typeof AnimatedUI
   containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
   disablePressAnimation?: boolean;
   disableRipple?: boolean;
+  minScale?: number;
 }
 
 const rippleColor = 'rgba(128,128,128,0.10)';
 
-const springConfig: WithSpringConfig = {
-  damping: 60,
-  stiffness: 600,
+const timingConfig: WithTimingConfig = {
+  duration: 250,
+  easing: Easing.elastic(1.5),
 };
 
 export function AnimatedPressable({
@@ -30,33 +32,28 @@ export function AnimatedPressable({
   containerStyle,
   disablePressAnimation = false,
   disableRipple = false,
+  minScale = 0.98,
   ...props
 }: AnimatedPressableProps) {
-  const scale = useSharedValue(1);
+  const progress = useSharedValue(false);
 
   const animatedStyle = useAnimatedStyle(() => {
-    if (disablePressAnimation) return {};
-    return { transform: [{ scale: scale.value }] };
+    const scale = withTiming(progress.value ? minScale : 1, timingConfig);
+    return { transform: [{ scale: scale }] };
   });
 
   function handlePressIn(event: GestureResponderEvent) {
-    // Scale down when the gesture begins
-    scale.value = withSpring(0.95, springConfig);
-    if (typeof props.onPressIn === 'function') {
-      props.onPressIn?.(event);
-    } else if (props.onPressIn) {
-      props.onPressIn.value?.(event);
-    }
+    if (!disablePressAnimation) progress.value = true;
+
+    if (typeof props.onPressIn === 'function') props.onPressIn?.(event);
+    else if (props.onPressIn) props.onPressIn.value?.(event);
   }
 
   function handlePressOut(event: GestureResponderEvent) {
-    // Scale back up when the gesture ends
-    scale.value = withSpring(1, springConfig);
-    if (typeof props.onPressOut === 'function') {
-      props.onPressOut?.(event);
-    } else if (props.onPressOut) {
-      props.onPressOut.value?.(event);
-    }
+    if (!disablePressAnimation) progress.value = false;
+
+    if (typeof props.onPressOut === 'function') props.onPressOut?.(event);
+    else if (props.onPressOut) props.onPressOut.value?.(event);
   }
 
   return (
