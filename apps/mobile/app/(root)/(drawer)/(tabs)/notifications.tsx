@@ -16,6 +16,7 @@ import { Notification } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -92,6 +93,7 @@ export default function NotificationsTab() {
         ListFooterComponentStyle={{ marginTop: 8 }}
         onEndReachedThreshold={0.25}
         onEndReached={handleFetchNextPage}
+        renderScrollComponent={ScrollView}
         refreshControl={
           <RefreshControl
             progressViewOffset={headerHeight - insets.top}

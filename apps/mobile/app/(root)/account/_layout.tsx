@@ -20,6 +20,10 @@ export default function Layout() {
       </Stack.Protected>
 
       <Stack.Screen name="index" options={{ headerTitle: 'Account' }} />
+
+      <Stack.Screen name="donations/incoming" options={{ headerTitle: 'Incoming Donations' }} />
+
+      <Stack.Screen name="requests/incoming" options={{ headerTitle: 'Incoming Requests' }} />
     </Stack>
   );
 }

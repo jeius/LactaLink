@@ -3,6 +3,7 @@ import { Donation, Image as ImageType } from '@lactalink/types/payload-generated
 import { MilkIcon, PackagePlusIcon } from 'lucide-react-native';
 import React from 'react';
 
+import { CollectionMethodTag, StorageTypeTag } from '@/features/donation&request/components/tags';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
@@ -11,7 +12,6 @@ import { AnimatedProgress } from '../animated/progress';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { ProfileTag } from '../ProfileTag';
-import { CollectionMethodTag, StorageTypeTag } from '../tags';
 import { Box } from '../ui/box';
 import { Button, ButtonIcon, ButtonText } from '../ui/button';
 import { Card } from '../ui/card';

@@ -37,6 +37,16 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  DONATIONS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
+  REQUESTS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -75,6 +85,16 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['delivery-plans'],
     INFINITE: ['delivery-plans', 'infinite'],
     ONE: ['delivery-plans', 'one'],
+  },
+  DONATIONS: {
+    ALL: ['donations'],
+    INFINITE: ['donations', 'infinite'],
+    ONE: ['donations', 'one'],
+  },
+  REQUESTS: {
+    ALL: ['requests'],
+    INFINITE: ['requests', 'infinite'],
+    ONE: ['requests', 'one'],
   },
 };
 

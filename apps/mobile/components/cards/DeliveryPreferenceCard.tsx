@@ -24,6 +24,8 @@ import GradientBackground from '../ui/gradient-bg';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { BasicLocationPin } from '../ui/icon/custom';
+import { Popover, PopoverBackdrop, PopoverBody, PopoverContent } from '../ui/popover';
+import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { Text, TextProps } from '../ui/text';
 
@@ -150,11 +152,9 @@ export function DeliveryPreferenceCardSkeleton({
 function DeliveryModeIcons({
   modes,
   size = 'md',
-  hideLabels = false,
 }: {
   modes?: DeliveryMode[];
   size?: CardProps['size'];
-  hideLabels?: boolean;
 }) {
   if (!modes?.length) return null;
 
@@ -165,17 +165,28 @@ function DeliveryModeIcons({
       {modes.map((mode, index) => {
         const iconAsset = getDeliveryPreferenceIcon(mode);
         return (
-          <HStack key={index} space="xs" className="items-center">
-            <Box className="rounded-full border border-primary-500 p-1">
-              <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 16, height: 16 }} />
-            </Box>
-
-            {!hideLabels && (
-              <Text size={textSize} className="font-JakartaMedium">
-                {DELIVERY_OPTIONS[mode].label}
-              </Text>
+          <Popover
+            key={index}
+            placement="bottom"
+            offset={8}
+            trigger={(props) => (
+              <Pressable
+                {...props}
+                className="overflow-hidden rounded-full border border-primary-500 p-1"
+              >
+                <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 20, height: 20 }} />
+              </Pressable>
             )}
-          </HStack>
+          >
+            <PopoverBackdrop />
+            <PopoverContent size="sm" className="p-3">
+              <PopoverBody>
+                <Text size={textSize} className="font-JakartaMedium">
+                  {DELIVERY_OPTIONS[mode].label}
+                </Text>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
         );
       })}
     </>
@@ -221,10 +232,6 @@ function ListCard({
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
       <VStack space="sm">
-        <HStack space="md" className="flex-wrap items-center">
-          <DeliveryModeIcons modes={preferredMode} size={size} hideLabels={hideIconLabels} />
-        </HStack>
-
         <HStack space="md">
           <Link asChild href={`/delivery-preferences/${prefID}`}>
             <Button
@@ -241,7 +248,7 @@ function ListCard({
         </HStack>
 
         <HStack space="xs" className="items-start">
-          <Icon size="sm" as={CalendarDaysIcon} className="text-primary-500" />
+          <Icon size="md" as={CalendarDaysIcon} className="text-primary-500" />
           <Text
             size={textSize}
             ellipsizeMode="tail"
@@ -253,7 +260,7 @@ function ListCard({
         </HStack>
 
         <HStack space="xs" className="items-start">
-          <Icon size="sm" as={MapPinIcon} className="text-primary-500" />
+          <Icon size="md" as={MapPinIcon} className="text-primary-500" />
           <VStack className="flex-1">
             <Text
               size={textSize}
@@ -264,6 +271,10 @@ function ListCard({
               {fullAddress}
             </Text>
           </VStack>
+        </HStack>
+
+        <HStack space="md" className="flex-wrap items-center">
+          <DeliveryModeIcons modes={preferredMode} size={size} />
         </HStack>
       </VStack>
     </Card>

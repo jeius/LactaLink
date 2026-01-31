@@ -7,48 +7,34 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { ProfileAvatar } from '@/components/Avatar';
-import { BasicBadge } from '@/components/badges';
+import DonationRequestStatusBadge from '@/components/badges/DonationRequestStatusBadge';
 import { DynamicStack, DynamicStackProps } from '@/components/ui/DynamicStack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
-import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
-import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { Request } from '@lactalink/types/payload-generated-types';
+import { STORAGE_TYPES } from '@lactalink/enums';
+import { Donation } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
-import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
-import isString from 'lodash/isString';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { useDonation } from '../../hooks/queries';
 
 type CardContentProps = Pick<DynamicStackProps, 'orientation'> & {
-  data: Request;
+  data: Donation;
   disableLinks?: boolean;
 };
 
-interface RequestCardProps extends Omit<CardContentProps, 'data'> {
-  data?: string | Request;
-  isLoading?: boolean;
+interface DonationCardProps extends Omit<CardContentProps, 'data'> {
+  data?: string | Donation;
 }
 
-const useRequestData = (data?: string | Request) => {
-  const query = useFetchById(isString(data), { collection: 'requests', id: extractID(data)! });
-  return { ...query, data: extractCollection(data) ?? query.data };
-};
+export default function DonationCard({ data: dataProp, ...props }: DonationCardProps) {
+  const { data: data, isLoading } = useDonation(dataProp!);
 
-export default function RequestCard({
-  data: dataProp,
-  isLoading: isLoadingProp,
-  ...props
-}: RequestCardProps) {
-  const { data: donationData, isLoading: isDataLoading } = useRequestData(dataProp!);
-
-  const isLoading = isLoadingProp || isDataLoading;
-
-  if (isLoading || !donationData) {
+  if (isLoading || !data) {
     return <CardSkeleton orientation={props.orientation} />;
   }
 
-  return <CardContent {...props} data={donationData} />;
+  return <CardContent {...props} data={data} />;
 }
 
 function CardContent({ data, orientation = 'horizontal', disableLinks }: CardContentProps) {
@@ -58,67 +44,48 @@ function CardContent({ data, orientation = 'horizontal', disableLinks }: CardCon
 
   const image = useMemo(() => {
     const imageSize = screenWidth < DEVICE_BREAKPOINTS.phone ? 'sm' : 'lg';
-    const milkSamples = extractCollection(data.details.image);
+    const milkSamples = extractCollection(data?.details?.milkSample);
     return extractOneImageData(milkSamples, imageSize);
-  }, [data.details.image, screenWidth]);
+  }, [data.details.milkSample, screenWidth]);
 
-  const volume = data.volumeNeeded;
-  const urgency = data.details.urgency;
-  const preferredStorage = data.details.storagePreference ?? PREFERRED_STORAGE_TYPES.EITHER.value;
+  const volume = data.volume;
+  const storage = data.details.storageType;
 
   return (
     <Card className="items-stretch p-0" style={{ maxWidth: 360 }}>
       <DynamicStack orientation={orientation}>
         <Box
-          className="relative bg-tertiary-50"
+          className="relative bg-primary-50"
           style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 164, width: '100%' }}
         >
           <SingleImageViewer image={image} disabled={!disableLinks} />
           {isVertical && (
             <Box className="absolute" style={{ bottom: 8, right: 8 }}>
-              <ProfileAvatar
-                size="sm"
-                profile={{ relationTo: 'individuals', value: data.requester }}
-              />
+              <ProfileAvatar size="sm" profile={{ relationTo: 'individuals', value: data.donor }} />
             </Box>
           )}
         </Box>
 
         <HStack space="sm" className="flex-1 px-4 py-2">
           <VStack className="flex-1 items-start justify-center">
-            <Text size="xl" className="font-JakartaExtraBold" numberOfLines={1}>
+            <Text size="lg" className="font-JakartaExtraBold" numberOfLines={1}>
               {displayVolume(volume)}
             </Text>
-
             <Text
               size="sm"
               className="mb-1 font-JakartaMedium text-typography-700"
               numberOfLines={isHorizontal ? 1 : 2}
             >
-              {PREFERRED_STORAGE_TYPES[preferredStorage].label}
+              {STORAGE_TYPES[storage].label}
             </Text>
-
-            {isHorizontal && (
-              <BasicBadge
-                size="lg"
-                action={getUrgencyAction(urgency)}
-                text={URGENCY_LEVELS[urgency].label}
-              />
-            )}
+            {isHorizontal && <DonationRequestStatusBadge status={data.status} />}
           </VStack>
 
           <Box className={isVertical ? 'self-center' : 'self-end'}>
             {isVertical ? (
-              <BasicBadge
-                size="lg"
-                action={getUrgencyAction(urgency)}
-                text={URGENCY_LEVELS[urgency].label}
-              />
+              <DonationRequestStatusBadge status={data.status} size="md" />
             ) : (
-              <ProfileAvatar
-                size="sm"
-                profile={{ relationTo: 'individuals', value: data.requester }}
-              />
+              <ProfileAvatar size="sm" profile={{ relationTo: 'individuals', value: data.donor }} />
             )}
           </Box>
         </HStack>

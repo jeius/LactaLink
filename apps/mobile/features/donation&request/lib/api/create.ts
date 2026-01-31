@@ -22,6 +22,8 @@ export function createMilkBag({ volume, collectedAt, donor }: Omit<MilkBagCreate
         relationTo: meUser.profile.relationTo,
         value: extractID(meUser.profile.value),
       },
+      // @ts-expect-error Auto filled by the API
+      createdBy: undefined,
     },
   });
 }

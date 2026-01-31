@@ -21,7 +21,7 @@ export function createRequestQuery(doc: string | Request | undefined) {
 export function createIncomingRequestsInfQuery(user: User | null | undefined) {
   return infiniteQueryOptions({
     enabled: !!user,
-    queryKey: [...QUERY_KEYS.DONATIONS.INFINITE, 'incoming', extractID(user)],
+    queryKey: [...QUERY_KEYS.REQUESTS.INFINITE, 'incoming', extractID(user)],
     initialPageParam: 1,
     queryFn: async ({ pageParam }) => {
       if (!user) throw new Error('User is not logged in.');
