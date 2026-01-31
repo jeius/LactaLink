@@ -45,6 +45,11 @@
       "dependsOn": ["@lactalink/web#generate:schema", "@lactalink/web#generate:types"],
       "persistent": true
     },
+    "dev:safe": {
+      "cache": false,
+      "dependsOn": ["@lactalink/web#generate:schema", "@lactalink/web#generate:types"],
+      "persistent": true
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
