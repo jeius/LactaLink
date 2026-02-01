@@ -1,5 +1,6 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { VerticalInfiniteList } from '@/components/lists/VerticalInfiniteList';
+import { Box } from '@/components/ui/box';
 import { Skeleton } from '@/components/ui/skeleton';
 import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { useInfiniteIncomingRequests } from '@/features/donation&request/hooks/queries';
@@ -25,10 +26,17 @@ export default function IncomingRequestsScreen() {
   const renderItem = useCallback<ListRenderItem<Request>>(
     ({ item }) => {
       if (isPlaceholderData) return <Skeleton className="h-32 rounded-xl" />;
+      const isUnread = (item.reads?.docs?.length || 0) === 0;
       return (
         <Link asChild push href={`/requests/${item.id}`}>
           <AnimatedPressable className="overflow-hidden rounded-2xl">
             <RequestCard data={item} orientation="horizontal" />
+            {isUnread && (
+              <Box
+                className="absolute h-2 w-2 rounded-full bg-primary-500"
+                style={{ top: 14, right: 14 }}
+              />
+            )}
           </AnimatedPressable>
         </Link>
       );

@@ -17,15 +17,17 @@ import ProgressTracker from '@/features/donation&request/components/ProgressTrac
 import { CollectionMethodTag, StorageTypeTag } from '@/features/donation&request/components/tags';
 import TextAreaBlock from '@/features/donation&request/components/TextAreaBlock';
 import { useDonation } from '@/features/donation&request/hooks/queries';
+import { useReadState } from '@/features/donation&request/hooks/useReadState';
 import { getDonationDetails } from '@/features/donation&request/lib/getDetails';
 import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
 import { getTypographyColor } from '@/lib/colors/getColor';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
+import { Donation } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -37,6 +39,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const IMAGE_HEIGHT = 180;
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
+
+function MarkAsRead({ donation }: { donation: Donation }) {
+  const { isUnread, markAsRead } = useReadState(donation);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isUnread) markAsRead();
+    }, [isUnread, markAsRead])
+  );
+
+  return null;
+}
 
 export default function DonationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,12 +81,13 @@ export default function DonationScreen() {
   const isMobile = screen.width <= DEVICE_BREAKPOINTS.phone;
   const [ctaHeight, setCTAHeight] = useState(0);
 
-  const { data, isLoading } = useDonation(id);
+  const { data, isLoading, isPlaceholderData } = useDonation(id);
 
   const { percentage, remainingVolume, ...details } = getDonationDetails(data, isMobile);
 
   return (
     <View style={{ flex: 1, paddingBottom: insets.bottom }} className="bg-background-50">
+      {data && !isPlaceholderData && <MarkAsRead donation={data} />}
       {/* Header Section */}
       <HStack
         space="md"

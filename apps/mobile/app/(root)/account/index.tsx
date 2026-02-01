@@ -16,13 +16,18 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { BasicLocationPin, HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import {
+  useInfiniteIncomingDonations,
+  useInfiniteIncomingRequests,
+} from '@/features/donation&request/hooks/queries';
+import { useInfiniteTransactions } from '@/features/transactions/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
 import { useNotification } from '@/hooks/notifications';
-import { useTransactions } from '@/hooks/transactions';
 import { User } from '@lactalink/types/payload-generated-types';
 import constants from 'expo-constants';
 import { Href, Link, useRouter } from 'expo-router';
@@ -296,21 +301,26 @@ function NotificationBadge() {
 }
 
 function TransactionBadge() {
-  const { unSeenCount } = useTransactions();
-  return <NumberBadge count={unSeenCount} />;
+  const { unseen, isLoading } = useInfiniteTransactions();
+  if (isLoading) return <Spinner size={'small'} />;
+  return <NumberBadge count={unseen.length} />;
 }
 
 function IncomingRequestsBadge() {
-  // Mocked for now
-  return <NumberBadge count={3} />;
+  const { data: meUser } = useMeUser();
+  const { unreadCount, isLoading } = useInfiniteIncomingRequests(meUser);
+  if (isLoading) return <Spinner size={'small'} />;
+  return <NumberBadge count={unreadCount} />;
 }
 
 function IncomingDonationsBadge() {
-  // Mocked for now
-  return <NumberBadge count={5} />;
+  const { data: meUser } = useMeUser();
+  const { unreadCount, isLoading } = useInfiniteIncomingDonations(meUser);
+  if (isLoading) return <Spinner size={'small'} />;
+  return <NumberBadge count={unreadCount} />;
 }
 
 function DeliveriesBadge() {
   // Mocked for now
-  return <NumberBadge count={235} />;
+  return <NumberBadge count={2} />;
 }

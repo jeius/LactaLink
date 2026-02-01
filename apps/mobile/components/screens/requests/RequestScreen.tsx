@@ -18,16 +18,18 @@ import ProgressTracker from '@/features/donation&request/components/ProgressTrac
 import { DueDateTag, StorageTypeTag } from '@/features/donation&request/components/tags';
 import TextAreaBlock from '@/features/donation&request/components/TextAreaBlock';
 import { useRequest } from '@/features/donation&request/hooks/queries';
+import { useReadState } from '@/features/donation&request/hooks/useReadState';
 import { getRequestDetails } from '@/features/donation&request/lib/getDetails';
 import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
 import { getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyColor } from '@/lib/utils/getUrgencyAction';
 import { DONATION_REQUEST_STATUS, URGENCY_LEVELS } from '@lactalink/enums';
+import { Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -39,6 +41,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const IMAGE_HEIGHT = 180;
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
+
+function MarkAsRead({ request }: { request: Request }) {
+  const { isUnread, markAsRead } = useReadState(request);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isUnread) markAsRead();
+    }, [isUnread, markAsRead])
+  );
+
+  return null;
+}
 
 export default function RequestScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,7 +85,7 @@ export default function RequestScreen() {
 
   const [ctaHeight, setCTAHeight] = useState(0);
 
-  const { data, isLoading } = useRequest(id);
+  const { data, isLoading, isPlaceholderData } = useRequest(id);
   const { urgency, ...details } = useMemo(
     () => getRequestDetails(data, isMobile),
     [data, isMobile]
@@ -79,6 +93,7 @@ export default function RequestScreen() {
 
   return (
     <Box style={{ flex: 1, paddingBottom: insets.bottom }} className="bg-background-50">
+      {data && !isPlaceholderData && <MarkAsRead request={data} />}
       {/* Header Section */}
       <HStack
         space="md"

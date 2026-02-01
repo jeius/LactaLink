@@ -34,15 +34,17 @@ export function useInfiniteIncomingDonations(user: User | null | undefined) {
   const queryClient = useQueryClient();
   const { data: docs, ...query } = useInfiniteQuery(createIncomingDonationsInfQuery(user));
 
-  const { arrayDocs, mappedDocs } = useMemo(() => {
+  const { arrayDocs, mappedDocs, unreadCount } = useMemo(() => {
     if (!docs)
       return {
         arrayDocs: [],
         mappedDocs: new Map<string, Donation>(),
+        unreadCount: 0,
       };
 
     const arrayDocs: Donation[] = [];
     const mappedDocs: Map<string, Donation> = new Map();
+    let unreadCount = 0;
 
     for (const page of docs.pages) {
       page.docs.forEach((doc) => {
@@ -52,31 +54,37 @@ export function useInfiniteIncomingDonations(user: User | null | undefined) {
           mappedDocs.set(doc.id, doc);
           // Add to cache as well
           addDonationToCache(queryClient, doc);
+          // Check if unread
+          if ((doc.reads?.docs?.length || 0) === 0) {
+            unreadCount += 1;
+          }
         }
         // Push each doc into the array
         arrayDocs.push(doc);
       });
     }
 
-    return { arrayDocs, mappedDocs };
+    return { arrayDocs, mappedDocs, unreadCount };
   }, [docs, query.isPlaceholderData, queryClient]);
 
-  return { ...query, data: arrayDocs, dataMap: mappedDocs };
+  return { ...query, data: arrayDocs, dataMap: mappedDocs, unreadCount };
 }
 
 export function useInfiniteIncomingRequests(user: User | null | undefined) {
   const queryClient = useQueryClient();
   const { data: docs, ...query } = useInfiniteQuery(createIncomingRequestsInfQuery(user));
 
-  const { arrayDocs, mappedDocs } = useMemo(() => {
+  const { arrayDocs, mappedDocs, unreadCount } = useMemo(() => {
     if (!docs)
       return {
         arrayDocs: [],
         mappedDocs: new Map<string, Request>(),
+        unreadCount: 0,
       };
 
     const arrayDocs: Request[] = [];
     const mappedDocs: Map<string, Request> = new Map();
+    let unreadCount = 0;
 
     for (const page of docs.pages) {
       page.docs.forEach((doc) => {
@@ -86,14 +94,18 @@ export function useInfiniteIncomingRequests(user: User | null | undefined) {
           mappedDocs.set(doc.id, doc);
           // Add to cache as well
           addRequestToCache(queryClient, doc);
+          // Check if unread
+          if ((doc.reads?.docs?.length || 0) === 0) {
+            unreadCount += 1;
+          }
         }
         // Push each doc into the array
         arrayDocs.push(doc);
       });
     }
 
-    return { arrayDocs, mappedDocs };
+    return { arrayDocs, mappedDocs, unreadCount };
   }, [docs, query.isPlaceholderData, queryClient]);
 
-  return { ...query, data: arrayDocs, dataMap: mappedDocs };
+  return { ...query, data: arrayDocs, dataMap: mappedDocs, unreadCount };
 }
