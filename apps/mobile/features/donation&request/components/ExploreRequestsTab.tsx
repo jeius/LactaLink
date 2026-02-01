@@ -1,37 +1,27 @@
+import PressableWrapper from '@/components/buttons/PressableWrapper';
 import { useSelectedDataMarker } from '@/components/contexts/markers/DataMarker';
-import { NoData } from '@/components/NoData';
-import { RefreshButton } from '@/components/RefreshButton';
-import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
 import RequestCard, {
   RequestCardSkeleton,
 } from '@/features/donation&request/components/cards/RequestCard';
-import { useNearestRequests } from '@/features/donation&request/hooks/useNearestListings';
 import { useCurrentCoordinates } from '@/lib/stores';
+import { ListRenderItem } from '@/lib/types';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { createMarkerID } from '@/lib/utils/markerUtils';
-import { Collection } from '@lactalink/types/collections';
+import { Request } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { extractCollection, listKeyExtractor } from '@lactalink/utilities/extractors';
-import { formatKebab } from '@lactalink/utilities/formatters';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { validatePoint } from '@lactalink/utilities/geo-utils';
-import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { MapPinIcon } from 'lucide-react-native';
 import React, { useCallback } from 'react';
-import PressableWrapper from '../../../components/buttons/PressableWrapper';
-import { VerticalInfiniteList } from '../../../components/lists/VerticalInfiniteList';
-import { Text } from '../../../components/ui/text';
+import { NearestRequestsList } from './lists/NearestListings';
 
-type TSlug = Extract<CollectionSlug, 'requests'>;
-type TData = Collection<TSlug>;
+type TData = Request;
 
-const slug: TSlug = 'requests';
-const TITLE = 'Available Requests';
+const slug: Extract<CollectionSlug, 'requests'> = 'requests';
 
 export default function ExploreRequestsTab() {
-  const { data, isPlaceholderData, ...query } = useNearestRequests();
   const router = useRouter();
 
   const setSelectedMarker = useSelectedDataMarker()[1];
@@ -52,28 +42,9 @@ export default function ExploreRequestsTab() {
     [router, setSelectedMarker]
   );
 
-  const EmptyComponent = useCallback(() => {
-    if (query.isLoading) return null;
-    return (
-      <Box className="pt-10">
-        <NoData title={`No available ${formatKebab(slug)} found`} />
-      </Box>
-    );
-  }, [query.isLoading]);
-
-  const HeaderComponent = useCallback(() => {
-    if (!data.length && !query.isLoading) return null;
-    return (
-      <HStack space="lg" className="items-center justify-between">
-        <Text className="font-JakartaSemiBold">{TITLE}</Text>
-        <RefreshButton refreshing={query.isRefetching} onRefresh={query.refetch} />
-      </HStack>
-    );
-  }, [data.length, query.isLoading, query.isRefetching, query.refetch]);
-
   const renderItem: ListRenderItem<TData> = useCallback(
-    ({ item }) => {
-      if (isPlaceholderData) return <RequestCardSkeleton />;
+    ({ item, isPlaceholder }) => {
+      if (isPlaceholder) return <RequestCardSkeleton />;
 
       const { deliveryPreferences } = item;
       const preferences = extractCollection(deliveryPreferences);
@@ -91,25 +62,14 @@ export default function ExploreRequestsTab() {
         </PressableWrapper>
       );
     },
-    [coordinates, handlePress, isPlaceholderData]
+    [coordinates, handlePress]
   );
 
   return (
-    <VerticalInfiniteList
-      useBottomSheetListComponent
-      gap={16}
-      data={data}
-      keyExtractor={listKeyExtractor}
+    <NearestRequestsList
       renderItem={renderItem}
-      ListHeaderComponent={HeaderComponent}
-      ListHeaderComponentStyle={{ marginBottom: 12 }}
-      ListEmptyComponent={EmptyComponent}
-      contentContainerStyle={{ padding: 16 }}
-      refreshing={query.isRefetching}
-      onRefresh={query.refetch}
-      fetchNextPage={query.fetchNextPage}
-      hasNextPage={query.hasNextPage}
-      isFetchingNextPage={query.isFetchingNextPage}
+      useBottomSheetListComponent
+      title="Available Requests"
     />
   );
 }

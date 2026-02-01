@@ -26,7 +26,7 @@ export default function PressableWrapper({
       {label && (
         <HStack
           space="xs"
-          className="items-center bg-background-100 p-2"
+          className="items-center bg-typography-50 p-2"
           style={{ borderBottomLeftRadius: 16, position: 'absolute', top: 0, right: 0 }}
         >
           {icon && <Icon size="sm" as={icon} />}
