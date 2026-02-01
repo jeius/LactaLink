@@ -11,7 +11,6 @@ import { useCurrentCoordinates } from '@/lib/stores';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { createMarkerID } from '@/lib/utils/markerUtils';
-import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { Collection } from '@lactalink/types/collections';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection, listKeyExtractor } from '@lactalink/utilities/extractors';
@@ -20,11 +19,10 @@ import { validatePoint } from '@lactalink/utilities/geo-utils';
 import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { MapPinIcon } from 'lucide-react-native';
-import React, { useCallback, useMemo } from 'react';
-import { AnimatedPressable } from '../animated/pressable';
-import { VerticalInfiniteList } from '../lists/VerticalInfiniteList';
-import { Icon } from '../ui/icon';
-import { Text } from '../ui/text';
+import React, { useCallback } from 'react';
+import PressableWrapper from '../../../components/buttons/PressableWrapper';
+import { VerticalInfiniteList } from '../../../components/lists/VerticalInfiniteList';
+import { Text } from '../../../components/ui/text';
 
 type TSlug = Extract<CollectionSlug, 'requests'>;
 type TData = Collection<TSlug>;
@@ -32,44 +30,12 @@ type TData = Collection<TSlug>;
 const slug: TSlug = 'requests';
 const TITLE = 'Available Requests';
 
-function ListItem({ item, onPress }: { item: TData; onPress?: (item: TData) => void }) {
-  const { deliveryPreferences } = item;
-
-  const coordinates = useCurrentCoordinates();
-
-  const minDistance = useMemo(() => {
-    const preferences = extractCollection(deliveryPreferences);
-    return getMinDistance(preferences, coordinates);
-  }, [coordinates, deliveryPreferences]);
-
-  return (
-    <AnimatedPressable
-      className="overflow-hidden rounded-2xl"
-      containerStyle={createDirectionalShadow()}
-      onPress={() => onPress?.(item)}
-    >
-      <RequestCard data={item} />
-      {minDistance !== null && (
-        <HStack
-          space="xs"
-          className="absolute right-0 top-0 items-center bg-background-100 p-2"
-          style={{ borderBottomLeftRadius: 16 }}
-        >
-          <Icon size="sm" as={MapPinIcon} />
-          <Text size="xs" className="font-JakartaMedium text-typography-700">
-            {minDistance.toFixed(2)} km
-          </Text>
-        </HStack>
-      )}
-    </AnimatedPressable>
-  );
-}
-
 export default function ExploreRequestsTab() {
   const { data, isPlaceholderData, ...query } = useNearestRequests();
   const router = useRouter();
 
   const setSelectedMarker = useSelectedDataMarker()[1];
+  const coordinates = useCurrentCoordinates();
 
   const handlePress = useCallback(
     (data: TData) => {
@@ -108,9 +74,24 @@ export default function ExploreRequestsTab() {
   const renderItem: ListRenderItem<TData> = useCallback(
     ({ item }) => {
       if (isPlaceholderData) return <RequestCardSkeleton />;
-      return <ListItem item={item} onPress={handlePress} />;
+
+      const { deliveryPreferences } = item;
+      const preferences = extractCollection(deliveryPreferences);
+      const minDistance = getMinDistance(preferences, coordinates);
+      const label = minDistance ? `${minDistance.toFixed(2)} km` : undefined;
+
+      return (
+        <PressableWrapper
+          label={label}
+          icon={MapPinIcon}
+          className="overflow-hidden rounded-2xl"
+          onPress={() => handlePress(item)}
+        >
+          <RequestCard data={item} />
+        </PressableWrapper>
+      );
     },
-    [handlePress, isPlaceholderData]
+    [coordinates, handlePress, isPlaceholderData]
   );
 
   return (

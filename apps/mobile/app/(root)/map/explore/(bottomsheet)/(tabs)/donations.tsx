@@ -1,4 +1,4 @@
-import ExploreDonationsTab from '@/components/tabs/ExploreDonationsTab';
+import ExploreDonationsTab from '@/features/donation&request/components/ExploreDonationsTab';
 import React from 'react';
 
 export default function DonationsTab() {
