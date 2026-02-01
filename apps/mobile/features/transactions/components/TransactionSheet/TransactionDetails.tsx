@@ -1,10 +1,10 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import DonationCard from '@/components/cards/DonationCard';
 import { MilkBagCard } from '@/components/cards/MilkBagCard';
-import RequestCard from '@/components/cards/RequestCard';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack, VStackProps } from '@/components/ui/vstack';
+import DonationCard from '@/features/donation&request/components/cards/DonationCard';
+import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { TRANSACTION_TYPE } from '@lactalink/enums';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractDisplayName } from '@lactalink/utilities/extractors';

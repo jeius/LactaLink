@@ -1,11 +1,11 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import DonationCard from '@/components/cards/DonationCard';
-import RequestCard from '@/components/cards/RequestCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
+import DonationCard from '@/features/donation&request/components/cards/DonationCard';
+import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { PostSchema } from '@lactalink/form-schemas';
 import { XIcon } from 'lucide-react-native';
 import React from 'react';

@@ -1,6 +1,6 @@
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
+import { Card, CardProps } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
@@ -18,10 +18,10 @@ import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useDonation } from '../../hooks/queries';
 
-type CardContentProps = Pick<DynamicStackProps, 'orientation'> & {
-  data: Donation;
-  disableLinks?: boolean;
-};
+type CardContentProps = Pick<DynamicStackProps, 'orientation'> &
+  Pick<CardProps, 'variant'> & {
+    data: Donation;
+  };
 
 interface DonationCardProps extends Omit<CardContentProps, 'data'> {
   data?: string | Donation;
@@ -37,7 +37,7 @@ export default function DonationCard({ data: dataProp, ...props }: DonationCardP
   return <CardContent {...props} data={data} />;
 }
 
-function CardContent({ data, orientation = 'horizontal', disableLinks }: CardContentProps) {
+function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }: CardContentProps) {
   const { width: screenWidth } = useWindowDimensions();
   const isHorizontal = orientation === 'horizontal';
   const isVertical = orientation === 'vertical';
@@ -52,13 +52,17 @@ function CardContent({ data, orientation = 'horizontal', disableLinks }: CardCon
   const storage = data.details.storageType;
 
   return (
-    <Card className="items-stretch p-0" style={{ maxWidth: 360 }}>
+    <Card variant={variant} className="items-stretch p-0" style={{ maxWidth: 360 }}>
       <DynamicStack orientation={orientation}>
         <Box
-          className="relative bg-primary-50"
-          style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 164, width: '100%' }}
+          className="relative border-primary-500 bg-primary-50"
+          style={
+            isHorizontal
+              ? { width: 96, aspectRatio: 1, borderRightWidth: 4 }
+              : { height: 164, width: '100%', borderBottomWidth: 4 }
+          }
         >
-          <SingleImageViewer image={image} disabled={!disableLinks} />
+          <SingleImageViewer image={image} disabled />
           {isVertical && (
             <Box className="absolute" style={{ bottom: 8, right: 8 }}>
               <ProfileAvatar size="sm" profile={{ relationTo: 'individuals', value: data.donor }} />
@@ -68,7 +72,7 @@ function CardContent({ data, orientation = 'horizontal', disableLinks }: CardCon
 
         <HStack space="sm" className="flex-1 px-4 py-2">
           <VStack className="flex-1 items-start justify-center">
-            <Text size="lg" className="font-JakartaExtraBold" numberOfLines={1}>
+            <Text size="xl" className="font-JakartaExtraBold" numberOfLines={1}>
               {displayVolume(volume)}
             </Text>
             <Text

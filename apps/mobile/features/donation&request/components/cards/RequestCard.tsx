@@ -1,6 +1,6 @@
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
-import { Card } from '@/components/ui/card';
+import { Card, CardProps } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
@@ -9,38 +9,32 @@ import { VStack } from '@/components/ui/vstack';
 import { ProfileAvatar } from '@/components/Avatar';
 import { BasicBadge } from '@/components/badges';
 import { DynamicStack, DynamicStackProps } from '@/components/ui/DynamicStack';
-import { useFetchById } from '@/hooks/collections/useFetchById';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { PREFERRED_STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
 import { Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
-import { extractCollection, extractID, extractOneImageData } from '@lactalink/utilities/extractors';
-import isString from 'lodash/isString';
+import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { useRequest } from '../../hooks/queries';
 
-type CardContentProps = Pick<DynamicStackProps, 'orientation'> & {
-  data: Request;
-  disableLinks?: boolean;
-};
+type CardContentProps = Pick<DynamicStackProps, 'orientation'> &
+  Pick<CardProps, 'variant'> & {
+    data: Request;
+  };
 
 interface RequestCardProps extends Omit<CardContentProps, 'data'> {
   data?: string | Request;
   isLoading?: boolean;
 }
 
-const useRequestData = (data?: string | Request) => {
-  const query = useFetchById(isString(data), { collection: 'requests', id: extractID(data)! });
-  return { ...query, data: extractCollection(data) ?? query.data };
-};
-
 export default function RequestCard({
   data: dataProp,
   isLoading: isLoadingProp,
   ...props
 }: RequestCardProps) {
-  const { data: donationData, isLoading: isDataLoading } = useRequestData(dataProp!);
+  const { data: donationData, isLoading: isDataLoading } = useRequest(dataProp);
 
   const isLoading = isLoadingProp || isDataLoading;
 
@@ -51,7 +45,7 @@ export default function RequestCard({
   return <CardContent {...props} data={donationData} />;
 }
 
-function CardContent({ data, orientation = 'horizontal', disableLinks }: CardContentProps) {
+function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }: CardContentProps) {
   const { width: screenWidth } = useWindowDimensions();
   const isHorizontal = orientation === 'horizontal';
   const isVertical = orientation === 'vertical';
@@ -67,13 +61,17 @@ function CardContent({ data, orientation = 'horizontal', disableLinks }: CardCon
   const preferredStorage = data.details.storagePreference ?? PREFERRED_STORAGE_TYPES.EITHER.value;
 
   return (
-    <Card className="items-stretch p-0" style={{ maxWidth: 360 }}>
+    <Card variant={variant} className="items-stretch p-0" style={{ maxWidth: 360 }}>
       <DynamicStack orientation={orientation}>
         <Box
-          className="relative bg-tertiary-50"
-          style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 164, width: '100%' }}
+          className="relative border-tertiary-500 bg-tertiary-50"
+          style={
+            isHorizontal
+              ? { width: 96, aspectRatio: 1, borderRightWidth: 4 }
+              : { height: 164, width: '100%', borderBottomWidth: 4 }
+          }
         >
-          <SingleImageViewer image={image} disabled={!disableLinks} />
+          <SingleImageViewer image={image} />
           {isVertical && (
             <Box className="absolute" style={{ bottom: 8, right: 8 }}>
               <ProfileAvatar

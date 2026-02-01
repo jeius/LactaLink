@@ -1,8 +1,8 @@
 import React from 'react';
 
-import DonationCard from '@/components/cards/DonationCard';
-import RequestCard from '@/components/cards/RequestCard';
 import { Pressable } from '@/components/ui/pressable';
+import DonationCard from '@/features/donation&request/components/cards/DonationCard';
+import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
