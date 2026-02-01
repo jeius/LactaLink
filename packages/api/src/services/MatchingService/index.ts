@@ -90,6 +90,7 @@ export class MatchingService implements IMatchingService {
   ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
     const options: NearDonationOrRequestOptions = { location, status, maxDistance };
     const paginationOpts = {
+      pagination: true,
       page: paginationOptions?.page || 1,
       limit: paginationOptions?.limit || 10,
     };
@@ -112,6 +113,7 @@ export class MatchingService implements IMatchingService {
   ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
     const options: NearDonationOrRequestOptions = { location, status, maxDistance };
     const paginationOpts = {
+      pagination: true,
       page: paginationOptions?.page || 1,
       limit: paginationOptions?.limit || 10,
     };

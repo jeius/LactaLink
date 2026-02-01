@@ -11,6 +11,7 @@ import { ValidationError } from '@lactalink/utilities/errors';
 import { and, asc, eq, lte, sql, SQLWrapper } from '@payloadcms/db-postgres/drizzle';
 import httpStatus from 'http-status';
 import { APIError, CollectionSlug, Payload, PayloadRequest } from 'payload';
+import { isNumber } from 'payload/shared';
 import z from 'zod';
 
 export const nearDonationsOrRequestsHandler = createPayloadHandler({
@@ -202,6 +203,12 @@ function parseNearOptions(input: unknown): NearDonationOrRequestOptions {
   // Convert to number the stringified coordinates
   if (typeof input === 'object' && 'location' in input && Array.isArray(input.location)) {
     input.location = input.location.map((coord) => Number(coord));
+  }
+
+  // Convert to number the stringified maxDistance
+  if (typeof input === 'object' && 'maxDistance' in input) {
+    const maxDistance = Number(input.maxDistance);
+    if (isNumber(maxDistance)) input.maxDistance = maxDistance;
   }
 
   const parsed = nearDonationRequestSchema.safeParse(input);
