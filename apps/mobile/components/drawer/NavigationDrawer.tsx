@@ -6,6 +6,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { RIPPLE_COLOR } from '@/lib/colors';
 import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -31,16 +32,18 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
         <DrawerItem
           label="Explore"
           icon={({ color }) => <Icon as={CompassIcon} color={color} />}
-          labelStyle={{ fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 }}
+          labelStyle={{ fontFamily: 'Jakarta-Bold', fontSize: 14, lineHeight: 18 }}
           style={{ borderRadius: 14, height: 48 }}
+          pressColor={RIPPLE_COLOR}
           inactiveTintColor={themeColors.typography[900]}
           onPress={() => router.push('/map/explore')}
         />
         <DrawerItem
           label="Exit App"
           icon={({ color }) => <Icon as={DoorOpenIcon} color={color} />}
-          labelStyle={{ fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 }}
+          labelStyle={{ fontFamily: 'Jakarta-Bold', fontSize: 14, lineHeight: 18 }}
           style={{ borderRadius: 14, height: 48 }}
+          pressColor={RIPPLE_COLOR}
           inactiveTintColor={themeColors.error[400]}
           onPress={() => BackHandler.exitApp()}
         />
@@ -86,7 +89,7 @@ function DrawerFooter() {
         <Link href={'/account'} asChild>
           <AnimatedPressable disablePressAnimation className="flex-1 shrink p-4">
             <HStack space="sm" className="items-center">
-              <ProfileAvatar size="md" profile={user?.profile} />
+              <ProfileAvatar size="md" profile={user?.profile ?? undefined} />
               <VStack className="min-w-0 flex-1">
                 <Text
                   size="sm"

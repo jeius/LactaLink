@@ -1,3 +1,4 @@
+import { RIPPLE_COLOR } from '@/lib/colors';
 import { createAnimatedPressable } from 'pressto';
 import React, { ComponentProps } from 'react';
 import { Easing, interpolate } from 'react-native-reanimated';
@@ -5,8 +6,6 @@ import { Easing, interpolate } from 'react-native-reanimated';
 export interface PressableScaleProps extends ComponentProps<typeof PressableComp> {
   disableRipple?: boolean;
 }
-
-const rippleColor = 'rgba(128,128,128,0.10)';
 
 const PressableComp = createAnimatedPressable((progress, { config }) => {
   'worklet';
@@ -23,7 +22,7 @@ export function PressableScale({ children, disableRipple = false, ...props }: Pr
   return (
     <PressableComp
       {...props}
-      rippleColor={rippleColor}
+      rippleColor={RIPPLE_COLOR}
       rippleRadius={disableRipple ? null : undefined}
       shouldCancelWhenOutside={props.shouldCancelWhenOutside ?? true}
       animationType="timing"

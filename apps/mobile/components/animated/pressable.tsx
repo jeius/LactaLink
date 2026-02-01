@@ -1,3 +1,4 @@
+import { RIPPLE_COLOR } from '@/lib/colors';
 import React, { ComponentProps } from 'react';
 import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
@@ -19,8 +20,6 @@ export interface AnimatedPressableProps extends ComponentProps<typeof AnimatedUI
   disableRipple?: boolean;
   minScale?: number;
 }
-
-const rippleColor = 'rgba(128,128,128,0.10)';
 
 const timingConfig: WithTimingConfig = {
   duration: 250,
@@ -71,7 +70,7 @@ export function AnimatedPressable({
         disableRipple
           ? undefined
           : {
-              color: rippleColor,
+              color: RIPPLE_COLOR,
               foreground: true,
             }
       }

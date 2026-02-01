@@ -3,6 +3,7 @@ import { HeaderProvider } from '@/components/contexts/HeaderProvider';
 import { NavigationDrawerContent } from '@/components/drawer/NavigationDrawer';
 import { Icon } from '@/components/ui/icon';
 import { MilkBottleIcon } from '@/components/ui/icon/custom';
+import { RIPPLE_COLOR } from '@/lib/colors';
 import { Drawer } from 'expo-router/drawer';
 import { Building2Icon, BuildingIcon, HomeIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -31,6 +32,7 @@ export default function Layout() {
           headerShown: false,
           drawerActiveTintColor: activeTintColor,
           drawerActiveBackgroundColor: activeBgColor,
+          headerPressColor: RIPPLE_COLOR,
           drawerItemStyle: {
             borderRadius: 14,
             height: 48,
@@ -39,7 +41,7 @@ export default function Layout() {
           drawerContentStyle: { paddingTop: 12 },
           drawerStyle: { backgroundColor: bgColor },
           drawerInactiveTintColor: inActiveTintColor,
-          drawerLabelStyle: { fontFamily: 'Jakarta-SemiBold', fontSize: 14, lineHeight: 18 },
+          drawerLabelStyle: { fontFamily: 'Jakarta-Bold', fontSize: 14, lineHeight: 18 },
         }}
       >
         <Drawer.Screen
