@@ -47,6 +47,10 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  LISTINGS: {
+    ALL: QueryKey;
+    NEAREST: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -95,6 +99,10 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['requests'],
     INFINITE: ['requests', 'infinite'],
     ONE: ['requests', 'one'],
+  },
+  LISTINGS: {
+    ALL: ['listings'],
+    NEAREST: ['listings', 'nearest'],
   },
 };
 

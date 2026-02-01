@@ -32,11 +32,13 @@ export default function ExploreTabLayout() {
           borderBottomWidth: 1,
           ...shadow.sm,
         },
-        tabBarLabelStyle: { fontSize: 12, fontFamily: 'Jakarta-SemiBold' },
+        tabBarLabelStyle: { fontSize: 14, fontFamily: 'Jakarta-SemiBold' },
         tabBarPosition: 'top',
         tabBarLabelPosition: 'beside-icon',
-        //@ts-expect-error props.ref type mismatch
-        tabBarButton: (props) => <Pressable {...props} ref={props.ref} />,
+        tabBarButton: (props) => (
+          //@ts-expect-error props.ref type mismatch
+          <Pressable {...props} android_ripple={undefined} ref={props.ref} />
+        ),
       }}
     >
       <Tabs.Screen

@@ -1,10 +1,8 @@
 import { createAnimatedPressable } from 'pressto';
 import React, { ComponentProps } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
-import { AnimatedStyle, Easing, interpolate } from 'react-native-reanimated';
+import { Easing, interpolate } from 'react-native-reanimated';
 
 export interface PressableScaleProps extends ComponentProps<typeof PressableComp> {
-  containerStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
   disableRipple?: boolean;
 }
 
@@ -21,12 +19,7 @@ const PressableComp = createAnimatedPressable((progress, { config }) => {
   };
 });
 
-export function PressableScale({
-  children,
-  containerStyle,
-  disableRipple = false,
-  ...props
-}: PressableScaleProps) {
+export function PressableScale({ children, disableRipple = false, ...props }: PressableScaleProps) {
   return (
     <PressableComp
       {...props}
@@ -35,7 +28,6 @@ export function PressableScale({
       shouldCancelWhenOutside={props.shouldCancelWhenOutside ?? true}
       animationType="timing"
       animationConfig={{ duration: 250, easing: Easing.elastic(1.5) }}
-      style={containerStyle}
     >
       {children}
     </PressableComp>

@@ -15,11 +15,11 @@ import { Donation } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import React, { useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { useDonation } from '../../hooks/queries';
 
 type CardContentProps = Pick<DynamicStackProps, 'orientation'> &
-  Pick<CardProps, 'variant'> & {
+  Pick<CardProps, 'variant' | 'className' | 'style'> & {
     data: Donation;
   };
 
@@ -27,17 +27,36 @@ interface DonationCardProps extends Omit<CardContentProps, 'data'> {
   data?: string | Donation;
 }
 
+export function DonationCardSkeleton({
+  orientation = 'horizontal',
+}: Pick<CardContentProps, 'orientation'>) {
+  const isHorizontal = orientation === 'horizontal';
+  return (
+    <Skeleton
+      variant="rounded"
+      className="rounded-2xl"
+      style={isHorizontal ? { height: 96, maxWidth: 420 } : { height: 180, maxWidth: 420 }}
+    />
+  );
+}
+
 export default function DonationCard({ data: dataProp, ...props }: DonationCardProps) {
   const { data: data, isLoading } = useDonation(dataProp!);
 
   if (isLoading || !data) {
-    return <CardSkeleton orientation={props.orientation} />;
+    return <DonationCardSkeleton orientation={props.orientation} />;
   }
 
   return <CardContent {...props} data={data} />;
 }
 
-function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }: CardContentProps) {
+function CardContent({
+  data,
+  orientation = 'horizontal',
+  variant = 'elevated',
+  className,
+  style,
+}: CardContentProps) {
   const { width: screenWidth } = useWindowDimensions();
   const isHorizontal = orientation === 'horizontal';
   const isVertical = orientation === 'vertical';
@@ -52,7 +71,11 @@ function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }:
   const storage = data.details.storageType;
 
   return (
-    <Card variant={variant} className="items-stretch p-0" style={{ maxWidth: 360 }}>
+    <Card
+      variant={variant}
+      className={className}
+      style={StyleSheet.flatten([{ maxWidth: 360, padding: 0 }, style])}
+    >
       <DynamicStack orientation={orientation}>
         <Box
           className="relative border-primary-500 bg-primary-50"
@@ -95,16 +118,5 @@ function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }:
         </HStack>
       </DynamicStack>
     </Card>
-  );
-}
-
-function CardSkeleton({ orientation = 'horizontal' }: Pick<CardContentProps, 'orientation'>) {
-  const isHorizontal = orientation === 'horizontal';
-  return (
-    <Skeleton
-      variant="rounded"
-      className="rounded-2xl"
-      style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 180, width: '100%' }}
-    />
   );
 }

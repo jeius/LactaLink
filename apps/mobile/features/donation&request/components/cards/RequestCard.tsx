@@ -29,6 +29,19 @@ interface RequestCardProps extends Omit<CardContentProps, 'data'> {
   isLoading?: boolean;
 }
 
+export function RequestCardSkeleton({
+  orientation = 'horizontal',
+}: Pick<CardContentProps, 'orientation'>) {
+  const isHorizontal = orientation === 'horizontal';
+  return (
+    <Skeleton
+      variant="rounded"
+      className="rounded-2xl"
+      style={isHorizontal ? { height: 96, maxWidth: 420 } : { height: 180, maxWidth: 420 }}
+    />
+  );
+}
+
 export default function RequestCard({
   data: dataProp,
   isLoading: isLoadingProp,
@@ -39,7 +52,7 @@ export default function RequestCard({
   const isLoading = isLoadingProp || isDataLoading;
 
   if (isLoading || !donationData) {
-    return <CardSkeleton orientation={props.orientation} />;
+    return <RequestCardSkeleton orientation={props.orientation} />;
   }
 
   return <CardContent {...props} data={donationData} />;
@@ -122,16 +135,5 @@ function CardContent({ data, orientation = 'horizontal', variant = 'elevated' }:
         </HStack>
       </DynamicStack>
     </Card>
-  );
-}
-
-function CardSkeleton({ orientation = 'horizontal' }: Pick<CardContentProps, 'orientation'>) {
-  const isHorizontal = orientation === 'horizontal';
-  return (
-    <Skeleton
-      variant="rounded"
-      className="rounded-2xl"
-      style={isHorizontal ? { width: 96, aspectRatio: 1 } : { height: 180, width: '100%' }}
-    />
   );
 }

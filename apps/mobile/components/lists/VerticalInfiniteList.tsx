@@ -4,6 +4,7 @@ import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { NoData } from '../NoData';
 import { RefreshControl } from '../RefreshControl';
+import { BottomSheetFlashList } from '../ui/bottom-sheet';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 
@@ -15,6 +16,7 @@ export interface VerticalInfiniteListProps<T> extends OmittedFlashListProps<T> {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   fetchNextPage?: () => void;
+  useBottomSheetListComponent?: boolean;
 }
 
 export function VerticalInfiniteList<T extends { id: string }>({
@@ -25,10 +27,12 @@ export function VerticalInfiniteList<T extends { id: string }>({
   fetchNextPage,
   onRefresh,
   refreshing,
+  useBottomSheetListComponent = false,
   ...props
 }: VerticalInfiniteListProps<T>) {
+  const FlashListComponent = useBottomSheetListComponent ? BottomSheetFlashList : FlashList;
   return (
-    <FlashList
+    <FlashListComponent
       {...props}
       keyExtractor={props.keyExtractor ?? listKeyExtractor}
       ListFooterComponent={isFetchingNextPage ? <Spinner size="small" /> : null}

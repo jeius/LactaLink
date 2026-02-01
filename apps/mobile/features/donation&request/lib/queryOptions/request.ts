@@ -2,6 +2,7 @@ import { QUERY_KEYS } from '@/lib/constants/queryKeys';
 import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { Request, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformers';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { findPaginatedIncomingRequests, findRequest } from '../api/find';
 
@@ -30,12 +31,12 @@ export function createIncomingRequestsInfQuery(user: User | null | undefined) {
 
       if (!userProfile) throw new Error('User profile is required to fetch incoming donations.');
 
-      const { docs, ...rest } = await findPaginatedIncomingRequests(userProfile, {
+      const paginatedDocs = await findPaginatedIncomingRequests(userProfile, {
         page: pageParam,
         limit: 15,
       });
 
-      return { docs: new Map(docs.map((doc) => [doc.id, doc])), ...rest };
+      return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     getPreviousPageParam: (firstPage) => firstPage.prevPage,

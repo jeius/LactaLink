@@ -108,10 +108,12 @@ export default function Layout() {
               tabBarActiveTintColor,
               tabBarInactiveTintColor,
               tabBarStyle: { backgroundColor: tabBarBackgroundColor, elevation: 0, borderColor },
-              tabBarLabelStyle: { fontSize: 12, fontFamily: 'Jakarta-SemiBold' },
+              tabBarLabelStyle: { fontSize: 14, fontFamily: 'Jakarta-Bold' },
               tabBarLabelPosition: 'beside-icon',
-              //@ts-expect-error props.ref type mismatch
-              tabBarButton: (props) => <Pressable {...props} ref={props.ref} />,
+              tabBarButton: (props) => (
+                //@ts-expect-error props.ref type mismatch
+                <Pressable {...props} android_ripple={undefined} ref={props.ref} />
+              ),
             }}
           >
             <Tabs.Screen
