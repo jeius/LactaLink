@@ -9,6 +9,28 @@ export const afterDeleteDonationOrRequest: CollectionAfterDeleteHook<Donation | 
 }) => {
   const docsToDelete: { id: string; collection: CollectionSlug }[] = [];
 
+  // Delete read tracking records
+  const readCollection = collection.slug === 'donations' ? 'donation-reads' : 'request-reads';
+  const entityField = collection.slug === 'donations' ? 'donation' : 'request';
+
+  try {
+    const readRecords = await req.payload.find({
+      collection: readCollection,
+      where: { [entityField]: { equals: doc.id } },
+      depth: 0,
+      pagination: false,
+      req,
+    });
+
+    readRecords.docs.forEach((record) => {
+      docsToDelete.push({ id: record.id, collection: readCollection });
+    });
+  } catch (error) {
+    req.payload.logger.warn(
+      `Failed to fetch read records for ${collection.slug} ${doc.id}: ${error}`
+    );
+  }
+
   const milkBags = doc.details.bags;
 
   if (milkBags?.length) {
@@ -45,6 +67,7 @@ export const afterDeleteDonationOrRequest: CollectionAfterDeleteHook<Donation | 
 
   req.payload.logger.info(
     {
+      readRecords: docsToDelete.filter((item) => item.collection.includes('-reads')).length,
       milkBags: milkBags?.length || 0,
       images: Array.isArray(images) ? images.length : images ? 1 : 0,
       total: docsToDelete.length,

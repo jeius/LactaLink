@@ -157,6 +157,7 @@ export interface Config {
     citiesMunicipalities: CityMunicipality;
     comments: Comment;
     'delivery-preferences': DeliveryPreference;
+    'donation-reads': DonationRead;
     'donor-screenings': DonorScreening;
     donations: Donation;
     hospitals: Hospital;
@@ -174,6 +175,7 @@ export interface Config {
     posts: Post;
     provinces: Province;
     regions: Region;
+    'request-reads': RequestRead;
     requests: Request;
     users: User;
     transactions: Transaction;
@@ -214,6 +216,7 @@ export interface Config {
       requests: 'requests';
     };
     donations: {
+      reads: 'donation-reads';
       transactions: 'transactions';
     };
     hospitals: {
@@ -243,6 +246,7 @@ export interface Config {
       shares: 'posts';
     };
     requests: {
+      reads: 'request-reads';
       transactions: 'transactions';
     };
     users: {
@@ -276,6 +280,7 @@ export interface Config {
     citiesMunicipalities: CitiesMunicipalitiesSelect<false> | CitiesMunicipalitiesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
+    'donation-reads': DonationReadsSelect<false> | DonationReadsSelect<true>;
     'donor-screenings': DonorScreeningsSelect<false> | DonorScreeningsSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
@@ -293,6 +298,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
+    'request-reads': RequestReadsSelect<false> | RequestReadsSelect<true>;
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
@@ -1176,6 +1182,14 @@ export interface Donation {
    */
   deliveryPreferences?: (string | DeliveryPreference)[] | null;
   /**
+   * Users who have seen this donation
+   */
+  reads?: {
+    docs?: (string | DonationRead)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * Transactions associated with this donation
    */
   transactions?: {
@@ -1366,6 +1380,14 @@ export interface Request {
    */
   deliveryPreferences?: (string | DeliveryPreference)[] | null;
   /**
+   * Users who have seen this request
+   */
+  reads?: {
+    docs?: (string | RequestRead)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * Transactions associated with this donation
    */
   transactions?: {
@@ -1373,6 +1395,22 @@ export interface Request {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tracks which users have seen which requests
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "request-reads".
+ */
+export interface RequestRead {
+  id: string;
+  request: string | Request;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  user: string | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1628,6 +1666,22 @@ export interface TransactionStatusHistory {
    * Any additional notes related to this status change
    */
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tracks which users have seen which donations
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donation-reads".
+ */
+export interface DonationRead {
+  id: string;
+  donation: string | Donation;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  user: string | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -2891,6 +2945,10 @@ export interface PayloadLockedDocument {
         value: string | DeliveryPreference;
       } | null)
     | ({
+        relationTo: 'donation-reads';
+        value: string | DonationRead;
+      } | null)
+    | ({
         relationTo: 'donor-screenings';
         value: string | DonorScreening;
       } | null)
@@ -2957,6 +3015,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'regions';
         value: string | Region;
+      } | null)
+    | ({
+        relationTo: 'request-reads';
+        value: string | RequestRead;
       } | null)
     | ({
         relationTo: 'requests';
@@ -3193,6 +3255,16 @@ export interface DeliveryPreferencesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donation-reads_select".
+ */
+export interface DonationReadsSelect<T extends boolean = true> {
+  donation?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "donor-screenings_select".
  */
 export interface DonorScreeningsSelect<T extends boolean = true> {
@@ -3251,6 +3323,7 @@ export interface DonationsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryPreferences?: T;
+  reads?: T;
   transactions?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3657,6 +3730,16 @@ export interface RegionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "request-reads_select".
+ */
+export interface RequestReadsSelect<T extends boolean = true> {
+  request?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "requests_select".
  */
 export interface RequestsSelect<T extends boolean = true> {
@@ -3687,6 +3770,7 @@ export interface RequestsSelect<T extends boolean = true> {
         notes?: T;
       };
   deliveryPreferences?: T;
+  reads?: T;
   transactions?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -597,6 +597,36 @@ export const delivery_preferences = pgTable(
   ]
 );
 
+export const donation_reads = pgTable(
+  'donation_reads',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    donation: uuid('donation_id')
+      .notNull()
+      .references(() => donations.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('donation_reads_donation_idx').on(columns.donation),
+    index('donation_reads_user_idx').on(columns.user),
+    index('donation_reads_updated_at_idx').on(columns.updatedAt),
+    index('donation_reads_created_at_idx').on(columns.createdAt),
+    uniqueIndex('donation_user_idx').on(columns.donation, columns.user),
+  ]
+);
+
 export const donor_screenings_responses = pgTable(
   'donor_screenings_responses',
   {
@@ -1715,6 +1745,36 @@ export const regions = pgTable(
     index('regions_island_group_idx').on(columns.islandGroup),
     index('regions_updated_at_idx').on(columns.updatedAt),
     index('regions_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const request_reads = pgTable(
+  'request_reads',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    request: uuid('request_id')
+      .notNull()
+      .references(() => requests.id, {
+        onDelete: 'set null',
+      }),
+    user: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('request_reads_request_idx').on(columns.request),
+    index('request_reads_user_idx').on(columns.user),
+    index('request_reads_updated_at_idx').on(columns.updatedAt),
+    index('request_reads_created_at_idx').on(columns.createdAt),
+    uniqueIndex('request_user_idx').on(columns.request, columns.user),
   ]
 );
 
@@ -2962,6 +3022,7 @@ export const payload_locked_documents_rels = pgTable(
     citiesMunicipalitiesID: uuid('cities_municipalities_id'),
     commentsID: uuid('comments_id'),
     'delivery-preferencesID': uuid('delivery_preferences_id'),
+    'donation-readsID': uuid('donation_reads_id'),
     'donor-screeningsID': uuid('donor_screenings_id'),
     donationsID: uuid('donations_id'),
     hospitalsID: uuid('hospitals_id'),
@@ -2979,6 +3040,7 @@ export const payload_locked_documents_rels = pgTable(
     postsID: uuid('posts_id'),
     provincesID: uuid('provinces_id'),
     regionsID: uuid('regions_id'),
+    'request-readsID': uuid('request_reads_id'),
     requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
     transactionsID: uuid('transactions_id'),
@@ -3015,6 +3077,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_delivery_preferences_id_idx').on(
       columns['delivery-preferencesID']
     ),
+    index('payload_locked_documents_rels_donation_reads_id_idx').on(columns['donation-readsID']),
     index('payload_locked_documents_rels_donor_screenings_id_idx').on(
       columns['donor-screeningsID']
     ),
@@ -3040,6 +3103,7 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_posts_id_idx').on(columns.postsID),
     index('payload_locked_documents_rels_provinces_id_idx').on(columns.provincesID),
     index('payload_locked_documents_rels_regions_id_idx').on(columns.regionsID),
+    index('payload_locked_documents_rels_request_reads_id_idx').on(columns['request-readsID']),
     index('payload_locked_documents_rels_requests_id_idx').on(columns.requestsID),
     index('payload_locked_documents_rels_users_id_idx').on(columns.usersID),
     index('payload_locked_documents_rels_transactions_id_idx').on(columns.transactionsID),
@@ -3111,6 +3175,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['delivery-preferencesID']],
       foreignColumns: [delivery_preferences.id],
       name: 'payload_locked_documents_rels_delivery_preferences_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['donation-readsID']],
+      foreignColumns: [donation_reads.id],
+      name: 'payload_locked_documents_rels_donation_reads_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['donor-screeningsID']],
@@ -3196,6 +3265,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['regionsID']],
       foreignColumns: [regions.id],
       name: 'payload_locked_documents_rels_regions_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['request-readsID']],
+      foreignColumns: [request_reads.id],
+      name: 'payload_locked_documents_rels_request_reads_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['requestsID']],
@@ -3899,6 +3973,18 @@ export const relations_delivery_preferences = relations(delivery_preferences, ({
     relationName: 'availableDays',
   }),
 }));
+export const relations_donation_reads = relations(donation_reads, ({ one }) => ({
+  donation: one(donations, {
+    fields: [donation_reads.donation],
+    references: [donations.id],
+    relationName: 'donation',
+  }),
+  user: one(users, {
+    fields: [donation_reads.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
 export const relations_donor_screenings_responses = relations(
   donor_screenings_responses,
   ({ one }) => ({
@@ -4402,6 +4488,18 @@ export const relations_regions = relations(regions, ({ one }) => ({
     relationName: 'islandGroup',
   }),
 }));
+export const relations_request_reads = relations(request_reads, ({ one }) => ({
+  request: one(requests, {
+    fields: [request_reads.request],
+    references: [requests.id],
+    relationName: 'request',
+  }),
+  user: one(users, {
+    fields: [request_reads.user],
+    references: [users.id],
+    relationName: 'user',
+  }),
+}));
 export const relations_requests_rels = relations(requests_rels, ({ one }) => ({
   parent: one(requests, {
     fields: [requests_rels.parent],
@@ -4874,6 +4972,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [delivery_preferences.id],
       relationName: 'delivery-preferences',
     }),
+    'donation-readsID': one(donation_reads, {
+      fields: [payload_locked_documents_rels['donation-readsID']],
+      references: [donation_reads.id],
+      relationName: 'donation-reads',
+    }),
     'donor-screeningsID': one(donor_screenings, {
       fields: [payload_locked_documents_rels['donor-screeningsID']],
       references: [donor_screenings.id],
@@ -4958,6 +5061,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.regionsID],
       references: [regions.id],
       relationName: 'regions',
+    }),
+    'request-readsID': one(request_reads, {
+      fields: [payload_locked_documents_rels['request-readsID']],
+      references: [request_reads.id],
+      relationName: 'request-reads',
     }),
     requestsID: one(requests, {
       fields: [payload_locked_documents_rels.requestsID],
@@ -5314,6 +5422,7 @@ type DatabaseSchema = {
   delivery_preferences_preferred_mode: typeof delivery_preferences_preferred_mode;
   delivery_preferences_available_days: typeof delivery_preferences_available_days;
   delivery_preferences: typeof delivery_preferences;
+  donation_reads: typeof donation_reads;
   donor_screenings_responses: typeof donor_screenings_responses;
   donor_screenings: typeof donor_screenings;
   donations: typeof donations;
@@ -5345,6 +5454,7 @@ type DatabaseSchema = {
   posts_rels: typeof posts_rels;
   provinces: typeof provinces;
   regions: typeof regions;
+  request_reads: typeof request_reads;
   requests: typeof requests;
   requests_rels: typeof requests_rels;
   users: typeof users;
@@ -5405,6 +5515,7 @@ type DatabaseSchema = {
   relations_delivery_preferences_preferred_mode: typeof relations_delivery_preferences_preferred_mode;
   relations_delivery_preferences_available_days: typeof relations_delivery_preferences_available_days;
   relations_delivery_preferences: typeof relations_delivery_preferences;
+  relations_donation_reads: typeof relations_donation_reads;
   relations_donor_screenings_responses: typeof relations_donor_screenings_responses;
   relations_donor_screenings: typeof relations_donor_screenings;
   relations_donations_rels: typeof relations_donations_rels;
@@ -5436,6 +5547,7 @@ type DatabaseSchema = {
   relations_posts: typeof relations_posts;
   relations_provinces: typeof relations_provinces;
   relations_regions: typeof relations_regions;
+  relations_request_reads: typeof relations_request_reads;
   relations_requests_rels: typeof relations_requests_rels;
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;

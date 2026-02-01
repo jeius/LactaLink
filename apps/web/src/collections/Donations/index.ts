@@ -4,6 +4,7 @@ import { deliveryTab } from '@/fields/deliveryTab';
 import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
+import { cleanReadTrackingOnUpdate } from '@/hooks/collections/cleanReadTrackingOnUpdate';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
@@ -36,7 +37,11 @@ export const Donations: CollectionConfig<'donations'> = {
     beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
     beforeValidate: [initializeDonation, ({ data, req }) => calculateVolumes(data, req)],
     beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateSeenTracking],
-    afterChange: [createDonationNotification, processDonationToOrganization],
+    afterChange: [
+      createDonationNotification,
+      processDonationToOrganization,
+      cleanReadTrackingOnUpdate,
+    ],
     afterDelete: [afterDeleteDonationOrRequest],
   },
   endpoints: donationsEndpoints,
@@ -214,7 +219,26 @@ export const Donations: CollectionConfig<'donations'> = {
             },
           ],
         },
+
         deliveryTab(),
+
+        {
+          label: 'Read Tracking',
+          fields: [
+            {
+              name: 'reads',
+              label: 'Read by Users',
+              type: 'join',
+              collection: 'donation-reads',
+              on: 'donation',
+              admin: {
+                description: 'Users who have seen this donation',
+                defaultColumns: ['user', 'createdAt'],
+              },
+            },
+          ],
+        },
+
         {
           label: 'Transactions',
           fields: [

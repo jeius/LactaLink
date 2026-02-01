@@ -4,6 +4,7 @@ import BlockedUsers from './BlockedUsers';
 import { ChatSystemCollections } from './chat-system';
 import { Comments } from './Comments';
 import { DeliveryPreferences } from './DeliveryPreferences';
+import { DonationReads } from './DonationReads';
 import { Donations } from './Donations';
 import { DonorScreenings } from './DonorScreenings';
 import { Hospitals } from './Hospitals';
@@ -21,6 +22,7 @@ import { NotificationTypes } from './Notifications/types';
 import { Posts } from './Posts';
 import { Barangays, CitiesMunicipalities, IslandGroups, Regions } from './PSGC';
 import { Provinces } from './PSGC/Provinces';
+import { RequestReads } from './RequestReads';
 import { Requests } from './Requests';
 import TransactionCollections from './transaction-system';
 import { Users } from './Users';
@@ -32,6 +34,7 @@ const Collections: CollectionConfig[] = [
   CitiesMunicipalities,
   Comments,
   DeliveryPreferences,
+  DonationReads,
   DonorScreenings,
   Donations,
   Hospitals,
@@ -49,6 +52,7 @@ const Collections: CollectionConfig[] = [
   Posts,
   Provinces,
   Regions,
+  RequestReads,
   Requests,
   Users,
   ...TransactionCollections,

@@ -3,6 +3,7 @@ import { deliveryTab } from '@/fields/deliveryTab';
 import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
+import { cleanReadTrackingOnUpdate } from '@/hooks/collections/cleanReadTrackingOnUpdate';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
@@ -46,7 +47,7 @@ export const Requests: CollectionConfig<'requests'> = {
       updateVolume,
       updateSeenTracking,
     ],
-    afterChange: [createRequestNotification, processOrganizationRequest],
+    afterChange: [createRequestNotification, processOrganizationRequest, cleanReadTrackingOnUpdate],
     afterDelete: [afterDeleteDonationOrRequest],
   },
   endpoints: requestsEndpoints,
@@ -259,7 +260,26 @@ export const Requests: CollectionConfig<'requests'> = {
             },
           ],
         },
+
         deliveryTab(),
+
+        {
+          label: 'Read Tracking',
+          fields: [
+            {
+              name: 'reads',
+              label: 'Read by Users',
+              type: 'join',
+              collection: 'request-reads',
+              on: 'request',
+              admin: {
+                description: 'Users who have seen this request',
+                defaultColumns: ['user', 'createdAt'],
+              },
+            },
+          ],
+        },
+
         {
           label: 'Transactions',
           fields: [
