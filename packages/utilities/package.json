@@ -48,6 +48,10 @@
     "./type-guards": {
       "types": "./dist/type-guards/index.d.ts",
       "default": "./dist/type-guards/index.js"
+    },
+    "./transformers": {
+      "types": "./dist/transformers/index.d.ts",
+      "default": "./dist/transformers/index.js"
     }
   },
   "scripts": {
