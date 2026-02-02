@@ -1,0 +1,1714 @@
+diff --git a/lib/module/ClearButtonAndSpinner.js b/lib/module/ClearButtonAndSpinner.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..920469188eae33f242cc6e1475d98bfc8a5713e0
+--- /dev/null
++++ b/lib/module/ClearButtonAndSpinner.js
+@@ -0,0 +1,84 @@
++"use strict";
++
++import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
++import { jsx as _jsx } from "react/jsx-runtime";
++const ClearButtonAndSpinner = ({
++  showClearButton = true,
++  showLoadingIndicator = true,
++  style = {},
++  accessibilityLabels,
++  isLoading,
++  isInputEmpty,
++  onPress,
++  clearElement
++}) => {
++  // Loading indicator
++  if (isLoading) {
++    if (!showLoadingIndicator) return null;
++    return /*#__PURE__*/_jsx(ActivityIndicator, {
++      style: [styles.loadingIndicator],
++      size: 'small',
++      color: style.loadingIndicator?.color || '#000000',
++      accessibilityLiveRegion: "polite",
++      accessibilityLabel: accessibilityLabels?.loadingIndicator || 'Loading suggestions'
++    });
++  }
++
++  // Clear button visibility check
++  // Not shown if showClearButton is false or input is empty
++  if (!showClearButton || isInputEmpty) return null;
++
++  // Clear button
++  return /*#__PURE__*/_jsx(TouchableOpacity, {
++    style: [styles.clearButton],
++    onPress: onPress,
++    accessibilityRole: "button",
++    accessibilityLabel: accessibilityLabels?.clearButton || 'Clear input text',
++    children: clearElement || /*#__PURE__*/_jsx(View, {
++      style: styles.clearTextWrapper,
++      children: /*#__PURE__*/_jsx(Text, {
++        style: [Platform.select({
++          ios: styles.iOSclearText,
++          android: styles.androidClearText
++        }), style.clearButtonText],
++        accessibilityElementsHidden: true,
++        importantForAccessibility: "no-hide-descendants",
++        children: '×'
++      })
++    })
++  });
++};
++const styles = StyleSheet.create({
++  clearButton: {
++    alignSelf: 'center',
++    padding: 0
++  },
++  loadingIndicator: {
++    alignSelf: 'center'
++  },
++  clearTextWrapper: {
++    backgroundColor: '#999',
++    borderRadius: 12,
++    width: 24,
++    height: 24,
++    alignItems: 'center',
++    justifyContent: 'center'
++  },
++  //this is never going to be consistent between different phone fonts and sizes
++  iOSclearText: {
++    fontSize: 22,
++    fontWeight: '400',
++    color: 'white',
++    lineHeight: 24,
++    includeFontPadding: false
++  },
++  androidClearText: {
++    fontSize: 24,
++    fontWeight: '400',
++    color: 'white',
++    lineHeight: 25.5,
++    includeFontPadding: false
++  }
++});
++export default ClearButtonAndSpinner;
++//# sourceMappingURL=ClearButtonAndSpinner.js.map
+\ No newline at end of file
+diff --git a/lib/module/ClearButtonAndSpinner.js.map b/lib/module/ClearButtonAndSpinner.js.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..846e5d6304a5e317f93b09e08ca52dd4b1389063
+--- /dev/null
++++ b/lib/module/ClearButtonAndSpinner.js.map
+@@ -0,0 +1 @@
++{"version":3,"names":["ActivityIndicator","Platform","StyleSheet","Text","TouchableOpacity","View","jsx","_jsx","ClearButtonAndSpinner","showClearButton","showLoadingIndicator","style","accessibilityLabels","isLoading","isInputEmpty","onPress","clearElement","styles","loadingIndicator","size","color","accessibilityLiveRegion","accessibilityLabel","clearButton","accessibilityRole","children","clearTextWrapper","select","ios","iOSclearText","android","androidClearText","clearButtonText","accessibilityElementsHidden","importantForAccessibility","create","alignSelf","padding","backgroundColor","borderRadius","width","height","alignItems","justifyContent","fontSize","fontWeight","lineHeight","includeFontPadding"],"sourceRoot":"..\\..\\src","sources":["ClearButtonAndSpinner.tsx"],"mappings":";;AACA,SACEA,iBAAiB,EACjBC,QAAQ,EACRC,UAAU,EACVC,IAAI,EACJC,gBAAgB,EAChBC,IAAI,QACC,cAAc;AAAC,SAAAC,GAAA,IAAAC,IAAA;AAgBtB,MAAMC,qBAA2D,GAAGA,CAAC;EACnEC,eAAe,GAAG,IAAI;EACtBC,oBAAoB,GAAG,IAAI;EAC3BC,KAAK,GAAG,CAAC,CAAC;EACVC,mBAAmB;EACnBC,SAAS;EACTC,YAAY;EACZC,OAAO;EACPC;AACF,CAAC,KAAK;EACJ;EACA,IAAIH,SAAS,EAAE;IACb,IAAI,CAACH,oBAAoB,EAAE,OAAO,IAAI;IAEtC,oBACEH,IAAA,CAACP,iBAAiB;MAChBW,KAAK,EAAE,CAACM,MAAM,CAACC,gBAAgB,CAAE;MACjCC,IAAI,EAAE,OAAQ;MACdC,KAAK,EAAET,KAAK,CAACO,gBAAgB,EAAEE,KAAK,IAAI,SAAU;MAClDC,uBAAuB,EAAC,QAAQ;MAChCC,kBAAkB,EAChBV,mBAAmB,EAAEM,gBAAgB,IAAI;IAC1C,CACF,CAAC;EAEN;;EAEA;EACA;EACA,IAAI,CAACT,eAAe,IAAIK,YAAY,EAAE,OAAO,IAAI;;EAEjD;EACA,oBACIP,IAAA,CAACH,gBAAgB;IACfO,KAAK,EAAE,CAACM,MAAM,CAACM,WAAW,CAAE;IAC5BR,OAAO,EAAEA,OAAQ;IACjBS,iBAAiB,EAAC,QAAQ;IAC1BF,kBAAkB,EAChBV,mBAAmB,EAAEW,WAAW,IAAI,kBACrC;IAAAE,QAAA,EAEAT,YAAY,iBACXT,IAAA,CAACF,IAAI;MAACM,KAAK,EAAEM,MAAM,CAACS,gBAAiB;MAAAD,QAAA,eACnClB,IAAA,CAACJ,IAAI;QACHQ,KAAK,EAAE,CACLV,QAAQ,CAAC0B,MAAM,CAAC;UACdC,GAAG,EAAEX,MAAM,CAACY,YAAY;UACxBC,OAAO,EAAEb,MAAM,CAACc;QAClB,CAAC,CAAC,EACFpB,KAAK,CAACqB,eAAe,CACrB;QACFC,2BAA2B,EAAE,IAAK;QAClCC,yBAAyB,EAAC,qBAAqB;QAAAT,QAAA,EAE9C;MAAG,CACA;IAAC,CACH;EACP,CACe,CAAC;AAEzB,CAAC;AAED,MAAMR,MAAM,GAAGf,UAAU,CAACiC,MAAM,CAAC;EAC/BZ,WAAW,EAAE;IACXa,SAAS,EAAE,QAAQ;IACnBC,OAAO,EAAE;EACX,CAAC;EACDnB,gBAAgB,EAAE;IAChBkB,SAAS,EAAE;EACb,CAAC;EACDV,gBAAgB,EAAE;IAChBY,eAAe,EAAE,MAAM;IACvBC,YAAY,EAAE,EAAE;IAChBC,KAAK,EAAE,EAAE;IACTC,MAAM,EAAE,EAAE;IACVC,UAAU,EAAE,QAAQ;IACpBC,cAAc,EAAE;EAClB,CAAC;EACD;EACAd,YAAY,EAAE;IACZe,QAAQ,EAAE,EAAE;IACZC,UAAU,EAAE,KAAK;IACjBzB,KAAK,EAAE,OAAO;IACd0B,UAAU,EAAE,EAAE;IACdC,kBAAkB,EAAE;EACtB,CAAC;EACDhB,gBAAgB,EAAE;IAChBa,QAAQ,EAAE,EAAE;IACZC,UAAU,EAAE,KAAK;IACjBzB,KAAK,EAAE,OAAO;IACd0B,UAAU,EAAE,IAAI;IAChBC,kBAAkB,EAAE;EACtB;AACF,CAAC,CAAC;AAGF,eAAevC,qBAAqB","ignoreList":[]}
+diff --git a/lib/module/GooglePlacesTextInput.js b/lib/module/GooglePlacesTextInput.js
+index b12e7bf8fe72436a9ba4735127e86c87a2657100..43de8e719a6667c7e5063bb3c1d794e7fd422634 100644
+--- a/lib/module/GooglePlacesTextInput.js
++++ b/lib/module/GooglePlacesTextInput.js
+@@ -1,49 +1,51 @@
+ "use strict";
+ 
+ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+-import { ActivityIndicator, FlatList, I18nManager, Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
++import { FlatList, I18nManager, Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+ 
+ // Import the API functions
+ import { fetchPlaceDetails as fetchPlaceDetailsApi, fetchPredictions as fetchPredictionsApi, generateUUID, isRTLText } from "./services/googlePlacesApi.js";
++import ClearButtonAndSpinner from "./ClearButtonAndSpinner.js";
+ 
+ // Type definitions
+ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+-const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+-  apiKey,
+-  value,
+-  placeHolderText,
+-  proxyUrl,
+-  proxyHeaders = null,
+-  languageCode,
+-  includedRegionCodes,
+-  locationBias,
+-  locationRestriction,
+-  types = [],
+-  biasPrefixText,
+-  minCharsToFetch = 1,
+-  onPlaceSelect,
+-  onTextChange,
+-  debounceDelay = 200,
+-  showLoadingIndicator = true,
+-  showClearButton = true,
+-  forceRTL = undefined,
+-  style = {},
+-  clearElement,
+-  hideOnKeyboardDismiss = false,
+-  scrollEnabled = true,
+-  nestedScrollEnabled = true,
+-  fetchDetails = false,
+-  detailsProxyUrl = null,
+-  detailsProxyHeaders = null,
+-  detailsFields = [],
+-  onError,
+-  enableDebug = false,
+-  onFocus,
+-  onBlur,
+-  accessibilityLabels = {},
+-  suggestionTextProps = {},
+-  ...restTextInputProps
+-}, ref) => {
++const GooglePlacesTextInput = /*#__PURE__*/forwardRef((props, ref) => {
++  const {
++    apiKey,
++    value,
++    placeHolderText,
++    proxyUrl,
++    proxyHeaders = null,
++    languageCode,
++    includedRegionCodes,
++    locationBias,
++    locationRestriction,
++    types = [],
++    biasPrefixText,
++    minCharsToFetch = 1,
++    onPlaceSelect,
++    onTextChange,
++    debounceDelay = 200,
++    showLoadingIndicator = true,
++    showClearButton = true,
++    forceRTL = undefined,
++    style = {},
++    clearElement,
++    hideOnKeyboardDismiss = false,
++    scrollEnabled = true,
++    nestedScrollEnabled = true,
++    fetchDetails = false,
++    detailsProxyUrl = null,
++    detailsProxyHeaders = null,
++    detailsFields = [],
++    onError,
++    enableDebug = false,
++    onFocus,
++    onBlur,
++    accessibilityLabels = {},
++    suggestionTextProps = {},
++    ...restTextInputProps
++  } = props;
+   const [predictions, setPredictions] = useState([]);
+   const [loading, setLoading] = useState(false);
+   const [inputText, setInputText] = useState(value || '');
+@@ -104,6 +106,7 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+   }));
+ 
+   // RTL detection logic
++  const isDeviceRTL = I18nManager.isRTL;
+   const isRTL = forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText ?? '');
+ 
+   // Add missing CORS warning effect
+@@ -309,6 +312,9 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+       style: [index > 0 ? styles.separatorLine : {}, styles.suggestionItem, {
+         backgroundColor
+       }, style.suggestionItem],
++      onPressIn: () => {
++        suggestionPressing.current = true;
++      },
+       onPress: () => {
+         suggestionPressing.current = false;
+         handleSuggestionPress(item);
+@@ -333,22 +339,7 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+       })]
+     });
+   };
+-  const getPadding = () => {
+-    const physicalRTL = I18nManager.isRTL;
+-    const clearButtonPadding = showClearButton ? 75 : 45;
+-    if (isRTL !== physicalRTL) {
+-      return {
+-        paddingStart: clearButtonPadding,
+-        paddingEnd: 15
+-      };
+-    }
+-    return {
+-      paddingStart: 15,
+-      paddingEnd: clearButtonPadding
+-    };
+-  };
+   const getTextAlign = () => {
+-    const isDeviceRTL = I18nManager.isRTL;
+     if (isDeviceRTL) {
+       return {
+         textAlign: isRTL ? 'left' : 'right'
+@@ -359,16 +350,17 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+       };
+     }
+   };
+-  const getIconPosition = paddingValue => {
+-    const physicalRTL = I18nManager.isRTL;
+-    if (isRTL !== physicalRTL) {
+-      return {
+-        start: paddingValue
+-      };
++  const handleClearPress = () => {
++    if (debounceTimeout.current) {
++      clearTimeout(debounceTimeout.current);
+     }
+-    return {
+-      end: paddingValue
+-    };
++    skipNextFocusFetch.current = true;
++    setInputText('');
++    setPredictions([]);
++    setShowSuggestions(false);
++    onTextChange?.('');
++    setSessionToken(generateSessionToken());
++    inputRef.current?.focus();
+   };
+ 
+   // Debug initialization
+@@ -385,15 +377,20 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+         debounceDelay
+       });
+     }
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
+   return /*#__PURE__*/_jsxs(View, {
+     style: [styles.container, style.container],
+     children: [/*#__PURE__*/_jsxs(View, {
+-      children: [/*#__PURE__*/_jsx(TextInput, {
++      style: [styles.inputContainer, style.inputContainer],
++      children: [isRTL !== isDeviceRTL && /*#__PURE__*/_jsx(ClearButtonAndSpinner, {
++        ...props,
++        isLoading: loading || detailsLoading,
++        onPress: handleClearPress,
++        isInputEmpty: inputText.length === 0
++      }), /*#__PURE__*/_jsx(TextInput, {
+         ...restTextInputProps,
+         ref: inputRef,
+-        style: [styles.input, style.input, getPadding(), getTextAlign()],
++        style: [styles.input, style.input, getTextAlign()],
+         placeholder: placeHolderText,
+         placeholderTextColor: style.placeholder?.color || '#666666',
+         value: inputText,
+@@ -404,40 +401,11 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+         ,
+         accessibilityRole: "search",
+         accessibilityLabel: accessibilityLabels.input || placeHolderText
+-      }), showClearButton && inputText !== '' && /*#__PURE__*/_jsx(TouchableOpacity, {
+-        style: [styles.clearButton, getIconPosition(12)],
+-        onPress: () => {
+-          if (debounceTimeout.current) {
+-            clearTimeout(debounceTimeout.current);
+-          }
+-          skipNextFocusFetch.current = true;
+-          setInputText('');
+-          setPredictions([]);
+-          setShowSuggestions(false);
+-          onTextChange?.('');
+-          setSessionToken(generateSessionToken());
+-          inputRef.current?.focus();
+-        },
+-        accessibilityRole: "button",
+-        accessibilityLabel: accessibilityLabels.clearButton || 'Clear input text',
+-        children: clearElement || /*#__PURE__*/_jsx(View, {
+-          style: styles.clearTextWrapper,
+-          children: /*#__PURE__*/_jsx(Text, {
+-            style: [Platform.select({
+-              ios: styles.iOSclearText,
+-              android: styles.androidClearText
+-            }), style.clearButtonText],
+-            accessibilityElementsHidden: true,
+-            importantForAccessibility: "no-hide-descendants",
+-            children: '×'
+-          })
+-        })
+-      }), (loading || detailsLoading) && showLoadingIndicator && /*#__PURE__*/_jsx(ActivityIndicator, {
+-        style: [styles.loadingIndicator, getIconPosition(45)],
+-        size: 'small',
+-        color: style.loadingIndicator?.color || '#000000',
+-        accessibilityLiveRegion: "polite",
+-        accessibilityLabel: accessibilityLabels.loadingIndicator || 'Loading suggestions'
++      }), isRTL === isDeviceRTL && /*#__PURE__*/_jsx(ClearButtonAndSpinner, {
++        ...props,
++        isLoading: loading || detailsLoading,
++        onPress: handleClearPress,
++        isInputEmpty: inputText.length === 0
+       })]
+     }), showSuggestions && predictions.length > 0 && /*#__PURE__*/_jsx(View, {
+       style: [styles.suggestionsContainer, style.suggestionsContainer],
+@@ -458,14 +426,17 @@ const GooglePlacesTextInput = /*#__PURE__*/forwardRef(({
+ });
+ const styles = StyleSheet.create({
+   container: {},
+-  input: {
+-    flex: 1,
++  inputContainer: {
+     borderRadius: 6,
+     borderWidth: 1,
+-    paddingHorizontal: 10,
++    paddingHorizontal: 12,
++    paddingVertical: 0,
+     backgroundColor: 'white',
+-    fontSize: 16,
+-    paddingVertical: 16
++    flexDirection: 'row'
++  },
++  input: {
++    flex: 1,
++    fontSize: 16
+   },
+   suggestionsContainer: {
+     backgroundColor: '#efeff1',
+@@ -492,44 +463,6 @@ const styles = StyleSheet.create({
+     color: '#666',
+     marginTop: 2,
+     textAlign: 'left'
+-  },
+-  clearButton: {
+-    position: 'absolute',
+-    top: '50%',
+-    transform: [{
+-      translateY: -13
+-    }],
+-    padding: 0
+-  },
+-  loadingIndicator: {
+-    position: 'absolute',
+-    top: '50%',
+-    transform: [{
+-      translateY: -10
+-    }]
+-  },
+-  clearTextWrapper: {
+-    backgroundColor: '#999',
+-    borderRadius: 12,
+-    width: 24,
+-    height: 24,
+-    alignItems: 'center',
+-    justifyContent: 'center'
+-  },
+-  //this is never going to be consistent between different phone fonts and sizes
+-  iOSclearText: {
+-    fontSize: 22,
+-    fontWeight: '400',
+-    color: 'white',
+-    lineHeight: 24,
+-    includeFontPadding: false
+-  },
+-  androidClearText: {
+-    fontSize: 24,
+-    fontWeight: '400',
+-    color: 'white',
+-    lineHeight: 25.5,
+-    includeFontPadding: false
+   }
+ });
+ export default GooglePlacesTextInput;
+diff --git a/lib/module/GooglePlacesTextInput.js.map b/lib/module/GooglePlacesTextInput.js.map
+index ecb5d06bff6384f664d388ff79eeae41b52c5608..58614bf0c4e6ef16af32353597d417b9a319bd45 100644
+--- a/lib/module/GooglePlacesTextInput.js.map
++++ b/lib/module/GooglePlacesTextInput.js.map
+@@ -1 +1 @@
+-{"version":3,"names":["forwardRef","useEffect","useImperativeHandle","useRef","useState","ActivityIndicator","FlatList","I18nManager","Keyboard","Platform","StyleSheet","Text","TextInput","TouchableOpacity","View","fetchPlaceDetails","fetchPlaceDetailsApi","fetchPredictions","fetchPredictionsApi","generateUUID","isRTLText","jsx","_jsx","jsxs","_jsxs","GooglePlacesTextInput","apiKey","value","placeHolderText","proxyUrl","proxyHeaders","languageCode","includedRegionCodes","locationBias","locationRestriction","types","biasPrefixText","minCharsToFetch","onPlaceSelect","onTextChange","debounceDelay","showLoadingIndicator","showClearButton","forceRTL","undefined","style","clearElement","hideOnKeyboardDismiss","scrollEnabled","nestedScrollEnabled","fetchDetails","detailsProxyUrl","detailsProxyHeaders","detailsFields","onError","enableDebug","onFocus","onBlur","accessibilityLabels","suggestionTextProps","restTextInputProps","ref","predictions","setPredictions","loading","setLoading","inputText","setInputText","showSuggestions","setShowSuggestions","sessionToken","setSessionToken","detailsLoading","setDetailsLoading","debounceTimeout","inputRef","suggestionPressing","skipNextFocusFetch","generateSessionToken","current","clearTimeout","keyboardDidHideSubscription","addListener","remove","clear","blur","focus","getSessionToken","isRTL","OS","console","warn","debugLog","category","message","data","timestamp","Date","toISOString","log","text","length","error","fetchedPredictions","errorType","constructor","name","errorMessage","errorStack","stack","placeId","platform","details","handleTextChange","setTimeout","handleSuggestionPress","suggestion","place","placePrediction","structuredFormat","mainText","dismiss","enrichedPlace","hasDetails","placeKeys","Object","keys","detailsKeys","handleFocus","event","handleBlur","renderSuggestion","item","index","secondaryText","suggestionsContainerStyle","flatten","suggestionsContainer","backgroundColor","defaultAccessibilityLabel","accessibilityLabel","suggestionItem","accessibilityRole","accessibilityHint","styles","separatorLine","onPress","onMouseDown","children","suggestionText","main","getTextAlign","numberOfLines","mainTextNumberOfLines","ellipsizeMode","secondary","secondaryTextNumberOfLines","getPadding","physicalRTL","clearButtonPadding","paddingStart","paddingEnd","isDeviceRTL","textAlign","getIconPosition","paddingValue","start","end","container","input","placeholder","placeholderTextColor","color","onChangeText","clearButtonMode","clearButton","clearTextWrapper","select","ios","iOSclearText","android","androidClearText","clearButtonText","accessibilityElementsHidden","importantForAccessibility","loadingIndicator","size","accessibilityLiveRegion","renderItem","keyExtractor","keyboardShouldPersistTaps","bounces","suggestionsList","create","flex","borderRadius","borderWidth","paddingHorizontal","fontSize","paddingVertical","marginTop","overflow","maxHeight","padding","borderTopWidth","hairlineWidth","borderTopColor","position","top","transform","translateY","width","height","alignItems","justifyContent","fontWeight","lineHeight","includeFontPadding"],"sourceRoot":"../../src","sources":["GooglePlacesTextInput.tsx"],"mappings":"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","ignoreList":[]}
++{"version":3,"names":["forwardRef","useEffect","useImperativeHandle","useRef","useState","FlatList","I18nManager","Keyboard","Platform","StyleSheet","Text","TextInput","TouchableOpacity","View","fetchPlaceDetails","fetchPlaceDetailsApi","fetchPredictions","fetchPredictionsApi","generateUUID","isRTLText","ClearButtonAndSpinner","jsx","_jsx","jsxs","_jsxs","GooglePlacesTextInput","props","ref","apiKey","value","placeHolderText","proxyUrl","proxyHeaders","languageCode","includedRegionCodes","locationBias","locationRestriction","types","biasPrefixText","minCharsToFetch","onPlaceSelect","onTextChange","debounceDelay","showLoadingIndicator","showClearButton","forceRTL","undefined","style","clearElement","hideOnKeyboardDismiss","scrollEnabled","nestedScrollEnabled","fetchDetails","detailsProxyUrl","detailsProxyHeaders","detailsFields","onError","enableDebug","onFocus","onBlur","accessibilityLabels","suggestionTextProps","restTextInputProps","predictions","setPredictions","loading","setLoading","inputText","setInputText","showSuggestions","setShowSuggestions","sessionToken","setSessionToken","detailsLoading","setDetailsLoading","debounceTimeout","inputRef","suggestionPressing","skipNextFocusFetch","generateSessionToken","current","clearTimeout","keyboardDidHideSubscription","addListener","remove","clear","blur","focus","getSessionToken","isDeviceRTL","isRTL","OS","console","warn","debugLog","category","message","data","timestamp","Date","toISOString","log","text","length","error","fetchedPredictions","errorType","constructor","name","errorMessage","errorStack","stack","placeId","platform","details","handleTextChange","setTimeout","handleSuggestionPress","suggestion","place","placePrediction","structuredFormat","mainText","dismiss","enrichedPlace","hasDetails","placeKeys","Object","keys","detailsKeys","handleFocus","event","handleBlur","renderSuggestion","item","index","secondaryText","suggestionsContainerStyle","flatten","suggestionsContainer","backgroundColor","defaultAccessibilityLabel","accessibilityLabel","suggestionItem","accessibilityRole","accessibilityHint","styles","separatorLine","onPressIn","onPress","onMouseDown","children","suggestionText","main","getTextAlign","numberOfLines","mainTextNumberOfLines","ellipsizeMode","secondary","secondaryTextNumberOfLines","textAlign","handleClearPress","container","inputContainer","isLoading","isInputEmpty","input","placeholder","placeholderTextColor","color","onChangeText","clearButtonMode","renderItem","keyExtractor","keyboardShouldPersistTaps","bounces","suggestionsList","create","borderRadius","borderWidth","paddingHorizontal","paddingVertical","flexDirection","flex","fontSize","marginTop","overflow","maxHeight","padding","borderTopWidth","hairlineWidth","borderTopColor"],"sourceRoot":"..\\..\\src","sources":["GooglePlacesTextInput.tsx"],"mappings":"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","ignoreList":[]}
+diff --git a/lib/module/index.js.map b/lib/module/index.js.map
+index dc47f59688c842f76ab3dd5f524dba72b0f940d6..08826e9e71f4c499828b04f1221a033e3261cf25 100644
+--- a/lib/module/index.js.map
++++ b/lib/module/index.js.map
+@@ -1 +1 @@
+-{"version":3,"names":["GooglePlacesTextInput"],"sourceRoot":"../../src","sources":["index.ts"],"mappings":";;AAAA,OAAOA,qBAAqB,MAAM,4BAAyB;AAE3D,eAAeA,qBAAqB;;AAEpC","ignoreList":[]}
++{"version":3,"names":["GooglePlacesTextInput"],"sourceRoot":"..\\..\\src","sources":["index.ts"],"mappings":";;AAAA,OAAOA,qBAAqB,MAAM,4BAAyB;AAE3D,eAAeA,qBAAqB;;AAEpC","ignoreList":[]}
+diff --git a/lib/module/services/googlePlacesApi.js.map b/lib/module/services/googlePlacesApi.js.map
+index 58f2ac9c0d4d8294f8f59e6b5fe3f08091443161..900f312b6bc47ab2f6c5de99d0c7700a61dae620 100644
+--- a/lib/module/services/googlePlacesApi.js.map
++++ b/lib/module/services/googlePlacesApi.js.map
+@@ -1 +1 @@
+-{"version":3,"names":["DEFAULT_GOOGLE_API_URL","DEFAULT_PLACE_DETAILS_URL","fetchPredictions","text","apiKey","proxyUrl","proxyHeaders","sessionToken","languageCode","includedRegionCodes","locationBias","locationRestriction","types","biasPrefixText","error","predictions","processedText","API_URL","headers","Object","entries","forEach","key","value","body","input","length","includedPrimaryTypes","response","fetch","method","JSON","stringify","data","json","Error","message","suggestions","console","fetchPlaceDetails","placeId","detailsProxyUrl","detailsProxyHeaders","detailsFields","details","fieldsToRequest","join","params","URLSearchParams","append","url","toString","generateUUID","replace","c","r","Math","random","v","isRTLText","rtlRegex","test"],"sourceRoot":"../../../src","sources":["services/googlePlacesApi.ts"],"mappings":";;AAAA,MAAMA,sBAAsB,GAC1B,sDAAsD;AACxD,MAAMC,yBAAyB,GAAG,0CAA0C;AAoC5E;AACA;AACA;AACA,OAAO,MAAMC,gBAAgB,GAAG,MAAAA,CAAO;EACrCC,IAAI;EACJC,MAAM;EACNC,QAAQ;EACRC,YAAY;EACZC,YAAY;EACZC,YAAY;EACZC,mBAAmB;EACnBC,YAAY;EACZC,mBAAmB;EACnBC,KAAK,GAAG,EAAE;EACVC;AACsB,CAAC,KAAgC;EACvD,IAAI,CAACV,IAAI,EAAE;IACT,OAAO;MAAEW,KAAK,EAAE,IAAI;MAAEC,WAAW,EAAE;IAAG,CAAC;EACzC;EAEA,MAAMC,aAAa,GAAGH,cAAc,GAAGA,cAAc,CAACV,IAAI,CAAC,GAAGA,IAAI;EAElE,IAAI;IACF,MAAMc,OAAO,GAAGZ,QAAQ,IAAIL,sBAAsB;IAClD,MAAMkB,OAA+B,GAAG;MACtC,cAAc,EAAE;IAClB,CAAC;IAED,IAAIb,QAAQ,IAAIC,YAAY,EAAE;MAC5Ba,MAAM,CAACC,OAAO,CAACd,YAAY,CAAC,CAACe,OAAO,CAAC,CAAC,CAACC,GAAG,EAAEC,KAAK,CAAC,KAAK;QACrDL,OAAO,CAACI,GAAG,CAAC,GAAGC,KAAK;MACtB,CAAC,CAAC;IACJ;IAEA,IAAInB,MAAM,EAAE;MACVc,OAAO,CAAC,gBAAgB,CAAC,GAAGd,MAAM;IACpC;IAEA,MAAMoB,IAAI,GAAG;MACXC,KAAK,EAAET,aAAa;MACpBR,YAAY;MACZ,IAAID,YAAY,IAAI;QAAEA;MAAa,CAAC,CAAC;MACrC,IAAIE,mBAAmB,IACrBA,mBAAmB,CAACiB,MAAM,GAAG,CAAC,IAAI;QAAEjB;MAAoB,CAAC,CAAC;MAC5D,IAAIC,YAAY,IAAI;QAAEA;MAAa,CAAC,CAAC;MACrC,IAAIC,mBAAmB,IAAI;QAAEA;MAAoB,CAAC,CAAC;MACnD,IAAIC,KAAK,CAACc,MAAM,GAAG,CAAC,IAAI;QAAEC,oBAAoB,EAAEf;MAAM,CAAC;IACzD,CAAC;IAED,MAAMgB,QAAQ,GAAG,MAAMC,KAAK,CAACZ,OAAO,EAAE;MACpCa,MAAM,EAAE,MAAM;MACdZ,OAAO;MACPM,IAAI,EAAEO,IAAI,CAACC,SAAS,CAACR,IAAI;IAC3B,CAAC,CAAC;IAEF,MAAMS,IAAI,GAAG,MAAML,QAAQ,CAACM,IAAI,CAAC,CAAC;IAElC,IAAID,IAAI,CAACnB,KAAK,EAAE;MACd,MAAM,IAAIqB,KAAK,CAACF,IAAI,CAACnB,KAAK,CAACsB,OAAO,IAAI,4BAA4B,CAAC;IACrE;IAEA,OAAO;MAAEtB,KAAK,EAAE,IAAI;MAAEC,WAAW,EAAEkB,IAAI,CAACI,WAAW,IAAI;IAAG,CAAC;EAC7D,CAAC,CAAC,OAAOvB,KAAK,EAAE;IACdwB,OAAO,CAACxB,KAAK,CAAC,6BAA6B,EAAEA,KAAK,CAAC;IACnD,OAAO;MAAEA,KAAK,EAAEA,KAAc;MAAEC,WAAW,EAAE;IAAG,CAAC;EACnD;AACF,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMwB,iBAAiB,GAAG,MAAAA,CAAO;EACtCC,OAAO;EACPpC,MAAM;EACNqC,eAAe;EACfC,mBAAmB;EACnBnC,YAAY;EACZC,YAAY;EACZmC,aAAa,GAAG;AACO,CAAC,KAAkC;EAC1D,IAAI,CAACH,OAAO,EAAE;IACZ,OAAO;MAAE1B,KAAK,EAAE,IAAI;MAAE8B,OAAO,EAAE;IAAK,CAAC;EACvC;EAEA,IAAI;IACF,MAAM3B,OAAO,GAAGwB,eAAe,GAC3B,GAAGA,eAAe,IAAID,OAAO,EAAE,GAC/B,GAAGvC,yBAAyB,GAAGuC,OAAO,EAAE;IAE5C,MAAMtB,OAA+B,GAAG;MACtC,cAAc,EAAE;IAClB,CAAC;IAED,IAAIuB,eAAe,IAAIC,mBAAmB,EAAE;MAC1CvB,MAAM,CAACC,OAAO,CAACsB,mBAAmB,CAAC,CAACrB,OAAO,CAAC,CAAC,CAACC,GAAG,EAAEC,KAAK,CAAC,KAAK;QAC5DL,OAAO,CAACI,GAAG,CAAC,GAAGC,KAAK;MACtB,CAAC,CAAC;IACJ;IAEA,IAAInB,MAAM,EAAE;MACVc,OAAO,CAAC,gBAAgB,CAAC,GAAGd,MAAM;IACpC;;IAEA;IACA,MAAMyC,eAAe,GACnBF,aAAa,CAACjB,MAAM,GAAG,CAAC,GACpBiB,aAAa,GACb,CAAC,aAAa,EAAE,kBAAkB,EAAE,UAAU,EAAE,IAAI,CAAC;IAE3DzB,OAAO,CAAC,kBAAkB,CAAC,GAAG2B,eAAe,CAACC,IAAI,CAAC,GAAG,CAAC;;IAEvD;IACA,IAAIvC,YAAY,EAAE;MAChBW,OAAO,CAAC,qBAAqB,CAAC,GAAGX,YAAY;IAC/C;;IAEA;IACA,MAAMwC,MAAM,GAAG,IAAIC,eAAe,CAAC,CAAC;IACpC,IAAIxC,YAAY,EAAE;MAChBuC,MAAM,CAACE,MAAM,CAAC,cAAc,EAAEzC,YAAY,CAAC;IAC7C;;IAEA;IACA,MAAM0C,GAAG,GAAG,GAAGjC,OAAO,GAAG8B,MAAM,CAACI,QAAQ,CAAC,CAAC,GAAG,GAAG,GAAGJ,MAAM,CAACI,QAAQ,CAAC,CAAC,GAAG,EAAE,EAAE;IAE3E,MAAMvB,QAAQ,GAAG,MAAMC,KAAK,CAACqB,GAAG,EAAE;MAChCpB,MAAM,EAAE,KAAK;MACbZ;IACF,CAAC,CAAC;IAEF,MAAMe,IAAI,GAAG,MAAML,QAAQ,CAACM,IAAI,CAAC,CAAC;IAElC,IAAID,IAAI,CAACnB,KAAK,EAAE;MACd,MAAM,IAAIqB,KAAK,CAACF,IAAI,CAACnB,KAAK,CAACsB,OAAO,IAAI,8BAA8B,CAAC;IACvE;IAEA,OAAO;MAAEtB,KAAK,EAAE,IAAI;MAAE8B,OAAO,EAAEX;IAAK,CAAC;EACvC,CAAC,CAAC,OAAOnB,KAAK,EAAE;IACdwB,OAAO,CAACxB,KAAK,CAAC,+BAA+B,EAAEA,KAAK,CAAC;IACrD,OAAO;MAAEA,KAAK,EAAEA,KAAc;MAAE8B,OAAO,EAAE;IAAK,CAAC;EACjD;AACF,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMQ,YAAY,GAAGA,CAAA,KAAc;EACxC,OAAO,sCAAsC,CAACC,OAAO,CAAC,OAAO,EAAE,UAAUC,CAAC,EAAE;IAC1E;IACA,MAAMC,CAAC,GAAIC,IAAI,CAACC,MAAM,CAAC,CAAC,GAAG,EAAE,GAAI,CAAC;IAClC,MAAMC,CAAC,GAAGJ,CAAC,KAAK,GAAG,GAAGC,CAAC,GAAIA,CAAC,GAAG,GAAG,GAAI,GAAG;IACzC;IACA,OAAOG,CAAC,CAACP,QAAQ,CAAC,EAAE,CAAC;EACvB,CAAC,CAAC;AACJ,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMQ,SAAS,GAAIxD,IAAY,IAAc;EAClD,IAAI,CAACA,IAAI,EAAE,OAAO,KAAK;EACvB,MAAMyD,QAAQ,GACZ,kFAAkF;EACpF,OAAOA,QAAQ,CAACC,IAAI,CAAC1D,IAAI,CAAC;AAC5B,CAAC","ignoreList":[]}
++{"version":3,"names":["DEFAULT_GOOGLE_API_URL","DEFAULT_PLACE_DETAILS_URL","fetchPredictions","text","apiKey","proxyUrl","proxyHeaders","sessionToken","languageCode","includedRegionCodes","locationBias","locationRestriction","types","biasPrefixText","error","predictions","processedText","API_URL","headers","Object","entries","forEach","key","value","body","input","length","includedPrimaryTypes","response","fetch","method","JSON","stringify","data","json","Error","message","suggestions","console","fetchPlaceDetails","placeId","detailsProxyUrl","detailsProxyHeaders","detailsFields","details","fieldsToRequest","join","params","URLSearchParams","append","url","toString","generateUUID","replace","c","r","Math","random","v","isRTLText","rtlRegex","test"],"sourceRoot":"..\\..\\..\\src","sources":["services/googlePlacesApi.ts"],"mappings":";;AAAA,MAAMA,sBAAsB,GAC1B,sDAAsD;AACxD,MAAMC,yBAAyB,GAAG,0CAA0C;AAoC5E;AACA;AACA;AACA,OAAO,MAAMC,gBAAgB,GAAG,MAAAA,CAAO;EACrCC,IAAI;EACJC,MAAM;EACNC,QAAQ;EACRC,YAAY;EACZC,YAAY;EACZC,YAAY;EACZC,mBAAmB;EACnBC,YAAY;EACZC,mBAAmB;EACnBC,KAAK,GAAG,EAAE;EACVC;AACsB,CAAC,KAAgC;EACvD,IAAI,CAACV,IAAI,EAAE;IACT,OAAO;MAAEW,KAAK,EAAE,IAAI;MAAEC,WAAW,EAAE;IAAG,CAAC;EACzC;EAEA,MAAMC,aAAa,GAAGH,cAAc,GAAGA,cAAc,CAACV,IAAI,CAAC,GAAGA,IAAI;EAElE,IAAI;IACF,MAAMc,OAAO,GAAGZ,QAAQ,IAAIL,sBAAsB;IAClD,MAAMkB,OAA+B,GAAG;MACtC,cAAc,EAAE;IAClB,CAAC;IAED,IAAIb,QAAQ,IAAIC,YAAY,EAAE;MAC5Ba,MAAM,CAACC,OAAO,CAACd,YAAY,CAAC,CAACe,OAAO,CAAC,CAAC,CAACC,GAAG,EAAEC,KAAK,CAAC,KAAK;QACrDL,OAAO,CAACI,GAAG,CAAC,GAAGC,KAAK;MACtB,CAAC,CAAC;IACJ;IAEA,IAAInB,MAAM,EAAE;MACVc,OAAO,CAAC,gBAAgB,CAAC,GAAGd,MAAM;IACpC;IAEA,MAAMoB,IAAI,GAAG;MACXC,KAAK,EAAET,aAAa;MACpBR,YAAY;MACZ,IAAID,YAAY,IAAI;QAAEA;MAAa,CAAC,CAAC;MACrC,IAAIE,mBAAmB,IACrBA,mBAAmB,CAACiB,MAAM,GAAG,CAAC,IAAI;QAAEjB;MAAoB,CAAC,CAAC;MAC5D,IAAIC,YAAY,IAAI;QAAEA;MAAa,CAAC,CAAC;MACrC,IAAIC,mBAAmB,IAAI;QAAEA;MAAoB,CAAC,CAAC;MACnD,IAAIC,KAAK,CAACc,MAAM,GAAG,CAAC,IAAI;QAAEC,oBAAoB,EAAEf;MAAM,CAAC;IACzD,CAAC;IAED,MAAMgB,QAAQ,GAAG,MAAMC,KAAK,CAACZ,OAAO,EAAE;MACpCa,MAAM,EAAE,MAAM;MACdZ,OAAO;MACPM,IAAI,EAAEO,IAAI,CAACC,SAAS,CAACR,IAAI;IAC3B,CAAC,CAAC;IAEF,MAAMS,IAAI,GAAG,MAAML,QAAQ,CAACM,IAAI,CAAC,CAAC;IAElC,IAAID,IAAI,CAACnB,KAAK,EAAE;MACd,MAAM,IAAIqB,KAAK,CAACF,IAAI,CAACnB,KAAK,CAACsB,OAAO,IAAI,4BAA4B,CAAC;IACrE;IAEA,OAAO;MAAEtB,KAAK,EAAE,IAAI;MAAEC,WAAW,EAAEkB,IAAI,CAACI,WAAW,IAAI;IAAG,CAAC;EAC7D,CAAC,CAAC,OAAOvB,KAAK,EAAE;IACdwB,OAAO,CAACxB,KAAK,CAAC,6BAA6B,EAAEA,KAAK,CAAC;IACnD,OAAO;MAAEA,KAAK,EAAEA,KAAc;MAAEC,WAAW,EAAE;IAAG,CAAC;EACnD;AACF,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMwB,iBAAiB,GAAG,MAAAA,CAAO;EACtCC,OAAO;EACPpC,MAAM;EACNqC,eAAe;EACfC,mBAAmB;EACnBnC,YAAY;EACZC,YAAY;EACZmC,aAAa,GAAG;AACO,CAAC,KAAkC;EAC1D,IAAI,CAACH,OAAO,EAAE;IACZ,OAAO;MAAE1B,KAAK,EAAE,IAAI;MAAE8B,OAAO,EAAE;IAAK,CAAC;EACvC;EAEA,IAAI;IACF,MAAM3B,OAAO,GAAGwB,eAAe,GAC3B,GAAGA,eAAe,IAAID,OAAO,EAAE,GAC/B,GAAGvC,yBAAyB,GAAGuC,OAAO,EAAE;IAE5C,MAAMtB,OAA+B,GAAG;MACtC,cAAc,EAAE;IAClB,CAAC;IAED,IAAIuB,eAAe,IAAIC,mBAAmB,EAAE;MAC1CvB,MAAM,CAACC,OAAO,CAACsB,mBAAmB,CAAC,CAACrB,OAAO,CAAC,CAAC,CAACC,GAAG,EAAEC,KAAK,CAAC,KAAK;QAC5DL,OAAO,CAACI,GAAG,CAAC,GAAGC,KAAK;MACtB,CAAC,CAAC;IACJ;IAEA,IAAInB,MAAM,EAAE;MACVc,OAAO,CAAC,gBAAgB,CAAC,GAAGd,MAAM;IACpC;;IAEA;IACA,MAAMyC,eAAe,GACnBF,aAAa,CAACjB,MAAM,GAAG,CAAC,GACpBiB,aAAa,GACb,CAAC,aAAa,EAAE,kBAAkB,EAAE,UAAU,EAAE,IAAI,CAAC;IAE3DzB,OAAO,CAAC,kBAAkB,CAAC,GAAG2B,eAAe,CAACC,IAAI,CAAC,GAAG,CAAC;;IAEvD;IACA,IAAIvC,YAAY,EAAE;MAChBW,OAAO,CAAC,qBAAqB,CAAC,GAAGX,YAAY;IAC/C;;IAEA;IACA,MAAMwC,MAAM,GAAG,IAAIC,eAAe,CAAC,CAAC;IACpC,IAAIxC,YAAY,EAAE;MAChBuC,MAAM,CAACE,MAAM,CAAC,cAAc,EAAEzC,YAAY,CAAC;IAC7C;;IAEA;IACA,MAAM0C,GAAG,GAAG,GAAGjC,OAAO,GAAG8B,MAAM,CAACI,QAAQ,CAAC,CAAC,GAAG,GAAG,GAAGJ,MAAM,CAACI,QAAQ,CAAC,CAAC,GAAG,EAAE,EAAE;IAE3E,MAAMvB,QAAQ,GAAG,MAAMC,KAAK,CAACqB,GAAG,EAAE;MAChCpB,MAAM,EAAE,KAAK;MACbZ;IACF,CAAC,CAAC;IAEF,MAAMe,IAAI,GAAG,MAAML,QAAQ,CAACM,IAAI,CAAC,CAAC;IAElC,IAAID,IAAI,CAACnB,KAAK,EAAE;MACd,MAAM,IAAIqB,KAAK,CAACF,IAAI,CAACnB,KAAK,CAACsB,OAAO,IAAI,8BAA8B,CAAC;IACvE;IAEA,OAAO;MAAEtB,KAAK,EAAE,IAAI;MAAE8B,OAAO,EAAEX;IAAK,CAAC;EACvC,CAAC,CAAC,OAAOnB,KAAK,EAAE;IACdwB,OAAO,CAACxB,KAAK,CAAC,+BAA+B,EAAEA,KAAK,CAAC;IACrD,OAAO;MAAEA,KAAK,EAAEA,KAAc;MAAE8B,OAAO,EAAE;IAAK,CAAC;EACjD;AACF,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMQ,YAAY,GAAGA,CAAA,KAAc;EACxC,OAAO,sCAAsC,CAACC,OAAO,CAAC,OAAO,EAAE,UAAUC,CAAC,EAAE;IAC1E;IACA,MAAMC,CAAC,GAAIC,IAAI,CAACC,MAAM,CAAC,CAAC,GAAG,EAAE,GAAI,CAAC;IAClC,MAAMC,CAAC,GAAGJ,CAAC,KAAK,GAAG,GAAGC,CAAC,GAAIA,CAAC,GAAG,GAAG,GAAI,GAAG;IACzC;IACA,OAAOG,CAAC,CAACP,QAAQ,CAAC,EAAE,CAAC;EACvB,CAAC,CAAC;AACJ,CAAC;;AAED;AACA;AACA;AACA,OAAO,MAAMQ,SAAS,GAAIxD,IAAY,IAAc;EAClD,IAAI,CAACA,IAAI,EAAE,OAAO,KAAK;EACvB,MAAMyD,QAAQ,GACZ,kFAAkF;EACpF,OAAOA,QAAQ,CAACC,IAAI,CAAC1D,IAAI,CAAC;AAC5B,CAAC","ignoreList":[]}
+diff --git a/lib/typescript/src/ClearButtonAndSpinner.d.ts b/lib/typescript/src/ClearButtonAndSpinner.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..2851f42684dee19b853520d7e74cb469a59d145b
+--- /dev/null
++++ b/lib/typescript/src/ClearButtonAndSpinner.d.ts
+@@ -0,0 +1,10 @@
++import type { GooglePlacesTextInputProps } from './GooglePlacesTextInput';
++interface ClearButtonAndSpinnerProps extends Pick<GooglePlacesTextInputProps, 'showClearButton' | 'style' | 'accessibilityLabels' | 'clearElement' | 'showLoadingIndicator'> {
++    isInputEmpty: boolean;
++    isLoading: boolean;
++    onPress: () => void;
++}
++declare const ClearButtonAndSpinner: React.FC<ClearButtonAndSpinnerProps>;
++export type { ClearButtonAndSpinnerProps };
++export default ClearButtonAndSpinner;
++//# sourceMappingURL=ClearButtonAndSpinner.d.ts.map
+\ No newline at end of file
+diff --git a/lib/typescript/src/ClearButtonAndSpinner.d.ts.map b/lib/typescript/src/ClearButtonAndSpinner.d.ts.map
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fca9f76e85ec35cc2ed95307422915dfcd915f3
+--- /dev/null
++++ b/lib/typescript/src/ClearButtonAndSpinner.d.ts.map
+@@ -0,0 +1 @@
++{"version":3,"file":"ClearButtonAndSpinner.d.ts","sourceRoot":"","sources":["../../../src/ClearButtonAndSpinner.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,0BAA0B,EAAE,MAAM,yBAAyB,CAAC;AAU1E,UAAU,0BACR,SAAQ,IAAI,CACV,0BAA0B,EACxB,iBAAiB,GACjB,OAAO,GACP,qBAAqB,GACrB,cAAc,GACd,sBAAsB,CACzB;IACD,YAAY,EAAE,OAAO,CAAC;IACtB,SAAS,EAAE,OAAO,CAAC;IACnB,OAAO,EAAE,MAAM,IAAI,CAAC;CACrB;AAED,QAAA,MAAM,qBAAqB,EAAE,KAAK,CAAC,EAAE,CAAC,0BAA0B,CA4D/D,CAAC;AAmCF,YAAY,EAAE,0BAA0B,EAAE,CAAC;AAC3C,eAAe,qBAAqB,CAAC"}
+\ No newline at end of file
+diff --git a/lib/typescript/src/GooglePlacesTextInput.d.ts b/lib/typescript/src/GooglePlacesTextInput.d.ts
+index 0c6bd96c702a893c769c978d6e25aeb1e0855533..bb744d850fbfecec0dd4ee85fc7371dc34bf50b1 100644
+--- a/lib/typescript/src/GooglePlacesTextInput.d.ts
++++ b/lib/typescript/src/GooglePlacesTextInput.d.ts
+@@ -25,6 +25,7 @@ interface Place {
+ interface GooglePlacesTextInputStyles {
+     container?: StyleProp<ViewStyle>;
+     input?: StyleProp<TextStyle>;
++    inputContainer?: StyleProp<ViewStyle>;
+     suggestionsContainer?: StyleProp<ViewStyle>;
+     suggestionsList?: StyleProp<ViewStyle>;
+     suggestionItem?: StyleProp<ViewStyle>;
+diff --git a/lib/typescript/src/GooglePlacesTextInput.d.ts.map b/lib/typescript/src/GooglePlacesTextInput.d.ts.map
+index 3451ee2b64e8e27481951ee41f72bfd986eededd..40f319513e351aca0ec8057c730ed2636e3b4980 100644
+--- a/lib/typescript/src/GooglePlacesTextInput.d.ts.map
++++ b/lib/typescript/src/GooglePlacesTextInput.d.ts.map
+@@ -1 +1 @@
+-{"version":3,"file":"GooglePlacesTextInput.d.ts","sourceRoot":"","sources":["../../../src/GooglePlacesTextInput.tsx"],"names":[],"mappings":"AAOA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,OAAO,CAAC;AACvC,OAAO,KAAK,EACV,SAAS,EACT,SAAS,EACT,SAAS,EACT,cAAc,EAGf,MAAM,cAAc,CAAC;AAuBtB,UAAU,qBAAqB;IAC7B,QAAQ,EAAE;QACR,IAAI,EAAE,MAAM,CAAC;KACd,CAAC;IACF,aAAa,CAAC,EAAE;QACd,IAAI,EAAE,MAAM,CAAC;KACd,CAAC;CACH;AAED,UAAU,eAAe;IACvB,OAAO,EAAE,MAAM,CAAC;IAChB,gBAAgB,EAAE,qBAAqB,CAAC;IACxC,KAAK,EAAE,MAAM,EAAE,CAAC;CACjB;AAED,UAAU,kBAAkB;IAC1B,CAAC,GAAG,EAAE,MAAM,GAAG,GAAG,CAAC;CACpB;AAED,UAAU,KAAK;IACb,OAAO,EAAE,MAAM,CAAC;IAChB,gBAAgB,EAAE,qBAAqB,CAAC;IACxC,KAAK,EAAE,MAAM,EAAE,CAAC;IAChB,OAAO,CAAC,EAAE,kBAAkB,CAAC;CAC9B;AAED,UAAU,2BAA2B;IACnC,SAAS,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;IACjC,KAAK,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;IAC7B,oBAAoB,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;IAC5C,eAAe,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;IACvC,cAAc,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;IACtC,cAAc,CAAC,EAAE;QACf,IAAI,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;QAC5B,SAAS,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;KAClC,CAAC;IACF,gBAAgB,CAAC,EAAE;QACjB,KAAK,CAAC,EAAE,MAAM,CAAC;KAChB,CAAC;IACF,WAAW,CAAC,EAAE;QACZ,KAAK,CAAC,EAAE,MAAM,CAAC;KAChB,CAAC;IACF,eAAe,CAAC,EAAE,SAAS,CAAC,SAAS,CAAC,CAAC;CACxC;AAED,UAAU,+BAA+B;IACvC,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,WAAW,CAAC,EAAE,MAAM,CAAC;IACrB,gBAAgB,CAAC,EAAE,MAAM,CAAC;IAC1B;;;;OAIG;IACH,cAAc,CAAC,EAAE,CAAC,UAAU,EAAE,eAAe,KAAK,MAAM,CAAC;CAC1D;AAED,UAAU,mBAAmB;IAC3B;;;OAGG;IACH,qBAAqB,CAAC,EAAE,MAAM,CAAC;IAC/B;;;OAGG;IACH,0BAA0B,CAAC,EAAE,MAAM,CAAC;IACpC;;;OAGG;IACH,aAAa,CAAC,EAAE,MAAM,GAAG,QAAQ,GAAG,MAAM,GAAG,MAAM,CAAC;CACrD;AAED,UAAU,0BACR,SAAQ,IAAI,CACV,cAAc,EACZ,OAAO,GACP,cAAc,GACd,KAAK,GACL,OAAO,GACP,aAAa,GACb,sBAAsB,CACzB;IACD,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,eAAe,CAAC,EAAE,MAAM,CAAC;IACzB,QAAQ,CAAC,EAAE,MAAM,CAAC;IAClB,YAAY,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,CAAC;IACtC,YAAY,CAAC,EAAE,MAAM,CAAC;IACtB,mBAAmB,CAAC,EAAE,MAAM,EAAE,CAAC;IAC/B,YAAY,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,CAAC;IACnC,mBAAmB,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,CAAC;IAC1C,KAAK,CAAC,EAAE,MAAM,EAAE,CAAC;IACjB,cAAc,CAAC,EAAE,CAAC,IAAI,EAAE,MAAM,KAAK,MAAM,CAAC;IAC1C,eAAe,CAAC,EAAE,MAAM,CAAC;IACzB,aAAa,EAAE,CAAC,KAAK,EAAE,KAAK,EAAE,YAAY,CAAC,EAAE,MAAM,GAAG,IAAI,KAAK,IAAI,CAAC;IACpE,YAAY,CAAC,EAAE,CAAC,IAAI,EAAE,MAAM,KAAK,IAAI,CAAC;IACtC,aAAa,CAAC,EAAE,MAAM,CAAC;IACvB,oBAAoB,CAAC,EAAE,OAAO,CAAC;IAC/B,eAAe,CAAC,EAAE,OAAO,CAAC;IAC1B,QAAQ,CAAC,EAAE,OAAO,CAAC;IACnB,KAAK,CAAC,EAAE,2BAA2B,CAAC;IACpC,YAAY,CAAC,EAAE,SAAS,CAAC;IACzB,qBAAqB,CAAC,EAAE,OAAO,CAAC;IAChC,aAAa,CAAC,EAAE,OAAO,CAAC;IACxB,mBAAmB,CAAC,EAAE,OAAO,CAAC;IAC9B,YAAY,CAAC,EAAE,OAAO,CAAC;IACvB,eAAe,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IAChC,mBAAmB,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,CAAC;IAC7C,aAAa,CAAC,EAAE,MAAM,EAAE,CAAC;IACzB,OAAO,CAAC,EAAE,CAAC,KAAK,EAAE,GAAG,KAAK,IAAI,CAAC;IAC/B,WAAW,CAAC,EAAE,OAAO,CAAC;IACtB,mBAAmB,CAAC,EAAE,+BAA+B,CAAC;IACtD,mBAAmB,CAAC,EAAE,mBAAmB,CAAC;CAC3C;AAED,UAAU,wBAAwB;IAChC,KAAK,EAAE,MAAM,IAAI,CAAC;IAClB,IAAI,EAAE,MAAM,IAAI,CAAC;IACjB,KAAK,EAAE,MAAM,IAAI,CAAC;IAClB,eAAe,EAAE,MAAM,MAAM,GAAG,IAAI,CAAC;CACtC;AAMD,QAAA,MAAM,qBAAqB,iIAgjB1B,CAAC;AA0EF,YAAY,EACV,0BAA0B,EAC1B,wBAAwB,EACxB,2BAA2B,EAC3B,KAAK,EACL,kBAAkB,EAClB,eAAe,EACf,qBAAqB,EACrB,+BAA+B,EAC/B,mBAAmB,GACpB,CAAC;AAEF,eAAe,qBAAqB,CAAC"}
+\ No newline at end of file
++{"version":3,"file":"GooglePlacesTextInput.d.ts","sourceRoot":"","sources":["../../../src/GooglePlacesTextInput.tsx"],"names":[],"mappings":"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"}
+\ No newline at end of file
+diff --git a/src/ClearButtonAndSpinner.tsx b/src/ClearButtonAndSpinner.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..c6e498648ea03e6155a5394645bdfc2cfbd5793d
+--- /dev/null
++++ b/src/ClearButtonAndSpinner.tsx
+@@ -0,0 +1,121 @@
++import type { GooglePlacesTextInputProps } from './GooglePlacesTextInput';
++import {
++  ActivityIndicator,
++  Platform,
++  StyleSheet,
++  Text,
++  TouchableOpacity,
++  View,
++} from 'react-native';
++
++interface ClearButtonAndSpinnerProps
++  extends Pick<
++    GooglePlacesTextInputProps,
++    | 'showClearButton'
++    | 'style'
++    | 'accessibilityLabels'
++    | 'clearElement'
++    | 'showLoadingIndicator'
++  > {
++  isInputEmpty: boolean;
++  isLoading: boolean;
++  onPress: () => void;
++}
++
++const ClearButtonAndSpinner: React.FC<ClearButtonAndSpinnerProps> = ({
++  showClearButton = true,
++  showLoadingIndicator = true,
++  style = {},
++  accessibilityLabels,
++  isLoading,
++  isInputEmpty,
++  onPress,
++  clearElement,
++}) => {
++  // Loading indicator
++  if (isLoading) {
++    if (!showLoadingIndicator) return null;
++
++    return (
++      <ActivityIndicator
++        style={[styles.loadingIndicator]}
++        size={'small'}
++        color={style.loadingIndicator?.color || '#000000'}
++        accessibilityLiveRegion="polite"
++        accessibilityLabel={
++          accessibilityLabels?.loadingIndicator || 'Loading suggestions'
++        }
++      />
++    );
++  }
++
++  // Clear button visibility check
++  // Not shown if showClearButton is false or input is empty
++  if (!showClearButton || isInputEmpty) return null;
++
++  // Clear button
++  return (
++    <TouchableOpacity
++      style={[styles.clearButton]}
++      onPress={onPress}
++      accessibilityRole="button"
++      accessibilityLabel={
++        accessibilityLabels?.clearButton || 'Clear input text'
++      }
++    >
++      {clearElement || (
++        <View style={styles.clearTextWrapper}>
++          <Text
++            style={[
++              Platform.select({
++                ios: styles.iOSclearText,
++                android: styles.androidClearText,
++              }),
++              style.clearButtonText,
++            ]}
++            accessibilityElementsHidden={true}
++            importantForAccessibility="no-hide-descendants"
++          >
++            {'×'}
++          </Text>
++        </View>
++      )}
++    </TouchableOpacity>
++  );
++};
++
++const styles = StyleSheet.create({
++  clearButton: {
++    alignSelf: 'center',
++    padding: 0,
++  },
++  loadingIndicator: {
++    alignSelf: 'center',
++  },
++  clearTextWrapper: {
++    backgroundColor: '#999',
++    borderRadius: 12,
++    width: 24,
++    height: 24,
++    alignItems: 'center',
++    justifyContent: 'center',
++  },
++  //this is never going to be consistent between different phone fonts and sizes
++  iOSclearText: {
++    fontSize: 22,
++    fontWeight: '400',
++    color: 'white',
++    lineHeight: 24,
++    includeFontPadding: false,
++  },
++  androidClearText: {
++    fontSize: 24,
++    fontWeight: '400',
++    color: 'white',
++    lineHeight: 25.5,
++    includeFontPadding: false,
++  },
++});
++
++export type { ClearButtonAndSpinnerProps };
++export default ClearButtonAndSpinner;
+diff --git a/src/GooglePlacesTextInput.tsx b/src/GooglePlacesTextInput.tsx
+index 8c7fd2642bb553711cb8fa3b9a4849d95efd6162..69e712d0b7363d6d4c4a754986cb5981368bed36 100644
+--- a/src/GooglePlacesTextInput.tsx
++++ b/src/GooglePlacesTextInput.tsx
+@@ -1,3 +1,4 @@
++import type { ReactNode } from 'react';
+ import {
+   forwardRef,
+   useEffect,
+@@ -5,17 +6,15 @@ import {
+   useRef,
+   useState,
+ } from 'react';
+-import type { ReactNode } from 'react';
+ import type {
++  NativeSyntheticEvent,
+   StyleProp,
++  TextInputFocusEventData,
++  TextInputProps,
+   TextStyle,
+   ViewStyle,
+-  TextInputProps,
+-  TextInputFocusEventData,
+-  NativeSyntheticEvent,
+ } from 'react-native';
+ import {
+-  ActivityIndicator,
+   FlatList,
+   I18nManager,
+   Keyboard,
+@@ -35,6 +34,8 @@ import {
+   isRTLText,
+ } from './services/googlePlacesApi';
+ 
++import ClearButtonAndSpinner from './ClearButtonAndSpinner';
++
+ // Type definitions
+ interface PlaceStructuredFormat {
+   mainText: {
+@@ -65,6 +66,7 @@ interface Place {
+ interface GooglePlacesTextInputStyles {
+   container?: StyleProp<ViewStyle>;
+   input?: StyleProp<TextStyle>;
++  inputContainer?: StyleProp<ViewStyle>;
+   suggestionsContainer?: StyleProp<ViewStyle>;
+   suggestionsList?: StyleProp<ViewStyle>;
+   suggestionItem?: StyleProp<ViewStyle>;
+@@ -168,144 +170,166 @@ interface PredictionItem {
+ const GooglePlacesTextInput = forwardRef<
+   GooglePlacesTextInputRef,
+   GooglePlacesTextInputProps
+->(
+-  (
+-    {
+-      apiKey,
+-      value,
+-      placeHolderText,
++>((props, ref) => {
++  const {
++    apiKey,
++    value,
++    placeHolderText,
++    proxyUrl,
++    proxyHeaders = null,
++    languageCode,
++    includedRegionCodes,
++    locationBias,
++    locationRestriction,
++    types = [],
++    biasPrefixText,
++    minCharsToFetch = 1,
++    onPlaceSelect,
++    onTextChange,
++    debounceDelay = 200,
++    forceRTL = undefined,
++    style = {},
++    hideOnKeyboardDismiss = false,
++    scrollEnabled = true,
++    nestedScrollEnabled = true,
++    fetchDetails = false,
++    detailsProxyUrl = null,
++    detailsProxyHeaders = null,
++    detailsFields = [],
++    onError,
++    enableDebug = false,
++    onFocus,
++    onBlur,
++    accessibilityLabels = {},
++    suggestionTextProps = {},
++    ...restTextInputProps
++  } = props;
++
++  const [predictions, setPredictions] = useState<PredictionItem[]>([]);
++  const [loading, setLoading] = useState<boolean>(false);
++  const [inputText, setInputText] = useState<string>(value || '');
++  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
++  const [sessionToken, setSessionToken] = useState<string | null>(null);
++  const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
++  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const inputRef = useRef<TextInput>(null);
++  const suggestionPressing = useRef<boolean>(false);
++  const skipNextFocusFetch = useRef<boolean>(false);
++
++  const generateSessionToken = (): string => {
++    return generateUUID();
++  };
++
++  // Initialize session token on mount
++  useEffect(() => {
++    setSessionToken(generateSessionToken());
++
++    return () => {
++      if (debounceTimeout.current) {
++        clearTimeout(debounceTimeout.current);
++      }
++    };
++  }, []);
++
++  useEffect(() => {
++    setInputText(value ?? '');
++  }, [value]);
++
++  // Add keyboard listener
++  useEffect(() => {
++    if (hideOnKeyboardDismiss) {
++      const keyboardDidHideSubscription = Keyboard.addListener(
++        'keyboardDidHide',
++        () => setShowSuggestions(false)
++      );
++
++      return () => {
++        keyboardDidHideSubscription.remove();
++      };
++    }
++    return () => {};
++  }, [hideOnKeyboardDismiss]);
++
++  // Expose methods to parent through ref
++  useImperativeHandle(ref, () => ({
++    clear: () => {
++      if (debounceTimeout.current) {
++        clearTimeout(debounceTimeout.current);
++      }
++      skipNextFocusFetch.current = true;
++      setInputText('');
++      setPredictions([]);
++      setShowSuggestions(false);
++      setSessionToken(generateSessionToken());
++    },
++    blur: () => {
++      inputRef.current?.blur();
++    },
++    focus: () => {
++      inputRef.current?.focus();
++    },
++    getSessionToken: () => sessionToken,
++  }));
++
++  // RTL detection logic
++  const isDeviceRTL = I18nManager.isRTL;
++  const isRTL =
++    forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText ?? '');
++
++  // Add missing CORS warning effect
++  useEffect(() => {
++    if (Platform.OS === 'web' && fetchDetails && !detailsProxyUrl) {
++      console.warn(
++        'Google Places Details API does not support CORS. ' +
++          'To fetch place details on web, provide a detailsProxyUrl prop that points to a CORS-enabled proxy.'
++      );
++    }
++  }, [fetchDetails, detailsProxyUrl]);
++
++  // Debug logger utility
++  const debugLog = (category: string, message: string, data?: any) => {
++    if (enableDebug) {
++      const timestamp = new Date().toISOString();
++      console.log(
++        `[GooglePlacesTextInput:${category}] ${timestamp} - ${message}`
++      );
++      if (data) {
++        console.log(`[GooglePlacesTextInput:${category}] Data:`, data);
++      }
++    }
++  };
++
++  const fetchPredictions = async (text: string): Promise<void> => {
++    debugLog('PREDICTIONS', `Starting fetch for text: "${text}"`);
++    debugLog('PREDICTIONS', 'Request params', {
++      text,
++      apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+       proxyUrl,
+-      proxyHeaders = null,
++      proxyHeaders,
++      sessionToken,
+       languageCode,
+       includedRegionCodes,
+       locationBias,
+       locationRestriction,
+-      types = [],
+-      biasPrefixText,
+-      minCharsToFetch = 1,
+-      onPlaceSelect,
+-      onTextChange,
+-      debounceDelay = 200,
+-      showLoadingIndicator = true,
+-      showClearButton = true,
+-      forceRTL = undefined,
+-      style = {},
+-      clearElement,
+-      hideOnKeyboardDismiss = false,
+-      scrollEnabled = true,
+-      nestedScrollEnabled = true,
+-      fetchDetails = false,
+-      detailsProxyUrl = null,
+-      detailsProxyHeaders = null,
+-      detailsFields = [],
+-      onError,
+-      enableDebug = false,
+-      onFocus,
+-      onBlur,
+-      accessibilityLabels = {},
+-      suggestionTextProps = {},
+-      ...restTextInputProps
+-    },
+-    ref
+-  ) => {
+-    const [predictions, setPredictions] = useState<PredictionItem[]>([]);
+-    const [loading, setLoading] = useState<boolean>(false);
+-    const [inputText, setInputText] = useState<string>(value || '');
+-    const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+-    const [sessionToken, setSessionToken] = useState<string | null>(null);
+-    const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
+-    const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+-    const inputRef = useRef<TextInput>(null);
+-    const suggestionPressing = useRef<boolean>(false);
+-    const skipNextFocusFetch = useRef<boolean>(false);
+-
+-    const generateSessionToken = (): string => {
+-      return generateUUID();
+-    };
++      types,
++      minCharsToFetch,
++    });
+ 
+-    // Initialize session token on mount
+-    useEffect(() => {
+-      setSessionToken(generateSessionToken());
++    if (!text || text.length < minCharsToFetch) {
++      debugLog(
++        'PREDICTIONS',
++        `Text too short (${text.length} < ${minCharsToFetch})`
++      );
++      setPredictions([]);
++      return;
++    }
+ 
+-      return () => {
+-        if (debounceTimeout.current) {
+-          clearTimeout(debounceTimeout.current);
+-        }
+-      };
+-    }, []);
+-
+-    useEffect(() => {
+-      setInputText(value ?? '');
+-    }, [value]);
+-
+-    // Add keyboard listener
+-    useEffect(() => {
+-      if (hideOnKeyboardDismiss) {
+-        const keyboardDidHideSubscription = Keyboard.addListener(
+-          'keyboardDidHide',
+-          () => setShowSuggestions(false)
+-        );
+-
+-        return () => {
+-          keyboardDidHideSubscription.remove();
+-        };
+-      }
+-      return () => {};
+-    }, [hideOnKeyboardDismiss]);
+-
+-    // Expose methods to parent through ref
+-    useImperativeHandle(ref, () => ({
+-      clear: () => {
+-        if (debounceTimeout.current) {
+-          clearTimeout(debounceTimeout.current);
+-        }
+-        skipNextFocusFetch.current = true;
+-        setInputText('');
+-        setPredictions([]);
+-        setShowSuggestions(false);
+-        setSessionToken(generateSessionToken());
+-      },
+-      blur: () => {
+-        inputRef.current?.blur();
+-      },
+-      focus: () => {
+-        inputRef.current?.focus();
+-      },
+-      getSessionToken: () => sessionToken,
+-    }));
+-
+-    // RTL detection logic
+-    const isRTL =
+-      forceRTL !== undefined ? forceRTL : isRTLText(placeHolderText ?? '');
+-
+-    // Add missing CORS warning effect
+-    useEffect(() => {
+-      if (Platform.OS === 'web' && fetchDetails && !detailsProxyUrl) {
+-        console.warn(
+-          'Google Places Details API does not support CORS. ' +
+-            'To fetch place details on web, provide a detailsProxyUrl prop that points to a CORS-enabled proxy.'
+-        );
+-      }
+-    }, [fetchDetails, detailsProxyUrl]);
+-
+-    // Debug logger utility
+-    const debugLog = (category: string, message: string, data?: any) => {
+-      if (enableDebug) {
+-        const timestamp = new Date().toISOString();
+-        console.log(
+-          `[GooglePlacesTextInput:${category}] ${timestamp} - ${message}`
+-        );
+-        if (data) {
+-          console.log(`[GooglePlacesTextInput:${category}] Data:`, data);
+-        }
+-      }
+-    };
++    setLoading(true);
+ 
+-    const fetchPredictions = async (text: string): Promise<void> => {
+-      debugLog('PREDICTIONS', `Starting fetch for text: "${text}"`);
+-      debugLog('PREDICTIONS', 'Request params', {
++    const { error, predictions: fetchedPredictions } =
++      await fetchPredictionsApi({
+         text,
+-        apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
++        apiKey,
+         proxyUrl,
+         proxyHeaders,
+         sessionToken,
+@@ -314,429 +338,352 @@ const GooglePlacesTextInput = forwardRef<
+         locationBias,
+         locationRestriction,
+         types,
+-        minCharsToFetch,
++        biasPrefixText,
+       });
+ 
+-      if (!text || text.length < minCharsToFetch) {
+-        debugLog(
+-          'PREDICTIONS',
+-          `Text too short (${text.length} < ${minCharsToFetch})`
+-        );
+-        setPredictions([]);
+-        return;
+-      }
+-
+-      setLoading(true);
++    if (error) {
++      debugLog('PREDICTIONS', 'API Error occurred', {
++        errorType: error.constructor.name,
++        errorMessage: error.message,
++        errorStack: error.stack,
++      });
++      onError?.(error);
++      setPredictions([]);
++    } else {
++      debugLog(
++        'PREDICTIONS',
++        `Success: ${fetchedPredictions.length} predictions received`
++      );
++      debugLog('PREDICTIONS', 'Predictions data', fetchedPredictions);
++      setPredictions(fetchedPredictions);
++      setShowSuggestions(fetchedPredictions.length > 0);
++    }
+ 
+-      const { error, predictions: fetchedPredictions } =
+-        await fetchPredictionsApi({
+-          text,
+-          apiKey,
+-          proxyUrl,
+-          proxyHeaders,
+-          sessionToken,
+-          languageCode,
+-          includedRegionCodes,
+-          locationBias,
+-          locationRestriction,
+-          types,
+-          biasPrefixText,
+-        });
+-
+-      if (error) {
+-        debugLog('PREDICTIONS', 'API Error occurred', {
+-          errorType: error.constructor.name,
+-          errorMessage: error.message,
+-          errorStack: error.stack,
+-        });
+-        onError?.(error);
+-        setPredictions([]);
+-      } else {
+-        debugLog(
+-          'PREDICTIONS',
+-          `Success: ${fetchedPredictions.length} predictions received`
+-        );
+-        debugLog('PREDICTIONS', 'Predictions data', fetchedPredictions);
+-        setPredictions(fetchedPredictions);
+-        setShowSuggestions(fetchedPredictions.length > 0);
+-      }
++    setLoading(false);
++  };
+ 
+-      setLoading(false);
+-    };
++  const fetchPlaceDetails = async (
++    placeId: string
++  ): Promise<PlaceDetailsFields | null> => {
++    debugLog('DETAILS', `Starting details fetch for placeId: ${placeId}`);
++    debugLog('DETAILS', 'Request params', {
++      placeId,
++      apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
++      detailsProxyUrl,
++      detailsProxyHeaders,
++      sessionToken,
++      languageCode,
++      detailsFields,
++      fetchDetails,
++      platform: Platform.OS,
++    });
+ 
+-    const fetchPlaceDetails = async (
+-      placeId: string
+-    ): Promise<PlaceDetailsFields | null> => {
+-      debugLog('DETAILS', `Starting details fetch for placeId: ${placeId}`);
+-      debugLog('DETAILS', 'Request params', {
+-        placeId,
+-        apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+-        detailsProxyUrl,
+-        detailsProxyHeaders,
+-        sessionToken,
+-        languageCode,
+-        detailsFields,
++    if (!fetchDetails || !placeId) {
++      debugLog('DETAILS', 'Skipping details fetch', {
+         fetchDetails,
+-        platform: Platform.OS,
++        placeId,
+       });
++      return null;
++    }
+ 
+-      if (!fetchDetails || !placeId) {
+-        debugLog('DETAILS', 'Skipping details fetch', {
+-          fetchDetails,
+-          placeId,
+-        });
+-        return null;
+-      }
++    // Web CORS warning
++    if (Platform.OS === 'web' && !detailsProxyUrl) {
++      debugLog(
++        'DETAILS',
++        'WARNING: Web platform detected without detailsProxyUrl - CORS issues likely'
++      );
++    }
+ 
+-      // Web CORS warning
+-      if (Platform.OS === 'web' && !detailsProxyUrl) {
+-        debugLog(
+-          'DETAILS',
+-          'WARNING: Web platform detected without detailsProxyUrl - CORS issues likely'
+-        );
+-      }
++    setDetailsLoading(true);
+ 
+-      setDetailsLoading(true);
++    const { error, details } = await fetchPlaceDetailsApi({
++      placeId,
++      apiKey,
++      detailsProxyUrl,
++      detailsProxyHeaders,
++      sessionToken,
++      languageCode,
++      detailsFields,
++    });
+ 
+-      const { error, details } = await fetchPlaceDetailsApi({
+-        placeId,
+-        apiKey,
+-        detailsProxyUrl,
+-        detailsProxyHeaders,
+-        sessionToken,
+-        languageCode,
+-        detailsFields,
++    setDetailsLoading(false);
++
++    if (error) {
++      debugLog('DETAILS', 'API Error occurred', {
++        errorType: error.constructor.name,
++        errorMessage: error.message,
++        errorStack: error.stack,
+       });
++      onError?.(error);
++      return null;
++    }
+ 
+-      setDetailsLoading(false);
++    debugLog('DETAILS', 'Success: Details received', details);
++    return details;
++  };
+ 
+-      if (error) {
+-        debugLog('DETAILS', 'API Error occurred', {
+-          errorType: error.constructor.name,
+-          errorMessage: error.message,
+-          errorStack: error.stack,
+-        });
+-        onError?.(error);
+-        return null;
+-      }
++  const handleTextChange = (text: string): void => {
++    setInputText(text);
++    onTextChange?.(text);
+ 
+-      debugLog('DETAILS', 'Success: Details received', details);
+-      return details;
+-    };
++    if (debounceTimeout.current) {
++      clearTimeout(debounceTimeout.current);
++    }
+ 
+-    const handleTextChange = (text: string): void => {
+-      setInputText(text);
+-      onTextChange?.(text);
++    debounceTimeout.current = setTimeout(() => {
++      fetchPredictions(text);
++    }, debounceDelay);
++  };
+ 
+-      if (debounceTimeout.current) {
+-        clearTimeout(debounceTimeout.current);
+-      }
++  const handleSuggestionPress = async (
++    suggestion: PredictionItem
++  ): Promise<void> => {
++    const place = suggestion.placePrediction;
++    debugLog(
++      'SELECTION',
++      `User selected place: ${place.structuredFormat.mainText.text}`
++    );
++    debugLog('SELECTION', 'Selected place data', place);
+ 
+-      debounceTimeout.current = setTimeout(() => {
+-        fetchPredictions(text);
+-      }, debounceDelay);
+-    };
++    setInputText(place.structuredFormat.mainText.text);
++    setShowSuggestions(false);
++    Keyboard.dismiss();
++
++    if (fetchDetails) {
++      debugLog('SELECTION', 'Fetching place details...');
++      setLoading(true);
++      const details = await fetchPlaceDetails(place.placeId);
++      const enrichedPlace: Place = details ? { ...place, details } : place;
++
++      debugLog('SELECTION', 'Final place object being sent to onPlaceSelect', {
++        hasDetails: !!details,
++        placeKeys: Object.keys(enrichedPlace),
++        detailsKeys: details ? Object.keys(details) : null,
++      });
+ 
+-    const handleSuggestionPress = async (
+-      suggestion: PredictionItem
+-    ): Promise<void> => {
+-      const place = suggestion.placePrediction;
++      onPlaceSelect?.(enrichedPlace, sessionToken);
++      setLoading(false);
++    } else {
+       debugLog(
+         'SELECTION',
+-        `User selected place: ${place.structuredFormat.mainText.text}`
++        'Sending place without details (fetchDetails=false)'
+       );
+-      debugLog('SELECTION', 'Selected place data', place);
++      onPlaceSelect?.(place, sessionToken);
++    }
++    setSessionToken(generateSessionToken());
++  };
+ 
+-      setInputText(place.structuredFormat.mainText.text);
+-      setShowSuggestions(false);
+-      Keyboard.dismiss();
+-
+-      if (fetchDetails) {
+-        debugLog('SELECTION', 'Fetching place details...');
+-        setLoading(true);
+-        const details = await fetchPlaceDetails(place.placeId);
+-        const enrichedPlace: Place = details ? { ...place, details } : place;
+-
+-        debugLog(
+-          'SELECTION',
+-          'Final place object being sent to onPlaceSelect',
+-          {
+-            hasDetails: !!details,
+-            placeKeys: Object.keys(enrichedPlace),
+-            detailsKeys: details ? Object.keys(details) : null,
+-          }
+-        );
+-
+-        onPlaceSelect?.(enrichedPlace, sessionToken);
+-        setLoading(false);
+-      } else {
+-        debugLog(
+-          'SELECTION',
+-          'Sending place without details (fetchDetails=false)'
+-        );
+-        onPlaceSelect?.(place, sessionToken);
+-      }
+-      setSessionToken(generateSessionToken());
+-    };
++  const handleFocus = (
++    event: NativeSyntheticEvent<TextInputFocusEventData>
++  ): void => {
++    onFocus?.(event);
++
++    if (skipNextFocusFetch.current) {
++      skipNextFocusFetch.current = false;
++      return;
++    }
++    if (inputText.length >= minCharsToFetch) {
++      fetchPredictions(inputText);
++      setShowSuggestions(true);
++    }
++  };
+ 
+-    const handleFocus = (
+-      event: NativeSyntheticEvent<TextInputFocusEventData>
+-    ): void => {
+-      onFocus?.(event);
++  const handleBlur = (
++    event: NativeSyntheticEvent<TextInputFocusEventData>
++  ): void => {
++    onBlur?.(event);
+ 
+-      if (skipNextFocusFetch.current) {
+-        skipNextFocusFetch.current = false;
+-        return;
+-      }
+-      if (inputText.length >= minCharsToFetch) {
+-        fetchPredictions(inputText);
+-        setShowSuggestions(true);
++    setTimeout(() => {
++      if (suggestionPressing.current) {
++        suggestionPressing.current = false;
++      } else {
++        setShowSuggestions(false);
+       }
+-    };
++    }, 10);
++  };
+ 
+-    const handleBlur = (
+-      event: NativeSyntheticEvent<TextInputFocusEventData>
+-    ): void => {
+-      onBlur?.(event);
++  const renderSuggestion = ({
++    item,
++    index,
++  }: {
++    item: PredictionItem;
++    index: number;
++  }) => {
++    const { mainText, secondaryText } = item.placePrediction.structuredFormat;
++
++    // Safely extract backgroundColor from style
++    const suggestionsContainerStyle = StyleSheet.flatten(
++      style.suggestionsContainer
++    );
++    const backgroundColor =
++      suggestionsContainerStyle?.backgroundColor || '#efeff1';
+ 
+-      setTimeout(() => {
+-        if (suggestionPressing.current) {
+-          suggestionPressing.current = false;
+-        } else {
+-          setShowSuggestions(false);
+-        }
+-      }, 10);
+-    };
++    const defaultAccessibilityLabel = `${mainText.text}${
++      secondaryText ? `, ${secondaryText.text}` : ''
++    }`;
++    const accessibilityLabel =
++      accessibilityLabels.suggestionItem?.(item.placePrediction) ||
++      defaultAccessibilityLabel;
+ 
+-    const renderSuggestion = ({
+-      item,
+-      index,
+-    }: {
+-      item: PredictionItem;
+-      index: number;
+-    }) => {
+-      const { mainText, secondaryText } = item.placePrediction.structuredFormat;
+-
+-      // Safely extract backgroundColor from style
+-      const suggestionsContainerStyle = StyleSheet.flatten(
+-        style.suggestionsContainer
+-      );
+-      const backgroundColor =
+-        suggestionsContainerStyle?.backgroundColor || '#efeff1';
+-
+-      const defaultAccessibilityLabel = `${mainText.text}${
+-        secondaryText ? `, ${secondaryText.text}` : ''
+-      }`;
+-      const accessibilityLabel =
+-        accessibilityLabels.suggestionItem?.(item.placePrediction) ||
+-        defaultAccessibilityLabel;
+-
+-      return (
+-        <TouchableOpacity
+-          accessibilityRole="button"
+-          accessibilityLabel={accessibilityLabel}
+-          accessibilityHint="Double tap to select this place"
+-          style={[
+-            index > 0 ? styles.separatorLine : {},
+-            styles.suggestionItem,
+-            { backgroundColor },
+-            style.suggestionItem,
+-          ]}
+-          onPress={() => {
+-            suggestionPressing.current = false;
+-            handleSuggestionPress(item);
+-          }}
+-          // Fix for web: onBlur fires before onPress, hiding suggestions too early.
+-          {...(Platform.OS === 'web' &&
+-            ({
+-              onMouseDown: () => {
+-                suggestionPressing.current = true;
+-              },
+-            } as any))}
++    return (
++      <TouchableOpacity
++        accessibilityRole="button"
++        accessibilityLabel={accessibilityLabel}
++        accessibilityHint="Double tap to select this place"
++        style={[
++          index > 0 ? styles.separatorLine : {},
++          styles.suggestionItem,
++          { backgroundColor },
++          style.suggestionItem,
++        ]}
++        onPressIn={() => {
++          suggestionPressing.current = true;
++        }}
++        onPress={() => {
++          suggestionPressing.current = false;
++          handleSuggestionPress(item);
++        }}
++        // Fix for web: onBlur fires before onPress, hiding suggestions too early.
++        {...(Platform.OS === 'web' &&
++          ({
++            onMouseDown: () => {
++              suggestionPressing.current = true;
++            },
++          } as any))}
++      >
++        <Text
++          style={[styles.mainText, style.suggestionText?.main, getTextAlign()]}
++          numberOfLines={suggestionTextProps.mainTextNumberOfLines}
++          ellipsizeMode={suggestionTextProps.ellipsizeMode || 'tail'}
+         >
++          {mainText.text}
++        </Text>
++        {secondaryText && (
+           <Text
+             style={[
+-              styles.mainText,
+-              style.suggestionText?.main,
++              styles.secondaryText,
++              style.suggestionText?.secondary,
+               getTextAlign(),
+             ]}
+-            numberOfLines={suggestionTextProps.mainTextNumberOfLines}
++            numberOfLines={suggestionTextProps.secondaryTextNumberOfLines}
+             ellipsizeMode={suggestionTextProps.ellipsizeMode || 'tail'}
+           >
+-            {mainText.text}
++            {secondaryText.text}
+           </Text>
+-          {secondaryText && (
+-            <Text
+-              style={[
+-                styles.secondaryText,
+-                style.suggestionText?.secondary,
+-                getTextAlign(),
+-              ]}
+-              numberOfLines={suggestionTextProps.secondaryTextNumberOfLines}
+-              ellipsizeMode={suggestionTextProps.ellipsizeMode || 'tail'}
+-            >
+-              {secondaryText.text}
+-            </Text>
+-          )}
+-        </TouchableOpacity>
+-      );
+-    };
+-
+-    const getPadding = () => {
+-      const physicalRTL = I18nManager.isRTL;
+-      const clearButtonPadding = showClearButton ? 75 : 45;
+-      if (isRTL !== physicalRTL) {
+-        return {
+-          paddingStart: clearButtonPadding,
+-          paddingEnd: 15,
+-        };
+-      }
+-      return {
+-        paddingStart: 15,
+-        paddingEnd: clearButtonPadding,
+-      };
+-    };
+-
+-    const getTextAlign = () => {
+-      const isDeviceRTL = I18nManager.isRTL;
+-      if (isDeviceRTL) {
+-        return { textAlign: isRTL ? 'left' : ('right' as 'left' | 'right') };
+-      } else {
+-        return { textAlign: isRTL ? 'right' : ('left' as 'left' | 'right') };
+-      }
+-    };
++        )}
++      </TouchableOpacity>
++    );
++  };
+ 
+-    const getIconPosition = (paddingValue: number) => {
+-      const physicalRTL = I18nManager.isRTL;
+-      if (isRTL !== physicalRTL) {
+-        return { start: paddingValue };
+-      }
+-      return { end: paddingValue };
+-    };
++  const getTextAlign = () => {
++    if (isDeviceRTL) {
++      return { textAlign: isRTL ? 'left' : ('right' as 'left' | 'right') };
++    } else {
++      return { textAlign: isRTL ? 'right' : ('left' as 'left' | 'right') };
++    }
++  };
+ 
+-    // Debug initialization
+-    useEffect(() => {
+-      if (enableDebug) {
+-        debugLog('INIT', 'Component initialized with props', {
+-          apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
+-          fetchDetails,
+-          detailsProxyUrl,
+-          detailsFields,
+-          platform: Platform.OS,
+-          minCharsToFetch,
+-          debounceDelay,
+-        });
+-      }
+-      // eslint-disable-next-line react-hooks/exhaustive-deps
+-    }, []);
++  const handleClearPress = () => {
++    if (debounceTimeout.current) {
++      clearTimeout(debounceTimeout.current);
++    }
++    skipNextFocusFetch.current = true;
++    setInputText('');
++    setPredictions([]);
++    setShowSuggestions(false);
++    onTextChange?.('');
++    setSessionToken(generateSessionToken());
++    inputRef.current?.focus();
++  };
+ 
+-    return (
+-      <View style={[styles.container, style.container]}>
+-        <View>
+-          <TextInput
+-            {...restTextInputProps}
+-            ref={inputRef}
+-            style={[styles.input, style.input, getPadding(), getTextAlign()]}
+-            placeholder={placeHolderText}
+-            placeholderTextColor={style.placeholder?.color || '#666666'}
+-            value={inputText}
+-            onChangeText={handleTextChange}
+-            onFocus={handleFocus}
+-            onBlur={handleBlur}
+-            clearButtonMode="never" // Disable iOS native clear button
+-            accessibilityRole="search"
+-            accessibilityLabel={accessibilityLabels.input || placeHolderText}
++  // Debug initialization
++  useEffect(() => {
++    if (enableDebug) {
++      debugLog('INIT', 'Component initialized with props', {
++        apiKey: apiKey ? '[PROVIDED]' : '[MISSING]', // ✅ Security fix
++        fetchDetails,
++        detailsProxyUrl,
++        detailsFields,
++        platform: Platform.OS,
++        minCharsToFetch,
++        debounceDelay,
++      });
++    }
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, []);
++
++  return (
++    <View style={[styles.container, style.container]}>
++      <View style={[styles.inputContainer, style.inputContainer]}>
++        {/* Render Button and Loader here if is forced RTL */}
++        {isRTL !== isDeviceRTL && (
++          <ClearButtonAndSpinner
++            {...props}
++            isLoading={loading || detailsLoading}
++            onPress={handleClearPress}
++            isInputEmpty={inputText.length === 0}
+           />
++        )}
+ 
+-          {/* Clear button - shown only if showClearButton is true */}
+-          {showClearButton && inputText !== '' && (
+-            <TouchableOpacity
+-              style={[styles.clearButton, getIconPosition(12)]}
+-              onPress={() => {
+-                if (debounceTimeout.current) {
+-                  clearTimeout(debounceTimeout.current);
+-                }
+-                skipNextFocusFetch.current = true;
+-                setInputText('');
+-                setPredictions([]);
+-                setShowSuggestions(false);
+-                onTextChange?.('');
+-                setSessionToken(generateSessionToken());
+-                inputRef.current?.focus();
+-              }}
+-              accessibilityRole="button"
+-              accessibilityLabel={
+-                accessibilityLabels.clearButton || 'Clear input text'
+-              }
+-            >
+-              {clearElement || (
+-                <View style={styles.clearTextWrapper}>
+-                  <Text
+-                    style={[
+-                      Platform.select({
+-                        ios: styles.iOSclearText,
+-                        android: styles.androidClearText,
+-                      }),
+-                      style.clearButtonText,
+-                    ]}
+-                    accessibilityElementsHidden={true}
+-                    importantForAccessibility="no-hide-descendants"
+-                  >
+-                    {'×'}
+-                  </Text>
+-                </View>
+-              )}
+-            </TouchableOpacity>
+-          )}
+-
+-          {/* Loading indicator */}
+-          {(loading || detailsLoading) && showLoadingIndicator && (
+-            <ActivityIndicator
+-              style={[styles.loadingIndicator, getIconPosition(45)]}
+-              size={'small'}
+-              color={style.loadingIndicator?.color || '#000000'}
+-              accessibilityLiveRegion="polite"
+-              accessibilityLabel={
+-                accessibilityLabels.loadingIndicator || 'Loading suggestions'
+-              }
+-            />
+-          )}
+-        </View>
+-
+-        {/* Suggestions */}
+-        {showSuggestions && predictions.length > 0 && (
+-          <View
+-            style={[styles.suggestionsContainer, style.suggestionsContainer]}
+-          >
+-            <FlatList
+-              data={predictions}
+-              renderItem={renderSuggestion}
+-              keyExtractor={(item) => item.placePrediction.placeId}
+-              keyboardShouldPersistTaps="always"
+-              scrollEnabled={scrollEnabled}
+-              nestedScrollEnabled={nestedScrollEnabled}
+-              bounces={false}
+-              style={style.suggestionsList}
+-              accessibilityRole="list"
+-              accessibilityLabel={`${predictions.length} place suggestion resuts`}
+-            />
+-          </View>
++        <TextInput
++          {...restTextInputProps}
++          ref={inputRef}
++          style={[styles.input, style.input, getTextAlign()]}
++          placeholder={placeHolderText}
++          placeholderTextColor={style.placeholder?.color || '#666666'}
++          value={inputText}
++          onChangeText={handleTextChange}
++          onFocus={handleFocus}
++          onBlur={handleBlur}
++          clearButtonMode="never" // Disable iOS native clear button
++          accessibilityRole="search"
++          accessibilityLabel={accessibilityLabels.input || placeHolderText}
++        />
++
++        {isRTL === isDeviceRTL && (
++          <ClearButtonAndSpinner
++            {...props}
++            isLoading={loading || detailsLoading}
++            onPress={handleClearPress}
++            isInputEmpty={inputText.length === 0}
++          />
+         )}
+       </View>
+-    );
+-  }
+-);
++
++      {/* Suggestions */}
++      {showSuggestions && predictions.length > 0 && (
++        <View style={[styles.suggestionsContainer, style.suggestionsContainer]}>
++          <FlatList
++            data={predictions}
++            renderItem={renderSuggestion}
++            keyExtractor={(item) => item.placePrediction.placeId}
++            keyboardShouldPersistTaps="always"
++            scrollEnabled={scrollEnabled}
++            nestedScrollEnabled={nestedScrollEnabled}
++            bounces={false}
++            style={style.suggestionsList}
++            accessibilityRole="list"
++            accessibilityLabel={`${predictions.length} place suggestion resuts`}
++          />
++        </View>
++      )}
++    </View>
++  );
++});
+ 
+ const styles = StyleSheet.create({
+   container: {},
+-  input: {
+-    flex: 1,
++  inputContainer: {
+     borderRadius: 6,
+     borderWidth: 1,
+-    paddingHorizontal: 10,
++    paddingHorizontal: 12,
++    paddingVertical: 0,
+     backgroundColor: 'white',
++    flexDirection: 'row',
++  },
++  input: {
++    flex: 1,
+     fontSize: 16,
+-    paddingVertical: 16,
+   },
+   suggestionsContainer: {
+     backgroundColor: '#efeff1', // default background
+@@ -763,52 +710,16 @@ const styles = StyleSheet.create({
+     marginTop: 2,
+     textAlign: 'left',
+   },
+-  clearButton: {
+-    position: 'absolute',
+-    top: '50%',
+-    transform: [{ translateY: -13 }],
+-    padding: 0,
+-  },
+-  loadingIndicator: {
+-    position: 'absolute',
+-    top: '50%',
+-    transform: [{ translateY: -10 }],
+-  },
+-  clearTextWrapper: {
+-    backgroundColor: '#999',
+-    borderRadius: 12,
+-    width: 24,
+-    height: 24,
+-    alignItems: 'center',
+-    justifyContent: 'center',
+-  },
+-  //this is never going to be consistent between different phone fonts and sizes
+-  iOSclearText: {
+-    fontSize: 22,
+-    fontWeight: '400',
+-    color: 'white',
+-    lineHeight: 24,
+-    includeFontPadding: false,
+-  },
+-  androidClearText: {
+-    fontSize: 24,
+-    fontWeight: '400',
+-    color: 'white',
+-    lineHeight: 25.5,
+-    includeFontPadding: false,
+-  },
+ });
+ 
+ export type {
+-  GooglePlacesTextInputProps,
++  GooglePlacesAccessibilityLabels, GooglePlacesTextInputProps,
+   GooglePlacesTextInputRef,
+   GooglePlacesTextInputStyles,
+   Place,
+   PlaceDetailsFields,
+   PlacePrediction,
+-  PlaceStructuredFormat,
+-  GooglePlacesAccessibilityLabels,
+-  SuggestionTextProps,
++  PlaceStructuredFormat, SuggestionTextProps
+ };
+ 
+ export default GooglePlacesTextInput;

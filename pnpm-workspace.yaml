@@ -11,3 +11,6 @@ onlyBuiltDependencies:
   - react-native-nitro-modules
   - sharp
   - unrs-resolver
+
+patchedDependencies:
+  react-native-google-places-textinput: patches/react-native-google-places-textinput.patch

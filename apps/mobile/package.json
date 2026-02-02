@@ -19,8 +19,7 @@
     "preview:update": "eas update --channel preview --branch preview-update --platform android --message \"Updated preview build\" --non-interactive",
     "lint": "eslint --ext js,ts,tsx .",
     "lint:fix": "eslint --ext .js,.ts,.tsx --fix . && prettier --write .",
-    "eas-build-pre-install": "pnpm install && pnpm run build:deps",
-    "postinstall": "patch-package"
+    "eas-build-pre-install": "pnpm install && pnpm run build:deps"
   },
   "dependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",
@@ -119,6 +118,7 @@
     "react-native-gifted-chat": "^3.3.2",
     "react-native-google-maps-plus": "^1.11.0",
     "react-native-google-places-autocomplete": "^2.6.4",
+    "react-native-google-places-textinput": "^0.9.1",
     "react-native-keyboard-controller": "^1.18.5",
     "react-native-mmkv": "^3.3.3",
     "react-native-nitro-modules": "^0.33.2",
