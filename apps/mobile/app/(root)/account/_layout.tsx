@@ -24,6 +24,10 @@ export default function Layout() {
       <Stack.Screen name="donations/incoming" options={{ headerTitle: 'Incoming Donations' }} />
 
       <Stack.Screen name="requests/incoming" options={{ headerTitle: 'Incoming Requests' }} />
+
+      <Stack.Screen name="deliveries" options={{ headerTitle: 'Deliveries' }} />
+
+      <Stack.Screen name="transactions" options={{ headerTitle: 'Transactions' }} />
     </Stack>
   );
 }

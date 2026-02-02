@@ -1,5 +1,6 @@
 import { storeInfiniteDocuments } from '@/lib/localStorage/utils';
 import { getMeUser } from '@/lib/stores/meUserStore';
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { DeliveryDetail, Transaction } from '@lactalink/types/payload-generated-types';
 import { createStorageKeyByUser, generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -58,4 +59,8 @@ export function useInfiniteTransactions(options?: {
   }, [data, queryOptions.queryKey]);
 
   return { ...query, data: docs, dataMap: data, unseen };
+}
+
+export function useInfiniteDeliveries() {
+  return useInfiniteTransactions({ status: TRANSACTION_STATUS.IN_TRANSIT.value });
 }

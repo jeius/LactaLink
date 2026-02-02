@@ -33,15 +33,15 @@ export default function TransactionListItem({
 
   const { isUnseen } = useTransactionState(data);
 
-  const isMeSender = isEqualProfiles(user?.profile, sender);
-  const isMeRecipient = isEqualProfiles(user?.profile, recipient);
+  const isSender = isEqualProfiles(user?.profile, sender);
+  const isRecipient = isEqualProfiles(user?.profile, recipient);
 
-  // If meUser is sender, the other user is recipient, vice versa
-  const otherUserProfile = isMeSender ? recipient : isMeRecipient ? sender : null;
-  const otherUserProfileLabel = isMeSender ? 'Requester' : isMeRecipient ? 'Donor' : undefined;
+  // If user is sender, the other user is recipient, vice versa
+  const otherUserProfile = isSender ? recipient : isRecipient ? sender : null;
+  const otherUserProfileLabel = isSender ? 'Requester' : isRecipient ? 'Donor' : undefined;
 
   const title = matchedVolume ? displayVolume(matchedVolume) : 'N/A';
-  const badgeText = isMeSender ? 'Donation' : isMeRecipient ? 'Request' : null;
+  const badgeText = isSender ? 'Donation' : isRecipient ? 'Request' : null;
 
   const handlePress = useCallback(() => {
     onPress?.(data!);
@@ -65,7 +65,7 @@ export default function TransactionListItem({
                 size="xs"
                 text={badgeText}
                 variant="solid"
-                action={isMeSender ? 'primary' : isMeRecipient ? 'tertiary' : 'muted'}
+                action={isSender ? 'primary' : isRecipient ? 'tertiary' : 'muted'}
               />
             )}
           </HStack>

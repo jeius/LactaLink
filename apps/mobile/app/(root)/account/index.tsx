@@ -23,7 +23,10 @@ import {
   useInfiniteIncomingDonations,
   useInfiniteIncomingRequests,
 } from '@/features/donation&request/hooks/queries';
-import { useInfiniteTransactions } from '@/features/transactions/hooks/queries';
+import {
+  useInfiniteDeliveries,
+  useInfiniteTransactions,
+} from '@/features/transactions/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
@@ -47,7 +50,7 @@ import React, { FC, ReactNode } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
-export default function ProfilePage() {
+export default function AccountPage() {
   useLiveNotifications();
 
   const router = useRouter();
@@ -321,6 +324,7 @@ function IncomingDonationsBadge() {
 }
 
 function DeliveriesBadge() {
-  // Mocked for now
-  return <NumberBadge count={2} />;
+  const { unseen, isLoading } = useInfiniteDeliveries();
+  if (isLoading) return <Spinner size={'small'} />;
+  return <NumberBadge count={unseen.length} />;
 }

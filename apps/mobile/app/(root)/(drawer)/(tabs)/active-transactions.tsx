@@ -17,7 +17,7 @@ import { Transaction } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { ChevronRightIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 
@@ -27,7 +27,6 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
 
 export default function TransactionsTab() {
   const { data: meUser = null } = useMeUser();
-  const router = useRouter();
 
   const { data, ...query } = useInfiniteTransactions();
 
@@ -37,15 +36,15 @@ export default function TransactionsTab() {
 
   const renderItem = useCallback<ListRenderItem<Transaction>>(
     ({ item }) => {
-      const handlePress = (txn: Transaction) => {
-        router.push(`/transactions/${txn.id}`);
-      };
-
       if (isPlaceHolderData(item))
         return <Skeleton className="rounded-2xl" style={{ height: 112 }} />;
-      return <TransactionListItem data={item} showBadge user={meUser} onPress={handlePress} />;
+      return (
+        <Link href={`/transactions/${item.id}`} asChild push>
+          <TransactionListItem data={item} showBadge user={meUser} />
+        </Link>
+      );
     },
-    [meUser, router]
+    [meUser]
   );
 
   function EmptyComponent() {
@@ -64,10 +63,18 @@ export default function TransactionsTab() {
           Active Transactions
         </Text>
         {!isEmpty && (
-          <Button size="sm" variant="link" action="default" className="h-fit w-fit p-0" hitSlop={8}>
-            <ButtonText className="font-sans">See All</ButtonText>
-            <ButtonIcon as={ChevronRightIcon} />
-          </Button>
+          <Link href="/account/transactions" asChild push>
+            <Button
+              size="sm"
+              variant="link"
+              action="default"
+              className="h-fit w-fit p-0"
+              hitSlop={8}
+            >
+              <ButtonText className="font-sans">See All</ButtonText>
+              <ButtonIcon as={ChevronRightIcon} />
+            </Button>
+          </Link>
         )}
       </HStack>
     );
