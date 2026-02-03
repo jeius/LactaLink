@@ -117,7 +117,6 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-gifted-chat": "^3.3.2",
     "react-native-google-maps-plus": "^1.11.0",
-    "react-native-google-places-autocomplete": "^2.6.4",
     "react-native-google-places-textinput": "^0.9.1",
     "react-native-keyboard-controller": "^1.18.5",
     "react-native-mmkv": "^3.3.3",
