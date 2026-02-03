@@ -1,5 +1,5 @@
 import { HStack } from '@/components/ui/hstack';
-import { createDirectionalShadow } from '@/lib/utils/shadows';
+import { shadow } from '@/lib/utils/shadows';
 import { LucideIcon } from 'lucide-react-native';
 import React, { FC, ReactNode } from 'react';
 import { SvgProps } from 'react-native-svg';
@@ -21,7 +21,7 @@ export default function PressableWrapper({
   ...props
 }: PressableWrapperProps) {
   return (
-    <AnimatedPressable {...props} containerStyle={createDirectionalShadow()}>
+    <AnimatedPressable {...props} containerStyle={shadow.sm}>
       {children}
       {label && (
         <HStack

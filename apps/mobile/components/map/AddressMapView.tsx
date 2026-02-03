@@ -6,7 +6,7 @@ import MapView, { type MapViewProps } from '@/components/map/MapView';
 import { getLottieAsset } from '@/lib/stores/assetsStore';
 import { Coordinates } from '@lactalink/types';
 import LottieView from 'lottie-react-native';
-import { GoogleMapsViewRef } from 'react-native-google-maps-plus';
+import { useMap } from '../contexts/MapProvider';
 import { Box } from '../ui/box';
 import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
@@ -26,19 +26,10 @@ export function AddressMapView({
   const [isMapReady, setIsMapReady] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
 
-  const mapRef = useRef<GoogleMapsViewRef | null>(null);
-
-  useEffect(() => {
-    if (coordinates && isMapReady && mapRef.current) {
-      mapRef.current.setCamera({ center: coordinates, zoom: 16 }, false);
-    }
-  }, [coordinates, isMapReady]);
-
   return (
     <MapView
       {...props}
-      mapRef={mapRef}
-      initialProps={coordinates ? { camera: { center: coordinates } } : undefined}
+      initialProps={coordinates ? { camera: { center: coordinates, zoom: 16 } } : undefined}
       style={StyleSheet.flatten([StyleSheet.absoluteFillObject, props.style])}
       onMapReady={() => setIsMapReady(true)}
       onCameraChange={(_, __, isGesture) => {
@@ -54,6 +45,8 @@ export function AddressMapView({
         props.onCameraChangeComplete?.(_, __, isGesture);
       }}
     >
+      <MapCameraSetter coordinates={coordinates} />
+
       {isMapReady && !isLoading && (
         <VStack className="pointer-events-none absolute inset-0 items-center justify-center">
           <Text bold size="lg" className="absolute inset-x-5 text-center" style={{ top: '30%' }}>
@@ -80,11 +73,7 @@ export function AddressMapView({
   );
 }
 
-interface LottieMarkerProps {
-  isPanning: boolean;
-}
-
-function LottieMarker({ isPanning }: LottieMarkerProps) {
+function LottieMarker({ isPanning }: { isPanning: boolean }) {
   const ref = useRef<LottieView>(null);
 
   useEffect(() => {
@@ -103,4 +92,16 @@ function LottieMarker({ isPanning }: LottieMarkerProps) {
       style={{ width: '100%', height: '100%' }}
     />
   );
+}
+
+function MapCameraSetter({ coordinates }: { coordinates?: Coordinates }) {
+  const [map] = useMap();
+
+  useEffect(() => {
+    if (coordinates && map) {
+      map.setCamera({ center: coordinates }, true, 300);
+    }
+  }, [coordinates, map]);
+
+  return null;
 }

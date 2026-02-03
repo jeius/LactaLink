@@ -1,3 +1,4 @@
+import { usePrefetchAddress } from '@/features/address/hooks/queries';
 import { QUERY_KEYS } from '@/lib/constants';
 import { meUserQueryOptions, sessionQueryOptions } from '@/lib/queries/authQueryOptions';
 import { setMeUser } from '@/lib/stores/meUserStore';
@@ -8,7 +9,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 export function useMeUser() {
-  return useQuery(meUserQueryOptions);
+  const { data = null, ...query } = useQuery(meUserQueryOptions);
+
+  // Prefetch addresses if we have a user
+  usePrefetchAddress(data);
+
+  return { data, ...query };
 }
 
 export function useAuth() {

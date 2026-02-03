@@ -1,23 +1,24 @@
-import React, { FC } from 'react';
+import React, { useCallback } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
+import { shadow } from '@/lib/utils/shadows';
+import { Address } from '@lactalink/types/payload-generated-types';
+import { ListRenderItem } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { GestureResponderEvent } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards/AddressCard';
 import { Divider } from '../ui/divider';
-import { BasicList, BasicListItemProps, BasicListProps } from './BasicList';
+import { Skeleton } from '../ui/skeleton';
+import { VerticalInfiniteList, VerticalInfiniteListProps } from './VerticalInfiniteList';
 
-const AnimatedAddressCard = Animated.createAnimatedComponent(AddressCard);
-
-interface AddressListProps extends Omit<BasicListProps<'addresses'>, 'slug' | 'ItemComponent'> {
+interface AddressListProps extends Omit<VerticalInfiniteListProps<Address>, 'renderItem'> {
   disableRemove?: boolean;
   itemVariant?: 'default' | 'card';
   allowEdit?: boolean;
   allowDelete?: boolean;
   showMap?: boolean;
+  isLoading?: boolean;
 }
 
 export function AddressList({
@@ -27,6 +28,7 @@ export function AddressList({
   allowEdit = false,
   allowDelete = false,
   gap = 12,
+  isLoading = false,
   ...props
 }: AddressListProps) {
   const router = useRouter();
@@ -34,55 +36,56 @@ export function AddressList({
   const data = props.data;
   const isEmpty = Array.isArray(data) && data.length === 0;
 
-  const ItemComponent: FC<BasicListItemProps<'addresses'>> = ({ item, isLoading }) => {
-    function handleEdit(e: GestureResponderEvent) {
-      e.stopPropagation();
-      router.push(`/addresses/${item.id}/edit`);
-    }
+  const renderItem = useCallback<ListRenderItem<Address>>(
+    ({ item }) => {
+      if (isLoading) return <Skeleton className="h-40" />;
 
-    function Action() {
-      return (
-        allowEdit && (
-          <EditActionButton isDisabled={disableRemove} href={`/addresses/${item.id}/edit`} />
-        )
-      );
-    }
+      const handleEdit = () => router.push(`/addresses/${item.id}/edit`);
 
-    function Card() {
-      return (
-        <AnimatedAddressCard
-          variant={itemVariant === 'card' ? 'filled' : 'ghost'}
-          isLoading={isLoading}
-          data={item}
-          showMap={showMap}
-          className={itemVariant === 'card' ? (showMap ? 'p-0' : undefined) : 'p-0'}
-          action={<Action />}
-          entering={FadeIn}
-          exiting={FadeOut}
-        />
-      );
-    }
-
-    switch (itemVariant) {
-      case 'card':
+      function Action() {
         return (
-          <AnimatedPressable
-            className="overflow-hidden rounded-2xl"
-            disableRipple={!allowEdit || showMap}
-            disablePressAnimation={!allowEdit || showMap}
-            onPress={allowEdit && !showMap ? handleEdit : undefined}
-          >
-            <Card />
-          </AnimatedPressable>
+          allowEdit && (
+            <EditActionButton isDisabled={disableRemove} href={`/addresses/${item.id}/edit`} />
+          )
         );
+      }
 
-      case 'default':
-      default:
-        return <Card />;
-    }
-  };
+      function Card() {
+        return (
+          <AddressCard
+            variant={itemVariant === 'card' ? 'filled' : 'ghost'}
+            isLoading={isLoading}
+            data={item}
+            showMap={showMap}
+            className={itemVariant === 'card' ? (showMap ? 'p-0' : undefined) : 'p-0'}
+            action={<Action />}
+          />
+        );
+      }
 
-  function SeparatorComponent() {
+      switch (itemVariant) {
+        case 'card':
+          return (
+            <AnimatedPressable
+              className="overflow-hidden rounded-2xl"
+              disableRipple={!allowEdit || showMap}
+              disablePressAnimation={!allowEdit || showMap}
+              onPress={allowEdit && !showMap ? handleEdit : undefined}
+              style={shadow.sm}
+            >
+              <Card />
+            </AnimatedPressable>
+          );
+
+        case 'default':
+        default:
+          return <Card />;
+      }
+    },
+    [isLoading, itemVariant, allowEdit, disableRemove, router, showMap]
+  );
+
+  const SeparatorComponent = useCallback(() => {
     switch (itemVariant) {
       case 'card':
         return <Box style={{ height: gap }} />;
@@ -90,11 +93,10 @@ export function AddressList({
       default:
         return <Divider style={{ paddingVertical: gap }} />;
     }
-  }
+  }, [gap, itemVariant]);
 
-  function FooterComponent() {
+  const FooterComponent = useCallback(() => {
     if (isEmpty) return null;
-
     switch (itemVariant) {
       case 'card':
         return null;
@@ -102,14 +104,12 @@ export function AddressList({
       default:
         return <Divider />;
     }
-  }
+  }, [isEmpty, itemVariant]);
 
   return (
-    <BasicList
+    <VerticalInfiniteList
       {...props}
-      slug="addresses"
-      ItemComponent={ItemComponent}
-      placeholderLength={5}
+      renderItem={renderItem}
       ItemSeparatorComponent={SeparatorComponent}
       ListFooterComponent={FooterComponent}
       contentContainerStyle={{
