@@ -6,3 +6,4 @@ export * from './extractImageData';
 export * from './extractName';
 export * from './extractTransactionData';
 export * from './listKeyExtractor';
+export * from './spatialExtractor';
