@@ -1,6 +1,5 @@
 import { getColor, getPrimaryColor } from '@/lib/colors';
 import { DidDismissEvent, DidPresentEvent, TrueSheet } from '@lodev09/react-native-true-sheet';
-import { FlashList } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GestureResponderEvent, StyleSheet, View } from 'react-native';
@@ -24,7 +23,9 @@ import type {
 } from './types';
 
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../../icon';
+import { VerticalInfiniteList } from '../../list';
 import { Text } from '../../text';
 
 function ActionSheetProvider({
@@ -82,8 +83,10 @@ function ActionSheetContent({
   dismissible = true,
   grabberOptions = {},
   cornerRadius = 24,
+  insetAdjustment = 'never',
   ...props
 }: ActionSheetContentProps) {
+  const insets = useSafeAreaInsets();
   const { setPresented, handleClose } = useSheetActions();
   const presented = usePresentedSheet();
   const sheetRef = useSheetRef();
@@ -119,6 +122,8 @@ function ActionSheetContent({
       grabberOptions={{ color: getPrimaryColor('500'), adaptive: false, ...grabberOptions }}
       backgroundColor={props.backgroundColor ?? getColor('background', '0')}
       className={sheetContentStyle({ className: props.className })}
+      insetAdjustment={insetAdjustment}
+      style={StyleSheet.flatten([{ paddingBottom: insets.bottom }, props.style])}
       header={props.header ?? <View />}
       headerStyle={StyleSheet.flatten([{ marginTop: 30 }, props.headerStyle])}
     />
@@ -170,7 +175,7 @@ function ActionSheetItemText({ className, ...props }: ActionSheetTextProps) {
 }
 
 function ActionSheetList<T>({ ...props }: ActionSheetListProps<T>) {
-  return <FlashList {...props} />;
+  return <VerticalInfiniteList {...props} />;
 }
 
 function ActionSheetIcon({ className, ...props }: ActionSheetIconProps) {

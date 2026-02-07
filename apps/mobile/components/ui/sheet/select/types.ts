@@ -1,5 +1,10 @@
-import { FlashListProps } from '@shopify/flash-list';
+import { LucideIcon } from 'lucide-react-native';
+import { FC } from 'react';
+import { ViewProps } from 'react-native';
+import { SvgProps } from 'react-native-svg';
 import { InputFieldProps, InputProps } from '../../input';
+import { VerticalInfiniteListProps } from '../../list';
+import { TextProps } from '../../text';
 import {
   ActionSheetContentProps,
   ActionSheetIconProps,
@@ -25,7 +30,7 @@ type SelectItemProps<T> = Omit<ActionSheetItemProps, 'onPress'> & {
   onPress?: (value: T) => void;
 };
 
-type SelectInputProps = Pick<
+type SelectSearchInputProps = Pick<
   InputProps,
   'size' | 'variant' | 'isDisabled' | 'isFocused' | 'isInvalid'
 > &
@@ -33,13 +38,28 @@ type SelectInputProps = Pick<
     hideClear?: boolean;
     onClear?: () => void;
     showSearchIcon?: boolean;
+    containerClassName?: ViewProps['className'];
+    containerStyle?: ViewProps['style'];
   };
 
-type SelectListProps<T> = FlashListProps<T>;
+type SelectInputProps = Pick<
+  InputProps,
+  'size' | 'variant' | 'isDisabled' | 'isFocused' | 'isInvalid'
+> &
+  InputFieldProps & {
+    iconLeft?: LucideIcon | FC<SvgProps>;
+    iconRight?: LucideIcon | FC<SvgProps>;
+    containerClassName?: ViewProps['className'];
+    containerStyle?: ViewProps['style'];
+  };
+
+type SelectListProps<T> = VerticalInfiniteListProps<T>;
 
 type SelectTriggerProps = ActionSheetTriggerProps;
 
 type SelectIconProps = ActionSheetIconProps;
+
+type SelectTextProps = TextProps;
 
 export type {
   SelectContentProps,
@@ -48,6 +68,8 @@ export type {
   SelectItemProps,
   SelectListProps,
   SelectProps,
+  SelectSearchInputProps,
   SelectStore,
+  SelectTextProps,
   SelectTriggerProps,
 };

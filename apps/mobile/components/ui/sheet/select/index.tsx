@@ -1,13 +1,19 @@
-import { FlashList } from '@shopify/flash-list';
 import isEqual from 'lodash/isEqual';
 import { ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TextInput } from 'react-native';
 import { Icon } from '../../icon';
 import { Input, InputField, InputIcon, InputSlot } from '../../input';
+import { VerticalInfiniteList } from '../../list';
+import { Text } from '../../text';
 import { ActionSheet } from '../action-sheet';
 import { initStore, SelectStoreContext, useSelectActionSheetStore } from './context';
-import { selectIconStyle, selectItemStyle, selectTriggerStyle } from './styles';
+import {
+  selectIconStyle,
+  selectInputFieldStyle,
+  selectItemStyle,
+  selectTriggerStyle,
+} from './styles';
 import {
   SelectContentProps,
   SelectIconProps,
@@ -15,7 +21,9 @@ import {
   SelectItemProps,
   SelectListProps,
   SelectProps,
+  SelectSearchInputProps,
   SelectStore,
+  SelectTextProps,
   SelectTriggerProps,
 } from './types';
 
@@ -52,19 +60,7 @@ function SelectItem<T>({ value, className, onPress, ...props }: SelectItemProps<
   );
 }
 
-function SelectContent(props: SelectContentProps) {
-  return <ActionSheet.Content {...props} />;
-}
-
-function SelectTrigger({ className, ...props }: SelectTriggerProps) {
-  return <ActionSheet.Trigger {...props} className={selectTriggerStyle({ className })} />;
-}
-
-function SelectIcon({ as = ChevronDownIcon, className, ...props }: SelectIconProps) {
-  return <ActionSheet.Icon {...props} as={as} className={selectIconStyle({ className })} />;
-}
-
-function SelectTextInput({
+function SelectSearchInput({
   showSearchIcon,
   hideClear = false,
   isDisabled,
@@ -75,8 +71,11 @@ function SelectTextInput({
   onClear,
   value = '',
   onChangeText,
+  containerClassName,
+  containerStyle,
+  className,
   ...props
-}: SelectInputProps) {
+}: SelectSearchInputProps) {
   const inputRef = useRef<TextInput>(null);
 
   const handleClear = useCallback(() => {
@@ -92,11 +91,19 @@ function SelectTextInput({
       isDisabled={isDisabled}
       isFocused={isFocused}
       isInvalid={isInvalid}
+      className={containerClassName}
+      style={containerStyle}
     >
       {showSearchIcon && <InputIcon as={SearchIcon} className="ml-2" />}
 
-      {/* @ts-expect-error Gluestack type issue, safe to ignore */}
-      <InputField {...props} ref={inputRef} value={value} onChangeText={onChangeText} />
+      <InputField
+        {...props}
+        // @ts-expect-error Gluestack type issue, safe to ignore
+        ref={inputRef}
+        className={selectInputFieldStyle({ className })}
+        value={value}
+        onChangeText={onChangeText}
+      />
 
       {!hideClear && value !== '' && (
         <InputSlot className="p-2" onPress={handleClear}>
@@ -107,25 +114,76 @@ function SelectTextInput({
   );
 }
 
-function SelectList<T>({ ...props }: SelectListProps<T>) {
-  return <FlashList {...props} />;
+function SelectInput({
+  isDisabled,
+  isFocused,
+  isInvalid,
+  size,
+  variant,
+  value = '',
+  onChangeText,
+  containerClassName,
+  containerStyle,
+  className,
+  iconLeft,
+  iconRight,
+  ...props
+}: SelectInputProps) {
+  return (
+    <Input>
+      {iconLeft && <InputIcon as={iconLeft} className="ml-2" />}
+      <InputField
+        {...props}
+        // @ts-expect-error Gluestack type issue, safe to ignore
+        ref={inputRef}
+        className={selectInputFieldStyle({ className })}
+        value={value}
+        onChangeText={onChangeText}
+      />
+      {iconRight && <InputIcon as={iconRight} className="mr-2" />}
+    </Input>
+  );
+}
+
+function SelectText(props: SelectTextProps) {
+  return <Text {...props} />;
+}
+
+function SelectContent(props: SelectContentProps) {
+  return <ActionSheet.Content {...props} />;
+}
+
+function SelectTrigger({ className, ...props }: SelectTriggerProps) {
+  return <ActionSheet.Trigger {...props} className={selectTriggerStyle({ className })} />;
+}
+
+function SelectIcon({ as = ChevronDownIcon, className, ...props }: SelectIconProps) {
+  return <ActionSheet.Icon {...props} as={as} className={selectIconStyle({ className })} />;
+}
+
+function SelectList<T>(props: SelectListProps<T>) {
+  return <VerticalInfiniteList {...props} />;
 }
 
 SelectSheet.displayName = 'SelectSheet';
 SelectTrigger.displayName = 'SelectTrigger';
 SelectContent.displayName = 'SelectSheet';
 SelectItem.displayName = 'SelectItem';
-SelectTextInput.displayName = 'SelectTextInput';
+SelectInput.displayName = 'SelectTextInput';
 SelectList.displayName = 'SelectList';
 SelectIcon.displayName = 'SelectIcon';
+SelectText.displayName = 'SelectText';
+SelectSearchInput.displayName = 'SelectSearchInput';
 
 const Select = Object.assign(SelectSheet, {
   Content: SelectContent,
   Item: SelectItem,
   List: SelectList,
-  TextInput: SelectTextInput,
+  Input: SelectInput,
+  Search: SelectSearchInput,
   Icon: SelectIcon,
   Trigger: SelectTrigger,
+  Text: SelectText,
 });
 
 export { Select };
@@ -136,5 +194,7 @@ export type {
   SelectItemProps,
   SelectListProps,
   SelectProps,
+  SelectSearchInputProps,
+  SelectTextProps,
   SelectTriggerProps,
 };

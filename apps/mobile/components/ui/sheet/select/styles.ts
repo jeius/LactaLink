@@ -17,4 +17,8 @@ const selectIconStyle = tva({
   base: 'text-typography-700',
 });
 
-export { selectIconStyle, selectItemStyle, selectTriggerStyle };
+const selectInputFieldStyle = tva({
+  base: 'flex-1'
+});
+
+export { selectIconStyle, selectItemStyle, selectTriggerStyle, selectInputFieldStyle };

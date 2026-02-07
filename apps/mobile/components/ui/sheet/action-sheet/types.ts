@@ -1,6 +1,6 @@
 import { TrueSheet, TrueSheetProps } from '@lodev09/react-native-true-sheet';
-import { FlashListProps } from '@shopify/flash-list';
 import { IconProps } from '../../icon';
+import { VerticalInfiniteListProps } from '../../list';
 import { PressableProps } from '../../pressable';
 import { TextProps } from '../../text';
 
@@ -59,7 +59,7 @@ interface SheetProps extends Partial<Pick<SheetState, 'sheetRef'>> {
 
 type SheetContentProps = TrueSheetProps;
 
-type SheetListProps<T> = FlashListProps<T>;
+type SheetListProps<T> = VerticalInfiniteListProps<T>;
 
 type SheetItemProps = PressableProps;
 
