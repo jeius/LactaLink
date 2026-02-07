@@ -1,54 +1,77 @@
-import { ListRenderItem } from '@shopify/flash-list';
+import { ListRenderItem } from '@/lib/types';
 import { useCallback } from 'react';
-import {
-  Select,
-  SelectInputProps,
-  SelectItemProps,
-  SelectListProps,
-  SelectProps,
-} from './sheet/select';
+import { NoData } from '../NoData';
+import { Select, SelectItemProps, SelectListProps, SelectProps } from './sheet/select';
+import { SelectContentProps, SelectSearchInputProps } from './sheet/select/types';
 
-interface ComboboxProps<T> extends Omit<SelectProps<T>, 'header' | 'children'> {
+type ContentProps = Pick<
+  SelectContentProps,
+  'detents' | 'dimmed' | 'scrollable' | 'headerStyle' | 'cornerRadius'
+>;
+
+export interface ComboboxProps<T> extends Omit<SelectProps<T>, 'children'>, ContentProps {
   items: T[];
-  renderItem: ListRenderItem<T>;
+  renderItem: SelectListProps<T>['renderItem'];
   itemStyle?: SelectItemProps<T>['style'];
   itemClassName?: SelectItemProps<T>['className'];
   listProps?: Omit<SelectListProps<T>, 'data' | 'renderItem'>;
-  inputProps?: SelectInputProps;
+  searchInputProps?: SelectSearchInputProps;
+  trigger?: React.ReactNode;
+  isDisabled?: boolean;
 }
 
 export default function Combobox<T>({
   listProps,
-  inputProps,
+  searchInputProps: inputProps,
   items,
   renderItem: renderItemProp,
   detents = [0.45],
   dimmed = true,
   scrollable = true,
+  headerStyle,
+  cornerRadius,
+  trigger,
+  itemClassName,
+  itemStyle,
+  isDisabled = false,
   ...props
 }: ComboboxProps<T>) {
   const renderItem = useCallback<ListRenderItem<T>>(
     (info) => {
-      return <Select.Item value={info.item}>{renderItemProp(info)}</Select.Item>;
+      return (
+        <Select.Item value={info.item} className={itemClassName} style={itemStyle}>
+          {renderItemProp(info)}
+        </Select.Item>
+      );
     },
-    [renderItemProp]
+    [itemClassName, itemStyle, renderItemProp]
   );
 
   return (
-    <Select
-      {...props}
-      detents={detents}
-      dimmed={dimmed}
-      scrollable={scrollable}
-      header={<Select.TextInput {...inputProps} />}
-      headerStyle={[{ paddingHorizontal: 12, marginBottom: 8 }, props.headerStyle]}
-    >
-      <Select.List
-        {...listProps}
-        data={items}
-        renderItem={renderItem}
-        nestedScrollEnabled={listProps?.nestedScrollEnabled ?? true}
-      />
+    <Select {...props}>
+      {trigger && <Select.Trigger disabled={isDisabled}>{trigger}</Select.Trigger>}
+
+      <Select.Content
+        detents={detents}
+        dimmed={dimmed}
+        scrollable={scrollable}
+        cornerRadius={cornerRadius}
+        header={<Select.Search {...inputProps} />}
+        headerStyle={[{ paddingHorizontal: 12, marginBottom: 8 }, headerStyle]}
+      >
+        <Select.List
+          {...listProps}
+          data={items}
+          renderItem={renderItem}
+          ListEmptyComponent={
+            <NoData
+              title={listProps?.emptyListLabel || 'No options available'}
+              className="mx-auto mt-5 justify-start"
+              style={{ width: '80%' }}
+            />
+          }
+        />
+      </Select.Content>
     </Select>
   );
 }
