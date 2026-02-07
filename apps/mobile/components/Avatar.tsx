@@ -57,14 +57,15 @@ export default function Avatar({
 
       {!isLoading && (
         <UIAvatar.Avatar {...props}>
-          <UIAvatar.AvatarFallbackText>{avatarName}</UIAvatar.AvatarFallbackText>
-          {avatarUrl && (
+          {avatarUrl ? (
             <UIAvatar.AvatarImage
               source={{ uri: avatarUrl }}
               alt={`Profile picture of ${avatarName}`}
               onLoad={onLoad}
               fadeDuration={fadeDuration}
             />
+          ) : (
+            <UIAvatar.AvatarFallbackText>{avatarName}</UIAvatar.AvatarFallbackText>
           )}
           {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
         </UIAvatar.Avatar>
@@ -150,15 +151,15 @@ export function ProfileAvatar({
           <Skeleton speed={4} variant="circular" />
         ) : (
           <>
-            <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>
-
-            {avatarUrl && (
+            {avatarUrl ? (
               <UIAvatar.AvatarImage
                 source={{ uri: avatarUrl }}
                 alt={`Profile picture of ${fallbackName}`}
                 onLoad={onLoad}
                 fadeDuration={fadeDuration}
               />
+            ) : (
+              <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>
             )}
 
             {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}

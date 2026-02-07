@@ -166,14 +166,14 @@ function ActionLink({ icon, href, label, badge }: ActionProps) {
 
   return (
     <Link href={href} push asChild>
-      <AnimatedPressable disablePressAnimation>
+      <Pressable>
         <HStack space="sm" className="w-full items-center justify-start px-5 py-4">
           <Icon as={icon} color={iconFillColor} />
           <Text className="grow font-JakartaMedium">{label}</Text>
           {badge}
           <Icon as={ChevronRightIcon} color={iconFillColor} />
         </HStack>
-      </AnimatedPressable>
+      </Pressable>
     </Link>
   );
 }
