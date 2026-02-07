@@ -168,6 +168,7 @@ module.exports = {
           primary: 'var(--color-indicator-primary)',
           info: 'var(--color-indicator-info)',
           error: 'var(--color-indicator-error)',
+          ripple: 'rgb(var(--color-indicator-ripple)/<alpha-value>)',
         },
       },
       fontFamily: {

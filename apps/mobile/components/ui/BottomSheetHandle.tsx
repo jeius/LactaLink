@@ -1,12 +1,12 @@
 import { getColor, getPrimaryColor } from '@/lib/colors';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
-import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 import React, { useMemo } from 'react';
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
+  SharedValue,
   useAnimatedStyle,
   useDerivedValue,
 } from 'react-native-reanimated';
@@ -27,11 +27,13 @@ export const transformOrigin = ({ x, y }, ...transformations) => {
   ];
 };
 
-interface HandleProps extends BottomSheetHandleProps {
+interface HandleProps {
   style?: StyleProp<ViewStyle>;
+  animatedIndex: SharedValue<number>;
+  animatedPosition: SharedValue<number>;
 }
 
-export const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex }) => {
+const BottomSheetHandle: React.FC<HandleProps> = ({ style, animatedIndex }) => {
   const outlineColor = useMemo(() => getColor('outline', '200'), []);
   const bgColor = useMemo(() => getColor('background', '0'), []);
 
@@ -137,3 +139,6 @@ const styles = StyleSheet.create({
     borderBottomEndRadius: 2,
   },
 });
+
+export { BottomSheetHandle, type HandleProps };
+export default BottomSheetHandle;

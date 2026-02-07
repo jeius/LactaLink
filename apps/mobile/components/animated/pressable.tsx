@@ -1,4 +1,3 @@
-import { RIPPLE_COLOR } from '@/lib/colors';
 import React, { ComponentProps } from 'react';
 import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
@@ -66,14 +65,7 @@ export function AnimatedPressable({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[animatedStyle, containerStyle, props.style]}
-      android_ripple={
-        disableRipple
-          ? undefined
-          : {
-              color: RIPPLE_COLOR,
-              foreground: true,
-            }
-      }
+      android_ripple={disableRipple ? null : undefined}
     >
       {children}
     </AnimatedUIPressable>

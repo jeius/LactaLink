@@ -104,6 +104,7 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - `packages/enums`: Shared enums.
 - `packages/types`: Shared TypeScript types.
 - `packages/types/forms`: Shared form schema and types.
+- `packages/utilities`: Shared utility functions.
 - `database/sql`: Database scripts.
 - `docs/technical-architecture/INDEX.md`: Overview of the technical architecture.
 - `docs/features/INDEX.md`: Detailed feature documentation.
@@ -111,6 +112,10 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 ## Notes for AI Agents
 
 - Follow the established folder structure and naming conventions.
+- Follow DRY (Don't Repeat Yourself) principles by utilizing shared packages.
+- Follow modern React practices, including hooks and functional components.
+- Follow best practices for payload CMS when working with collections and custom endpoints.
+- Write clear, maintainable, and well-documented code.
 - Use TypeScript for all new code.
 - Ensure compatibility with both react native and next.js platforms when adding shared features.
 - Refer to the `README.md` files in each directory for additional context.
