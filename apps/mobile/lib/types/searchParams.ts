@@ -8,3 +8,7 @@ export type MapPageSearchParams = {
 export type FeedCommentsSearchParams = {
   post: string;
 };
+
+export type RedirectSearchParams = {
+  redirect?: string;
+};

@@ -149,7 +149,8 @@ export function DeliveryForm({
         label="Method"
         helperText="Method of transaction (e.g. Delivery, Meet-up)"
         items={deliveryModes || Object.values(DELIVERY_OPTIONS)}
-        selectInputProps={{ placeholder: 'Select a method...' }}
+        transformItem={(item) => item}
+        triggerInputProps={{ placeholder: 'Select a method...' }}
         isDisabled={isDisabled || isSubmitting}
         isLoading={isLoading}
       />
