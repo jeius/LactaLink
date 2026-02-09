@@ -30,10 +30,7 @@ type SelectItemProps<T> = Omit<ActionSheetItemProps, 'onPress'> & {
   onPress?: (value: T) => void;
 };
 
-type SelectSearchInputProps = Pick<
-  InputProps,
-  'size' | 'variant' | 'isDisabled' | 'isFocused' | 'isInvalid'
-> &
+type SelectSearchInputProps = Pick<InputProps, 'size' | 'variant' | 'isDisabled' | 'isFocused'> &
   InputFieldProps & {
     hideClear?: boolean;
     onClear?: () => void;

@@ -65,7 +65,6 @@ function SelectSearchInput({
   hideClear = false,
   isDisabled,
   isFocused,
-  isInvalid,
   size,
   variant,
   onClear,
@@ -90,7 +89,7 @@ function SelectSearchInput({
       variant={variant}
       isDisabled={isDisabled}
       isFocused={isFocused}
-      isInvalid={isInvalid}
+      isInvalid={false}
       className={containerClassName}
       style={containerStyle}
     >
@@ -120,8 +119,6 @@ function SelectInput({
   isInvalid,
   size,
   variant,
-  value = '',
-  onChangeText,
   containerClassName,
   containerStyle,
   className,
@@ -130,16 +127,18 @@ function SelectInput({
   ...props
 }: SelectInputProps) {
   return (
-    <Input>
+    <Input
+      size={size}
+      variant={variant}
+      isFocused={isFocused}
+      isInvalid={isInvalid}
+      isDisabled={isDisabled}
+      className={containerClassName}
+      style={containerStyle}
+      pointerEvents={props.pointerEvents}
+    >
       {iconLeft && <InputIcon as={iconLeft} className="ml-2" />}
-      <InputField
-        {...props}
-        // @ts-expect-error Gluestack type issue, safe to ignore
-        ref={inputRef}
-        className={selectInputFieldStyle({ className })}
-        value={value}
-        onChangeText={onChangeText}
-      />
+      <InputField {...props} className={selectInputFieldStyle({ className })} />
       {iconRight && <InputIcon as={iconRight} className="mr-2" />}
     </Input>
   );

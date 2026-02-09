@@ -31,13 +31,18 @@ import { Text } from '../../text';
 function ActionSheetProvider({
   onOpen,
   onClose,
-  open,
-  setOpen,
+  open: openProp,
+  setOpen: setOpenProp,
   children,
   sheetRef,
 }: ActionSheetProps) {
   const localRef = useRef<TrueSheet>(null);
+  const [localOpen, setLocalOpen] = useState(openProp ?? false);
+  const [mounted, setMounted] = useState(false);
+
   const ref = sheetRef ?? localRef;
+  const open = openProp !== undefined ? openProp : localOpen;
+  const setOpen = setOpenProp !== undefined ? setOpenProp : setLocalOpen;
 
   const handleOpen = useCallback(() => {
     onOpen?.();
@@ -52,6 +57,7 @@ function ActionSheetProvider({
   const [store] = useState(() =>
     initSheetStore({
       presented: open ?? false,
+      mounted: mounted,
       actions: {
         handleOpen,
         handleClose,
@@ -61,15 +67,18 @@ function ActionSheetProvider({
   );
 
   useEffect(() => {
-    store.setState({ sheetRef: ref });
-  }, [ref, store]);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (open !== undefined) {
-      const { handleOpen, handleClose } = store.getState().actions;
-      if (open) handleOpen();
-      else handleClose();
-    }
+    store.setState({ sheetRef: ref, mounted });
+  }, [mounted, ref, store]);
+
+  useEffect(() => {
+    if (open === undefined) return;
+    const { handleOpen, handleClose } = store.getState().actions;
+    if (open) handleOpen();
+    else handleClose();
   }, [open, store]);
 
   return <SheetStoreContext.Provider value={store}>{children}</SheetStoreContext.Provider>;

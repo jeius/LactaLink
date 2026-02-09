@@ -13,7 +13,7 @@ const sheetScrollViewStyle = tva({
 });
 
 const sheetTriggerStyle = tva({
-  base: 'flex-row items-center overflow-hidden px-4 py-2',
+  base: 'flex-row items-center overflow-hidden',
 });
 
 const sheetIconStyle = tva({

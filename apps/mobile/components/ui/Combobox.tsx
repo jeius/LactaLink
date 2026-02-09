@@ -1,5 +1,6 @@
 import { ListRenderItem } from '@/lib/types';
 import { useCallback } from 'react';
+import { ViewProps } from 'react-native';
 import { NoData } from '../NoData';
 import { Select, SelectItemProps, SelectListProps, SelectProps } from './sheet/select';
 import { SelectContentProps, SelectSearchInputProps } from './sheet/select/types';
@@ -17,6 +18,8 @@ export interface ComboboxProps<T> extends Omit<SelectProps<T>, 'children'>, Cont
   listProps?: Omit<SelectListProps<T>, 'data' | 'renderItem'>;
   searchInputProps?: SelectSearchInputProps;
   trigger?: React.ReactNode;
+  triggerContainerClassName?: ViewProps['className'];
+  triggerContainerStyle?: ViewProps['style'];
   isDisabled?: boolean;
 }
 
@@ -34,6 +37,8 @@ export default function Combobox<T>({
   itemClassName,
   itemStyle,
   isDisabled = false,
+  triggerContainerClassName,
+  triggerContainerStyle,
   ...props
 }: ComboboxProps<T>) {
   const renderItem = useCallback<ListRenderItem<T>>(
@@ -49,7 +54,15 @@ export default function Combobox<T>({
 
   return (
     <Select {...props}>
-      {trigger && <Select.Trigger disabled={isDisabled}>{trigger}</Select.Trigger>}
+      {trigger && (
+        <Select.Trigger
+          disabled={isDisabled}
+          className={triggerContainerClassName}
+          style={triggerContainerStyle}
+        >
+          {trigger}
+        </Select.Trigger>
+      )}
 
       <Select.Content
         detents={detents}

@@ -3,7 +3,6 @@ import { FieldPath, FieldValues, useWatch } from 'react-hook-form';
 
 import { ComboboxField } from '@/components/form-fields/ComboboxField';
 import { BaseFieldProps } from '@/components/form-fields/types';
-import { TextProps } from '@/components/ui/text';
 import { extractID } from '@lactalink/utilities/extractors';
 import debounce from 'lodash/debounce';
 import { useInfiniteProvinces, useProvince } from '../../hooks/queries';
@@ -13,17 +12,12 @@ type Props<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Omit<BaseFieldProps<TFieldValues, TName>, 'error'> & {
   placeholder?: string;
-  triggerTextClassName?: TextProps['className'];
 };
 
 export function ProvinceSelectField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({
-  placeholder = 'Select a province...',
-  triggerTextClassName,
-  ...props
-}: Props<TFieldValues, TName>) {
+>({ placeholder = 'Select a province...', ...props }: Props<TFieldValues, TName>) {
   const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
 
@@ -54,9 +48,8 @@ export function ProvinceSelectField<
       items={provinces}
       transformItem={(item) => ({ value: item.id, label: item.name })}
       triggerInputProps={{
-        placeholder: placeholder,
-        className: triggerTextClassName,
-        label: query.isLoading ? 'Loading province...' : province?.name,
+        placeholder,
+        value: query.isLoading ? 'Loading province...' : province?.name,
         isLoading: query.isLoading,
       }}
       comboboxProps={{

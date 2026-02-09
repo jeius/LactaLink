@@ -3,7 +3,6 @@ import { FieldPath, FieldValues, useWatch } from 'react-hook-form';
 
 import { ComboboxField } from '@/components/form-fields/ComboboxField';
 import { BaseFieldProps } from '@/components/form-fields/types';
-import { TextProps } from '@/components/ui/text';
 import { extractID } from '@lactalink/utilities/extractors';
 import debounce from 'lodash/debounce';
 import { useCityMunicipality, useInfiniteCities } from '../../hooks/queries';
@@ -13,7 +12,6 @@ type Props<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Omit<BaseFieldProps<TFieldValues, TName>, 'error'> & {
   placeholder?: string;
-  triggerTextClassName?: TextProps['className'];
   provinceID?: string;
 };
 
@@ -22,7 +20,6 @@ export function CitySelectField<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   placeholder = 'Select a city/municipality...',
-  triggerTextClassName,
   provinceID,
   ...props
 }: Props<TFieldValues, TName>) {
@@ -57,8 +54,7 @@ export function CitySelectField<
       transformItem={(item) => ({ value: item.id, label: item.name })}
       triggerInputProps={{
         placeholder: placeholder,
-        className: triggerTextClassName,
-        label: query.isLoading ? 'Loading city/municipality...' : doc?.name,
+        value: query.isLoading ? 'Loading city/municipality...' : doc?.name,
         isLoading: query.isLoading,
       }}
       comboboxProps={{

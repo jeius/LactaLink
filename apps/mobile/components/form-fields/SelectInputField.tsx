@@ -1,105 +1,121 @@
 import { ChevronDownIcon } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { SheetDetent } from '@lodev09/react-native-true-sheet';
 import { useWindowDimensions } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Select, SelectProps, SelectTextProps } from '../ui/sheet/select';
+import { Select, SelectInputProps, SelectProps } from '../ui/sheet/select';
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
-import { BaseFieldProps, Item } from './types';
+import { BaseFieldProps } from './types';
 
 const MAX_DETENT = 0.45;
-
-const triggerTextStyle = tva({
-  base: 'flex-1',
-  variants: {
-    isPlaceholder: {
-      true: 'opacity-70',
-    },
-  },
-});
 
 interface SelectInputFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TItem = unknown,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
-  selectInputProps?: SelectTextProps & { placeholder?: string };
-  selectProps?: Omit<SelectProps<TFieldValues>, 'isDisabled'> & { itemSize?: number };
-  items: Item[];
+  triggerInputProps?: Omit<SelectInputProps, 'iconLeft' | 'iconRight' | 'value' | 'pointerEvents'>;
+  selectProps?: Omit<SelectProps<TItem>, 'isDisabled'> & { itemSize?: number };
+  items: TItem[];
+  transformItem: (item: TItem) => {
+    value: string;
+    label: string;
+  };
 }
 
 export function SelectInputField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TItem = unknown,
 >({
   control,
   name,
   isDisabled,
   isLoading,
-  selectInputProps,
+  triggerInputProps: selectInputProps,
   items,
   selectProps,
   contentPosition = 'first',
+  transformItem,
   ...props
-}: SelectInputFieldProps<TFieldValues, TName>) {
+}: SelectInputFieldProps<TFieldValues, TName, TItem>) {
   const {
     field: { value, onBlur, onChange, disabled },
-    fieldState: { error },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
-  const itemMap = useMemo(() => new Map(items.map((i) => [i.value, i.label])), [items]);
+  const detents = useDetents(items.length, selectProps?.itemSize);
 
-  const screen = useWindowDimensions();
-  const { bottom: bottomInset } = useSafeAreaInsets();
+  const itemMap = useMemo(
+    () => new Map(items.map((item) => [transformItem(item).value, item])),
+    [items, transformItem]
+  );
 
-  const detents = useMemo<SheetDetent[]>(() => {
-    const itemSize = selectProps?.itemSize ?? 42;
-    const calculatedDetent = (items.length * itemSize + bottomInset + 30) / screen.height;
-    return [Math.min(MAX_DETENT, calculatedDetent)];
-  }, [bottomInset, items.length, screen.height, selectProps?.itemSize]);
+  const handleChange = useCallback(
+    (newValue: TItem) => onChange(transformItem(newValue).value),
+    [onChange, transformItem]
+  );
+
+  const disabledFields = isDisabled || disabled || isSubmitting;
+
+  const selectedValue = useMemo(() => value && itemMap.get(value), [value, itemMap]);
+  const selectedLabel = selectedValue ? transformItem(selectedValue).label : '';
 
   return (
     <FieldWrapper
       {...props}
       contentPosition={contentPosition}
+      isInvalid={invalid}
       error={error}
-      isDisabled={isDisabled || isSubmitting}
+      isDisabled={disabledFields}
     >
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
       ) : (
-        <Select {...selectProps} selected={value} onSelect={onChange} onClose={onBlur}>
-          <Select.Trigger disabled={isDisabled || disabled || isSubmitting}>
-            <Select.Text
+        <Select {...selectProps} selected={selectedValue} onSelect={handleChange} onClose={onBlur}>
+          <Select.Trigger disabled={disabledFields} className="rounded-xl">
+            <Select.Input
               {...selectInputProps}
-              className={triggerTextStyle({
-                isPlaceholder: !value,
-                className: selectInputProps?.className,
-              })}
-            >
-              {itemMap.get(value) || selectInputProps?.placeholder || 'Select an option...'}
-            </Select.Text>
-            <Select.Icon as={ChevronDownIcon} />
+              value={selectedLabel}
+              iconRight={ChevronDownIcon}
+              pointerEvents="none"
+              containerClassName="flex-1"
+              editable={false}
+            />
           </Select.Trigger>
 
           <Select.Content scrollable detents={detents}>
             <Select.List
               data={items}
-              keyExtractor={(item, idx) => `${item.value}-${idx}`}
-              nestedScrollEnabled
-              renderItem={({ item }) => (
-                <Select.Item value={(item as Item).value}>
-                  <Select.Text>{item.label}</Select.Text>
-                </Select.Item>
-              )}
+              keyExtractor={(item, idx) => listKeyExtractor({ id: transformItem(item).value }, idx)}
+              renderItem={({ item, isPlaceholder }) =>
+                isPlaceholder ? (
+                  <Skeleton variant="rounded" className="h-6" />
+                ) : (
+                  <Select.Item value={item}>
+                    <Select.Text>{transformItem(item).label}</Select.Text>
+                  </Select.Item>
+                )
+              }
             />
           </Select.Content>
         </Select>
       )}
     </FieldWrapper>
   );
+}
+function useDetents(itemsLength: number, itemSize = 42) {
+  const screen = useWindowDimensions();
+  const { bottom: bottomInset } = useSafeAreaInsets();
+
+  const detents = useMemo<SheetDetent[]>(() => {
+    const calculatedDetent = (itemsLength * itemSize + bottomInset + 30) / screen.height;
+    return [Math.min(MAX_DETENT, calculatedDetent)];
+  }, [bottomInset, itemsLength, screen.height, itemSize]);
+  return detents;
 }

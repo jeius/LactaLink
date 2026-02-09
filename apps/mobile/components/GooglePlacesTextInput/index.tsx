@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Platform, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { Platform, StyleProp, StyleSheet, ViewProps, ViewStyle } from 'react-native';
 
 import { GooglePlacesFieldMask, GooglePlacesResult } from '@lactalink/types/geocoding';
 import RNGooglePlacesTextInput, { type Place } from 'react-native-google-places-textinput';
@@ -9,6 +9,7 @@ import { ANDROID_MAPS_API_KEY, IOS_MAPS_API_KEY } from '@/lib/constants/env';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { XIcon } from 'lucide-react-native';
+import { cssInterop } from 'nativewind';
 import { Icon } from '../ui/icon';
 
 const API_KEY = Platform.select({
@@ -26,12 +27,13 @@ const DEFAULT_DETAIL_FIELDS: GooglePlacesFieldMask[] = [
   'postalAddress',
 ];
 
-interface GooglePlacesTextInputProps {
+interface Props {
   onSelect?: (place: GooglePlacesResult, sessionToken?: string | null) => void;
   style?: StyleProp<ViewStyle>;
+  placeholder?: string;
 }
 
-export default function GooglePlacesTextInput({ onSelect, style }: GooglePlacesTextInputProps) {
+function GooglePlacesTextInput({ onSelect, style, placeholder = 'Search a place...' }: Props) {
   const currentCoordinates = useCurrentCoordinates();
 
   const locationBias = useMemo(() => {
@@ -59,7 +61,7 @@ export default function GooglePlacesTextInput({ onSelect, style }: GooglePlacesT
       detailsFields={DEFAULT_DETAIL_FIELDS}
       locationBias={locationBias}
       cursorColor={getColor('primary', '500')}
-      placeHolderText="Search a place..."
+      placeHolderText={placeholder}
       keyboardType="default"
       returnKeyType="search"
       textContentType="location"
@@ -118,3 +120,8 @@ function createStyles() {
     placeholder: { color: getColor('typography', '500') },
   });
 }
+
+const StyledGooglePlacesTextInput = cssInterop(GooglePlacesTextInput, { className: 'style' });
+
+export type GooglePlacesTextInputProps = Props & Pick<ViewProps, 'className'>;
+export default StyledGooglePlacesTextInput;

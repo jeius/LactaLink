@@ -102,8 +102,9 @@ export function RequestDetailsForm({
             control={control}
             name="details.storagePreference"
             label="Select how you would like the milk to be stored/preserved."
-            selectInputProps={{ placeholder: 'Select storage type' }}
+            triggerInputProps={{ placeholder: 'Select storage type' }}
             items={[...Object.values(STORAGE_TYPES), { label: 'Any method', value: 'EITHER' }]}
+            transformItem={(item) => item}
             isDisabled={isLoading || disableFields}
           />
         )}
@@ -112,8 +113,9 @@ export function RequestDetailsForm({
           control={control}
           name="details.urgency"
           label="How urgently do you need the milk?"
-          selectInputProps={{ placeholder: 'Select an urgency level' }}
+          triggerInputProps={{ placeholder: 'Select an urgency level' }}
           items={Object.values(URGENCY_LEVELS)}
+          transformItem={(item) => item}
           isDisabled={isLoading || disableFields}
         />
       </VStack>

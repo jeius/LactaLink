@@ -27,6 +27,12 @@ interface SheetStoreActions {
 
 interface SheetState {
   /**
+   * Whether the sheet has been mounted. Useful for avoiding rendering content before the
+   * sheet is ready, which can cause issues with measuring and layout on some platforms.
+   */
+  mounted: boolean;
+
+  /**
    * Whether sheet is currently presented
    */
   presented: boolean;

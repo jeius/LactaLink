@@ -2,25 +2,15 @@ import { ChevronDownIcon, XIcon } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import Combobox, { ComboboxProps } from '../ui/Combobox';
 import { Icon } from '../ui/icon';
+import { Input, InputField, InputFieldProps, InputIcon } from '../ui/input';
 import { Pressable } from '../ui/pressable';
-import { Select } from '../ui/sheet/select';
 import { Skeleton } from '../ui/skeleton';
 import { Spinner } from '../ui/spinner';
-import { Text, TextProps } from '../ui/text';
+import { Text } from '../ui/text';
 import { FieldWrapper } from './FieldWrapper';
 import { BaseFieldProps } from './types';
-
-const triggerTextStyle = tva({
-  base: 'flex-1',
-  variants: {
-    isPlaceholder: {
-      true: 'opacity-70',
-    },
-  },
-});
 
 type CBProps<T> = Pick<ComboboxProps<T>, 'listProps' | 'searchInputProps'> &
   Partial<Pick<ComboboxProps<T>, 'renderItem'>>;
@@ -28,11 +18,10 @@ type CBProps<T> = Pick<ComboboxProps<T>, 'listProps' | 'searchInputProps'> &
 export interface ComboboxFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TItem extends { id: string } = { id: string },
-> extends BaseFieldProps<TFieldValues, TName> {
-  triggerInputProps?: TextProps & {
-    placeholder?: string;
-    label: string | undefined;
+  TItem = unknown,
+> extends Omit<BaseFieldProps<TFieldValues, TName>, 'isInvalid'> {
+  triggerInputProps?: Pick<InputFieldProps, 'placeholder'> & {
+    value: string | undefined;
     isLoading?: boolean;
   };
   comboboxProps: CBProps<TItem>;
@@ -46,7 +35,7 @@ export interface ComboboxFieldProps<
 export function ComboboxField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TItem extends { id: string } = { id: string },
+  TItem = unknown,
 >({
   control,
   name,
@@ -55,13 +44,15 @@ export function ComboboxField<
   items,
   transformItem,
   comboboxProps,
-  triggerInputProps,
+  triggerInputProps: { value: label, isLoading: triggerLoading, ...triggerInputProps } = {
+    value: '',
+  },
   contentPosition = 'first',
   ...props
 }: ComboboxFieldProps<TFieldValues, TName, TItem>) {
   const {
-    field: { value, onBlur, onChange, disabled },
-    fieldState: { error },
+    field: { ref, value, onBlur, onChange, disabled },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
@@ -85,6 +76,7 @@ export function ComboboxField<
     <FieldWrapper
       {...props}
       contentPosition={contentPosition}
+      isInvalid={invalid}
       error={error}
       isDisabled={disabledFields}
     >
@@ -98,6 +90,7 @@ export function ComboboxField<
           onSelect={handleChange}
           onClose={onBlur}
           isDisabled={disabledFields}
+          triggerContainerClassName="rounded-lg"
           detents={[0.5]}
           renderItem={
             comboboxProps?.renderItem ??
@@ -109,21 +102,22 @@ export function ComboboxField<
               ))
           }
           trigger={
-            <>
-              <Text
+            <Input
+              ref={ref}
+              isDisabled={disabledFields}
+              isInvalid={invalid}
+              className="flex-1"
+              pointerEvents="box-none"
+            >
+              <InputField
                 {...triggerInputProps}
-                numberOfLines={triggerInputProps?.numberOfLines ?? 1}
-                className={triggerTextStyle({
-                  isPlaceholder: !value,
-                  className: triggerInputProps?.className,
-                })}
-              >
-                {triggerInputProps?.label ||
-                  triggerInputProps?.placeholder ||
-                  'Select an option...'}
-              </Text>
+                className="flex-1"
+                value={label ?? ''}
+                editable={false}
+                pointerEvents="none"
+              />
 
-              {triggerInputProps?.isLoading ? (
+              {triggerLoading ? (
                 <Spinner size={'small'} className="px-2" />
               ) : (
                 !!value && (
@@ -133,8 +127,8 @@ export function ComboboxField<
                 )
               )}
 
-              <Select.Icon as={ChevronDownIcon} />
-            </>
+              <InputIcon as={ChevronDownIcon} className="mr-2" />
+            </Input>
           }
         />
       )}

@@ -98,8 +98,9 @@ export function DonationDetailsForm({
           control={control}
           name="details.storageType"
           label="How are you storing/preserving the milk?"
-          selectInputProps={{ placeholder: 'Select storage type' }}
+          triggerInputProps={{ placeholder: 'Select storage type' }}
           items={Object.values(STORAGE_TYPES)}
+          transformItem={(item) => item}
           isDisabled={isLoading || disableFields}
         />
 
@@ -107,8 +108,9 @@ export function DonationDetailsForm({
           control={control}
           name="details.collectionMode"
           label="How did you collect the milk?"
-          selectInputProps={{ placeholder: 'Select collection method' }}
+          triggerInputProps={{ placeholder: 'Select collection method' }}
           items={Object.values(COLLECTION_MODES)}
+          transformItem={(item) => item}
           isDisabled={isLoading || disableFields}
         />
       </VStack>

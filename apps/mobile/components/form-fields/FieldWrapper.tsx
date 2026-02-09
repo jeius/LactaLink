@@ -45,7 +45,7 @@ export function FieldWrapper<
   ...props
 }: FieldWrapperProps<TFieldValues, TName>) {
   return (
-    <FormControl {...props} isInvalid={!!error} isRequired={isRequired}>
+    <FormControl {...props} isInvalid={props.isInvalid ?? !!error} isRequired={isRequired}>
       <FieldLabel
         text={label}
         isRequired={isRequired}

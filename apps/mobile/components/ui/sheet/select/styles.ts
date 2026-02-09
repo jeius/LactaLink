@@ -10,7 +10,7 @@ const selectItemStyle = tva({
 });
 
 const selectTriggerStyle = tva({
-  base: 'flex-row items-center overflow-hidden rounded-xl border border-outline-500 bg-background-0 px-4 py-2 hover:border-outline-300 focus:border-primary-700 disabled:opacity-40 disabled:hover:border-outline-300',
+  base: 'flex-row items-center overflow-hidden',
 });
 
 const selectIconStyle = tva({
@@ -18,7 +18,7 @@ const selectIconStyle = tva({
 });
 
 const selectInputFieldStyle = tva({
-  base: 'flex-1'
+  base: 'flex-1',
 });
 
-export { selectIconStyle, selectItemStyle, selectTriggerStyle, selectInputFieldStyle };
+export { selectIconStyle, selectInputFieldStyle, selectItemStyle, selectTriggerStyle };

@@ -8,22 +8,33 @@ export const SheetStoreContext = createContext<StoreApi<SheetStore> | null>(null
 export function initSheetStore({ actions, ...init }: InitStore) {
   return createStore<SheetStore>((set, get) => ({
     ...init,
+    mounted: init?.mounted ?? false,
     sheetRef: init.sheetRef ?? null,
     presented: init.presented ?? false,
     actions: {
       handleOpen: () => {
-        const { sheetRef } = get();
+        const { sheetRef, mounted, presented } = get();
+
+        // Prevent opening if not mounted or already presented
+        if (!mounted || presented) return;
+
         sheetRef?.current?.present();
-        set({ presented: true });
         actions?.handleOpen?.(); // Notify external handler
       },
       handleClose: () => {
-        const { sheetRef } = get();
+        const { sheetRef, mounted, presented } = get();
+
+        // Prevent closing if not mounted or already closed
+        if (!mounted || !presented) return;
+
         sheetRef?.current?.dismiss();
-        set({ presented: false });
         actions?.handleClose?.(); // Notify external handler
       },
       setPresented: (presented) => {
+        const { mounted } = get();
+
+        if (!mounted) return; // Prevent opening if not mounted
+
         set({ presented });
         // Notify external setVisible (parent component)
         actions?.setPresented?.(presented);
