@@ -13,7 +13,7 @@ import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
 interface AddressMapViewProps extends MapViewProps {
-  coordinates?: Coordinates;
+  coordinates?: Coordinates | null;
   isLoading?: boolean;
 }
 
@@ -29,6 +29,7 @@ export function AddressMapView({
   return (
     <MapView
       {...props}
+      // Only set the initial camera if coordinates are provided
       initialProps={coordinates ? { camera: { center: coordinates, zoom: 16 } } : undefined}
       style={StyleSheet.flatten([StyleSheet.absoluteFillObject, props.style])}
       onMapReady={() => setIsMapReady(true)}
@@ -94,7 +95,7 @@ function LottieMarker({ isPanning }: { isPanning: boolean }) {
   );
 }
 
-function MapCameraSetter({ coordinates }: { coordinates?: Coordinates }) {
+function MapCameraSetter({ coordinates }: { coordinates?: Coordinates | null }) {
   const [map] = useMap();
 
   useEffect(() => {

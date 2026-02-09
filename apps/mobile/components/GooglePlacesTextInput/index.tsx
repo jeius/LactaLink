@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Platform, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 
-import { GooglePlacesFieldMask } from '@lactalink/types/geocoding';
+import { GooglePlacesFieldMask, GooglePlacesResult } from '@lactalink/types/geocoding';
 import RNGooglePlacesTextInput, { type Place } from 'react-native-google-places-textinput';
 
 import { getColor } from '@/lib/colors';
 import { ANDROID_MAPS_API_KEY, IOS_MAPS_API_KEY } from '@/lib/constants/env';
+import { useCurrentCoordinates } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
 import { XIcon } from 'lucide-react-native';
 import { Icon } from '../ui/icon';
@@ -22,21 +23,31 @@ const DEFAULT_DETAIL_FIELDS: GooglePlacesFieldMask[] = [
   'viewport',
   'photos',
   'types',
+  'postalAddress',
 ];
 
 interface GooglePlacesTextInputProps {
-  onSelect?: (place: Place) => void;
+  onSelect?: (place: GooglePlacesResult, sessionToken?: string | null) => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export default function GooglePlacesTextInput({ onSelect, style }: GooglePlacesTextInputProps) {
+  const currentCoordinates = useCurrentCoordinates();
+
+  const locationBias = useMemo(() => {
+    if (!currentCoordinates) return undefined;
+    return {
+      circle: {
+        center: currentCoordinates,
+        radius: 1000 * 50, // 50km max radius bias around current location
+      },
+    };
+  }, [currentCoordinates]);
+
   const styles = createStyles();
 
   const onPlaceSelect = useCallback(
-    (place: Place, sessionToken?: string | null) => {
-      console.log('Selected place:', place, 'Session Token:', sessionToken);
-      onSelect?.(place);
-    },
+    (place: Place, sessionToken?: string | null) => onSelect?.(place, sessionToken),
     [onSelect]
   );
 
@@ -46,9 +57,9 @@ export default function GooglePlacesTextInput({ onSelect, style }: GooglePlacesT
       onPlaceSelect={onPlaceSelect}
       onError={(e) => console.warn('GooglePlacesTextInput Error:', e)}
       detailsFields={DEFAULT_DETAIL_FIELDS}
+      locationBias={locationBias}
       cursorColor={getColor('primary', '500')}
       placeHolderText="Search a place..."
-      placeholderClassName="font-sans"
       keyboardType="default"
       returnKeyType="search"
       textContentType="location"
@@ -85,7 +96,7 @@ function createStyles() {
     },
     input: {
       color: getColor('typography', '950'),
-      fontFamily: 'Jakarta-Medium',
+      fontFamily: 'Jakarta-Regular',
       fontSize: 14,
     },
     suggestionTextMain: {
@@ -104,6 +115,6 @@ function createStyles() {
       ...shadow.sm,
     },
     loadingIndicator: { color: getColor('primary', '500') },
-    placeholder: { color: getColor('outline', '700') },
+    placeholder: { color: getColor('typography', '500') },
   });
 }

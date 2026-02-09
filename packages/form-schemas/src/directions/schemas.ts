@@ -1,5 +1,5 @@
+import { coordinatesSchema } from '@/geocoding';
 import z from 'zod';
-import { coordinatesSchema } from '../address';
 
 const routeTravelModeSchema = z.enum(
   ['DRIVE', 'TWO_WHEELER', 'WALK', 'TRANSIT', 'BICYCLE'],
