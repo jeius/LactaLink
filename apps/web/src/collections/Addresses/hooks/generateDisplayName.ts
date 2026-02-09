@@ -1,12 +1,9 @@
 import { Address } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
-import { sanitizeStreetAddress } from '@lactalink/utilities/formatters';
 import { CollectionBeforeChangeHook } from 'payload';
 
 export const generateDisplayName: CollectionBeforeChangeHook<Address> = async ({ req, data }) => {
   const { payload } = req;
-
-  const street = data.street && sanitizeStreetAddress(data.street);
 
   const locationFields = [
     { key: 'barangay', collection: 'barangays' },
@@ -24,8 +21,7 @@ export const generateDisplayName: CollectionBeforeChangeHook<Address> = async ({
     })
   );
 
-  data.street = street;
-  data.displayName = [street, ...resolvedLocations].filter(Boolean).join(', ');
+  data.displayName = [data.street, ...resolvedLocations].filter(Boolean).join(', ');
 
   return data;
 };

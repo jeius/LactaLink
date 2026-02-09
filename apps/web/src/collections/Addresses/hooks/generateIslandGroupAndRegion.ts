@@ -17,9 +17,10 @@ export const generateIslandGroupAndRegion: CollectionBeforeChangeHook<Address> =
       id: provinceID,
       depth: 0,
       select: { region: true, islandGroup: true },
+      req,
     });
-    data.region = region;
-    data.islandGroup = islandGroup;
+    data.region = extractID(region);
+    data.islandGroup = extractID(islandGroup);
   }
 
   return data;

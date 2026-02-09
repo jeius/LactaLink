@@ -1,12 +1,16 @@
-import { ownerField } from '@/fields/ownerField';
-import { generateOwner } from '@/hooks/collections/generateOwner';
-import { COLLECTION_GROUP } from '@/lib/constants';
+import { GEOCODE_SOURCES } from '@lactalink/enums/geocoding';
+import { sanitizeStreetAddress } from '@lactalink/utilities/formatters';
+
 import { CollectionConfig } from 'payload';
+
+import { createUserField } from '@/fields/userField';
+import { COLLECTION_GROUP } from '@/lib/constants';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { ensureUniqueDefaultAddress } from './hooks/ensureUniqueDefaultAddress';
 import { generateDisplayName } from './hooks/generateDisplayName';
 import { generateIslandGroupAndRegion } from './hooks/generateIslandGroupAndRegion';
 import { generateName } from './hooks/generateName';
+import { preserveGeocodingMetadata } from './hooks/preserveGeocodingMetadata';
 
 export const Addresses: CollectionConfig<'addresses'> = {
   slug: 'addresses',
@@ -25,25 +29,28 @@ export const Addresses: CollectionConfig<'addresses'> = {
     delete: collectionOwnerOrAdmin,
   },
   hooks: {
-    beforeChange: [generateDisplayName, generateOwner, generateName, generateIslandGroupAndRegion],
+    beforeChange: [generateDisplayName, generateIslandGroupAndRegion, preserveGeocodingMetadata],
     afterChange: [ensureUniqueDefaultAddress],
   },
   fields: [
-    ownerField,
+    createUserField({ name: 'owner', required: true }),
+
     {
       type: 'row',
       fields: [
         {
           name: 'name',
-          label: 'Address Name',
+          label: 'Address Label',
           type: 'text',
           admin: {
             description: 'e.g. Home, Workplace.',
             width: '50%',
           },
+          hooks: { beforeChange: [generateName] },
         },
       ],
     },
+
     {
       type: 'row',
       fields: [
@@ -58,9 +65,61 @@ export const Addresses: CollectionConfig<'addresses'> = {
         },
       ],
     },
+
     {
       type: 'row',
       fields: [
+        {
+          name: 'region',
+          type: 'relationship',
+          relationTo: 'regions',
+          admin: {
+            width: '50%',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'islandGroup',
+          type: 'relationship',
+          relationTo: 'islandGroups',
+          admin: {
+            width: '50%',
+            readOnly: true,
+          },
+        },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'province',
+          type: 'relationship',
+          relationTo: 'provinces',
+          required: true,
+          admin: { width: '50%' },
+        },
+        {
+          name: 'cityMunicipality',
+          label: 'City/Municipality',
+          type: 'relationship',
+          relationTo: 'citiesMunicipalities',
+          required: true,
+          admin: { width: '50%' },
+        },
+      ],
+    },
+
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'barangay',
+          type: 'relationship',
+          relationTo: 'barangays',
+          admin: { width: '50%' },
+        },
         {
           name: 'zipCode',
           label: 'Postal/Zip Code',
@@ -72,29 +131,16 @@ export const Addresses: CollectionConfig<'addresses'> = {
         },
       ],
     },
-    {
-      name: 'province',
-      type: 'relationship',
-      relationTo: 'provinces',
-      required: true,
-    },
-    {
-      name: 'cityMunicipality',
-      label: 'City/Municipality',
-      type: 'relationship',
-      relationTo: 'citiesMunicipalities',
-      required: true,
-    },
-    {
-      name: 'barangay',
-      type: 'relationship',
-      relationTo: 'barangays',
-    },
+
     {
       name: 'street',
       label: 'Street Address',
       type: 'text',
+      hooks: {
+        beforeValidate: [({ value }) => value && sanitizeStreetAddress(value)],
+      },
     },
+
     {
       name: 'displayName',
       type: 'text',
@@ -103,37 +149,79 @@ export const Addresses: CollectionConfig<'addresses'> = {
         readOnly: true,
       },
     },
+
     {
-      name: 'region',
-      type: 'relationship',
-      relationTo: 'regions',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'islandGroup',
-      type: 'relationship',
-      relationTo: 'islandGroups',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'coordinates',
-      type: 'point',
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'deliveryPreferences',
-      label: 'Related Delivery Preferences',
-      type: 'join',
-      on: 'address',
-      collection: 'delivery-preferences',
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Geocoding Metadata',
+          fields: [
+            {
+              name: 'coordinates',
+              type: 'point',
+              admin: {
+                position: 'sidebar',
+              },
+            },
+
+            {
+              name: 'geocodedAddress',
+              label: 'Geocoded Address',
+              type: 'text',
+              admin: {
+                position: 'sidebar',
+                readOnly: true,
+                description: 'Full formatted address returned by Google (for reference)',
+              },
+            },
+            {
+              name: 'geocodedComponents',
+              label: 'Geocoded Components',
+              type: 'json',
+              admin: {
+                position: 'sidebar',
+                readOnly: true,
+                description: 'Address components from Google Geocoding API',
+              },
+            },
+            {
+              name: 'geocodedAt',
+              label: 'Geocoded At',
+              type: 'date',
+              admin: {
+                position: 'sidebar',
+                readOnly: true,
+                description: 'Timestamp when the address was geocoded',
+              },
+            },
+            {
+              name: 'geocodeSource',
+              label: 'Geocode Source',
+              enumName: 'enum_geocode_source',
+              type: 'select',
+              options: Object.values(GEOCODE_SOURCES),
+              admin: {
+                position: 'sidebar',
+                readOnly: true,
+                description: 'Source of the geocoding data',
+              },
+            },
+          ],
+        },
+
+        {
+          label: 'Delivery Preferences',
+          fields: [
+            {
+              name: 'deliveryPreferences',
+              label: 'Related Delivery Preferences',
+              type: 'join',
+              on: 'address',
+              collection: 'delivery-preferences',
+            },
+          ],
+        },
+      ],
     },
   ],
 };

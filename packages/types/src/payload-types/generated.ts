@@ -508,7 +508,10 @@ export interface CheckboxQuestion {
  */
 export interface Address {
   id: string;
-  owner?: (string | null) | User;
+  /**
+   * The user who created this entry. (Automatic, safe to ignore)
+   */
+  owner: string | User;
   /**
    * e.g. Home, Workplace.
    */
@@ -517,22 +520,46 @@ export interface Address {
    * Set as default address.
    */
   isDefault?: boolean | null;
+  region?: (string | null) | Region;
+  islandGroup?: (string | null) | IslandGroup;
+  province: string | Province;
+  cityMunicipality: string | CityMunicipality;
+  barangay?: (string | null) | Barangay;
   /**
    * Postal/Zip code of the address.
    */
   zipCode?: string | null;
-  province: string | Province;
-  cityMunicipality: string | CityMunicipality;
-  barangay?: (string | null) | Barangay;
   street?: string | null;
   displayName?: string | null;
-  region?: (string | null) | Region;
-  islandGroup?: (string | null) | IslandGroup;
   /**
    * @minItems 2
    * @maxItems 2
    */
   coordinates?: [number, number] | null;
+  /**
+   * Full formatted address returned by Google (for reference)
+   */
+  geocodedAddress?: string | null;
+  /**
+   * Address components from Google Geocoding API
+   */
+  geocodedComponents?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Timestamp when the address was geocoded
+   */
+  geocodedAt?: string | null;
+  /**
+   * Source of the geocoding data
+   */
+  geocodeSource?: ('places_autocomplete' | 'reverse_geocode' | 'manual') | null;
   deliveryPreferences?: {
     docs?: (string | DeliveryPreference)[];
     hasNextPage?: boolean;
@@ -1809,21 +1836,6 @@ export interface Comment {
   deletedAt?: string | null;
 }
 /**
- * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "provinces".
- */
-export interface Province {
-  id: string;
-  name: string;
-  code: string;
-  region: string | Region;
-  islandGroup: string | IslandGroup;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Regions in the Philippines, which are administrative divisions that group provinces and cities/municipalities.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1848,6 +1860,21 @@ export interface IslandGroup {
   id: string;
   name: string;
   code: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Provinces in the Philippines, which are administrative divisions that group cities and municipalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces".
+ */
+export interface Province {
+  id: string;
+  name: string;
+  code: string;
+  region: string | Region;
+  islandGroup: string | IslandGroup;
   updatedAt: string;
   createdAt: string;
 }
@@ -3154,15 +3181,19 @@ export interface AddressesSelect<T extends boolean = true> {
   owner?: T;
   name?: T;
   isDefault?: T;
-  zipCode?: T;
+  region?: T;
+  islandGroup?: T;
   province?: T;
   cityMunicipality?: T;
   barangay?: T;
+  zipCode?: T;
   street?: T;
   displayName?: T;
-  region?: T;
-  islandGroup?: T;
   coordinates?: T;
+  geocodedAddress?: T;
+  geocodedComponents?: T;
+  geocodedAt?: T;
+  geocodeSource?: T;
   deliveryPreferences?: T;
   updatedAt?: T;
   createdAt?: T;

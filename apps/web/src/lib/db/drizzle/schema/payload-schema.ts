@@ -15,17 +15,22 @@ import {
   uuid,
   varchar,
   boolean,
+  jsonb,
   timestamp,
   integer,
   type AnyPgColumn,
   numeric,
   serial,
-  jsonb,
   text,
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core';
 import { sql, relations } from '@payloadcms/db-postgres/drizzle';
 import { geometryColumn } from '@payloadcms/db-postgres';
+export const enum_geocode_source = pgEnum('enum_geocode_source', [
+  'places_autocomplete',
+  'reverse_geocode',
+  'manual',
+]);
 export const enum_cities_municipalities_type = pgEnum('enum_cities_municipalities_type', [
   'NONE',
   'CITY',
@@ -267,12 +272,19 @@ export const addresses = pgTable(
   'addresses',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    owner: uuid('owner_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
+    owner: uuid('owner_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
     name: varchar('name'),
     isDefault: boolean('is_default').default(false),
-    zipCode: varchar('zip_code'),
+    region: uuid('region_id').references(() => regions.id, {
+      onDelete: 'set null',
+    }),
+    islandGroup: uuid('island_group_id').references(() => island_groups.id, {
+      onDelete: 'set null',
+    }),
     province: uuid('province_id')
       .notNull()
       .references(() => provinces.id, {
@@ -286,15 +298,14 @@ export const addresses = pgTable(
     barangay: uuid('barangay_id').references(() => barangays.id, {
       onDelete: 'set null',
     }),
+    zipCode: varchar('zip_code'),
     street: varchar('street'),
     displayName: varchar('display_name'),
-    region: uuid('region_id').references(() => regions.id, {
-      onDelete: 'set null',
-    }),
-    islandGroup: uuid('island_group_id').references(() => island_groups.id, {
-      onDelete: 'set null',
-    }),
     coordinates: geometryColumn('coordinates'),
+    geocodedAddress: varchar('geocoded_address'),
+    geocodedComponents: jsonb('geocoded_components'),
+    geocodedAt: timestamp('geocoded_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    geocodeSource: enum_geocode_source('geocode_source'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -304,11 +315,11 @@ export const addresses = pgTable(
   },
   (columns) => [
     index('addresses_owner_idx').on(columns.owner),
+    index('addresses_region_idx').on(columns.region),
+    index('addresses_island_group_idx').on(columns.islandGroup),
     index('addresses_province_idx').on(columns.province),
     index('addresses_city_municipality_idx').on(columns.cityMunicipality),
     index('addresses_barangay_idx').on(columns.barangay),
-    index('addresses_region_idx').on(columns.region),
-    index('addresses_island_group_idx').on(columns.islandGroup),
     index('addresses_updated_at_idx').on(columns.updatedAt),
     index('addresses_created_at_idx').on(columns.createdAt),
   ]
@@ -3796,6 +3807,16 @@ export const relations_addresses = relations(addresses, ({ one }) => ({
     references: [users.id],
     relationName: 'owner',
   }),
+  region: one(regions, {
+    fields: [addresses.region],
+    references: [regions.id],
+    relationName: 'region',
+  }),
+  islandGroup: one(island_groups, {
+    fields: [addresses.islandGroup],
+    references: [island_groups.id],
+    relationName: 'islandGroup',
+  }),
   province: one(provinces, {
     fields: [addresses.province],
     references: [provinces.id],
@@ -3810,16 +3831,6 @@ export const relations_addresses = relations(addresses, ({ one }) => ({
     fields: [addresses.barangay],
     references: [barangays.id],
     relationName: 'barangay',
-  }),
-  region: one(regions, {
-    fields: [addresses.region],
-    references: [regions.id],
-    relationName: 'region',
-  }),
-  islandGroup: one(island_groups, {
-    fields: [addresses.islandGroup],
-    references: [island_groups.id],
-    relationName: 'islandGroup',
   }),
 }));
 export const relations_blocked_users = relations(blocked_users, ({ one }) => ({
@@ -5365,6 +5376,7 @@ export const relations__donor_screening_form_v = relations(_donor_screening_form
 }));
 
 type DatabaseSchema = {
+  enum_geocode_source: typeof enum_geocode_source;
   enum_cities_municipalities_type: typeof enum_cities_municipalities_type;
   comment_status_enum: typeof comment_status_enum;
   enum_delivery_modes: typeof enum_delivery_modes;

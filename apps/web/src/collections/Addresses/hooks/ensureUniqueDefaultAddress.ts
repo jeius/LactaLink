@@ -7,17 +7,18 @@ export const ensureUniqueDefaultAddress: CollectionAfterChangeHook<Address> = as
   req,
 }) => {
   // Only run if this address is set as default
-  if (!doc.isDefault || !doc.owner) return doc;
+  if (!doc.isDefault) return doc;
 
   // Update all other addresses for this owner to not be default
   await req.payload.update({
     collection: 'addresses',
     where: {
-      and: [{ owner: { equals: extractID(doc.owner) } }, { isDefault: { equals: true } }],
+      and: [{ owner: { equals: extractID(doc.owner) } }, { id: { not_equals: doc.id } }],
     },
     data: {
       isDefault: false,
     },
+    req,
   });
 
   return doc;
