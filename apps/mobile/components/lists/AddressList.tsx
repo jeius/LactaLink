@@ -9,8 +9,8 @@ import { useRouter } from 'expo-router';
 import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards/AddressCard';
 import { Divider } from '../ui/divider';
+import { VerticalInfiniteList, VerticalInfiniteListProps } from '../ui/list/vertical-list';
 import { Skeleton } from '../ui/skeleton';
-import { VerticalInfiniteList, VerticalInfiniteListProps } from './VerticalInfiniteList';
 
 interface AddressListProps extends Omit<VerticalInfiniteListProps<Address>, 'renderItem'> {
   disableRemove?: boolean;

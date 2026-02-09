@@ -14,7 +14,7 @@ export function transformToInfiniteDataMap<T extends { id: string }>(
 
   const docsMap = new Map<string, T>();
   for (const doc of initialData.docs || []) {
-    if (typeof doc === 'string') return;
+    if (typeof doc === 'string') continue;
     docsMap.set(doc.id, doc);
   }
 

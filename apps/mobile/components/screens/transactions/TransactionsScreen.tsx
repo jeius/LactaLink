@@ -1,4 +1,4 @@
-import { VerticalInfiniteList } from '@/components/lists/VerticalInfiniteList';
+import { VerticalInfiniteList } from '@/components/ui/list';
 import { Skeleton } from '@/components/ui/skeleton';
 import TransactionListItem from '@/features/transactions/components/TransactionListItem';
 import { useInfiniteTransactions } from '@/features/transactions/hooks/queries';
@@ -20,8 +20,8 @@ export default function TransactionsScreen() {
       contentContainerClassName="p-4"
       refreshing={query.isRefetching}
       onRefresh={query.refetch}
-      renderItem={({ item }) => {
-        if (isPlaceHolderData(item))
+      renderItem={({ item, isPlaceholder }) => {
+        if (isPlaceHolderData(item) && isPlaceholder)
           return <Skeleton className="rounded-2xl" style={{ height: 112 }} />;
         return (
           <Link href={`/transactions/${item.id}`} asChild push>

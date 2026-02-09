@@ -1,8 +1,8 @@
-import { VerticalInfiniteList } from '@/components/lists/VerticalInfiniteList';
 import { NoData } from '@/components/NoData';
 import { RefreshButton } from '@/components/RefreshButton';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
+import { VerticalInfiniteList, VerticalInfiniteListProps } from '@/components/ui/list';
 import { Text } from '@/components/ui/text';
 import {
   useNearestDonations,
@@ -11,11 +11,14 @@ import {
 import { ListRenderItem } from '@/lib/types';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
-import { FlashListProps, ListRenderItem as FlashListRenderItem } from '@shopify/flash-list';
+import { ListRenderItem as FlashListRenderItem } from '@shopify/flash-list';
 import React, { useCallback } from 'react';
 
 interface ListProps<T>
-  extends Pick<FlashListProps<T>, 'contentContainerClassName' | 'contentContainerStyle'> {
+  extends Pick<
+    VerticalInfiniteListProps<T>,
+    'contentContainerClassName' | 'contentContainerStyle'
+  > {
   renderItem: ListRenderItem<T>;
   title?: string;
   emptyLabel?: string;

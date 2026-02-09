@@ -151,6 +151,7 @@ export const colorsConfig: ColorsConfig = {
       primary: '#FE9BA3',
       info: '#89CFF0',
       error: '#B91C1C',
+      ripple: '128 128 128',
     },
   },
   dark: {
@@ -303,6 +304,7 @@ export const colorsConfig: ColorsConfig = {
       primary: '#FE828C',
       info: '#89CFF0',
       error: '#B91C1C',
+      ripple: '200 200 200',
     },
   },
 };

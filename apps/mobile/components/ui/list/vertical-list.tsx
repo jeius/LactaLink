@@ -4,6 +4,7 @@ import { ListRenderItem } from '@/lib/types';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { NoData } from '../../NoData';
 import { RefreshControl } from '../../RefreshControl';
+import { BottomSheetFlashList } from '../bottom-sheet';
 import { Box } from '../box';
 import { Spinner } from '../spinner';
 
@@ -17,6 +18,7 @@ export interface VerticalInfiniteListProps<T> extends OmittedFlashListProps<T> {
   fetchNextPage?: () => void;
   isPlaceholderData?: boolean;
   renderItem: ListRenderItem<T>;
+  useBottomSheetListComponent?: boolean;
 }
 
 export function VerticalInfiniteList<T>({
@@ -29,10 +31,13 @@ export function VerticalInfiniteList<T>({
   refreshing,
   keyboardShouldPersistTaps = 'always',
   isPlaceholderData = false,
+  useBottomSheetListComponent = false,
   ...props
 }: VerticalInfiniteListProps<T>) {
+  const FlashListComponent = useBottomSheetListComponent ? BottomSheetFlashList : FlashList;
+
   return (
-    <FlashList
+    <FlashListComponent
       {...props}
       renderItem={(info) => props.renderItem({ ...info, isPlaceholder: isPlaceholderData })}
       ListFooterComponent={

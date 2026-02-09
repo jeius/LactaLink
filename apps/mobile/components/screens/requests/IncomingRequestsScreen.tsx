@@ -1,6 +1,6 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { VerticalInfiniteList } from '@/components/lists/VerticalInfiniteList';
 import { Box } from '@/components/ui/box';
+import { VerticalInfiniteList } from '@/components/ui/list';
 import { Skeleton } from '@/components/ui/skeleton';
 import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { useInfiniteIncomingRequests } from '@/features/donation&request/hooks/queries';
@@ -53,6 +53,7 @@ export default function IncomingRequestsScreen() {
       refreshing={isRefetching}
       onRefresh={refetch}
       renderItem={renderItem}
+      gap={12}
       contentContainerClassName="p-4"
       contentInsetAdjustmentBehavior="always"
     />
