@@ -18,7 +18,6 @@ export const DOC_LOCK_DURATION = 60;
 
 export const SESSION_NAME = 'sb-session-token';
 
-export const API_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 export const RESEND_OTP = 90; // seconds
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

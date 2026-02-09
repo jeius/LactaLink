@@ -1,10 +1,10 @@
 import {
-  API_URL,
   SESSION_NAME,
   SUPABASE_ANON_KEY,
   SUPABASE_URL,
   VERCEL_BYPASS_TOKEN,
 } from '@/lib/constants';
+import { getServerSideURL } from '@/lib/utils/getURL';
 import { initServerApiClient } from '@lactalink/api';
 import { createServerClient } from '@supabase/ssr';
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
@@ -15,7 +15,7 @@ export async function initServerApi() {
   const supabase = () => createSupabaseServerClient(cookieStore);
 
   initServerApiClient({
-    apiUrl: API_URL,
+    apiUrl: getServerSideURL(),
     supabase,
     environment: 'nextjs',
     bypassToken: VERCEL_BYPASS_TOKEN,
