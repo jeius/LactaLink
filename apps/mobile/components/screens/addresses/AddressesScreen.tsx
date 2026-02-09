@@ -6,15 +6,16 @@ import { VStack } from '@/components/ui/vstack';
 import { useInfiniteAddresses } from '@/features/address/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useNavigateWithRedirect } from '@/hooks/useNavigateWithRedirect';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Motion } from '@legendapp/motion';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddressesScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const navigate = useNavigateWithRedirect();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
   const { data: meUser, ...meUserQuery } = useMeUser();
@@ -35,7 +36,7 @@ export default function AddressesScreen() {
     : `${user ? extractName(user) : 'User'}'s Addresses`;
 
   function handleAddAddress() {
-    router.push('/addresses/create');
+    navigate('/addresses/create', 'push');
   }
 
   function handleRefresh() {

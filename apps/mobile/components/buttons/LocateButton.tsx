@@ -63,6 +63,7 @@ export function LocateButton({
     <Button
       {...props}
       action={action}
+      isDisabled={props.isDisabled || (userLocated && disableFollowUser)}
       className={style({ className })}
       onPress={handleLocatePress}
       accessibilityLabel="Follow user location"
@@ -77,7 +78,13 @@ export function LocateButton({
         />
       )}
       <ButtonIcon
-        as={followingUser ? CompassIcon : userLocated ? LocateFixedIcon : LocateIcon}
+        as={
+          followingUser
+            ? CompassIcon
+            : userLocated && !disableFollowUser
+              ? LocateFixedIcon
+              : LocateIcon
+        }
         height={22}
         width={22}
       />

@@ -35,11 +35,6 @@ export default function Layout() {
       <Stack.Screen name="(create)/donations/create" />
 
       <Stack.Screen
-        name="(create)/addresses/create"
-        options={{ headerShown: true, title: 'New Address' }}
-      />
-
-      <Stack.Screen
         name="(create)/delivery-preferences/create"
         options={{ headerShown: true, title: 'New Delivery Preference' }}
       />

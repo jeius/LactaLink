@@ -54,7 +54,7 @@ export function AddressMapView({
             Pan the map to pin location
           </Text>
 
-          <Box style={{ transform: [{ translateY: -32 }], width: 125, height: 125 }}>
+          <Box style={{ transform: [{ translateY: 0 }], width: 125, height: 125 }}>
             <LottieMarker isPanning={isPanning} />
           </Box>
         </VStack>
@@ -100,7 +100,7 @@ function MapCameraSetter({ coordinates }: { coordinates?: Coordinates | null }) 
 
   useEffect(() => {
     if (coordinates && map) {
-      map.setCamera({ center: coordinates }, true, 300);
+      map.setCamera({ center: coordinates, zoom: 16 }, true, 300);
     }
   }, [coordinates, map]);
 
