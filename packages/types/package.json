@@ -60,12 +60,16 @@
     "./database": {
       "types": "./dist/database-types.d.ts",
       "default": "./dist/database-types.js"
+    },
+    "./geocoding": {
+      "types": "./dist/geocoding.d.ts",
+      "default": "./dist/geocoding.js"
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "dev": "tsc --watch",
-    "build:init": "tsc",
+    "dev:safe": "pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
   },

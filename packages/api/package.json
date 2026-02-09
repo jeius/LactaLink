@@ -39,9 +39,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "dev": "tsc --watch",
-    "build:init": "tsc",
+    "dev:safe": "pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "test": "jest --runInBand --passWithNoTests",
@@ -53,7 +53,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",
-    "@babel/preset-env": "^7.28.0",
     "@lactalink/enums": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",

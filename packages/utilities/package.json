@@ -55,9 +55,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "dev": "tsc --watch",
-    "build:init": "tsc",
+    "dev:safe": "pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
   },
@@ -82,6 +82,7 @@
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/react": "^19.1.17",
     "lodash": "^4.17.21",
