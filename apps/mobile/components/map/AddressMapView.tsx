@@ -12,6 +12,8 @@ import { Spinner } from '../ui/spinner';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
 
+const DEFAULT_ZOOM = 18;
+
 interface AddressMapViewProps extends MapViewProps {
   coordinates?: Coordinates | null;
   isLoading?: boolean;
@@ -30,19 +32,17 @@ export function AddressMapView({
     <MapView
       {...props}
       // Only set the initial camera if coordinates are provided
-      initialProps={coordinates ? { camera: { center: coordinates, zoom: 16 } } : undefined}
+      initialProps={
+        coordinates ? { camera: { center: coordinates, zoom: DEFAULT_ZOOM } } : undefined
+      }
       style={StyleSheet.flatten([StyleSheet.absoluteFillObject, props.style])}
       onMapReady={() => setIsMapReady(true)}
-      onCameraChange={(_, __, isGesture) => {
-        if (isGesture) {
-          setIsPanning(true);
-        }
-        props.onCameraChange?.(_, __, isGesture);
+      onCameraChangeStart={(_, __, isGesture) => {
+        if (isGesture) setIsPanning(true);
+        props.onCameraChangeStart?.(_, __, isGesture);
       }}
       onCameraChangeComplete={(_, __, isGesture) => {
-        if (isGesture) {
-          setIsPanning(false);
-        }
+        if (isGesture) setIsPanning(false);
         props.onCameraChangeComplete?.(_, __, isGesture);
       }}
     >
@@ -54,7 +54,7 @@ export function AddressMapView({
             Pan the map to pin location
           </Text>
 
-          <Box style={{ transform: [{ translateY: 0 }], width: 125, height: 125 }}>
+          <Box style={{ transform: [{ translateY: -4 }], width: 125, height: 125 }}>
             <LottieMarker isPanning={isPanning} />
           </Box>
         </VStack>
@@ -100,7 +100,7 @@ function MapCameraSetter({ coordinates }: { coordinates?: Coordinates | null }) 
 
   useEffect(() => {
     if (coordinates && map) {
-      map.setCamera({ center: coordinates, zoom: 16 }, true, 300);
+      map.setCamera({ center: coordinates, zoom: DEFAULT_ZOOM }, true, 300);
     }
   }, [coordinates, map]);
 
