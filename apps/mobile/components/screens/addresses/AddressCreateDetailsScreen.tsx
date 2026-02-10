@@ -2,7 +2,7 @@ import { useForm } from '@/components/contexts/FormProvider';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import { Box } from '@/components/ui/box';
 import AddressForm from '@/features/address/components/AddressForm';
-import { useAddAddressMutation } from '@/features/address/hooks/useAddAddressMutation';
+import { useAddAddressMutation } from '@/features/address/hooks/mutations';
 import { RedirectSearchParams } from '@/lib/types/searchParams';
 import { AddressCreateSchema } from '@lactalink/form-schemas/address';
 import { Address } from '@lactalink/types/payload-generated-types';

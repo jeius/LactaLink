@@ -30,27 +30,30 @@ export default function AddressCreateScreen() {
   const coordinates = useWatch({ control: control, name: 'coordinates' });
   const mapCoordinatesRef = useRef(coordinates);
 
-  const { mutateAsync, isPending } = useMutation(createAddressAutofillMutation());
+  const { mutateAsync: getAutoFillValues, isPending } = useMutation(
+    createAddressAutofillMutation()
+  );
 
   const handleCameraChangeComplete = useCallback((_: RNRegion, camera: RNCamera) => {
     if (camera?.center) mapCoordinatesRef.current = camera.center;
   }, []);
 
   const handlePinLocation = useCallback(() => {
+    // Update form values with the latest coordinates from the map before navigating
     reset({ ...getValues(), coordinates: mapCoordinatesRef.current });
+    // Navigate to details screen with current form values
     router.push({ pathname: '/addresses/create/details', params });
   }, [reset, getValues, router, params]);
 
   const handleSelectPlace = useCallback(
     async (place: GooglePlacesResult) => {
-      const newValues = await mutateAsync(place);
-
-      console.log('Selected place new values:', newValues);
-
+      const newValues = await getAutoFillValues(place);
+      // Update the ref with new coordinates from the selected place
       mapCoordinatesRef.current = newValues.coordinates;
+      // Update the form values with the new place details, keeping dirty state
       reset({ ...getValues(), ...filterUndefined(newValues) }, { keepDirty: true });
     },
-    [getValues, reset, mutateAsync]
+    [getValues, reset, getAutoFillValues]
   );
 
   return (

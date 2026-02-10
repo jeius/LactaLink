@@ -3,7 +3,7 @@ import { AddressCreateSchema } from '@lactalink/form-schemas/address';
 import { GooglePlacesResult } from '@lactalink/types/geocoding';
 import { ValidationError } from '@lactalink/utilities/errors';
 import { formatCityName } from '@lactalink/utilities/formatters';
-import { parseGooglePlacesResult } from '@lactalink/utilities/geocoding';
+import { formatGeocodingForStorage, parseGooglePlacesResult } from '@lactalink/utilities/geocoding';
 import { mutationOptions } from '@tanstack/react-query';
 import { toast } from 'sonner-native';
 import { addBarangayToCache, addCityToCache, addProvinceToCache } from './cacheUtils';
@@ -12,8 +12,10 @@ import { findBarangays, findCities, findProvinces } from './find';
 export function createAddressAutofillMutation() {
   return mutationOptions({
     mutationFn: async (input: GooglePlacesResult, { client }) => {
-      const { barangay, city, province, zipCode, coordinates, street } =
+      const { barangay, city, province, zipCode, street, coordinates } =
         parseGooglePlacesResult(input);
+
+      const geocodedData = formatGeocodingForStorage(input, 'places_autocomplete');
 
       const newValues: Partial<
         Pick<
@@ -60,7 +62,7 @@ export function createAddressAutofillMutation() {
         }
       }
 
-      return { ...newValues, coordinates };
+      return { ...newValues, ...(geocodedData ?? { coordinates }) };
     },
     onError: (error) => {
       if (error instanceof ValidationError) {

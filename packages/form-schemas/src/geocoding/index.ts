@@ -15,7 +15,7 @@ export const coordinatesSchema = z.object({
 
 export const addressGeocodingSchema = z.object({
   geocodedAddress: z.string().transform(nullTransform).optional().nullable(),
-  geocodedResults: z.any().optional().nullable(),
+  geocodedComponents: z.any().optional().nullable(),
   geocodedAt: z.date().optional().nullable(),
   coordinates: coordinatesSchema,
   geocodeSource: z

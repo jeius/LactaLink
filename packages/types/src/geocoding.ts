@@ -104,10 +104,10 @@ export interface GooglePlusCode {
  * Stored geocoded components in database
  */
 export interface StoredGeocodedComponents {
-  address_components?: GoogleAddressComponent[];
-  place_id?: string;
+  addressComponents?: GoogleAddressComponent[];
   types?: string[];
-  plus_code?: GooglePlusCode;
+  text?: GooglePlaceTextResult;
+  photos?: GooglePlacePhoto[];
 }
 
 /**

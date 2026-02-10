@@ -10,6 +10,7 @@ import type {
   GoogleAddressComponent,
   GooglePlaceDetails,
   GooglePlacesResult,
+  StoredGeocodedComponents,
 } from '@lactalink/types/geocoding';
 import { extractCoordinates as validateCoords } from './extractors';
 
@@ -43,15 +44,23 @@ export function extractAddressComponents(
 export function formatGeocodingForStorage(
   result: GooglePlacesResult,
   source: GeocodeSource
-): AddressGeocoding {
-  const { details } = result;
+):
+  | (Omit<AddressGeocoding, 'geocodedComponents'> & {
+      geocodedComponents?: StoredGeocodedComponents;
+    })
+  | null {
+  const { details, types, text } = result;
+
+  if (!details) return null;
+
+  const { addressComponents, photos, formattedAddress } = details;
 
   return {
-    geocodedAddress: details?.formattedAddress,
-    geocodedResults: result,
+    geocodedAddress: formattedAddress,
     geocodedAt: new Date(),
     geocodeSource: source,
-    coordinates: extractCoordinates(result),
+    coordinates: extractCoordinates(details),
+    geocodedComponents: { addressComponents, types, text, photos },
   };
 }
 
