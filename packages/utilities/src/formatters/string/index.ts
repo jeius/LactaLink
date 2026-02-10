@@ -1,6 +1,7 @@
 import { DAYS, ShortDays } from '@lactalink/enums';
 
 export * from './formatCamelCase';
+export * from './formatCityName';
 export * from './formatKebabCase';
 
 export function sanitizeStringForFilename(str: string): string {
