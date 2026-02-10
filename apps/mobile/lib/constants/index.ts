@@ -1,11 +1,12 @@
 import { URGENCY_LEVELS } from '@lactalink/enums';
-import { LatLng } from 'react-native-maps';
+import { Coordinates } from '@lactalink/types';
 
 export * from './assets';
 export * from './deviceBreakpoints';
 export * from './env';
 export * from './queryKeys';
 export * from './storageKeys';
+export * from './toastIDs';
 
 export const RESEND_OTP = 90; // seconds
 
@@ -18,7 +19,7 @@ export const AUTH_TOAST_ID = 'auth-toast-id';
 export const BLUR_HASH =
   '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
-export const PHILIPPINES_COORDINATES: LatLng = {
+export const PHILIPPINES_COORDINATES: Coordinates = {
   latitude: 12.8797,
   longitude: 121.774,
 };

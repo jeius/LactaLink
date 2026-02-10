@@ -1,3 +1,4 @@
+import { TOAST_ID } from '@/lib/constants';
 import { MutationCache, QueryClient, QueryClientProvider, QueryKey } from '@tanstack/react-query';
 
 import React, { ReactNode } from 'react';
@@ -8,7 +9,7 @@ declare module '@tanstack/react-query' {
     mutationMeta: {
       successMessage?: string;
       errorMessage?: string | ((error: unknown) => string);
-      invalidatesQuery?: QueryKey | QueryKey[];
+      invalidatesQuery?: QueryKey | Record<string, QueryKey>;
       onError?: (error: unknown) => void;
     };
   }
@@ -24,21 +25,25 @@ const queryClient = new QueryClient({
         } else {
           message = mutation.meta.errorMessage;
         }
-        toast.error(message);
+        toast.error(message, { id: TOAST_ID.ERROR });
       }
     },
 
     onSuccess: async (_data, _vars, _context, mutation) => {
-      const queryKeys = mutation.meta?.invalidatesQuery;
+      const queryKey = mutation.meta?.invalidatesQuery;
 
-      const keysToInvalidate = queryKeys && (Array.isArray(queryKeys) ? queryKeys : [queryKeys]);
-
-      if (keysToInvalidate) {
-        await Promise.all(keysToInvalidate.map((key) => queryClient.invalidateQueries(key)));
+      if (Array.isArray(queryKey)) {
+        await queryClient.invalidateQueries({ queryKey: queryKey });
+      } else if (queryKey && typeof queryKey === 'object') {
+        await Promise.all(
+          Object.values(queryKey as Record<string, QueryKey>).map((key) =>
+            queryClient.invalidateQueries({ queryKey: key })
+          )
+        );
       }
 
       if (mutation.meta?.successMessage) {
-        toast.success(mutation.meta.successMessage);
+        toast.success(mutation.meta.successMessage, { id: TOAST_ID.SUCCESS });
       }
     },
   }),
