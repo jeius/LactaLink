@@ -1,17 +1,15 @@
 import { getApiClient } from '@lactalink/api';
-import { Where } from '@lactalink/types/payload-types';
+import { FindMany } from '@lactalink/types/api';
+import { CollectionSlug, SelectFromCollectionSlug, Where } from '@lactalink/types/payload-types';
 
-type PaginatedOptions = {
-  page?: number;
-  limit?: number;
-  depth?: number;
-};
+type PaginatedOptions<T extends boolean = true> = Pick<
+  FindMany<CollectionSlug, SelectFromCollectionSlug<CollectionSlug>, T>,
+  'page' | 'limit' | 'depth' | 'pagination'
+>;
 
-type SingleDocOptions = {
-  depth?: number;
-};
+type SingleDocOptions = Pick<FindMany, 'depth'>;
 
-const PAGINATED_OPTIONS: PaginatedOptions = { page: 1, limit: 15, depth: 1 };
+const PAGINATED_OPTIONS: PaginatedOptions = { page: 1, limit: 15, depth: 1, pagination: true };
 
 //#region Paginated Docs
 export function findAddressesByUser(userID: string, options: PaginatedOptions = {}) {
@@ -19,52 +17,62 @@ export function findAddressesByUser(userID: string, options: PaginatedOptions = 
     ...PAGINATED_OPTIONS,
     ...options,
     collection: 'addresses',
-    pagination: true,
     joins: { deliveryPreferences: false },
     where: { owner: { equals: userID } },
   });
 }
 
-export function findProvinces(search: string, options: PaginatedOptions = {}) {
-  return getApiClient().find({
-    ...PAGINATED_OPTIONS,
+export function findProvinces<T extends boolean = true>(
+  search: string,
+  options: PaginatedOptions<T> = {}
+) {
+  type Slug = 'provinces';
+  return getApiClient().find<Slug, SelectFromCollectionSlug<Slug>, T>({
+    ...(PAGINATED_OPTIONS as PaginatedOptions<T>),
     ...options,
     collection: 'provinces',
-    pagination: true,
     sort: 'name',
     where: { name: { contains: search.trim().toLowerCase() } },
   });
 }
 
-export function findCities(search: string, provinceID?: string, options: PaginatedOptions = {}) {
+export function findCities<T extends boolean = true>(
+  search: string,
+  provinceID?: string,
+  options: PaginatedOptions<T> = {}
+) {
   const filters: Where[] = [{ name: { contains: search.trim().toLowerCase() } }];
 
   if (provinceID) {
     filters.push({ province: { equals: provinceID } });
   }
 
-  return getApiClient().find({
-    ...PAGINATED_OPTIONS,
+  type Slug = 'citiesMunicipalities';
+  return getApiClient().find<Slug, SelectFromCollectionSlug<Slug>, T>({
+    ...(PAGINATED_OPTIONS as PaginatedOptions<T>),
     ...options,
     collection: 'citiesMunicipalities',
-    pagination: true,
     sort: 'name',
     where: { and: filters },
   });
 }
 
-export function findBarangays(search: string, cityID?: string, options: PaginatedOptions = {}) {
+export function findBarangays<T extends boolean = true>(
+  search: string,
+  cityID?: string,
+  options: PaginatedOptions<T> = {}
+) {
   const filters: Where[] = [{ name: { contains: search.trim().toLowerCase() } }];
 
   if (cityID) {
     filters.push({ cityMunicipality: { equals: cityID } });
   }
 
-  return getApiClient().find({
-    ...PAGINATED_OPTIONS,
+  type Slug = 'barangays';
+  return getApiClient().find<Slug, SelectFromCollectionSlug<Slug>, T>({
+    ...(PAGINATED_OPTIONS as PaginatedOptions<T>),
     ...options,
     collection: 'barangays',
-    pagination: true,
     sort: 'name',
     where: { and: filters },
   });

@@ -6,65 +6,52 @@ import { AddressMapView } from '@/components/map/AddressMapView';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
+import { createAddressAutofillMutation } from '@/features/address/lib/mutationOptions';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { GooglePlacesResult } from '@lactalink/types/geocoding';
-import { parseGooglePlacesResult } from '@lactalink/utilities/geocoding';
+import { filterUndefined } from '@lactalink/utilities/filters';
+import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PinIcon } from 'lucide-react-native';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useWatch } from 'react-hook-form';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddressCreateScreen() {
   const insets = useSafeAreaInsets();
-
   const params = useLocalSearchParams();
   const router = useRouter();
 
-  const { control, reset, getValues, setValue } = useForm<AddressCreateSchema>();
+  const { control, reset, getValues } = useForm<AddressCreateSchema>();
 
   const coordinates = useWatch({ control: control, name: 'coordinates' });
+  const mapCoordinatesRef = useRef(coordinates);
 
-  function handleCameraChangeComplete(_: RNRegion, camera: RNCamera, isGesture: boolean) {
-    if (isGesture && camera?.center) {
-      setValue('coordinates', camera.center, {
-        shouldDirty: false,
-        shouldTouch: false,
-        shouldValidate: false,
-      });
-    }
-  }
+  const { mutateAsync, isPending } = useMutation(createAddressAutofillMutation());
 
-  const handleSelectPlace = useCallback(
-    (place: GooglePlacesResult) => {
-      const { details } = place;
-      console.log('Selected place:', place);
-
-      const parsedResult = parseGooglePlacesResult(place);
-      console.log('Parsed results:', parsedResult);
-
-      if (!details) return;
-
-      const { location } = details;
-      if (!location) return;
-
-      if (parsedResult.coordinates) {
-        setValue('coordinates', parsedResult.coordinates, { shouldDirty: true, shouldTouch: true });
-      }
-
-      if (parsedResult.zipCode) {
-        setValue('zipCode', parsedResult.zipCode, { shouldDirty: true, shouldTouch: true });
-      }
-    },
-    [setValue]
-  );
+  const handleCameraChangeComplete = useCallback((_: RNRegion, camera: RNCamera) => {
+    if (camera?.center) mapCoordinatesRef.current = camera.center;
+  }, []);
 
   const handlePinLocation = useCallback(() => {
-    reset(getValues());
+    reset({ ...getValues(), coordinates: mapCoordinatesRef.current });
     router.push({ pathname: '/addresses/create/details', params });
   }, [reset, getValues, router, params]);
+
+  const handleSelectPlace = useCallback(
+    async (place: GooglePlacesResult) => {
+      const newValues = await mutateAsync(place);
+
+      console.log('Selected place new values:', newValues);
+
+      mapCoordinatesRef.current = newValues.coordinates;
+      reset({ ...getValues(), ...filterUndefined(newValues) }, { keepDirty: true });
+    },
+    [getValues, reset, mutateAsync]
+  );
 
   return (
     <AddressMapView
@@ -76,14 +63,17 @@ export default function AddressCreateScreen() {
         className="pointer-events-box-none flex-1 justify-between p-4"
         style={{ marginTop: insets.top, marginBottom: insets.bottom }}
       >
-        <HStack space="sm" className="items-start">
-          <HeaderBackButton />
-          <GooglePlacesTextInput
-            onSelect={handleSelectPlace}
-            className="flex-1"
-            placeholder="Search a location..."
-          />
-        </HStack>
+        <VStack>
+          <HStack space="sm" className="items-start">
+            <HeaderBackButton />
+            <GooglePlacesTextInput
+              onSelect={handleSelectPlace}
+              className="flex-1"
+              placeholder="Search a location..."
+            />
+          </HStack>
+          {isPending && <Spinner size={'small'} className="mt-4 self-end" />}
+        </VStack>
 
         <VStack space="md">
           <LocateButton className="self-end" disableFollowUser />
