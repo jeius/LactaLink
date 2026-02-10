@@ -1,6 +1,7 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
-import React, { useMemo, useState } from 'react';
+import { useRecyclingState } from '@shopify/flash-list';
+import React, { useMemo } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
 import { GoogleMapsView, RNMarker } from 'react-native-google-maps-plus';
 import { callback } from 'react-native-nitro-modules';
@@ -32,16 +33,19 @@ export function ThumbnailMap({
   pitch = 0,
   heading = 0,
 }: ThumbnailMapProps) {
-  const [mapLoaded, setMapLoaded] = useState(false);
   const { theme } = useTheme();
+
+  const markerID = useMemo(() => `marker-${center.latitude}-${center.longitude}`, [center]);
 
   const locationMarker: RNMarker = useMemo(() => {
     return {
-      id: `marker-${center.latitude}-${center.longitude}`,
+      id: markerID,
       zIndex: 1000,
       coordinate: center,
     };
-  }, [center]);
+  }, [center, markerID]);
+
+  const [mapLoaded, setMapLoaded] = useRecyclingState(false, [markerID]);
 
   return (
     <Box className={baseStyle({ className })}>
@@ -53,6 +57,7 @@ export function ThumbnailMap({
             initialProps={{
               camera: { zoom, center, bearing: heading, tilt: pitch },
               liteMode: true,
+              mapId: `thumbnail-map-${markerID}`,
             }}
             style={StyleSheet.absoluteFill}
             myLocationEnabled={false}
