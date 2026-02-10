@@ -1,5 +1,5 @@
 {
-  "extends": "@lactalink/typescript-config",
+  "extends": "@lactalink/typescript-config/library",
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "dist",

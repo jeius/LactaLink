@@ -1,12 +1,12 @@
 {
-  "extends": "@lactalink/typescript-config",
+  "extends": "@lactalink/typescript-config/library",
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
       "@/*": ["./src/*"],
-    }
+    },
   },
   "include": ["src"],
   "exclude": ["node_modules/**", "dist/**", ".turbo/**", "build/**"]

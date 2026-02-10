@@ -43,8 +43,8 @@
     }
   },
   "scripts": {
-    "build": "tsc && tsc-alias",
-    "dev": "concurrently \"tsc -w\" \"tsc-alias -w\"",
+    "build": "tspc",
+    "dev": "tspc --watch",
     "dev:safe": "pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
