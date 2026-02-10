@@ -2,6 +2,7 @@ import { getApiClient } from '@lactalink/api';
 import { queryOptions } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { setMeUser } from '../stores/meUserStore';
+import { addUserToCache } from '../utils/cacheUtils';
 
 export const meUserQueryOptions = queryOptions({
   queryKey: QUERY_KEYS.AUTH.USER,
@@ -29,10 +30,7 @@ export const sessionQueryOptions = queryOptions({
     const session = await apiClient.auth.getSession();
 
     const user = session?.user || null;
-
-    // Update meUser in store and cache
-    setMeUser(user);
-    client.setQueryData(meUserQueryOptions.queryKey, user);
+    addUserToCache(client, user);
 
     return session;
   },
