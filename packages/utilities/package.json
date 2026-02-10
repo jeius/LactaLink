@@ -56,11 +56,15 @@
     "./geocoding": {
       "types": "./dist/geocoding.d.ts",
       "default": "./dist/geocoding.js"
+    },
+    "./filters": {
+      "types": "./dist/filters/index.d.ts",
+      "default": "./dist/filters/index.js"
     }
   },
   "scripts": {
     "build": "tsc && tsc-alias",
-    "dev": "tsc --watch",
+    "dev": "concurrently \"tsc -w\" \"tsc-alias -w\"",
     "dev:safe": "pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix . && prettier --write ."
