@@ -1,3 +1,5 @@
+import { ValidationError } from '@/errors';
+import { ValidationErrorNames } from '@lactalink/enums/error-names';
 import { Coordinates } from '@lactalink/types';
 import { isValidLatitude, isValidLongitude } from 'geolib';
 
@@ -17,7 +19,9 @@ export function extractCoordinates<T extends boolean = false>(
 ): T extends true ? Coordinates : Coordinates | null {
   if (typeof value !== 'object' || value === null || value === undefined) {
     if (options.throwError) {
-      throw new Error('Invalid coordinates: Value is not an object.');
+      throw new ValidationError('Invalid coordinates: Value is not an object.', {
+        name: ValidationErrorNames.INVALID_TYPE,
+      });
     } else {
       return null as T extends true ? Coordinates : Coordinates | null;
     }
@@ -25,7 +29,9 @@ export function extractCoordinates<T extends boolean = false>(
 
   if (!('latitude' in value) || !('longitude' in value)) {
     if (options.throwError) {
-      throw new Error('Invalid coordinates: Missing latitude or longitude property.');
+      throw new ValidationError('Invalid coordinates: Missing latitude or longitude property.', {
+        name: ValidationErrorNames.INVALID_FORMAT,
+      });
     } else {
       return null as T extends true ? Coordinates : Coordinates | null;
     }
@@ -35,7 +41,9 @@ export function extractCoordinates<T extends boolean = false>(
 
   if (!isValidLatitude(latitude)) {
     if (options.throwError) {
-      throw new Error(`Invalid coordinates: Latitude ${latitude} is out of range.`);
+      throw new ValidationError(`Invalid coordinates: Latitude ${latitude} is out of range.`, {
+        name: ValidationErrorNames.VALUE_OUT_OF_RANGE,
+      });
     } else {
       return null as T extends true ? Coordinates : Coordinates | null;
     }
@@ -43,7 +51,9 @@ export function extractCoordinates<T extends boolean = false>(
 
   if (!isValidLongitude(longitude)) {
     if (options.throwError) {
-      throw new Error(`Invalid coordinates: Longitude ${longitude} is out of range.`);
+      throw new ValidationError(`Invalid coordinates: Longitude ${longitude} is out of range.`, {
+        name: ValidationErrorNames.VALUE_OUT_OF_RANGE,
+      });
     } else {
       return null as T extends true ? Coordinates : Coordinates | null;
     }
