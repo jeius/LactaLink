@@ -1,10 +1,10 @@
-import { MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 
-export const authStorage = new MMKV({
+export const authStorage = createMMKV({
   id: 'auth-storage',
   encryptionKey: 'lactalink-auth',
 });
 
-export const formDataStorage = new MMKV({ id: 'form-data-storage' });
+export const formDataStorage = createMMKV({ id: 'form-data-storage' });
 
-export default new MMKV({ id: 'default-storage' });
+export default createMMKV({ id: 'default-storage' });

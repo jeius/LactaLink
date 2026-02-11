@@ -23,7 +23,7 @@ const storage: SupportedStorage = {
   },
   removeItem: async (key: string) => {
     try {
-      authStorage.delete(key);
+      authStorage.remove(key);
     } catch (error) {
       console.error('Error removing item from local storage:', error);
     }
