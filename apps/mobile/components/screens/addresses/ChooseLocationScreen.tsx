@@ -15,19 +15,22 @@ import { filterUndefined } from '@lactalink/utilities/filters';
 import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PinIcon } from 'lucide-react-native';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useWatch } from 'react-hook-form';
 import { RNCamera, RNRegion } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function AddressCreateScreen() {
+export default function ChooseLocationScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams();
   const router = useRouter();
+  const { id, ...params } = useLocalSearchParams<{ id?: string }>();
 
-  const { control, reset, getValues } = useForm<AddressCreateSchema>();
+  const isEditMode = Boolean(id);
+
+  const { control, reset, getValues, setValue } = useForm<AddressCreateSchema>();
 
   const coordinates = useWatch({ control: control, name: 'coordinates' });
+
   const mapCoordinatesRef = useRef(coordinates);
 
   const { mutateAsync: getAutoFillValues, isPending } = useMutation(
@@ -40,27 +43,37 @@ export default function AddressCreateScreen() {
 
   const handlePinLocation = useCallback(() => {
     // Update form values with the latest coordinates from the map before navigating
-    reset({ ...getValues(), coordinates: mapCoordinatesRef.current });
+    setValue('coordinates', mapCoordinatesRef.current, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
     // Navigate to details screen with current form values
-    router.push({ pathname: '/addresses/create/details', params });
-  }, [reset, getValues, router, params]);
+    router.push({ pathname: './details', params }, { relativeToDirectory: true });
+  }, [setValue, router, params]);
 
   const handleSelectPlace = useCallback(
     async (place: GooglePlacesResult) => {
       const newValues = await getAutoFillValues(place);
       // Update the ref with new coordinates from the selected place
       mapCoordinatesRef.current = newValues.coordinates;
-      // Update the form values with the new place details, keeping dirty state
-      reset({ ...getValues(), ...filterUndefined(newValues) }, { keepDirty: true });
+      // Update the form values with the new place details
+      reset({ ...getValues(), ...filterUndefined(newValues) }, { keepDefaultValues: true });
     },
     [getValues, reset, getAutoFillValues]
   );
+
+  useEffect(() => {
+    // Reset map coordinates ref when form coordinates change (e.g., when loading existing address)
+    mapCoordinatesRef.current = coordinates;
+  }, [coordinates]);
 
   return (
     <AddressMapView
       mapPadding={{ left: 4, right: 4, top: insets.top + 60, bottom: insets.bottom }}
       onCameraChangeComplete={handleCameraChangeComplete}
       coordinates={coordinates}
+      hideHelperText={isEditMode} // Hide helper text in edit mode since user already has an address
     >
       <Box
         className="pointer-events-box-none flex-1 justify-between p-4"
@@ -83,7 +96,7 @@ export default function AddressCreateScreen() {
 
           <Button className="self-center" onPress={handlePinLocation}>
             <ButtonIcon as={PinIcon} />
-            <ButtonText>Use this location</ButtonText>
+            <ButtonText>Select this location</ButtonText>
           </Button>
         </VStack>
       </Box>

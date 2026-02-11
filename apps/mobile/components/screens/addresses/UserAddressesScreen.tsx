@@ -13,18 +13,18 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { PlusIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function AddressesScreen() {
+export default function UserAddressesScreen() {
   const insets = useSafeAreaInsets();
   const navigate = useNavigateWithRedirect();
 
   const { userID } = useLocalSearchParams<{ userID?: string }>();
-  const { data: meUser, ...meUserQuery } = useMeUser();
+  const { data: meUser } = useMeUser();
 
   const { data, isRefetching, ...addrQuery } = useInfiniteAddresses(userID || meUser);
 
   const isMeUser = meUser?.id === userID;
 
-  const { data: fetchedUser, ...userQuery } = useFetchById(!!userID && !isMeUser, {
+  const { data: fetchedUser } = useFetchById(!!userID && !isMeUser, {
     collection: 'users',
     id: userID || '',
   });
@@ -41,8 +41,6 @@ export default function AddressesScreen() {
 
   function handleRefresh() {
     addrQuery.refetch();
-    meUserQuery.refetch();
-    userQuery.refetch();
   }
 
   return (

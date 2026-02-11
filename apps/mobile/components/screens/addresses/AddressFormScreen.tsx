@@ -2,31 +2,45 @@ import { useForm } from '@/components/contexts/FormProvider';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import { Box } from '@/components/ui/box';
 import AddressForm from '@/features/address/components/AddressForm';
-import { useAddAddressMutation } from '@/features/address/hooks/mutations';
+import {
+  useAddAddressMutation,
+  useUpdateAddressMutation,
+} from '@/features/address/hooks/mutations';
 import { RedirectSearchParams } from '@/lib/types/searchParams';
+import { getDirtyData } from '@/lib/utils/getDirtyData';
 import { AddressCreateSchema } from '@lactalink/form-schemas/address';
 import { Address } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
+import { useFormState } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
-export default function AddressCreateDetailsScreen() {
+type Params = RedirectSearchParams & { id?: string };
+
+export default function AddressFormScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { redirect } = useLocalSearchParams<RedirectSearchParams>();
+  const { redirect, id } = useLocalSearchParams<Params>();
+  const isEditMode = Boolean(id);
 
-  const { handleSubmit } = useForm<AddressCreateSchema>();
-  const { mutateAsync } = useAddAddressMutation();
+  const { handleSubmit, control } = useForm<AddressCreateSchema>();
+  const { dirtyFields } = useFormState({ control });
+
+  const { mutateAsync: createAddr } = useAddAddressMutation();
+  const { mutateAsync: updateAddr } = useUpdateAddressMutation();
 
   async function onSubmit(formData: AddressCreateSchema) {
-    const promise = mutateAsync(formData);
+    const dirtyData = getDirtyData(formData, dirtyFields);
+
+    const promise = isEditMode ? updateAddr({ ...dirtyData, id: id! }) : createAddr(formData);
 
     toast.promise(promise, {
       loading: 'Saving address...',
-      success: (data: Address) => `"${data.name || 'Address'}" created successfully.`,
+      success: (data: Address) =>
+        `"${data.name || 'Address'}" ${isEditMode ? 'updated' : 'created'} successfully.`,
       error: (err) => extractErrorMessage(err) || 'Failed to save address.',
     });
 
