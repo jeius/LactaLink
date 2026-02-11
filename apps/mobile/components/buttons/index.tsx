@@ -1,5 +1,6 @@
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { deleteCollection } from '@/lib/api/delete';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { type Href, useRouter } from 'expo-router';
 import { EditIcon, Trash2Icon } from 'lucide-react-native';
@@ -9,6 +10,10 @@ import { ActionModal } from '../modals';
 import { Icon } from '../ui/icon';
 import { Pressable, PressableProps } from '../ui/pressable';
 import { Text } from '../ui/text';
+
+const baseButtonStyle = tva({
+  base: 'h-fit w-fit',
+});
 
 interface EditActionButtonProps extends PressableProps {
   href?: Href;
@@ -43,34 +48,43 @@ export function EditActionButton({
 }
 
 interface DeleteActionButtonProps extends ComponentProps<typeof ActionModal> {
-  slug: CollectionSlug;
-  id: string;
+  slug?: CollectionSlug;
+  id?: string;
   itemName?: string | null;
+  shouldRevalidate?: boolean;
 }
 
-export function DeleteActionButton({ itemName, slug, id, ...props }: DeleteActionButtonProps) {
+export function DeleteActionButton({
+  itemName,
+  slug,
+  id,
+  className,
+  shouldRevalidate: revalidate = true,
+  ...props
+}: DeleteActionButtonProps) {
   const revalidateQueries = useRevalidateCollectionQueries();
 
   async function handleDelete() {
+    props.onConfirm?.();
+
+    if (!slug || !id) return;
     const deleted = await deleteCollection(slug, id);
-    if (deleted) {
-      revalidateQueries([slug, 'users']);
-    }
+    if (deleted && revalidate) revalidateQueries(slug);
   }
 
   return (
     <ActionModal
-      hitSlop={8}
-      action="negative"
-      variant="link"
       {...props}
-      className="h-fit w-fit"
+      hitSlop={props.hitSlop ?? 8}
+      action={props.action ?? 'negative'}
+      variant={props.variant ?? 'link'}
+      className={baseButtonStyle({ className })}
       triggerIcon={Trash2Icon}
       onTriggerPress={async (e) => {
         e.stopPropagation();
         props.onTriggerPress?.(e);
       }}
-      iconOnly
+      iconOnly={props.iconOnly ?? true}
       onConfirm={handleDelete}
       confirmLabel="Delete"
       description={

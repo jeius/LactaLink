@@ -1,3 +1,4 @@
+import { DeleteActionButton } from '@/components/buttons';
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { useForm } from '@/components/contexts/FormProvider';
 import GooglePlacesTextInput from '@/components/GooglePlacesTextInput';
@@ -8,6 +9,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
+import { useDeleteAddressMutation } from '@/features/address/hooks/mutations';
 import { createAddressAutofillMutation } from '@/features/address/lib/mutationOptions';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
 import { GooglePlacesResult } from '@lactalink/types/geocoding';
@@ -30,9 +32,11 @@ export default function ChooseLocationScreen() {
   const { control, reset, getValues, setValue } = useForm<AddressCreateSchema>();
 
   const coordinates = useWatch({ control: control, name: 'coordinates' });
+  const addressName = useWatch({ control: control, name: 'name' });
 
   const mapCoordinatesRef = useRef(coordinates);
 
+  const { mutate: deleteAddress } = useDeleteAddressMutation();
   const { mutateAsync: getAutoFillValues, isPending } = useMutation(
     createAddressAutofillMutation()
   );
@@ -40,6 +44,12 @@ export default function ChooseLocationScreen() {
   const handleCameraChangeComplete = useCallback((_: RNRegion, camera: RNCamera) => {
     if (camera?.center) mapCoordinatesRef.current = camera.center;
   }, []);
+
+  const handleDelete = useCallback(() => {
+    if (!id) return;
+    deleteAddress(id);
+    router.back();
+  }, [deleteAddress, id, router]);
 
   const handlePinLocation = useCallback(() => {
     // Update form values with the latest coordinates from the map before navigating
@@ -91,10 +101,20 @@ export default function ChooseLocationScreen() {
           {isPending && <Spinner size={'small'} className="mt-4 self-end" />}
         </VStack>
 
-        <VStack space="md">
-          <LocateButton className="self-end" disableFollowUser />
+        <VStack space="xl" className="items-center">
+          <VStack space="lg" className="self-end">
+            <LocateButton disableFollowUser />
+            {isEditMode && (
+              <DeleteActionButton
+                variant="solid"
+                className="p-3"
+                itemName={addressName || 'this address'}
+                onConfirm={handleDelete}
+              />
+            )}
+          </VStack>
 
-          <Button className="self-center" onPress={handlePinLocation}>
+          <Button onPress={handlePinLocation}>
             <ButtonIcon as={PinIcon} />
             <ButtonText>Select this location</ButtonText>
           </Button>

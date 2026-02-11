@@ -1,37 +1,23 @@
 import { TextInputField } from '@/components/form-fields/TextInputField';
-import { ActionModal } from '@/components/modals';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
-import { AddressSchema } from '@lactalink/form-schemas';
-import { CheckIcon, SaveIcon } from 'lucide-react-native';
+import { AddressCreateSchema } from '@lactalink/form-schemas';
+import { CheckIcon } from 'lucide-react-native';
 import React from 'react';
-import { useFormContext, useFormState, useWatch } from 'react-hook-form';
+import { Control, Controller, useFormState, useWatch } from 'react-hook-form';
 import { BarangaySelectField, CitySelectField, ProvinceSelectField } from './form-fields';
 
 interface Props {
-  onSavePress?: () => void;
+  control: Control<AddressCreateSchema>;
   isLoading?: boolean;
 }
 
-export default function AddressForm({ onSavePress, isLoading }: Props) {
-  const { control, setValue, trigger } = useFormContext<AddressSchema>();
-  const formState = useFormState({ control });
+export default function AddressForm({ control, isLoading }: Props) {
+  const { isSubmitting } = useFormState({ control });
 
-  const isDefault = useWatch({ control, name: 'isDefault', defaultValue: false });
   const cityID = useWatch({ control, name: 'cityMunicipality' });
   const provinceID = useWatch({ control, name: 'province' });
-
-  const { isSubmitting, isDirty } = formState;
-
-  function handleSetDefault(isSelected: boolean) {
-    setValue('isDefault', isSelected, { shouldDirty: true, shouldTouch: true });
-  }
-
-  async function handleValidation() {
-    const isValid = await trigger();
-    if (!isValid) throw new Error('Form validation failed');
-  }
 
   return (
     <VStack space="lg" className="p-4 pt-0">
@@ -112,30 +98,25 @@ export default function AddressForm({ onSavePress, isLoading }: Props) {
       />
 
       <HStack space="xl" className="justify-between">
-        <Checkbox
-          value={`address-checkbox`}
-          isChecked={isDefault}
-          onChange={handleSetDefault}
-          isDisabled={isSubmitting}
-        >
-          <CheckboxIndicator>
-            <CheckboxIcon as={CheckIcon} />
-          </CheckboxIndicator>
-          <CheckboxLabel>Set as default address</CheckboxLabel>
-        </Checkbox>
+        <Controller
+          control={control}
+          name="isDefault"
+          render={({ field: { value, onChange, ref } }) => (
+            <Checkbox
+              ref={ref}
+              value={`checkbox-address-isDefault`}
+              isChecked={value}
+              onChange={onChange}
+              isDisabled={isSubmitting}
+            >
+              <CheckboxIndicator>
+                <CheckboxIcon as={CheckIcon} />
+              </CheckboxIndicator>
+              <CheckboxLabel>Set as default address</CheckboxLabel>
+            </Checkbox>
+          )}
+        />
       </HStack>
-
-      <ActionModal
-        className="mt-5"
-        isDisabled={isSubmitting || !isDirty}
-        triggerLabel="Save Address"
-        triggerIcon={SaveIcon}
-        title="Review Address"
-        description="Are you sure you want to save this address?"
-        onTriggerPress={handleValidation}
-        confirmLabel="Save"
-        onConfirm={onSavePress}
-      />
     </VStack>
   );
 }
