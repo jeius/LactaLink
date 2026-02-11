@@ -22,6 +22,11 @@ export function transformRNLocationToExpo(location: RNLocation): LocationObject 
   };
 }
 
+/**
+ * Transforms an Expo LocationObject to a React Native Google Maps Plus location object.
+ * @param location - The `LocationObject` from Expo Location API to transform.
+ * @returns A `RNLocation` object compatible with React Native Google Maps Plus.
+ */
 export function transformExpoLocationToRN(location: LocationObject): RNLocation {
   return {
     center: {

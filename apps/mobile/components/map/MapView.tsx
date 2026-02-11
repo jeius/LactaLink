@@ -28,8 +28,8 @@ import {
   transformExpoLocationToRN,
   transformRNLocationToExpo,
 } from '@/lib/utils/transformLocationData';
+import { wrapCallback } from '@/lib/utils/wrapCallback';
 import { arePointsEqual, latLngToPoint } from '@lactalink/utilities/geo-utils';
-import { callback } from 'react-native-nitro-modules';
 import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { MapProvider, useIsFollowingUser, useMap, useMapActions } from '../contexts/MapProvider';
@@ -43,6 +43,10 @@ type Props = Pick<ViewProps, 'style'> &
     containerStyle?: ViewProps['style'];
     containerClassName?: ViewProps['className'];
   };
+
+interface MapViewProps extends Props {
+  mapRef?: React.RefObject<GoogleMapsViewRef | null>;
+}
 
 const MAP_ZOOM_CONFIG: RNMapZoomConfig = { min: 0, max: 20 };
 
@@ -91,6 +95,16 @@ const ICON_SVG: RNMarkerSvg = {
   svgString: USER_LOCATION_MARKER_SVG_STRING,
 };
 
+function createUISettings(overrides: RNMapUiSettings = {}) {
+  return { ...UI_SETTINGS, ...overrides };
+}
+
+function getInitialLocation() {
+  const currentLoc = getCurrentLocation();
+  if (!currentLoc) return DEFAULT_LOCATION;
+  return transformExpoLocationToRN(currentLoc);
+}
+
 function MapView({
   children,
   hideUserLocationMarker = false,
@@ -103,6 +117,7 @@ function MapView({
   const insets = useSafeAreaInsets();
 
   const uiSettings = createUISettings(props.uiSettings);
+
   const mapPadding: RNMapPadding = {
     top: insets.top + 20 + (offset?.top ?? 0),
     left: insets.left + 20 + (offset?.left ?? 0),
@@ -224,22 +239,11 @@ function MapView({
       />
 
       {children}
-
-      {/* {!mapLoaded && (
-        <Box className="absolute inset-0 flex-col items-center justify-center gap-1 bg-primary-0">
-          <Spinner size={'large'} />
-          <Text size="md">Loading google maps...</Text>
-        </Box>
-      )} */}
     </Box>
   );
 }
 
-export interface MapViewProps extends Props {
-  mapRef?: React.RefObject<GoogleMapsViewRef | null>;
-}
-
-export default function MapViewWrapper({ mapRef: mapRefProp, ...props }: MapViewProps) {
+function MapViewWrapper({ mapRef: mapRefProp, ...props }: MapViewProps) {
   const localMapRef = useRef<GoogleMapsViewRef | null>(null);
   const mapRef = mapRefProp ?? localMapRef;
 
@@ -250,25 +254,10 @@ export default function MapViewWrapper({ mapRef: mapRefProp, ...props }: MapView
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapCallback<T extends (...args: any[]) => void>(
-  propCallback: T | undefined,
-  fallback?: (...args: Parameters<T>) => void
-) {
-  return callback({
-    f: ((...args: Parameters<T>) => {
-      propCallback?.(...args);
-      fallback?.(...args);
-    }) as T,
-  });
-}
+MapViewWrapper.displayName = 'MapView';
 
-function createUISettings(overrides: RNMapUiSettings = {}) {
-  return { ...UI_SETTINGS, ...overrides };
-}
+export type { MapViewProps };
 
-function getInitialLocation() {
-  const currentLoc = getCurrentLocation();
-  if (!currentLoc) return DEFAULT_LOCATION;
-  return transformExpoLocationToRN(currentLoc);
-}
+export { MapViewWrapper as MapView };
+
+export default MapViewWrapper;
