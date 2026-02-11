@@ -2,7 +2,7 @@ import { DeleteActionButton } from '@/components/buttons';
 import { useForm } from '@/components/contexts/FormProvider';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import { ActionModal } from '@/components/modals/ActionModal';
-import { Box } from '@/components/ui/box';
+import FormSheetHandle from '@/components/ui/FormSheetHandle';
 import { VStack } from '@/components/ui/vstack';
 import AddressForm from '@/features/address/components/AddressForm';
 import {
@@ -78,10 +78,7 @@ export default function AddressFormScreen() {
 
   return (
     <>
-      {/* Sheet Handle */}
-      <Box className="h-10 items-center justify-center">
-        <Box className="h-1 w-12 rounded-full bg-primary-500" />
-      </Box>
+      <FormSheetHandle />
 
       {/* Form */}
       <KeyboardAvoidingScrollView style={{ marginBottom: insets.bottom }}>
