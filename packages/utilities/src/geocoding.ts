@@ -4,15 +4,13 @@
 
 import {} from '@lactalink/form-schemas';
 import { type AddressGeocoding } from '@lactalink/form-schemas/geocoding';
-import type { Coordinates } from '@lactalink/types';
 import type {
   GeocodeSource,
   GoogleAddressComponent,
-  GooglePlaceDetails,
   GooglePlacesResult,
   StoredGeocodedComponents,
 } from '@lactalink/types/geocoding';
-import { extractCoordinates as validateCoords } from './extractors';
+import { extractCoordinates } from './extractors';
 
 /**
  * Extracts specific address component types from Google address components
@@ -59,16 +57,9 @@ export function formatGeocodingForStorage(
     geocodedAddress: formattedAddress,
     geocodedAt: new Date(),
     geocodeSource: source,
-    coordinates: extractCoordinates(details),
+    coordinates: extractCoordinates(details.location, { throwError: true }),
     geocodedComponents: { addressComponents, types, text, photos },
   };
-}
-
-/**
- * Extracts coordinates from Google geocoding result
- */
-export function extractCoordinates({ location }: GooglePlaceDetails): Coordinates {
-  return validateCoords(location, { throwError: true });
 }
 
 /**

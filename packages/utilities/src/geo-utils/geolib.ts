@@ -6,6 +6,7 @@ import getCenterOfBounds from 'geolib/es/getCenterOfBounds';
 import getDistance from 'geolib/es/getDistance';
 import getPathLength from 'geolib/es/getPathLength';
 import isPointInPolygon from 'geolib/es/isPointInPolygon';
+import isValidCoordinate from 'geolib/es/isValidCoordinate';
 
 export {
   convertDistance,
@@ -16,4 +17,5 @@ export {
   getDistance,
   getPathLength,
   isPointInPolygon,
+  isValidCoordinate,
 };
