@@ -7,7 +7,8 @@ import { toast } from 'sonner-native';
 declare module '@tanstack/react-query' {
   interface Register {
     mutationMeta: {
-      successMessage?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      successMessage?: string | ((data: any) => string);
       errorMessage?: string | ((error: unknown) => string);
       invalidatesQuery?: QueryKey | Record<string, QueryKey>;
       onError?: (error: unknown) => void;
@@ -29,7 +30,7 @@ const queryClient = new QueryClient({
       }
     },
 
-    onSuccess: async (_data, _vars, _context, mutation) => {
+    onSuccess: async (data, _vars, _context, mutation) => {
       const queryKey = mutation.meta?.invalidatesQuery;
 
       if (Array.isArray(queryKey)) {
@@ -43,7 +44,13 @@ const queryClient = new QueryClient({
       }
 
       if (mutation.meta?.successMessage) {
-        toast.success(mutation.meta.successMessage, { id: TOAST_ID.SUCCESS });
+        let message = '';
+        if (typeof mutation.meta.successMessage === 'function') {
+          message = mutation.meta.successMessage(data);
+        } else {
+          message = mutation.meta.successMessage;
+        }
+        toast.success(message, { id: TOAST_ID.SUCCESS });
       }
     },
   }),
