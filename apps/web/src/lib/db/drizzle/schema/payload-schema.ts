@@ -15,8 +15,8 @@ import {
   uuid,
   varchar,
   boolean,
-  jsonb,
   timestamp,
+  jsonb,
   integer,
   type AnyPgColumn,
   numeric,
@@ -301,11 +301,11 @@ export const addresses = pgTable(
     zipCode: varchar('zip_code'),
     street: varchar('street'),
     displayName: varchar('display_name'),
-    coordinates: geometryColumn('coordinates'),
     geocodedAddress: varchar('geocoded_address'),
-    geocodedComponents: jsonb('geocoded_components'),
+    coordinates: geometryColumn('coordinates'),
     geocodedAt: timestamp('geocoded_at', { mode: 'string', withTimezone: true, precision: 3 }),
     geocodeSource: enum_geocode_source('geocode_source'),
+    geocodedComponents: jsonb('geocoded_components'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -320,6 +320,7 @@ export const addresses = pgTable(
     index('addresses_province_idx').on(columns.province),
     index('addresses_city_municipality_idx').on(columns.cityMunicipality),
     index('addresses_barangay_idx').on(columns.barangay),
+    index('addresses_coordinates_idx').on(columns.coordinates),
     index('addresses_updated_at_idx').on(columns.updatedAt),
     index('addresses_created_at_idx').on(columns.createdAt),
   ]
