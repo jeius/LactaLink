@@ -2,7 +2,7 @@ import { getLottieAsset } from '@/lib/stores';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import SafeArea, { SafeAreaProps } from '../SafeArea';
-import { Spinner } from '../ui/spinner';
+import { Spinner, SpinnerProps } from '../ui/spinner';
 
 interface LoadingSpinnerProps extends SafeAreaProps {
   isLoading?: boolean;
@@ -43,14 +43,16 @@ export function SplashSpinner({ isLoading = true, ...props }: LoadingSpinnerProp
   );
 }
 
-export default function LoadingSpinner({ isLoading = true, ...props }: LoadingSpinnerProps) {
-  if (!isLoading) {
-    return null;
-  }
+export default function LoadingSpinner({
+  isLoading = true,
+  size = 'large',
+  ...props
+}: LoadingSpinnerProps & Pick<SpinnerProps, 'size'>) {
+  if (!isLoading) return null;
 
   return (
     <SafeArea {...props}>
-      <Spinner size={'large'} />
+      <Spinner size={size} />
     </SafeArea>
   );
 }

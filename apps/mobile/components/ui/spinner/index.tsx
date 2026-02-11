@@ -25,25 +25,28 @@ const spinnerStyle = tva({
   },
 });
 
-const Spinner = React.forwardRef<
-  React.ComponentRef<typeof ActivityIndicator>,
-  React.ComponentProps<typeof ActivityIndicator> & VariantProps<typeof spinnerStyle>
->(function Spinner(
-  { className, color, focusable = false, 'aria-label': ariaLabel = 'loading', variant, ...props },
-  ref
-) {
-  return (
-    <ActivityIndicator
-      ref={ref}
-      focusable={focusable}
-      aria-label={ariaLabel}
-      {...props}
-      color={color}
-      className={spinnerStyle({ class: className, variant })}
-    />
-  );
-});
+type SpinnerProps = React.ComponentProps<typeof ActivityIndicator> &
+  VariantProps<typeof spinnerStyle>;
+
+const Spinner = React.forwardRef<React.ComponentRef<typeof ActivityIndicator>, SpinnerProps>(
+  function Spinner(
+    { className, color, focusable = false, 'aria-label': ariaLabel = 'loading', variant, ...props },
+    ref
+  ) {
+    return (
+      <ActivityIndicator
+        ref={ref}
+        focusable={focusable}
+        aria-label={ariaLabel}
+        {...props}
+        color={color}
+        className={spinnerStyle({ class: className, variant })}
+      />
+    );
+  }
+);
 
 Spinner.displayName = 'Spinner';
 
 export { Spinner };
+export type { SpinnerProps };
