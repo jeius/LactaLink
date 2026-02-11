@@ -87,6 +87,7 @@ export function DeleteActionButton({
       iconOnly={props.iconOnly ?? true}
       onConfirm={handleDelete}
       confirmLabel="Delete"
+      title={props.title ?? 'Confirm Delete'}
       description={
         <Text>
           Are you sure you want to delete

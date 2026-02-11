@@ -21,6 +21,7 @@ import { uploadImage } from '@/lib/api/file';
 import { createProfile } from '@/lib/api/profile/createProfile';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
+import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Stack, useRouter } from 'expo-router';
@@ -138,7 +139,10 @@ export default function Layout() {
         <AnimationWrapper hidden={isInOnboarding}>
           <VStack
             className="w-full rounded-2xl border border-outline-300 bg-background-0 p-4"
-            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+            style={{
+              paddingBottom: Math.max(insets.bottom, 16),
+              ...createDirectionalShadow('top'),
+            }}
             onLayout={(e) => setCtaSize(e.nativeEvent.layout)}
           >
             <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
