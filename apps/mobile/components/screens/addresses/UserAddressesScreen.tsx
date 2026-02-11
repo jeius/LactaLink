@@ -7,6 +7,7 @@ import { useInfiniteAddresses } from '@/features/address/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useFetchById } from '@/hooks/collections/useFetchById';
 import { useNavigateWithRedirect } from '@/hooks/useNavigateWithRedirect';
+import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { extractName } from '@lactalink/utilities/extractors';
 import { Motion } from '@legendapp/motion';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -22,7 +23,7 @@ export default function UserAddressesScreen() {
 
   const { data, isRefetching, ...addrQuery } = useInfiniteAddresses(userID || meUser);
 
-  const isMeUser = meUser?.id === userID;
+  const isMeUser = userID ? meUser?.id === userID : true;
 
   const { data: fetchedUser } = useFetchById(!!userID && !isMeUser, {
     collection: 'users',
@@ -30,6 +31,7 @@ export default function UserAddressesScreen() {
   });
 
   const user = userID ? fetchedUser : meUser;
+  const userName = user ? extractName(user) : 'User';
 
   const headerTitle = isMeUser
     ? 'My Addresses'
@@ -46,7 +48,7 @@ export default function UserAddressesScreen() {
   return (
     <>
       <Stack.Screen options={{ headerTitle }} />
-      <SafeArea className="items-stretch" safeTop={false} safeBottom={false}>
+      <SafeArea className="items-stretch" safeTop={false} safeBottom={!isMeUser}>
         <VStack className="flex-1">
           <AddressList
             {...addrQuery}
@@ -58,10 +60,10 @@ export default function UserAddressesScreen() {
             gap={16}
             refreshing={isRefetching}
             onRefresh={handleRefresh}
-            emptyListLabel="You have no addresses to show."
+            emptyListLabel={isMeUser ? 'No addresses added yet.' : `${userName} has no addresses.`}
           />
 
-          {(isMeUser || !userID) && (
+          {isMeUser && (
             <Motion.View
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -69,7 +71,10 @@ export default function UserAddressesScreen() {
             >
               <Box
                 className="rounded-t-2xl border border-outline-300 bg-background-0 p-4"
-                style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+                style={{
+                  paddingBottom: Math.max(insets.bottom, 16),
+                  ...createDirectionalShadow('top'),
+                }}
               >
                 <Button onPress={handleAddAddress}>
                   <ButtonIcon as={PlusIcon} />
