@@ -68,7 +68,7 @@ export function createAddressesInfQuery(user: string | User | null | undefined) 
 export function createProvincesInfQuery(search: string) {
   return infiniteQueryOptions({
     initialPageParam: 1,
-    queryKey: [...QUERY_KEYS.ADDRESSES.INFINITE, 'provinces', search],
+    queryKey: [...QUERY_KEYS.PSGC.INFINITE, 'provinces', search],
     queryFn: async ({ pageParam }) => {
       const paginatedDocs = await findProvinces(search, { page: pageParam });
       return transformToPaginatedMappedDocs(paginatedDocs);
@@ -82,7 +82,7 @@ export function createProvincesInfQuery(search: string) {
 export function createCitiesInfQuery(search: string, provinceID?: string) {
   return infiniteQueryOptions({
     initialPageParam: 1,
-    queryKey: [...QUERY_KEYS.ADDRESSES.INFINITE, 'cities', search, provinceID],
+    queryKey: [...QUERY_KEYS.PSGC.INFINITE, 'cities', search, provinceID],
     queryFn: async ({ pageParam }) => {
       const paginatedDocs = await findCities(search, provinceID, { page: pageParam });
       return transformToPaginatedMappedDocs(paginatedDocs);
@@ -96,7 +96,7 @@ export function createCitiesInfQuery(search: string, provinceID?: string) {
 export function createBarangaysInfQuery(search: string, cityID?: string) {
   return infiniteQueryOptions({
     initialPageParam: 1,
-    queryKey: [...QUERY_KEYS.ADDRESSES.INFINITE, 'barangays', search, cityID],
+    queryKey: [...QUERY_KEYS.PSGC.INFINITE, 'barangays', search, cityID],
     queryFn: async ({ pageParam }) => {
       const paginatedDocs = await findBarangays(search, cityID, { page: pageParam });
       return transformToPaginatedMappedDocs(paginatedDocs);
@@ -111,7 +111,7 @@ export function createProvinceQuery(province: string | Province | null | undefin
   const provinceID = extractID(province);
   return queryOptions({
     enabled: !!provinceID,
-    queryKey: [...QUERY_KEYS.ADDRESSES.ONE, 'province', provinceID],
+    queryKey: [...QUERY_KEYS.PSGC.ONE, 'province', provinceID],
     queryFn: async () => {
       if (!provinceID) throw new Error('Province ID is required to fetch the province.');
       return findProvinceByID(provinceID, { depth: 1 });
@@ -124,7 +124,7 @@ export function createCityQuery(city: string | CityMunicipality | null | undefin
   const cityID = extractID(city);
   return queryOptions({
     enabled: !!cityID,
-    queryKey: [...QUERY_KEYS.ADDRESSES.ONE, 'city', cityID],
+    queryKey: [...QUERY_KEYS.PSGC.ONE, 'city', cityID],
     queryFn: async () => {
       if (!cityID)
         throw new Error('City/Municipality ID is required to fetch the city/municipality.');
@@ -138,7 +138,7 @@ export function createBarangayQuery(barangay: string | Barangay | null | undefin
   const barangayID = extractID(barangay);
   return queryOptions({
     enabled: !!barangayID,
-    queryKey: [...QUERY_KEYS.ADDRESSES.ONE, 'barangay', barangayID],
+    queryKey: [...QUERY_KEYS.PSGC.ONE, 'barangay', barangayID],
     queryFn: async () => {
       if (!barangayID) throw new Error('Barangay ID is required to fetch the barangay.');
       return findBarangayByID(barangayID, { depth: 1 });

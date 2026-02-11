@@ -6,7 +6,7 @@ import { VStack } from '@/components/ui/vstack';
 import { AddressSchema } from '@lactalink/form-schemas';
 import { CheckIcon, SaveIcon } from 'lucide-react-native';
 import React from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext, useFormState, useWatch } from 'react-hook-form';
 import { BarangaySelectField, CitySelectField, ProvinceSelectField } from './form-fields';
 
 interface Props {
@@ -15,13 +15,14 @@ interface Props {
 }
 
 export default function AddressForm({ onSavePress, isLoading }: Props) {
-  const { control, formState, setValue, trigger } = useFormContext<AddressSchema>();
+  const { control, setValue, trigger } = useFormContext<AddressSchema>();
+  const formState = useFormState({ control });
 
   const isDefault = useWatch({ control, name: 'isDefault', defaultValue: false });
   const cityID = useWatch({ control, name: 'cityMunicipality' });
   const provinceID = useWatch({ control, name: 'province' });
 
-  const { isSubmitting } = formState;
+  const { isSubmitting, isDirty } = formState;
 
   function handleSetDefault(isSelected: boolean) {
     setValue('isDefault', isSelected, { shouldDirty: true, shouldTouch: true });
@@ -126,7 +127,7 @@ export default function AddressForm({ onSavePress, isLoading }: Props) {
 
       <ActionModal
         className="mt-5"
-        isDisabled={isSubmitting}
+        isDisabled={isSubmitting || !isDirty}
         triggerLabel="Save Address"
         triggerIcon={SaveIcon}
         title="Review Address"

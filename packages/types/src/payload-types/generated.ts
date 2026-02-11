@@ -532,14 +532,22 @@ export interface Address {
   street?: string | null;
   displayName?: string | null;
   /**
+   * Full formatted address returned by Google (for reference)
+   */
+  geocodedAddress?: string | null;
+  /**
    * @minItems 2
    * @maxItems 2
    */
   coordinates?: [number, number] | null;
   /**
-   * Full formatted address returned by Google (for reference)
+   * Timestamp when the address was geocoded
    */
-  geocodedAddress?: string | null;
+  geocodedAt?: string | null;
+  /**
+   * Source of the geocoding data
+   */
+  geocodeSource?: ('places_autocomplete' | 'reverse_geocode' | 'manual') | null;
   /**
    * Address components from Google Geocoding API
    */
@@ -552,14 +560,6 @@ export interface Address {
     | number
     | boolean
     | null;
-  /**
-   * Timestamp when the address was geocoded
-   */
-  geocodedAt?: string | null;
-  /**
-   * Source of the geocoding data
-   */
-  geocodeSource?: ('places_autocomplete' | 'reverse_geocode' | 'manual') | null;
   deliveryPreferences?: {
     docs?: (string | DeliveryPreference)[];
     hasNextPage?: boolean;
@@ -3189,11 +3189,11 @@ export interface AddressesSelect<T extends boolean = true> {
   zipCode?: T;
   street?: T;
   displayName?: T;
-  coordinates?: T;
   geocodedAddress?: T;
-  geocodedComponents?: T;
+  coordinates?: T;
   geocodedAt?: T;
   geocodeSource?: T;
+  geocodedComponents?: T;
   deliveryPreferences?: T;
   updatedAt?: T;
   createdAt?: T;

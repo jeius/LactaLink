@@ -57,6 +57,11 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  PSGC: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -110,6 +115,11 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['addresses'],
     INFINITE: ['addresses', 'infinite'],
     ONE: ['addresses', 'one'],
+  },
+  PSGC: {
+    ALL: ['psgc'],
+    INFINITE: ['psgc', 'infinite'],
+    ONE: ['psgc', 'one'],
   },
   LISTINGS: {
     ALL: ['listings'],

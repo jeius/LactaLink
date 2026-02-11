@@ -6,33 +6,39 @@ import { EditIcon, Trash2Icon } from 'lucide-react-native';
 import React, { ComponentProps } from 'react';
 import { GestureResponderEvent } from 'react-native';
 import { ActionModal } from '../modals';
-import { Button, ButtonIcon } from '../ui/button';
+import { Icon } from '../ui/icon';
+import { Pressable, PressableProps } from '../ui/pressable';
 import { Text } from '../ui/text';
 
-interface EditActionButtonProps extends ComponentProps<typeof Button> {
-  href: Href;
+interface EditActionButtonProps extends PressableProps {
+  href?: Href;
+  isDisabled?: boolean;
 }
 
-export function EditActionButton({ href, ...props }: EditActionButtonProps) {
+export function EditActionButton({
+  href,
+  hitSlop = 8,
+  isDisabled,
+  ...props
+}: EditActionButtonProps) {
   const router = useRouter();
 
   function handleEditPress(e: GestureResponderEvent) {
     props.onPress?.(e);
     e.stopPropagation();
-    router.push(href);
+    if (href) router.push(href);
   }
 
   return (
-    <Button
-      hitSlop={8}
+    <Pressable
       {...props}
-      variant="link"
-      action="default"
-      className="h-fit w-fit p-0"
+      disabled={isDisabled || props.disabled}
+      hitSlop={hitSlop}
+      className="overflow-hidden rounded-md p-2"
       onPress={handleEditPress}
     >
-      <ButtonIcon as={EditIcon} />
-    </Button>
+      <Icon as={EditIcon} />
+    </Pressable>
   );
 }
 
@@ -60,7 +66,7 @@ export function DeleteActionButton({ itemName, slug, id, ...props }: DeleteActio
       {...props}
       className="h-fit w-fit"
       triggerIcon={Trash2Icon}
-      onTriggerPress={(e) => {
+      onTriggerPress={async (e) => {
         e.stopPropagation();
         props.onTriggerPress?.(e);
       }}

@@ -6,7 +6,8 @@ export function getDirtyData<T extends FieldValues>(
 ): Partial<T> {
   const dirtyData: Record<string, unknown> = {};
 
-  for (const field of Object.keys(dirtyFields)) {
+  for (const [field, isDirty] of Object.entries(dirtyFields)) {
+    if (!isDirty) continue;
     const value = data[field as keyof T];
     if (value !== undefined) dirtyData[field] = value;
   }

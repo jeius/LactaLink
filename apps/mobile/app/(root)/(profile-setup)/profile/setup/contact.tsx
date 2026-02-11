@@ -8,7 +8,7 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FormControl, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
-import { useDeleteAddressMutation } from '@/features/address/hooks/useDeleteAddressMutation';
+import { useDeleteAddressMutation } from '@/features/address/hooks/mutations';
 import { useKeyboardOffset } from '@/features/profile/components/KeyboardOffsetContext';
 import PageTitle from '@/features/profile/components/PageTitle';
 
@@ -40,7 +40,7 @@ export default function ProfileContact() {
   const screen = useWindowDimensions();
 
   const { control } = useFormContext<SetupProfileSchema>();
-  const { mutateAsync } = useDeleteAddressMutation();
+  const { mutate: deleteAddr, isPending: isDeleting } = useDeleteAddressMutation();
 
   function handleAdd() {
     router.push('/addresses/create');
@@ -58,7 +58,11 @@ export default function ProfileContact() {
     };
 
     return (
-      <AnimatedPressable onPress={handlePress} className="overflow-hidden rounded-2xl">
+      <AnimatedPressable
+        disabled={isDeleting}
+        onPress={handlePress}
+        className="overflow-hidden rounded-2xl"
+      >
         <AddressCard
           data={item}
           showMap
@@ -76,7 +80,7 @@ export default function ProfileContact() {
               title="Delete Address"
               description="Are you sure you want to delete this address? This action cannot be undone."
               confirmLabel="Delete"
-              onConfirm={() => mutateAsync(item)}
+              onConfirm={() => deleteAddr(item)}
             />
           }
         />

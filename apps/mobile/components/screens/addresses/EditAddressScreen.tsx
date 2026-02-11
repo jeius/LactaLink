@@ -6,8 +6,8 @@ import FormPreventBack from '@/components/forms/FormPreventBack';
 import GooglePlacesTextInput from '@/components/GooglePlacesTextInput';
 import { AddressMapView } from '@/components/map/AddressMapView';
 import SafeArea from '@/components/SafeArea';
+import { useUpdateAddressMutation } from '@/features/address/hooks/mutations';
 import { useAddressForm } from '@/features/address/hooks/useAddressForm';
-import { useUpdateAddressMutation } from '@/features/address/hooks/useUpdateAddressMutation';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { AddressSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -33,7 +33,6 @@ export default function EditAddressScreen() {
   const { mutateAsync } = useUpdateAddressMutation();
 
   const coordinates = useWatch({ control, name: 'coordinates' });
-  console.log('Current coordinates in form:', coordinates);
 
   async function onSubmit(formData: AddressSchema) {
     const promise = mutateAsync(formData);

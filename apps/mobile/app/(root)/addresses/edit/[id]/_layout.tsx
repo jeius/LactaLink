@@ -1,7 +1,7 @@
 import { Form } from '@/components/contexts/FormProvider';
 import { useAddressForm } from '@/features/address/hooks/useAddressForm';
 import { getColor } from '@/lib/colors';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,12 +10,14 @@ export default function Layout() {
   const insets = useSafeAreaInsets();
   const screen = useWindowDimensions();
 
+  const { id } = useLocalSearchParams<{ id: string }>();
+
   const detents = useMemo(() => {
     const height = screen.height - insets.top;
     return [height / screen.height];
   }, [screen.height, insets.top]);
 
-  const methods = useAddressForm();
+  const methods = useAddressForm(id);
 
   return (
     <Form {...methods}>

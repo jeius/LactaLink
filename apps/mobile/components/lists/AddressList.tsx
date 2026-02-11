@@ -2,10 +2,11 @@ import React, { useCallback } from 'react';
 
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
+import { useNavigateWithRedirect } from '@/hooks/useNavigateWithRedirect';
 import { shadow } from '@/lib/utils/shadows';
 import { Address } from '@lactalink/types/payload-generated-types';
 import { ListRenderItem } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
+import { Href } from 'expo-router';
 import { EditActionButton } from '../buttons';
 import { AddressCard } from '../cards/AddressCard';
 import { Divider } from '../ui/divider';
@@ -31,7 +32,7 @@ export function AddressList({
   isLoading = false,
   ...props
 }: AddressListProps) {
-  const router = useRouter();
+  const navigateTo = useNavigateWithRedirect();
 
   const data = props.data;
   const isEmpty = Array.isArray(data) && data.length === 0;
@@ -40,15 +41,9 @@ export function AddressList({
     ({ item }) => {
       if (isLoading) return <Skeleton className="h-40" />;
 
-      const handleEdit = () => router.push(`/addresses/${item.id}/edit`);
+      const href: Href = `/addresses/edit/${item.id}`;
 
-      function Action() {
-        return (
-          allowEdit && (
-            <EditActionButton isDisabled={disableRemove} href={`/addresses/${item.id}/edit`} />
-          )
-        );
-      }
+      const handleEdit = () => navigateTo(href, 'push');
 
       function Card() {
         return (
@@ -58,7 +53,9 @@ export function AddressList({
             data={item}
             showMap={showMap}
             className={itemVariant === 'card' ? (showMap ? 'p-0' : undefined) : 'p-0'}
-            action={<Action />}
+            action={
+              allowEdit && <EditActionButton isDisabled={disableRemove} onPress={handleEdit} />
+            }
           />
         );
       }
@@ -82,7 +79,7 @@ export function AddressList({
           return <Card />;
       }
     },
-    [isLoading, itemVariant, allowEdit, disableRemove, router, showMap]
+    [isLoading, itemVariant, navigateTo, showMap, allowEdit, disableRemove]
   );
 
   const SeparatorComponent = useCallback(() => {

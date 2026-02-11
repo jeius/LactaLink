@@ -7,11 +7,10 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { Address } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
-import { ComponentProps, ReactNode, useMemo } from 'react';
+import { ComponentProps, ReactNode, useCallback, useMemo } from 'react';
 
-import { useFetchById } from '@/hooks/collections/useFetchById';
+import { useAddress } from '@/features/address/hooks/queries';
 import { isTempID } from '@/lib/utils/tempID';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
@@ -50,35 +49,31 @@ export function AddressCard({
   ...props
 }: AddressCardProps) {
   const router = useRouter();
-  const dataDoc = extractCollection(dataProp);
 
-  const { data: fetchedData, isLoading: isDataLoading } = useFetchById(!dataDoc, {
-    collection: 'addresses',
-    id: extractID(dataProp),
-    depth: 0,
-    select: { name: true, displayName: true, isDefault: true, coordinates: true },
-  });
+  const { data, ...query } = useAddress(dataProp);
 
-  const isLoading = isLoadingProp || isDataLoading;
+  const isLoading = isLoadingProp || query.isLoading;
 
-  const data = dataDoc ?? fetchedData;
   const { name, displayName, isDefault } = data || {};
 
   const center = useMemo(() => pointToLatLng(data?.coordinates), [data?.coordinates]);
 
-  function navigateToMap(e: GestureResponderEvent) {
-    e.stopPropagation();
-    if (!data) return;
-    router.push(`/map/explore/address/${data.id}`);
-  }
+  const navigateToMap = useCallback(
+    (e: GestureResponderEvent) => {
+      e.stopPropagation();
+      if (!data) return;
+      router.push(`/addresses/${data.id}`);
+    },
+    [router, data]
+  );
 
-  if (isLoading || data === undefined) {
+  if (isLoading || !data) {
     return (
       <Card {...props} className={cardStyle({ mapVisible: showMap, className })}>
         <VStack>
           <Skeleton variant="sharp" className="h-40 w-full" />
           <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
-            <Icon as={BasicLocationPin} />
+            <Icon as={BasicLocationPin} className="fill-primary-500" />
             <VStack space="xs" className="flex-1">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-3" />
@@ -102,15 +97,6 @@ export function AddressCard({
         props.style,
       ])}
     >
-      {isDefault && (
-        <BasicBadge
-          size="md"
-          action="info"
-          text="Default"
-          className="absolute z-10"
-          style={{ top: 8, right: 8 }}
-        />
-      )}
       <VStack className="w-full">
         {showMap && (
           <ThumbnailMap
@@ -122,6 +108,7 @@ export function AddressCard({
             disabled={disableTapOnMap}
           />
         )}
+
         <HStack space="sm" className={`w-full items-start ${showMap ? 'p-4' : ''}`}>
           <VStack className="flex-1 items-stretch">
             <HStack space="sm" className="w-full items-center justify-between">
@@ -143,8 +130,10 @@ export function AddressCard({
                   {name}
                 </ButtonText>
               </Button>
+
               {action}
             </HStack>
+
             <HStack space="xs" className="mt-1 w-full items-start">
               <Icon as={BasicLocationPin} className="fill-primary-500" />
               <Text ellipsizeMode="tail" numberOfLines={2} size="sm" className="flex-1">
@@ -154,6 +143,16 @@ export function AddressCard({
           </VStack>
         </HStack>
       </VStack>
+
+      {isDefault && (
+        <BasicBadge
+          size="md"
+          action="info"
+          text="Default"
+          className="absolute z-10"
+          style={{ top: 8, right: 8 }}
+        />
+      )}
     </Card>
   );
 }

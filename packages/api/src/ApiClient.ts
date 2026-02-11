@@ -97,7 +97,7 @@ export class ApiClient implements IApiClient {
     });
 
     if ('error' in res) {
-      throw new Error(res.message);
+      throw new Error(res.message, { cause: res.error });
     }
 
     return res.data;
@@ -110,8 +110,8 @@ export class ApiClient implements IApiClient {
     basePath: string,
     searchParams: Record<string, unknown>
   ): string => {
-    const query = stringify(searchParams);
-    return query ? `${basePath}?${query}` : basePath;
+    const query = stringify(searchParams, { addQueryPrefix: true });
+    return query ? basePath + query : basePath;
   };
 
   // PUBLIC METHODS (arrow functions to preserve 'this' context)
@@ -186,7 +186,7 @@ export class ApiClient implements IApiClient {
     });
 
     if ('error' in res) {
-      throw new Error(res.message);
+      throw new Error(res.message, { cause: res.error });
     }
 
     return res.data;

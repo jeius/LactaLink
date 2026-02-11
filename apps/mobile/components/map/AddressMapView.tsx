@@ -17,12 +17,14 @@ const DEFAULT_ZOOM = 18;
 interface AddressMapViewProps extends MapViewProps {
   coordinates?: Coordinates | null;
   isLoading?: boolean;
+  hideHelperText?: boolean;
 }
 
 export function AddressMapView({
   coordinates,
   isLoading,
   children,
+  hideHelperText = false,
   ...props
 }: AddressMapViewProps) {
   const [isMapReady, setIsMapReady] = useState(false);
@@ -50,9 +52,11 @@ export function AddressMapView({
 
       {isMapReady && !isLoading && (
         <VStack className="pointer-events-none absolute inset-0 items-center justify-center">
-          <Text bold size="lg" className="absolute inset-x-5 text-center" style={{ top: '30%' }}>
-            Pan the map to pin location
-          </Text>
+          {!hideHelperText && (
+            <Text bold size="lg" className="absolute inset-x-5 text-center" style={{ top: '30%' }}>
+              Pan the map to pin location
+            </Text>
+          )}
 
           <Box style={{ transform: [{ translateY: -4 }], width: 125, height: 125 }}>
             <LottieMarker isPanning={isPanning} />

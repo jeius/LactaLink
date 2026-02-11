@@ -2,7 +2,10 @@ import { getApiClient } from '@lactalink/api';
 import { AddressCreateSchema, AddressSchema } from '@lactalink/form-schemas/address';
 import { Address } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
+import { filterUndefined } from '@lactalink/utilities/filters';
 import { latLngToPoint } from '@lactalink/utilities/geo-utils';
+
+const DEFAULT_DEPTH = 3;
 
 export async function createAddress(data: AddressCreateSchema) {
   const apiClient = getApiClient();
@@ -10,6 +13,7 @@ export async function createAddress(data: AddressCreateSchema) {
 
   const newAddress = await apiClient.create({
     collection: 'addresses',
+    depth: DEFAULT_DEPTH,
     data: {
       ...rest,
       geocodedAt: geocodedAt?.toISOString(),
@@ -28,14 +32,19 @@ export async function updateAddress(data: Partial<Omit<AddressSchema, 'id'>> & {
   const apiClient = getApiClient();
   const { coordinates, geocodedAt, id, ...rest } = data;
 
+  const point = coordinates && latLngToPoint(coordinates);
+
+  const updateData = filterUndefined({
+    ...rest,
+    geocodedAt: geocodedAt === null ? null : geocodedAt?.toISOString(),
+    coordinates: point,
+  });
+
   const updatedAddress = await apiClient.updateByID({
     collection: 'addresses',
     id: id,
-    data: {
-      ...rest,
-      geocodedAt: geocodedAt === null ? null : geocodedAt?.toISOString(),
-      coordinates: coordinates && latLngToPoint(coordinates),
-    },
+    depth: DEFAULT_DEPTH,
+    data: updateData,
   });
 
   const updatedUser = await apiClient.auth.getMeUser();

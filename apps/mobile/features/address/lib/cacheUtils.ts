@@ -1,3 +1,4 @@
+import { QUERY_KEYS } from '@/lib/constants/queryKeys';
 import {
   Address,
   Barangay,
@@ -108,4 +109,16 @@ export function removeAddressFromAllCaches(
 ) {
   removeAddressFromCache(client, address);
   removeAddressFromInfiniteCache(client, address, user);
+}
+
+export async function invalidateAddressFromAllCaches(
+  client: QueryClient,
+  address: string | Address
+) {
+  const queryKey = createAddressQuery(address).queryKey;
+  const infQueryKey = QUERY_KEYS.ADDRESSES.INFINITE;
+  await Promise.all([
+    client.invalidateQueries({ queryKey, exact: true }),
+    client.invalidateQueries({ queryKey: infQueryKey }),
+  ]);
 }
