@@ -1,15 +1,12 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
-import { useRecyclingState } from '@shopify/flash-list';
 import React, { useMemo } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
 import { GoogleMapsView, RNMarker } from 'react-native-google-maps-plus';
-import { callback } from 'react-native-nitro-modules';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
-import { Spinner } from '../ui/spinner';
 
 const baseStyle = tva({
   base: 'relative h-32 w-full',
@@ -45,8 +42,6 @@ export function ThumbnailMap({
     };
   }, [center, markerID]);
 
-  const [mapLoaded, setMapLoaded] = useRecyclingState(false, [markerID]);
-
   return (
     <Box className={baseStyle({ className })}>
       {isLoading ? (
@@ -64,14 +59,7 @@ export function ThumbnailMap({
             userInterfaceStyle={theme}
             markers={[locationMarker]}
             pointerEvents="none"
-            onMapLoaded={callback(() => setMapLoaded(true))}
           />
-
-          {!mapLoaded && (
-            <Box className="absolute inset-0 z-50 items-center justify-center bg-background-200">
-              <Spinner size={'small'} />
-            </Box>
-          )}
 
           {onPress && <Pressable disabled={disabled} className="grow" onPress={onPress} />}
         </>
