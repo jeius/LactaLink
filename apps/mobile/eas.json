@@ -6,8 +6,8 @@
   },
   "build": {
     "monorepo": {
-      "pnpm": "10.20.0",
-      "node": "22.21.0",
+      "node": "24.13.1",
+      "pnpm": "10.29.2",
       "env": {
         "EXPO_USE_FAST_RESOLVER": "true"
       }
