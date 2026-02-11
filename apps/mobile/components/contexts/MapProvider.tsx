@@ -1,17 +1,10 @@
-import {
-  createContext,
-  PropsWithChildren,
-  RefObject,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, PropsWithChildren, RefObject, useContext, useState } from 'react';
 import { type GoogleMapsViewRef } from 'react-native-google-maps-plus';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
 import { createStore, useStore, type StoreApi } from 'zustand';
 
 interface MapStore {
-  map: GoogleMapsViewRef | null;
+  map: RefObject<GoogleMapsViewRef | null>;
   isFollowingUser: boolean;
   isUserLocated: boolean;
   zoomLevel: SharedValue<number>;
@@ -39,7 +32,7 @@ function useMapStore<T>(selector: (state: MapStore) => T) {
 }
 
 export const useMap = () => {
-  const map = useMapStore((state) => state.map);
+  const map = useMapStore((state) => state.map.current);
   const setMap = useMapStore((state) => state.actions.setMap);
   return [map, setMap] as const;
 };
@@ -65,12 +58,14 @@ export function MapProvider({ children, mapRef }: MapProviderProps) {
 
   const [mapStore] = useState(() =>
     createStore<MapStore>((set, get) => ({
-      map: null,
+      map: mapRef,
       isFollowingUser: false,
       isUserLocated: false,
       zoomLevel,
       actions: {
-        setMap: (ref) => set({ map: ref }),
+        setMap: (ref) => {
+          get().map.current = ref;
+        },
         setFollowingUser: (following) => set({ isFollowingUser: following }),
         setUserLocated: (located) => set({ isUserLocated: located }),
         setZoomLevel: (zoom) => {
@@ -79,10 +74,6 @@ export function MapProvider({ children, mapRef }: MapProviderProps) {
       },
     }))
   );
-
-  useEffect(() => {
-    if (mapRef.current) mapStore.getState().actions.setMap(mapRef.current);
-  }, [mapRef, mapStore]);
 
   return <MapStoreContext.Provider value={mapStore}>{children}</MapStoreContext.Provider>;
 }
