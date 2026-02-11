@@ -157,14 +157,6 @@ export const Addresses: CollectionConfig<'addresses'> = {
           label: 'Geocoding Metadata',
           fields: [
             {
-              name: 'coordinates',
-              type: 'point',
-              admin: {
-                position: 'sidebar',
-              },
-            },
-
-            {
               name: 'geocodedAddress',
               label: 'Geocoded Address',
               type: 'text',
@@ -174,6 +166,46 @@ export const Addresses: CollectionConfig<'addresses'> = {
                 description: 'Full formatted address returned by Google (for reference)',
               },
             },
+
+            {
+              name: 'coordinates',
+              type: 'point',
+              index: true,
+              admin: {
+                position: 'sidebar',
+              },
+            },
+
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'geocodedAt',
+                  label: 'Geocoded At',
+                  type: 'date',
+                  admin: {
+                    position: 'sidebar',
+                    readOnly: true,
+                    description: 'Timestamp when the address was geocoded',
+                    width: '50%',
+                  },
+                },
+                {
+                  name: 'geocodeSource',
+                  label: 'Geocode Source',
+                  enumName: 'enum_geocode_source',
+                  type: 'select',
+                  options: Object.values(GEOCODE_SOURCES),
+                  admin: {
+                    position: 'sidebar',
+                    readOnly: true,
+                    description: 'Source of the geocoding data',
+                    width: '50%',
+                  },
+                },
+              ],
+            },
+
             {
               name: 'geocodedComponents',
               label: 'Geocoded Components',
@@ -182,28 +214,6 @@ export const Addresses: CollectionConfig<'addresses'> = {
                 position: 'sidebar',
                 readOnly: true,
                 description: 'Address components from Google Geocoding API',
-              },
-            },
-            {
-              name: 'geocodedAt',
-              label: 'Geocoded At',
-              type: 'date',
-              admin: {
-                position: 'sidebar',
-                readOnly: true,
-                description: 'Timestamp when the address was geocoded',
-              },
-            },
-            {
-              name: 'geocodeSource',
-              label: 'Geocode Source',
-              enumName: 'enum_geocode_source',
-              type: 'select',
-              options: Object.values(GEOCODE_SOURCES),
-              admin: {
-                position: 'sidebar',
-                readOnly: true,
-                description: 'Source of the geocoding data',
               },
             },
           ],
