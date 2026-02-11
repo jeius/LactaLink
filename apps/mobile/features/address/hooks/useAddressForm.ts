@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { FormProps } from '@/components/contexts/FormProvider';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { transformToAddressSchema } from '@/lib/utils/transformData';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAddress } from './queries';
 
 type InputType = string | undefined | null;
@@ -33,7 +33,6 @@ export function useAddressForm<T extends InputType = undefined>(id?: T): FormRet
   const form = useForm({
     resolver: zodResolver(id ? addressSchema : addressCreateSchema),
     mode: 'onBlur',
-    values: values,
     defaultValues: {
       name: '',
       isDefault: false,
@@ -43,11 +42,11 @@ export function useAddressForm<T extends InputType = undefined>(id?: T): FormRet
     },
   });
 
-  // const { reset } = form;
+  const { reset } = form;
 
-  // useEffect(() => {
-  //   if (values) reset(values);
-  // }, [reset, values]);
+  useEffect(() => {
+    if (values) reset(values);
+  }, [reset, values]);
 
   return {
     ...form,

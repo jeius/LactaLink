@@ -164,6 +164,10 @@ export function transformToAddressSchema<T extends Address | BaseInput, B extend
         cityMunicipality: extractID(input.cityMunicipality),
         isDefault: input.isDefault || false,
         coordinates,
+        geocodedAt: input.geocodedAt ? new Date(input.geocodedAt) : undefined,
+        geocodedAddress: input.geocodedAddress || undefined,
+        geocodedComponents: input.geocodedComponents || undefined,
+        geocodeSource: input.geocodeSource || undefined,
       };
     },
     options,
