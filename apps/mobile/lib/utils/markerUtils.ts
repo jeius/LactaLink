@@ -1,7 +1,8 @@
 import { Coordinates, Point } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { latLngToPoint, pointToLatLng, validatePoint } from '@lactalink/utilities/geo-utils';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
+import { isValidCoordinate } from '@lactalink/utilities/geolib';
 
 export function createMarkerID<TSlug extends CollectionSlug>(
   slug: TSlug,
@@ -12,35 +13,35 @@ export function createMarkerID<TSlug extends CollectionSlug>(
   return `${slug}-${id}-[${longitude},${latitude}]`;
 }
 
-export function destructureMarkerID(markerID: string): {
+export function parseMarkerID(markerID: string): {
   slug: CollectionSlug;
   id: string;
   coordinates: Coordinates;
-} {
+} | null {
   const parts = markerID.split('-');
   if (parts.length < 3) {
-    throw new Error(`Invalid markerID format: ${markerID}`);
+    console.warn(`Invalid markerID format: ${markerID}`);
+    return null;
   }
 
   const slug = parts[0] as CollectionSlug;
   const id = parts.slice(1, parts.length - 1).join('-');
   const coordPart = parts[parts.length - 1]!;
+
   const match = coordPart.match(/\[([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)\]/);
   if (!match) {
-    throw new Error(`Invalid coordinates format in markerID: ${markerID}`);
+    console.warn(`Invalid coordinates format in markerID: ${markerID}`);
+    return null;
   }
 
   const longitude = parseFloat(match[1] ?? '0');
   const latitude = parseFloat(match[2] ?? '0');
+  const coordinates: Coordinates = { latitude, longitude };
 
-  try {
-    if (!validatePoint(latLngToPoint({ latitude, longitude }))) {
-      throw new Error(`Invalid coordinate values in markerID: ${markerID}`);
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error(`Error validating coordinates in markerID: ${markerID}`);
+  if (!isValidCoordinate(coordinates)) {
+    console.warn(`Invalid coordinate values in markerID: ${markerID}`);
+    return null;
   }
 
-  return { slug, id, coordinates: { latitude, longitude } };
+  return { slug, id, coordinates };
 }

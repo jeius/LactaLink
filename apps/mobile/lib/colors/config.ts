@@ -1,6 +1,6 @@
 import { ColorsConfig } from '@/lib/types/colors';
 
-export const colorsConfig: ColorsConfig = {
+const Colors: ColorsConfig = {
   light: {
     primary: {
       '0': '#FFF3F4',
@@ -308,3 +308,7 @@ export const colorsConfig: ColorsConfig = {
     },
   },
 };
+
+export { Colors as colorsConfig };
+
+export default Colors;
