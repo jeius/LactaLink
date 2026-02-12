@@ -1,14 +1,16 @@
 import { Box } from '@/components/ui/box';
 import { FlashList, FlashListProps, FlashListRef, ListRenderItemInfo } from '@shopify/flash-list';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import Animated, {
   Extrapolation,
   interpolate,
   SharedValue,
+  useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
   useScrollOffset,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 type PickedFlashListProps<T> = Pick<
   FlashListProps<T>,
@@ -62,13 +64,26 @@ export function BasicCarousel<T>({
   keyExtractor,
   itemWidth,
   itemSpacing = 12,
-  scaleRange = [0.9, 1.0, 0.9],
+  scaleRange = [0.85, 1.0, 0.85],
   ...props
 }: BasicCarouselProps<T>) {
   const animatedRef = useAnimatedRef<FlashListRef<T>>();
   const scrollOffset = useScrollOffset(animatedRef);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
   const itemSize = itemWidth + itemSpacing;
+
+  // Track the focused index and update React state when it changes
+  useAnimatedReaction(
+    () => Math.round(scrollOffset.value / itemSize),
+    (currentIndex, previousIndex) => {
+      'worklet';
+      if (currentIndex !== previousIndex) {
+        scheduleOnRN(setFocusedIndex, currentIndex);
+      }
+    },
+    [itemSize]
+  );
 
   return (
     <FlashList
@@ -78,12 +93,12 @@ export function BasicCarousel<T>({
       showsHorizontalScrollIndicator={false}
       data={data}
       snapToOffsets={data.map((_, i) => i * itemSize)}
-      ItemSeparatorComponent={() => <Box style={{ width: itemSpacing }} />}
       decelerationRate="fast"
+      ItemSeparatorComponent={() => <Box style={{ width: itemSpacing }} />}
       scrollEventThrottle={16}
       renderItem={(info) => {
         const { index } = info;
-        const isFocused = Math.round(scrollOffset.value / itemSize) === index;
+        const isFocused = focusedIndex === index;
         return (
           <ScaleIndicator
             index={index}
