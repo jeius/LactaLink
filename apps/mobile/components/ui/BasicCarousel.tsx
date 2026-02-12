@@ -1,6 +1,7 @@
 import { Box } from '@/components/ui/box';
 import { FlashList, FlashListProps, FlashListRef, ListRenderItemInfo } from '@shopify/flash-list';
 import { PropsWithChildren, useState } from 'react';
+import { View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -11,6 +12,7 @@ import Animated, {
   useScrollOffset,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { Spinner } from './spinner';
 
 type PickedFlashListProps<T> = Pick<
   FlashListProps<T>,
@@ -37,6 +39,9 @@ export interface BasicCarouselProps<T> extends BasicCarouselConfig, PickedFlashL
   data: T[];
   /** Render function for each item */
   renderItem: (info: ListRenderItemInfo<T> & { isFocused: boolean }) => React.ReactElement | null;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 /**
@@ -65,6 +70,9 @@ export function BasicCarousel<T>({
   itemWidth,
   itemSpacing = 12,
   scaleRange = [0.85, 1.0, 0.85],
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
   ...props
 }: BasicCarouselProps<T>) {
   const animatedRef = useAnimatedRef<FlashListRef<T>>();
@@ -94,8 +102,14 @@ export function BasicCarousel<T>({
       data={data}
       snapToOffsets={data.map((_, i) => i * itemSize)}
       decelerationRate="fast"
-      ItemSeparatorComponent={() => <Box style={{ width: itemSpacing }} />}
       scrollEventThrottle={16}
+      ItemSeparatorComponent={() => <Box style={{ width: itemSpacing }} />}
+      ListFooterComponentStyle={{ width: itemSize / 2 }}
+      ListFooterComponent={
+        <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          {hasNextPage && isFetchingNextPage && <Spinner />}
+        </View>
+      }
       renderItem={(info) => {
         const { index } = info;
         const isFocused = focusedIndex === index;
