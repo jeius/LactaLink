@@ -40,9 +40,6 @@ export function VerticalInfiniteList<T>({
     <FlashListComponent
       {...props}
       renderItem={(info) => props.renderItem({ ...info, isPlaceholder: isPlaceholderData })}
-      ListFooterComponent={
-        isFetchingNextPage ? <Spinner size="small" className="mx-auto mb-4" /> : null
-      }
       onEndReachedThreshold={props.onEndReachedThreshold ?? 0.2}
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
       contentContainerStyle={[props.contentContainerStyle, { flexGrow: 1 }]}
@@ -56,6 +53,15 @@ export function VerticalInfiniteList<T>({
       }
       ListEmptyComponent={
         props.ListEmptyComponent ?? <NoData title={emptyListLabel || `Nothing to show here`} />
+      }
+      ListFooterComponentStyle={[
+        { alignItems: 'center', justifyContent: 'center' },
+        props.ListFooterComponentStyle,
+      ]}
+      ListFooterComponent={
+        props.ListFooterComponent ?? (
+          <Box>{isFetchingNextPage && <Spinner size="small" className="m-4" />}</Box>
+        )
       }
     />
   );
