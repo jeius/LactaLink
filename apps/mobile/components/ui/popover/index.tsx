@@ -43,7 +43,7 @@ cssInterop(MotionView, { className: 'style' });
 cssInterop(AnimatedPressable, { className: 'style' });
 
 const popoverStyle = tva({
-  base: 'group/popover web:pointer-events-none h-full w-full items-center justify-center',
+  base: 'group/popover h-full w-full items-center justify-center web:pointer-events-none',
   variants: {
     size: {
       xs: '',
@@ -56,7 +56,7 @@ const popoverStyle = tva({
 });
 
 const popoverArrowStyle = tva({
-  base: 'bg-background-0 border-outline-100 absolute z-[1] h-3.5 w-3.5 overflow-hidden border',
+  base: 'absolute z-[1] h-3.5 w-3.5 overflow-hidden border border-outline-100 bg-background-0',
   variants: {
     placement: {
       'top left':
@@ -86,15 +86,15 @@ const popoverArrowStyle = tva({
 });
 
 const popoverBackdropStyle = tva({
-  base: 'web:cursor-default absolute bottom-0 left-0 right-0 top-0',
+  base: 'absolute bottom-0 left-0 right-0 top-0 web:cursor-default',
 });
 
 const popoverCloseButtonStyle = tva({
-  base: 'group/popover-close-button data-[focus-visible=true]:web:bg-background-100 web:outline-0 web:cursor-pointer z-[1] rounded-sm',
+  base: 'group/popover-close-button z-[1] rounded-sm web:cursor-pointer web:outline-0 data-[focus-visible=true]:web:bg-background-100',
 });
 
 const popoverContentStyle = tva({
-  base: 'bg-background-0 border-outline-100 w-full overflow-hidden rounded-lg border',
+  base: 'w-full overflow-hidden rounded-lg border border-outline-100 bg-background-0',
   parentVariants: {
     size: {
       xs: 'max-w-[360px] p-3.5',
@@ -330,4 +330,15 @@ export {
   PopoverContent,
   PopoverFooter,
   PopoverHeader,
+};
+
+export type {
+  IPopoverArrowProps as PopoverArrowProps,
+  IPopoverBackdropProps as PopoverBackdropProps,
+  IPopoverBodyProps as PopoverBodyProps,
+  IPopoverCloseButtonProps as PopoverCloseButtonProps,
+  IPopoverContentProps as PopoverContentProps,
+  IPopoverFooterProps as PopoverFooterProps,
+  IPopoverHeaderProps as PopoverHeaderProps,
+  IPopoverProps as PopoverProps,
 };
