@@ -52,12 +52,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
-      'expo-asset',
-      {
-        assets: ['./assets/images', './assets/icons', './assets/logo'],
-      },
-    ],
-    [
       'expo-camera',
       {
         cameraPermission: 'Allow LactaLink to access your camera',
