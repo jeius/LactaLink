@@ -1,7 +1,7 @@
 import { Box } from '@/components/ui/box';
 import { FlashList, FlashListProps, FlashListRef, ListRenderItemInfo } from '@shopify/flash-list';
-import { PropsWithChildren, useState } from 'react';
-import { View } from 'react-native';
+import debounce from 'lodash/debounce';
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -42,6 +42,8 @@ export interface BasicCarouselProps<T> extends BasicCarouselConfig, PickedFlashL
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
+  focusedIndex?: number;
+  setFocusedIndex?: (index: number) => void;
 }
 
 /**
@@ -73,25 +75,67 @@ export function BasicCarousel<T>({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
+  focusedIndex: externalFocusedIndex,
+  setFocusedIndex: externalSetFocusedIndex,
   ...props
 }: BasicCarouselProps<T>) {
   const animatedRef = useAnimatedRef<FlashListRef<T>>();
   const scrollOffset = useScrollOffset(animatedRef);
-  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const [localFocusedIndex, setLocalFocusedIndex] = useState(0);
+  const [isProgrammaticScroll, setIsScrollProgrammatic] = useState(false);
+
+  const focusedIndex = externalFocusedIndex ?? localFocusedIndex;
+  const setFocusedIndex = externalSetFocusedIndex ?? setLocalFocusedIndex;
 
   const itemSize = itemWidth + itemSpacing;
+
+  const handleIndexChange = useMemo(
+    () =>
+      debounce(
+        (index: number) => {
+          if (!isProgrammaticScroll) setFocusedIndex(index);
+        },
+        300,
+        { trailing: true }
+      ),
+    [setFocusedIndex, isProgrammaticScroll]
+  );
 
   // Track the focused index and update React state when it changes
   useAnimatedReaction(
     () => Math.round(scrollOffset.value / itemSize),
     (currentIndex, previousIndex) => {
       'worklet';
-      if (currentIndex !== previousIndex) {
-        scheduleOnRN(setFocusedIndex, currentIndex);
+      const validIndex = currentIndex >= 0 && currentIndex < data.length;
+      const hasIndexChanged = currentIndex !== previousIndex;
+      if (hasIndexChanged && validIndex) {
+        scheduleOnRN(handleIndexChange, currentIndex);
       }
-    },
-    [itemSize]
+    }
   );
+
+  useEffect(() => {
+    const targetOffset = focusedIndex * itemSize;
+    const currentOffset = scrollOffset.value;
+    const threshold = itemSize * 0.1; // 10% threshold to avoid unnecessary scrolls
+
+    if (Math.abs(targetOffset - currentOffset) > threshold) {
+      setIsScrollProgrammatic(true);
+      animatedRef.current?.scrollToOffset({
+        offset: targetOffset,
+        animated: true,
+      });
+      // Reset the flag after scroll completes
+      setTimeout(() => {
+        setIsScrollProgrammatic(false);
+      }, 500);
+    }
+  }, [animatedRef, focusedIndex, itemSize]);
+
+  useEffect(() => {
+    return () => handleIndexChange.cancel();
+  }, [handleIndexChange]);
 
   return (
     <FlashList
@@ -106,9 +150,9 @@ export function BasicCarousel<T>({
       ItemSeparatorComponent={() => <Box style={{ width: itemSpacing }} />}
       ListFooterComponentStyle={{ width: itemSize / 2 }}
       ListFooterComponent={
-        <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        <Box className="flex-1 items-center justify-center">
           {hasNextPage && isFetchingNextPage && <Spinner />}
-        </View>
+        </Box>
       }
       renderItem={(info) => {
         const { index } = info;
