@@ -1,4 +1,6 @@
-import { Route } from 'react-native-tab-view';
+import { Route as RNRoute } from 'react-native-tab-view';
+
+export type Route = RNRoute;
 
 export interface SceneProps {
   /**

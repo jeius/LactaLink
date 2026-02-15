@@ -1,3 +1,4 @@
+import { RIPPLE_COLOR } from '@/lib/colors';
 import { TabBar as RNTabBar, Route, TabBarProps } from 'react-native-tab-view';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Text } from '../ui/text';
@@ -16,8 +17,8 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
   routes.forEach((route) => {
     options[route.key] = {
       ...options[route.key],
-      label: ({ color, labelText }) => (
-        <Text className="text-center font-JakartaSemiBold" size="sm" style={{ color }}>
+      label: ({ color, labelText, style }) => (
+        <Text className="text-center font-JakartaSemiBold" size="sm" style={[{ color }, style]}>
           {labelText}
         </Text>
       ),
@@ -39,6 +40,7 @@ export function TabBar<T extends Route>(props: TabBarProps<T>) {
       pressColor={pressColor}
       options={options}
       scrollEnabled={props.scrollEnabled || true}
+      android_ripple={{ color: RIPPLE_COLOR, foreground: true }}
     />
   );
 }
