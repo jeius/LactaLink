@@ -59,11 +59,11 @@
     "@nandorojo/galeria": "^2.0.2",
     "@react-native-aria/focus": "^0.2.9",
     "@react-native-community/datetimepicker": "8.4.4",
-    "@react-native-community/netinfo": "^11.4.1",
+    "@react-native-community/netinfo": "~11.4.1",
     "@react-native-google-signin/google-signin": "^16.1.1",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-native/metro-config": "^0.80.0",
-    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/bottom-tabs": "~7.4.0",
     "@react-navigation/drawer": "^7.5.0",
     "@react-navigation/elements": "^2.4.3",
     "@react-navigation/native": "^7.1.17",
@@ -121,9 +121,9 @@
     "react-native-gifted-chat": "^3.3.2",
     "react-native-google-maps-plus": "^1.11.0",
     "react-native-google-places-textinput": "^0.9.1",
-    "react-native-keyboard-controller": "^1.18.5",
+    "react-native-keyboard-controller": "1.18.5",
     "react-native-mmkv": "^4.1.2",
-    "react-native-nitro-modules": "^0.33.2",
+    "react-native-nitro-modules": "^0.33.9",
     "react-native-otp-entry": "^1.8.5",
     "react-native-pager-view": "~6.9.1",
     "react-native-reanimated": "~4.1.6",
@@ -167,8 +167,5 @@
         "listUnknownPackages": false
       }
     }
-  },
-  "peerDependencies": {
-    "@supabase/supabase-js": "^2.89.0"
   }
 }
