@@ -1,4 +1,4 @@
-import { Donation, Image as ImageType } from '@lactalink/types/payload-generated-types';
+import { Donation } from '@lactalink/types/payload-generated-types';
 
 import { MilkIcon, PackagePlusIcon } from 'lucide-react-native';
 import React from 'react';
@@ -6,6 +6,7 @@ import React from 'react';
 import { CollectionMethodTag, StorageTypeTag } from '@/features/donation&request/components/tags';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
+import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { Link, useRouter } from 'expo-router';
 import { AnimatedProgress } from '../animated/progress';
@@ -32,7 +33,6 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
 
   const router = useRouter();
   const { data: user } = useMeUser();
-  const profile = extractCollection(user?.profile?.value);
 
   const {
     details: { milkSample },
@@ -41,13 +41,9 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
   } = data;
 
   const volumePercentage = Math.round((remainingVolume / volume) * 100);
-
-  const donor = extractCollection(data.donor);
-
-  const milkImages = milkSample as ImageType[] | undefined | null;
-  const image = extractOneImageData(milkImages);
-
-  const isOwner = profile && profile.id === donor?.id;
+  const donor = { value: data.donor, relationTo: 'individuals' } as const;
+  const image = extractOneImageData(extractCollection(milkSample));
+  const isOwner = isEqualProfiles(user?.profile, donor);
 
   function handleRequestPress() {
     const params: RequestCreateParams = { mdid: data.id };
@@ -68,11 +64,7 @@ export function DonationInfoCard({ data }: DonationInfoCardProps) {
           <Text size="sm">Total Volume</Text>
         </VStack>
 
-        <ProfileTag
-          direction="rtl"
-          label="Donor"
-          profile={donor && { value: donor, relationTo: 'individuals' }}
-        />
+        <ProfileTag direction="rtl" label="Donor" profile={donor} />
       </HStack>
 
       <Divider />
