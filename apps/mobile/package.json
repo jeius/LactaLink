@@ -15,6 +15,8 @@
     "build:deps": "pnpm -w run build:packages",
     "build:android-dev": "eas build:dev --platform android --profile development",
     "build:ios-dev": "eas build:dev --platform ios --profile development",
+    "build:local:android-dev": "eas build --platform android --profile development --local --output ./build/android/dev.apk",
+    "build:local:android-preview": "eas build --platform android --profile preview --local --output ./build/android/preview.apk",
     "preview:android": "eas build --platform android --profile preview",
     "preview:update": "eas update --channel preview --branch preview-update --platform android --message \"Updated preview build\" --non-interactive",
     "lint": "eslint --ext js,ts,tsx .",

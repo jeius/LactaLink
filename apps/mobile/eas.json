@@ -9,7 +9,9 @@
       "node": "24.13.1",
       "pnpm": "10.29.2",
       "env": {
-        "EXPO_USE_FAST_RESOLVER": "true"
+        "EXPO_USE_FAST_RESOLVER": "true",
+        "ANDROID_MAPS_API_KEY": "$ANDROID_MAPS_API_KEY",
+        "IOS_MAPS_API_KEY": "$IOS_MAPS_API_KEY"
       }
     },
     "development": {
@@ -20,7 +22,8 @@
       "environment": "development",
       "env": {
         "EXPO_PUBLIC_API_URL": "http://localhost:3000",
-        "EXPO_PUBLIC_ENVIRONMENT": "development"
+        "EXPO_PUBLIC_ENVIRONMENT": "development",
+        "NODE_ENV": "development"
       }
     },
     "preview": {
@@ -32,7 +35,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com"
+        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com",
+        "NODE_ENV": "production"
       }
     },
     "production": {
