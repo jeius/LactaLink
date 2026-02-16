@@ -5,13 +5,15 @@ import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
 import React, { ComponentProps, FC } from 'react';
-import { ActivityIndicator, GestureResponderEvent, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, GestureResponderEvent, Text, View } from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  WithSpringConfig,
+  withTiming,
+  WithTimingConfig,
 } from 'react-native-reanimated';
+import { Pressable } from '../pressable';
 import { buttonGroupStyle, buttonIconStyle, buttonStyle, buttonTextStyle } from './styles';
 
 const SCOPE = 'BUTTON';
@@ -25,6 +27,13 @@ const UIButton = createButton({
   Spinner: ActivityIndicator,
   Icon: UIIcon,
 });
+
+const AnimatedUIButton = Animated.createAnimatedComponent(UIButton);
+
+const timingConfig: WithTimingConfig = {
+  duration: 250,
+  easing: Easing.elastic(1.3),
+};
 
 cssInterop(PrimitiveIcon, {
   className: {
@@ -54,14 +63,9 @@ interface ButtonProps extends IButtonProps {
    * @default false
    */
   disablePressAnimation?: boolean;
+  disableRipple?: boolean;
+  minScale?: number;
 }
-
-const AnimatedUIButton = Animated.createAnimatedComponent(UIButton);
-
-const springConfig: WithSpringConfig = {
-  damping: 60,
-  stiffness: 600,
-};
 
 const Button: React.ForwardRefExoticComponent<
   ButtonProps & React.RefAttributes<React.ComponentRef<typeof UIButton>>
@@ -75,26 +79,28 @@ const Button: React.ForwardRefExoticComponent<
     disablePressAnimation = false,
     onPressIn,
     onPressOut,
+    disableRipple = false,
+    minScale = 0.97,
     ...props
   },
   ref
 ) {
-  const scale = useSharedValue(1);
+  const progress = useSharedValue(false);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = withTiming(progress.value ? minScale : 1, timingConfig);
+    return { transform: [{ scale: scale }] };
+  });
 
   const handlePressIn = (e: GestureResponderEvent) => {
-    scale.value = withSpring(0.95, springConfig);
+    if (!disablePressAnimation) progress.value = true;
     onPressIn?.(e);
   };
 
   const handlePressOut = (e: GestureResponderEvent) => {
-    scale.value = withSpring(1, springConfig);
+    if (!disablePressAnimation) progress.value = false;
     onPressOut?.(e);
   };
-
-  const animatedStyle = useAnimatedStyle(() => {
-    if (disablePressAnimation || !animateOnPress) return {};
-    return { transform: [{ scale: scale.value }] };
-  });
 
   return (
     <AnimatedUIButton
@@ -105,6 +111,7 @@ const Button: React.ForwardRefExoticComponent<
       className={buttonStyle({ variant, size, action, class: className })}
       context={{ variant, size, action }}
       style={[animatedStyle, props.style]}
+      android_ripple={disableRipple ? null : undefined}
     />
   );
 });
@@ -127,8 +134,9 @@ const ButtonText: React.ForwardRefExoticComponent<
 
     return (
       <UIButton.Text
-        ref={ref}
         {...props}
+        ref={ref}
+        pointerEvents={props.pointerEvents ?? 'none'}
         className={buttonTextStyle({
           parentVariants: {
             variant: parentVariant,
