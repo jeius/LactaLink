@@ -1,44 +1,52 @@
-import { ColorCategory, ColorsConfig, Shade } from '@/lib/types/colors';
+import { ColorCategory, ColorsConfig, Shade, ThemeColors } from '@/lib/types/colors';
 import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
-import { Theme } from '@lactalink/types';
+import { produce } from 'immer';
 import { ColorValue } from 'react-native';
 import { getTheme } from '../stores/themeStore';
 import { colorsConfig } from './config';
 
-export const getHexColor = (
-  mode: 'light' | 'dark',
-  category: keyof ColorsConfig['light'],
-  shade: keyof NonNullable<ColorsConfig['light'][keyof ColorsConfig['light']]>
-): ColorValue | undefined => {
-  const colorValue = colorsConfig?.[mode]?.[category]?.[shade];
-
-  if (!colorValue) return undefined;
-
-  const formatted = colorValue.trim();
-
-  return formatted;
-};
-
-export const getRgbColor = (
-  mode: 'light' | 'dark',
-  category: keyof ColorsConfig['light'],
-  shade: keyof NonNullable<ColorsConfig['light'][keyof ColorsConfig['light']]>
-): ColorValue | undefined => {
-  const colorValue = colorsConfig?.[mode]?.[category]?.[shade];
-
-  if (!colorValue) return undefined;
-
+export function formatToRgb(color: string): string {
   // Normalize color string to ensure consistent comma-separated values
-  const formatted = colorValue
+  const formatted = color
     .trim()
     .split(/[\s,]+/) // split by spaces or commas
     .join(',');
 
   return `rgb(${formatted})`;
-};
+}
+
+export function getRgbColor(
+  mode: 'light' | 'dark',
+  category: keyof ColorsConfig['light'],
+  shade: keyof NonNullable<ColorsConfig['light'][keyof ColorsConfig['light']]>
+): ColorValue | undefined {
+  const colorValue = colorsConfig?.[mode]?.[category]?.[shade];
+
+  if (!colorValue) return undefined;
+
+  return formatToRgb(colorValue);
+}
+
+export function getThemeColors(mode: 'light' | 'dark'): ThemeColors {
+  const colors = colorsConfig[mode];
+  return produce(colors, (draft) => {
+    for (const value of Object.values(draft)) {
+      for (const [shade, color] of Object.entries(value)) {
+        if (color) value[shade] = formatToRgb(color);
+      }
+    }
+  });
+}
+
+export function getHexColor(
+  mode: 'light' | 'dark',
+  category: keyof ColorsConfig['light'],
+  shade: keyof NonNullable<ColorsConfig['light'][keyof ColorsConfig['light']]>
+): ColorValue | undefined {
+  return getRgbColor(mode, category, shade);
+}
 
 export function getMilkBagStatusColor(
-  theme: Theme,
   status?: keyof typeof MILK_BAG_STATUS,
   shade: number = 400
 ): ColorValue {
@@ -51,7 +59,20 @@ export function getMilkBagStatusColor(
     DRAFT: 'warning',
   };
 
-  return (status && getHexColor(theme, colors[status], shade)) || '#a2a3a3';
+  return (status && getColor(colors[status], shade.toString() as Shade)) || '#a2a3a3';
+}
+
+export function getColor(category: ColorCategory, shade: Shade) {
+  const theme = getTheme();
+  return getRgbColor(theme, category, shade) || 'transparent';
+}
+
+export function getPrimaryColor(shade: Shade = '500') {
+  return getColor('primary', shade);
+}
+
+export function getTypographyColor(shade: Shade = '950') {
+  return getColor('typography', shade);
 }
 
 export function getDonationRequestStatusColor(
@@ -69,19 +90,4 @@ export function getDonationRequestStatusColor(
   };
 
   return (status && getColor(colors[status], shade)) || '#a2a3a3';
-}
-
-export function getPrimaryColor(shade: Shade = '500') {
-  const theme = getTheme();
-  return getHexColor(theme, 'primary', shade)?.toString();
-}
-
-export function getTypographyColor(shade: Shade = '950') {
-  const theme = getTheme();
-  return getHexColor(theme, 'typography', shade)?.toString();
-}
-
-export function getColor(category: ColorCategory, shade: Shade) {
-  const theme = getTheme();
-  return colorsConfig[theme][category][shade] || 'transparent';
 }
