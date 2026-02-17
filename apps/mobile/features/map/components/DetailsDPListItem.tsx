@@ -1,9 +1,9 @@
 import DeliveryModeIcons from '@/components/DeliveryModeIcons';
+import TruncatedText from '@/components/TruncatedText';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
@@ -31,9 +31,9 @@ export default function DetailsDPListItem({ item, onLocatePress }: DetailsDPList
 
         <HStack space="xs">
           <Icon as={MapPinIcon} />
-          <Text size="sm" numberOfLines={2} className="flex-1">
+          <TruncatedText initialLines={2} size="sm" containerClassName="flex-1">
             {address?.displayName || 'No address provided'}
-          </Text>
+          </TruncatedText>
         </HStack>
       </VStack>
 
