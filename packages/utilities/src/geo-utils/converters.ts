@@ -1,5 +1,6 @@
 import { Boundary, Coordinates, MapRegion, Point, Polygon } from '@lactalink/types';
 import getBoundsOfDistance from 'geolib/es/getBoundsOfDistance';
+import { GeolibBounds } from 'geolib/es/types';
 
 export function boundsToPolygon(center: Coordinates, radius: number): Polygon | undefined {
   // Get the southwestern and northeastern bounds
@@ -37,6 +38,16 @@ export function regionToBoundary(region: MapRegion): Boundary {
     minY: latMin,
     maxX: lngMax,
     maxY: latMax,
+  };
+}
+
+export function boundaryToLatLngBounds(boundary: GeolibBounds): {
+  northeast: Coordinates;
+  southwest: Coordinates;
+} {
+  return {
+    northeast: { latitude: boundary.maxLat, longitude: boundary.maxLng },
+    southwest: { latitude: boundary.minLat, longitude: boundary.minLng },
   };
 }
 
