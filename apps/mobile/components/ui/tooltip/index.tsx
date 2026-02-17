@@ -1,12 +1,12 @@
 'use client';
-import React from 'react';
-import { createTooltip } from '@gluestack-ui/tooltip';
-import { View, Text, ViewStyle } from 'react-native';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { Motion, AnimatePresence, MotionComponentProps } from '@legendapp/motion';
+import { createTooltip } from '@gluestack-ui/tooltip';
+import { AnimatePresence, Motion, MotionComponentProps } from '@legendapp/motion';
 import { cssInterop } from 'nativewind';
+import React from 'react';
+import { Text, View, ViewStyle } from 'react-native';
 
 type IMotionViewProps = React.ComponentProps<typeof View> &
   MotionComponentProps<typeof View, ViewStyle, unknown, unknown, unknown>;
@@ -23,24 +23,22 @@ export const UITooltip = createTooltip({
 cssInterop(MotionView, { className: 'style' });
 
 const tooltipStyle = tva({
-  base: 'web:pointer-events-none h-full w-full',
+  base: 'h-full w-full web:pointer-events-none',
 });
 
 const tooltipContentStyle = tva({
-  base: 'bg-background-900 web:pointer-events-auto rounded-sm px-3 py-1',
+  base: 'bg-background-0/90 rounded-sm px-3 py-1 web:pointer-events-auto',
 });
 
 const tooltipTextStyle = tva({
-  base: 'web:select-none text-typography-50 text-xs font-normal tracking-normal',
+  base: 'text-typography-900/90 font-sans text-xs tracking-normal web:select-none',
 
   variants: {
     isTruncated: {
-      true: {
-        props: 'line-clamp-1 truncate',
-      },
+      true: 'line-clamp-1 truncate',
     },
     bold: {
-      true: 'font-bold',
+      true: 'font-JakartaBold',
     },
     underline: {
       true: 'underline',
@@ -65,7 +63,7 @@ const tooltipTextStyle = tva({
       true: 'text-xs',
     },
     italic: {
-      true: 'italic',
+      true: 'font-JakartaItalic',
     },
     highlight: {
       true: 'bg-yellow-500',
