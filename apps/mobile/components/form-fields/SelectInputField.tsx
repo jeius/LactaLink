@@ -93,6 +93,7 @@ export function SelectInputField<
             <Select.List
               data={items}
               keyExtractor={(item, idx) => listKeyExtractor({ id: transformItem(item).value }, idx)}
+              nestedScrollEnabled
               renderItem={({ item, isPlaceholder }) =>
                 isPlaceholder ? (
                   <Skeleton variant="rounded" className="h-6" />
