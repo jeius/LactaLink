@@ -18,7 +18,7 @@ import React, {
 import { Platform } from 'react-native';
 import { GluestackUIProvider } from '../ui/gluestack-ui-provider';
 
-import { colorsConfig } from '@/lib/colors';
+import { getThemeColors } from '@/lib/colors';
 import { useThemeStore } from '@/lib/stores/themeStore';
 import { ThemeColors } from '@/lib/types/colors';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -37,7 +37,7 @@ export const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
   const storedTheme = Storage.getString(MMKV_KEYS.THEME) as Theme | undefined;
 
   const { colorScheme: theme = 'light', setColorScheme } = useColorScheme();
-  const themeColors = colorsConfig[theme];
+  const themeColors = getThemeColors(theme);
 
   const setThemeStore = useThemeStore((s) => s.setTheme);
 
