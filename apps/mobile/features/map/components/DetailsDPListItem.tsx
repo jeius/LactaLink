@@ -5,22 +5,41 @@ import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { VStack } from '@/components/ui/vstack';
-import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { useCurrentCoordinates } from '@/lib/stores';
+import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
+import { latLngToPoint } from '@lactalink/utilities/geo-utils';
+import { useRouter } from 'expo-router';
 import { MapPinIcon, RouteIcon } from 'lucide-react-native';
 import React, { useCallback } from 'react';
+import { MapQueryParams } from '../lib/types';
 
 interface DetailsDPListItemProps {
   item: DeliveryPreference;
-  onLocatePress?: (address: Address) => void;
 }
 
-export default function DetailsDPListItem({ item, onLocatePress }: DetailsDPListItemProps) {
+export default function DetailsDPListItem({ item }: DetailsDPListItemProps) {
+  const router = useRouter();
   const address = extractCollection(item.address);
+  const currentCoordinates = useCurrentCoordinates();
 
   const handleLocatePress = useCallback(() => {
-    if (address) onLocatePress?.(address);
-  }, [address, onLocatePress]);
+    const coords = address?.coordinates;
+
+    if (coords && currentCoordinates) {
+      const startPoint = latLngToPoint(currentCoordinates);
+      const destPoint = coords;
+
+      // Clear any existing marker or coordinate params before setting new ones
+      router.setParams({ mrk: undefined, lat: undefined, lng: undefined } as MapQueryParams);
+
+      // Set the start and destination points in the query params to trigger map camera update
+      router.setParams({
+        start: startPoint.toString(),
+        dest: destPoint.toString(),
+      } as MapQueryParams);
+    }
+  }, [address?.coordinates, currentCoordinates, router]);
 
   return (
     <Card variant="elevated" className="flex-row items-center gap-2">

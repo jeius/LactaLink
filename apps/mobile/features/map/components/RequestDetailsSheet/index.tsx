@@ -12,16 +12,14 @@ import { useRequest } from '@/features/donation&request/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { getColor } from '@/lib/colors/getColor';
 import { DonationCreateParams } from '@/lib/types/donationRequest';
-import { Address, DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
+import { DeliveryPreference, Request } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useRouter } from 'expo-router';
 import { ClipboardListIcon, EditIcon } from 'lucide-react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MapQueryParams } from '../../lib/types';
 import DetailsDPListItem from '../DetailsDPListItem';
 import { Details, DetailsSkeleton } from './Details';
 
@@ -33,8 +31,6 @@ interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'
 }
 
 function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetProps) {
-  const router = useRouter();
-
   const { data, isLoading, ...query } = useRequest(requestID);
 
   const deliveryPreferences = useMemo(
@@ -48,18 +44,6 @@ function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetP
   const sheetRef = useRef<SheetRef>(null);
   const presentedRef = useRef(false);
   const [footerHeight, setFooterHeight] = useState(0);
-
-  const handleOnLocate = useCallback(
-    (address: Address) => {
-      const point = address.coordinates;
-      if (!point) return;
-      const { latitude: lat, longitude: lng } = pointToLatLng(point);
-      sheetRef.current?.dismiss();
-      presentedRef.current = false;
-      router.setParams({ lat: lat.toString(), lng: lng.toString() } as MapQueryParams);
-    },
-    [router]
-  );
 
   useEffect(() => {
     if (open) {
@@ -113,7 +97,7 @@ function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetP
             {isPlaceHolderData(item) ? (
               <Skeleton className="h-24 w-full rounded-lg" />
             ) : (
-              <DetailsDPListItem item={item} onLocatePress={handleOnLocate} />
+              <DetailsDPListItem item={item} />
             )}
           </Box>
         )}

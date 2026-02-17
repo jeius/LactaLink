@@ -31,6 +31,15 @@ export type MapQueryParams = {
    * Example: `lat=37.7749&lng=-122.4194`
    */
   lng?: string;
+
+  /**
+   * Starting point for directions, expected in the format of `[<latitude>,<longitude>]`.
+   */
+  start?: string;
+  /**
+   * Destination point for directions, expected in the format of `[<latitude>,<longitude>]`.
+   */
+  dest?: string;
 };
 
 export type MapListingSlug = Extract<

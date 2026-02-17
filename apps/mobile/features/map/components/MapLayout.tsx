@@ -2,20 +2,27 @@ import { DataMarkerProvider, useDataMarkers } from '@/components/contexts/marker
 import { MapView } from '@/components/map/MapView';
 import { MapQueryParams } from '@/features/map/lib/types';
 import { parseMarkerID } from '@/lib/utils/markerUtils';
+import { parsePointString, pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
-import { PropsWithChildren, useCallback, useEffect, useRef } from 'react';
-import { GoogleMapsViewRef, RNLatLng } from 'react-native-google-maps-plus';
+import { produce } from 'immer';
+import { PropsWithChildren, useCallback, useEffect, useMemo, useRef } from 'react';
+import { GoogleMapsViewRef, RNLatLng, RNMapPadding } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { mrk: markerID, lat, lng } = queryParams;
+  const { mrk: markerID, lat, lng, start, dest } = queryParams;
 
   const mapRef = useRef<GoogleMapsViewRef>(null);
   const prevMarkerIDRef = useRef<string | undefined>(markerID);
   const markers = useDataMarkers();
+
+  const mapPadding = useMemo<RNMapPadding>(
+    () => ({ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 48 }),
+    [insets.bottom, insets.top]
+  );
 
   const handleMarkerPress = useCallback(
     (markerID: string) => router.setParams({ mrk: markerID } as MapQueryParams),
@@ -46,6 +53,20 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
       if (!isNaN(latitude) && !isNaN(longitude)) {
         mapRef.current?.setCamera({ center: { latitude, longitude }, zoom: 18 }, true, 500);
       }
+    } else if (start && dest) {
+      const startCoords = pointToLatLng(parsePointString(start));
+      const destCoords = pointToLatLng(parsePointString(dest));
+
+      if (startCoords && destCoords) {
+        // Add extra padding to ensure markers aren't too close to edges
+        const padding = produce(mapPadding, (draft) => {
+          for (const [key, value] of Object.entries(mapPadding)) {
+            draft[key as keyof RNMapPadding] = value + 40;
+          }
+        });
+
+        mapRef.current?.setCameraToCoordinates([startCoords, destCoords], padding, true, 500);
+      }
     }
 
     const prevMarkerID = prevMarkerIDRef.current;
@@ -53,12 +74,12 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
       mapRef.current?.hideMarkerInfoWindow(prevMarkerID);
     }
     prevMarkerIDRef.current = markerID;
-  }, [lat, lng, markerID]);
+  }, [dest, insets.bottom, insets.top, lat, lng, mapPadding, markerID, start]);
 
   return (
     <MapView
       mapRef={mapRef}
-      mapPadding={{ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 48 }}
+      mapPadding={mapPadding}
       markers={markers}
       onMarkerPress={handleMarkerPress}
       onMapPress={handleOnMapPress}
