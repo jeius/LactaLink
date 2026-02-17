@@ -8,7 +8,7 @@ export type SheetRef = React.ComponentRef<typeof TrueSheet>;
 
 export type SheetProps = TrueSheetProps;
 
-export default function Sheet(props: SheetProps) {
+const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, ref) {
   const insets = useSafeAreaInsets();
 
   const { themeColors } = useTheme();
@@ -18,6 +18,7 @@ export default function Sheet(props: SheetProps) {
   return (
     <TrueSheet
       {...props}
+      ref={ref}
       style={StyleSheet.flatten([{ paddingBottom: insets.bottom }, props.style])}
       backgroundColor={props.backgroundColor ?? backgroundColor}
       cornerRadius={props.cornerRadius ?? 24}
@@ -30,4 +31,6 @@ export default function Sheet(props: SheetProps) {
       }}
     />
   );
-}
+});
+
+export default Sheet;
