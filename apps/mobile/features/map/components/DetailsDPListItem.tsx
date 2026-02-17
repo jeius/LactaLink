@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { VStack } from '@/components/ui/vstack';
 import { Address, DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { LocateIcon, MapPinIcon } from 'lucide-react-native';
+import { MapPinIcon, RouteIcon } from 'lucide-react-native';
 import React, { useCallback } from 'react';
 
 interface DetailsDPListItemProps {
@@ -37,8 +37,13 @@ export default function DetailsDPListItem({ item, onLocatePress }: DetailsDPList
         </HStack>
       </VStack>
 
-      <Button action="info" className="h-fit w-fit rounded-full p-2" onPress={handleLocatePress}>
-        <ButtonIcon as={LocateIcon} className="h-7 w-7" />
+      <Button
+        action="info"
+        className="h-fit w-fit rounded-full p-3"
+        accessibilityLabel="Show Directions"
+        onPress={handleLocatePress}
+      >
+        <ButtonIcon as={RouteIcon} className="h-6 w-6" />
       </Button>
     </Card>
   );

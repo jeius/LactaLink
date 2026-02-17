@@ -19,7 +19,7 @@ export function getRgbColor(
   mode: 'light' | 'dark',
   category: keyof ColorsConfig['light'],
   shade: keyof NonNullable<ColorsConfig['light'][keyof ColorsConfig['light']]>
-): ColorValue | undefined {
+): string | undefined {
   const colorValue = colorsConfig?.[mode]?.[category]?.[shade];
 
   if (!colorValue) return undefined;

@@ -7,7 +7,6 @@ import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate } from '@lactalink/utilities/formatters';
 import React, { useMemo } from 'react';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card, CardProps } from '../ui/card';
@@ -74,16 +73,14 @@ function CardContent({
   disableViewThumbnail = false,
   orientation = 'vertical',
 }: CardContentProps) {
-  const { theme } = useTheme();
-
   const { image, volume, code, status, statusColor } = useMemo(() => {
     const image = extractImageData(extractCollection(data.bagImage));
     const volume = displayVolume(data.volume);
     const code = data.code || 'No Code';
     const status = data.status;
-    const statusColor = getMilkBagStatusColor(theme, status);
+    const statusColor = getMilkBagStatusColor(status);
     return { image, volume, code, status, statusColor };
-  }, [data, theme]);
+  }, [data]);
 
   if (orientation === 'horizontal') {
     return (

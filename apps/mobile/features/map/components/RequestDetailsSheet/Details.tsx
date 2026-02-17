@@ -4,32 +4,23 @@ import { BasicBadge } from '@/components/badges/BasicBadge';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { ProfileTag } from '@/components/ProfileTag';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { DueDateTag, StorageTypeTag } from '@/features/donation&request/components/tags';
-import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationCreateParams } from '@/lib/types/donationRequest';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { URGENCY_LEVELS } from '@lactalink/enums';
 import { Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
-import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
-import { Link, useRouter } from 'expo-router';
-import { HandHelpingIcon, MilkIcon } from 'lucide-react-native';
+import { MilkIcon } from 'lucide-react-native';
 import React from 'react';
 
 export function Details({ data }: { data: Request }) {
   const { themeColors } = useTheme();
   const iconFillColor = themeColors.tertiary[50];
   const iconStrokeColor = themeColors.tertiary[700];
-
-  const router = useRouter();
-  const { data: user } = useMeUser();
 
   const {
     details: { urgency },
@@ -40,15 +31,9 @@ export function Details({ data }: { data: Request }) {
   const volumePercentage = Math.round((volumeFulfilled / initialVolumeNeeded) * 100);
   const image = extractImageData(extractCollection(data.details.image));
   const requester = { relationTo: 'individuals', value: data.requester } as const;
-  const isOwner = isEqualProfiles(user?.profile, requester);
-
-  function handleDonatePress() {
-    const params: DonationCreateParams = { mrid: data.id };
-    router.push({ pathname: '/donations/create', params });
-  }
 
   return (
-    <VStack space="lg">
+    <VStack space="lg" className="bg-background-0 px-4 pb-4 shadow">
       <Box className="h-40 w-full overflow-hidden rounded-2xl">
         <SingleImageViewer image={image} />
         <BasicBadge
@@ -70,42 +55,21 @@ export function Details({ data }: { data: Request }) {
       </HStack>
 
       <VStack space="lg">
-        <HStack space="2xl" className="flex-wrap items-center">
-          <StorageTypeTag data={data} />
-          <DueDateTag data={data} />
-        </HStack>
-
         <VStack>
           <HStack space="sm" className="items-center justify-between">
             <Text size="sm" className="mb-1">
               Volume Fulfilled
             </Text>
+
             <Icon as={MilkIcon} size="sm" fill={iconFillColor} stroke={iconStrokeColor} />
           </HStack>
-          <AnimatedProgress
-            value={volumePercentage}
-            size="sm"
-            trackColor={themeColors.tertiary[500]}
-          />
+
+          <AnimatedProgress value={volumePercentage} size="sm" />
+
           <Text size="xs" className="mt-1 text-center text-typography-700">
             {volumeFulfilled.toLocaleString()} mL ({volumePercentage}%)
           </Text>
         </VStack>
-
-        <HStack space="md">
-          {!isOwner && (
-            <Button className="flex-1" onPress={handleDonatePress}>
-              <ButtonIcon as={HandHelpingIcon} />
-              <ButtonText>Donate</ButtonText>
-            </Button>
-          )}
-
-          <Link asChild push href={`/requests/${data.id}`}>
-            <Button className="flex-1" action="default" variant="outline">
-              <ButtonText>View More</ButtonText>
-            </Button>
-          </Link>
-        </HStack>
       </VStack>
     </VStack>
   );
@@ -113,7 +77,7 @@ export function Details({ data }: { data: Request }) {
 
 export function DetailsSkeleton() {
   return (
-    <VStack space="lg" className="pb-4">
+    <VStack space="lg" className="bg-background-0 px-4 pb-4 shadow">
       <Skeleton className="h-40 rounded-2xl" />
 
       <HStack className="items-center justify-between">
