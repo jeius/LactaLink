@@ -1,26 +1,22 @@
 import React from 'react';
 
-import {
-  ListRenderItemInfo as FlashItemInfo,
-  FlashList,
-  FlashListProps,
-} from '@shopify/flash-list';
-import { ScrollView } from 'react-native-gesture-handler';
+import { FlatListProps, ListRenderItemInfo } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import { NoData } from '../../NoData';
 import { RefreshControl } from '../../RefreshControl';
-import { BottomSheetFlashList } from '../bottom-sheet';
+import { BottomSheetFlatList } from '../bottom-sheet';
 import { Box } from '../box';
 import { Spinner } from '../spinner';
 
 type RenderItemInfo<T> = {
   isPlaceholder: boolean;
-} & FlashItemInfo<T>;
+} & ListRenderItemInfo<T>;
 
 type ListRenderItem<T> = (info: RenderItemInfo<T>) => React.ReactElement | null;
 
-type OmittedListProps<T> = Omit<FlashListProps<T>, 'refreshControl' | 'renderItem'>;
+type OmittedListProps<T> = Omit<FlatListProps<T>, 'refreshControl' | 'renderItem'>;
 
-export type VerticalInfiniteListProps<T> = OmittedListProps<T> & {
+export type InfiniteFlatListProps<T> = OmittedListProps<T> & {
   gap?: number;
   emptyListLabel?: string;
   hasNextPage?: boolean;
@@ -28,20 +24,10 @@ export type VerticalInfiniteListProps<T> = OmittedListProps<T> & {
   fetchNextPage?: () => void;
   isPlaceholderData?: boolean;
   renderItem: ListRenderItem<T>;
-  listComponentType?: 'flashList' | 'bottomSheetFlashList';
-  /**
-   * @deprecated Use `listComponentType="bottomSheetFlashList"` instead and ensure the parent
-   * is a Bottom Sheet
-   */
-  useBottomSheetListComponent?: boolean;
+  listComponentType?: 'flatList' | 'bottomSheetFlatList';
 };
 
-/**
- * A vertical list component that supports infinite loading, pull-to-refresh, and placeholders.
- * @deprecated Use `InfiniteFlashList` with the appropriate props instead. This component will be
- * removed in a future release.
- */
-export function VerticalInfiniteList<T>({
+export function InfiniteFlatList<T>({
   gap = 0,
   emptyListLabel,
   isFetchingNextPage,
@@ -51,14 +37,10 @@ export function VerticalInfiniteList<T>({
   refreshing,
   keyboardShouldPersistTaps = 'always',
   isPlaceholderData = false,
-  listComponentType = 'flashList',
-  useBottomSheetListComponent = false,
+  listComponentType = 'flatList',
   ...props
-}: VerticalInfiniteListProps<T>) {
-  const Component =
-    useBottomSheetListComponent || listComponentType === 'bottomSheetFlashList'
-      ? BottomSheetFlashList
-      : FlashList;
+}: InfiniteFlatListProps<T>) {
+  const Component = listComponentType === 'bottomSheetFlatList' ? BottomSheetFlatList : FlatList;
 
   return (
     <Component
@@ -68,7 +50,6 @@ export function VerticalInfiniteList<T>({
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
       contentContainerStyle={[props.contentContainerStyle, { flexGrow: 1 }]}
       showsVerticalScrollIndicator={props.showsVerticalScrollIndicator ?? false}
-      renderScrollComponent={ScrollView}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       refreshControl={
         onRefresh ? (
