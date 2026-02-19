@@ -1,9 +1,7 @@
 import { getCurrentCoordinates } from '@/lib/stores';
 import { getNearestDeliveryPreference } from '@/lib/utils/getNearestDeliveryPreference';
 import { createMarkerID } from '@/lib/utils/markerUtils';
-import { Coordinates } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
-import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import {
   extractCollection,
@@ -14,12 +12,7 @@ import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { convertDistance, getDistance } from '@lactalink/utilities/geolib';
 import { isDonation, isHospital, isMilkBank, isRequest } from '@lactalink/utilities/type-guards';
 import { MapListingItem, MapListingSlug } from '../types';
-
-function extractCoordsFromDP(dP: DeliveryPreference): Coordinates | null {
-  const address = extractCollection(dP.address);
-  if (!address) return null;
-  return pointToLatLng(address.coordinates);
-}
+import { extractCoordsFromDP } from './extractCoordsFromDP';
 
 export function extractListingData(listing: Collection<MapListingSlug>): MapListingItem | null {
   if (isDonation(listing)) {
