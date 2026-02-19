@@ -6,11 +6,11 @@ import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformer
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { findPaginatedIncomingRequests, findRequest } from '../api/find';
 
-export function createRequestQuery(doc: string | Request | undefined) {
+export function createRequestQuery(doc: string | Request | undefined, enabled = true) {
   const docID = extractID(doc);
   return queryOptions({
-    enabled: !!doc,
-    queryKey: ['requests', docID],
+    enabled: !!doc && enabled,
+    queryKey: [...QUERY_KEYS.REQUESTS.ONE, docID],
     queryFn: () => {
       if (!docID) throw new Error('Request ID is required to fetch request.');
       return findRequest(docID);

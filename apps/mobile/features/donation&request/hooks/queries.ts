@@ -22,12 +22,12 @@ export function useDraftMilkbags() {
   return { ...query, data: dataArray, dataMap: data };
 }
 
-export function useRequest(data: string | Request | undefined) {
-  return useQuery(createRequestQuery(data));
+export function useRequest(data: string | Request | undefined, enabled?: boolean) {
+  return useQuery(createRequestQuery(data, enabled));
 }
 
-export function useDonation(data: string | Donation | undefined) {
-  return useQuery(createDonationQuery(data));
+export function useDonation(data: string | Donation | undefined, enabled?: boolean) {
+  return useQuery(createDonationQuery(data, enabled));
 }
 
 export function useInfiniteIncomingDonations(user: User | null | undefined) {

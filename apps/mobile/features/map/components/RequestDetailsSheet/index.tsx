@@ -31,7 +31,7 @@ interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'
 }
 
 function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetProps) {
-  const { data, isLoading, ...query } = useRequest(requestID);
+  const { data, isLoading, ...query } = useRequest(requestID, open);
 
   const deliveryPreferences = useMemo(
     () =>

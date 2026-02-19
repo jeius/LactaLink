@@ -31,7 +31,7 @@ interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'
 }
 
 function DonationDetailsSheet({ donationID, open, ...props }: ListingDetailsSheetProps) {
-  const { data, isLoading, ...query } = useDonation(donationID);
+  const { data, isLoading, ...query } = useDonation(donationID, open);
 
   const deliveryPreferences = useMemo(
     () =>

@@ -6,11 +6,11 @@ import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformer
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { findDonation, findPaginatedIncomingDonations } from '../api/find';
 
-export function createDonationQuery(doc: string | Donation | undefined) {
+export function createDonationQuery(doc: string | Donation | undefined, enabled = true) {
   const docID = extractID(doc);
   return queryOptions({
-    enabled: !!doc,
-    queryKey: ['donations', docID],
+    enabled: !!doc && enabled,
+    queryKey: [...QUERY_KEYS.DONATIONS.ONE, docID],
     queryFn: () => {
       if (!docID) throw new Error('Donation ID is required to fetch donation.');
       return findDonation(docID);
