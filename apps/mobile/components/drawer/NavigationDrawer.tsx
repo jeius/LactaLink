@@ -36,7 +36,7 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
           style={{ borderRadius: 14, height: 48 }}
           pressColor={RIPPLE_COLOR}
           inactiveTintColor={themeColors.typography[900]}
-          onPress={() => router.push('/map/explore')}
+          onPress={() => router.push('/map')}
         />
         <DrawerItem
           label="Exit App"

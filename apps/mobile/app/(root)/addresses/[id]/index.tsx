@@ -5,7 +5,7 @@ import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
-export default function AddressPage() {
+export default function ViewAddress() {
   const { id, lat, lng } = useLocalSearchParams<{ id: string; lat?: string; lng?: string }>();
 
   const { data, error, isLoading } = useFetchById(!lat && !lng, {
