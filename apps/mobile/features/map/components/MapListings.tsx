@@ -1,4 +1,5 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
+import { LocateButton } from '@/components/buttons/LocateButton';
 import { BasicCarousel } from '@/components/ui/BasicCarousel';
 import { Box } from '@/components/ui/box';
 import CollapsibleView from '@/components/ui/CollapsibleView';
@@ -95,7 +96,7 @@ export default function MapListings() {
     }
   }, [list, donationsQuery, requestsQuery]);
 
-  function setListParams(slug: MapListingSlug) {
+  function setListParams(slug: MapListingSlug | undefined) {
     router.setParams({ list: slug } as MapQueryParams);
   }
 
@@ -117,6 +118,8 @@ export default function MapListings() {
 
   return (
     <Box>
+      <LocateButton className="mx-4 mb-6 self-end" />
+
       <CollapsibleView expand={expand}>
         <BasicCarousel
           data={data}
@@ -156,7 +159,7 @@ export default function MapListings() {
           return (
             <AnimatedPressable
               key={i}
-              onPress={() => setListParams(slug)}
+              onPress={() => setListParams(selected ? undefined : slug)}
               aria-selected={selected}
               className={pressableStyle({ selected })}
             >
