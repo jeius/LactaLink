@@ -23,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DetailsDPListItem from '../DetailsDPListItem';
 import { Details, DetailsSkeleton } from './Details';
 
-const DETENTS = [0.5, 1];
+const DETENTS = [0.6, 1];
 
 interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'> {
   requestID: string | undefined;
@@ -146,7 +146,7 @@ function SheetFooter({ data, space = 'sm', ...props }: { data: Request } & HStac
     <HStack {...props} space={space} style={[{ marginBottom: insets.bottom }, props.style]}>
       <Button
         size="lg"
-        action={isOwner ? 'default' : 'tertiary'}
+        action={isOwner ? 'default' : 'primary'}
         className="flex-1 rounded-full shadow"
         onPress={handleMainBtnPress}
       >
