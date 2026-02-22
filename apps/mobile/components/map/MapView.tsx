@@ -21,7 +21,7 @@ import {
 
 import { useAnimatedLatLng } from '@/hooks/location/useAnimatedLatLng';
 import { useHeading } from '@/hooks/location/useHeading';
-import { PHILIPPINES_COORDINATES } from '@/lib/constants';
+import { PHILIPPINES_COORDINATES, USER_MARKER_ID } from '@/lib/constants';
 import { USER_LOCATION_MARKER_SVG_STRING } from '@/lib/constants/markerSvgs';
 import { getCurrentLocation, setLocationStore } from '@/lib/stores';
 import {
@@ -77,8 +77,6 @@ const UI_SETTINGS: RNMapUiSettings = {
   consumeOnMarkerPress: false,
   consumeOnMyLocationButtonPress: false,
 };
-
-const USER_MARKER_ID = 'user-location-marker';
 
 const DEFAULT_LOCATION: RNLocation = {
   center: PHILIPPINES_COORDINATES,

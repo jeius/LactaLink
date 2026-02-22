@@ -32,3 +32,5 @@ export const PRIORITY_LEVEL_COLORS: Record<keyof typeof URGENCY_LEVELS, string> 
 };
 
 export const TEMP_ID_PREFIX = 'temp';
+
+export const USER_MARKER_ID = 'user-location-marker';
