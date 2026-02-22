@@ -1,6 +1,8 @@
 import { Coordinates, ImageData, UserProfile } from '@lactalink/types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 
+export * from './marker';
+
 export type MapQueryParams = {
   /**
    * Marker ID in the format of `slug-id-[longitude,latitude]`, where:
@@ -36,6 +38,7 @@ export type MapQueryParams = {
    * Starting point for directions, expected in the format of `[<latitude>,<longitude>]`.
    */
   start?: string;
+
   /**
    * Destination point for directions, expected in the format of `[<latitude>,<longitude>]`.
    */

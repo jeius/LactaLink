@@ -1,6 +1,5 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import DonationDetailsSheet from '@/features/map/components/DonationDetailsSheet';
 import MapLayout from '@/features/map/components/MapLayout';
@@ -11,16 +10,19 @@ import { parseMarkerID } from '@/lib/utils/markerUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
 import { useMemo } from 'react';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
-  const { mrk } = useLocalSearchParams<MapQueryParams>();
+  const { mrk, start, dest } = useLocalSearchParams<MapQueryParams>();
   const router = useRouter();
 
   const marker = useMemo(() => (mrk ? parseMarkerID(mrk) : null), [mrk]);
   const slug = marker?.slug;
   const id = marker?.id;
+
+  const isDirectionsMode = !!start && !!dest;
 
   const handleDidDismiss = () => {
     router.setParams({ mrk: undefined } as MapQueryParams);
@@ -33,16 +35,26 @@ export default function ExploreScreen() {
         pointerEvents="box-none"
         style={{ paddingTop: insets.top }}
       >
-        <HStack space="sm" className="items-center py-2 pl-3 pr-5">
-          <HeaderBackButton />
+        {!isDirectionsMode && (
+          <Animated.View
+            className="flex-row items-center gap-2 py-2 pl-3 pr-5"
+            entering={FadeInDown.duration(300)}
+            exiting={FadeOutUp.duration(300)}
+          >
+            <HeaderBackButton />
 
-          <Input variant="rounded" className="flex-1 bg-background-0 shadow">
-            <InputIcon as={SearchIcon} className="ml-3" />
-            <InputField numberOfLines={1} placeholder="Search here..." />
-          </Input>
-        </HStack>
+            <Input variant="rounded" className="flex-1 bg-background-0 shadow">
+              <InputIcon as={SearchIcon} className="ml-3" />
+              <InputField numberOfLines={1} placeholder="Search here..." />
+            </Input>
+          </Animated.View>
+        )}
 
-        <MapListings />
+        {!isDirectionsMode && (
+          <Animated.View entering={FadeInDown.duration(300)} exiting={FadeOutUp.duration(300)}>
+            <MapListings />
+          </Animated.View>
+        )}
 
         <DonationDetailsSheet
           donationID={id}

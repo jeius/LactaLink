@@ -1,4 +1,3 @@
-import { DataMarkerProvider, useDataMarkers } from '@/components/contexts/markers/DataMarker';
 import { MapView } from '@/components/map/MapView';
 import { MapQueryParams } from '@/features/map/lib/types';
 import { parseMarkerID } from '@/lib/utils/markerUtils';
@@ -10,6 +9,8 @@ import { PropsWithChildren, useCallback, useEffect, useMemo, useRef } from 'reac
 import { GoogleMapsViewRef, RNLatLng, RNMapPadding } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DataMarkerProvider, useMarkers } from './contexts/markers';
+
 function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -18,7 +19,8 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
   const isFocused = useIsFocused();
 
   const mapRef = useRef<GoogleMapsViewRef>(null);
-  const markers = useDataMarkers();
+  const currentMarkerIDRef = useRef<string>(markerID);
+  const markers = useMarkers();
 
   const mapPadding = useMemo<RNMapPadding>(
     () => ({ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 48 }),
@@ -49,6 +51,29 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
     [router]
   );
 
+  const showMarkerInfoWindow = useCallback((id: string) => {
+    mapRef.current?.showMarkerInfoWindow(id);
+    currentMarkerIDRef.current = id;
+  }, []);
+
+  const hideMarkerInfoWindow = useCallback(() => {
+    if (currentMarkerIDRef.current) {
+      mapRef.current?.hideMarkerInfoWindow(currentMarkerIDRef.current);
+      currentMarkerIDRef.current = undefined;
+    }
+  }, []);
+
+  useEffect(() => {
+    // If the markerID in the URL changes (e.g. user clicks on a different marker
+    // or manually changes URL), show the new marker's info window
+    if (markerID && markerID !== currentMarkerIDRef.current) {
+      showMarkerInfoWindow(markerID);
+    } else if (!markerID) {
+      // If the markerID is removed from the URL, hide the currently shown info window
+      hideMarkerInfoWindow();
+    }
+  }, [hideMarkerInfoWindow, markerID, showMarkerInfoWindow]);
+
   useEffect(() => {
     // Only attempt to move camera if screen is focused to prevent unwanted
     // camera movements when navigating back to the map screen
@@ -72,6 +97,7 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
         });
 
         mapRef.current?.setCameraToCoordinates([startCoords, destCoords], padding, true, 500);
+        hideMarkerInfoWindow();
       }
     }
 
@@ -93,7 +119,7 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
         setCamera({ latitude, longitude });
       }
     }
-  }, [dest, isFocused, lat, lng, mapPadding, markerID, start]);
+  }, [dest, hideMarkerInfoWindow, isFocused, lat, lng, mapPadding, markerID, start]);
 
   return (
     <MapView
@@ -113,7 +139,7 @@ function MapLayout({ children }: PropsWithChildren) {
   const params = useGlobalSearchParams<MapQueryParams>();
 
   return (
-    <DataMarkerProvider selectedMarkerId={params.mrk}>
+    <DataMarkerProvider selectedMarkerID={params.mrk}>
       <Map {...params}>{children}</Map>
     </DataMarkerProvider>
   );

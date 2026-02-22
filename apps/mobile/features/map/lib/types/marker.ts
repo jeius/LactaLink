@@ -6,7 +6,7 @@ import { RNMarker } from 'react-native-google-maps-plus';
 
 export type DataMarkerSlug = Extract<
   CollectionSlug,
-  'donations' | 'requests' | 'hospitals' | 'milkBanks' | 'addresses'
+  'donations' | 'requests' | 'hospitals' | 'milkBanks'
 >;
 
 export type Data<T extends DataMarkerSlug = DataMarkerSlug> = {
@@ -32,5 +32,5 @@ export interface DataMarkerStore {
 }
 
 export interface DataMarkerProviderProps extends PropsWithChildren {
-  selectedMarkerId?: string | null;
+  selectedMarkerID?: string | null;
 }
