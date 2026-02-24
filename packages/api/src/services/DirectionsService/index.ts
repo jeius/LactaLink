@@ -19,7 +19,9 @@ export class DirectionsService {
       origin: { location: { latLng: origin } },
       destination: { location: { latLng: destination } },
       travelMode,
-      routingPreference: travelMode === 'WALK' ? 'TRAFFIC_UNAWARE' : 'TRAFFIC_AWARE',
+      routingPreference: ['DRIVE', 'TWO_WHEELER'].includes(travelMode)
+        ? 'TRAFFIC_AWARE'
+        : undefined,
       requestedReferenceRoutes: ['SHORTER_DISTANCE'],
     };
 

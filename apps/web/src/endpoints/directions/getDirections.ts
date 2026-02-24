@@ -69,6 +69,7 @@ async function handler(req: PayloadRequest): Promise<DirectionsResult> {
     polylineQuality = 'HIGH_QUALITY',
     polylineEncoding = 'GEO_JSON_LINESTRING',
     travelMode = 'DRIVE',
+    routingPreference = 'TRAFFIC_AWARE',
     ...options
   } = parsedData as DirectionsOptions;
 
@@ -113,6 +114,9 @@ async function handler(req: PayloadRequest): Promise<DirectionsResult> {
       travelMode: travelMode,
       polylineQuality: polylineQuality,
       polylineEncoding: polylineEncoding,
+      routingPreference: ['DRIVE', 'TWO_WHEELER'].includes(travelMode)
+        ? routingPreference
+        : undefined,
       requestedReferenceRoutes: requestedReferenceRoutes?.map((route) => {
         switch (route) {
           case 'FUEL_EFFICIENT':
