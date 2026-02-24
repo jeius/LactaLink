@@ -33,6 +33,14 @@ interface HandlerOptions<T = unknown> {
   requireAuth?: boolean;
 
   /**
+   * Maximum time (in milliseconds) to allow for the handler to execute before timing out.
+   * If the handler takes longer than this time, it will be aborted and an error response will be returned.
+   *
+   * @default 30000 (30 seconds)
+   */
+  maxDuration?: number;
+
+  /**
    * The custom handler function to execute.
    * Receives the request object as its parameter.
    */
@@ -65,10 +73,29 @@ export function createPayloadHandler<T>({
   requireAdmin = false,
   requireAuth = true,
   handler,
+  maxDuration = 30 * 1000,
   successMessage,
 }: HandlerOptions<T>): PayloadHandler {
   return async (req) => {
     const { user, payload, t } = req;
+
+    // Create an abort controller to manage the timeout
+    const abortController = new AbortController();
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    // A promise that rejects after maxDuration, enforcing the timeout via Promise.race
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        abortController.abort();
+        reject(
+          new APIError(
+            '[Request Timeout]: Request was cancelled due to timeout.',
+            HttpStatus.REQUEST_TIMEOUT
+          )
+        );
+      }, maxDuration);
+    });
 
     try {
       if (requireAuth && !user) {
@@ -80,8 +107,8 @@ export function createPayloadHandler<T>({
         throw new APIError(t('error:unauthorizedAdmin'), HttpStatus.UNAUTHORIZED);
       }
 
-      // Execute the custom handler and capture the result.
-      const data = await handler(req);
+      // Race the handler against the timeout promise
+      const data = await Promise.race([handler(req), timeoutPromise]);
 
       // Prepare the success response.
       const status = HttpStatus.OK;
@@ -120,6 +147,9 @@ export function createPayloadHandler<T>({
 
       // Return the error response.
       return Response.json(res, { status });
+    } finally {
+      clearTimeout(timeoutId);
+      abortController.abort();
     }
   };
 }
