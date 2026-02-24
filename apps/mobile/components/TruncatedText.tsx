@@ -1,8 +1,8 @@
 import { useRecyclingState } from '@shopify/flash-list';
 import React, { useCallback, useEffect } from 'react';
-import { Text, TextLayoutEvent, ViewProps } from 'react-native';
+import { TextLayoutEvent, ViewProps } from 'react-native';
 import { Pressable } from './ui/pressable';
-import { TextProps } from './ui/text';
+import { Text, TextProps } from './ui/text';
 
 interface TruncatedTextProps extends TextProps {
   initialLines?: number;
