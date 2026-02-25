@@ -22,7 +22,9 @@ export class DirectionsService {
       routingPreference: ['DRIVE', 'TWO_WHEELER'].includes(travelMode)
         ? 'TRAFFIC_AWARE'
         : undefined,
-      requestedReferenceRoutes: ['SHORTER_DISTANCE'],
+      requestedReferenceRoutes: ['DRIVE', 'BICYCLE', 'TWO_WHEELER'].includes(travelMode)
+        ? ['SHORTER_DISTANCE']
+        : undefined,
     };
 
     const response = await this.apiClient.fetch<ApiFetchResponse<DirectionsResult>>(
