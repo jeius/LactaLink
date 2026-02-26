@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  react-native-google-places-textinput:
-    hash: 88bae9b124dbc872608cd7f5b33ae10189315aac800e76ea9e88ab3e4a20bd37
-    path: patches/react-native-google-places-textinput.patch
-
 importers:
 
   .:
@@ -350,11 +345,11 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2(d92889d9039c7c89c6875e352c49fc0a)
       react-native-google-maps-plus:
-        specifier: ^1.11.0
+        specifier: 1.11.0
         version: 1.11.0(expo@54.0.33)(react-native-nitro-modules@0.33.9(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
       react-native-google-places-textinput:
-        specifier: ^0.9.1
-        version: 0.9.1(patch_hash=88bae9b124dbc872608cd7f5b33ae10189315aac800e76ea9e88ab3e4a20bd37)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
+        specifier: ^0.9.2
+        version: 0.9.2(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
       react-native-keyboard-controller:
         specifier: 1.18.5
         version: 1.18.5(react-native-reanimated@4.1.6(@babel/core@7.29.0)(react-native-worklets@0.7.3(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
@@ -9515,8 +9510,8 @@ packages:
       expo:
         optional: true
 
-  react-native-google-places-textinput@0.9.1:
-    resolution: {integrity: sha512-UVLIYGwpzXo4xENKs0Nvv38mqwInbxQvdavcGpUwOfcU2D080q37ZDAsv9A/K0q+seBjl3zwEHvllIMEjLyW1Q==}
+  react-native-google-places-textinput@0.9.2:
+    resolution: {integrity: sha512-Jk06g5QT/CWUxQHI/GjmSB1Xxk8YgokOR84XLnjwgD5fukyF3W6a/3FBtsVczojIJ/h4kvA3z79TropBp5+aHg==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -21913,7 +21908,7 @@ snapshots:
     optionalDependencies:
       expo: 54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(graphql@16.12.0)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
 
-  react-native-google-places-textinput@0.9.1(patch_hash=88bae9b124dbc872608cd7f5b33ae10189315aac800e76ea9e88ab3e4a20bd37)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0):
+  react-native-google-places-textinput@0.9.2(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0)
