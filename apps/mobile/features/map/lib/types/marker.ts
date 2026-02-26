@@ -24,6 +24,7 @@ export interface DataMarkerStore {
   markersMap: Map<string, DataMarker>;
   markers: RNMarker[];
   selectedDataMarker: DataMarker | null;
+  isPending: boolean;
   actions: {
     addMarker: (doc: Collection<DataMarkerSlug>) => DataMarker | null | DataMarker[];
     removeMarker: (markerID: string) => void;

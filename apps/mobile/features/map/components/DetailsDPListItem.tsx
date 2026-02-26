@@ -5,41 +5,50 @@ import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { VStack } from '@/components/ui/vstack';
+import { USER_MARKER_ID } from '@/lib/constants';
 import { useCurrentCoordinates } from '@/lib/stores';
+import { createMarkerID } from '@/lib/utils/markerUtils';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { latLngToPoint } from '@lactalink/utilities/geo-utils';
-import { useRouter } from 'expo-router';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { MapPinIcon, RouteIcon } from 'lucide-react-native';
-import React, { useCallback } from 'react';
-import { MapQueryParams } from '../lib/types';
+import React from 'react';
+import { useDirectionActions } from './contexts/directions';
 
 interface DetailsDPListItemProps {
   item: DeliveryPreference;
+  parentID: string;
+  parentSlug: Extract<CollectionSlug, 'donations' | 'requests'>;
 }
 
-export default function DetailsDPListItem({ item }: DetailsDPListItemProps) {
-  const router = useRouter();
+export default function DetailsDPListItem({ item, parentID, parentSlug }: DetailsDPListItemProps) {
   const address = extractCollection(item.address);
   const currentCoordinates = useCurrentCoordinates();
 
-  const handleLocatePress = useCallback(() => {
+  const { startNavigation, setInputs } = useDirectionActions();
+
+  const handleLocatePress = () => {
     const coords = address?.coordinates;
+    const addressName = address?.displayName || 'Unknown Location';
 
     if (coords && currentCoordinates) {
-      const startPoint = latLngToPoint(currentCoordinates);
-      const destPoint = coords;
+      setInputs({
+        origin: {
+          coordinates: currentCoordinates,
+          name: 'Your Location',
+          markerID: USER_MARKER_ID,
+        },
+        destination: {
+          coordinates: pointToLatLng(coords),
+          name: addressName,
+          markerID: createMarkerID(parentSlug, parentID, coords), // Generate a markerID for the destination
+        },
+      });
 
-      // Clear any existing marker or coordinate params before setting new ones
-      router.setParams({ mrk: undefined, lat: undefined, lng: undefined } as MapQueryParams);
-
-      // Set the start and destination points in the query params to trigger map camera update
-      router.setParams({
-        start: startPoint.toString(),
-        dest: destPoint.toString(),
-      } as MapQueryParams);
+      startNavigation();
     }
-  }, [address?.coordinates, currentCoordinates, router]);
+  };
 
   return (
     <Card variant="elevated" className="flex-row items-center gap-2">

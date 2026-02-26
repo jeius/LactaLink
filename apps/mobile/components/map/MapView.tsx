@@ -65,7 +65,7 @@ const LOCATION_CONFIG: RNLocationConfig = {
 const UI_SETTINGS: RNMapUiSettings = {
   allGesturesEnabled: true,
   compassEnabled: true,
-  indoorLevelPickerEnabled: true,
+  indoorLevelPickerEnabled: false,
   mapToolbarEnabled: false,
   myLocationButtonEnabled: false,
   rotateEnabled: true,
@@ -148,6 +148,8 @@ function MapView({
       iconSvg: ICON_SVG,
       zIndex: -1,
       draggable: false,
+      title: 'Your Location',
+      infoWindowAnchor: { x: 0.5, y: 0.5 },
     };
   }, [hideUserLocationMarker, animatedLatLng, heading]);
 
@@ -195,7 +197,7 @@ function MapView({
       <GoogleMapsView
         {...props}
         hybridRef={wrapCallback(setMapRef)}
-        initialProps={props.initialProps ?? initialProps}
+        initialProps={{ ...initialProps, ...props.initialProps }}
         markers={markers}
         uiSettings={uiSettings}
         myLocationEnabled={props.myLocationEnabled ?? false}

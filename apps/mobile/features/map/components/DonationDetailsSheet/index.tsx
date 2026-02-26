@@ -18,8 +18,10 @@ import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checker
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { ClipboardListIcon, EditIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDirectionIsActive } from '../contexts/directions';
+import { useSelectedMarker } from '../contexts/markers';
 import DetailsDPListItem from '../DetailsDPListItem';
 import { Details, DetailsSkeleton } from './Details';
 
@@ -27,10 +29,14 @@ const DETENTS = [0.6, 1];
 
 interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'> {
   donationID: string | undefined;
-  open: boolean;
 }
 
-function DonationDetailsSheet({ donationID, open, ...props }: ListingDetailsSheetProps) {
+function DonationDetailsSheet({ donationID, ...props }: ListingDetailsSheetProps) {
+  const isDirectionMode = useDirectionIsActive();
+  const [selectedMarker, setSelectedMarker] = useSelectedMarker();
+
+  const open = !isDirectionMode && selectedMarker?.data.relationTo === 'donations';
+
   const { data, isLoading, ...query } = useDonation(donationID, open);
 
   const deliveryPreferences = useMemo(
@@ -45,15 +51,22 @@ function DonationDetailsSheet({ donationID, open, ...props }: ListingDetailsShee
   const presentedRef = useRef(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
+  const handleOnDidPresent = useCallback(() => {
+    presentedRef.current = true;
+  }, []);
+
+  const handleOnDidDismiss = useCallback(() => {
+    presentedRef.current = false;
+    setSelectedMarker(null);
+  }, [setSelectedMarker]);
+
   useEffect(() => {
     if (open) {
       if (presentedRef.current) return;
       sheetRef.current?.present();
-      presentedRef.current = true;
     } else {
       if (!presentedRef.current) return;
       sheetRef.current?.dismiss();
-      presentedRef.current = false;
     }
   }, [open]);
 
@@ -67,6 +80,8 @@ function DonationDetailsSheet({ donationID, open, ...props }: ListingDetailsShee
       backgroundColor={getColor('background', '50')}
       headerStyle={{ backgroundColor: getColor('background', '0') }}
       footerStyle={{ backgroundColor: getColor('background', '50') }}
+      onDidPresent={handleOnDidPresent}
+      onDidDismiss={handleOnDidDismiss}
       footer={
         data && (
           <SheetFooter
@@ -97,7 +112,7 @@ function DonationDetailsSheet({ donationID, open, ...props }: ListingDetailsShee
             {isPlaceHolderData(item) ? (
               <Skeleton className="h-24 w-full rounded-lg" />
             ) : (
-              <DetailsDPListItem item={item} />
+              <DetailsDPListItem item={item} parentID={donationID ?? ''} parentSlug="donations" />
             )}
           </Box>
         )}

@@ -1,5 +1,10 @@
 import { getApiClient } from '@lactalink/api';
-import { MatchingService, ReadTrackingService, TransactionService } from '@lactalink/api/services';
+import {
+  DirectionsService,
+  MatchingService,
+  ReadTrackingService,
+  TransactionService,
+} from '@lactalink/api/services';
 
 export * from './chat';
 
@@ -16,4 +21,9 @@ export function getMatchingService() {
 export function getReadTrackingService() {
   const apiClient = getApiClient();
   return new ReadTrackingService(apiClient);
+}
+
+export function getDirectionsService() {
+  const apiClient = getApiClient();
+  return new DirectionsService(apiClient);
 }

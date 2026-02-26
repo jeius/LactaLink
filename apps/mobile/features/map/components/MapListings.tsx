@@ -20,6 +20,7 @@ import { Building2Icon, HospitalIcon, LucideIcon } from 'lucide-react-native';
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { SvgProps } from 'react-native-svg';
 import { extractListingData } from '../lib/utils/extractListingData';
+import { useSelectedMarker } from './contexts/markers';
 import MapListItem from './MapListItem';
 
 const ITEM_WIDTH = 192;
@@ -61,6 +62,8 @@ export default function MapListings() {
   const { data: donations, ...donationsQuery } = useNearestDonations();
   const { data: requests, ...requestsQuery } = useNearestRequests();
 
+  const [_, setSelectedMarker] = useSelectedMarker();
+
   const donationsListings = useMemo(
     () => donations?.map(extractListingData).filter((v) => v !== null),
     [donations]
@@ -101,7 +104,7 @@ export default function MapListings() {
   }
 
   function setMarkerID({ markerID }: MapListingItem) {
-    router.setParams({ mrk: markerID, lat: undefined, lng: undefined } as MapQueryParams);
+    setSelectedMarker(markerID);
   }
 
   useEffect(() => {

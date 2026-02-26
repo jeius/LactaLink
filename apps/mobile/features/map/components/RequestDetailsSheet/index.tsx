@@ -18,8 +18,10 @@ import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checker
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import { ClipboardListIcon, EditIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDirectionIsActive } from '../contexts/directions';
+import { useSelectedMarker } from '../contexts/markers';
 import DetailsDPListItem from '../DetailsDPListItem';
 import { Details, DetailsSkeleton } from './Details';
 
@@ -27,10 +29,14 @@ const DETENTS = [0.6, 1];
 
 interface ListingDetailsSheetProps extends Omit<SheetProps, 'detents' | 'dimmed'> {
   requestID: string | undefined;
-  open: boolean;
 }
 
-function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetProps) {
+function RequestDetailsSheet({ requestID, ...props }: ListingDetailsSheetProps) {
+  const isDirectionMode = useDirectionIsActive();
+  const [selectedMarker, setSelectedMarker] = useSelectedMarker();
+
+  const open = !isDirectionMode && selectedMarker?.data.relationTo === 'requests';
+
   const { data, isLoading, ...query } = useRequest(requestID, open);
 
   const deliveryPreferences = useMemo(
@@ -45,15 +51,22 @@ function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetP
   const presentedRef = useRef(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
+  const handleOnDidPresent = useCallback(() => {
+    presentedRef.current = true;
+  }, []);
+
+  const handleOnDidDismiss = useCallback(() => {
+    presentedRef.current = false;
+    setSelectedMarker(null);
+  }, [setSelectedMarker]);
+
   useEffect(() => {
     if (open) {
       if (presentedRef.current) return;
       sheetRef.current?.present();
-      presentedRef.current = true;
     } else {
       if (!presentedRef.current) return;
       sheetRef.current?.dismiss();
-      presentedRef.current = false;
     }
   }, [open]);
 
@@ -67,6 +80,8 @@ function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetP
       backgroundColor={getColor('background', '50')}
       headerStyle={{ backgroundColor: getColor('background', '0') }}
       footerStyle={{ backgroundColor: getColor('background', '50') }}
+      onDidPresent={handleOnDidPresent}
+      onDidDismiss={handleOnDidDismiss}
       footer={
         data && (
           <SheetFooter
@@ -97,7 +112,7 @@ function RequestDetailsSheet({ requestID, open, ...props }: ListingDetailsSheetP
             {isPlaceHolderData(item) ? (
               <Skeleton className="h-24 w-full rounded-lg" />
             ) : (
-              <DetailsDPListItem item={item} />
+              <DetailsDPListItem item={item} parentID={requestID ?? ''} parentSlug="requests" />
             )}
           </Box>
         )}

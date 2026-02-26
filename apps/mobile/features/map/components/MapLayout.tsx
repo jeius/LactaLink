@@ -1,78 +1,96 @@
 import { MapView } from '@/components/map/MapView';
 import { MapQueryParams } from '@/features/map/lib/types';
 import { parseMarkerID } from '@/lib/utils/markerUtils';
-import { parsePointString, pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useIsFocused } from '@react-navigation/native';
-import { useGlobalSearchParams, useRouter } from 'expo-router';
+import { useGlobalSearchParams } from 'expo-router';
 import { produce } from 'immer';
 import { PropsWithChildren, useCallback, useEffect, useMemo, useRef } from 'react';
-import { GoogleMapsViewRef, RNLatLng, RNMapPadding } from 'react-native-google-maps-plus';
+import {
+  GoogleMapsViewRef,
+  RNLatLng,
+  RNMapPadding,
+  RNPolyline,
+} from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { DataMarkerProvider, useMarkers } from './contexts/markers';
+import { Spinner } from '@/components/ui/spinner';
+import { isValidCoordinate } from '@lactalink/utilities/geolib';
+import { DirectionsContextProvider, useDirection } from './contexts/directions';
+import { DataMarkerProvider, useMarkers, useSelectedMarker } from './contexts/markers';
 
 function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-
-  const { mrk: markerID, lat, lng, start, dest } = queryParams;
-  const isFocused = useIsFocused();
-
-  const mapRef = useRef<GoogleMapsViewRef>(null);
-  const currentMarkerIDRef = useRef<string>(markerID);
-  const markers = useMarkers();
 
   const mapPadding = useMemo<RNMapPadding>(
     () => ({ right: 4, left: 4, top: insets.top + 32 + 20, bottom: insets.bottom + 48 }),
     [insets.bottom, insets.top]
   );
 
+  const { mrk, lat, lng } = queryParams;
+  const isFocused = useIsFocused();
+
+  const mapRef = useRef<GoogleMapsViewRef>(null);
+  const prevMarkerIDRef = useRef<string>(null);
+
+  const { markers, isPending: isPendingMarkers } = useMarkers();
+  const [selectedMarker, setSelectedMarker] = useSelectedMarker();
+  const { direction, isPending: isPendingDirection, isActive: isDirectionMode } = useDirection();
+
+  const selectedMarkerID = useMemo(
+    () => selectedMarker?.marker.id ?? mrk,
+    [mrk, selectedMarker?.marker.id]
+  );
+  const isLoading = isPendingMarkers || isPendingDirection;
+
+  const routePolylines = useMemo<RNPolyline | null>(() => {
+    if (!direction || !isDirectionMode) return null;
+    return {
+      id: 'directions-polyline',
+      coordinates: direction.polyline,
+      color: '#2563eb',
+      width: 6,
+      lineCap: 'round',
+      lineJoin: 'round',
+      zIndex: 99999,
+    };
+  }, [direction, isDirectionMode]);
+
   const handleMarkerPress = useCallback(
     (newMarkerID: string) => {
-      if (newMarkerID === markerID) return; // Marker already selected, do nothing
-      if (markerID) {
+      if (isDirectionMode) return; // Don't allow selecting markers while in directions mode
+      if (newMarkerID === selectedMarkerID) return; // Marker already selected, do nothing
+      if (selectedMarkerID) {
         // If there's an existing marker selected, hide its info window before selecting the new one
-        mapRef.current?.hideMarkerInfoWindow(markerID);
-        router.setParams({ mrk: undefined } as MapQueryParams);
-        return;
+        mapRef.current?.hideMarkerInfoWindow(selectedMarkerID);
       }
-      router.setParams({ mrk: newMarkerID } as MapQueryParams);
+
+      setSelectedMarker(newMarkerID);
     },
-    [markerID, router]
+    [isDirectionMode, selectedMarkerID, setSelectedMarker]
   );
 
   const handleOnMapPress = useCallback((coords: RNLatLng) => {}, []);
 
-  const handleOnInfoWindowClose = useCallback(
-    () =>
-      router.setParams({
-        mrk: undefined,
-      } as MapQueryParams),
-    [router]
-  );
+  const handleOnInfoWindowClose = useCallback(() => setSelectedMarker(null), [setSelectedMarker]);
 
   const showMarkerInfoWindow = useCallback((id: string) => {
     mapRef.current?.showMarkerInfoWindow(id);
-    currentMarkerIDRef.current = id;
+    prevMarkerIDRef.current = id;
   }, []);
 
   const hideMarkerInfoWindow = useCallback(() => {
-    if (currentMarkerIDRef.current) {
-      mapRef.current?.hideMarkerInfoWindow(currentMarkerIDRef.current);
-      currentMarkerIDRef.current = undefined;
+    if (prevMarkerIDRef.current) {
+      mapRef.current?.hideMarkerInfoWindow(prevMarkerIDRef.current);
+      prevMarkerIDRef.current = null;
     }
   }, []);
 
   useEffect(() => {
-    // If the markerID in the URL changes (e.g. user clicks on a different marker
-    // or manually changes URL), show the new marker's info window
-    if (markerID && markerID !== currentMarkerIDRef.current) {
-      showMarkerInfoWindow(markerID);
-    } else if (!markerID) {
-      // If the markerID is removed from the URL, hide the currently shown info window
-      hideMarkerInfoWindow();
-    }
-  }, [hideMarkerInfoWindow, markerID, showMarkerInfoWindow]);
+    // If there's a selected marker, show its info window.
+    if (selectedMarkerID) showMarkerInfoWindow(selectedMarkerID);
+    // If there's no selected marker, hide any open info window.
+    else if (!selectedMarkerID) hideMarkerInfoWindow();
+  }, [hideMarkerInfoWindow, selectedMarkerID, showMarkerInfoWindow]);
 
   useEffect(() => {
     // Only attempt to move camera if screen is focused to prevent unwanted
@@ -84,42 +102,44 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
     }
 
     // If both start and dest are provided, fit the camera to show both points
-    if (start && dest) {
-      const startCoords = pointToLatLng(parsePointString(start));
-      const destCoords = pointToLatLng(parsePointString(dest));
+    if (routePolylines && isDirectionMode) {
+      // Add extra padding to ensure markers aren't too close to edges
+      const padding = produce(mapPadding, (draft) => {
+        for (const [key, value] of Object.entries(mapPadding)) {
+          draft[key as keyof RNMapPadding] = value + 40;
+        }
+      });
 
-      if (startCoords && destCoords) {
-        // Add extra padding to ensure markers aren't too close to edges
-        const padding = produce(mapPadding, (draft) => {
-          for (const [key, value] of Object.entries(mapPadding)) {
-            draft[key as keyof RNMapPadding] = value + 40;
-          }
-        });
-
-        mapRef.current?.setCameraToCoordinates([startCoords, destCoords], padding, true, 500);
-        hideMarkerInfoWindow();
-      }
+      mapRef.current?.setCameraToCoordinates(routePolylines.coordinates, padding, true, 500);
+      hideMarkerInfoWindow();
     }
-
     // If a markerID is provided, attempt to find the marker and show its info window
-    else if (markerID) {
-      const { coordinates } = parseMarkerID(markerID) ?? {};
+    else if (selectedMarkerID) {
+      const { coordinates } = parseMarkerID(selectedMarkerID) ?? {};
 
       if (coordinates) {
         setCamera(coordinates);
-        mapRef.current?.showMarkerInfoWindow(markerID);
+        mapRef.current?.showMarkerInfoWindow(selectedMarkerID);
       }
     }
-
     // If lat and lng are provided, move the camera to those coordinates
     else if (lat && lng) {
       const latitude = parseFloat(lat);
       const longitude = parseFloat(lng);
-      if (!isNaN(latitude) && !isNaN(longitude)) {
+      if (isValidCoordinate({ latitude, longitude })) {
         setCamera({ latitude, longitude });
       }
     }
-  }, [dest, hideMarkerInfoWindow, isFocused, lat, lng, mapPadding, markerID, start]);
+  }, [
+    hideMarkerInfoWindow,
+    isDirectionMode,
+    isFocused,
+    lat,
+    lng,
+    mapPadding,
+    routePolylines,
+    selectedMarkerID,
+  ]);
 
   return (
     <MapView
@@ -129,20 +149,35 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
       onMarkerPress={handleMarkerPress}
       onMapPress={handleOnMapPress}
       onInfoWindowClose={handleOnInfoWindowClose}
+      polylines={[routePolylines].filter(Boolean) as RNPolyline[]}
+      uiSettings={{
+        consumeOnMarkerPress: isDirectionMode,
+      }}
     >
       {children}
+      {isLoading && (
+        <Spinner
+          size={'small'}
+          className="absolute"
+          style={{ top: mapPadding.top + 8, right: mapPadding.right + 8 }}
+        />
+      )}
     </MapView>
   );
 }
 
-function MapLayout({ children }: PropsWithChildren) {
+function MapWrapper({ children }: PropsWithChildren) {
   const params = useGlobalSearchParams<MapQueryParams>();
 
   return (
     <DataMarkerProvider selectedMarkerID={params.mrk}>
-      <Map {...params}>{children}</Map>
+      <DirectionsContextProvider>
+        <Map {...params}>{children}</Map>
+      </DirectionsContextProvider>
     </DataMarkerProvider>
   );
 }
 
-export default MapLayout;
+export { MapWrapper as MapLayout };
+
+export default MapWrapper;
