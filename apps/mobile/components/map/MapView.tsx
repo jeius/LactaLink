@@ -109,6 +109,7 @@ function MapView({
   offset,
   containerClassName,
   containerStyle,
+  onLocationUpdate: _onLocationUpdate,
   ...props
 }: Props) {
   const { theme } = useTheme();
@@ -192,6 +193,10 @@ function MapView({
     }
   }, [heading, followingUser, locationUpdates, map]);
 
+  useEffect(() => {
+    _onLocationUpdate?.({ ...locationUpdates, center: animatedLatLng });
+  }, [animatedLatLng, locationUpdates, _onLocationUpdate]);
+
   return (
     <Box style={containerStyle} className={containerClassName ?? 'flex-1'}>
       <GoogleMapsView
@@ -232,7 +237,7 @@ function MapView({
         onMapReady={wrapCallback(props.onMapReady, () => setMapReady(true))}
         onMapLoaded={wrapCallback(props.onMapLoaded, () => setMapLoaded(true))}
         onMapError={wrapCallback(props.onMapError, (e) => console.warn('Map error:', e))}
-        onLocationUpdate={wrapCallback(props.onLocationUpdate, onLocationUpdate)}
+        onLocationUpdate={wrapCallback(onLocationUpdate)}
         onLocationError={wrapCallback(props.onLocationError, (e) =>
           console.warn('Location error:', e)
         )}
