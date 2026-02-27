@@ -23,7 +23,7 @@ export function useAnimatedLatLng(initialLatLng: RNLatLng) {
     ) => {
       const animateValue = (sharedValue: SharedValue<number>, toValue: number) => {
         if (!toValue) return;
-        sharedValue.value = withTiming(toValue, config);
+        sharedValue.set(withTiming(toValue, config));
       };
 
       animateValue(animatedLat, latlng.latitude);
