@@ -1,4 +1,5 @@
 export * from './converters';
+export * from './polyline';
 export * from './validatePoint';
 
 export function lerpAngle(a: number, b: number, t: number) {
