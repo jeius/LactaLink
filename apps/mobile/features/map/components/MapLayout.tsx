@@ -4,10 +4,11 @@ import { parseMarkerID } from '@/lib/utils/markerUtils';
 import { useIsFocused } from '@react-navigation/native';
 import { useGlobalSearchParams } from 'expo-router';
 import { produce } from 'immer';
-import { PropsWithChildren, useCallback, useEffect, useMemo, useRef } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   GoogleMapsViewRef,
   RNLatLng,
+  RNLocation,
   RNMapPadding,
   RNPolyline,
 } from 'react-native-google-maps-plus';
@@ -15,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Spinner } from '@/components/ui/spinner';
 import { isValidCoordinate } from '@lactalink/utilities/geolib';
+import { useNavigationPolyline } from '../hooks/useNavigationPolyline';
 import { DirectionsContextProvider, useDirection } from './contexts/directions';
 import { DataMarkerProvider, useMarkers, useSelectedMarker } from './contexts/markers';
 
@@ -31,10 +33,19 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
 
   const mapRef = useRef<GoogleMapsViewRef>(null);
   const prevMarkerIDRef = useRef<string>(null);
+  const alreadyFittedRef = useRef(false);
 
   const { markers, isPending: isPendingMarkers } = useMarkers();
   const [selectedMarker, setSelectedMarker] = useSelectedMarker();
+
   const { direction, isPending: isPendingDirection, isActive: isDirectionMode } = useDirection();
+
+  const [locationUpdates, setLocationUpdates] = useState<RNLocation | null>(null);
+  const { trimmedPolyline } = useNavigationPolyline(
+    direction?.polyline,
+    locationUpdates?.center,
+    isDirectionMode
+  );
 
   const selectedMarkerID = useMemo(
     () => selectedMarker?.marker.id ?? mrk,
@@ -43,17 +54,22 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
   const isLoading = isPendingMarkers || isPendingDirection;
 
   const routePolylines = useMemo<RNPolyline | null>(() => {
-    if (!direction || !isDirectionMode) return null;
+    if (!isDirectionMode || !trimmedPolyline || trimmedPolyline.length < 2) return null;
+
+    const coordinates = locationUpdates?.center
+      ? [locationUpdates.center, ...trimmedPolyline]
+      : trimmedPolyline;
+
     return {
       id: 'directions-polyline',
-      coordinates: direction.polyline,
+      coordinates: coordinates,
       color: '#2563eb',
       width: 6,
       lineCap: 'round',
       lineJoin: 'round',
       zIndex: 99999,
     };
-  }, [direction, isDirectionMode]);
+  }, [isDirectionMode, locationUpdates, trimmedPolyline]);
 
   const handleMarkerPress = useCallback(
     (newMarkerID: string) => {
@@ -85,12 +101,38 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
     }
   }, []);
 
+  const fitCameraToRoute = useCallback(() => {
+    if (routePolylines) {
+      hideMarkerInfoWindow();
+
+      // Add extra padding to ensure markers aren't too close to edges
+      const padding = produce(mapPadding, (draft) => {
+        for (const [key, value] of Object.entries(mapPadding)) {
+          draft[key as keyof RNMapPadding] = value + 40;
+        }
+      });
+
+      if (!alreadyFittedRef.current) {
+        mapRef.current?.setCameraToCoordinates(routePolylines.coordinates, padding, true, 500);
+        alreadyFittedRef.current = true;
+      }
+    }
+  }, [hideMarkerInfoWindow, mapPadding, routePolylines]);
+
+  // When the selected marker changes, show its info window (or hide if null).
   useEffect(() => {
     // If there's a selected marker, show its info window.
     if (selectedMarkerID) showMarkerInfoWindow(selectedMarkerID);
     // If there's no selected marker, hide any open info window.
     else if (!selectedMarkerID) hideMarkerInfoWindow();
   }, [hideMarkerInfoWindow, selectedMarkerID, showMarkerInfoWindow]);
+
+  // When exiting directions mode, reset the camera to the default position.
+  useEffect(() => {
+    if (!isDirectionMode) {
+      alreadyFittedRef.current = false;
+    }
+  }, [isDirectionMode]);
 
   useEffect(() => {
     // Only attempt to move camera if screen is focused to prevent unwanted
@@ -102,16 +144,8 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
     }
 
     // If both start and dest are provided, fit the camera to show both points
-    if (routePolylines && isDirectionMode) {
-      // Add extra padding to ensure markers aren't too close to edges
-      const padding = produce(mapPadding, (draft) => {
-        for (const [key, value] of Object.entries(mapPadding)) {
-          draft[key as keyof RNMapPadding] = value + 40;
-        }
-      });
-
-      mapRef.current?.setCameraToCoordinates(routePolylines.coordinates, padding, true, 500);
-      hideMarkerInfoWindow();
+    if (isDirectionMode) {
+      fitCameraToRoute();
     }
     // If a markerID is provided, attempt to find the marker and show its info window
     else if (selectedMarkerID) {
@@ -131,13 +165,12 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
       }
     }
   }, [
+    fitCameraToRoute,
     hideMarkerInfoWindow,
     isDirectionMode,
     isFocused,
     lat,
     lng,
-    mapPadding,
-    routePolylines,
     selectedMarkerID,
   ]);
 
@@ -153,6 +186,7 @@ function Map({ children, ...queryParams }: PropsWithChildren<MapQueryParams>) {
       uiSettings={{
         consumeOnMarkerPress: isDirectionMode,
       }}
+      onLocationUpdate={setLocationUpdates}
     >
       {children}
       {isLoading && (
