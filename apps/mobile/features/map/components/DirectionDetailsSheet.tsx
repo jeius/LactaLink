@@ -159,18 +159,21 @@ function TravelModeSelector() {
   const mode = useDirectionTravelMode();
   const { setInputs } = useDirectionActions();
 
-  const modeActions: { icon: LucideIcon; value: TravelMode }[] = [
+  const modeActions: { icon: LucideIcon; value: TravelMode; label: string }[] = [
     {
       icon: FootprintsIcon,
       value: 'WALK',
+      label: 'Walk',
     },
     {
       icon: BikeIcon,
       value: 'TWO_WHEELER',
+      label: 'Two Wheeler',
     },
     {
       icon: CarIcon,
       value: 'DRIVE',
+      label: 'Drive',
     },
   ];
 
@@ -197,7 +200,7 @@ function TravelModeSelector() {
       className="overflow-hidden rounded-full border border-outline-400 bg-background-0"
       style={{ minWidth: 72 * 3 }}
     >
-      {modeActions.map(({ icon, value }) => {
+      {modeActions.map(({ icon, value, label }) => {
         const isActive = mode === value;
         const handlePress = () => setInputs({ mode: value });
 
@@ -206,6 +209,7 @@ function TravelModeSelector() {
             key={value}
             className={pressableStyle({ active: isActive })}
             onPress={handlePress}
+            accessibilityLabel={`Select ${label} mode`}
           >
             <Icon as={icon} size="xl" className={iconStyle({ active: isActive })} />
           </Pressable>

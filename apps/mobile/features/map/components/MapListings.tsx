@@ -120,8 +120,8 @@ export default function MapListings() {
   }, [list, donationsListings, requestsListings, expand]);
 
   return (
-    <Box>
-      <LocateButton className="mx-4 mb-6 self-end" />
+    <Box pointerEvents="box-none">
+      <LocateButton className="mx-4 mb-4 self-end" />
 
       <CollapsibleView expand={expand}>
         <BasicCarousel

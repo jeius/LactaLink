@@ -45,7 +45,6 @@ export default function ExploreScreen() {
   const router = useRouter();
 
   const marker = useMemo(() => (mrk ? parseMarkerID(mrk) : null), [mrk]);
-  const slug = marker?.slug;
   const id = marker?.id;
 
   const handleDidDismiss = () => {
