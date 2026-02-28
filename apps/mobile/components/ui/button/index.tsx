@@ -93,12 +93,12 @@ const Button: React.ForwardRefExoticComponent<
   });
 
   const handlePressIn = (e: GestureResponderEvent) => {
-    if (!disablePressAnimation) progress.value = true;
+    if (!disablePressAnimation) progress.set(true);
     onPressIn?.(e);
   };
 
   const handlePressOut = (e: GestureResponderEvent) => {
-    if (!disablePressAnimation) progress.value = false;
+    if (!disablePressAnimation) progress.set(false);
     onPressOut?.(e);
   };
 
