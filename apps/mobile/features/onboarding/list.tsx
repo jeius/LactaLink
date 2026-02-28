@@ -1,12 +1,12 @@
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import ScrollView from '@/components/ui/ScrollView';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import React, { FC } from 'react';
-
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
 
 const itemStyle = tva({
   base: 'flex-1 text-left text-sm',
@@ -45,7 +45,7 @@ export type ListProps = {
 
 export default function List({ items }: ListProps) {
   return (
-    <VStack space="md" className="w-full">
+    <ScrollView className="self-stretch" contentContainerClassName="gap-3 grow">
       {items &&
         items.map(({ icon, iconPosition, content, variant }, i) => {
           const isHorizontal = iconPosition === 'left' || iconPosition === 'right';
@@ -77,6 +77,6 @@ export default function List({ items }: ListProps) {
               </VStack>
             );
         })}
-    </VStack>
+    </ScrollView>
   );
 }

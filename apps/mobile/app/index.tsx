@@ -1,4 +1,4 @@
-import { Welcome } from '@/components/onboarding';
+import { Welcome } from '@/features/onboarding';
 
 export default function EntryPage() {
   return <Welcome />;
