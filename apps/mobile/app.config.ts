@@ -1,4 +1,4 @@
-import { ConfigContext, ExpoConfig } from 'expo/config';
+import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -13,7 +13,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   primaryColor: '#FE828C',
   scheme: 'lactalink',
   userInterfaceStyle: 'light',
-  newArchEnabled: true,
   platforms: ['ios', 'android'],
   ios: {
     supportsTablet: true,
@@ -26,7 +25,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   android: {
-    edgeToEdgeEnabled: true,
     adaptiveIcon: {
       foregroundImage: './assets/logo/adaptive_icon.png',
       monochromeImage: './assets/logo/adaptive_icon.png',
@@ -36,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: { googleMaps: { apiKey: process.env.ANDROID_MAPS_API_KEY } },
     permissions: ['SCHEDULE_EXACT_ALARM'],
   },
-  androidStatusBar: { translucent: true, hidden: true },
+  androidStatusBar: { hidden: true },
   plugins: [
     'expo-router',
     'expo-image-picker',
@@ -122,5 +120,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   updates: {
     url: 'https://u.expo.dev/ee00ec97-b3a9-4e3e-b499-95bb14571879',
+    enableBsdiffPatchSupport: true,
   },
 });

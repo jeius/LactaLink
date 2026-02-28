@@ -63,8 +63,8 @@
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/types": "workspace:*",
-    "@supabase/supabase-js": "^2.49.4",
-    "react-hook-form": "^7.63.0",
-    "zod": "^4.1.12"
+    "@supabase/supabase-js": "*",
+    "react-hook-form": "*",
+    "zod": "*"
   }
 }

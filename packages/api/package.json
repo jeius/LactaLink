@@ -69,17 +69,17 @@
     "install": "^0.13.0",
     "lodash": "^4.17.21",
     "npm": "^11.5.2",
-    "react": "19.1.0",
+    "react": "19.2.0",
     "zustand": "^5.0.5"
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
     "@lactalink/utilities": "workspace:*",
-    "@supabase/supabase-js": "^2.89.0",
-    "@types/react": "^19.1.17",
-    "lodash": "^4.17.21",
-    "react": "19.1.0",
-    "zustand": "^5.0.5"
+    "@supabase/supabase-js": "*",
+    "@types/react": "*",
+    "lodash": "*",
+    "react": "*",
+    "zustand": "*"
   }
 }
