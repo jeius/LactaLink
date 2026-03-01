@@ -122,7 +122,7 @@
     "react-native-google-maps-plus": "1.11.0",
     "react-native-google-places-textinput": "^0.9.2",
     "react-native-keyboard-controller": "1.18.5",
-    "react-native-mmkv": "^4.1.2",
+    "react-native-mmkv": "4.0.1",
     "react-native-nitro-modules": "0.32.0",
     "react-native-otp-entry": "^1.8.5",
     "react-native-pager-view": "~6.9.1",
