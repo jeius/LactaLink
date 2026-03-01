@@ -7,20 +7,17 @@ import { Icon } from '@/components/ui/icon';
 import { HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import ScrollView from '@/components/ui/ScrollView';
 import { Text } from '@/components/ui/text';
-import {
-  useNearestDonations,
-  useNearestRequests,
-} from '@/features/donation&request/hooks/useNearestListings';
 import { MapListingItem, MapListingSlug, MapQueryParams } from '@/features/map/lib/types';
+import { useCurrentCoordinates } from '@/lib/stores';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Building2Icon, HospitalIcon, LucideIcon } from 'lucide-react-native';
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { SvgProps } from 'react-native-svg';
-import { extractListingData } from '../lib/utils/extractListingData';
-import { useSelectedMarker } from './contexts/markers';
+import { getListings } from '../lib/utils/extractListingData';
+import { useMarkersMap, useSelectedMarker } from './contexts/markers';
 import MapListItem from './MapListItem';
 
 const ITEM_WIDTH = 192;
@@ -56,48 +53,20 @@ const pressableTextStyle = tva({
 export default function MapListings() {
   const { list } = useLocalSearchParams<MapQueryParams>();
   const router = useRouter();
+  const currentCoords = useCurrentCoordinates();
 
   const expand = Boolean(list);
 
-  const { data: donations, ...donationsQuery } = useNearestDonations();
-  const { data: requests, ...requestsQuery } = useNearestRequests();
-
   const [_, setSelectedMarker] = useSelectedMarker();
+  const markersMap = useMarkersMap();
 
-  const donationsListings = useMemo(
-    () => donations?.map(extractListingData).filter((v) => v !== null),
-    [donations]
-  );
-
-  const requestsListings = useMemo(
-    () => requests?.map(extractListingData).filter((v) => v !== null),
-    [requests]
+  const { donationsListings, requestsListings } = useMemo(
+    () => getListings(markersMap, currentCoords),
+    [currentCoords, markersMap]
   );
 
   const [data, setData] = useState<MapListingItem[]>([]);
   const [focusedIndex, setFocusedIndex] = useState(0);
-
-  const hasNextPage =
-    list === 'donations'
-      ? donationsQuery.hasNextPage
-      : list === 'requests'
-        ? requestsQuery.hasNextPage
-        : false;
-
-  const isFetchingNextPage =
-    list === 'donations'
-      ? donationsQuery.isFetchingNextPage
-      : list === 'requests'
-        ? requestsQuery.isFetchingNextPage
-        : false;
-
-  const handleFetchNextPage = useCallback(() => {
-    if (list === 'donations' && donationsQuery.hasNextPage) {
-      donationsQuery.fetchNextPage();
-    } else if (list === 'requests' && requestsQuery.hasNextPage) {
-      requestsQuery.fetchNextPage();
-    }
-  }, [list, donationsQuery, requestsQuery]);
 
   function setListParams(slug: MapListingSlug | undefined) {
     router.setParams({ list: slug } as MapQueryParams);
@@ -128,9 +97,6 @@ export default function MapListings() {
           data={data}
           itemWidth={ITEM_WIDTH}
           itemSpacing={ITEM_SPACING}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          fetchNextPage={handleFetchNextPage}
           contentContainerClassName="px-4 py-2"
           focusedIndex={focusedIndex}
           setFocusedIndex={setFocusedIndex}
