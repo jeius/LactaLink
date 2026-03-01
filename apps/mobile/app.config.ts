@@ -105,7 +105,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
-    autolinkingModuleResolution: false,
+    autolinkingModuleResolution: true,
   },
   extra: {
     router: {
