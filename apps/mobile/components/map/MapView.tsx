@@ -21,6 +21,7 @@ import {
 
 import { useAnimatedLatLng } from '@/hooks/location/useAnimatedLatLng';
 import { useHeading } from '@/hooks/location/useHeading';
+import { getColor } from '@/lib/colors';
 import { PHILIPPINES_COORDINATES, USER_MARKER_ID } from '@/lib/constants';
 import { USER_LOCATION_MARKER_SVG_STRING } from '@/lib/constants/markerSvgs';
 import { getCurrentLocation, setLocationStore } from '@/lib/stores';
@@ -132,7 +133,10 @@ function MapView({
   const { setUserLocated, setZoomLevel } = useMapActions();
 
   const initialLoc: RNLocation = useMemo(() => getInitialLocation(), []);
-  const initialProps: RNInitialProps = { camera: { center: initialLoc.center, zoom: 16 } };
+  const initialProps: RNInitialProps = {
+    camera: { center: initialLoc.center, zoom: 16 },
+    backgroundColor: getColor('background', '0'),
+  };
 
   const [locationUpdates, setLocationUpdates] = useState<RNLocation>(initialLoc);
   const heading = useHeading({ updateInterval: 'fast' });
@@ -234,8 +238,14 @@ function MapView({
         onCameraChangeStart={wrapCallback(props.onCameraChangeStart)}
         onCameraChange={wrapCallback(props.onCameraChange, onCameraChange)}
         onCameraChangeComplete={wrapCallback(props.onCameraChangeComplete, onCameraChangeComplete)}
-        onMapReady={wrapCallback(props.onMapReady, () => setMapReady(true))}
-        onMapLoaded={wrapCallback(props.onMapLoaded, () => setMapLoaded(true))}
+        onMapReady={wrapCallback((e) => {
+          setMapReady(true);
+          props.onMapReady?.(e);
+        })}
+        onMapLoaded={wrapCallback((region, camera) => {
+          setMapLoaded(true);
+          props.onMapLoaded?.(region, camera);
+        })}
         onMapError={wrapCallback(props.onMapError, (e) => console.warn('Map error:', e))}
         onLocationUpdate={wrapCallback(onLocationUpdate)}
         onLocationError={wrapCallback(props.onLocationError, (e) =>
