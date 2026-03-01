@@ -4,7 +4,6 @@ import { AppProvider } from '@/components/AppProvider';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
-import { ApiClientConfig } from '@lactalink/api/interfaces';
 import { enableMapSet } from 'immer';
 
 import '@/global.css';
@@ -18,14 +17,12 @@ configureReanimatedLogger({
   strict: false,
 });
 
-const config: ApiClientConfig = {
+initApiClient({
   apiUrl: API_URL,
   supabase,
   environment: 'expo',
   bypassToken: VERCEL_BYPASS_TOKEN,
-};
-
-initApiClient(config);
+});
 
 // Enable Immer support for Map and Set
 enableMapSet();
