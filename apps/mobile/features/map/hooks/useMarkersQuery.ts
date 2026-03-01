@@ -1,5 +1,7 @@
 import { QUERY_KEYS } from '@/lib/constants';
+import { getCurrentCoordinates } from '@/lib/stores';
 import { DataFromCollectionSlug } from '@lactalink/types/payload-types';
+import { getDistance } from '@lactalink/utilities/geolib';
 import { useQueries, UseQueryResult } from '@tanstack/react-query';
 import {
   startTransition,
@@ -25,7 +27,19 @@ function markersReducer(
 ): Map<string, DataMarker> {
   const next = new Map(prev);
   newMap.forEach((value, key) => next.set(key, value));
-  return next;
+
+  // Sort markers by distance to current location before updating the map, so
+  // that nearby markers are more likely to be visible if the total number exceeds the map's marker limit.
+  const currentCoords = getCurrentCoordinates();
+  if (!currentCoords) return next;
+
+  const sortedEntries = Array.from(next.entries()).sort((a, b) => {
+    const distA = getDistance(currentCoords, a[1].marker.coordinate);
+    const distB = getDistance(currentCoords, b[1].marker.coordinate);
+    return distA - distB;
+  });
+
+  return new Map(sortedEntries);
 }
 
 export function useMarkersQuery(
