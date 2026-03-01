@@ -1,13 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { NativeScrollEvent, Platform, ScrollViewProps, TextInput } from 'react-native';
+import { NativeScrollEvent, Platform, ScrollView as RNScrollView, TextInput } from 'react-native';
 
-import { ScrollView } from 'react-native-gesture-handler';
 import { useKeyboardHandler, useReanimatedFocusedInput } from 'react-native-keyboard-controller';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { RefreshControl } from './RefreshControl';
 import { Box } from './ui/box';
-import { VStack } from './ui/vstack';
+import ScrollView, { ScrollViewProps } from './ui/ScrollView';
+import { VStack, VStackProps } from './ui/vstack';
 
 const OFFSET = Platform.select({ android: 42, ios: 64, default: 0 });
 
@@ -38,11 +37,8 @@ export default function KeyboardAvoidingScrollView({
   ...props
 }: KeyboardAvoiderProps) {
   const { height, isKeyboardShown } = useKeyboardSharedHeight(keyboardVerticalOffset + OFFSET);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<RNScrollView>(null);
   const scrollEvent = useRef<NativeScrollEvent>(null);
-  const inputRefs = useRef<Record<string, TextInput | null>>({});
-
-  const [focusedInputID, setFocusedInputID] = useState<string | null>(null);
 
   const { input: focusedInput } = useReanimatedFocusedInput();
 
@@ -50,41 +46,35 @@ export default function KeyboardAvoidingScrollView({
     height: height.value,
   }));
 
-  const handleFocus = useCallback((id: string) => {
-    setFocusedInputID(id);
-  }, []);
-
-  const handleRegisterInput = useCallback((id: string, ref: TextInput | null) => {
-    const unregister = (id: string) => {
-      if (inputRefs.current[id]) {
-        delete inputRefs.current[id];
-      }
-    };
-
-    if (ref) {
-      inputRefs.current[id] = ref;
-    } else {
-      unregister(id);
-    }
-
-    return () => unregister(id);
-  }, []);
-
   useEffect(() => {
     if (isKeyboardShown && scrollEvent.current) {
       const currentOffset = scrollEvent.current.contentOffset.y;
       const viewportHeight = scrollEvent.current.layoutMeasurement.height;
 
       if (focusedInput) {
-        const inputYPos = focusedInput.value?.layout.y ?? 0;
+        const inputYPos = focusedInput.value?.layout.absoluteY ?? 0;
         // Check if the input is covered by the viewport
         if (inputYPos > viewportHeight) {
-          const scrollToOffset = currentOffset + OFFSET + (inputYPos - viewportHeight);
+          const scrollToOffset = currentOffset + 10;
           scrollRef.current?.scrollTo({ y: scrollToOffset, animated: true });
         }
       }
     }
   }, [focusedInput, isKeyboardShown]);
+
+  /**
+   * @deprecated This function is a placeholder for handling focus events on input fields.
+   * It currently does not perform any actions and will be removed in future releases.
+   */
+  const handleFocus = useCallback(() => {}, []);
+
+  /**
+   * @deprecated This function is a placeholder for registering input fields with the KeyboardAvoider context.
+   * It currently does not perform any actions and will be removed in future releases.
+   */
+  const handleRegisterInput = useCallback(() => {
+    return () => {};
+  }, []);
 
   return (
     <KeyboardAvoiderContext.Provider
@@ -97,13 +87,7 @@ export default function KeyboardAvoidingScrollView({
           onScroll={({ nativeEvent }) => {
             scrollEvent.current = nativeEvent;
           }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-          refreshControl={
-            refreshing !== undefined || onRefresh ? (
-              <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
-            ) : undefined
-          }
+          refreshControlProps={{ onRefresh, refreshing: refreshing ?? false }}
         >
           {children}
         </ScrollView>
@@ -113,15 +97,9 @@ export default function KeyboardAvoidingScrollView({
   );
 }
 
-export const KeyboardAvoider: React.FC<KeyboardAvoiderProps> = ({
-  children,
-  keyboardVerticalOffset = 0,
-  contentContainerClassName,
-  contentContainerStyle,
-  refreshing,
-  onRefresh,
-  ...props
-}) => {
+export const KeyboardAvoider: React.FC<
+  Pick<KeyboardAvoiderProps, 'keyboardVerticalOffset'> & VStackProps
+> = ({ children, keyboardVerticalOffset = 0, ...props }) => {
   const { height } = useKeyboardSharedHeight(keyboardVerticalOffset + OFFSET);
   const fakeViewStyle = useAnimatedStyle(() => ({
     height: height.value,
@@ -137,6 +115,10 @@ export const KeyboardAvoider: React.FC<KeyboardAvoiderProps> = ({
 
 //#region Hooks
 
+/**
+ * A custom hook to access the KeyboardAvoider context, providing functions to register input fields and handle focus events.
+ * @deprecated This hook is deprecated and will be removed in future releases.
+ */
 export const useKeyboardAvoider = () => useContext(KeyboardAvoiderContext);
 
 function useKeyboardSharedHeight(offset: number = OFFSET) {
@@ -146,6 +128,10 @@ function useKeyboardSharedHeight(offset: number = OFFSET) {
   useKeyboardHandler(
     {
       onMove: (e) => {
+        'worklet';
+        height.set(Math.max(e.height - offset, 0));
+      },
+      onInteractive: (e) => {
         'worklet';
         height.set(Math.max(e.height - offset, 0));
       },

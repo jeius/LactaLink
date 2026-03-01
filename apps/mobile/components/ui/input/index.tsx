@@ -1,12 +1,9 @@
 'use client';
-import { useKeyboardAvoider } from '@/components/KeyboardAvoider';
 import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import { createInput } from '@gluestack-ui/input';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { useRecyclingState } from '@shopify/flash-list';
-import { randomUUID } from 'expo-crypto';
 import { cssInterop } from 'nativewind';
 import React, { ComponentProps, ComponentRef, useEffect, useRef } from 'react';
 import { FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
@@ -212,24 +209,9 @@ const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFi
     const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
 
     const localRef = useRef<TextInput>(null);
-    const { onFocus, registerInput } = useKeyboardAvoider();
-    const [inputID, setInputID] = useRecyclingState('', [recyclingKey]);
     const { setFocused } = useInputFocusStateActions();
 
     const ref = refProp || localRef;
-
-    useEffect(() => {
-      if (typeof ref !== 'function' && ref.current) {
-        const inputID = `input-${randomUUID()}`;
-        setInputID(inputID);
-
-        const unregister = registerInput?.(inputID, ref.current as TextInput);
-        return () => {
-          unregister?.();
-        };
-      }
-      return () => {};
-    }, [ref, registerInput, setInputID]);
 
     useEffect(() => {
       const sub = Keyboard.addListener('keyboardDidHide', () => {
@@ -244,7 +226,6 @@ const InputField = React.forwardRef<ComponentRef<typeof UIInput.Input>, IInputFi
 
     function handleFocus(event: FocusEvent) {
       props.onFocus?.(event);
-      onFocus?.(inputID);
       setFocused(true);
     }
 
