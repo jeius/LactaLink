@@ -17,7 +17,7 @@ import { Building2Icon, HospitalIcon, LucideIcon } from 'lucide-react-native';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { SvgProps } from 'react-native-svg';
 import { getListings } from '../lib/utils/extractListingData';
-import { useMarkersMap, useSelectedMarker } from './contexts/markers';
+import { useMarkerActions, useMarkersMap } from './contexts/markers';
 import MapListItem from './MapListItem';
 
 const ITEM_WIDTH = 192;
@@ -57,7 +57,7 @@ export default function MapListings() {
 
   const expand = Boolean(list);
 
-  const [_, setSelectedMarker] = useSelectedMarker();
+  const { setSelectedMarker } = useMarkerActions();
   const markersMap = useMarkersMap();
 
   const { donationsListings, requestsListings } = useMemo(

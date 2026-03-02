@@ -2,7 +2,7 @@ import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { useDirectionIsActive } from '@/features/map/components/contexts/directions';
-import DirectionDetailsSheet from '@/features/map/components/DirectionDetailsSheet';
+import DirectionDetails from '@/features/map/components/DirectionDetails';
 import DonationDetailsSheet from '@/features/map/components/DonationDetailsSheet';
 import { MapLayout } from '@/features/map/components/MapLayout';
 import MapListings from '@/features/map/components/MapListings';
@@ -15,29 +15,6 @@ import { useMemo } from 'react';
 import { ViewProps } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-function FadeWrapper({
-  children,
-  fadeDirection = 'up',
-  ...props
-}: ViewProps & {
-  fadeDirection?: 'down' | 'up';
-}) {
-  const isUp = fadeDirection === 'up';
-  const isDirectionsMode = useDirectionIsActive();
-
-  return (
-    !isDirectionsMode && (
-      <Animated.View
-        {...props}
-        entering={isUp ? FadeInUp.duration(300) : FadeInDown.duration(300)}
-        exiting={isUp ? FadeOutUp.duration(300) : FadeOutDown.duration(300)}
-      >
-        {children}
-      </Animated.View>
-    )
-  );
-}
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
@@ -76,9 +53,32 @@ export default function ExploreScreen() {
 
       <RequestDetailsSheet requestID={id} onDidDismiss={handleDidDismiss} />
 
-      <DirectionDetailsSheet />
+      <DirectionDetails />
 
       <Box className="bg-background-0" style={{ height: insets.bottom }} />
     </MapLayout>
+  );
+}
+
+function FadeWrapper({
+  children,
+  fadeDirection = 'up',
+  ...props
+}: ViewProps & {
+  fadeDirection?: 'down' | 'up';
+}) {
+  const isUp = fadeDirection === 'up';
+  const isDirectionsMode = useDirectionIsActive();
+
+  return (
+    !isDirectionsMode && (
+      <Animated.View
+        {...props}
+        entering={isUp ? FadeInUp.duration(300) : FadeInDown.duration(300)}
+        exiting={isUp ? FadeOutUp.duration(300) : FadeOutDown.duration(300)}
+      >
+        {children}
+      </Animated.View>
+    )
   );
 }

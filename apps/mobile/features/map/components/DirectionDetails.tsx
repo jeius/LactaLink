@@ -43,7 +43,7 @@ import {
 
 const AnimatedCard = createAnimatedComponent(Card);
 
-export default function DirectionDetailsSheet() {
+export default function DirectionDetails() {
   const insets = useSafeAreaInsets();
 
   const { direction, isActive, isPending, error } = useDirection();
