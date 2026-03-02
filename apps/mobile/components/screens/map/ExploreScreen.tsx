@@ -3,30 +3,18 @@ import { Box } from '@/components/ui/box';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { useDirectionIsActive } from '@/features/map/components/contexts/directions';
 import DirectionDetails from '@/features/map/components/DirectionDetails';
-import DonationDetailsSheet from '@/features/map/components/DonationDetailsSheet';
 import { MapLayout } from '@/features/map/components/MapLayout';
 import MapListings from '@/features/map/components/MapListings';
-import RequestDetailsSheet from '@/features/map/components/RequestDetailsSheet';
-import { MapQueryParams } from '@/features/map/lib/types';
-import { parseMarkerID } from '@/lib/utils/markerUtils';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import MarkerDetailsSheet from '@/features/map/components/MarkerDetailsSheet';
+import { useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
-import { useMemo } from 'react';
 import { ViewProps } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
-  const { mrk } = useLocalSearchParams<MapQueryParams>();
   const router = useRouter();
-
-  const marker = useMemo(() => (mrk ? parseMarkerID(mrk) : null), [mrk]);
-  const id = marker?.id;
-
-  const handleDidDismiss = () => {
-    router.setParams({ mrk: undefined } as MapQueryParams);
-  };
 
   return (
     <MapLayout>
@@ -49,9 +37,7 @@ export default function ExploreScreen() {
         </FadeWrapper>
       </Box>
 
-      <DonationDetailsSheet donationID={id} onDidDismiss={handleDidDismiss} />
-
-      <RequestDetailsSheet requestID={id} onDidDismiss={handleDidDismiss} />
+      <MarkerDetailsSheet />
 
       <DirectionDetails />
 
