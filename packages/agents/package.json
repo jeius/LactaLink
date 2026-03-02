@@ -1,0 +1,56 @@
+{
+  "name": "@lactalink/agents",
+  "version": "0.1.0",
+  "description": "LactaLink shared agent skills",
+  "private": true,
+  "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./payload": {
+      "types": "./dist/payload/index.d.ts",
+      "default": "./dist/payload/index.js"
+    },
+    "./expo": {
+      "types": "./dist/expo/index.d.ts",
+      "default": "./dist/expo/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch",
+    "dev:safe": "pnpm dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix . && prettier --write ."
+  },
+  "devDependencies": {
+    "@lactalink/eslint-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
+    "@lactalink/typescript-config": "workspace:*",
+    "@types/node": "^22.5.4",
+    "payload": "3.72.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "payload": "3.72.0",
+    "expo": "*"
+  },
+  "peerDependenciesMeta": {
+    "payload": {
+      "optional": true
+    },
+    "expo": {
+      "optional": true
+    }
+  }
+}
