@@ -49,9 +49,11 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - **`packages/enums`**: Shared enums for consistent data handling.
 - **`packages/types`**: Shared TypeScript types.
 - **`packages/types/forms`**: Shared form schemas and types.
+- **`packages/agents`**: Shared agent skills and TypeScript wrappers, consumed via subpath exports (`@lactalink/agents/payload`, `@lactalink/agents/supabase`, `@lactalink/agents/expo`).
 - **`packages/utilities`**: Shared utility functions across apps.
 - **`packages/eslint-config`**: Shared ESLint configuration.
 - **`packages/typescript-config`**: Shared TypeScript configuration.
+- **`.agents/skills/`**: Agent skill instruction files installed via `pnpx skills add <skill>` from the workspace root.
 - **`database/sql`**: SQL scripts for database functions, indexes, and triggers.
 - **`docs`**: Documentation for features and technical architecture.
 
@@ -100,11 +102,14 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - `apps/mobile/app/index.tsx`: Entry point for the mobile app.
 - `apps/mobile/components`: Shared React components for the mobile app.
 - `apps/mobile/lib`: Utility functions for the mobile app.
+- `packages/agents`: Shared agent skills — `src/payload/` (web), `src/expo/` (mobile), `src/supabase/` (shared).
 - `packages/api`: Backend API logic.
 - `packages/enums`: Shared enums.
 - `packages/types`: Shared TypeScript types.
 - `packages/types/forms`: Shared form schema and types.
 - `packages/utilities`: Shared utility functions.
+- `.agents/skills/payload/SKILL.md`: PayloadCMS agent skill reference.
+- `skills-lock.json`: Tracks installed agent skills.
 - `database/sql`: Database scripts.
 - `docs/technical-architecture/INDEX.md`: Overview of the technical architecture.
 - `docs/features/INDEX.md`: Detailed feature documentation.
@@ -119,5 +124,8 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - Use TypeScript for all new code.
 - Ensure compatibility with both react native and next.js platforms when adding shared features.
 - Refer to the `README.md` files in each directory for additional context.
+- When working with PayloadCMS collections, hooks, fields, or access control, consult `.agents/skills/payload/SKILL.md` and its `reference/` files.
+- Always run `pnpx skills add <skill>` from the **workspace root** so new skills are installed into `.agents/skills/` and tracked in `skills-lock.json`.
+- Place TypeScript runtime wrappers for library-specific logic in the corresponding `packages/agents/src/<library>/` directory.
 
 For further details, consult the documentation in the `docs` folder or reach out to the maintainers.
