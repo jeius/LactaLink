@@ -53,6 +53,7 @@
     "@lactalink/api": "workspace:*",
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
+    "@lactalink/agents": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@legendapp/motion": "^2.5.3",
     "@lodev09/react-native-true-sheet": "^3.8.2",

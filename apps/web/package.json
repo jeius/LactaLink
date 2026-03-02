@@ -21,6 +21,7 @@
   "dependencies": {
     "@googlemaps/routing": "^2.1.1",
     "@hookform/resolvers": "^5.2.2",
+    "@lactalink/agents": "workspace:*",
     "@lactalink/api": "workspace:*",
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
