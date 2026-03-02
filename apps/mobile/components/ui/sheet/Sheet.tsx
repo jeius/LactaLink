@@ -1,4 +1,5 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import {
   DidBlurEvent,
   DidDismissEvent,
@@ -7,18 +8,19 @@ import {
   TrueSheet,
   TrueSheetProps,
 } from '@lodev09/react-native-true-sheet';
-import { useFocusEffect } from 'expo-router';
 import { cssInterop } from 'nativewind';
-import React, { useCallback, useRef } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type SheetRef = TrueSheet;
 
 export type SheetProps = TrueSheetProps;
 
-const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, ref) {
+const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, externalRef) {
   const insets = useSafeAreaInsets();
+  const localRef = useRef<SheetRef>(null);
+  const ref = externalRef ?? localRef;
 
   const { themeColors } = useTheme();
   const backgroundColor = themeColors.background[0];
@@ -51,19 +53,9 @@ const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, ref) 
     focusRef.current = false;
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (focusRef.current && presentedRef.current) {
-          if (typeof ref === 'object' && ref) ref.current?.dismiss();
-          return true;
-        }
-        return false;
-      });
-
-      return () => subscription.remove();
-    }, [ref])
-  );
+  usePreventBackPress(presentedRef, () => {
+    if (focusRef.current && typeof ref === 'object' && ref) ref.current?.dismiss();
+  });
 
   return (
     <TrueSheet
