@@ -9,6 +9,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { TravelMode } from '@lactalink/form-schemas/directions';
 import {
@@ -23,7 +24,6 @@ import {
   XIcon,
 } from 'lucide-react-native';
 import React, { useCallback, useEffect } from 'react';
-import { BackHandler } from 'react-native';
 import {
   createAnimatedComponent,
   FadeInDown,
@@ -64,17 +64,7 @@ export default function DirectionDetails() {
     }
   }, [map, origin, destination, stopNavigation]);
 
-  useEffect(() => {
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (isActive) {
-        handleStopNavigation();
-        return true; // Prevent default back behavior
-      }
-      return false; // Allow default back behavior
-    });
-
-    return () => sub.remove();
-  }, [isActive, handleStopNavigation]);
+  usePreventBackPress(isActive, handleStopNavigation);
 
   useEffect(() => {
     if (error) {
