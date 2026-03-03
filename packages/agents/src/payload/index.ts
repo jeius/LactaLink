@@ -7,6 +7,7 @@
 
 import type { CollectionSlug, PayloadRequest, Where } from 'payload';
 
+export * from './fieldValidators';
 export * from './hookContext';
 
 // ---------------------------------------------------------------------------
