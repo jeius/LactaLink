@@ -7,30 +7,7 @@
 
 import type { CollectionSlug, PayloadRequest, Where } from 'payload';
 
-// ---------------------------------------------------------------------------
-// Hook context guards — prevent hook loops (req.context pattern)
-// See: .agents/skills/payload/reference/HOOKS.md#hook-context
-// ---------------------------------------------------------------------------
-
-/**
- * Returns true if a named hook has already been marked as run on this request,
- * preventing accidental recursive/looping hook execution.
- *
- * @example
- * if (isHookRun(req, 'generateTitle')) return doc;
- * markHookRun(req, 'generateTitle');
- */
-export function isHookRun(req: PayloadRequest, hookName: string): boolean {
-  return Boolean((req.context as Record<string, unknown>)?.[hookName]);
-}
-
-/**
- * Marks a named hook as run for the lifetime of this request.
- */
-export function markHookRun(req: PayloadRequest, hookName: string): void {
-  if (!req.context) req.context = {};
-  (req.context as Record<string, unknown>)[hookName] = true;
-}
+export * from './hookContext';
 
 // ---------------------------------------------------------------------------
 // Local API helpers — typed wrappers around req.payload
