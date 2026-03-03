@@ -2,6 +2,7 @@ import { pino } from 'pino';
 import pretty from 'pino-pretty';
 
 const isProd = process.env.NODE_ENV === 'production';
+const enableDebugLogs = process.env.ENABLE_DEBUG_LOGS === 1;
 
 // Configure pino-pretty for pretty printing
 const stream = pretty({
@@ -12,7 +13,7 @@ const stream = pretty({
 
 export const logger = pino(
   {
-    level: isProd ? 'error' : 'info',
+    level: isProd ? (enableDebugLogs ? 'info' : 'error') : 'info',
     enabled: true,
   },
   stream

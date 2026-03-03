@@ -29,6 +29,7 @@ declare global {
       VERCEL_AUTOMATION_BYPASS_SECRET?: string;
       GOOGLE_CLOUD_VISION_API_KEY: string;
       GOOGLE_ROUTES_API_KEY: string;
+      ENABLE_DEBUG_LOGS?: number;
     }
   }
 }
