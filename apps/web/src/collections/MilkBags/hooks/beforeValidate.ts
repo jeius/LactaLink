@@ -3,7 +3,13 @@ import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook } from 'payload';
 
-export const initializeMilkBag: CollectionBeforeValidateHook<MilkBag> = async ({
+/**
+ * Before validating a new milk bag:
+ * - Set collectedAt to current date if not provided.
+ * - Set owner to donor if not provided.
+ * - Also, if no bag image and status is not provided, set status to DRAFT.
+ */
+export const beforeValidate: CollectionBeforeValidateHook<MilkBag> = async ({
   data,
   operation,
 }) => {

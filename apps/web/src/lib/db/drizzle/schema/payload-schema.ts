@@ -108,26 +108,6 @@ export const enum_individuals_marital_status = pgEnum('enum_individuals_marital_
   'DIVORCED',
   'N/A',
 ]);
-export const enum_inventory_status = pgEnum('enum_inventory_status', [
-  'AVAILABLE',
-  'RESERVED',
-  'EXPIRED',
-  'CONSUMED',
-]);
-export const enum_milk_bag_transfer_reason = pgEnum('enum_milk_bag_transfer_reason', [
-  'DONATION_COMPLETED',
-  'REDISTRIBUTION',
-  'RETURN',
-  'N/A',
-]);
-export const enum_milk_bag_status = pgEnum('enum_milk_bag_status', [
-  'DRAFT',
-  'AVAILABLE',
-  'ALLOCATED',
-  'CONSUMED',
-  'EXPIRED',
-  'DISCARDED',
-]);
 export const enum_milk_banks_type = pgEnum('enum_milk_banks_type', [
   'GOVERNMENT',
   'PRIVATE',
@@ -194,6 +174,20 @@ export const enum_users_profile_type = pgEnum('enum_users_profile_type', [
   'HOSPITAL',
   'MILK_BANK',
 ]);
+export const enum_milk_bag_status = pgEnum('enum_milk_bag_status', [
+  'DRAFT',
+  'AVAILABLE',
+  'ALLOCATED',
+  'CONSUMED',
+  'EXPIRED',
+  'DISCARDED',
+]);
+export const enum_milk_bag_transfer_reason = pgEnum('enum_milk_bag_transfer_reason', [
+  'DONATION_COMPLETED',
+  'REDISTRIBUTION',
+  'RETURN',
+  'N/A',
+]);
 export const enum_transaction_status = pgEnum('enum_transaction_status', [
   'PENDING',
   'CONFIRMED',
@@ -233,6 +227,17 @@ export const enum_conversation_participants_role = pgEnum('enum_conversation_par
   'ADMIN',
   'MODERATOR',
   'MEMBER',
+]);
+export const enum_inventory_status = pgEnum('enum_inventory_status', [
+  'AVAILABLE',
+  'RESERVED',
+  'EXPIRED',
+  'CONSUMED',
+]);
+export const enum_inventory_allocation_status = pgEnum('enum_inventory_allocation_status', [
+  'PENDING',
+  'FULFILLED',
+  'CANCELLED',
 ]);
 export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', [
   'inline',
@@ -937,101 +942,6 @@ export const individuals = pgTable(
   ]
 );
 
-export const inventory_allocation_details = pgTable(
-  'inventory_allocation_details',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: uuid('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    request: uuid('request_id')
-      .notNull()
-      .references(() => requests.id, {
-        onDelete: 'set null',
-      }),
-    allocationId: varchar('allocation_id'),
-    allocatedAt: timestamp('allocated_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    notes: varchar('notes'),
-  },
-  (columns) => [
-    index('inventory_allocation_details_order_idx').on(columns._order),
-    index('inventory_allocation_details_parent_id_idx').on(columns._parentID),
-    index('inventory_allocation_details_request_idx').on(columns.request),
-    foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [inventory.id],
-      name: 'inventory_allocation_details_parent_id_fk',
-    }).onDelete('cascade'),
-  ]
-);
-
-export const inventory = pgTable(
-  'inventory',
-  {
-    id: uuid('id').defaultRandom().primaryKey(),
-    sourceDonation: uuid('source_donation_id').references(() => donations.id, {
-      onDelete: 'set null',
-    }),
-    initialVolume: numeric('initial_volume', { mode: 'number' }).notNull(),
-    remainingVolume: numeric('remaining_volume', { mode: 'number' }).notNull(),
-    status: enum_inventory_status('status').notNull().default('AVAILABLE'),
-    receivedAt: timestamp('received_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    expiresAt: timestamp('expires_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    notes: varchar('notes'),
-    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-  },
-  (columns) => [
-    index('inventory_source_donation_idx').on(columns.sourceDonation),
-    index('inventory_updated_at_idx').on(columns.updatedAt),
-    index('inventory_created_at_idx').on(columns.createdAt),
-  ]
-);
-
-export const inventory_rels = pgTable(
-  'inventory_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    hospitalsID: uuid('hospitals_id'),
-    milkBanksID: uuid('milk_banks_id'),
-    milkBagsID: uuid('milk_bags_id'),
-  },
-  (columns) => [
-    index('inventory_rels_order_idx').on(columns.order),
-    index('inventory_rels_parent_idx').on(columns.parent),
-    index('inventory_rels_path_idx').on(columns.path),
-    index('inventory_rels_hospitals_id_idx').on(columns.hospitalsID),
-    index('inventory_rels_milk_banks_id_idx').on(columns.milkBanksID),
-    index('inventory_rels_milk_bags_id_idx').on(columns.milkBagsID),
-    foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [inventory.id],
-      name: 'inventory_rels_parent_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['hospitalsID']],
-      foreignColumns: [hospitals.id],
-      name: 'inventory_rels_hospitals_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['milkBanksID']],
-      foreignColumns: [milk_banks.id],
-      name: 'inventory_rels_milk_banks_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['milkBagsID']],
-      foreignColumns: [milk_bags.id],
-      name: 'inventory_rels_milk_bags_fk',
-    }).onDelete('cascade'),
-  ]
-);
-
 export const island_groups = pgTable(
   'island_groups',
   {
@@ -1120,116 +1030,6 @@ export const likes_rels = pgTable(
       columns: [columns['commentsID']],
       foreignColumns: [comments.id],
       name: 'likes_rels_comments_fk',
-    }).onDelete('cascade'),
-  ]
-);
-
-export const milk_bags_ownership_history = pgTable(
-  'milk_bags_ownership_history',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: uuid('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    transferReason: enum_milk_bag_transfer_reason('transfer_reason').notNull().default('N/A'),
-    transferredAt: timestamp('transferred_at', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }),
-  },
-  (columns) => [
-    index('milk_bags_ownership_history_order_idx').on(columns._order),
-    index('milk_bags_ownership_history_parent_id_idx').on(columns._parentID),
-    foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [milk_bags.id],
-      name: 'milk_bags_ownership_history_parent_id_fk',
-    }).onDelete('cascade'),
-  ]
-);
-
-export const milk_bags = pgTable(
-  'milk_bags',
-  {
-    id: uuid('id').defaultRandom().primaryKey(),
-    code: varchar('code'),
-    title: varchar('title'),
-    createdBy: uuid('created_by_id')
-      .notNull()
-      .references(() => users.id, {
-        onDelete: 'set null',
-      }),
-    donor: uuid('donor_id')
-      .notNull()
-      .references(() => individuals.id, {
-        onDelete: 'set null',
-      }),
-    volume: numeric('volume', { mode: 'number' }).notNull().default(20),
-    status: enum_milk_bag_status('status').notNull().default('DRAFT'),
-    collectedAt: timestamp('collected_at', {
-      mode: 'string',
-      withTimezone: true,
-      precision: 3,
-    }).notNull(),
-    expiresAt: timestamp('expires_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    bagImage: uuid('bag_image_id').references(() => milk_bag_images.id, {
-      onDelete: 'set null',
-    }),
-    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
-      .defaultNow()
-      .notNull(),
-  },
-  (columns) => [
-    uniqueIndex('milk_bags_code_idx').on(columns.code),
-    index('milk_bags_created_by_idx').on(columns.createdBy),
-    index('milk_bags_donor_idx').on(columns.donor),
-    index('milk_bags_bag_image_idx').on(columns.bagImage),
-    index('milk_bags_updated_at_idx').on(columns.updatedAt),
-    index('milk_bags_created_at_idx').on(columns.createdAt),
-    index('status_expiresAt_idx').on(columns.status, columns.expiresAt),
-  ]
-);
-
-export const milk_bags_rels = pgTable(
-  'milk_bags_rels',
-  {
-    id: serial('id').primaryKey(),
-    order: integer('order'),
-    parent: uuid('parent_id').notNull(),
-    path: varchar('path').notNull(),
-    individualsID: uuid('individuals_id'),
-    milkBanksID: uuid('milk_banks_id'),
-    hospitalsID: uuid('hospitals_id'),
-  },
-  (columns) => [
-    index('milk_bags_rels_order_idx').on(columns.order),
-    index('milk_bags_rels_parent_idx').on(columns.parent),
-    index('milk_bags_rels_path_idx').on(columns.path),
-    index('milk_bags_rels_individuals_id_idx').on(columns.individualsID),
-    index('milk_bags_rels_milk_banks_id_idx').on(columns.milkBanksID),
-    index('milk_bags_rels_hospitals_id_idx').on(columns.hospitalsID),
-    foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [milk_bags.id],
-      name: 'milk_bags_rels_parent_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['individualsID']],
-      foreignColumns: [individuals.id],
-      name: 'milk_bags_rels_individuals_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['milkBanksID']],
-      foreignColumns: [milk_banks.id],
-      name: 'milk_bags_rels_milk_banks_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['hospitalsID']],
-      foreignColumns: [hospitals.id],
-      name: 'milk_bags_rels_hospitals_fk',
     }).onDelete('cascade'),
   ]
 );
@@ -1976,6 +1776,171 @@ export const users_rels = pgTable(
       columns: [columns['hospitalsID']],
       foreignColumns: [hospitals.id],
       name: 'users_rels_hospitals_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const milk_bags = pgTable(
+  'milk_bags',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    code: varchar('code').notNull(),
+    title: varchar('title').notNull(),
+    createdBy: uuid('created_by_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    donor: uuid('donor_id')
+      .notNull()
+      .references(() => individuals.id, {
+        onDelete: 'set null',
+      }),
+    volume: numeric('volume', { mode: 'number' }).notNull().default(20),
+    status: enum_milk_bag_status('status').notNull().default('DRAFT'),
+    collectedAt: timestamp('collected_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    expiresAt: timestamp('expires_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    bagImage: uuid('bag_image_id').references(() => milk_bag_images.id, {
+      onDelete: 'set null',
+    }),
+    inventory: uuid('inventory_id').references(() => inventories.id, {
+      onDelete: 'set null',
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    uniqueIndex('milk_bags_code_idx').on(columns.code),
+    index('milk_bags_created_by_idx').on(columns.createdBy),
+    index('milk_bags_donor_idx').on(columns.donor),
+    index('milk_bags_bag_image_idx').on(columns.bagImage),
+    index('milk_bags_inventory_idx').on(columns.inventory),
+    index('milk_bags_updated_at_idx').on(columns.updatedAt),
+    index('milk_bags_created_at_idx').on(columns.createdAt),
+    index('status_idx').on(columns.status),
+    index('expiresAt_idx').on(columns.expiresAt),
+  ]
+);
+
+export const milk_bags_rels = pgTable(
+  'milk_bags_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+    hospitalsID: uuid('hospitals_id'),
+  },
+  (columns) => [
+    index('milk_bags_rels_order_idx').on(columns.order),
+    index('milk_bags_rels_parent_idx').on(columns.parent),
+    index('milk_bags_rels_path_idx').on(columns.path),
+    index('milk_bags_rels_individuals_id_idx').on(columns.individualsID),
+    index('milk_bags_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    index('milk_bags_rels_hospitals_id_idx').on(columns.hospitalsID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [milk_bags.id],
+      name: 'milk_bags_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'milk_bags_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'milk_bags_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'milk_bags_rels_hospitals_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const milkbag_ownership_histories = pgTable(
+  'milkbag_ownership_histories',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    milkBag: uuid('milk_bag_id')
+      .notNull()
+      .references(() => milk_bags.id, {
+        onDelete: 'set null',
+      }),
+    transferReason: enum_milk_bag_transfer_reason('transfer_reason').notNull().default('N/A'),
+    transferredAt: timestamp('transferred_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('milkbag_ownership_histories_milk_bag_idx').on(columns.milkBag),
+    index('milkbag_ownership_histories_updated_at_idx').on(columns.updatedAt),
+    index('milkbag_ownership_histories_created_at_idx').on(columns.createdAt),
+  ]
+);
+
+export const milkbag_ownership_histories_rels = pgTable(
+  'milkbag_ownership_histories_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    individualsID: uuid('individuals_id'),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('milkbag_ownership_histories_rels_order_idx').on(columns.order),
+    index('milkbag_ownership_histories_rels_parent_idx').on(columns.parent),
+    index('milkbag_ownership_histories_rels_path_idx').on(columns.path),
+    index('milkbag_ownership_histories_rels_individuals_id_idx').on(columns.individualsID),
+    index('milkbag_ownership_histories_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('milkbag_ownership_histories_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [milkbag_ownership_histories.id],
+      name: 'milkbag_ownership_histories_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['individualsID']],
+      foreignColumns: [individuals.id],
+      name: 'milkbag_ownership_histories_rels_individuals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'milkbag_ownership_histories_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'milkbag_ownership_histories_rels_milk_banks_fk',
     }).onDelete('cascade'),
   ]
 );
@@ -2862,6 +2827,246 @@ export const screening_files = pgTable(
   ]
 );
 
+export const inventories = pgTable(
+  'inventories',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    code: varchar('code').notNull(),
+    sourceDonation: uuid('source_donation_id').references(() => donations.id, {
+      onDelete: 'set null',
+    }),
+    initialVolume: numeric('initial_volume', { mode: 'number' }).notNull(),
+    remainingVolume: numeric('remaining_volume', { mode: 'number' }).notNull(),
+    reservedVolume: numeric('reserved_volume', { mode: 'number' }).default(0),
+    status: enum_inventory_status('status').notNull().default('AVAILABLE'),
+    receivedAt: timestamp('received_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    expiresAt: timestamp('expires_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    notes: varchar('notes'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    uniqueIndex('inventories_code_idx').on(columns.code),
+    index('inventories_source_donation_idx').on(columns.sourceDonation),
+    index('inventories_status_idx').on(columns.status),
+    index('inventories_expires_at_idx').on(columns.expiresAt),
+    index('inventories_updated_at_idx').on(columns.updatedAt),
+    index('inventories_created_at_idx').on(columns.createdAt),
+    index('inventories_deleted_at_idx').on(columns.deletedAt),
+    index('status_1_idx').on(columns.status),
+    index('expiresAt_1_idx').on(columns.expiresAt),
+  ]
+);
+
+export const inventories_rels = pgTable(
+  'inventories_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('inventories_rels_order_idx').on(columns.order),
+    index('inventories_rels_parent_idx').on(columns.parent),
+    index('inventories_rels_path_idx').on(columns.path),
+    index('inventories_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('inventories_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [inventories.id],
+      name: 'inventories_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'inventories_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'inventories_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _inventories_v = pgTable(
+  '_inventories_v',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    parent: uuid('parent_id').references(() => inventories.id, {
+      onDelete: 'set null',
+    }),
+    version_code: varchar('version_code').notNull(),
+    version_sourceDonation: uuid('version_source_donation_id').references(() => donations.id, {
+      onDelete: 'set null',
+    }),
+    version_initialVolume: numeric('version_initial_volume', { mode: 'number' }).notNull(),
+    version_remainingVolume: numeric('version_remaining_volume', { mode: 'number' }).notNull(),
+    version_reservedVolume: numeric('version_reserved_volume', { mode: 'number' }).default(0),
+    version_status: enum_inventory_status('version_status').notNull().default('AVAILABLE'),
+    version_receivedAt: timestamp('version_received_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_expiresAt: timestamp('version_expires_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_notes: varchar('version_notes'),
+    version_updatedAt: timestamp('version_updated_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_createdAt: timestamp('version_created_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_deletedAt: timestamp('version_deleted_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index('_inventories_v_parent_idx').on(columns.parent),
+    index('_inventories_v_version_version_code_idx').on(columns.version_code),
+    index('_inventories_v_version_version_source_donation_idx').on(columns.version_sourceDonation),
+    index('_inventories_v_version_version_status_idx').on(columns.version_status),
+    index('_inventories_v_version_version_expires_at_idx').on(columns.version_expiresAt),
+    index('_inventories_v_version_version_updated_at_idx').on(columns.version_updatedAt),
+    index('_inventories_v_version_version_created_at_idx').on(columns.version_createdAt),
+    index('_inventories_v_version_version_deleted_at_idx').on(columns.version_deletedAt),
+    index('_inventories_v_created_at_idx').on(columns.createdAt),
+    index('_inventories_v_updated_at_idx').on(columns.updatedAt),
+    index('version_status_idx').on(columns.version_status),
+    index('version_expiresAt_idx').on(columns.version_expiresAt),
+  ]
+);
+
+export const _inventories_v_rels = pgTable(
+  '_inventories_v_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('_inventories_v_rels_order_idx').on(columns.order),
+    index('_inventories_v_rels_parent_idx').on(columns.parent),
+    index('_inventories_v_rels_path_idx').on(columns.path),
+    index('_inventories_v_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('_inventories_v_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [_inventories_v.id],
+      name: '_inventories_v_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: '_inventories_v_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: '_inventories_v_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const inventory_allocations = pgTable(
+  'inventory_allocations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    inventory: uuid('inventory_id')
+      .notNull()
+      .references(() => inventories.id, {
+        onDelete: 'set null',
+      }),
+    request: uuid('request_id')
+      .notNull()
+      .references(() => requests.id, {
+        onDelete: 'set null',
+      }),
+    allocatedVolume: numeric('allocated_volume', { mode: 'number' }).notNull().default(0),
+    allocatedAt: timestamp('allocated_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    status: enum_inventory_allocation_status('status').notNull().default('PENDING'),
+    allocationId: varchar('allocation_id').notNull(),
+    notes: varchar('notes'),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+  },
+  (columns) => [
+    index('inventory_allocations_inventory_idx').on(columns.inventory),
+    index('inventory_allocations_request_idx').on(columns.request),
+    index('inventory_allocations_status_idx').on(columns.status),
+    index('inventory_allocations_allocation_id_idx').on(columns.allocationId),
+    index('inventory_allocations_updated_at_idx').on(columns.updatedAt),
+    index('inventory_allocations_created_at_idx').on(columns.createdAt),
+    index('inventory_allocations_deleted_at_idx').on(columns.deletedAt),
+    index('inventory_idx').on(columns.inventory),
+    index('request_idx').on(columns.request),
+    index('status_2_idx').on(columns.status),
+  ]
+);
+
+export const inventory_allocations_rels = pgTable(
+  'inventory_allocations_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    milkBagsID: uuid('milk_bags_id'),
+  },
+  (columns) => [
+    index('inventory_allocations_rels_order_idx').on(columns.order),
+    index('inventory_allocations_rels_parent_idx').on(columns.parent),
+    index('inventory_allocations_rels_path_idx').on(columns.path),
+    index('inventory_allocations_rels_milk_bags_id_idx').on(columns.milkBagsID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [inventory_allocations.id],
+      name: 'inventory_allocations_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBagsID']],
+      foreignColumns: [milk_bags.id],
+      name: 'inventory_allocations_rels_milk_bags_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
 export const user_search = pgTable(
   'user_search',
   {
@@ -3040,10 +3245,8 @@ export const payload_locked_documents_rels = pgTable(
     hospitalsID: uuid('hospitals_id'),
     identitiesID: uuid('identities_id'),
     individualsID: uuid('individuals_id'),
-    inventoryID: uuid('inventory_id'),
     islandGroupsID: uuid('island_groups_id'),
     likesID: uuid('likes_id'),
-    milkBagsID: uuid('milk_bags_id'),
     milkBanksID: uuid('milk_banks_id'),
     'notification-categoriesID': uuid('notification_categories_id'),
     'notification-channelsID': uuid('notification_channels_id'),
@@ -3055,6 +3258,8 @@ export const payload_locked_documents_rels = pgTable(
     'request-readsID': uuid('request_reads_id'),
     requestsID: uuid('requests_id'),
     usersID: uuid('users_id'),
+    milkBagsID: uuid('milk_bags_id'),
+    'milkbag-ownership-historiesID': uuid('milkbag_ownership_histories_id'),
     transactionsID: uuid('transactions_id'),
     'delivery-detailsID': uuid('delivery_details_id'),
     'delivery-updatesID': uuid('delivery_updates_id'),
@@ -3073,6 +3278,8 @@ export const payload_locked_documents_rels = pgTable(
     'identity-imagesID': uuid('identity_images_id'),
     avatarsID: uuid('avatars_id'),
     'screening-filesID': uuid('screening_files_id'),
+    inventoriesID: uuid('inventories_id'),
+    'inventory-allocationsID': uuid('inventory_allocations_id'),
     'user-searchID': uuid('user_search_id'),
   },
   (columns) => [
@@ -3097,10 +3304,8 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_hospitals_id_idx').on(columns.hospitalsID),
     index('payload_locked_documents_rels_identities_id_idx').on(columns.identitiesID),
     index('payload_locked_documents_rels_individuals_id_idx').on(columns.individualsID),
-    index('payload_locked_documents_rels_inventory_id_idx').on(columns.inventoryID),
     index('payload_locked_documents_rels_island_groups_id_idx').on(columns.islandGroupsID),
     index('payload_locked_documents_rels_likes_id_idx').on(columns.likesID),
-    index('payload_locked_documents_rels_milk_bags_id_idx').on(columns.milkBagsID),
     index('payload_locked_documents_rels_milk_banks_id_idx').on(columns.milkBanksID),
     index('payload_locked_documents_rels_notification_categories_id_idx').on(
       columns['notification-categoriesID']
@@ -3118,6 +3323,10 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_request_reads_id_idx').on(columns['request-readsID']),
     index('payload_locked_documents_rels_requests_id_idx').on(columns.requestsID),
     index('payload_locked_documents_rels_users_id_idx').on(columns.usersID),
+    index('payload_locked_documents_rels_milk_bags_id_idx').on(columns.milkBagsID),
+    index('payload_locked_documents_rels_milkbag_ownership_historie_idx').on(
+      columns['milkbag-ownership-historiesID']
+    ),
     index('payload_locked_documents_rels_transactions_id_idx').on(columns.transactionsID),
     index('payload_locked_documents_rels_delivery_details_id_idx').on(
       columns['delivery-detailsID']
@@ -3152,6 +3361,10 @@ export const payload_locked_documents_rels = pgTable(
     index('payload_locked_documents_rels_identity_images_id_idx').on(columns['identity-imagesID']),
     index('payload_locked_documents_rels_avatars_id_idx').on(columns.avatarsID),
     index('payload_locked_documents_rels_screening_files_id_idx').on(columns['screening-filesID']),
+    index('payload_locked_documents_rels_inventories_id_idx').on(columns.inventoriesID),
+    index('payload_locked_documents_rels_inventory_allocations_id_idx').on(
+      columns['inventory-allocationsID']
+    ),
     index('payload_locked_documents_rels_user_search_id_idx').on(columns['user-searchID']),
     foreignKey({
       columns: [columns['parent']],
@@ -3219,11 +3432,6 @@ export const payload_locked_documents_rels = pgTable(
       name: 'payload_locked_documents_rels_individuals_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['inventoryID']],
-      foreignColumns: [inventory.id],
-      name: 'payload_locked_documents_rels_inventory_fk',
-    }).onDelete('cascade'),
-    foreignKey({
       columns: [columns['islandGroupsID']],
       foreignColumns: [island_groups.id],
       name: 'payload_locked_documents_rels_island_groups_fk',
@@ -3232,11 +3440,6 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['likesID']],
       foreignColumns: [likes.id],
       name: 'payload_locked_documents_rels_likes_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [columns['milkBagsID']],
-      foreignColumns: [milk_bags.id],
-      name: 'payload_locked_documents_rels_milk_bags_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['milkBanksID']],
@@ -3292,6 +3495,16 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['usersID']],
       foreignColumns: [users.id],
       name: 'payload_locked_documents_rels_users_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBagsID']],
+      foreignColumns: [milk_bags.id],
+      name: 'payload_locked_documents_rels_milk_bags_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkbag-ownership-historiesID']],
+      foreignColumns: [milkbag_ownership_histories.id],
+      name: 'payload_locked_documents_rels_milkbag_ownership_histories_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['transactionsID']],
@@ -3382,6 +3595,16 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns['screening-filesID']],
       foreignColumns: [screening_files.id],
       name: 'payload_locked_documents_rels_screening_files_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['inventoriesID']],
+      foreignColumns: [inventories.id],
+      name: 'payload_locked_documents_rels_inventories_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['inventory-allocationsID']],
+      foreignColumns: [inventory_allocations.id],
+      name: 'payload_locked_documents_rels_inventory_allocations_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['user-searchID']],
@@ -4135,56 +4358,6 @@ export const relations_individuals = relations(individuals, ({ one }) => ({
     relationName: 'avatar',
   }),
 }));
-export const relations_inventory_allocation_details = relations(
-  inventory_allocation_details,
-  ({ one }) => ({
-    _parentID: one(inventory, {
-      fields: [inventory_allocation_details._parentID],
-      references: [inventory.id],
-      relationName: 'allocationDetails',
-    }),
-    request: one(requests, {
-      fields: [inventory_allocation_details.request],
-      references: [requests.id],
-      relationName: 'request',
-    }),
-  })
-);
-export const relations_inventory_rels = relations(inventory_rels, ({ one }) => ({
-  parent: one(inventory, {
-    fields: [inventory_rels.parent],
-    references: [inventory.id],
-    relationName: '_rels',
-  }),
-  hospitalsID: one(hospitals, {
-    fields: [inventory_rels.hospitalsID],
-    references: [hospitals.id],
-    relationName: 'hospitals',
-  }),
-  milkBanksID: one(milk_banks, {
-    fields: [inventory_rels.milkBanksID],
-    references: [milk_banks.id],
-    relationName: 'milkBanks',
-  }),
-  milkBagsID: one(milk_bags, {
-    fields: [inventory_rels.milkBagsID],
-    references: [milk_bags.id],
-    relationName: 'milkBags',
-  }),
-}));
-export const relations_inventory = relations(inventory, ({ one, many }) => ({
-  sourceDonation: one(donations, {
-    fields: [inventory.sourceDonation],
-    references: [donations.id],
-    relationName: 'sourceDonation',
-  }),
-  allocationDetails: many(inventory_allocation_details, {
-    relationName: 'allocationDetails',
-  }),
-  _rels: many(inventory_rels, {
-    relationName: '_rels',
-  }),
-}));
 export const relations_island_groups = relations(island_groups, () => ({}));
 export const relations_likes_rels = relations(likes_rels, ({ one }) => ({
   parent: one(likes, {
@@ -4220,61 +4393,6 @@ export const relations_likes_rels = relations(likes_rels, ({ one }) => ({
 }));
 export const relations_likes = relations(likes, ({ many }) => ({
   _rels: many(likes_rels, {
-    relationName: '_rels',
-  }),
-}));
-export const relations_milk_bags_ownership_history = relations(
-  milk_bags_ownership_history,
-  ({ one }) => ({
-    _parentID: one(milk_bags, {
-      fields: [milk_bags_ownership_history._parentID],
-      references: [milk_bags.id],
-      relationName: 'ownershipHistory',
-    }),
-  })
-);
-export const relations_milk_bags_rels = relations(milk_bags_rels, ({ one }) => ({
-  parent: one(milk_bags, {
-    fields: [milk_bags_rels.parent],
-    references: [milk_bags.id],
-    relationName: '_rels',
-  }),
-  individualsID: one(individuals, {
-    fields: [milk_bags_rels.individualsID],
-    references: [individuals.id],
-    relationName: 'individuals',
-  }),
-  milkBanksID: one(milk_banks, {
-    fields: [milk_bags_rels.milkBanksID],
-    references: [milk_banks.id],
-    relationName: 'milkBanks',
-  }),
-  hospitalsID: one(hospitals, {
-    fields: [milk_bags_rels.hospitalsID],
-    references: [hospitals.id],
-    relationName: 'hospitals',
-  }),
-}));
-export const relations_milk_bags = relations(milk_bags, ({ one, many }) => ({
-  createdBy: one(users, {
-    fields: [milk_bags.createdBy],
-    references: [users.id],
-    relationName: 'createdBy',
-  }),
-  donor: one(individuals, {
-    fields: [milk_bags.donor],
-    references: [individuals.id],
-    relationName: 'donor',
-  }),
-  bagImage: one(milk_bag_images, {
-    fields: [milk_bags.bagImage],
-    references: [milk_bag_images.id],
-    relationName: 'bagImage',
-  }),
-  ownershipHistory: many(milk_bags_ownership_history, {
-    relationName: 'ownershipHistory',
-  }),
-  _rels: many(milk_bags_rels, {
     relationName: '_rels',
   }),
 }));
@@ -4591,6 +4709,91 @@ export const relations_users = relations(users, ({ many }) => ({
     relationName: '_rels',
   }),
 }));
+export const relations_milk_bags_rels = relations(milk_bags_rels, ({ one }) => ({
+  parent: one(milk_bags, {
+    fields: [milk_bags_rels.parent],
+    references: [milk_bags.id],
+    relationName: '_rels',
+  }),
+  individualsID: one(individuals, {
+    fields: [milk_bags_rels.individualsID],
+    references: [individuals.id],
+    relationName: 'individuals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [milk_bags_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [milk_bags_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+}));
+export const relations_milk_bags = relations(milk_bags, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [milk_bags.createdBy],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  donor: one(individuals, {
+    fields: [milk_bags.donor],
+    references: [individuals.id],
+    relationName: 'donor',
+  }),
+  bagImage: one(milk_bag_images, {
+    fields: [milk_bags.bagImage],
+    references: [milk_bag_images.id],
+    relationName: 'bagImage',
+  }),
+  inventory: one(inventories, {
+    fields: [milk_bags.inventory],
+    references: [inventories.id],
+    relationName: 'inventory',
+  }),
+  _rels: many(milk_bags_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations_milkbag_ownership_histories_rels = relations(
+  milkbag_ownership_histories_rels,
+  ({ one }) => ({
+    parent: one(milkbag_ownership_histories, {
+      fields: [milkbag_ownership_histories_rels.parent],
+      references: [milkbag_ownership_histories.id],
+      relationName: '_rels',
+    }),
+    individualsID: one(individuals, {
+      fields: [milkbag_ownership_histories_rels.individualsID],
+      references: [individuals.id],
+      relationName: 'individuals',
+    }),
+    hospitalsID: one(hospitals, {
+      fields: [milkbag_ownership_histories_rels.hospitalsID],
+      references: [hospitals.id],
+      relationName: 'hospitals',
+    }),
+    milkBanksID: one(milk_banks, {
+      fields: [milkbag_ownership_histories_rels.milkBanksID],
+      references: [milk_banks.id],
+      relationName: 'milkBanks',
+    }),
+  })
+);
+export const relations_milkbag_ownership_histories = relations(
+  milkbag_ownership_histories,
+  ({ one, many }) => ({
+    milkBag: one(milk_bags, {
+      fields: [milkbag_ownership_histories.milkBag],
+      references: [milk_bags.id],
+      relationName: 'milkBag',
+    }),
+    _rels: many(milkbag_ownership_histories_rels, {
+      relationName: '_rels',
+    }),
+  })
+);
 export const relations_transactions_rels = relations(transactions_rels, ({ one }) => ({
   parent: one(transactions, {
     fields: [transactions_rels.parent],
@@ -4906,6 +5109,98 @@ export const relations_screening_files = relations(screening_files, ({ one }) =>
     relationName: 'createdBy',
   }),
 }));
+export const relations_inventories_rels = relations(inventories_rels, ({ one }) => ({
+  parent: one(inventories, {
+    fields: [inventories_rels.parent],
+    references: [inventories.id],
+    relationName: '_rels',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [inventories_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [inventories_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations_inventories = relations(inventories, ({ one, many }) => ({
+  sourceDonation: one(donations, {
+    fields: [inventories.sourceDonation],
+    references: [donations.id],
+    relationName: 'sourceDonation',
+  }),
+  _rels: many(inventories_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations__inventories_v_rels = relations(_inventories_v_rels, ({ one }) => ({
+  parent: one(_inventories_v, {
+    fields: [_inventories_v_rels.parent],
+    references: [_inventories_v.id],
+    relationName: '_rels',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [_inventories_v_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
+  }),
+  milkBanksID: one(milk_banks, {
+    fields: [_inventories_v_rels.milkBanksID],
+    references: [milk_banks.id],
+    relationName: 'milkBanks',
+  }),
+}));
+export const relations__inventories_v = relations(_inventories_v, ({ one, many }) => ({
+  parent: one(inventories, {
+    fields: [_inventories_v.parent],
+    references: [inventories.id],
+    relationName: 'parent',
+  }),
+  version_sourceDonation: one(donations, {
+    fields: [_inventories_v.version_sourceDonation],
+    references: [donations.id],
+    relationName: 'version_sourceDonation',
+  }),
+  _rels: many(_inventories_v_rels, {
+    relationName: '_rels',
+  }),
+}));
+export const relations_inventory_allocations_rels = relations(
+  inventory_allocations_rels,
+  ({ one }) => ({
+    parent: one(inventory_allocations, {
+      fields: [inventory_allocations_rels.parent],
+      references: [inventory_allocations.id],
+      relationName: '_rels',
+    }),
+    milkBagsID: one(milk_bags, {
+      fields: [inventory_allocations_rels.milkBagsID],
+      references: [milk_bags.id],
+      relationName: 'milkBags',
+    }),
+  })
+);
+export const relations_inventory_allocations = relations(
+  inventory_allocations,
+  ({ one, many }) => ({
+    inventory: one(inventories, {
+      fields: [inventory_allocations.inventory],
+      references: [inventories.id],
+      relationName: 'inventory',
+    }),
+    request: one(requests, {
+      fields: [inventory_allocations.request],
+      references: [requests.id],
+      relationName: 'request',
+    }),
+    _rels: many(inventory_allocations_rels, {
+      relationName: '_rels',
+    }),
+  })
+);
 export const relations_user_search_rels = relations(user_search_rels, ({ one }) => ({
   parent: one(user_search, {
     fields: [user_search_rels.parent],
@@ -5014,11 +5309,6 @@ export const relations_payload_locked_documents_rels = relations(
       references: [individuals.id],
       relationName: 'individuals',
     }),
-    inventoryID: one(inventory, {
-      fields: [payload_locked_documents_rels.inventoryID],
-      references: [inventory.id],
-      relationName: 'inventory',
-    }),
     islandGroupsID: one(island_groups, {
       fields: [payload_locked_documents_rels.islandGroupsID],
       references: [island_groups.id],
@@ -5028,11 +5318,6 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.likesID],
       references: [likes.id],
       relationName: 'likes',
-    }),
-    milkBagsID: one(milk_bags, {
-      fields: [payload_locked_documents_rels.milkBagsID],
-      references: [milk_bags.id],
-      relationName: 'milkBags',
     }),
     milkBanksID: one(milk_banks, {
       fields: [payload_locked_documents_rels.milkBanksID],
@@ -5088,6 +5373,16 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.usersID],
       references: [users.id],
       relationName: 'users',
+    }),
+    milkBagsID: one(milk_bags, {
+      fields: [payload_locked_documents_rels.milkBagsID],
+      references: [milk_bags.id],
+      relationName: 'milkBags',
+    }),
+    'milkbag-ownership-historiesID': one(milkbag_ownership_histories, {
+      fields: [payload_locked_documents_rels['milkbag-ownership-historiesID']],
+      references: [milkbag_ownership_histories.id],
+      relationName: 'milkbag-ownership-histories',
     }),
     transactionsID: one(transactions, {
       fields: [payload_locked_documents_rels.transactionsID],
@@ -5178,6 +5473,16 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels['screening-filesID']],
       references: [screening_files.id],
       relationName: 'screening-files',
+    }),
+    inventoriesID: one(inventories, {
+      fields: [payload_locked_documents_rels.inventoriesID],
+      references: [inventories.id],
+      relationName: 'inventories',
+    }),
+    'inventory-allocationsID': one(inventory_allocations, {
+      fields: [payload_locked_documents_rels['inventory-allocationsID']],
+      references: [inventory_allocations.id],
+      relationName: 'inventory-allocations',
     }),
     'user-searchID': one(user_search, {
       fields: [payload_locked_documents_rels['user-searchID']],
@@ -5392,9 +5697,6 @@ type DatabaseSchema = {
   enum_identities_status: typeof enum_identities_status;
   enum_individuals_gender: typeof enum_individuals_gender;
   enum_individuals_marital_status: typeof enum_individuals_marital_status;
-  enum_inventory_status: typeof enum_inventory_status;
-  enum_milk_bag_transfer_reason: typeof enum_milk_bag_transfer_reason;
-  enum_milk_bag_status: typeof enum_milk_bag_status;
   enum_milk_banks_type: typeof enum_milk_banks_type;
   enum_system_colors: typeof enum_system_colors;
   enum_notification_channel_type: typeof enum_notification_channel_type;
@@ -5409,6 +5711,8 @@ type DatabaseSchema = {
   enum_requests_details_storage_preference: typeof enum_requests_details_storage_preference;
   enum_users_role: typeof enum_users_role;
   enum_users_profile_type: typeof enum_users_profile_type;
+  enum_milk_bag_status: typeof enum_milk_bag_status;
+  enum_milk_bag_transfer_reason: typeof enum_milk_bag_transfer_reason;
   enum_transaction_status: typeof enum_transaction_status;
   enum_transaction_type: typeof enum_transaction_type;
   enum_delivery_details_status: typeof enum_delivery_details_status;
@@ -5417,6 +5721,8 @@ type DatabaseSchema = {
   enum_message_type: typeof enum_message_type;
   enum_conversation_type: typeof enum_conversation_type;
   enum_conversation_participants_role: typeof enum_conversation_participants_role;
+  enum_inventory_status: typeof enum_inventory_status;
+  enum_inventory_allocation_status: typeof enum_inventory_allocation_status;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
@@ -5443,15 +5749,9 @@ type DatabaseSchema = {
   hospitals: typeof hospitals;
   identities: typeof identities;
   individuals: typeof individuals;
-  inventory_allocation_details: typeof inventory_allocation_details;
-  inventory: typeof inventory;
-  inventory_rels: typeof inventory_rels;
   island_groups: typeof island_groups;
   likes: typeof likes;
   likes_rels: typeof likes_rels;
-  milk_bags_ownership_history: typeof milk_bags_ownership_history;
-  milk_bags: typeof milk_bags;
-  milk_bags_rels: typeof milk_bags_rels;
   milk_banks: typeof milk_banks;
   notification_categories: typeof notification_categories;
   notification_channels: typeof notification_channels;
@@ -5472,6 +5772,10 @@ type DatabaseSchema = {
   requests_rels: typeof requests_rels;
   users: typeof users;
   users_rels: typeof users_rels;
+  milk_bags: typeof milk_bags;
+  milk_bags_rels: typeof milk_bags_rels;
+  milkbag_ownership_histories: typeof milkbag_ownership_histories;
+  milkbag_ownership_histories_rels: typeof milkbag_ownership_histories_rels;
   transactions: typeof transactions;
   transactions_rels: typeof transactions_rels;
   delivery_details: typeof delivery_details;
@@ -5494,6 +5798,12 @@ type DatabaseSchema = {
   identity_images: typeof identity_images;
   avatars: typeof avatars;
   screening_files: typeof screening_files;
+  inventories: typeof inventories;
+  inventories_rels: typeof inventories_rels;
+  _inventories_v: typeof _inventories_v;
+  _inventories_v_rels: typeof _inventories_v_rels;
+  inventory_allocations: typeof inventory_allocations;
+  inventory_allocations_rels: typeof inventory_allocations_rels;
   user_search: typeof user_search;
   user_search_rels: typeof user_search_rels;
   payload_kv: typeof payload_kv;
@@ -5536,15 +5846,9 @@ type DatabaseSchema = {
   relations_hospitals: typeof relations_hospitals;
   relations_identities: typeof relations_identities;
   relations_individuals: typeof relations_individuals;
-  relations_inventory_allocation_details: typeof relations_inventory_allocation_details;
-  relations_inventory_rels: typeof relations_inventory_rels;
-  relations_inventory: typeof relations_inventory;
   relations_island_groups: typeof relations_island_groups;
   relations_likes_rels: typeof relations_likes_rels;
   relations_likes: typeof relations_likes;
-  relations_milk_bags_ownership_history: typeof relations_milk_bags_ownership_history;
-  relations_milk_bags_rels: typeof relations_milk_bags_rels;
-  relations_milk_bags: typeof relations_milk_bags;
   relations_milk_banks: typeof relations_milk_banks;
   relations_notification_categories: typeof relations_notification_categories;
   relations_notification_channels: typeof relations_notification_channels;
@@ -5565,6 +5869,10 @@ type DatabaseSchema = {
   relations_requests: typeof relations_requests;
   relations_users_rels: typeof relations_users_rels;
   relations_users: typeof relations_users;
+  relations_milk_bags_rels: typeof relations_milk_bags_rels;
+  relations_milk_bags: typeof relations_milk_bags;
+  relations_milkbag_ownership_histories_rels: typeof relations_milkbag_ownership_histories_rels;
+  relations_milkbag_ownership_histories: typeof relations_milkbag_ownership_histories;
   relations_transactions_rels: typeof relations_transactions_rels;
   relations_transactions: typeof relations_transactions;
   relations_delivery_details_rels: typeof relations_delivery_details_rels;
@@ -5587,6 +5895,12 @@ type DatabaseSchema = {
   relations_identity_images: typeof relations_identity_images;
   relations_avatars: typeof relations_avatars;
   relations_screening_files: typeof relations_screening_files;
+  relations_inventories_rels: typeof relations_inventories_rels;
+  relations_inventories: typeof relations_inventories;
+  relations__inventories_v_rels: typeof relations__inventories_v_rels;
+  relations__inventories_v: typeof relations__inventories_v;
+  relations_inventory_allocations_rels: typeof relations_inventory_allocations_rels;
+  relations_inventory_allocations: typeof relations_inventory_allocations;
   relations_user_search_rels: typeof relations_user_search_rels;
   relations_user_search: typeof relations_user_search;
   relations_payload_kv: typeof relations_payload_kv;

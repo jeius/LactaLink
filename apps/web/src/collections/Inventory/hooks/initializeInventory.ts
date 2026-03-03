@@ -1,5 +1,7 @@
+import { InventoryHookContext } from '@/lib/constants/hookContexts';
+import { hookLogger, setHookContext } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
-import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
+import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook } from 'payload';
 
 export const initializeInventory: CollectionBeforeValidateHook<Inventory> = async ({
@@ -12,52 +14,70 @@ export const initializeInventory: CollectionBeforeValidateHook<Inventory> = asyn
     return data;
   }
 
+  // Default status to AVAILABLE if not provided
+  if (!data.status) {
+    data.status = 'AVAILABLE';
+  }
+
+  const logger = hookLogger(req, 'inventories', 'beforeValidate');
+
   try {
     // Get donation information with milk bags
     const sourceDonation = await req.payload.findByID({
       collection: 'donations',
       id: extractID(data.sourceDonation),
       depth: 0,
+      select: { details: { bags: true } },
     });
 
-    // Get milk bags from the donation
-    const milkBags = sourceDonation.details.bags || [];
+    // Get milk bag IDs from the donation
+    const milkBagIDs = extractID(sourceDonation.details.bags);
 
-    // Get volumes of all bags
-    let totalVolume = 0;
-    if (milkBags.length > 0) {
-      const milkBagIds = extractID(milkBags);
+    // Store milk bag IDs in the request context for use in afterChange hook
+    setHookContext(req, InventoryHookContext.MilkBagIDs, milkBagIDs);
 
+    if (milkBagIDs.length > 0) {
       const { docs: bags } = await req.payload.find({
         collection: 'milkBags',
         where: {
-          id: { in: milkBagIds },
+          id: { in: milkBagIDs },
           status: { equals: 'AVAILABLE' },
         },
+        select: { volume: true, expiresAt: true },
         depth: 0,
+        req,
       });
 
-      // Calculate total volume
-      bags.forEach((bag) => {
-        totalVolume += bag.volume || 0;
-      });
+      // If initialVolume or remainingVolume is not provided, calculate total volume from bags
+      if (!data.initialVolume || !data.remainingVolume) {
+        // Calculate total volume
+        const totalVolume = bags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
 
-      // Set the milk bags for the inventory
-      data.milkBags = milkBagIds;
+        // Set initial and remaining volumes to the total volume of the bags
+        data.initialVolume = data.initialVolume || totalVolume;
+        data.remainingVolume = data.remainingVolume || totalVolume;
+
+        logger.info(
+          `Initialized inventory with ${milkBagIDs.length} milk bags totaling ${totalVolume}ml`
+        );
+      }
+
+      // Compute the earliest expiry across all available bags
+      const earliestExpiry = bags.reduce<Date | null>((min, bag) => {
+        if (!bag.expiresAt) return min;
+        const expirationDate = new Date(bag.expiresAt);
+        return min === null || expirationDate < min ? expirationDate : min;
+      }, null);
+
+      // If we found an expiry date, set it on the inventory
+      if (earliestExpiry) {
+        data.expiresAt = earliestExpiry.toISOString();
+      }
     }
-
-    // Set the initial and remaining volumes
-    data.initialVolume = totalVolume;
-    data.remainingVolume = totalVolume;
-    data.status = 'AVAILABLE';
-
-    req.payload.logger.info(
-      `Initialized inventory with ${milkBags.length} milk bags totaling ${totalVolume}ml`
-    );
 
     return data;
   } catch (error) {
-    req.payload.logger.error(`Error initializing inventory: ${extractErrorMessage(error)}`);
+    logger.error(error, `Error initializing inventory`);
     return data;
   }
 };

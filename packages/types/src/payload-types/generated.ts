@@ -7,45 +7,6 @@
  */
 
 /**
- * History of ownership transfers
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MilkBagOwnershipHistory".
- */
-export type MilkBagOwnershipHistory =
-  | {
-      previousOwner:
-        | {
-            relationTo: 'individuals';
-            value: string | Individual;
-          }
-        | {
-            relationTo: 'hospitals';
-            value: string | Hospital;
-          }
-        | {
-            relationTo: 'milkBanks';
-            value: string | MilkBank;
-          };
-      newOwner:
-        | {
-            relationTo: 'individuals';
-            value: string | Individual;
-          }
-        | {
-            relationTo: 'hospitals';
-            value: string | Hospital;
-          }
-        | {
-            relationTo: 'milkBanks';
-            value: string | MilkBank;
-          };
-      transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN' | 'N/A';
-      transferredAt?: string | null;
-      id?: string | null;
-    }[]
-  | null;
-/**
  * Delivery status for each notification channel (email, SMS, in-app, etc.). Tracks attempts, failures, and success.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -163,10 +124,8 @@ export interface Config {
     hospitals: Hospital;
     identities: Identity;
     individuals: Individual;
-    inventory: Inventory;
     islandGroups: IslandGroup;
     likes: Like;
-    milkBags: MilkBag;
     milkBanks: MilkBank;
     'notification-categories': NotificationCategory;
     'notification-channels': NotificationChannel;
@@ -178,6 +137,8 @@ export interface Config {
     'request-reads': RequestRead;
     requests: Request;
     users: User;
+    milkBags: MilkBag;
+    'milkbag-ownership-histories': MilkbagOwnershipHistory;
     transactions: Transaction;
     'delivery-details': DeliveryDetail;
     'delivery-updates': DeliveryUpdate;
@@ -196,6 +157,8 @@ export interface Config {
     'identity-images': IdentityImage;
     avatars: Avatar;
     'screening-files': ScreeningFile;
+    inventories: Inventory;
+    'inventory-allocations': InventoryAllocation;
     'user-search': UserSearch;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -220,7 +183,7 @@ export interface Config {
       transactions: 'transactions';
     };
     hospitals: {
-      inventory: 'inventory';
+      inventory: 'inventories';
       milkBags: 'milkBags';
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
@@ -229,12 +192,8 @@ export interface Config {
     individuals: {
       posts: 'posts';
     };
-    milkBags: {
-      donation: 'donations';
-      request: 'requests';
-    };
     milkBanks: {
-      inventory: 'inventory';
+      inventory: 'inventories';
       milkBags: 'milkBags';
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
@@ -252,6 +211,11 @@ export interface Config {
     users: {
       addresses: 'addresses';
       deliveryPreferences: 'delivery-preferences';
+    };
+    milkBags: {
+      ownershipHistory: 'milkbag-ownership-histories';
+      donation: 'donations';
+      request: 'requests';
     };
     transactions: {
       deliveryDetails: 'delivery-details';
@@ -272,6 +236,10 @@ export interface Config {
       mutedStatuses: 'conversation-statuses';
       archivedStatuses: 'conversation-statuses';
     };
+    inventories: {
+      allocations: 'inventory-allocations';
+      milkBags: 'milkBags';
+    };
   };
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
@@ -286,10 +254,8 @@ export interface Config {
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
-    inventory: InventorySelect<false> | InventorySelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     likes: LikesSelect<false> | LikesSelect<true>;
-    milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     'notification-categories': NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
@@ -301,6 +267,8 @@ export interface Config {
     'request-reads': RequestReadsSelect<false> | RequestReadsSelect<true>;
     requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
+    'milkbag-ownership-histories': MilkbagOwnershipHistoriesSelect<false> | MilkbagOwnershipHistoriesSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'delivery-details': DeliveryDetailsSelect<false> | DeliveryDetailsSelect<true>;
     'delivery-updates': DeliveryUpdatesSelect<false> | DeliveryUpdatesSelect<true>;
@@ -319,6 +287,8 @@ export interface Config {
     'identity-images': IdentityImagesSelect<false> | IdentityImagesSelect<true>;
     avatars: AvatarsSelect<false> | AvatarsSelect<true>;
     'screening-files': ScreeningFilesSelect<false> | ScreeningFilesSelect<true>;
+    inventories: InventoriesSelect<false> | InventoriesSelect<true>;
+    'inventory-allocations': InventoryAllocationsSelect<false> | InventoryAllocationsSelect<true>;
     'user-search': UserSearchSelect<false> | UserSearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -872,11 +842,17 @@ export interface Hospital {
   createdAt: string;
 }
 /**
+ * Milk inventory held by hospitals and milk banks
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory".
+ * via the `definition` "inventories".
  */
 export interface Inventory {
   id: string;
+  /**
+   * Human-readable identifier — auto-generated on create (e.g. "INV-A3F2E1")
+   */
+  code: string;
   organization:
     | {
         relationTo: 'hospitals';
@@ -891,51 +867,46 @@ export interface Inventory {
    */
   sourceDonation?: (string | null) | Donation;
   /**
-   * Initial volume received into inventory (may differ from donation volume)
+   * Volume received into inventory (ml)
    */
   initialVolume: number;
   /**
-   * Volume still available for use in milliliters
+   * Volume still uncommitted (ml)
    */
   remainingVolume: number;
-  status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
   /**
-   * Milk bags in this inventory
+   * Volume committed to pending allocations but not yet delivered (ml)
    */
-  milkBags: (string | MilkBag)[];
+  reservedVolume?: number | null;
+  status: 'AVAILABLE' | 'RESERVED' | 'EXPIRED' | 'CONSUMED';
   /**
    * When the organization received this donation
    */
   receivedAt?: string | null;
   /**
-   * When this inventory item expires
+   * Earliest expiry date across all bags in this inventory
    */
   expiresAt?: string | null;
   /**
    * Additional notes about this inventory item
    */
   notes?: string | null;
+  allocations?: {
+    docs?: (string | InventoryAllocation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
-   * Details about how this inventory was allocated to requests
+   * Milk bags in this inventory
    */
-  allocationDetails?:
-    | {
-        request: string | Request;
-        /**
-         * Milk bags allocated to this request
-         */
-        allocatedBags: (string | MilkBag)[];
-        /**
-         * Unique identifier for grouping allocations that fulfill the same request. (Auto generated)
-         */
-        allocationId?: string | null;
-        allocatedAt?: string | null;
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  milkBags?: {
+    docs?: (string | MilkBag)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1010,8 +981,14 @@ export interface MilkBank {
  */
 export interface MilkBag {
   id: string;
-  code?: string | null;
-  title?: string | null;
+  /**
+   * Unique identifier for the milk bag, auto-generated on creation.
+   */
+  code: string;
+  /**
+   * Human-readable title for the milk bag, auto-generated from code and volume.
+   */
+  title: string;
   /**
    * The user who created this entry. (Automatic, safe to ignore)
    */
@@ -1021,7 +998,7 @@ export interface MilkBag {
    */
   donor: string | Individual;
   /**
-   * Current owner of the milk bag
+   * Current owner of the milk bag, auto-populated based on authenticated user.
    */
   owner:
     | {
@@ -1049,14 +1026,21 @@ export interface MilkBag {
    */
   collectedAt: string;
   /**
-   * Date when the milk expires
+   * Date when the milk expires, auto-generated based on collectedAt date plus shelf life.
    */
-  expiresAt?: string | null;
+  expiresAt: string;
   /**
    * Upload a photo showing the milk bag with the code clearly visible. This can be added after initial creation.
    */
   bagImage?: (string | null) | MilkBagImage;
-  ownershipHistory?: MilkBagOwnershipHistory;
+  /**
+   * History of ownership transfers for this milk bag
+   */
+  ownershipHistory?: {
+    docs?: (string | MilkbagOwnershipHistory)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * The donation this milk bag is part of
    */
@@ -1073,6 +1057,10 @@ export interface MilkBag {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * The inventory record this milk bag is stored to (if any)
+   */
+  inventory?: (string | null) | Inventory;
   updatedAt: string;
   createdAt: string;
 }
@@ -1129,6 +1117,59 @@ export interface MilkBagImage {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkbag-ownership-histories".
+ */
+export interface MilkbagOwnershipHistory {
+  id: string;
+  /**
+   * The milk bag this ownership record belongs to
+   */
+  milkBag: string | MilkBag;
+  /**
+   * The previous owner of the milk bag
+   */
+  previousOwner:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * The new owner of the milk bag
+   */
+  newOwner:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      };
+  /**
+   * The reason for the ownership transfer
+   */
+  transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN' | 'N/A';
+  /**
+   * The date and time of the ownership transfer
+   */
+  transferredAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1711,6 +1752,47 @@ export interface DonationRead {
   user: string | User;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Records of milk inventory dispatched to fulfill recipient requests
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-allocations".
+ */
+export interface InventoryAllocation {
+  id: string;
+  /**
+   * The inventory pool this allocation draws from
+   */
+  inventory: string | Inventory;
+  /**
+   * The recipient request being fulfilled
+   */
+  request: string | Request;
+  /**
+   * Specific milk bags dispatched for this request
+   */
+  allocatedBags: (string | MilkBag)[];
+  /**
+   * Total volume of allocated bags in milliliters (auto-calculated)
+   */
+  allocatedVolume: number;
+  allocatedAt: string;
+  /**
+   * PENDING: bags committed but not yet delivered; FULFILLED: delivered; CANCELLED: voided
+   */
+  status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
+  /**
+   * Unique identifier shared across allocations from the same batch (auto-generated)
+   */
+  allocationId: string;
+  /**
+   * Optional notes about this allocation
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2996,20 +3078,12 @@ export interface PayloadLockedDocument {
         value: string | Individual;
       } | null)
     | ({
-        relationTo: 'inventory';
-        value: string | Inventory;
-      } | null)
-    | ({
         relationTo: 'islandGroups';
         value: string | IslandGroup;
       } | null)
     | ({
         relationTo: 'likes';
         value: string | Like;
-      } | null)
-    | ({
-        relationTo: 'milkBags';
-        value: string | MilkBag;
       } | null)
     | ({
         relationTo: 'milkBanks';
@@ -3054,6 +3128,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'milkBags';
+        value: string | MilkBag;
+      } | null)
+    | ({
+        relationTo: 'milkbag-ownership-histories';
+        value: string | MilkbagOwnershipHistory;
       } | null)
     | ({
         relationTo: 'transactions';
@@ -3126,6 +3208,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'screening-files';
         value: string | ScreeningFile;
+      } | null)
+    | ({
+        relationTo: 'inventories';
+        value: string | Inventory;
+      } | null)
+    | ({
+        relationTo: 'inventory-allocations';
+        value: string | InventoryAllocation;
       } | null)
     | ({
         relationTo: 'user-search';
@@ -3429,33 +3519,6 @@ export interface IndividualsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory_select".
- */
-export interface InventorySelect<T extends boolean = true> {
-  organization?: T;
-  sourceDonation?: T;
-  initialVolume?: T;
-  remainingVolume?: T;
-  status?: T;
-  milkBags?: T;
-  receivedAt?: T;
-  expiresAt?: T;
-  notes?: T;
-  allocationDetails?:
-    | T
-    | {
-        request?: T;
-        allocatedBags?: T;
-        allocationId?: T;
-        allocatedAt?: T;
-        notes?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "islandGroups_select".
  */
 export interface IslandGroupsSelect<T extends boolean = true> {
@@ -3473,38 +3536,6 @@ export interface LikesSelect<T extends boolean = true> {
   liked?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkBags_select".
- */
-export interface MilkBagsSelect<T extends boolean = true> {
-  code?: T;
-  title?: T;
-  createdBy?: T;
-  donor?: T;
-  owner?: T;
-  volume?: T;
-  status?: T;
-  collectedAt?: T;
-  expiresAt?: T;
-  bagImage?: T;
-  ownershipHistory?: T | MilkBagOwnershipHistorySelect<T>;
-  donation?: T;
-  request?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MilkBagOwnershipHistory_select".
- */
-export interface MilkBagOwnershipHistorySelect<T extends boolean = true> {
-  previousOwner?: T;
-  newOwner?: T;
-  transferReason?: T;
-  transferredAt?: T;
-  id?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3823,6 +3854,41 @@ export interface UsersSelect<T extends boolean = true> {
   emailConfirmedAt?: T;
   phoneConfirmedAt?: T;
   picture?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkBags_select".
+ */
+export interface MilkBagsSelect<T extends boolean = true> {
+  code?: T;
+  title?: T;
+  createdBy?: T;
+  donor?: T;
+  owner?: T;
+  volume?: T;
+  status?: T;
+  collectedAt?: T;
+  expiresAt?: T;
+  bagImage?: T;
+  ownershipHistory?: T;
+  donation?: T;
+  request?: T;
+  inventory?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkbag-ownership-histories_select".
+ */
+export interface MilkbagOwnershipHistoriesSelect<T extends boolean = true> {
+  milkBag?: T;
+  previousOwner?: T;
+  newOwner?: T;
+  transferReason?: T;
+  transferredAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4269,6 +4335,44 @@ export interface ScreeningFilesSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventories_select".
+ */
+export interface InventoriesSelect<T extends boolean = true> {
+  code?: T;
+  organization?: T;
+  sourceDonation?: T;
+  initialVolume?: T;
+  remainingVolume?: T;
+  reservedVolume?: T;
+  status?: T;
+  receivedAt?: T;
+  expiresAt?: T;
+  notes?: T;
+  allocations?: T;
+  milkBags?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-allocations_select".
+ */
+export interface InventoryAllocationsSelect<T extends boolean = true> {
+  inventory?: T;
+  request?: T;
+  allocatedBags?: T;
+  allocatedVolume?: T;
+  allocatedAt?: T;
+  status?: T;
+  allocationId?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

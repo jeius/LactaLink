@@ -1,24 +1,45 @@
 import { MILK_EXPIRY_DAYS } from '@/lib/constants';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { randomBytes } from 'crypto';
-import { CollectionBeforeChangeHook, FieldHook } from 'payload';
+import { FieldHook } from 'payload';
 
-export const generateExpiry: FieldHook<MilkBag> = ({ data, value }) => {
+/**
+ * Generate an expiry date based on the collectedAt date plus a defined number of days.
+ * If an expiry date is already provided, it will be returned as is.
+ */
+export const createExpiryDate: FieldHook<MilkBag, MilkBag['expiresAt']> = ({ data, value }) => {
   if (value && value !== '') return value; // Expiry date already set
 
   // If no expiry date is set, generate one based on the collectedAt date
   const dateCollected = data?.collectedAt ?? new Date().toISOString();
   const expiryDate = new Date(dateCollected);
+
+  // Add the defined number of expiry days to the collected date to get the expiry date
   expiryDate.setDate(expiryDate.getDate() + MILK_EXPIRY_DAYS);
+
   return expiryDate.toISOString();
 };
 
-export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
-  data,
-  operation,
-  req,
-}) => {
-  if (operation !== 'create') return data;
+/**
+ * Generate a title for the milk bag based on its code and volume.
+ * If a title is already provided, it will be returned as is.
+ */
+export const generateTitle: FieldHook<MilkBag, MilkBag['title']> = ({ data, value }) => {
+  if (value && value !== '') return value; // Title already set
+
+  const code = data?.code;
+  const volume = data?.volume;
+  if (code && volume) return `${code} - ${volume} mL`;
+
+  return value; // Return original value if we can't generate a title
+};
+
+/**
+ * Generate a unique code for the milk bag if not provided. The code is a random 6-character string.
+ * If a code is already provided, it will be returned as is.
+ */
+export const generateCode: FieldHook<MilkBag, MilkBag['code']> = async ({ value, req }) => {
+  if (value && value !== '') return value; // Code already set
 
   // Function to generate a random 6-character code
   const generateRandomCode = () => randomBytes(3).toString('hex').toUpperCase();
@@ -30,16 +51,15 @@ export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
   const maxAttempts = 10; // Safety limit to prevent infinite loops
 
   // Keep trying until we find a unique code
-  while (!isUnique && attempts < maxAttempts) {
+  do {
     // Check if the code exists in the database
-    const existingBag = await req.payload.find({
+    const existingBag = await req.payload.count({
       collection: 'milkBags',
       where: { code: { equals: code } },
-      limit: 1,
-      pagination: false,
+      req,
     });
 
-    if (existingBag.docs.length === 0) {
+    if (existingBag.totalDocs === 0) {
       // Code is unique
       isUnique = true;
     } else {
@@ -47,7 +67,7 @@ export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
       code = generateRandomCode();
       attempts++;
     }
-  }
+  } while (!isUnique && attempts < maxAttempts);
 
   if (!isUnique) {
     // Create a more human-readable fallback code
@@ -56,15 +76,7 @@ export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
     let fallbackCode = '';
 
     // Add a sequential counter for uniqueness
-    const counter =
-      (
-        await req.payload.find({
-          collection: 'milkBags',
-          limit: 1,
-          pagination: false,
-          sort: '-createdAt',
-        })
-      ).totalDocs + 1;
+    const counter = (await req.payload.count({ collection: 'milkBags', req })).totalDocs + 1;
 
     // Use counter for first 2 digits (encoded to base 36)
     fallbackCode += counter.toString(36).padStart(2, '0').toUpperCase();
@@ -76,17 +88,13 @@ export const generateCode: CollectionBeforeChangeHook<MilkBag> = async ({
     }
 
     code = fallbackCode.substring(0, 6);
+
     req.payload.logger.warn(
       `Using human-readable fallback code: ${code} after ${maxAttempts} failed attempts`
     );
   }
 
-  // Assign the unique code
-  data.code = code;
   req.payload.logger.info(`Generated unique milk bag code: ${code}`);
 
-  // Also assign title
-  data.title = `${code} - ${data.volume ?? 0} mL`;
-
-  return data;
+  return code;
 };

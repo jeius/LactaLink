@@ -1,11 +1,12 @@
-import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractID } from '@lactalink/utilities/extractors';
-import { CollectionAfterChangeHook, PayloadRequest } from 'payload';
+import { CollectionAfterChangeHook } from 'payload';
+import { allocateMilkBags, updateDonationOnCreate, updateRequestOnCreate } from '../helpers';
+import { consumeRequestBags } from '../helpers/consumeMilkBags';
 
-const matchedStatus = DONATION_REQUEST_STATUS.MATCHED.value;
-const allocatedStatus = MILK_BAG_STATUS.ALLOCATED.value;
+const completedTransactionStatus = TRANSACTION_STATUS.COMPLETED.value;
 
 export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   doc,
@@ -45,15 +46,20 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
         req.payload.logger.info(
           `Created status history record ${history.id} for transaction ${doc.id} with status ${doc.status}`
         );
+
+        if (doc.status === completedTransactionStatus) {
+          // Consume allocated bags linked to the transaction's request
+          if (doc.request) await consumeRequestBags({ id: doc.id, request: doc.request }, req);
+        }
       }
     }
 
     // On create operations
     if (operation === 'create') {
       await Promise.all([
-        updateDonation(extractID(doc.donation), req),
-        updateRequest(extractID(doc.request), req),
-        updateMilkBagsStatus(extractID(doc.milkBags), req),
+        updateDonationOnCreate(extractID(doc.donation), req),
+        updateRequestOnCreate(extractID(doc.request), req),
+        allocateMilkBags(extractID(doc.milkBags), req),
       ]);
     }
   } catch (error) {
@@ -63,44 +69,3 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
 
   return doc;
 };
-
-async function updateDonation(id: string | null | undefined, req: PayloadRequest) {
-  if (!id) return Promise.resolve(null);
-  return req.payload
-    .update({
-      collection: 'donations',
-      req,
-      data: { status: matchedStatus },
-      where: { id: { equals: id } },
-      depth: 0,
-    })
-    .then(() => req.payload.logger.info(`Donation ${id} status updated to ${matchedStatus}`));
-}
-
-async function updateRequest(id: string | null | undefined, req: PayloadRequest) {
-  if (!id) return Promise.resolve(null);
-  return req.payload
-    .update({
-      collection: 'requests',
-      req,
-      data: { status: matchedStatus },
-      where: { id: { equals: id } },
-      depth: 0,
-    })
-    .then(() => req.payload.logger.info(`Request ${id} status updated to ${matchedStatus}`));
-}
-
-async function updateMilkBagsStatus(ids: string[], req: PayloadRequest) {
-  if (!ids || ids.length === 0) return Promise.resolve(null);
-  return req.payload
-    .update({
-      collection: 'milkBags',
-      req,
-      data: { status: allocatedStatus },
-      where: { id: { in: ids } },
-      depth: 0,
-    })
-    .then(() =>
-      req.payload.logger.info(`Updated status of ${ids.length} milk bags to ${allocatedStatus}`)
-    );
-}

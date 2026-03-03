@@ -10,10 +10,10 @@ import { DonorScreenings } from './DonorScreenings';
 import { Hospitals } from './Hospitals';
 import { Identities } from './Identities';
 import { Individuals } from './Individuals';
-import { Inventory } from './Inventory';
+import { InventoryCollections } from './Inventory';
 import { Likes } from './Likes';
 import MediaCollections from './media';
-import { MilkBags } from './MilkBags';
+import { MilkBagCollections } from './MilkBags';
 import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
 import { NotificationCategories } from './Notifications/categories';
@@ -40,10 +40,8 @@ const Collections: CollectionConfig[] = [
   Hospitals,
   Identities,
   Individuals,
-  Inventory,
   IslandGroups,
   Likes,
-  MilkBags,
   MilkBanks,
   NotificationCategories,
   NotificationChannels,
@@ -55,9 +53,11 @@ const Collections: CollectionConfig[] = [
   RequestReads,
   Requests,
   Users,
+  ...MilkBagCollections,
   ...TransactionCollections,
   ...ChatSystemCollections,
   ...MediaCollections,
+  ...InventoryCollections,
 ];
 
 export { Hospitals, Individuals, MilkBanks, Users };

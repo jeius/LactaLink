@@ -117,7 +117,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
               name: 'inventory',
               label: 'Inventory',
               type: 'join',
-              collection: 'inventory',
+              collection: 'inventories',
               on: 'organization',
               maxDepth: 3,
               defaultLimit: 10,
