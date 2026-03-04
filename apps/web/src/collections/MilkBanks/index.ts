@@ -1,7 +1,7 @@
+import { createOrgTotalVolumeField } from '@/fields/createOrgTotalVolumeField';
 import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
 import { createUserField } from '@/fields/userField';
-import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
@@ -24,7 +24,6 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
-    beforeRead: [calculateVolumeInStock],
     afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
   },
   fields: [
@@ -103,18 +102,13 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
             {
               type: 'row',
               fields: [
-                {
-                  name: 'totalVolume',
-                  label: 'Total Volume in Stock',
-                  type: 'number',
-                  virtual: true,
+                createOrgTotalVolumeField({
                   admin: {
                     description:
                       'Total volume of milk in stock at the milk bank. (Auto calculated)',
                     width: '50%',
-                    readOnly: true,
                   },
-                },
+                }),
               ],
             },
             {
