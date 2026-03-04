@@ -31,7 +31,8 @@ export const generateTitle: FieldHook<MilkBag, MilkBag['title']> = ({ data, valu
   const volume = data?.volume;
   if (code && volume) return `${code} - ${volume} mL`;
 
-  return value; // Return original value if we can't generate a title
+  // Return a default title if code or volume is missing, but only if title is not already set.
+  return 'Untitled Milkbag';
 };
 
 /**

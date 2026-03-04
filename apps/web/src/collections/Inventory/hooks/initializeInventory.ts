@@ -2,7 +2,7 @@ import { InventoryHookContext } from '@/lib/constants/hookContexts';
 import { hookLogger, setHookContext } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
-import { CollectionBeforeValidateHook } from 'payload';
+import { CollectionBeforeValidateHook, RequestContext } from 'payload';
 
 export const initializeInventory: CollectionBeforeValidateHook<Inventory> = async ({
   data,
@@ -34,7 +34,11 @@ export const initializeInventory: CollectionBeforeValidateHook<Inventory> = asyn
     const milkBagIDs = extractID(sourceDonation.details.bags);
 
     // Store milk bag IDs in the request context for use in afterChange hook
-    setHookContext(req, InventoryHookContext.MilkBagIDs, milkBagIDs);
+    setHookContext<RequestContext['milkbags']>(
+      req,
+      InventoryHookContext.MilkBagIDs,
+      sourceDonation.details.bags
+    );
 
     if (milkBagIDs.length > 0) {
       const { docs: bags } = await req.payload.find({

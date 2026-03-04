@@ -1,4 +1,4 @@
-import { Config as PayloadConfig } from '@lactalink/types/payload-generated-types';
+import { MilkBag, Config as PayloadConfig } from '@lactalink/types/payload-generated-types';
 
 declare global {
   namespace NodeJS {
@@ -37,4 +37,8 @@ declare global {
 declare module 'payload' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface GeneratedTypes extends PayloadConfig {}
+
+  export interface RequestContext {
+    milkbags?: (string | MilkBag)[];
+  }
 }

@@ -1,7 +1,8 @@
 import { InventoryHookContext } from '@/lib/constants/hookContexts';
 import { getHookContext, hookLogger } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
-import { CollectionAfterChangeHook, PayloadRequest } from 'payload';
+import { extractID } from '@lactalink/utilities/extractors';
+import { CollectionAfterChangeHook, PayloadRequest, RequestContext } from 'payload';
 
 export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
   doc,
@@ -25,7 +26,9 @@ export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
 };
 
 async function linkMilkBagsToInventory(doc: Inventory, req: PayloadRequest) {
-  const milkBagIDs = getHookContext<string[]>(req, InventoryHookContext.MilkBagIDs);
+  const milkBags = getHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBagIDs);
+
+  const milkBagIDs = extractID(milkBags);
 
   if (!milkBagIDs || milkBagIDs.length === 0) return null;
 
