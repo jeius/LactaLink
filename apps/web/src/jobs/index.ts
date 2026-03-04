@@ -10,6 +10,7 @@ export const jobs: JobsConfig = {
   },
   tasks: tasks,
   workflows: [idVerificationWorkflow],
+  enableConcurrencyControl: true,
   jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
     ...defaultJobsCollection,
     admin: {
