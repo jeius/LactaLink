@@ -1,9 +1,8 @@
-import { ownerField } from '@/fields/ownerField';
+import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
+import { createUserField } from '@/fields/userField';
 import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
-import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
-import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
@@ -26,20 +25,24 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
   },
   hooks: {
     beforeRead: [calculateVolumeInStock],
-    beforeChange: [generateOwner, generateDisplayName],
     afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
   },
   fields: [
-    {
-      name: 'displayName',
-      label: 'Display Name',
-      type: 'text',
+    createProfileDisplayNameField({
       admin: {
         description: 'Display name for the hospital, used in public profiles.',
-        position: 'sidebar',
+        readOnly: true,
       },
-    },
-    ownerField,
+    }),
+
+    createUserField({
+      name: 'owner',
+      admin: {
+        description:
+          'User who owns this hospital profile. On create, defaults to authenticated user if empty.',
+      },
+    }),
+
     {
       type: 'tabs',
       tabs: [

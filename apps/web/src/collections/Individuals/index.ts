@@ -1,8 +1,7 @@
-import { ownerField } from '@/fields/ownerField';
+import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
+import { createUserField } from '@/fields/userField';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
-import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
-import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { GENDER_TYPES, MARITAL_STATUS } from '@lactalink/enums';
@@ -26,21 +25,23 @@ export const Individuals: CollectionConfig<'individuals'> = {
     defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus', 'owner'],
   },
   hooks: {
-    beforeChange: [generateDisplayName, generateOwner],
     afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
   },
   fields: [
-    {
-      name: 'displayName',
-      label: 'Display Name',
-      type: 'text',
+    createProfileDisplayNameField({
       admin: {
-        position: 'sidebar',
-        readOnly: true,
         description: 'Automatically generated from given, middle, and family names.',
+        readOnly: true,
       },
-    },
-    ownerField,
+    }),
+
+    createUserField({
+      name: 'owner',
+      admin: {
+        description:
+          'User who owns this profile. On create, defaults to authenticated user if empty.',
+      },
+    }),
     {
       name: 'isVerified',
       label: 'Identity Verified',

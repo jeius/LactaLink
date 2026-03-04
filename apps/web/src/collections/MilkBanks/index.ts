@@ -1,9 +1,8 @@
-import { ownerField } from '@/fields/ownerField';
+import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
+import { createUserField } from '@/fields/userField';
 import { calculateVolumeInStock } from '@/hooks/collections/calculateVolumeInStock';
 import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
-import { generateDisplayName } from '@/hooks/collections/generateDisplayName';
-import { generateOwner } from '@/hooks/collections/generateOwner';
 import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
@@ -26,20 +25,24 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
   },
   hooks: {
     beforeRead: [calculateVolumeInStock],
-    beforeChange: [generateOwner, generateDisplayName],
     afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
   },
   fields: [
-    {
-      name: 'displayName',
-      label: 'Display Name',
-      type: 'text',
+    createProfileDisplayNameField({
       admin: {
         description: 'Display name for the milk bank, used in public profiles.',
-        position: 'sidebar',
+        readOnly: true,
       },
-    },
-    ownerField,
+    }),
+
+    createUserField({
+      name: 'owner',
+      admin: {
+        description:
+          'User who owns this milk bank profile. On create, defaults to authenticated user if empty.',
+      },
+    }),
+
     {
       type: 'tabs',
       tabs: [
@@ -93,6 +96,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
             },
           ],
         },
+
         {
           label: 'Inventory',
           fields: [
@@ -141,6 +145,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
             },
           ],
         },
+
         {
           label: 'Transactions',
           fields: [
@@ -172,6 +177,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
             },
           ],
         },
+
         {
           label: 'Posts',
           fields: [profilesRelatedPostsField()],
