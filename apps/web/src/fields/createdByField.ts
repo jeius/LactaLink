@@ -2,7 +2,7 @@ import { extractID } from '@lactalink/utilities/extractors';
 import { RelationshipField } from 'payload';
 
 /**
- * @deprecated Use [createUserField](./userField.ts) instead
+ * @deprecated Use `createUserField()` instead
  */
 export const createdByField: RelationshipField = {
   name: 'createdBy',
