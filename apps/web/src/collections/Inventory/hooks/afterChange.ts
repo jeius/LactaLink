@@ -23,6 +23,18 @@ export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
   if (operation === 'update') {
     // Update operation hooks here (if needed in the future)
   }
+
+  /**
+   * For both create and update operations, we want to ensure the organization's
+   * stock is updated. Queue the stock update task for the associated organization
+   */
+  const updateStockJob = await req.payload.jobs.queue({
+    task: 'update-organization-stock-task',
+    input: { organization: doc.organization },
+  });
+
+  // Execute the job immediately to ensure the stock is updated without delay.
+  req.payload.jobs.runByID({ id: updateStockJob.id, req, overrideAccess: true });
 };
 
 async function linkMilkBagsToInventory(doc: Inventory, req: PayloadRequest) {
