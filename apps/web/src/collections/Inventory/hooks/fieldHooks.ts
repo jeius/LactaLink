@@ -2,8 +2,13 @@ import { Inventory } from '@lactalink/types/payload-generated-types';
 import { FieldHook } from 'payload';
 
 /**
- * Auto-generates a unique human-readable code (e.g. "INV-A3F2E1") for new Inventory records.
- * Used as `useAsTitle` in the admin panel.
+ * Inventory `FieldHook` to auto-generate a unique human-readable code for new Inventory records.
+ *
+ * @description
+ * This hook executes the following logic:
+ * - Generates a code in the format `INV-XXXXXX`, where `XXXXXX` is a random 6-character hexadecimal string.
+ * - It checks for uniqueness against existing inventory codes to prevent collisions.
+ * - If a code is provided (e.g., during an update), it will not overwrite it.
  */
 export const generateInventoryCode: FieldHook<Inventory, Inventory['code']> = async ({
   req,

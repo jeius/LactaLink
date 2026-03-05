@@ -5,8 +5,8 @@ import { CollectionConfig } from 'payload';
 import { anyone } from '../_access-control';
 import { inventoryOwnerOrAdminWrite } from './access';
 import { afterChange } from './hooks/afterChange';
+import { beforeValidate } from './hooks/beforeValidate';
 import { generateInventoryCode } from './hooks/fieldHooks';
-import { initializeInventory } from './hooks/initializeInventory';
 
 export const Inventories: CollectionConfig<'inventories'> = {
   slug: 'inventories',
@@ -47,7 +47,7 @@ export const Inventories: CollectionConfig<'inventories'> = {
   },
 
   hooks: {
-    beforeValidate: [initializeInventory],
+    beforeValidate: [beforeValidate],
     afterChange: [afterChange],
   },
 

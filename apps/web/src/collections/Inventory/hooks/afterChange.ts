@@ -1,9 +1,16 @@
-import { InventoryHookContext } from '@/lib/constants/hookContexts';
-import { getHookContext, hookLogger } from '@lactalink/agents/payload';
+import { hookLogger } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
-import { CollectionAfterChangeHook, PayloadRequest, RequestContext } from 'payload';
+import { CollectionAfterChangeHook } from 'payload';
+import { linkMilkBagsToInventory } from '../helpers';
 
+/**
+ * After change hook for the Inventory collection. This hook is triggered after an inventory record is created or updated.
+ *
+ * @description
+ * It performs the following operations:
+ * - On creation, it links any associated milk bags to the inventory entry.
+ * - On both creation and update, it queues a job to update the stock levels for the associated organization.
+ */
 export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
   doc,
   operation,
@@ -12,11 +19,11 @@ export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
 }) => {
   const logger = hookLogger(req, collection.slug, 'afterChange');
 
+  logger.info(`Inventory ${operation} operation triggered for inventory ${doc.id}`);
+
   // Create operations
   if (operation === 'create') {
-    await linkMilkBagsToInventory(doc, req).then((msg) => {
-      if (msg) logger.info(msg);
-    });
+    await linkMilkBagsToInventory(doc, req, logger);
   }
 
   // Update operations
@@ -27,29 +34,18 @@ export const afterChange: CollectionAfterChangeHook<Inventory> = async ({
   /**
    * For both create and update operations, we want to ensure the organization's
    * stock is updated. Queue the stock update task for the associated organization
+   * and execute it immediately to ensure the stock levels are accurate without delay.
    */
   const updateStockJob = await req.payload.jobs.queue({
     task: 'update-organization-stock-task',
     input: { organization: doc.organization },
   });
 
-  // Execute the job immediately to ensure the stock is updated without delay.
-  req.payload.jobs.runByID({ id: updateStockJob.id, req, overrideAccess: true });
-};
-
-async function linkMilkBagsToInventory(doc: Inventory, req: PayloadRequest) {
-  const milkBags = getHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBagIDs);
-
-  const milkBagIDs = extractID(milkBags);
-
-  if (!milkBagIDs || milkBagIDs.length === 0) return null;
-
-  await req.payload.update({
-    collection: 'milkBags',
-    where: { id: { in: milkBagIDs } },
-    data: { inventory: doc.id },
+  const { jobStatus } = await req.payload.jobs.runByID({
+    id: updateStockJob.id,
     req,
+    overrideAccess: true,
   });
 
-  return `Linked ${milkBagIDs.length} milk bags to inventory ${doc.id}`;
-}
+  logger.info(`Job: 'update-organization-stock-task', Status: ${jobStatus}`);
+};
