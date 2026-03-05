@@ -65,16 +65,25 @@ export function ownedBy(req: PayloadRequest, field = 'createdBy'): Where | false
  * Returns a scoped logger bound to a collection + operation label, mirroring
  * the `req.payload.logger` calls already used throughout the collections.
  *
+ * @param req - The Payload request object, used to access the logger instance.
+ * @param collection - The slug of the collection for which the logger is being created.
+ * @param hook - The name of the hook or operation for which the logger is being created.
+ *
  * @example
  * const log = hookLogger(req, 'donations', 'afterChange');
+ *
  * log.info(`Processed donation ${doc.id}`);
+ * // Logs: [donations:afterChange] Processed donation 12345
+ *
  * log.error(err, 'Failed to send notification');
+ * // Logs: [donations:afterChange] Failed to send notification - Error details...
+ *
  */
 export function hookLogger(req: PayloadRequest, collection: string, hook: string) {
   const prefix = `[${collection}:${hook}]`;
   return {
-    info: (msg: string) => req.payload.logger.info(`${prefix} ${msg}`),
-    warn: (msg: string) => req.payload.logger.warn(`${prefix} ${msg}`),
+    info: (msg: string, data?: unknown) => req.payload.logger.info(data, `${prefix} ${msg}`),
+    warn: (msg: string, data?: unknown) => req.payload.logger.warn(data, `${prefix} ${msg}`),
     error: (err: unknown, msg: string) => req.payload.logger.error(err, `${prefix} ${msg}`),
   };
 }
