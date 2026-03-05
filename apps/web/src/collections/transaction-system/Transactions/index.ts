@@ -1,5 +1,6 @@
 import { createUserProfileField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { NullableValidator } from '@lactalink/agents/payload';
 import { DELIVERY_DETAILS_STATUS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated } from '../../_access-control';
@@ -7,8 +8,7 @@ import { involvedUsersOrAdmin } from './access';
 import { trackingField } from './fields/tracking';
 import { filterMilkBagsOptions } from './filterOptions';
 import { afterChange } from './hooks/afterChange';
-import { calculateVolume } from './hooks/caculateVolume';
-import { generateTransactionNumber } from './hooks/generateTransactionNumber';
+import { calculateVolume, generateTransactionNumber } from './hooks/fieldHooks';
 
 export const Transactions: CollectionConfig<'transactions'> = {
   slug: 'transactions',
@@ -34,8 +34,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
       type: 'text',
       unique: true,
       required: true,
-      hasMany: false,
-      validate: () => true, // Always valid, automatically generated
+      validate: NullableValidator.text,
       hooks: { beforeChange: [generateTransactionNumber] },
       admin: {
         readOnly: true,
@@ -121,8 +120,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
           type: 'number',
           required: true,
           defaultValue: 0,
-          hasMany: false,
-          validate: () => true, // Always valid, automatically calculated
+          validate: NullableValidator.number,
           hooks: { beforeChange: [calculateVolume] },
           admin: {
             description: 'Total volume of milk bags (in mL). Automatically calculated.',

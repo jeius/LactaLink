@@ -1,65 +1,67 @@
+import { hookLogger } from '@lactalink/agents/payload';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
-import { isEqualProfiles } from '@lactalink/utilities/checkers';
-import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
-import { allocateMilkBags, updateDonationOnCreate, updateRequestOnCreate } from '../helpers';
-import { consumeRequestBags } from '../helpers/consumeMilkBags';
+import {
+  clearTransactionReads,
+  consumeRequestBags,
+  createNewInventory,
+  createStatusHistoryRecord,
+  markBagsAsAllocated,
+  markDonationAsMatched,
+  markRequestAsMatched,
+} from '../helpers';
 
-const completedTransactionStatus = TRANSACTION_STATUS.COMPLETED.value;
+const COMPLETE_STATUS = TRANSACTION_STATUS.COMPLETED.value;
 
+/**
+ * AfterChange hook for the Transactions collection.
+ *
+ * @description
+ * Handles side effects related to transaction creation and updates, including:
+ * - On create: Marking linked donation and request as matched, and marking included
+ *   milk bags as allocated.
+ * - On update: If status changes to completed, consuming allocated bags and creating
+ *   inventory for organization donations. Also clears transaction reads and creates
+ *   status history records on any update.
+ */
 export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   doc,
   req,
   operation,
   previousDoc,
+  collection,
 }) => {
   const { user } = req;
   if (!user?.profile) return doc;
 
+  const logger = hookLogger(req, collection.slug, 'afterChange');
+
   try {
-    // On update operations
     if (operation === 'update') {
-      // Update read records
-      const { docs } = await req.payload.delete({
-        collection: 'transaction-reads',
-        where: { transaction: { equals: doc.id } },
-        req,
-      });
+      const onTransactionCompleted = async () => {
+        if (doc.status !== COMPLETE_STATUS) return;
 
-      req.payload.logger.info(
-        `Deleted ${docs.length} transaction read records for transaction ${doc.id}`
-      );
+        // Consume allocated bags linked to the transaction's request
+        if (doc.request) await consumeRequestBags(doc.request, req, logger);
 
-      // Add record in status history if status changed
-      if (previousDoc?.status !== doc.status) {
-        const isSender = isEqualProfiles(user.profile, doc.sender);
-        const isReceiver = isEqualProfiles(user.profile, doc.recipient);
-        const notes = `Status changed by ${isSender ? 'sender' : isReceiver ? 'receiver' : 'system'}.`;
+        // Create organization inventory if transaction has a linked donation
+        // with an organization as recipient
+        if (doc.donation) await createNewInventory(doc.donation, req, logger);
+      };
 
-        const history = await req.payload.create({
-          collection: 'transaction-status-histories',
-          data: { status: doc.status, transaction: doc.id, notes: notes },
-          req,
-        });
-
-        req.payload.logger.info(
-          `Created status history record ${history.id} for transaction ${doc.id} with status ${doc.status}`
-        );
-
-        if (doc.status === completedTransactionStatus) {
-          // Consume allocated bags linked to the transaction's request
-          if (doc.request) await consumeRequestBags({ id: doc.id, request: doc.request }, req);
-        }
-      }
+      await Promise.all([
+        clearTransactionReads(doc, req, logger),
+        createStatusHistoryRecord(doc, previousDoc, req, logger),
+        onTransactionCompleted(),
+      ]);
     }
 
-    // On create operations
     if (operation === 'create') {
       await Promise.all([
-        updateDonationOnCreate(extractID(doc.donation), req),
-        updateRequestOnCreate(extractID(doc.request), req),
-        allocateMilkBags(extractID(doc.milkBags), req),
+        markDonationAsMatched(doc.donation, req),
+        markRequestAsMatched(doc.request, req),
+        markBagsAsAllocated(doc.milkBags, req),
       ]);
     }
   } catch (error) {
