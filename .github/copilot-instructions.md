@@ -40,6 +40,9 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
   - **Expo Application Services (EAS)** for mobile app distribution.
 - **Monorepo Management**:
   - **Turborepo** for managing multiple packages and apps.
+- **Documentation**:
+  - **TypeDoc** for code documentation.
+  - Markdown files in the `docs` folder for architectural and feature documentation.
 
 ## Codebase Structure
 
@@ -84,6 +87,7 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - **TypeScript**: Strongly typed codebase with shared types in `packages/types`.
 - **API Integration**: Use Supabase client for authentication interactions.
 - **API**: Backend logic is in `packages/api/src`. Follow existing patterns for new endpoints.
+- **Documentation**: TypeDoc for code documentations. Follow modern best practices for documenting functions and conditions.
 
 ## Integration Points
 
@@ -120,7 +124,8 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - Follow DRY (Don't Repeat Yourself) principles by utilizing shared packages.
 - Follow modern React practices, including hooks and functional components.
 - Follow best practices for payload CMS when working with collections and custom endpoints.
-- Write clear, maintainable, and well-documented code.
+- Write clear and readable, maintainable, and well-documented code.
+- Follow modern best practices for documenting functions, including parameters, return types, and conditions.
 - Use TypeScript for all new code.
 - Ensure compatibility with both react native and next.js platforms when adding shared features.
 - Refer to the `README.md` files in each directory for additional context.
