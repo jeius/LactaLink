@@ -1,13 +1,13 @@
-import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
-import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
-import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
+import { createUserField } from '@/fields/userField';
 import { cleanReadTrackingOnUpdate } from '@/hooks/collections/cleanReadTrackingOnUpdate';
+import { generateTitleForDonationOrRequest } from '@/hooks/collections/fieldHooks';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
+import { NullableValidator } from '@lactalink/agents/payload';
 import {
   DONATION_REQUEST_STATUS,
   PREFERRED_STORAGE_TYPES,
@@ -16,6 +16,7 @@ import {
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { requestsEndpoints } from './endpoints';
+import { afterDelete } from './hooks/afterDelete';
 import { calculateVolumes } from './hooks/calculateVolumes';
 import { generateTitle } from './hooks/generateTitle';
 import { initializeRequest } from './hooks/initialize';
@@ -48,15 +49,19 @@ export const Requests: CollectionConfig<'requests'> = {
       updateSeenTracking,
     ],
     afterChange: [createRequestNotification, processOrganizationRequest, cleanReadTrackingOnUpdate],
-    afterDelete: [afterDeleteDonationOrRequest],
+    afterDelete: [afterDelete],
   },
   endpoints: requestsEndpoints,
   fields: [
     {
       name: 'title',
       type: 'text',
+      required: true,
+      validate: NullableValidator.text,
+      hooks: { beforeChange: [generateTitleForDonationOrRequest] },
       admin: {
-        description: 'Title of the milk request.',
+        description:
+          'Title of the milk request record. (Auto-generated based on requester and volume needed)',
         readOnly: true,
         position: 'sidebar',
       },
@@ -84,8 +89,7 @@ export const Requests: CollectionConfig<'requests'> = {
       },
     },
 
-    createdByField,
-    ...seenTrackingFields,
+    createUserField({ name: 'createdBy', required: true }),
 
     {
       type: 'row',

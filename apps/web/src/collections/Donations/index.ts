@@ -1,6 +1,7 @@
 import { deliveryTab } from '@/fields/deliveryTab';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { createUserField } from '@/fields/userField';
+import { generateTitleForDonationOrRequest } from '@/hooks/collections/fieldHooks';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { NullableValidator } from '@lactalink/agents/payload';
 import { COLLECTION_MODES, DONATION_REQUEST_STATUS, STORAGE_TYPES } from '@lactalink/enums';
@@ -11,7 +12,6 @@ import { filterMilkBagsOptions } from './filterOptions';
 import { afterChange } from './hooks/afterChange';
 import { afterDelete } from './hooks/afterDelete';
 import { beforeValidate } from './hooks/beforeValidate';
-import { generateTitle } from './hooks/fieldHooks';
 import { createDonationNotification } from './hooks/notifications';
 
 export const Donations: CollectionConfig<'donations'> = {
@@ -40,9 +40,9 @@ export const Donations: CollectionConfig<'donations'> = {
       type: 'text',
       required: true,
       validate: NullableValidator.text,
-      hooks: { beforeChange: [generateTitle] },
+      hooks: { beforeChange: [generateTitleForDonationOrRequest] },
       admin: {
-        description: 'Title of the donation record.',
+        description: 'Title of the donation record. (Auto-generated based on donor and volume)',
         readOnly: true,
         position: 'sidebar',
       },
