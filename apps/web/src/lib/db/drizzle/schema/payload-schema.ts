@@ -245,6 +245,7 @@ export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_tas
   'send-email',
   'calculate-post-comment-count-task',
   'calculate-comment-reply-count-task',
+  'update-organization-stock-task',
   'schedulePublish',
 ]);
 export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', [
@@ -260,6 +261,7 @@ export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug',
   'send-email',
   'calculate-post-comment-count-task',
   'calculate-comment-reply-count-task',
+  'update-organization-stock-task',
   'schedulePublish',
 ]);
 export const enum_orientation = pgEnum('enum_orientation', ['vertical', 'horizontal']);
@@ -716,18 +718,18 @@ export const donations = pgTable(
   'donations',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    title: varchar('title'),
-    volume: numeric('volume', { mode: 'number' }).notNull().default(20),
-    remainingVolume: numeric('remaining_volume', { mode: 'number' }).notNull().default(0),
+    title: varchar('title').notNull(),
+    expiredAt: timestamp('expired_at', { mode: 'string', withTimezone: true, precision: 3 }),
     completedAt: timestamp('completed_at', { mode: 'string', withTimezone: true, precision: 3 }),
     cancelledAt: timestamp('cancelled_at', { mode: 'string', withTimezone: true, precision: 3 }),
     rejectedAt: timestamp('rejected_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    expiredAt: timestamp('expired_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    createdBy: uuid('created_by_id').references(() => users.id, {
-      onDelete: 'set null',
-    }),
-    seen: boolean('seen').default(false),
-    seenAt: timestamp('seen_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    createdBy: uuid('created_by_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
+    volume: numeric('volume', { mode: 'number' }).notNull().default(20),
+    remainingVolume: numeric('remaining_volume', { mode: 'number' }).notNull().default(20),
     donor: uuid('donor_id')
       .notNull()
       .references(() => individuals.id, {
@@ -832,6 +834,7 @@ export const hospitals = pgTable(
     hospitalID: varchar('hospital_i_d'),
     type: enum_hospitals_type('type'),
     phone: varchar('phone'),
+    totalVolume: numeric('total_volume', { mode: 'number' }).default(0),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -1050,6 +1053,7 @@ export const milk_banks = pgTable(
     head: varchar('head'),
     type: enum_milk_banks_type('type'),
     phone: varchar('phone'),
+    totalVolume: numeric('total_volume', { mode: 'number' }).default(0),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -3186,6 +3190,7 @@ export const payload_jobs = pgTable(
     queue: varchar('queue').default('default'),
     waitUntil: timestamp('wait_until', { mode: 'string', withTimezone: true, precision: 3 }),
     processing: boolean('processing').default(false),
+    concurrencyKey: varchar('concurrency_key'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -3202,6 +3207,7 @@ export const payload_jobs = pgTable(
     index('payload_jobs_queue_idx').on(columns.queue),
     index('payload_jobs_wait_until_idx').on(columns.waitUntil),
     index('payload_jobs_processing_idx').on(columns.processing),
+    index('payload_jobs_concurrency_key_idx').on(columns.concurrencyKey),
     index('payload_jobs_updated_at_idx').on(columns.updatedAt),
     index('payload_jobs_created_at_idx').on(columns.createdAt),
   ]

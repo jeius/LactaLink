@@ -1,56 +1,6 @@
-import { DONATION_REQUEST_STATUS, MILK_BAG_STATUS } from '@lactalink/enums';
+import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
 import { PayloadRequest } from 'payload';
-
-export async function calculateVolumes<T extends Donation>(
-  doc: T | Partial<T>,
-  req: PayloadRequest
-) {
-  const volume = 0;
-  const remainingVolume = 0;
-
-  const bagIDs = extractID(doc.details?.bags || []);
-
-  if (bagIDs.length === 0) {
-    doc.volume = volume;
-    doc.remainingVolume = remainingVolume;
-    return doc;
-  }
-
-  const { docs: bags } = await req.payload.find({
-    collection: 'milkBags',
-    req,
-    where: { id: { in: bagIDs } },
-    select: { volume: true, status: true },
-    pagination: false,
-  });
-
-  const result = bags.reduce(
-    (acc, bag) => {
-      acc.volume += bag.volume;
-      if (bag.status === MILK_BAG_STATUS.AVAILABLE.value) {
-        acc.remainingVolume += bag.volume;
-      }
-      return acc;
-    },
-    { volume, remainingVolume }
-  );
-
-  doc.volume = result.volume;
-  doc.remainingVolume = result.remainingVolume;
-
-  // Check if all bags are expired
-  const _allExpired =
-    bags.length > 0 && bags.every((bag) => bag.status === MILK_BAG_STATUS.EXPIRED.value);
-
-  // if (allExpired) {
-  //   // At this point, all bags are expired, update donation status if needed
-  //   return await updateStatusOnBagsExpired(doc, req);
-  // }
-
-  return doc;
-}
 
 async function _updateStatusOnBagsExpired<T extends Donation>(
   doc: T | Partial<T>,

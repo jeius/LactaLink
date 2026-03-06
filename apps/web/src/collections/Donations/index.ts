@@ -1,22 +1,17 @@
-import { processDonationToOrganization } from '@/collections/Donations/hooks/processDonationToOrganization';
-import { createdByField } from '@/fields/createdByField';
 import { deliveryTab } from '@/fields/deliveryTab';
-import { seenTrackingFields } from '@/fields/seenTrackingField';
 import { statusTimeStamps } from '@/fields/statusTimeStamps';
-import { afterDeleteDonationOrRequest } from '@/hooks/collections/afterDelete';
-import { cleanReadTrackingOnUpdate } from '@/hooks/collections/cleanReadTrackingOnUpdate';
-import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
-import { initStatusOnRecipient } from '@/hooks/collections/initStatusOnRecipient';
-import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
+import { createUserField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants';
+import { NullableValidator } from '@lactalink/agents/payload';
 import { COLLECTION_MODES, DONATION_REQUEST_STATUS, STORAGE_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
 import { donationsEndpoints } from './endpoints';
 import { filterMilkBagsOptions } from './filterOptions';
-import { calculateVolumes } from './hooks/calculateVolumes';
-import { generateTitle } from './hooks/generateTitle';
-import { initializeDonation } from './hooks/initialize';
+import { afterChange } from './hooks/afterChange';
+import { afterDelete } from './hooks/afterDelete';
+import { beforeValidate } from './hooks/beforeValidate';
+import { generateTitle } from './hooks/fieldHooks';
 import { createDonationNotification } from './hooks/notifications';
 
 export const Donations: CollectionConfig<'donations'> = {
@@ -34,57 +29,24 @@ export const Donations: CollectionConfig<'donations'> = {
     defaultColumns: ['donor', 'volume', 'remainingVolume', 'status', 'createdAt'],
   },
   hooks: {
-    beforeRead: [({ doc, req }) => calculateVolumes(doc, req)],
-    beforeValidate: [initializeDonation, ({ data, req }) => calculateVolumes(data, req)],
-    beforeChange: [initStatusOnRecipient, generateCreatedBy, generateTitle, updateSeenTracking],
-    afterChange: [
-      createDonationNotification,
-      processDonationToOrganization,
-      cleanReadTrackingOnUpdate,
-    ],
-    afterDelete: [afterDeleteDonationOrRequest],
+    beforeValidate: [beforeValidate],
+    afterChange: [createDonationNotification, afterChange],
+    afterDelete: [afterDelete],
   },
   endpoints: donationsEndpoints,
   fields: [
     {
       name: 'title',
       type: 'text',
+      required: true,
+      validate: NullableValidator.text,
+      hooks: { beforeChange: [generateTitle] },
       admin: {
         description: 'Title of the donation record.',
         readOnly: true,
         position: 'sidebar',
       },
     },
-    {
-      name: 'volume',
-      label: 'Total Volume (mL)',
-      type: 'number',
-      defaultValue: 20,
-      hasMany: false,
-      required: true,
-      validate: () => true, // Always valid as it's calculated
-      admin: {
-        description: 'Total volume of milk donated.',
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'remainingVolume',
-      label: 'Remaining Volume (mL)',
-      type: 'number',
-      defaultValue: 0,
-      hasMany: false,
-      required: true,
-      validate: () => true, // Always valid as it's calculated
-      admin: {
-        description: 'Volume still available for allocation',
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-
-    ...statusTimeStamps,
 
     {
       name: 'expiredAt',
@@ -95,12 +57,41 @@ export const Donations: CollectionConfig<'donations'> = {
       },
     },
 
-    createdByField,
-    ...seenTrackingFields,
+    ...statusTimeStamps,
+
+    createUserField({ name: 'createdBy', required: true }),
 
     {
       type: 'row',
       fields: [
+        {
+          name: 'volume',
+          label: 'Total Volume (mL)',
+          type: 'number',
+          defaultValue: 20,
+          required: true,
+          validate: NullableValidator.number,
+          admin: {
+            description: 'Total volume of milk donated.',
+            readOnly: true,
+            width: '50%',
+          },
+        },
+
+        {
+          name: 'remainingVolume',
+          label: 'Remaining Volume (mL)',
+          type: 'number',
+          defaultValue: 20,
+          required: true,
+          validate: NullableValidator.number,
+          admin: {
+            description: 'Volume still available for allocation',
+            readOnly: true,
+            width: '50%',
+          },
+        },
+
         {
           name: 'donor',
           type: 'relationship',
@@ -111,6 +102,7 @@ export const Donations: CollectionConfig<'donations'> = {
             width: '50%',
           },
         },
+
         {
           name: 'recipient',
           type: 'relationship',
