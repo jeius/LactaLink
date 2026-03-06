@@ -9,9 +9,9 @@ import { Donation, MilkBag, Request, Transaction } from '@lactalink/types/payloa
 import { extractID } from '@lactalink/utilities/extractors';
 import { PayloadRequest } from 'payload';
 
-export * from './consumeRequestBags';
-export * from './createNewInventory';
 export * from './createStatusHistoryRecord';
+export * from './markDonationAsComplete';
+export * from './markRequestAsComplete';
 
 const MATCHED_STATUS = DONATION_REQUEST_STATUS.MATCHED.value;
 const MILK_ALLOCATED_STATUS = MILK_BAG_STATUS.ALLOCATED.value;

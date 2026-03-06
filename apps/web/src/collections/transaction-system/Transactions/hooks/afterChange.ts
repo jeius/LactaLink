@@ -1,14 +1,14 @@
 import { hookLogger } from '@lactalink/agents/payload';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
-import { CollectionAfterChangeHook } from 'payload';
+import { CollectionAfterChangeHook, PayloadRequest } from 'payload';
 import {
   clearTransactionReads,
-  consumeRequestBags,
-  createNewInventory,
   createStatusHistoryRecord,
   markBagsAsAllocated,
+  markDonationAsComplete,
   markDonationAsMatched,
+  markRequestAsComplete,
   markRequestAsMatched,
 } from '../helpers';
 
@@ -21,9 +21,9 @@ const COMPLETE_STATUS = TRANSACTION_STATUS.COMPLETED.value;
  * Handles side effects related to transaction creation and updates, including:
  * - On create: Marking linked donation and request as matched, and marking included
  *   milk bags as allocated.
- * - On update: If status changes to completed, consuming allocated bags and creating
- *   inventory for organization donations. Also clears transaction reads and creates
- *   status history records on any update.
+ * - On update: If status changes to completed, marking linked donation and request
+ *   as complete. Also handles clearing transaction reads and creating status history
+ *   records on any update.
  */
 export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   doc,
@@ -35,33 +35,24 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   const { user } = req;
   if (!user?.profile) return doc;
 
-  const logger = hookLogger(req, collection.slug, 'afterChange');
-
   try {
-    if (operation === 'update') {
-      const onTransactionCompleted = async () => {
-        if (doc.status !== COMPLETE_STATUS) return;
-
-        // Consume allocated bags linked to the transaction's request
-        if (doc.request) await consumeRequestBags(doc.request, req, logger);
-
-        // Create organization inventory if transaction has a linked donation
-        // with an organization as recipient
-        if (doc.donation) await createNewInventory(doc.donation, req, logger);
-      };
+    if (operation === 'create') {
+      const logger = hookLogger(req, collection.slug, 'afterCreate');
 
       await Promise.all([
-        clearTransactionReads(doc, req, logger),
-        createStatusHistoryRecord(doc, previousDoc, req, logger),
-        onTransactionCompleted(),
+        markDonationAsMatched(doc.donation, req, logger),
+        markRequestAsMatched(doc.request, req, logger),
+        markBagsAsAllocated(doc.milkBags, req, logger),
       ]);
     }
 
-    if (operation === 'create') {
-      await Promise.all([
-        markDonationAsMatched(doc.donation, req),
-        markRequestAsMatched(doc.request, req),
-        markBagsAsAllocated(doc.milkBags, req),
+    if (operation === 'update') {
+      const logger = hookLogger(req, collection.slug, 'afterUpdate');
+
+      await Promise.allSettled([
+        clearTransactionReads(doc, req, logger),
+        createStatusHistoryRecord(doc, previousDoc, req, logger),
+        finalizeOnComplete(doc, req, logger),
       ]);
     }
   } catch (error) {
@@ -71,3 +62,15 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
 
   return doc;
 };
+
+async function finalizeOnComplete(
+  doc: Transaction,
+  req: PayloadRequest,
+  logger: ReturnType<typeof hookLogger>
+) {
+  if (doc.status !== COMPLETE_STATUS) return;
+  await Promise.all([
+    markRequestAsComplete(doc.request, req, logger),
+    markDonationAsComplete(doc.donation, req, logger),
+  ]);
+}
