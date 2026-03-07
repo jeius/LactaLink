@@ -9,3 +9,7 @@ export enum MilkBagHookContext {
 export enum InventoryHookContext {
   MilkBagIDs = 'milkBagIDsToLink',
 }
+
+export enum ProfileHookContext {
+  Owner = 'owner',
+}

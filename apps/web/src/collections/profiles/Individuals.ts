@@ -1,12 +1,11 @@
-import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
-import { createUserField } from '@/fields/userField';
-import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
-import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { GENDER_TYPES, MARITAL_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { defaultAddressField, displayNameField, ownerField } from './fields';
+import { afterChange } from './hooks/afterChange';
+import { afterRead } from './hooks/afterRead';
 
 export const Individuals: CollectionConfig<'individuals'> = {
   slug: 'individuals',
@@ -18,30 +17,17 @@ export const Individuals: CollectionConfig<'individuals'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
-    group: COLLECTION_GROUP.PROFILES,
+    group: COLLECTION_GROUP.USER,
     description:
       'Individuals profile of users, including their personal information such as name, date of birth, contact details, and other relevant attributes.',
     useAsTitle: 'displayName',
-    defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus', 'owner'],
+    defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus'],
   },
   hooks: {
-    afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
+    afterChange: [afterChange],
+    afterRead: [afterRead],
   },
   fields: [
-    createProfileDisplayNameField({
-      admin: {
-        description: 'Automatically generated from given, middle, and family names.',
-        readOnly: true,
-      },
-    }),
-
-    createUserField({
-      name: 'owner',
-      admin: {
-        description:
-          'User who owns this profile. On create, defaults to authenticated user if empty.',
-      },
-    }),
     {
       name: 'isVerified',
       label: 'Identity Verified',
@@ -50,6 +36,18 @@ export const Individuals: CollectionConfig<'individuals'> = {
         position: 'sidebar',
       },
     },
+
+    displayNameField({
+      admin: {
+        description: 'Automatically generated from given, middle, and family names.',
+        readOnly: true,
+      },
+    }),
+
+    ownerField('User who owns this profile. On create, defaults to authenticated user if empty.'),
+
+    defaultAddressField(),
+
     {
       name: 'avatar',
       type: 'upload',
@@ -139,6 +137,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
         },
       ],
     },
+
     {
       type: 'tabs',
       tabs: [

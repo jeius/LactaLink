@@ -7,19 +7,17 @@ import { DeliveryPreferences } from './DeliveryPreferences';
 import { DonationReads } from './DonationReads';
 import { Donations } from './Donations';
 import { DonorScreenings } from './DonorScreenings';
-import { Hospitals } from './Hospitals';
 import { Identities } from './Identities';
-import { Individuals } from './Individuals';
 import { InventoryCollections } from './Inventory';
 import { Likes } from './Likes';
 import MediaCollections from './media';
 import { MilkBagCollections } from './MilkBags';
-import { MilkBanks } from './MilkBanks';
 import { Notifications } from './Notifications';
 import { NotificationCategories } from './Notifications/categories';
 import { NotificationChannels } from './Notifications/channels';
 import { NotificationTypes } from './Notifications/types';
 import { Posts } from './Posts';
+import { Hospitals, Individuals, MilkBanks, ProfileCollections } from './profiles';
 import { Barangays, CitiesMunicipalities, IslandGroups, Regions } from './PSGC';
 import { Provinces } from './PSGC/Provinces';
 import { RequestReads } from './RequestReads';
@@ -37,12 +35,9 @@ const Collections: CollectionConfig[] = [
   DonationReads,
   DonorScreenings,
   Donations,
-  Hospitals,
   Identities,
-  Individuals,
   IslandGroups,
   Likes,
-  MilkBanks,
   NotificationCategories,
   NotificationChannels,
   Notifications,
@@ -53,6 +48,7 @@ const Collections: CollectionConfig[] = [
   RequestReads,
   Requests,
   Users,
+  ...ProfileCollections,
   ...MilkBagCollections,
   ...TransactionCollections,
   ...ChatSystemCollections,

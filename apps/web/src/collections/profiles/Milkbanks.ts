@@ -1,13 +1,12 @@
 import { createOrgTotalVolumeField } from '@/fields/createOrgTotalVolumeField';
-import { createProfileDisplayNameField } from '@/fields/createProfileDisplayNameField';
 import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
-import { createUserField } from '@/fields/userField';
-import { deletePreviousAvatar } from '@/hooks/collections/deletePreviousAvatar';
-import { updateUserProfileOnCreate } from '@/hooks/collections/updateUserProfileOnCreate';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { defaultAddressField, displayNameField, ownerField } from './fields';
+import { afterChange } from './hooks/afterChange';
+import { afterRead } from './hooks/afterRead';
 
 export const MilkBanks: CollectionConfig<'milkBanks'> = {
   slug: 'milkBanks',
@@ -19,28 +18,27 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     delete: collectionOwnerOrAdmin,
   },
   admin: {
-    group: COLLECTION_GROUP.PROFILES,
+    group: COLLECTION_GROUP.USER,
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
-    afterChange: [updateUserProfileOnCreate, deletePreviousAvatar],
+    afterChange: [afterChange],
+    afterRead: [afterRead],
   },
   fields: [
-    createProfileDisplayNameField({
+    displayNameField({
       admin: {
         description: 'Display name for the milk bank, used in public profiles.',
         readOnly: true,
       },
     }),
 
-    createUserField({
-      name: 'owner',
-      admin: {
-        description:
-          'User who owns this milk bank profile. On create, defaults to authenticated user if empty.',
-      },
-    }),
+    ownerField(
+      'User who owns this milk bank profile. On create, defaults to authenticated user if empty.'
+    ),
+
+    defaultAddressField(),
 
     {
       type: 'tabs',

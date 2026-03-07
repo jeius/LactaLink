@@ -1,4 +1,4 @@
-import { MilkBag, Config as PayloadConfig } from '@lactalink/types/payload-generated-types';
+import { MilkBag, Config as PayloadConfig, User } from '@lactalink/types/payload-generated-types';
 
 declare global {
   namespace NodeJS {
@@ -40,5 +40,6 @@ declare module 'payload' {
 
   export interface RequestContext {
     milkbags?: (string | MilkBag)[];
+    user?: string | User;
   }
 }
