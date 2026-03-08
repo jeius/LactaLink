@@ -42,8 +42,6 @@ export async function markDonationAsMatched(
       req,
       depth: 0,
       data: { status: MATCHED_STATUS },
-      // Select one field to reduce payload size, since we only care about the count of updated records
-      select: { title: true },
     })
     .then(({ id }) => logger?.info(`Donation ${id} status updated to ${MATCHED_STATUS}`));
 }
@@ -74,8 +72,6 @@ export async function markRequestAsMatched(
       req,
       depth: 0,
       data: { status: MATCHED_STATUS },
-      // Select one field to reduce payload size, since we only care about the count of updated records
-      select: { title: true },
     })
     .then(({ id }) => logger?.info(`Request ${id} status updated to ${MATCHED_STATUS}`));
 }
@@ -106,8 +102,6 @@ export async function markBagsAsAllocated(
       data: { status: MILK_ALLOCATED_STATUS },
       where: { id: { in: extractID(milkbags) } },
       depth: 0,
-      // Select one field to reduce payload size, since we only care about the count of updated records
-      select: { code: true },
     })
     .then(({ docs }) =>
       logger?.info(`Updated ${docs.length} milk bags to ${MILK_ALLOCATED_STATUS}`)
@@ -136,8 +130,6 @@ export async function clearTransactionReads(
       where: { transaction: { equals: transactionID } },
       req,
       depth: 0,
-      // Select one field to reduce payload size, since we only care about the count of updated records
-      select: { transaction: true },
     })
     .then(({ docs }) =>
       logger?.info(

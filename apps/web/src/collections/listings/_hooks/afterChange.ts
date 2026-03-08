@@ -1,9 +1,9 @@
-import { clearReadRecords } from '@/lib/utils/donationOrRequest/clearReadRecords';
 import { hookLogger } from '@lactalink/agents/payload';
-import { Donation } from '@lactalink/types/payload-generated-types';
+import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { CollectionAfterChangeHook } from 'payload';
+import { clearReadRecords } from '../_helpers';
 
-export const afterChange: CollectionAfterChangeHook<Donation> = async ({
+export const afterChange: CollectionAfterChangeHook<Donation | Request> = async ({
   doc,
   req,
   operation,

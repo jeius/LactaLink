@@ -120,13 +120,9 @@ export interface Config {
     'delivery-preferences': DeliveryPreference;
     'donation-reads': DonationRead;
     'donor-screenings': DonorScreening;
-    donations: Donation;
-    hospitals: Hospital;
     identities: Identity;
-    individuals: Individual;
     islandGroups: IslandGroup;
     likes: Like;
-    milkBanks: MilkBank;
     'notification-categories': NotificationCategory;
     'notification-channels': NotificationChannel;
     notifications: Notification;
@@ -135,8 +131,12 @@ export interface Config {
     provinces: Province;
     regions: Region;
     'request-reads': RequestRead;
-    requests: Request;
     users: User;
+    donations: Donation;
+    requests: Request;
+    hospitals: Hospital;
+    individuals: Individual;
+    milkBanks: MilkBank;
     milkBags: MilkBag;
     'milkbag-ownership-histories': MilkbagOwnershipHistory;
     transactions: Transaction;
@@ -178,8 +178,21 @@ export interface Config {
       donations: 'donations';
       requests: 'requests';
     };
+    posts: {
+      likes: 'likes';
+      comments: 'comments';
+      shares: 'posts';
+    };
+    users: {
+      addresses: 'addresses';
+      deliveryPreferences: 'delivery-preferences';
+    };
     donations: {
       reads: 'donation-reads';
+      transactions: 'transactions';
+    };
+    requests: {
+      reads: 'request-reads';
       transactions: 'transactions';
     };
     hospitals: {
@@ -198,19 +211,6 @@ export interface Config {
       receivedTransactions: 'transactions';
       sentTransactions: 'transactions';
       posts: 'posts';
-    };
-    posts: {
-      likes: 'likes';
-      comments: 'comments';
-      shares: 'posts';
-    };
-    requests: {
-      reads: 'request-reads';
-      transactions: 'transactions';
-    };
-    users: {
-      addresses: 'addresses';
-      deliveryPreferences: 'delivery-preferences';
     };
     milkBags: {
       ownershipHistory: 'milkbag-ownership-histories';
@@ -250,13 +250,9 @@ export interface Config {
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     'donation-reads': DonationReadsSelect<false> | DonationReadsSelect<true>;
     'donor-screenings': DonorScreeningsSelect<false> | DonorScreeningsSelect<true>;
-    donations: DonationsSelect<false> | DonationsSelect<true>;
-    hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
-    individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     likes: LikesSelect<false> | LikesSelect<true>;
-    milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     'notification-categories': NotificationCategoriesSelect<false> | NotificationCategoriesSelect<true>;
     'notification-channels': NotificationChannelsSelect<false> | NotificationChannelsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
@@ -265,8 +261,12 @@ export interface Config {
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     'request-reads': RequestReadsSelect<false> | RequestReadsSelect<true>;
-    requests: RequestsSelect<false> | RequestsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    donations: DonationsSelect<false> | DonationsSelect<true>;
+    requests: RequestsSelect<false> | RequestsSelect<true>;
+    hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
+    individuals: IndividualsSelect<false> | IndividualsSelect<true>;
+    milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
     'milkbag-ownership-histories': MilkbagOwnershipHistoriesSelect<false> | MilkbagOwnershipHistoriesSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
@@ -588,6 +588,7 @@ export interface User {
  */
 export interface Individual {
   id: string;
+  isVerified?: boolean | null;
   /**
    * Automatically generated from given, middle, and family names.
    */
@@ -596,7 +597,7 @@ export interface Individual {
    * User who owns this profile. On create, defaults to authenticated user if empty.
    */
   owner?: (string | null) | User;
-  isVerified?: boolean | null;
+  defaultAddress?: (string | null) | Address;
   avatar?: (string | null) | Avatar;
   givenName: string;
   middleName?: string | null;
@@ -791,6 +792,7 @@ export interface Hospital {
    * User who owns this hospital profile. On create, defaults to authenticated user if empty.
    */
   owner?: (string | null) | User;
+  defaultAddress?: (string | null) | Address;
   avatar?: (string | null) | Avatar;
   name: string;
   description?: string | null;
@@ -929,6 +931,7 @@ export interface MilkBank {
    * User who owns this milk bank profile. On create, defaults to authenticated user if empty.
    */
   owner?: (string | null) | User;
+  defaultAddress?: (string | null) | Address;
   avatar?: (string | null) | Avatar;
   name: string;
   description?: string | null;
@@ -1188,25 +1191,17 @@ export interface MilkbagOwnershipHistory {
 export interface Donation {
   id: string;
   /**
-   * Title of the donation record.
+   * Title of the donation record. (Auto-generated based on donor and volume)
    */
   title: string;
-  expiredAt?: string | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
   rejectedAt?: string | null;
+  expiredAt?: string | null;
   /**
    * The user who created this entry. (Auto-generated by the current authenticated user, safe to ignore)
    */
   createdBy: string | User;
-  /**
-   * Total volume of milk donated.
-   */
-  volume: number;
-  /**
-   * Volume still available for allocation
-   */
-  remainingVolume: number;
   /**
    * The person donating the milk
    */
@@ -1227,6 +1222,14 @@ export interface Donation {
         relationTo: 'milkBanks';
         value: string | MilkBank;
       } | null);
+  /**
+   * Total volume of milk donated.
+   */
+  volume: number;
+  /**
+   * Volume still available for allocation
+   */
+  remainingVolume: number;
   status: 'PENDING' | 'AVAILABLE' | 'MATCHED' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'REJECTED';
   details: {
     /**
@@ -1368,9 +1371,9 @@ export interface DeliveryPreference {
 export interface Request {
   id: string;
   /**
-   * Title of the milk request.
+   * Title of the milk request record. (Auto-generated based on requester and volume needed)
    */
-  title?: string | null;
+  title: string;
   /**
    * Percentage of the request that has been fulfilled.
    */
@@ -1379,15 +1382,10 @@ export interface Request {
   cancelledAt?: string | null;
   rejectedAt?: string | null;
   expiredAt?: string | null;
-  createdBy?: (string | null) | User;
   /**
-   * Indicates whether the collection has been seen by the user
+   * The user who created this entry. (Auto-generated by the current authenticated user, safe to ignore)
    */
-  seen?: boolean | null;
-  /**
-   * The timestamp when the collection was last seen by the user
-   */
-  seenAt?: string | null;
+  createdBy: string | User;
   /**
    * The person requesting the milk
    */
@@ -3073,20 +3071,8 @@ export interface PayloadLockedDocument {
         value: string | DonorScreening;
       } | null)
     | ({
-        relationTo: 'donations';
-        value: string | Donation;
-      } | null)
-    | ({
-        relationTo: 'hospitals';
-        value: string | Hospital;
-      } | null)
-    | ({
         relationTo: 'identities';
         value: string | Identity;
-      } | null)
-    | ({
-        relationTo: 'individuals';
-        value: string | Individual;
       } | null)
     | ({
         relationTo: 'islandGroups';
@@ -3095,10 +3081,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'likes';
         value: string | Like;
-      } | null)
-    | ({
-        relationTo: 'milkBanks';
-        value: string | MilkBank;
       } | null)
     | ({
         relationTo: 'notification-categories';
@@ -3133,12 +3115,28 @@ export interface PayloadLockedDocument {
         value: string | RequestRead;
       } | null)
     | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: string | Donation;
+      } | null)
+    | ({
         relationTo: 'requests';
         value: string | Request;
       } | null)
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'individuals';
+        value: string | Individual;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
       } | null)
     | ({
         relationTo: 'milkBags';
@@ -3429,60 +3427,6 @@ export interface DonorScreeningsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donations_select".
- */
-export interface DonationsSelect<T extends boolean = true> {
-  title?: T;
-  expiredAt?: T;
-  completedAt?: T;
-  cancelledAt?: T;
-  rejectedAt?: T;
-  createdBy?: T;
-  volume?: T;
-  remainingVolume?: T;
-  donor?: T;
-  recipient?: T;
-  status?: T;
-  details?:
-    | T
-    | {
-        storageType?: T;
-        collectionMode?: T;
-        bags?: T;
-        milkSample?: T;
-        notes?: T;
-      };
-  deliveryPreferences?: T;
-  reads?: T;
-  transactions?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "hospitals_select".
- */
-export interface HospitalsSelect<T extends boolean = true> {
-  displayName?: T;
-  owner?: T;
-  avatar?: T;
-  name?: T;
-  description?: T;
-  head?: T;
-  hospitalID?: T;
-  type?: T;
-  phone?: T;
-  totalVolume?: T;
-  inventory?: T;
-  milkBags?: T;
-  receivedTransactions?: T;
-  sentTransactions?: T;
-  posts?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "identities_select".
  */
 export interface IdentitiesSelect<T extends boolean = true> {
@@ -3507,27 +3451,6 @@ export interface IdentitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "individuals_select".
- */
-export interface IndividualsSelect<T extends boolean = true> {
-  displayName?: T;
-  owner?: T;
-  isVerified?: T;
-  avatar?: T;
-  givenName?: T;
-  middleName?: T;
-  familyName?: T;
-  birth?: T;
-  phone?: T;
-  dependents?: T;
-  gender?: T;
-  maritalStatus?: T;
-  posts?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "islandGroups_select".
  */
 export interface IslandGroupsSelect<T extends boolean = true> {
@@ -3543,28 +3466,6 @@ export interface IslandGroupsSelect<T extends boolean = true> {
 export interface LikesSelect<T extends boolean = true> {
   createdBy?: T;
   liked?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkBanks_select".
- */
-export interface MilkBanksSelect<T extends boolean = true> {
-  displayName?: T;
-  owner?: T;
-  avatar?: T;
-  name?: T;
-  description?: T;
-  head?: T;
-  type?: T;
-  phone?: T;
-  totalVolume?: T;
-  inventory?: T;
-  milkBags?: T;
-  receivedTransactions?: T;
-  sentTransactions?: T;
-  posts?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3811,6 +3712,57 @@ export interface RequestReadsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  email?: T;
+  phone?: T;
+  profileType?: T;
+  profile?: T;
+  addresses?: T;
+  deliveryPreferences?: T;
+  lastSignInAt?: T;
+  onlineAt?: T;
+  emailConfirmedAt?: T;
+  phoneConfirmedAt?: T;
+  picture?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations_select".
+ */
+export interface DonationsSelect<T extends boolean = true> {
+  title?: T;
+  completedAt?: T;
+  cancelledAt?: T;
+  rejectedAt?: T;
+  expiredAt?: T;
+  createdBy?: T;
+  donor?: T;
+  recipient?: T;
+  volume?: T;
+  remainingVolume?: T;
+  status?: T;
+  details?:
+    | T
+    | {
+        storageType?: T;
+        collectionMode?: T;
+        bags?: T;
+        milkSample?: T;
+        notes?: T;
+      };
+  deliveryPreferences?: T;
+  reads?: T;
+  transactions?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "requests_select".
  */
 export interface RequestsSelect<T extends boolean = true> {
@@ -3821,8 +3773,6 @@ export interface RequestsSelect<T extends boolean = true> {
   rejectedAt?: T;
   expiredAt?: T;
   createdBy?: T;
-  seen?: T;
-  seenAt?: T;
   requester?: T;
   recipient?: T;
   initialVolumeNeeded?: T;
@@ -3848,21 +3798,70 @@ export interface RequestsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "hospitals_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  role?: T;
-  email?: T;
+export interface HospitalsSelect<T extends boolean = true> {
+  displayName?: T;
+  owner?: T;
+  defaultAddress?: T;
+  avatar?: T;
+  name?: T;
+  description?: T;
+  head?: T;
+  hospitalID?: T;
+  type?: T;
   phone?: T;
-  profileType?: T;
-  profile?: T;
-  addresses?: T;
-  deliveryPreferences?: T;
-  lastSignInAt?: T;
-  onlineAt?: T;
-  emailConfirmedAt?: T;
-  phoneConfirmedAt?: T;
-  picture?: T;
+  totalVolume?: T;
+  inventory?: T;
+  milkBags?: T;
+  receivedTransactions?: T;
+  sentTransactions?: T;
+  posts?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "individuals_select".
+ */
+export interface IndividualsSelect<T extends boolean = true> {
+  isVerified?: T;
+  displayName?: T;
+  owner?: T;
+  defaultAddress?: T;
+  avatar?: T;
+  givenName?: T;
+  middleName?: T;
+  familyName?: T;
+  birth?: T;
+  phone?: T;
+  dependents?: T;
+  gender?: T;
+  maritalStatus?: T;
+  posts?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "milkBanks_select".
+ */
+export interface MilkBanksSelect<T extends boolean = true> {
+  displayName?: T;
+  owner?: T;
+  defaultAddress?: T;
+  avatar?: T;
+  name?: T;
+  description?: T;
+  head?: T;
+  type?: T;
+  phone?: T;
+  totalVolume?: T;
+  inventory?: T;
+  milkBags?: T;
+  receivedTransactions?: T;
+  sentTransactions?: T;
+  posts?: T;
   updatedAt?: T;
   createdAt?: T;
 }

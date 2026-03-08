@@ -1,18 +1,18 @@
 import { deliveryTab } from '@/fields/deliveryTab';
-import { statusTimeStamps } from '@/fields/statusTimeStamps';
 import { createUserField } from '@/fields/userField';
-import { generateTitleForDonationOrRequest } from '@/hooks/collections/fieldHooks';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { NullableValidator } from '@lactalink/agents/payload';
-import { COLLECTION_MODES, DONATION_REQUEST_STATUS, STORAGE_TYPES } from '@lactalink/enums';
+import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { admin, authenticated, collectionCreatorOrAdmin } from '../../_access-control';
+import { recipientField, timeStampFields, titleField } from '../_fields';
+import { statusField } from '../_fields/statusField';
+import { afterChange } from '../_hooks/afterChange';
+import { afterDelete } from '../_hooks/afterDelete';
+import { afterRead } from '../_hooks/afterRead';
 import { donationsEndpoints } from './endpoints';
 import { filterMilkBagsOptions } from './filterOptions';
-import { afterChange } from './hooks/afterChange';
-import { afterDelete } from './hooks/afterDelete';
 import { beforeValidate } from './hooks/beforeValidate';
-import { createDonationNotification } from './hooks/notifications';
 
 export const Donations: CollectionConfig<'donations'> = {
   slug: 'donations',
@@ -30,40 +30,40 @@ export const Donations: CollectionConfig<'donations'> = {
   },
   hooks: {
     beforeValidate: [beforeValidate],
-    afterChange: [createDonationNotification, afterChange],
+    afterChange: [afterChange],
     afterDelete: [afterDelete],
+    afterRead: [afterRead],
   },
   endpoints: donationsEndpoints,
   fields: [
-    {
-      name: 'title',
-      type: 'text',
-      required: true,
-      validate: NullableValidator.text,
-      hooks: { beforeChange: [generateTitleForDonationOrRequest] },
-      admin: {
-        description: 'Title of the donation record. (Auto-generated based on donor and volume)',
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
+    titleField({
+      description: 'Title of the donation record. (Auto-generated based on donor and volume)',
+    }),
 
-    {
-      name: 'expiredAt',
-      type: 'date',
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-
-    ...statusTimeStamps,
+    ...timeStampFields(),
 
     createUserField({ name: 'createdBy', required: true }),
 
     {
       type: 'row',
       fields: [
+        {
+          name: 'donor',
+          type: 'relationship',
+          relationTo: 'individuals',
+          required: true,
+          admin: {
+            description: 'The person donating the milk',
+            width: '50%',
+          },
+        },
+
+        recipientField({
+          description:
+            'Intended recipient for this donation (optional - leave empty for general donation)',
+          width: '50%',
+        }),
+
         {
           name: 'volume',
           label: 'Total Volume (mL)',
@@ -91,46 +91,12 @@ export const Donations: CollectionConfig<'donations'> = {
             width: '50%',
           },
         },
-
-        {
-          name: 'donor',
-          type: 'relationship',
-          relationTo: 'individuals',
-          required: true,
-          admin: {
-            description: 'The person donating the milk',
-            width: '50%',
-          },
-        },
-
-        {
-          name: 'recipient',
-          type: 'relationship',
-          relationTo: ['individuals', 'hospitals', 'milkBanks'],
-          hasMany: false,
-          admin: {
-            description:
-              'Intended recipient for this donation (optional - leave empty for general donation)',
-            width: '50%',
-          },
-        },
       ],
     },
 
     {
       type: 'row',
-      fields: [
-        {
-          name: 'status',
-          label: 'Donation Status',
-          type: 'select',
-          enumName: 'enum_donation_request_status',
-          required: true,
-          defaultValue: DONATION_REQUEST_STATUS.AVAILABLE.value,
-          options: Object.values(DONATION_REQUEST_STATUS),
-          admin: { width: '50%' },
-        },
-      ],
+      fields: [statusField('Donation Status')],
     },
 
     {
