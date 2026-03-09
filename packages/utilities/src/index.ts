@@ -1,4 +1,3 @@
-export * from './apiFetch';
 export * from './batching';
 export * from './createStorageKey';
 export * from './delay';

@@ -88,15 +88,12 @@ export function extractAuthErrorCode<T = unknown>(error: T): ErrorCodes {
 /**
  * Extracts the HTTP status code from an error object.
  *
- * This utility function retrieves the `status` property from an error object. If the `status` property
- * is not present or the input is not an object, it returns a default value of `500`.
- *
  * @template T - The type of the error input.
  * @param error - The error object or unknown input.
  * @returns A number representing the extracted HTTP status code or `500` if none is found.
  *
  * @example
- * ```typescript
+ * ```ts
  * const error = { status: 404 };
  * const status = extractErrorStatus(error); // 404
  *
@@ -108,6 +105,28 @@ export function extractErrorStatus<T = unknown>(error: T): number {
   if (error && typeof error === 'object' && 'status' in error)
     return Number((error as { status: unknown }).status);
   return 500;
+}
+
+/**
+ * Extracts the HTTP status text from an error object.
+ *
+ * @template T - The type of the error input.
+ * @param error - The error object or unknown input.
+ * @returns A string representing the extracted HTTP status text or 'Internal Server Error' if none is found.
+ *
+ * @example
+ * ```ts
+ * const error = { statusText: 'Not Found' };
+ * const statusText = extractErrorStatusText(error); // 'Not Found'
+ *
+ * const unknownError = {};
+ * const statusText = extractErrorStatusText(unknownError); // 'Internal Server Error'
+ * ```
+ */
+export function extractErrorStatusText<T = unknown>(error: T): string {
+  if (error && typeof error === 'object' && 'statusText' in error)
+    return String((error as { statusText: unknown }).statusText);
+  return 'Internal Server Error';
 }
 
 /**
