@@ -1,6 +1,6 @@
 {
   "name": "@lactalink/types",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lactalink shared types",
   "private": true,
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
@@ -79,14 +79,26 @@
     "@lactalink/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
-    "payload": "3.42.0",
+    "payload": "^3.79.0",
     "react-hook-form": "^7.63.0",
     "zod": "^4.1.3"
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@supabase/supabase-js": "^2.49.4",
+    "payload": "^3.79.0",
     "react-hook-form": "^7.63.0",
     "zod": "^4.1.3"
+  },
+  "peerDependenciesMeta": {
+    "payload": {
+      "optional": false
+    },
+    "@supabase/supabase-js": {
+      "optional": false
+    },
+    "@lactalink/enums": {
+      "optional": false
+    }
   }
 }

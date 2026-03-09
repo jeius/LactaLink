@@ -1,6 +1,3 @@
-export type { SanitizedPermissions } from './auth';
-export type * from './collection';
-export type * from './config';
-export type * from './constants';
-export type { PaginatedDocs } from './database';
-export type * from './error';
+export type { SelectFromCollectionSlug } from 'node_modules/payload/dist/collections/config/types';
+export type { TransformCollectionWithSelect } from 'node_modules/payload/dist/types';
+export type * from 'payload';

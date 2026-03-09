@@ -1,5 +1,4 @@
-import { DAYS, DELIVERY_OPTIONS, DONATION_REQUEST_STATUS } from '@lactalink/enums';
-import { CollectionSlug } from './payload-types';
+import { CollectionSlug } from '@/collections';
 import {
   Hospital,
   Identity,
@@ -8,7 +7,8 @@ import {
   Post,
   Transaction,
   User,
-} from './payload-types/generated';
+} from '@/payload-types/generated';
+import { DAYS, DELIVERY_OPTIONS, DONATION_REQUEST_STATUS } from '@lactalink/enums';
 
 export type Theme = 'light' | 'dark';
 export type ImageData = {

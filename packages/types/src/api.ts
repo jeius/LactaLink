@@ -1,23 +1,21 @@
-import { DeepPartial } from 'react-hook-form';
-import { CustomError } from './errors';
-import { Polyline } from './geo-types';
-import type {
-  JoinQuery,
-  PopulateType,
-  Sort,
-  TransformCollectionWithSelect,
-  Where,
-} from './payload-types/collection';
+import { CollectionSlug } from '@/collections';
+import { CustomError } from '@/errors';
+import { Polyline } from '@/geo-types';
 import type {
   BulkOperationResult,
-  CollectionSlug,
   DataFromCollectionSlug,
+  JoinQuery,
+  PaginatedDocs,
+  PopulateType,
   RequiredDataFromCollectionSlug,
   SelectFromCollectionSlug,
+  Sort,
+  TransformCollectionWithSelect,
   TypedCollection,
   TypedLocale,
-} from './payload-types/config';
-import type { PaginatedDocs } from './payload-types/database';
+  Where,
+} from '@/payload-types';
+import { DeepPartial } from 'react-hook-form';
 
 //#region API Types
 export type ApiFetchResponse<T> =

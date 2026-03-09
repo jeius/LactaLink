@@ -1,10 +1,10 @@
+import { SanitizedPermissions } from '@/payload-types';
 import type {
   ResendParams,
   EmailOtpType as SbEmailOtpType,
   VerifyOtpParams,
 } from '@supabase/supabase-js';
-import { SanitizedPermissions } from './payload-types/auth';
-import { User } from './payload-types/generated';
+import type { User } from './payload-types/generated';
 
 export type MeUser =
   | {
