@@ -10,9 +10,15 @@
 
 import { ApiFetchResponse } from '@lactalink/types/api';
 import { ValidationError } from '@lactalink/utilities/errors';
-import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
+import {
+  extractErrorMessage,
+  extractErrorStatus,
+  extractErrorStatusText,
+} from '@lactalink/utilities/extractors';
 import { status as HttpStatus } from 'http-status';
+import isString from 'lodash/isString';
 import { APIError, PayloadHandler, PayloadRequest } from 'payload';
+import { isAdmin } from './isAdmin';
 
 /**
  * Options for configuring the Payload handler.
@@ -34,7 +40,8 @@ interface HandlerOptions<T = unknown> {
 
   /**
    * Maximum time (in milliseconds) to allow for the handler to execute before timing out.
-   * If the handler takes longer than this time, it will be aborted and an error response will be returned.
+   * If the handler takes longer than this time, it will be aborted and an error response
+   * will be returned.
    *
    * @default 30000 (30 seconds)
    */
@@ -42,9 +49,13 @@ interface HandlerOptions<T = unknown> {
 
   /**
    * The custom handler function to execute.
-   * Receives the request object as its parameter.
+   * @param req - The Payload request object.
+   * @param signal - An `AbortSignal` that can be used to handle request cancellation
+   * and timeouts.
+   *
+   * @returns A Promise that resolves to the data to be returned in the response.
    */
-  handler: (req: PayloadRequest) => Promise<T>;
+  handler: (req: PayloadRequest, signal: AbortSignal) => Promise<T>;
 
   /**
    * A custom success message to include in the response.
@@ -58,15 +69,15 @@ interface HandlerOptions<T = unknown> {
 /**
  * Creates a standardized Payload handler.
  *
- * @param {HandlerOptions} options - The options for configuring the handler.
- * @returns {PayloadHandler} - A function that handles the request and returns a response.
+ * @param options - The options for configuring the handler.
+ * @returns A function that handles the request and returns a `JSON` response.
  *
  * @description
  * This function wraps a custom handler with additional functionality:
  * - If `requireAuth` is `true`, it checks if the user is authenticated and throws an error if not.
  * - If `requireAdmin` is `true`, it checks if the user is an admin and throws an error if not.
  * - Executes the custom handler.
- * - Logs success or error messages and returns a standardized JSON response.
+ * - Logs success or error messages and returns a standardized `JSON` response.
  * - Handles errors gracefully, including `APIError` instances.
  */
 export function createPayloadHandler<T>({
@@ -79,8 +90,16 @@ export function createPayloadHandler<T>({
   return async (req) => {
     const { user, payload, t } = req;
 
+    // Record the start time for duration logging
+    const startTime = performance.now();
+
     // Create an abort controller to manage the timeout
     const abortController = new AbortController();
+
+    // Combine the request signal with the abort controller signal to allow for cancellation
+    const combinedSignal = AbortSignal.any(
+      [req.signal, abortController.signal].filter(Boolean) as AbortSignal[]
+    );
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
@@ -88,68 +107,84 @@ export function createPayloadHandler<T>({
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
         abortController.abort();
+        const status = HttpStatus.REQUEST_TIMEOUT;
         reject(
           new APIError(
             '[Request Timeout]: Request was cancelled due to timeout.',
-            HttpStatus.REQUEST_TIMEOUT
+            HttpStatus.REQUEST_TIMEOUT,
+            { message: HttpStatus[`${status}_MESSAGE`] },
+            true
           )
         );
       }, maxDuration);
     });
 
     try {
-      if (requireAuth && !user) {
-        throw new APIError(t('error:unauthorized'), HttpStatus.UNAUTHORIZED, null, true);
+      if ((requireAuth || requireAdmin) && !user) {
+        const status = HttpStatus.UNAUTHORIZED;
+        throw new APIError(
+          t('error:unauthorized'),
+          status,
+          { message: HttpStatus[`${status}_MESSAGE`] },
+          true
+        );
       }
 
-      // Check if the operation requires admin privileges and validate the user.
-      if (requireAuth && user && requireAdmin && user.role !== 'ADMIN') {
-        throw new APIError(t('error:unauthorizedAdmin'), HttpStatus.UNAUTHORIZED);
+      if (requireAdmin && !isAdmin(user)) {
+        const status = HttpStatus.FORBIDDEN;
+        throw new APIError(
+          t('error:unauthorizedAdmin'),
+          status,
+          { message: HttpStatus[`${status}_MESSAGE`] },
+          true
+        );
       }
 
       // Race the handler against the timeout promise
-      const data = await Promise.race([handler(req), timeoutPromise]);
+      const data = await Promise.race([handler(req, combinedSignal), timeoutPromise]);
 
       // Prepare the success response.
       const status = HttpStatus.OK;
-      const message =
-        typeof successMessage === 'string'
+      const statusText = HttpStatus[status];
+      const init: ResponseInit = { status, statusText };
+
+      const message = successMessage
+        ? isString(successMessage)
           ? successMessage
-          : typeof successMessage === 'function'
-            ? await successMessage(req, data)
-            : 'Operation completed successfully.';
+          : await successMessage(req, data)
+        : 'Operation completed successfully.';
 
-      // Log the success message and elapsed time.
-      if (message) payload.logger.info(`${message}`);
-
-      // Exclude data in the response if its undefined;
-      if (data === undefined) {
-        return Response.json({ message }, { status });
-      }
-
-      const res: ApiFetchResponse<T> = { message, data, status };
-
-      // Return the success response.
-      return Response.json(res, { status });
+      const result: ApiFetchResponse<T> = { message, data };
+      return Response.json(result, init);
     } catch (error) {
       // Prepare the error response.
       let message = extractErrorMessage(error);
-      let status: number = extractErrorStatus(error);
+      let status = extractErrorStatus(error);
+      let statusText = extractErrorStatusText(error);
 
       if (error instanceof ValidationError) {
         status = error.statusCode || HttpStatus.BAD_REQUEST;
         message = `[Validation Error]: ${error.message}`;
+        statusText = error.statusText || HttpStatus[status as 500] || 'Bad Request';
       }
 
-      const res: ApiFetchResponse<T> = { message, error, status };
+      if (error instanceof APIError) {
+        status = error.status;
+        message = `[API Error]: ${error.message}`;
+        statusText = HttpStatus[status as 500] || 'Internal Server Error';
+      }
+
+      const res: ApiFetchResponse<T> = { message, error };
 
       payload.logger.error(error, `[API Error]: ${message}`);
 
       // Return the error response.
-      return Response.json(res, { status });
+      return Response.json(res, { status, statusText });
     } finally {
       clearTimeout(timeoutId);
       abortController.abort();
+      const elapsed = (performance.now() - startTime).toFixed(2);
+      payload.logger.info(`[Request Duration]: ${elapsed}ms`);
     }
   };
 }
