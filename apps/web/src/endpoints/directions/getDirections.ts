@@ -10,7 +10,7 @@ import { Point } from '@lactalink/types';
 import { DirectionsResult } from '@lactalink/types/api';
 import { ValidationError } from '@lactalink/utilities/errors';
 import status from 'http-status';
-import { PayloadRequest } from 'payload';
+import { APIError, PayloadRequest } from 'payload';
 import { FieldPath } from 'react-hook-form';
 
 const Int32Value = protos.google.protobuf.Int32Value;
@@ -22,18 +22,10 @@ type RouteModifiers = protos.google.maps.routing.v2.IRouteModifiers;
 type ComputeResponse = protos.google.maps.routing.v2.IComputeRoutesResponse;
 type RouteFields = FieldPath<NonNullable<ComputeResponse['routes']>[number]>;
 
-const getDirectionsHandler = createPayloadHandler({
-  requireAuth: true,
-  handler: handler,
-  successMessage: (_req, data) => {
-    return `Directions fetched successfully. Found ${data?.length ?? 0} routes.`;
-  },
-});
+async function handler(req: PayloadRequest, signal: AbortSignal): Promise<DirectionsResult> {
+  const data = await req.json?.();
 
-async function handler(req: PayloadRequest): Promise<DirectionsResult> {
-  const body = await req.json?.();
-
-  const parseResult = directionsOptionsSchema.safeParse(body);
+  const parseResult = directionsOptionsSchema.safeParse(data);
 
   if (!parseResult.success) {
     const error = parseResult.error.issues.pop();
@@ -99,7 +91,7 @@ async function handler(req: PayloadRequest): Promise<DirectionsResult> {
 
   const client = new v2.RoutesClient({ apiKey: process.env.GOOGLE_ROUTES_API_KEY });
 
-  const [primaryRoute] = await client.computeRoutes(
+  const computePromise = client.computeRoutes(
     {
       ...options,
       origin: originWaypoint,
@@ -137,7 +129,7 @@ async function handler(req: PayloadRequest): Promise<DirectionsResult> {
         : undefined,
     },
     {
-      timeout: 1000 * 5, // 5 seconds
+      timeout: 1000 * 10, // 10 seconds
       otherArgs: {
         headers: {
           'X-Goog-FieldMask': `routes,${fieldMask.map((field) => `routes.${field}`).join(',')}`,
@@ -146,38 +138,49 @@ async function handler(req: PayloadRequest): Promise<DirectionsResult> {
     }
   );
 
+  const [primaryRoute] = await Promise.race([
+    computePromise,
+    new Promise<never>((_, reject) => {
+      signal.addEventListener('abort', () => {
+        reject(new APIError('Request aborted by the client', status.REQUEST_TIMEOUT, null, true));
+      });
+    }),
+  ]);
+
   const routes = primaryRoute.routes;
 
-  return !routes
-    ? null
-    : routes.map((route) => {
-        const polylines = route.polyline?.geoJsonLinestring?.fields?.coordinates?.listValue?.values;
-        return {
-          description: route.description,
-          distanceMeters: route.distanceMeters ?? 0,
-          duration: { seconds: Number(route.duration?.seconds ?? 0) },
-          optimizedIntermediateWaypointIndex: route.optimizedIntermediateWaypointIndex,
-          localizedValues: {
-            distance: route.localizedValues?.distance?.text ?? '',
-            duration: route.localizedValues?.duration?.text ?? '',
-          },
-          polyline: polylines
-            ? polylines
-                .map((value) => {
-                  if (!value?.listValue?.values || value?.listValue?.values?.length !== 2) {
-                    return null;
-                  }
+  if (!routes || routes.length === 0) {
+    return null;
+  }
 
-                  const [longitude, latitude] = value.listValue.values.map(
-                    (v) => v.numberValue
-                  ) as Point;
+  return routes.map((route) => {
+    const polylines = route.polyline?.geoJsonLinestring?.fields?.coordinates?.listValue?.values;
+    return {
+      description: route.description,
+      distanceMeters: route.distanceMeters ?? 0,
+      duration: { seconds: Number(route.duration?.seconds ?? 0) },
+      optimizedIntermediateWaypointIndex: route.optimizedIntermediateWaypointIndex,
+      localizedValues: {
+        distance: route.localizedValues?.distance?.text ?? '',
+        duration: route.localizedValues?.duration?.text ?? '',
+      },
+      polyline: polylines
+        ? polylines
+            .map((value) => {
+              if (!value?.listValue?.values || value?.listValue?.values?.length !== 2) {
+                return null;
+              }
 
-                  return { latitude, longitude };
-                })
-                .filter((v) => v !== null)
-            : [],
-        };
-      });
+              const [longitude, latitude] = value.listValue.values.map(
+                (v) => v.numberValue
+              ) as Point;
+
+              return { latitude, longitude };
+            })
+            .filter((v) => v !== null)
+        : [],
+    };
+  });
 }
 
 function createTimeStamp(dateString: string) {
@@ -203,5 +206,13 @@ function createWaypoint(waypoint: IWaypoint) {
     },
   });
 }
+
+const getDirectionsHandler = createPayloadHandler({
+  requireAuth: true,
+  handler: handler,
+  successMessage: (_req, data) => {
+    return `Directions fetched successfully. Found ${data?.length ?? 0} routes.`;
+  },
+});
 
 export default getDirectionsHandler;
