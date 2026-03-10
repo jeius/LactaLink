@@ -8,6 +8,14 @@
       "@/*": ["./src/*"],
     }
   },
-  "include": ["src", "environment.d.ts"],
-  "exclude": ["node_modules/**", "dist/**", ".turbo/**", "build/**"]
+  "include": ["src", "environment.d.ts", "tests/**/*.ts"],
+  "exclude": [
+    "node_modules/**", 
+    "dist/**", 
+    ".turbo/**", 
+    "build/**", 
+    "tests/**", 
+    "vitest.config.ts", 
+    "scripts/**"
+  ]
 }
