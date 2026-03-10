@@ -1,6 +1,6 @@
 {
   "name": "@lactalink/api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lactalink api client",
   "private": true,
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
@@ -13,29 +13,53 @@
     "src"
   ],
   "exports": {
-    ".": {
+    "./v1": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./auth-client": {
+    "./v1/auth-client": {
       "types": "./dist/auth/AuthClient.d.ts",
       "default": "./dist/auth/AuthClient.js"
     },
-    "./client": {
+    "./v1/client": {
       "types": "./dist/ApiClient.d.ts",
       "default": "./dist/ApiClient.js"
     },
-    "./interfaces": {
+    "./v1/interfaces": {
       "types": "./dist/interfaces/index.d.ts",
       "default": "./dist/interfaces/index.js"
     },
-    "./utils": {
+    "./v1/utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"
     },
-    "./services": {
+    "./v1/services": {
       "types": "./dist/services/index.d.ts",
       "default": "./dist/services/index.js"
+    },
+    ".": {
+      "types": "./dist/v2/index.d.ts",
+      "default": "./dist/v2/index.js"
+    },
+    "./auth-client": {
+      "types": "./dist/v2/auth/AuthClient.d.ts",
+      "default": "./dist/v2/auth/AuthClient.js"
+    },
+    "./client": {
+      "types": "./dist/v2/ApiClient.d.ts",
+      "default": "./dist/v2/ApiClient.js"
+    },
+    "./interfaces": {
+      "types": "./dist/v2/interfaces/index.d.ts",
+      "default": "./dist/v2/interfaces/index.js"
+    },
+    "./utils": {
+      "types": "./dist/v2/utils/index.d.ts",
+      "default": "./dist/v2/utils/index.js"
+    },
+    "./services": {
+      "types": "./dist/v2/services/index.d.ts",
+      "default": "./dist/v2/services/index.js"
     }
   },
   "scripts": {
