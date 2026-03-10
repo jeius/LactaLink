@@ -1,25 +1,16 @@
 import type { ApiClient as IApiClient } from '@/v2/ApiClient';
 import { MatchCriteria, NearDonationOrRequestOptions } from '@lactalink/form-schemas/validators';
 import type { DonationRequestStatus, Point } from '@lactalink/types';
-import type { FindManyResult } from '@lactalink/types/api';
-import { Config } from '@lactalink/types/payload-generated-types';
-import {
-  CollectionSlug,
-  FindOptions,
-  SelectFromCollectionSlug,
-} from '@lactalink/types/payload-types';
-
-type Options<
-  TSlug extends CollectionSlug<Config>,
-  TSelect extends SelectFromCollectionSlug<TSlug>,
-> = Omit<FindOptions<TSlug, TSelect>, 'collection' | 'draft' | 'overrideAccess'>;
+import type { FindManyResult, FindOptions } from '@lactalink/types/api';
+import { CollectionSlug } from '@lactalink/types/collections';
+import { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 
 export type FindMatchOptions<
-  TSlug extends CollectionSlug<Config>,
+  TSlug extends CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug>,
 > = {
   criteria: MatchCriteria;
-  fetchOptions?: Options<TSlug, TSelect>;
+  fetchOptions?: Omit<FindOptions<TSlug, TSelect, true>, 'collection' | 'draft' | 'overrideAccess'>;
 };
 
 /**

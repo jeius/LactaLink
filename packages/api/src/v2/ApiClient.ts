@@ -175,4 +175,4 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> {
   };
 }
 
-export type IApiClient = InstanceType<typeof ApiClient>;
+export type IApiClient = InstanceType<typeof ApiClient<Config>>;

@@ -4,8 +4,8 @@ import { mergeHeaders } from '@lactalink/utilities';
 import { PayloadSDK as Payload } from '@payloadcms/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { AuthClient } from '../auth/AuthClient';
 import type { ApiClientConfig } from '../interfaces';
+import { AuthClient } from './AuthClient';
 
 export class PayloadSDK<T extends Config = Config> extends Payload<T> {
   private url: string | URL;
@@ -39,6 +39,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> {
     this.auth = new AuthClient(
       this._getBaseFetchOptions,
       this.getSupabaseClient,
+      this as unknown as PayloadSDK<Config>,
       config.environment
     );
   }
