@@ -20,18 +20,14 @@ import type {
   UpdateManyResult,
   UploadFile,
 } from '@lactalink/types/api';
-import type { FileCollectionSlug } from '@lactalink/types/collections';
-import type {
-  CollectionSlug,
-  PaginatedDocs,
-  SelectFromCollectionSlug,
-} from '@lactalink/types/payload-types';
+import type { CollectionSlug, FileCollectionSlug } from '@lactalink/types/collections';
+import type { PaginatedDocs, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 import type { ApiClientConfig, IApiClient } from './interfaces';
 
 import { mergeHeaders } from '@lactalink/utilities';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { stringify } from 'qs';
+import { stringify } from 'qs-esm';
 import { AuthClient } from './auth/AuthClient';
 import { apiFetch } from './utils/apiFetch';
 
@@ -272,9 +268,7 @@ export class ApiClient implements IApiClient {
     const result = await this._makeApiRequest<UpdateManyResult<TSlug, TSelect>>(
       endpoint,
       'PATCH',
-      // @ts-expect-error Expected error, since PayloadKv is a new feature. I haven't configured
-      // its typing yet. But I am about to implement a payload api sdk soon so this api client will
-      // undergo a major overhaul.
+      //@ts-expect-error Safe to ignore.
       data
     );
     return result.docs;
@@ -291,9 +285,7 @@ export class ApiClient implements IApiClient {
     const result = await this._makeApiRequest<UpdateByIDResult<TSlug, TSelect>>(
       endpoint,
       'PATCH',
-      // @ts-expect-error Expected error, since PayloadKv is a new feature. I haven't configured
-      // its typing yet. But I am about to implement a payload api sdk soon so this api client will
-      // undergo a major overhaul.
+      //@ts-expect-error Safe to ignore.
       data
     );
     return result.doc;

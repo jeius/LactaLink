@@ -3,7 +3,8 @@ import { MatchCriteria } from '@lactalink/form-schemas/validators';
 
 import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { FindManyResult, FindOptions } from '@lactalink/types/api';
-import type { CollectionSlug, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import type { CollectionSlug } from '@lactalink/types/collections';
+import type { SelectFromCollectionSlug, SelectType } from '@lactalink/types/payload-types';
 
 type Options<
   TSlug extends CollectionSlug,
@@ -105,9 +106,7 @@ export interface IMatchingService {
    * @param options - Matching criteria and fetch options
    * @returns List of compatible donations
    */
-  findMatchingDonations<
-    TSelect extends SelectFromCollectionSlug<'donations'> = SelectFromCollectionSlug<'donations'>,
-  >(
+  findMatchingDonations<TSelect extends SelectType = SelectType>(
     requestId: string,
     options?: FindMatchOptions<'donations', TSelect>
   ): Promise<FindManyResult<'donations', TSelect, true>>;
@@ -118,9 +117,7 @@ export interface IMatchingService {
    * @param options - Matching criteria and fetch options
    * @returns List of compatible requests
    */
-  findMatchingRequests<
-    TSelect extends SelectFromCollectionSlug<'requests'> = SelectFromCollectionSlug<'requests'>,
-  >(
+  findMatchingRequests<TSelect extends SelectType = SelectType>(
     donationId: string,
     options?: FindMatchOptions<'requests', TSelect>
   ): Promise<FindManyResult<'requests', TSelect, true>>;
@@ -136,7 +133,7 @@ export interface IMatchingService {
     requestId: string,
     maxDistance?: number,
     limit?: number
-  ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>>>;
+  ): Promise<FindManyResult<'donations', SelectType>>;
 
   /**
    * Gets the best matching requests for a donation.
@@ -149,7 +146,7 @@ export interface IMatchingService {
     donationId: string,
     maxDistance?: number,
     limit?: number
-  ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>>;
+  ): Promise<FindManyResult<'requests', SelectType, true>>;
 
   /**
    * Gets the nearest donations based on location and status.
@@ -166,7 +163,7 @@ export interface IMatchingService {
     status?: DonationRequestStatus,
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
-  ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>>;
+  ): Promise<FindManyResult<'donations', SelectType, true>>;
 
   /**
    * Gets the nearest requests based on location and status.
@@ -183,5 +180,5 @@ export interface IMatchingService {
     status?: DonationRequestStatus,
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
-  ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>>;
+  ): Promise<FindManyResult<'requests', SelectType, true>>;
 }

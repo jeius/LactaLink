@@ -1,10 +1,10 @@
-import { stringify } from 'qs';
+import { stringify } from 'qs-esm';
 
+import type { FindMatchOptions, IApiClient, IMatchingService } from '@/interfaces';
 import { NearDonationOrRequestOptions } from '@lactalink/form-schemas/validators';
 import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { ApiFetchResponse, FindManyResult } from '@lactalink/types/api';
 import type { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
-import type { FindMatchOptions, IApiClient, IMatchingService } from '../../interfaces';
 
 /**
  * Service for matching donations to requests and managing their lifecycle.

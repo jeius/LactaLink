@@ -1,5 +1,5 @@
 import type { ApiFetchArgs, ApiFetchResponse } from '@lactalink/types/api';
-import type { CollectionSlug } from '@lactalink/types/payload-types';
+import type { CollectionSlug } from '@lactalink/types/collections';
 import { extractErrorMessage, extractErrorStatus } from '@lactalink/utilities/extractors';
 
 export async function apiFetch<T, Slug extends CollectionSlug = CollectionSlug>(

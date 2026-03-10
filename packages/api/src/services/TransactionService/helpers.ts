@@ -1,6 +1,6 @@
+import { IApiClient } from '@/interfaces';
 import { MilkBag, Transaction, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { IApiClient } from 'src/interfaces';
 
 export function fetchDonation(client: IApiClient, id: string) {
   return client.findByID({

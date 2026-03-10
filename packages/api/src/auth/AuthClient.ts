@@ -17,7 +17,7 @@ import {
   type VerifyOtpParams,
 } from '@supabase/supabase-js';
 import status from 'http-status';
-import { stringify } from 'qs';
+import { stringify } from 'qs-esm';
 import type { ApiClientConfig, IAuthClient } from '../interfaces';
 import { apiFetch } from '../utils/apiFetch';
 import { isServerEnvironment } from '../utils/getEnvironment';

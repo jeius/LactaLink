@@ -1,3 +1,4 @@
+import { IApiClient } from '@/interfaces/ApiClient';
 import { CONVERSATION_ROLE } from '@lactalink/enums';
 import { UserProfile } from '@lactalink/types';
 import type {
@@ -5,7 +6,6 @@ import type {
   ConversationParticipant,
 } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
-import { IApiClient } from '../../interfaces/ApiClient';
 import { CreateConvoParticipantError } from './errors';
 
 const MEMBER_ROLE = CONVERSATION_ROLE.MEMBER.value;

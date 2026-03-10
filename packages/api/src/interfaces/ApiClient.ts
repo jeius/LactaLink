@@ -12,12 +12,8 @@ import type {
   UpdateMany,
   UploadFile,
 } from '@lactalink/types/api';
-import type { FileCollectionSlug } from '@lactalink/types/collections';
-import type {
-  CollectionSlug,
-  PaginatedDocs,
-  SelectFromCollectionSlug,
-} from '@lactalink/types/payload-types';
+import type { CollectionSlug, FileCollectionSlug } from '@lactalink/types/collections';
+import type { PaginatedDocs, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IAuthClient } from './AuthClient';
 
