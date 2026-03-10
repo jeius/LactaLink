@@ -38,11 +38,11 @@
     "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@types/node": "^22.5.4",
-    "payload": "3.72.0",
+    "payload": "3.79.0",
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "payload": "3.72.0",
+    "payload": "*",
     "expo": "*"
   },
   "peerDependenciesMeta": {
