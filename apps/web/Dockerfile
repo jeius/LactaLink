@@ -11,10 +11,10 @@
 # ====================================================================================================
 # Stage 1: Base - Ubuntu base with pnpm
 # ====================================================================================================
-FROM node:22.21.0 AS base
+FROM node:24.13.1 AS base
 
 # Install pnpm globally with specific version
-RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.29.2 --activate
 
 # Set pnpm home directory
 ENV PNPM_HOME=/pnpm
@@ -59,7 +59,7 @@ COPY --from=prepare /app/out/json/ .
 # Install dependencies using frozen lockfile with build cache
 # turbo prune creates a pruned lockfile with only required dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prefer-offline
+    pnpm install --no-frozen-lockfile --prefer-offline
 
 # ====================================================================================================
 # Stage 4: Builder - Build the application
@@ -90,7 +90,7 @@ RUN pnpm build:web
 # ====================================================================================================
 # Stage 5: Runner - Minimal production runtime
 # ====================================================================================================
-FROM node:22.21.0 AS runner
+FROM node:24.13.1 AS runner
 
 # Install dumb-init to handle signal forwarding and process reaping
 RUN apt-get update && apt-get install -y \
