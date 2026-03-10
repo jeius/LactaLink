@@ -1,17 +1,15 @@
 import type { GetPreference, UpdatePreference } from '@lactalink/types';
 import type { ApiFetchResponse } from '@lactalink/types/api';
 import type { Config } from '@lactalink/types/payload-generated-types';
-import type {
-  CollectionSlug,
-  PaginatedDocs,
-  SelectType,
-  UploadCollectionSlug,
-} from '@lactalink/types/payload-types';
+import { CollectionSlug, PaginatedDocs, SelectType, UploadCollectionSlug } from 'payload';
+import { stringify } from 'qs-esm';
+
 import { CreateOptions } from 'node_modules/@payloadcms/sdk/dist/collections/create';
 import {
   DeleteByIDOptions,
   DeleteManyOptions,
 } from 'node_modules/@payloadcms/sdk/dist/collections/delete';
+import { FindOptions } from 'node_modules/@payloadcms/sdk/dist/collections/find';
 import type {
   UpdateByIDOptions,
   UpdateManyOptions,
@@ -21,8 +19,6 @@ import {
   TransformCollectionWithSelect,
 } from 'node_modules/@payloadcms/sdk/dist/types';
 
-import { FindOptions } from 'node_modules/@payloadcms/sdk/dist/collections/find';
-import { stringify } from 'qs-esm';
 import type { ApiClientConfig } from '../interfaces';
 import { PayloadSDK } from './PayloadSDK';
 
@@ -100,7 +96,7 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> {
     options: CreateOptions<T, TSlug, TSelect>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
-    const result = await super.create<TSlug, TSelect>(options, init);
+    const result = await super.create(options, init);
     return result;
   };
 
