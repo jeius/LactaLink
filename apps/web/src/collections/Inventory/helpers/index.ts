@@ -8,8 +8,6 @@ import { Donation, Inventory, MilkBag } from '@lactalink/types/payload-generated
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { PayloadRequest, RequestContext } from 'payload';
 
-export * from './getEarliestExpiryDateOfBags';
-
 /**
  * Retrieves milk bags associated with a source donation.
  *

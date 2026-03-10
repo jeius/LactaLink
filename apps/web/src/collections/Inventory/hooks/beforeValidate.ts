@@ -1,9 +1,10 @@
 import { InventoryHookContext } from '@/lib/constants/hookContexts';
+import { getEarliestExpiryDateOfBags } from '@/lib/utils/collections/getEarliestExpiryDateOfBags';
 import { hookLogger, setHookContext } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook, RequestContext } from 'payload';
-import { getEarliestExpiryDateOfBags, getMilkBagsFromSourceDonation } from '../helpers';
+import { getMilkBagsFromSourceDonation } from '../helpers';
 
 /**
  * Before validate hook for the Inventory collection. This hook runs before
