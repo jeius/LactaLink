@@ -8,13 +8,13 @@
       "@/*": ["./src/*"],
     }
   },
-  "include": ["src", "environment.d.ts", "tests/**/*.ts"],
+  "include": ["src", "environment.d.ts"],
   "exclude": [
     "node_modules/**", 
     "dist/**", 
     ".turbo/**", 
-    "build/**", 
-    "tests/**", 
+    "build/**",
+    "tests/**",
     "vitest.config.ts", 
     "scripts/**"
   ]

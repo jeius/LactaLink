@@ -12,7 +12,7 @@ export default defineConfig({
    * allowing test files to import from `@/collections`, `@/lib`, etc. exactly as
    * production code does.
    */
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths({ root: process.cwd() })],
 
   test: {
     globals: true,
