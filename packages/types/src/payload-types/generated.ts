@@ -307,9 +307,10 @@ export interface Config {
     'donor-screening-form': DonorScreeningFormSelect<false> | DonorScreeningFormSelect<true>;
   };
   locale: null;
-  user: User & {
-    collection: 'users';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: User;
   jobs: {
     tasks: {
       'id-verification-task': IDVerficationTask;
@@ -579,6 +580,7 @@ export interface User {
   picture?: string | null;
   updatedAt: string;
   createdAt: string;
+  collection: 'users';
 }
 /**
  * Individuals profile of users, including their personal information such as name, date of birth, contact details, and other relevant attributes.
@@ -4498,7 +4500,121 @@ export interface DonorScreeningForm {
     /**
      * Add questions to this section
      */
-    questions: (CheckboxQuestion | RadioQuestion | TextQuestion)[];
+    questions: (
+      | {
+          required?: boolean | null;
+          question: string;
+          /**
+           * Optional helper text for clarification
+           */
+          helpText?: string | null;
+          /**
+           * How to display the choices
+           */
+          layout: 'vertical' | 'horizontal';
+          /**
+           * Define the available choices
+           */
+          options: {
+            /**
+             * Select whether this choice is predefined or a user-defined choice.
+             *                       For example, set to User Defined if the answer can be anything outside of the listed options.
+             */
+            type: 'PREDEFINED' | 'CUSTOM';
+            /**
+             * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
+             */
+            label: string;
+            /**
+             * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
+             */
+            value?: string | null;
+            id?: string | null;
+          }[];
+          /**
+           * Optional validation constraints
+           */
+          validation?: {
+            /**
+             * Minimum number of selections. Leave blank for no minimum.
+             */
+            minSelections?: number | null;
+            /**
+             * Maximum number of selections allowed. Leave blank for no limit.
+             */
+            maxSelections?: number | null;
+          };
+          id?: string | null;
+          blockName?: string | null;
+          blockType: 'checkbox-question';
+        }
+      | {
+          required?: boolean | null;
+          question: string;
+          /**
+           * Optional helper text for clarification
+           */
+          helpText?: string | null;
+          /**
+           * Define the available choices
+           */
+          options: {
+            /**
+             * Select whether this choice is predefined or a user-defined choice.
+             *                       For example, set to User Defined if the answer can be anything outside of the listed options.
+             */
+            type: 'PREDEFINED' | 'CUSTOM';
+            /**
+             * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
+             */
+            label: string;
+            /**
+             * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
+             */
+            value?: string | null;
+            id?: string | null;
+          }[];
+          /**
+           * How to display the choices
+           */
+          layout: 'vertical' | 'horizontal';
+          id?: string | null;
+          blockName?: string | null;
+          blockType: 'radio-question';
+        }
+      | {
+          required?: boolean | null;
+          question: string;
+          /**
+           * Optional helper text for clarification
+           */
+          helpText?: string | null;
+          /**
+           * Indicate the expected length of the answer
+           */
+          expectedAnswerLength: 'SHORT' | 'LONG';
+          /**
+           * Placeholder text for the input field
+           */
+          placeholder?: string | null;
+          /**
+           * Optional validation constraints
+           */
+          validation?: {
+            /**
+             * Minimum character length. Leave blank for no minimum.
+             */
+            minLength?: number | null;
+            /**
+             * Maximum character length. Leave blank for no maximum.
+             */
+            maxLength?: number | null;
+          };
+          id?: string | null;
+          blockName?: string | null;
+          blockType: 'text-question';
+        }
+    )[];
     id?: string | null;
   }[];
   _status?: ('draft' | 'published') | null;
@@ -4524,6 +4640,16 @@ export interface DonorScreeningFormSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
