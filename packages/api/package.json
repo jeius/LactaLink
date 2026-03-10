@@ -43,11 +43,10 @@
     "dev": "tspc --watch",
     "dev:safe": "pnpm dev",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix . && prettier --write .",
-    "test": "jest --runInBand --passWithNoTests",
-    "test:watch": "jest --watch"
+    "lint:fix": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
+    "@payloadcms/sdk": "^3.79.0",
     "http-status": "^2.1.0",
     "qs-esm": "^7.0.3"
   },
@@ -63,7 +62,6 @@
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.5.4",
     "@types/react": "^19.1.17",
-    "babel-jest": "^30.0.5",
     "dotenv": "^16.5.0",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
@@ -75,6 +73,7 @@
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/form-schemas": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@supabase/supabase-js": "*",
     "@types/react": "*",
@@ -91,6 +90,9 @@
       "optional": false
     },
     "@lactalink/utilities": {
+      "optional": false
+    },
+    "@lactalink/types": {
       "optional": false
     },
     "@supabase/supabase-js": {
