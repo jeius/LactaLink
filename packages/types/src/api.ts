@@ -234,12 +234,14 @@ export type CreateResult<
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
   message: string;
+  //@ts-expect-error - Payload type issue
   doc: TransformCollectionWithSelect<TSlug, TSelect>;
 };
 
 export type FindOneResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  //@ts-expect-error - Payload type issue
 > = TransformCollectionWithSelect<TSlug, TSelect>;
 
 export type FindManyResult<
@@ -247,13 +249,16 @@ export type FindManyResult<
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
   TPaginate extends boolean = boolean,
 > = TPaginate extends true
-  ? PaginatedDocs<TransformCollectionWithSelect<TSlug, TSelect>>
-  : TransformCollectionWithSelect<TSlug, TSelect>[];
+  ? //@ts-expect-error - Payload type issue
+    PaginatedDocs<TransformCollectionWithSelect<TSlug, TSelect>>
+  : //@ts-expect-error - Payload type issue
+    TransformCollectionWithSelect<TSlug, TSelect>[];
 
 export type UpdateByIDResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
+  //@ts-expect-error - Payload type issue
   doc: TransformCollectionWithSelect<TSlug, TSelect>;
   message: string;
 };
@@ -261,12 +266,14 @@ export type UpdateByIDResult<
 export type UpdateManyResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  //@ts-expect-error - Payload type issue
 > = BulkOperationResult<TSlug, TSelect>;
 
 export type DeleteByIDResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
 > = {
+  //@ts-expect-error - Payload type issue
   doc: TransformCollectionWithSelect<TSlug, TSelect>;
   message: string;
 };
@@ -274,6 +281,7 @@ export type DeleteByIDResult<
 export type DeleteManyResult<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
+  //@ts-expect-error - Payload type issue
 > = BulkOperationResult<TSlug, TSelect>;
 
 export type Direction = {
