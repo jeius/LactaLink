@@ -5,7 +5,7 @@ import type {
 } from '@/payload-types';
 import type { Config, Donation, Image, Individual, Like } from '@/payload-types/generated';
 
-export type CollectionSlug = PayloadCollectionSlug<Config>;
+export type CollectionSlug = PayloadCollectionSlug;
 export type Collections = Config['collections'][keyof Config['collections']];
 
 type CollectionBySlug<TSlug extends CollectionSlug> = Config['collections'][TSlug];
@@ -25,7 +25,7 @@ export type CollectionWithAvatar = Extract<Collection, Pick<Individual, 'avatar'
 
 export type CollectionWithBlurHash = Extract<Collection, Pick<Image, 'blurHash'>>;
 
-export type FileCollectionSlug = UploadCollectionSlug<Config>;
+export type FileCollectionSlug = UploadCollectionSlug;
 
 export type FileCollection = Collection<FileCollectionSlug>;
 

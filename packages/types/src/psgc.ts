@@ -1,7 +1,6 @@
 import type { ApiFetchResponse } from '@/api';
 import type { Collection } from '@/collections';
 import type { CollectionSlug } from '@/payload-types';
-import { Config } from '@/payload-types/generated';
 
 export type SlugPSGC =
   | 'island-groups'
@@ -11,7 +10,7 @@ export type SlugPSGC =
   | 'barangays';
 
 export type CollectionSlugPSGC = Extract<
-  CollectionSlug<Config>,
+  CollectionSlug,
   'islandGroups' | 'regions' | 'provinces' | 'citiesMunicipalities' | 'barangays'
 >;
 
