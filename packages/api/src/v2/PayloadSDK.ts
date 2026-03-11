@@ -28,6 +28,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
   private bypassToken?: string;
   private headers: Headers = new Headers();
 
+  //#region Utility Methods -----------------------------------------------
   setBypassToken = (bypassToken?: string) => {
     this.bypassToken = bypassToken;
   };
@@ -54,6 +55,8 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
   getHeaders = () => {
     return this.headers;
   };
+
+  //#endregion --------------------------------------------------------------
 
   apiFetch = async <TData>(
     path: string,
@@ -92,6 +95,8 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
 
     return result.data;
   };
+
+  //#region API Operations -------------------------------------------------------
 
   //@ts-expect-error - Overriding the base class method with a more specific return type
   find = async <
@@ -187,4 +192,6 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     });
     return result.doc.value;
   };
+
+  //#endregion ----------------------------------------------------------------------
 }

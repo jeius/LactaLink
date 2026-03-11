@@ -31,18 +31,79 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
   Payload<T>,
   'find' | 'update' | 'delete'
 > {
+  /**
+   * Sets a bypass token to be included in the headers of subsequent API requests.
+   * This can be used to bypass certain access controls or trigger specific behavior
+   * on the server.
+   *
+   * @param token - The bypass token to set. If undefined, the bypass token will be cleared.
+   */
   setBypassToken(token: string): void;
 
+  /**
+   * Retrieves the currently set bypass token, if any.
+   *
+   * @returns The currently set bypass token, or undefined if no token is set.
+   */
   getBypassToken(): string | undefined;
 
+  /**
+   * Updates the headers that will be included in subsequent API requests. This method
+   * merges the provided headers with any existing headers, allowing for incremental updates.
+   *
+   * @param headers - The headers to merge with the existing headers.
+   */
   updateHeaders(headers: Headers): void;
 
+  /**
+   * Replaces the headers that will be included in subsequent API requests with the
+   * provided headers.
+   *
+   * @param headers - The new set of headers to use for API requests.
+   */
   setHeaders(headers: Headers): void;
 
+  /**
+   * Sets the Authorization header with a Bearer token for authentication.
+   * If a null or undefined token is provided, the Authorization header will be removed.
+   *
+   * @param token - The authentication token to set in the Authorization header.
+   */
   setAuthHeaders(token: string): void;
 
+  /**
+   * Retrieves the current set of headers that will be included in API requests.
+   *
+   * @returns The current Headers object containing all headers that will be sent with API requests.
+   */
   getHeaders(): Headers;
 
+  /**
+   * Retrieves a stored preference value for the given key. This method abstracts the underlying
+   * mechanism for storing and retrieving preferences, which may involve API calls or local storage.
+   *
+   * @param key - The key identifying the preference to retrieve.
+   * @returns A promise that resolves to the value of the preference associated with the given key.
+   */
+  getPreference<TValue = unknown>(key: string): Promise<TValue>;
+
+  /**
+   * Updates a preference value for the given key. This method abstracts the underlying mechanism
+   * for storing preferences, which may involve API calls or local storage.
+   *
+   * @param key - The key identifying the preference to update.
+   * @param value - The new value to set for the preference.
+   * @returns A promise that resolves to the updated value of the preference after it has been stored.
+   */
+  updatePreference<TValue = unknown>(key: string, value: TValue): Promise<TValue>;
+
+  /**
+   * A generic method for making API requests with the client's configured baseURL,
+   * headers, and authentication.
+   * @param path - The API endpoint path (relative to the baseURL) to which the request should be made.
+   * @param init - Optional fetch initialization options, which can include method,
+   * headers, body, and custom properties like searchParams.
+   */
   apiFetch<TData>(
     path: string,
     init?: Omit<RequestInit, 'body'> & {
@@ -98,8 +159,4 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     options: DeleteByIDOptions<T, TSlug, TSelect>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>>;
-
-  getPreference<TValue = unknown>(key: string): Promise<TValue>;
-
-  updatePreference<TValue = unknown>(key: string, value: TValue): Promise<TValue>;
 }
