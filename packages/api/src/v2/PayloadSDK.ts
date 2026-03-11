@@ -178,19 +178,40 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
 
   getPreference = async <TValue = unknown>(key: string) => {
     const endpoint = `/payload-preferences/${key}`;
-    const result = await this.apiFetch<GetPreference<TValue>>(endpoint, {
-      method: 'GET',
-    });
+    const response = await this.request({ path: endpoint, method: 'GET' });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to get preference: ${response.statusText}`, {
+        cause: {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorData,
+        },
+      });
+    }
+
+    const result: GetPreference<TValue> = await response.json();
     return result.value;
   };
 
   updatePreference = async <TValue = unknown>(key: string, value: TValue) => {
     const endpoint = `/payload-preferences/${key}`;
-    const result = await this.apiFetch<UpdatePreference<TValue>>(endpoint, {
-      method: 'POST',
-      body: { value },
-    });
-    return result.doc.value;
+    const response = await this.request({ path: endpoint, method: 'POST', json: { value } });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to update preference: ${response.statusText}`, {
+        cause: {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorData,
+        },
+      });
+    }
+
+    const result: UpdatePreference<TValue> = await response.json();
+    return result?.doc.value;
   };
 
   //#endregion ----------------------------------------------------------------------
