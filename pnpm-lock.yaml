@@ -432,6 +432,9 @@ importers:
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@payloadcms/sdk':
+        specifier: ^3.79.0
+        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
       '@react-native-community/cli':
         specifier: ^20.0.2
         version: 20.1.1(typescript@5.9.3)
@@ -444,6 +447,9 @@ importers:
       jscodeshift:
         specifier: 17.3.0
         version: 17.3.0(@babel/preset-env@7.29.0(@babel/core@7.29.0))
+      payload:
+        specifier: ^3.79.0
+        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
