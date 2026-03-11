@@ -20,6 +20,7 @@ export const Users: CollectionConfig<'users'> = {
   auth: {
     disableLocalStrategy: true,
     strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],
+    depth: 0,
   },
   access: {
     admin: admin,
