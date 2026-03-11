@@ -1,5 +1,15 @@
+import {
+  getHookContext,
+  hookLogger,
+  isHookRun,
+  markHookRun,
+  setHookContext,
+} from '@lactalink/agents/payload';
 import { User } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug, PayloadRequest } from 'payload';
+
+const hookName = 'skipGetOwner';
+const logCounterHookName = 'logCounter';
 
 /**
  * Helper function to find the owner of a profile document by querying the users collection.
@@ -12,35 +22,83 @@ import { CollectionSlug, PayloadRequest } from 'payload';
 export async function getOwner(
   docID: string,
   docSlug: CollectionSlug,
-  req: PayloadRequest
+  req: PayloadRequest,
+  logger?: ReturnType<typeof hookLogger>
 ): Promise<User | null> {
-  const depth = req.searchParams.get('depth');
+  const logCounter = getHookContext<number>(req, logCounterHookName) ?? 0;
+
+  // Only log once per request
+  if (logCounter < 1) {
+    logger?.info(`Getting owner doc for document ID ${docID}`);
+    setHookContext(req, logCounterHookName, logCounter + 1);
+  }
+
+  if (isHookRun(req, hookName)) return null;
+  markHookRun(req, hookName);
 
   const { docs: users } = await req.payload.find({
     collection: 'users',
     limit: 1,
     pagination: false,
     req,
-    depth: depth ? parseInt(depth) : req.payload.config.defaultDepth,
+    depth: 0,
     where: {
       and: [{ 'profile.value': { equals: docID } }, { 'profile.relationTo': { equals: docSlug } }],
     },
+
     /**
-     * Only select necessary fields to minimize data transfer, since we only need the
-     * user ID and maybe email for admin UI display.
-     *
-     * IMPORTANT: Don't ever select the profile field here, as it can cause infinite recursion
+     * IMPORTANT: Don't ever populate the owner field here, as it can cause infinite recursion
      * in the afterRead hook!
      */
-    select: {
-      email: true,
-      phone: true,
-      addresses: true,
-      deliveryPreferences: true,
-      onlineAt: true,
-      lastSignInAt: true,
-      picture: true,
-    },
+    // populate: {
+    //   individuals: {
+    //     avatar: true,
+    //     createdAt: true,
+    //     updatedAt: true,
+    //     birth: true,
+    //     defaultAddress: true,
+    //     dependents: true,
+    //     displayName: true,
+    //     familyName: true,
+    //     givenName: true,
+    //     gender: true,
+    //     isVerified: true,
+    //     maritalStatus: true,
+    //     middleName: true,
+    //     phone: true,
+    //   },
+    //   hospitals: {
+    //     avatar: true,
+    //     createdAt: true,
+    //     updatedAt: true,
+    //     defaultAddress: true,
+    //     displayName: true,
+    //     phone: true,
+    //     posts: true,
+    //     description: true,
+    //     name: true,
+    //     head: true,
+    //     hospitalID: true,
+    //     inventory: true,
+    //     milkBags: true,
+    //     type: true,
+    //   },
+    //   milkBanks: {
+    //     avatar: true,
+    //     createdAt: true,
+    //     updatedAt: true,
+    //     defaultAddress: true,
+    //     displayName: true,
+    //     phone: true,
+    //     posts: true,
+    //     description: true,
+    //     name: true,
+    //     head: true,
+    //     inventory: true,
+    //     milkBags: true,
+    //     type: true,
+    //   },
+    // },
   });
 
   return users.length > 0 ? (users[0] as User) : null;
