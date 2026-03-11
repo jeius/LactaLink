@@ -1,6 +1,6 @@
 {
   "name": "@lactalink/api",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Lactalink api client",
   "private": true,
   "author": "Julius Pahama <www.linkedin.com/in/julius-pahama>",
