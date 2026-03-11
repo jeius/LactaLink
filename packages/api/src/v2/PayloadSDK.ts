@@ -1,11 +1,11 @@
 import type { BaseApiFetchArgs } from '@lactalink/types/api';
-import type { Config } from '@lactalink/types/payload-generated-types';
 import { mergeHeaders } from '@lactalink/utilities';
 import { PayloadSDK as Payload } from '@payloadcms/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { ApiClientConfig } from '../interfaces';
 import { AuthClient } from './AuthClient';
+import { Config } from './payload-types';
 
 export class PayloadSDK<T extends Config = Config> extends Payload<T> {
   private url: string | URL;

@@ -1,26 +1,26 @@
 import type { GetPreference, UpdatePreference } from '@lactalink/types';
 import type { ApiFetchResponse } from '@lactalink/types/api';
-import type { Config } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug, PaginatedDocs, SelectType, UploadCollectionSlug } from 'payload';
 import { stringify } from 'qs-esm';
 
-import { CreateOptions } from 'node_modules/@payloadcms/sdk/dist/collections/create';
-import {
+import type { CreateOptions } from 'node_modules/@payloadcms/sdk/dist/collections/create';
+import type {
   DeleteByIDOptions,
   DeleteManyOptions,
 } from 'node_modules/@payloadcms/sdk/dist/collections/delete';
-import { FindOptions } from 'node_modules/@payloadcms/sdk/dist/collections/find';
+import type { FindOptions } from 'node_modules/@payloadcms/sdk/dist/collections/find';
 import type {
   UpdateByIDOptions,
   UpdateManyOptions,
 } from 'node_modules/@payloadcms/sdk/dist/collections/update';
-import {
+import type {
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
 } from 'node_modules/@payloadcms/sdk/dist/types';
 
 import type { ApiClientConfig } from '../interfaces';
 import { PayloadSDK } from './PayloadSDK';
+import type { Config } from './payload-types';
 
 type FindManyResult<
   T extends Config = Config,

@@ -14,7 +14,6 @@
  * - Centralized error handling
  *
  * @author Julius Pahama <www.linkedin.com/in/julius-pahama>
- * @version 1.0.0
  */
 
 import { ApiClientConfig } from '@/interfaces/ApiClientConfig';
@@ -325,3 +324,7 @@ export const useIsServer = (): boolean => {
 export const resetApiClient = (): void => {
   useStoreApiClient.getState().reset();
 };
+
+// ============================================================================
+// EXPORTS
+// ============================================================================

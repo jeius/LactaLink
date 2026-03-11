@@ -1,4 +1,4 @@
-import { Config } from '@lactalink/types/payload-generated-types';
+import { Config } from '@/payload-types';
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}

@@ -1,7 +1,7 @@
 import type { BaseApiFetchArgs } from '@lactalink/types/api';
 import type { BackendSession } from '@lactalink/types/auth';
 import type { ErrorCodes } from '@lactalink/types/errors';
-import type { Config, User } from '@lactalink/types/payload-generated-types';
+import type { User } from '@lactalink/types/payload-generated-types';
 import { SanitizedPermissions } from '@lactalink/types/payload-types';
 import type { Database } from '@lactalink/types/supabase';
 import { PayloadSDK } from '@payloadcms/sdk';
@@ -21,6 +21,7 @@ import {
 import status from 'http-status';
 import type { ApiClientConfig, IAuthClient } from '../interfaces';
 import { isServerEnvironment } from '../utils/getEnvironment';
+import { Config } from './payload-types';
 
 type BaseApiFetchArgsWithoutToken = Omit<BaseApiFetchArgs, 'token'>;
 type UsersUpdate = Database['public']['Tables']['users']['Update'];

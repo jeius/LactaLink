@@ -1,9 +1,9 @@
 import { ApiClientConfig } from '@/interfaces';
 import { isServerEnvironment } from '@/utils/getEnvironment';
 import { ApiClient } from '@/v2/ApiClient';
-import { Config } from '@lactalink/types/payload-generated-types';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { Config } from '../payload-types';
 
 function createApiClient(config: ApiClientConfig) {
   const appEnv = config.environment;

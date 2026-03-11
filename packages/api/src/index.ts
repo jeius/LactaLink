@@ -14,7 +14,6 @@
  * - Centralized error handling
  *
  * @author Julius Pahama <www.linkedin.com/in/julius-pahama>
- * @version 1.0.0
  */
 
 import { ApiClient } from './ApiClient';
