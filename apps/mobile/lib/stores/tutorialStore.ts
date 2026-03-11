@@ -37,7 +37,7 @@ export function useInitializeTutorialStore(user: User | null) {
       const tutorialKey = MMKV_KEYS.TUTORIAL_STATE.trim();
       const storageKey = tutorialKey + '-' + user.id.trim();
 
-      const state = await client.getPreference<TutorialState>(tutorialKey);
+      const state = await client.getPreference<TutorialState | null | undefined>(tutorialKey);
       if (state) {
         localStorage.set(storageKey, JSON.stringify(state));
         useTutorialStore.setState(state);
