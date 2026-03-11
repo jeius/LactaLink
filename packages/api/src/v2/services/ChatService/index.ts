@@ -1,4 +1,3 @@
-import type { ApiClient as IApiClient } from '@/v2/ApiClient';
 import { CONVERSATION_TYPE, MESSAGE_TYPE } from '@lactalink/enums';
 import { FindDirectConversationParams } from '@lactalink/form-schemas/validators';
 import { UserProfile } from '@lactalink/types';
@@ -10,6 +9,7 @@ import {
   User,
 } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
+import type { IApiClient } from '../../interfaces';
 import { CreateConvoParticipantError, SendMessageError } from './errors';
 import {
   ADMIN_ROLE,

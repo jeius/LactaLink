@@ -1,9 +1,9 @@
-import type { ApiClient as IApiClient } from '@/v2/ApiClient';
 import { MatchCriteria, NearDonationOrRequestOptions } from '@lactalink/form-schemas/validators';
 import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { FindManyResult, FindOptions } from '@lactalink/types/api';
 import { CollectionSlug } from '@lactalink/types/collections';
 import { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import type { IApiClient } from '../../interfaces';
 
 export type FindMatchOptions<
   TSlug extends CollectionSlug,

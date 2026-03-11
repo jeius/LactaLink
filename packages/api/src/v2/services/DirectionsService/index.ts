@@ -1,7 +1,7 @@
-import type { ApiClient as IApiClient } from '@/v2/ApiClient';
 import { DirectionsOptions, TravelMode } from '@lactalink/form-schemas/directions';
 import { Coordinates } from '@lactalink/types';
 import { ApiFetchResponse, DirectionsResult } from '@lactalink/types/api';
+import type { IApiClient } from '../../interfaces';
 
 export class DirectionsService {
   constructor(private apiClient: IApiClient) {}

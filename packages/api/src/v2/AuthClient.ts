@@ -1,10 +1,9 @@
-import type { BaseApiFetchArgs } from '@lactalink/types/api';
+import type { ApiClientConfig, IAuthClient } from '@/interfaces';
 import type { BackendSession } from '@lactalink/types/auth';
 import type { ErrorCodes } from '@lactalink/types/errors';
 import type { User } from '@lactalink/types/payload-generated-types';
 import { SanitizedPermissions } from '@lactalink/types/payload-types';
 import type { Database } from '@lactalink/types/supabase';
-import { PayloadSDK } from '@payloadcms/sdk';
 import {
   AuthError,
   type ResendParams,
@@ -19,11 +18,10 @@ import {
   type VerifyOtpParams,
 } from '@supabase/supabase-js';
 import status from 'http-status';
-import type { ApiClientConfig, IAuthClient } from '../interfaces';
 import { isServerEnvironment } from '../utils/getEnvironment';
 import { Config } from './payload-types';
+import { PayloadSDK } from './PayloadSDK';
 
-type BaseApiFetchArgsWithoutToken = Omit<BaseApiFetchArgs, 'token'>;
 type UsersUpdate = Database['public']['Tables']['users']['Update'];
 type UserTable = Database['public']['Tables']['users']['Row'];
 
@@ -35,7 +33,6 @@ export class AuthClient implements IAuthClient {
   public readonly getSbAuth: () => SupabaseAuthClient;
 
   constructor(
-    private _baseFetchOptions: () => BaseApiFetchArgsWithoutToken,
     private _getSbClient: () => SupabaseClient,
     private _apiClient: PayloadSDK<Config>,
     environment: ApiClientConfig['environment']
@@ -87,6 +84,7 @@ export class AuthClient implements IAuthClient {
 
   private _setToken = (token: string | null): void => {
     this._token = token;
+    this._apiClient.setAuthHeaders(token);
   };
 
   private _syncToken = async (): Promise<void> => {

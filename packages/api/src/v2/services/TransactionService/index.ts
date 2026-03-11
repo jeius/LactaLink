@@ -24,7 +24,7 @@ import type {
   DeliveryDetailsParams,
   ITransactionService,
 } from '@/interfaces';
-import { IApiClient } from '@/v2/ApiClient';
+import { IApiClient } from '../../interfaces';
 import {
   fetchDonation,
   fetchRequest,

@@ -1,6 +1,6 @@
-import type { IApiClient } from '@/v2/ApiClient';
 import type { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
+import type { IApiClient } from '../../interfaces';
 
 /**
  * Service for managing read tracking of donations and requests.
