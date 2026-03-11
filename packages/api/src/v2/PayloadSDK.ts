@@ -69,7 +69,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
 
     const queryString = searchParams && stringify(searchParams, { addQueryPrefix: true });
 
-    const url = new URL(queryString ? path.trim() + queryString : path, this.baseURL);
+    const url = this.baseURL + (queryString ? path.trim() + queryString : path.trim());
 
     const response = await this.fetch(url, {
       ...restOptions,
