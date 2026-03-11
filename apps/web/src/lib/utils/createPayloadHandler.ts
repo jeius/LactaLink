@@ -110,7 +110,7 @@ export function createPayloadHandler<T>({
         const status = HttpStatus.REQUEST_TIMEOUT;
         reject(
           new APIError(
-            '[Request Timeout]: Request was cancelled due to timeout.',
+            'Request was cancelled due to timeout.',
             HttpStatus.REQUEST_TIMEOUT,
             { message: HttpStatus[`${status}_MESSAGE`] },
             true
@@ -176,7 +176,7 @@ export function createPayloadHandler<T>({
 
       const res: ApiFetchResponse<T> = { message, error };
 
-      payload.logger.error(error, `[API Error]: ${message}`);
+      payload.logger.error(error, message);
 
       // Return the error response.
       return Response.json(res, { status, statusText });
