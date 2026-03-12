@@ -6,6 +6,7 @@
  */
 
 import type { CollectionSlug, PayloadRequest, Where } from 'payload';
+import { getHookContext, setHookContext } from './hookContext';
 
 export * from './fieldValidators';
 export * from './hookContext';
@@ -68,6 +69,8 @@ export function ownedBy(req: PayloadRequest, field = 'createdBy'): Where | false
  * @param req - The Payload request object, used to access the logger instance.
  * @param collection - The slug of the collection for which the logger is being created.
  * @param hook - The name of the hook or operation for which the logger is being created.
+ * @param logCount - Number of times this log repeats in the single request.
+ * Used to prevent logging on recursive hooks. Defaults to 1 (no repetition).
  *
  * @example
  * const log = hookLogger(req, 'donations', 'afterChange');
@@ -78,14 +81,59 @@ export function ownedBy(req: PayloadRequest, field = 'createdBy'): Where | false
  * log.error(err, 'Failed to send notification');
  * // Logs: [donations:afterChange] Failed to send notification - Error details...
  *
+ * // In a recursive hook, you might set `logCount` to 1 to only log the first occurrence
+ * // of the same message:
+ * const log = hookLogger(req, 'milkBags', 'beforeRead', 1);
+ * log.info(`Checking expiry for milk bag ${doc.id}`);
+ * checkExpiry(doc);
+ * // This will trigger the beforeRead hook on the doc which may update the status to EXPIRED
+ * // and cause another beforeRead call on the same doc. With `logCount` set to 1, only the first
+ * // log will be printed, preventing infinite logging loops.
+ *
  */
-export function hookLogger(req: PayloadRequest, collection: string, hook: string) {
+export function hookLogger(
+  req: PayloadRequest,
+  collection: string,
+  hook: string,
+  logCount: number = 1
+) {
+  const contextKey = 'hookLoggerCount';
+  const countsMap = new Map(getHookContext<Map<string, number>>(req, contextKey));
   const prefix = `[${collection}:${hook}]`;
-  return {
-    info: (msg: string, data?: unknown) => req.payload.logger.info(data, `${prefix} ${msg}`),
-    warn: (msg: string, data?: unknown) => req.payload.logger.warn(data, `${prefix} ${msg}`),
-    error: (err: unknown, msg: string) => req.payload.logger.error(err, `${prefix} ${msg}`),
+
+  const trackLogCount = (key: string) => {
+    const currentCount = countsMap.get(key) ?? 0;
+    countsMap.set(key, currentCount + 1);
+    setHookContext(req, contextKey, countsMap);
   };
+
+  const shouldLog = (key: string) => {
+    const currentCount = countsMap.get(key) ?? 0;
+    return currentCount <= logCount;
+  };
+
+  function info(msg: string, data?: unknown) {
+    const logKey = `${prefix}:${msg}`;
+    if (!shouldLog(logKey)) return;
+    trackLogCount(logKey);
+    req.payload.logger.info(data, `${prefix} ${msg}`);
+  }
+
+  function warn(msg: string, data?: unknown) {
+    const logKey = `${prefix}:${msg}`;
+    if (!shouldLog(logKey)) return;
+    trackLogCount(logKey);
+    req.payload.logger.warn(data, `${prefix} ${msg}`);
+  }
+
+  function error(err: unknown, msg: string) {
+    const logKey = `${prefix}:${msg}`;
+    if (!shouldLog(logKey)) return;
+    trackLogCount(logKey);
+    req.payload.logger.error(err, `${prefix} ${msg}`);
+  }
+
+  return { info, warn, error };
 }
 
 // ---------------------------------------------------------------------------
