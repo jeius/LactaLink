@@ -52,22 +52,6 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
   'find' | 'update' | 'delete'
 > {
   /**
-   * Sets a bypass token to be included in the headers of subsequent API requests.
-   * This can be used to bypass certain access controls or trigger specific behavior
-   * on the server.
-   *
-   * @param token - The bypass token to set. If undefined, the bypass token will be cleared.
-   */
-  setBypassToken(token: string): void;
-
-  /**
-   * Retrieves the currently set bypass token, if any.
-   *
-   * @returns The currently set bypass token, or undefined if no token is set.
-   */
-  getBypassToken(): string | undefined;
-
-  /**
    * Updates the headers that will be included in subsequent API requests. This method
    * merges the provided headers with any existing headers, allowing for incremental updates.
    *
@@ -118,11 +102,15 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
   updatePreference<TValue = unknown>(key: string, value: TValue): Promise<TValue>;
 
   /**
-   * A generic method for making API requests with the client's configured baseURL,
-   * headers, and authentication.
+   * A fetch method for making API requests to the Payload custom endpoints that returns a
+   * `ApiFetchResponse` object.
+   *
+   * @template TData - The expected shape of the data returned in the response.
    * @param path - The API endpoint path (relative to the baseURL) to which the request should be made.
-   * @param init - Optional fetch initialization options, which can include method,
-   * headers, body, and custom properties like searchParams.
+   * @param init - Optional fetch initialization options, with additional `searchParams` property.
+   *
+   * @throws An `Error` if the fetch operation fails or if the response status indicates an error.
+   * @returns A promise that resolves to the parsed JSON response from the `ApiFetchResponse`, typed as `TData`.
    */
   apiFetch<TData>(
     path: string,

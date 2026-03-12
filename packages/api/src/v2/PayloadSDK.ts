@@ -33,16 +33,42 @@ import {
 import { Config } from './payload-types';
 
 export class PayloadSDK<T extends Config = Config> extends Payload<T> implements IPayloadSDK<T> {
-  private bypassToken?: string;
   private headers: Headers = new Headers();
 
   //#region Utility Methods -----------------------------------------------
-  setBypassToken = (bypassToken?: string) => {
-    this.bypassToken = bypassToken;
-  };
 
-  getBypassToken = () => {
-    return this.bypassToken;
+  /**
+   * A wrapper around the fetch method to handle common logic like error handling
+   * and query string construction. This is used internally by the SDK methods to
+   * ensure consistent behavior across all API calls.
+   */
+  private _fetch = async <TData>(
+    ...args: Parameters<IPayloadSDK<T>['apiFetch']>
+  ): Promise<TData> => {
+    const [path, init] = args;
+    const { searchParams, body, ...restOptions } = init || {};
+
+    const queryString = searchParams && stringify(searchParams, { addQueryPrefix: true });
+
+    const url = this.baseURL + (queryString ? path.trim() + queryString : path.trim());
+
+    const response = await this.fetch(url, {
+      ...restOptions,
+      body: body && JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API request failed: ${response.statusText}`, {
+        cause: {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        },
+      });
+    }
+
+    return response.json();
   };
 
   updateHeaders = (headers: Headers) => {
@@ -66,36 +92,10 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
 
   //#endregion --------------------------------------------------------------
 
-  apiFetch = async <TData>(
-    path: string,
-    init?: Omit<RequestInit, 'body'> & {
-      searchParams?: Record<string, unknown>;
-      body?: Record<string, unknown>;
-    }
-  ): Promise<TData> => {
-    const { searchParams, body, ...restOptions } = init || {};
+  //#region API Operations -------------------------------------------------------
 
-    const queryString = searchParams && stringify(searchParams, { addQueryPrefix: true });
-
-    const url = this.baseURL + (queryString ? path.trim() + queryString : path.trim());
-
-    const response = await this.fetch(url, {
-      ...restOptions,
-      body: body && JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`API request failed: ${response.statusText}`, {
-        cause: {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-        },
-      });
-    }
-
-    const result: ApiFetchResponse<TData> = await response.json();
+  apiFetch = async <TData>(...args: Parameters<IPayloadSDK<T>['apiFetch']>): Promise<TData> => {
+    const result = await this._fetch<ApiFetchResponse<TData>>(...args);
 
     if ('error' in result) {
       throw new Error(result.message, { cause: result.error });
@@ -103,8 +103,6 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
 
     return result.data;
   };
-
-  //#region API Operations -------------------------------------------------------
 
   //@ts-expect-error - Overriding the base class method with a more specific return type
   find = async <
@@ -150,9 +148,9 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
       docs = result.docs;
       errors = result.errors;
     } else {
-      // We use the apiFetch to manually attach the autoSave query param
+      // We use the internal fetch to manually attach the autoSave query param
       const { collection, data, ...searchParams } = restOfOptions;
-      const result = await this.apiFetch<BulkOperationResult<T, TSlug, TSelect>>(`/${collection}`, {
+      const result = await this._fetch<BulkOperationResult<T, TSlug, TSelect>>(`/${collection}`, {
         ...init,
         searchParams,
         method: 'PATCH',
@@ -182,9 +180,9 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
       return super.update<TSlug, TSelect>(restOfOptions, init);
     }
 
-    // We use the apiFetch to manually attach the autoSave query param
+    // We use the internal fetch to manually attach the autoSave query param
     const { collection, id, data, ...searchParams } = restOfOptions;
-    return this.apiFetch<TransformCollectionWithSelect<T, TSlug, TSelect>>(`/${collection}/${id}`, {
+    return this._fetch<TransformCollectionWithSelect<T, TSlug, TSelect>>(`/${collection}/${id}`, {
       ...init,
       searchParams,
       method: 'PATCH',

@@ -9,6 +9,7 @@ import { IApiClient } from './interfaces';
 import type { Config } from './payload-types';
 
 export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implements IApiClient<T> {
+  private bypassToken?: string;
   private appEnvironment: ApiClientConfig['environment'];
   private supabaseClient: SupabaseClient | (() => SupabaseClient);
   public readonly auth: AuthClient;
@@ -28,12 +29,11 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implemen
       },
     });
 
-    const headers = new Headers({ 'Content-Type': 'application/json' });
+    this.setHeaders(new Headers({ 'Content-Type': 'application/json' }));
+
     if (config.bypassToken) {
-      headers.set('x-vercel-protection-bypass', config.bypassToken);
       this.setBypassToken(config.bypassToken);
     }
-    this.setHeaders(headers);
 
     this.appEnvironment = config.environment;
     this.supabaseClient = config.supabase;
@@ -51,6 +51,14 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implemen
       bypassToken: this.getBypassToken(),
       headers: this.getHeaders(),
     };
+  };
+
+  setBypassToken = (bypassToken?: string) => {
+    this.bypassToken = bypassToken;
+  };
+
+  getBypassToken = () => {
+    return this.bypassToken;
   };
 
   getAppEnvironment = () => {

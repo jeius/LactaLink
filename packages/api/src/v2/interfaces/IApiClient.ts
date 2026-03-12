@@ -6,6 +6,22 @@ import { IPayloadSDK } from './IPayloadSDK';
 
 export interface IApiClient<T extends Config = Config> extends IPayloadSDK<T> {
   /**
+   * Sets a bypass token to be included in the headers of subsequent API requests.
+   * This can be used to bypass certain access controls or trigger specific behavior
+   * on the server.
+   *
+   * @param token - The bypass token to set. If undefined, the bypass token will be cleared.
+   */
+  setBypassToken(token: string): void;
+
+  /**
+   * Retrieves the currently set bypass token, if any.
+   *
+   * @returns The currently set bypass token, or undefined if no token is set.
+   */
+  getBypassToken(): string | undefined;
+
+  /**
    * Gets the fetch options to be used for API requests. This method can be used
    * to retrieve any necessary headers, tokens, or other options that should be included
    *  in API requests.
