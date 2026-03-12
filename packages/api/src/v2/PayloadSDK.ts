@@ -16,8 +16,6 @@ import type {
   UpdateManyOptions,
 } from 'node_modules/@payloadcms/sdk/dist/collections/update';
 import type {
-  BulkOperationResult,
-  IDType,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
 } from 'node_modules/@payloadcms/sdk/dist/types';
@@ -139,26 +137,8 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     options: UpdateManyOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]> => {
-    const { autoSave, id: _, ...restOfOptions } = options;
-    let docs: TransformCollectionWithSelect<T, TSlug, TSelect>[];
-    let errors: { id: IDType<T, TSlug>; message: string }[];
-
-    if (!autoSave) {
-      const result = await super.update<TSlug, TSelect>(restOfOptions, init);
-      docs = result.docs;
-      errors = result.errors;
-    } else {
-      // We use the internal fetch to manually attach the autoSave query param
-      const { collection, data, ...searchParams } = restOfOptions;
-      const result = await this._fetch<BulkOperationResult<T, TSlug, TSelect>>(`/${collection}`, {
-        ...init,
-        searchParams,
-        method: 'PATCH',
-        body: data as Record<string, unknown>,
-      });
-      docs = result.docs;
-      errors = result.errors;
-    }
+    const { id: _, ...restOfOptions } = options;
+    const { docs, errors } = await super.update<TSlug, TSelect>(restOfOptions, init);
 
     if (errors && errors.length > 0) {
       throw new Error(`Failed to update some documents`, { cause: errors });
@@ -174,20 +154,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     options: UpdateByIDOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
-    const { autoSave, ...restOfOptions } = options;
-
-    if (!autoSave) {
-      return super.update<TSlug, TSelect>(restOfOptions, init);
-    }
-
-    // We use the internal fetch to manually attach the autoSave query param
-    const { collection, id, data, ...searchParams } = restOfOptions;
-    return this._fetch<TransformCollectionWithSelect<T, TSlug, TSelect>>(`/${collection}/${id}`, {
-      ...init,
-      searchParams,
-      method: 'PATCH',
-      body: data as Record<string, unknown>,
-    });
+    return super.update<TSlug, TSelect>(options, init);
   };
 
   //@ts-expect-error - Overriding the base class method with a more specific return type
