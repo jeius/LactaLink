@@ -15,6 +15,7 @@ import type {
   TransformCollectionWithSelect,
 } from 'node_modules/@payloadcms/sdk/dist/types';
 
+import { Collection } from '@lactalink/types/collections';
 import { PayloadSDK as Payload } from '@payloadcms/sdk';
 import type { Config } from '../payload-types';
 
@@ -26,6 +27,12 @@ export type FindManyResult<
 > = TPagination extends true
   ? PaginatedDocs<TransformCollectionWithSelect<T, TSlug, TSelect>>
   : TransformCollectionWithSelect<T, TSlug, TSelect>[];
+
+export type TrashOption<
+  T extends Config = Config,
+  TSlug extends CollectionSlug<T> = CollectionSlug<T>,
+> =
+  Collection<TSlug> extends { deletedAt?: string | null } ? { trash?: boolean } : { trash?: never };
 
 export interface IPayloadSDK<T extends Config = Config> extends Omit<
   Payload<T>,
@@ -148,7 +155,7 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteManyOptions<T, TSlug, TSelect>,
+    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]>;
 
@@ -156,7 +163,7 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteByIDOptions<T, TSlug, TSelect>,
+    options: DeleteByIDOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>>;
 }

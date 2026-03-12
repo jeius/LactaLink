@@ -21,7 +21,7 @@ import type {
 } from 'node_modules/@payloadcms/sdk/dist/types';
 
 import { mergeHeaders } from '@lactalink/utilities';
-import { FindManyResult, IPayloadSDK } from './interfaces';
+import { FindManyResult, IPayloadSDK, TrashOption } from './interfaces';
 import { Config } from './payload-types';
 
 export class PayloadSDK<T extends Config = Config> extends Payload<T> implements IPayloadSDK<T> {
@@ -154,10 +154,24 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteManyOptions<T, TSlug, TSelect>,
+    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]> => {
-    const { docs, errors } = await super.delete(options, init);
+    const { trash, ...restOfOptions } = options;
+
+    if (trash) {
+      return this.update<TSlug, TSelect>(
+        {
+          ...restOfOptions,
+          // @ts-expect-error - TypeScript is incorrectly inferring the type of `data`
+          // here, but we know it will be valid based on the presence of the `trash` option
+          data: { deletedAt: new Date().toISOString() },
+        },
+        init
+      );
+    }
+
+    const { docs, errors } = await super.delete<TSlug, TSelect>(restOfOptions, init);
 
     if (errors && errors.length > 0) {
       throw new Error(`Failed to delete some documents`, { cause: errors });
@@ -170,10 +184,19 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteByIDOptions<T, TSlug, TSelect>,
+    options: DeleteByIDOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
-    return super.delete<TSlug, TSelect>(options, init);
+    const { trash, ...restOfOptions } = options;
+    if (trash) {
+      return this.updateByID<TSlug, TSelect>({
+        ...restOfOptions,
+        // @ts-expect-error - TypeScript is incorrectly inferring the type of `data`
+        // here, but we know it will be valid based on the presence of the `trash` option
+        data: { deletedAt: new Date().toISOString() },
+      });
+    }
+    return super.delete<TSlug, TSelect>(restOfOptions, init);
   };
 
   getPreference = async <TValue = unknown>(key: string) => {
