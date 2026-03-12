@@ -16,12 +16,20 @@ import type {
   UpdateManyOptions,
 } from 'node_modules/@payloadcms/sdk/dist/collections/update';
 import type {
+  BulkOperationResult,
+  IDType,
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
 } from 'node_modules/@payloadcms/sdk/dist/types';
 
 import { mergeHeaders } from '@lactalink/utilities';
-import { FindManyResult, IPayloadSDK, TrashOption } from './interfaces';
+import {
+  DraftOption,
+  FindManyResult,
+  IPayloadSDK,
+  TrashOption,
+  UpdateDraftOption,
+} from './interfaces';
 import { Config } from './payload-types';
 
 export class PayloadSDK<T extends Config = Config> extends Payload<T> implements IPayloadSDK<T> {
@@ -82,7 +90,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
         cause: {
           status: response.status,
           statusText: response.statusText,
-          body: errorData,
+          error: errorData,
         },
       });
     }
@@ -104,7 +112,9 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
     TPagination extends boolean = true,
   >(
-    options: Omit<FindOptions<T, TSlug, TSelect>, 'pagination'> & { pagination?: TPagination },
+    options: Omit<FindOptions<T, TSlug, TSelect>, 'pagination'> & {
+      pagination?: TPagination;
+    } & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<FindManyResult<T, TSlug, TSelect, TPagination>> => {
     const result = await super.find(options, init);
@@ -116,7 +126,7 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends UploadCollectionSlug<T> = UploadCollectionSlug<T>,
     TSelect extends SelectType = SelectType,
   >(
-    options: CreateOptions<T, TSlug, TSelect>,
+    options: CreateOptions<T, TSlug, TSelect> & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
     const result = await super.create(options, init);
@@ -128,10 +138,29 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: UpdateManyOptions<T, TSlug, TSelect>,
+    options: UpdateManyOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]> => {
-    const { docs, errors } = await super.update(options, init);
+    const { autoSave, id: _, ...restOfOptions } = options;
+    let docs: TransformCollectionWithSelect<T, TSlug, TSelect>[];
+    let errors: { id: IDType<T, TSlug>; message: string }[];
+
+    if (!autoSave) {
+      const result = await super.update<TSlug, TSelect>(restOfOptions, init);
+      docs = result.docs;
+      errors = result.errors;
+    } else {
+      // We use the apiFetch to manually attach the autoSave query param
+      const { collection, data, ...searchParams } = restOfOptions;
+      const result = await this.apiFetch<BulkOperationResult<T, TSlug, TSelect>>(`/${collection}`, {
+        ...init,
+        searchParams,
+        method: 'PATCH',
+        body: data as Record<string, unknown>,
+      });
+      docs = result.docs;
+      errors = result.errors;
+    }
 
     if (errors && errors.length > 0) {
       throw new Error(`Failed to update some documents`, { cause: errors });
@@ -144,9 +173,23 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: UpdateByIDOptions<T, TSlug, TSelect>
+    options: UpdateByIDOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
+    init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
-    return super.update(options);
+    const { autoSave, ...restOfOptions } = options;
+
+    if (!autoSave) {
+      return super.update<TSlug, TSelect>(restOfOptions, init);
+    }
+
+    // We use the apiFetch to manually attach the autoSave query param
+    const { collection, id, data, ...searchParams } = restOfOptions;
+    return this.apiFetch<TransformCollectionWithSelect<T, TSlug, TSelect>>(`/${collection}/${id}`, {
+      ...init,
+      searchParams,
+      method: 'PATCH',
+      body: data as Record<string, unknown>,
+    });
   };
 
   //@ts-expect-error - Overriding the base class method with a more specific return type
@@ -154,19 +197,17 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
+    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug> & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]> => {
-    const { trash, ...restOfOptions } = options;
+    const { trash, id: _, ...restOfOptions } = options;
 
     if (trash) {
+      // Handle soft-delete by updating the `deletedAt`
       return this.update<TSlug, TSelect>(
-        {
-          ...restOfOptions,
-          // @ts-expect-error - TypeScript is incorrectly inferring the type of `data`
-          // here, but we know it will be valid based on the presence of the `trash` option
-          data: { deletedAt: new Date().toISOString() },
-        },
+        // @ts-expect-error - No payload type support for this yet
+        // but we know it will be valid based on the presence of the `trash` option
+        { ...restOfOptions, data: { deletedAt: new Date().toISOString() } },
         init
       );
     }
@@ -184,19 +225,22 @@ export class PayloadSDK<T extends Config = Config> extends Payload<T> implements
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteByIDOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
+    options: DeleteByIDOptions<T, TSlug, TSelect> & TrashOption<T, TSlug> & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>> => {
     const { trash, ...restOfOptions } = options;
-    if (trash) {
-      return this.updateByID<TSlug, TSelect>({
-        ...restOfOptions,
-        // @ts-expect-error - TypeScript is incorrectly inferring the type of `data`
-        // here, but we know it will be valid based on the presence of the `trash` option
-        data: { deletedAt: new Date().toISOString() },
-      });
+
+    if (!trash) {
+      return super.delete<TSlug, TSelect>(restOfOptions, init);
     }
-    return super.delete<TSlug, TSelect>(restOfOptions, init);
+
+    // Handle soft-delete by updating the `deletedAt`
+    return this.updateByID<TSlug, TSelect>(
+      // @ts-expect-error - No payload type support for this yet
+      // but we know it will be valid based on the presence of the `trash` option
+      { ...restOfOptions, data: { deletedAt: new Date().toISOString() } },
+      init
+    );
   };
 
   getPreference = async <TValue = unknown>(key: string) => {

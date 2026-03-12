@@ -34,6 +34,19 @@ export type TrashOption<
 > =
   Collection<TSlug> extends { deletedAt?: string | null } ? { trash?: boolean } : { trash?: never };
 
+export type DraftOption<
+  T extends Config = Config,
+  TSlug extends CollectionSlug<T> = CollectionSlug<T>,
+> = Collection<TSlug> extends { _status?: string | null } ? { draft?: boolean } : { draft?: never };
+
+export type UpdateDraftOption<
+  T extends Config = Config,
+  TSlug extends CollectionSlug<T> = CollectionSlug<T>,
+> =
+  Collection<TSlug> extends { _status?: string | null }
+    ? { autoSave?: boolean; draft?: boolean }
+    : { autoSave?: never; draft?: never };
+
 export interface IPayloadSDK<T extends Config = Config> extends Omit<
   Payload<T>,
   'find' | 'update' | 'delete'
@@ -124,7 +137,9 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
     TPagination extends boolean = true,
   >(
-    options: Omit<FindOptions<T, TSlug, TSelect>, 'pagination'> & { pagination?: TPagination },
+    options: Omit<FindOptions<T, TSlug, TSelect>, 'pagination'> & {
+      pagination?: TPagination;
+    } & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<FindManyResult<T, TSlug, TSelect, TPagination>>;
 
@@ -132,7 +147,7 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSlug extends UploadCollectionSlug<T> = UploadCollectionSlug<T>,
     TSelect extends SelectType = SelectType,
   >(
-    options: CreateOptions<T, TSlug, TSelect>,
+    options: CreateOptions<T, TSlug, TSelect> & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>>;
 
@@ -140,7 +155,7 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: UpdateManyOptions<T, TSlug, TSelect>,
+    options: UpdateManyOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]>;
 
@@ -148,20 +163,22 @@ export interface IPayloadSDK<T extends Config = Config> extends Omit<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: UpdateByIDOptions<T, TSlug, TSelect>
+    options: UpdateByIDOptions<T, TSlug, TSelect> & UpdateDraftOption<T, TSlug>,
+    init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>>;
 
   delete<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
     TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
   >(
-    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
+    options: DeleteManyOptions<T, TSlug, TSelect> & TrashOption<T, TSlug> & DraftOption<T, TSlug>,
     init?: RequestInit
   ): Promise<TransformCollectionWithSelect<T, TSlug, TSelect>[]>;
 
   deleteByID<
     TSlug extends CollectionSlug<T> = CollectionSlug<T>,
-    TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug>,
+    TSelect extends SelectFromCollectionSlug<T, TSlug> = SelectFromCollectionSlug<T, TSlug> &
+      DraftOption<T, TSlug>,
   >(
     options: DeleteByIDOptions<T, TSlug, TSelect> & TrashOption<T, TSlug>,
     init?: RequestInit
