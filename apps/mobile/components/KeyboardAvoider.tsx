@@ -84,10 +84,11 @@ export default function KeyboardAvoidingScrollView({
         <ScrollView
           {...props}
           ref={scrollRef}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           onScroll={({ nativeEvent }) => {
             scrollEvent.current = nativeEvent;
           }}
-          refreshControlProps={{ onRefresh, refreshing: refreshing ?? false }}
         >
           {children}
         </ScrollView>
