@@ -1,16 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { VStack } from '@/components/ui/vstack';
 
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
+import { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 
+import { AnimatedPressable } from '@/components/animated/pressable';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
 import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { OnboardingItem } from './OnboardingItem';
@@ -64,28 +66,28 @@ export function Welcome() {
       return () => {
         setTheme(prevTheme.current);
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [setTheme])
   );
 
   return (
     <SafeAreaView className="flex-1">
       <GradientBackground colors={gradientColors} end={{ x: 0, y: 1 }} locations={[0, 0.8, 1]} />
 
-      <VStack className="relative flex-1 items-stretch justify-start gap-0 py-4">
-        <Button
-          variant="link"
-          size="sm"
-          disablePressAnimation
-          className="absolute right-0 top-0 z-10 h-min w-min p-5"
-          action="primary"
-          style={{ opacity: isLastSlide ? 0 : 1 }}
-          onPress={handleSkip}
-        >
-          <ButtonText size="sm" className="text-primary-600">
-            Skip
-          </ButtonText>
-        </Button>
+      <VStack className="flex-1 py-4">
+        {!isLastSlide && (
+          <AnimatedPressable
+            disablePressAnimation
+            entering={FadeIn.duration(150)}
+            exiting={FadeOut.duration(150)}
+            className="absolute right-4 z-10 px-3 py-1"
+            style={{ top: 12 }}
+            onPress={handleSkip}
+          >
+            <Text bold className="text-primary-600">
+              Skip
+            </Text>
+          </AnimatedPressable>
+        )}
 
         <Box
           className="flex-1"
@@ -94,8 +96,6 @@ export function Welcome() {
           <Carousel
             ref={ref}
             loop={false}
-            width={screen.width}
-            height={carouselHeight}
             onProgressChange={progress}
             onSnapToItem={setCurrentPage}
             data={onboardingData}
@@ -108,41 +108,38 @@ export function Welcome() {
               parallaxScrollingOffset: 30,
               parallaxAdjacentItemScale: 0.7,
             }}
-          />
-
-          <Pagination.Basic<OnboardingData>
-            progress={progress}
-            data={onboardingData}
-            dotStyle={{
-              width: 25,
-              height: 4,
-              backgroundColor: '#FEB4BA',
-              borderRadius: 4,
-            }}
-            activeDotStyle={{
-              overflow: 'hidden',
-              backgroundColor: '#CB6870',
-            }}
-            containerStyle={{
-              gap: 10,
-              marginBottom: 16,
-            }}
-            horizontal
-            onPress={onPressPagination}
+            style={{ width: screen.width, height: carouselHeight }}
           />
         </Box>
 
-        <Box className="w-full p-5">
-          <Button
-            size="xl"
-            className="shadow-primary-800 w-full rounded-2xl shadow-md"
-            onPress={handleNext}
-          >
-            <ButtonText size="lg" className="font-JakartaMedium">
-              {isLastSlide ? 'Get Started' : 'Next'}
-            </ButtonText>
-          </Button>
-        </Box>
+        <Pagination.Basic<OnboardingData>
+          progress={progress}
+          data={onboardingData}
+          dotStyle={{
+            width: 25,
+            height: 4,
+            backgroundColor: '#FEB4BA',
+            borderRadius: 4,
+          }}
+          activeDotStyle={{
+            overflow: 'hidden',
+            backgroundColor: '#CB6870',
+          }}
+          containerStyle={{
+            gap: 10,
+            marginBottom: 16,
+          }}
+          horizontal
+          onPress={onPressPagination}
+        />
+
+        <Button
+          size="xl"
+          className="mx-5 rounded-full shadow-md shadow-primary-800"
+          onPress={handleNext}
+        >
+          <ButtonText>{isLastSlide ? 'Get Started' : 'Next'}</ButtonText>
+        </Button>
       </VStack>
     </SafeAreaView>
   );

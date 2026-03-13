@@ -9,12 +9,12 @@ import List from './list';
 export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
   const {
     index,
-    item: { image, description, subtitle, title, footer },
+    item: { image, description, subtitle, title, footer: listItems },
   } = args;
 
   return (
-    <VStack key={index}>
-      <Box className="mx-auto h-72 w-full p-4 pb-0">
+    <VStack key={index} className="h-full w-full">
+      <Box className="h-72 p-4 pb-0">
         <Image
           alt={image.alt}
           source={image.source}
@@ -23,17 +23,19 @@ export const OnboardingItem: CarouselRenderItem<OnboardingData> = (args) => {
           recyclingKey={`onboarding-image-${index}`}
         />
       </Box>
-      <VStack space="xl" className="w-full items-center p-6">
-        <VStack className="items-center">
-          <Text size="3xl" bold className="text-center">
-            {title}
-          </Text>
-          <Text className="font-JakartaMedium text-primary-700 text-base">{subtitle}</Text>
-        </VStack>
-        <Text italic size="lg" className="text-typography-950 text-center">
+
+      <VStack className="flex-1 p-6">
+        <Text size="3xl" bold className="mb-1 text-center">
+          {title}
+        </Text>
+
+        <Text className="mb-5 text-center font-JakartaMedium text-primary-700">{subtitle}</Text>
+
+        <Text italic size="lg" className="mb-5 text-center text-typography-900">
           {description}
         </Text>
-        {footer && <List items={footer} />}
+
+        {listItems && <List items={listItems} />}
       </VStack>
     </VStack>
   );

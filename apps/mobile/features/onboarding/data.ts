@@ -1,11 +1,4 @@
-import {
-  CheckCircle2Icon,
-  EditIcon,
-  HeartIcon,
-  LockIcon,
-  LucideMailbox,
-  SearchIcon,
-} from 'lucide-react-native';
+import { CheckCircle2Icon, EditIcon, LucideMailbox, SearchIcon } from 'lucide-react-native';
 
 import { getImageAsset } from '@/lib/stores';
 import { ImageSource } from 'expo-image';
@@ -48,12 +41,12 @@ export const onboardingData: OnboardingData[] = [
         content: 'Track your donations and connect with recipients.',
         variant: 'primary',
       },
-      {
-        icon: HeartIcon,
-        iconPosition: 'left',
-        content: 'Make a difference in a baby’s life today!',
-        variant: 'primary',
-      },
+      // {
+      //   icon: HeartIcon,
+      //   iconPosition: 'left',
+      //   content: 'Make a difference in a baby’s life today!',
+      //   variant: 'primary',
+      // },
     ],
   },
   {
@@ -75,12 +68,12 @@ export const onboardingData: OnboardingData[] = [
         content: 'Request and schedule a pickup or delivery.',
         variant: 'primary',
       },
-      {
-        icon: LockIcon,
-        iconPosition: 'left',
-        content: 'Ensure safe and healthy nourishment for your baby.',
-        variant: 'primary',
-      },
+      // {
+      //   icon: LockIcon,
+      //   iconPosition: 'left',
+      //   content: 'Ensure safe and healthy nourishment for your baby.',
+      //   variant: 'primary',
+      // },
     ],
   },
   {
