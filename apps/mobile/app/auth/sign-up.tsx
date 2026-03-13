@@ -16,7 +16,8 @@ import { getImageAsset } from '@/lib/stores';
 
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
+import { LayoutRectangle } from 'react-native';
 
 export default function SignUp() {
   const { theme } = useTheme();
@@ -25,9 +26,11 @@ export default function SignUp() {
     (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
+  const [{ width }, setSize] = useState<LayoutRectangle>({ x: 0, y: 0, width: 0, height: 0 });
+
   return (
-    <SafeArea className="items-stretch">
-      <KeyboardAvoidingScrollView contentContainerClassName="grow p-5 justify-center">
+    <SafeArea>
+      <KeyboardAvoidingScrollView contentContainerClassName="p-5 justify-center grow">
         <Card className="p-0">
           <Box className="relative w-full overflow-hidden" style={{ aspectRatio: 2.25 }}>
             <Image
@@ -40,7 +43,7 @@ export default function SignUp() {
             <GradientBackground colors={gradientColors} className="opacity-40" />
           </Box>
 
-          <VStack>
+          <VStack onLayout={(e) => setSize(e.nativeEvent.layout)}>
             <VStack className="p-5">
               <Text bold size="2xl">
                 Create your account
@@ -57,7 +60,7 @@ export default function SignUp() {
 
             <GoogleButtonWrapper className="overflow-hidden px-5">
               <Box className="mx-auto">
-                <SignUpForm />
+                <SignUpForm carouselWidth={width} />
               </Box>
             </GoogleButtonWrapper>
           </VStack>

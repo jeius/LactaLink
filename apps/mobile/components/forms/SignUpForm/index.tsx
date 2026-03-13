@@ -3,41 +3,46 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LockIcon, MailIcon } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { Dimensions } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { FormSlide } from './FormSlide';
 
-import { FormFieldProps } from '@/components/FormField';
-
 import { signUp } from '@/auth';
+import { TextInputFieldProps } from '@/components/form-fields/TextInputField';
 import { extractAuthErrorCode, extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 import { SignUpSchema, signUpSchema } from './schema';
 
-const FIELDS: FormFieldProps<SignUpSchema>[] = [
+const FIELDS: TextInputFieldProps<SignUpSchema>[] = [
   {
     name: 'email',
-    fieldType: 'text',
-    placeholder: 'name@example.com',
-    inputIcon: MailIcon,
-    autoCapitalize: 'none',
-    autoComplete: 'email',
-    keyboardType: 'email-address',
+    contentPosition: 'first',
+    inputProps: {
+      placeholder: 'name@example.com',
+      icon: MailIcon,
+      autoCapitalize: 'none',
+      autoComplete: 'email',
+      keyboardType: 'email-address',
+      type: 'text',
+      'aria-label': 'Enter your email address',
+    },
   },
   {
     name: 'password',
-    fieldType: 'password',
-    placeholder: 'Enter unique password',
     helperText: 'Enter at least 8 characters long.',
-    autoComplete: 'new-password',
-    autoCapitalize: 'none',
-    inputIcon: LockIcon,
+    contentPosition: 'first',
+    inputProps: {
+      placeholder: 'Enter unique password',
+      autoComplete: 'new-password',
+      autoCapitalize: 'none',
+      icon: LockIcon,
+      type: 'password',
+      'aria-label': 'Enter your unique password',
+    },
   },
 ];
 
-export default function SignUpForm() {
+export default function SignUpForm({ carouselWidth }: { carouselWidth: number }) {
   const carouselRef = useRef<ICarouselInstance>(null);
-  const { width } = Dimensions.get('window');
 
   const form = useForm({
     resolver: zodResolver(signUpSchema),
@@ -70,9 +75,10 @@ export default function SignUpForm() {
         ref={carouselRef}
         loop={false}
         data={FIELDS}
-        width={width * 0.84}
-        height={180}
+        style={{ height: 180 }}
+        itemWidth={carouselWidth - 40}
         scrollAnimationDuration={300}
+        enabled={false}
         renderItem={({ item }) => (
           <FormSlide
             key={item.name}
