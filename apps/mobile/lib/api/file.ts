@@ -1,34 +1,28 @@
 import { getApiClient } from '@lactalink/api';
 import { ImageSchema } from '@lactalink/form-schemas';
-import { FileCollectionSlug } from '@lactalink/types/collections';
-import { NativeFile } from '../types';
+import {
+  RequiredDataFromCollectionSlug,
+  UploadCollectionSlug,
+} from '@lactalink/types/payload-types';
 
-type FileData = { url: string; filename: string; mimeType: string };
-export function createNativeFile(data: FileData): NativeFile {
-  if (!data.url || !data.filename || !data.mimeType) {
-    throw new Error('Invalid file parameters. Ensure url, name, and type are provided.');
-  }
-  return { uri: data.url, name: data.filename, type: data.mimeType };
-}
+import { File } from 'expo-file-system';
 
-export async function uploadImage<TSlug extends FileCollectionSlug = FileCollectionSlug>(
+export async function uploadImage<TSlug extends UploadCollectionSlug = UploadCollectionSlug>(
   collection: TSlug,
-  data: ImageSchema
+  image: Pick<ImageSchema, 'url' | 'alt'>,
+  data?: RequiredDataFromCollectionSlug<TSlug>
 ) {
-  const apiClient = getApiClient();
+  const file = new File(image.url);
 
-  const file = createNativeFile(data);
-
-  return await apiClient.uploadFile({
+  // @ts-expect-error - TS can't infer the correct type for this
+  return await getApiClient().uploadFile({
     collection,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    file: file as any,
-    // @ts-expect-error -- typing issue in api client
-    data: { alt: data.alt },
+    file: file,
+    data: { alt: image.alt, ...data },
   });
 }
 
-export async function upsertImage<TSlug extends FileCollectionSlug = FileCollectionSlug>(
+export async function upsertImage<TSlug extends UploadCollectionSlug = UploadCollectionSlug>(
   collection: TSlug,
   data: ImageSchema
 ) {
