@@ -35,7 +35,8 @@ declare global {
 }
 
 declare module 'payload' {
-  export type GeneratedTypes = PayloadConfig;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface GeneratedTypes extends PayloadConfig {}
 
   export interface RequestContext {
     milkbags?: (string | MilkBag)[];
