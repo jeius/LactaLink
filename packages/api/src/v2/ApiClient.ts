@@ -2,9 +2,9 @@ import type { BaseApiFetchArgs } from '@lactalink/types/api';
 
 import { mergeHeaders } from '@lactalink/utilities';
 import { SupabaseClient } from '@supabase/supabase-js';
-import type { ApiClientConfig } from '../interfaces';
 import { AuthClient } from './AuthClient';
 import { PayloadSDK } from './PayloadSDK';
+import type { ApiClientConfig } from './interfaces';
 import { IApiClient } from './interfaces';
 import type { Config } from './payload-types';
 
@@ -16,6 +16,7 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implemen
 
   constructor(config: ApiClientConfig) {
     const baseURL = new URL('/api', config.apiUrl).toString();
+    const fetcher = config.fetch ?? fetch;
 
     super({
       baseURL: baseURL,
@@ -25,7 +26,7 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implemen
         if (token) headers.set('Authorization', `Bearer ${token}`);
         if (bypassToken) headers.set('x-vercel-protection-bypass', bypassToken);
         const mergedHeaders = mergeHeaders(headers, new Headers(init?.headers));
-        return fetch(url, { ...init, headers: mergedHeaders });
+        return fetcher(url, { ...init, headers: mergedHeaders });
       },
     });
 

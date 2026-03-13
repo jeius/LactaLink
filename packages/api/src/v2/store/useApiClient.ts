@@ -1,8 +1,8 @@
-import { ApiClientConfig } from '@/interfaces';
 import { isServerEnvironment } from '@/utils/getEnvironment';
 import { ApiClient } from '@/v2/ApiClient';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { ApiClientConfig } from '../interfaces';
 import { Config } from '../payload-types';
 
 function createApiClient(config: ApiClientConfig) {

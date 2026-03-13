@@ -16,8 +16,8 @@
  * @author Julius Pahama <www.linkedin.com/in/julius-pahama>
  */
 
-import { ApiClientConfig } from '@/interfaces/ApiClientConfig';
 import { ApiClient } from '@/v2/ApiClient';
+import { ApiClientConfig } from '@/v2/interfaces/ApiClientConfig';
 import { MatchingService, TransactionService } from '@/v2/services';
 import { useStoreApiClient } from '@/v2/store/useApiClient';
 
