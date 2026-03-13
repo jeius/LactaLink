@@ -8,18 +8,13 @@ export * from './markers';
 export * from './profile';
 export type { MapPageSearchParams } from './searchParams';
 
-export type NativeFile = {
-  uri: string;
-  name: string;
-  type: string;
-};
-
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
 
-export type InfiniteDataMap<T, V = unknown> = InfiniteData<
-  { docs: Map<string, T> } & Omit<PaginatedDocs, 'docs'>,
-  V
->;
+export type PaginatedDocsMap<T> = Omit<PaginatedDocs, 'docs'> & {
+  docs: Map<string, T>;
+};
+
+export type InfiniteDataMap<T, V = unknown> = InfiniteData<PaginatedDocsMap<T>, V>;
 
 export type InfiniteDoc<T, V = unknown> = InfiniteData<PaginatedDocs<T>, V>;
 
