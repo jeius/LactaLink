@@ -6,7 +6,9 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { defaultAddressField, displayNameField, ownerField } from './fields';
 import { afterChange } from './hooks/afterChange';
+import { afterDelete } from './hooks/afterDelete';
 import { afterRead } from './hooks/afterRead';
+import { beforeChange } from './hooks/beforeChange';
 
 export const Hospitals: CollectionConfig<'hospitals'> = {
   slug: 'hospitals',
@@ -23,8 +25,10 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
     defaultColumns: ['name', 'type', 'head'],
   },
   hooks: {
+    beforeChange: [beforeChange],
     afterChange: [afterChange],
     afterRead: [afterRead],
+    afterDelete: [afterDelete],
   },
   fields: [
     displayNameField({

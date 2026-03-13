@@ -6,7 +6,9 @@ import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
 import { defaultAddressField, displayNameField, ownerField } from './fields';
 import { afterChange } from './hooks/afterChange';
+import { afterDelete } from './hooks/afterDelete';
 import { afterRead } from './hooks/afterRead';
+import { beforeChange } from './hooks/beforeChange';
 
 export const MilkBanks: CollectionConfig<'milkBanks'> = {
   slug: 'milkBanks',
@@ -23,8 +25,10 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },
   hooks: {
+    beforeChange: [beforeChange],
     afterChange: [afterChange],
     afterRead: [afterRead],
+    afterDelete: [afterDelete],
   },
   fields: [
     displayNameField({
