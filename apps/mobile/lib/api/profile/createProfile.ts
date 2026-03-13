@@ -1,54 +1,45 @@
 import { getApiClient } from '@lactalink/api';
-import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/form-schemas';
+import {
+  HospitalSchema,
+  ImageSchema,
+  IndividualSchema,
+  MilkBankSchema,
+} from '@lactalink/form-schemas';
 import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { CollectionSlug } from '@lactalink/types/payload-types';
+import { File } from 'expo-file-system';
 
 type Input = IndividualSchema | HospitalSchema | MilkBankSchema;
 type Output = Individual | Hospital | MilkBank;
-type BaseFields = Pick<Output, 'avatar'>;
+type BaseFields = { avatar?: ImageSchema | null };
 type Data = Input & BaseFields;
+
+const slugMap: Record<
+  Input['profileType'],
+  Extract<CollectionSlug, 'hospitals' | 'individuals' | 'milkBanks'>
+> = {
+  HOSPITAL: 'hospitals',
+  INDIVIDUAL: 'individuals',
+  MILK_BANK: 'milkBanks',
+};
 
 export async function createProfile(dataParams: Data): Promise<Output> {
   const client = getApiClient();
+  const { avatar, profileType, ...data } = dataParams;
+  const avatarURI = avatar?.url;
 
-  switch (dataParams.profileType) {
-    case 'HOSPITAL': {
-      const { avatar, profileType: _, ...data } = dataParams;
-      const avatarID = avatar && extractID(avatar);
+  const response = await client.request({
+    path: `/${slugMap[profileType]}`,
+    method: 'POST',
+    file: avatarURI ? new File(avatarURI) : undefined,
+    json: data,
+    args: { depth: 3 },
+  });
 
-      return await client.create({
-        collection: 'hospitals',
-        data: {
-          avatar: avatarID,
-          ...data,
-        },
-      });
-    }
-
-    case 'MILK_BANK': {
-      const { avatar, profileType: _, ...data } = dataParams;
-      const avatarID = avatar && extractID(avatar);
-
-      return await client.create({
-        collection: 'milkBanks',
-        data: {
-          avatar: avatarID,
-          ...data,
-        },
-      });
-    }
-
-    default: {
-      const { avatar, profileType: _, ...data } = dataParams;
-      const avatarID = avatar && extractID(avatar);
-
-      return await client.create({
-        collection: 'individuals',
-        data: {
-          avatar: avatarID,
-          ...data,
-        },
-      });
-    }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to create profile');
   }
+
+  return response.json();
 }

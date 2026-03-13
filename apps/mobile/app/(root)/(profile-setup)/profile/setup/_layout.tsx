@@ -16,8 +16,6 @@ import { SetupProfileFields, SetupProfileSteps } from '@/features/profile/types'
 import { useAuth } from '@/hooks/auth/useAuth';
 import { usePagination } from '@/hooks/forms/usePagination';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { deleteCollection } from '@/lib/api/delete';
-import { uploadImage } from '@/lib/api/file';
 import { createProfile } from '@/lib/api/profile/createProfile';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
@@ -55,18 +53,7 @@ export default function Layout() {
     const createPromise = async () => {
       if (!user) throw new Error('User not found.');
 
-      const { avatar, ...rest } = formData;
-
-      const avatarDoc = avatar && (await uploadImage('avatars', avatar));
-
-      const createdProfile = await createProfile({
-        ...rest,
-        avatar: avatarDoc,
-      }).catch(async (error) => {
-        await deleteCollection('avatars', avatarDoc?.id, { silent: true });
-        throw error;
-      });
-
+      const createdProfile = await createProfile(formData);
       const name = createdProfile.displayName;
 
       deleteSavedFormData('profile-create');
@@ -76,7 +63,9 @@ export default function Layout() {
       return name ? `Welcome to LactaLink ${name}!` : 'Profile created successfully!';
     };
 
-    toast.promise(createPromise(), {
+    const promise = createPromise();
+
+    toast.promise(promise, {
       loading: 'Creating profile...',
       success: (msg) => msg,
       error: (error) => extractErrorMessage(error),
