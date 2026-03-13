@@ -1,7 +1,8 @@
 import { resetPassword } from '@/auth';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { FormField } from '@/components/FormField';
+import { Form } from '@/components/contexts/FormProvider';
+import { TextInputField } from '@/components/form-fields/TextInputField';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -23,7 +24,7 @@ import { router } from 'expo-router';
 
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner-native';
 import * as z from 'zod/v4';
 
@@ -38,12 +39,12 @@ export default function ForgotPassword() {
     (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
-  const form = useForm<Schema>({
+  const methods = useForm<Schema>({
     resolver: zodResolver(schema),
     defaultValues: { email: '' },
   });
 
-  const isSubmitting = form.formState.isSubmitting;
+  const { isSubmitting } = methods.formState;
 
   async function onSubmit({ email }: Schema) {
     const resetPromise = resetPassword(email);
@@ -87,37 +88,46 @@ export default function ForgotPassword() {
             </VStack>
 
             <VStack space="3xl" className="p-5 pt-0">
-              <FormProvider {...form}>
-                <FormField
+              <Form {...methods}>
+                <TextInputField
+                  control={methods.control}
                   name="email"
-                  fieldType="text"
-                  variant="underlined"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  placeholder="name@example.com"
-                  keyboardType="email-address"
-                  inputIcon={MailIcon}
+                  contentPosition="first"
+                  inputProps={{
+                    type: 'text',
+                    variant: 'underlined',
+                    autoCapitalize: 'none',
+                    autoComplete: 'email',
+                    placeholder: 'name@example.com',
+                    keyboardType: 'email-address',
+                    icon: MailIcon,
+                    'aria-label': 'Enter your email address',
+                  }}
                 />
-              </FormProvider>
+              </Form>
 
               <Button
                 isDisabled={isSubmitting}
                 size="lg"
                 variant="solid"
                 action="primary"
-                onPress={form.handleSubmit(onSubmit)}
+                onPress={methods.handleSubmit(onSubmit)}
               >
                 <ButtonText>{isSubmitting ? 'Requesting...' : 'Request Reset'}</ButtonText>
               </Button>
             </VStack>
           </Card>
 
-          <HStack>
-            <Button variant="link" action="default" size="md" onPress={() => router.dismiss()}>
-              <ButtonIcon as={ChevronLeftIcon} />
-              <ButtonText>Back to sign in</ButtonText>
-            </Button>
-          </HStack>
+          <Button
+            className="mt-1 self-start"
+            variant="link"
+            action="default"
+            size="md"
+            onPress={() => router.dismiss()}
+          >
+            <ButtonIcon as={ChevronLeftIcon} />
+            <ButtonText>Back to sign in</ButtonText>
+          </Button>
         </VStack>
       </KeyboardAvoidingScrollView>
     </SafeArea>
