@@ -69,7 +69,7 @@ export function saveFormData<TName extends SchemaName>(
 export function deleteSavedFormData(schemaName: SchemaName): void {
   const key = createKey(schemaName);
   if (!key) return;
-  formDataStorage.delete(key);
+  formDataStorage.remove(key);
 }
 
 export function getStoredData<T>(key: string, storage: MMKV = Storage) {
