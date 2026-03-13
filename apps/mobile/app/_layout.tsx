@@ -4,6 +4,7 @@ import { AppProvider } from '@/components/AppProvider';
 import { API_URL, VERCEL_BYPASS_TOKEN } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import { initApiClient } from '@lactalink/api';
+import { fetch as expoFetch, FetchRequestInit } from 'expo/fetch';
 import { enableMapSet } from 'immer';
 
 import '@/global.css';
@@ -22,6 +23,7 @@ initApiClient({
   supabase,
   environment: 'expo',
   bypassToken: VERCEL_BYPASS_TOKEN,
+  fetch: (url, init) => expoFetch(url.toString(), init as FetchRequestInit),
 });
 
 // Enable Immer support for Map and Set
