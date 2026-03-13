@@ -19,7 +19,7 @@ const iconStyle = tva({
   base: 'ml-3',
 });
 
-interface TextInputFieldProps<
+export interface TextInputFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
@@ -77,7 +77,6 @@ export function TextInputField<
         <Skeleton variant="rounded" className="h-10" />
       ) : (
         <InputComp
-          ref={ref}
           className={containerClassName}
           style={containerStyle}
           size={size}
@@ -94,9 +93,9 @@ export function TextInputField<
 
           <InputFieldComp
             {...inputProps}
-            type={showPass ? 'text' : 'password'}
+            ref={ref}
             secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
-            value={value || ''}
+            value={value ?? ''}
             onChangeText={onChange}
             recyclingKey={recyclingKey}
           />
@@ -105,7 +104,6 @@ export function TextInputField<
             <Pressable
               className="mr-3"
               hitSlop={8}
-              android_ripple={null}
               onPress={(e) => {
                 e.stopPropagation();
                 setShowPass(!showPass);
