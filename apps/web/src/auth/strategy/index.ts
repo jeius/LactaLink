@@ -13,7 +13,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
   const collectionSlug: CollectionSlug = 'users';
   const collection = payload.collections[collectionSlug];
 
-  payload.logger.info('Authenticating...');
+  payload.logger.info('[Auth] Authenticating...');
 
   const supabase = createSupabaseServerClient(await cookies());
 
@@ -21,7 +21,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     const sbUser = await getSupabaseAuthUser(supabase, headers);
 
     if (!sbUser) {
-      payload.logger.warn('User not found from supabase.');
+      payload.logger.warn('[Auth] User not found from supabase.');
       return { user: null };
     }
 
@@ -32,7 +32,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       .limit(1);
 
     if (!authenticatedUser) {
-      payload.logger.warn('User not found in the database.');
+      payload.logger.warn('[Auth] User not found in the database.');
       return { user: null };
     }
 
@@ -50,7 +50,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
 
     return { user };
   } catch (err) {
-    payload.logger.warn(extractErrorMessage(err));
+    payload.logger.warn(`[Auth] Authentication error - ${extractErrorMessage(err)}`);
     return { user: null };
   }
 };
