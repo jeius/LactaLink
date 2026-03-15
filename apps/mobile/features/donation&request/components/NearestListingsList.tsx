@@ -1,3 +1,12 @@
+import { AnimatedPressable } from '@/components/animated/pressable';
+import { ProfileAvatar } from '@/components/Avatar';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { Box } from '@/components/ui/box';
+import { Card } from '@/components/ui/card';
+import { FlashList } from '@/components/ui/FlashList';
+import { Icon } from '@/components/ui/icon';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { getColor } from '@/lib/colors';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
@@ -11,18 +20,9 @@ import {
   listKeyExtractor,
 } from '@lactalink/utilities/extractors';
 import { isDonation } from '@lactalink/utilities/type-guards';
-import { FlashList } from '@shopify/flash-list';
 import { Link } from 'expo-router';
 import { ChevronRightCircleIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { AnimatedPressable } from '../animated/pressable';
-import { ProfileAvatar } from '../Avatar';
-import { SingleImageViewer } from '../ImageViewer';
-import { Box } from '../ui/box';
-import { Card } from '../ui/card';
-import { Icon } from '../ui/icon';
-import { Skeleton } from '../ui/skeleton';
-import { Text } from '../ui/text';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
 
@@ -43,6 +43,8 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
     return isLoading ? PLACEHOLDER : sortToNearest(combined);
   }, [donations, isLoading, requests]);
 
+  if (listings.length === 0) return null;
+
   return (
     <FlashList
       data={listings}
@@ -53,7 +55,7 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
       style={shadow.sm}
       contentContainerClassName="grow p-4 bg-background-0"
       ItemSeparatorComponent={() => <Box className="w-2" />}
-      ListFooterComponent={() => <CTA />}
+      ListFooterComponent={<CTA />}
       ListFooterComponentStyle={{ marginLeft: 8 }}
       renderItem={({ item }) => {
         const isPlaceholder = isPlaceHolderData(item);
