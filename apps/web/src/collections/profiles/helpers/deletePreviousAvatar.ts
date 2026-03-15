@@ -27,7 +27,7 @@ export async function deletePreviousAvatar(
   const prevAvatarID = prevAvatar ? extractID(prevAvatar) : null;
   const newAvatarID = newAvatar ? extractID(newAvatar) : null;
 
-  if (prevAvatarID && newAvatarID && prevAvatarID !== newAvatarID) {
+  if (prevAvatarID && prevAvatarID !== newAvatarID) {
     await req.payload.delete({
       collection: 'avatars',
       id: prevAvatarID,
