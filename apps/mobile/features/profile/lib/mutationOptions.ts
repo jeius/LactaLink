@@ -31,7 +31,7 @@ export function createEditProfileMutationOptions(
         path: `/${profile.relationTo}/${extractID(profile.value)}`,
         method: 'PATCH',
         file: avatarURI ? new File(avatarURI) : undefined,
-        json: data,
+        json: avatar ? { ...data, avatar: avatar.id } : { ...data, avatar },
         init: init,
         args: { depth: 3 },
       });

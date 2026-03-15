@@ -3,6 +3,7 @@ import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Form } from '@/components/contexts/FormProvider';
 import { HStack } from '@/components/ui/hstack';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { getDirtyData } from '@/lib/utils/getDirtyData';
 import { EditProfileSchema } from '@lactalink/form-schemas';
@@ -28,8 +29,9 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   const methods = useEditProfileForm(profile);
   const { formState, handleSubmit } = methods;
+  const { isDirty, isSubmitting, dirtyFields } = formState;
 
-  const { mutateAsync } = useUpdateProfileMutation(profile);
+  const { mutateAsync: updateProfile } = useUpdateProfileMutation(profile);
 
   const renderForm: Record<ProfileSlug, React.ReactNode> = {
     individuals: <PersonalEditForm control={methods.control} />,
@@ -38,15 +40,9 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   };
 
   const onSubmit = async (data: EditProfileSchema) => {
-    const { id: _, slug: __, ...finalData } = getDirtyData(data, formState.dirtyFields);
+    const { id: _, slug: __, ...finalData } = getDirtyData(data, dirtyFields);
 
-    const promise = mutateAsync(finalData);
-
-    toast.promise(promise, {
-      loading: 'Updating profile...',
-      success: () => 'Profile updated successfully!',
-      error: (err) => extractErrorMessage(err),
-    });
+    await updateProfile(finalData).catch((err) => toast.error(extractErrorMessage(err)));
   };
 
   return (
@@ -57,11 +53,15 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
           Update Profile
         </Text>
         <AnimatedPressable
-          disabled={!formState.isDirty}
+          disabled={!isDirty || isSubmitting}
           className="px-3 py-2"
           onPress={handleSubmit(onSubmit)}
         >
-          <Text className="font-JakartaSemiBold">Save</Text>
+          {isSubmitting ? (
+            <Spinner size={'small'} />
+          ) : (
+            <Text className="font-JakartaSemiBold">Save</Text>
+          )}
         </AnimatedPressable>
       </HStack>
       <KeyboardAvoidingScrollView

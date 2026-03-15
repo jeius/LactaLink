@@ -72,7 +72,7 @@ export function AvatarField({ control }: AvatarFieldProps) {
 
   function handleRemove() {
     // Remove local file if exists
-    if (avatar && !avatar.url.startsWith('https')) {
+    if (avatar && !avatar.url.startsWith('http')) {
       deleteLocalFiles([avatar.url]);
     }
     onChange(null);
