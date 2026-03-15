@@ -25,15 +25,12 @@ export default function Toaster() {
         loading: <Spinner className="text-info-500" size={'small'} />,
       }}
       toastOptions={{
-        actionButtonStyle: {
-          paddingHorizontal: 20,
-        },
-        titleStyle: {
-          fontFamily: 'Jakarta-Medium',
-        },
-        descriptionStyle: {
-          fontFamily: 'Jakarta-Regular',
-        },
+        actionButtonStyle: { paddingHorizontal: 20 },
+        cancelButtonStyle: { paddingHorizontal: 20 },
+        titleStyle: { fontFamily: 'Jakarta-Medium' },
+        descriptionStyle: { fontFamily: 'Jakarta-Regular' },
+        actionButtonTextStyle: { fontFamily: 'Jakarta-Medium' },
+        cancelButtonTextStyle: { fontFamily: 'Jakarta-Medium' },
       }}
     />
   );
