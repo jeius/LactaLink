@@ -1,15 +1,11 @@
-import { useRevalidateAllQueries } from '@/hooks/collections/useRevalidateQueries';
-import { FC, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RefreshControlProps } from 'react-native';
 import { RefreshControl as RNRefreshControl } from 'react-native-gesture-handler';
 import { useTheme } from './AppProvider/ThemeProvider';
 
-const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, refreshing, ...props }) => {
-  const { themeColors } = useTheme();
-  const revalidateQueries = useRevalidateAllQueries();
-
+export function RefreshControl({ onRefresh, refreshing, ...props }: RefreshControlProps) {
   const [pulled, setPulled] = useState(false);
-
+  const { themeColors } = useTheme();
   const tintColor = themeColors.primary[500];
   const bgColor = themeColors.background[50];
 
@@ -17,14 +13,10 @@ const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, refreshing, ...pro
     if (!refreshing) setPulled(false);
   }, [refreshing]);
 
-  function handleRefresh() {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      revalidateQueries();
-    }
+  const handleRefresh = useCallback(() => {
+    onRefresh?.();
     setPulled(true);
-  }
+  }, [onRefresh]);
 
   return (
     <RNRefreshControl
@@ -35,7 +27,4 @@ const RefreshControl: FC<RefreshControlProps> = ({ onRefresh, refreshing, ...pro
       onRefresh={handleRefresh}
     />
   );
-};
-
-RefreshControl.displayName = 'RefreshControl';
-export { RefreshControl };
+}
