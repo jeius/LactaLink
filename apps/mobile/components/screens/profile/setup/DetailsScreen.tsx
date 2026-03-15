@@ -16,7 +16,7 @@ const forms: Record<ProfileType, FC<{ control: Control<SetupProfileSchema> }>> =
   MILK_BANK: MilkBankForm,
 };
 
-export default function ProfileDetails() {
+export default function ProfileDetailsScreen() {
   const { control } = useFormContext<SetupProfileSchema>();
   const profileType = useWatch({ control, name: 'profileType' });
   const offset = useKeyboardOffset((s) => s.height);

@@ -7,7 +7,7 @@ import React from 'react';
 
 import { Image } from '@/components/Image';
 import { profileTypeOptions } from '@/features/profile/lib/options';
-import { ProfileTypeOptions } from '@/features/profile/types';
+import { ProfileTypeOptions } from '@/features/profile/lib/types';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -79,7 +79,7 @@ const descriptionStyle = tva({
 
 const AnimatedCard = Animated.createAnimatedComponent(Card);
 
-export default function SelectProfileType() {
+export default function ProfileTypeScreen() {
   const { setValue, control } = useFormContext<SetupProfileSchema>();
   const selected = useWatch({ control, name: 'profileType' });
 

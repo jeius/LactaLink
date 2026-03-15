@@ -6,7 +6,7 @@ import { SetupProfileSchema } from '@lactalink/form-schemas';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
-export default function ProfileAvatar() {
+export default function ProfileAvatarScreen() {
   const { control, getValues } = useFormContext<SetupProfileSchema>();
 
   const name = getValues('name')

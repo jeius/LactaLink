@@ -1,3 +1,4 @@
+import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import {
   HospitalSchema,
   IndividualSchema,
@@ -6,11 +7,10 @@ import {
 } from '@lactalink/form-schemas';
 import { Building2Icon, HospitalIcon, LucideProps, UserIcon } from 'lucide-react-native';
 import { SvgProps } from 'react-native-svg';
-import { ProfileType, SetupProfileSteps } from '../types';
+import { ProfileType, SetupProfileSteps } from '../lib/types';
 
-export const SETUP_PROFILE_STEPS: SetupProfileSteps[] = ['type', 'details', 'contact', 'avatar'];
-
-export const TYPE_FIELDS: (keyof SetupProfileSchema)[] = ['profileType'];
+const STEPS: SetupProfileSteps[] = ['type', 'details', 'contact', 'avatar'];
+export const PROFILE_SETUP_ROUTES = createDynamicRoute('/profile/setup', STEPS);
 
 const INDIVIDUAL_FIELDS: (keyof IndividualSchema)[] = [
   'givenName',
@@ -45,3 +45,5 @@ export const PROFILE_TYPE_ICONS: Record<ProfileType, React.FC<SvgProps | LucideP
   HOSPITAL: HospitalIcon,
   MILK_BANK: Building2Icon,
 };
+
+export const TYPE_FIELDS: (keyof SetupProfileSchema)[] = ['profileType'];

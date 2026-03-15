@@ -1,6 +1,6 @@
 import { OptionsCardItem } from '@/components/cards/OptionsCards';
 import { getIconAsset, getImageAsset } from '@/lib/stores';
-import { ProfileTypeOptions } from '../types';
+import { ProfileTypeOptions } from '../lib/types';
 
 import { HospitalSchema, IndividualSchema, MilkBankSchema } from '@lactalink/form-schemas';
 

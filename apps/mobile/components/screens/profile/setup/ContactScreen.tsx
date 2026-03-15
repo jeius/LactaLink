@@ -29,7 +29,7 @@ import { FlatList } from 'react-native-gesture-handler';
 
 const STORAGE_KEY = MMKV_KEYS.ALERT.ADDRESS.CREATE;
 
-export default function ProfileContact() {
+export default function ProfileContactScreen() {
   const navigateTo = useNavigateWithRedirect();
 
   const { data: user } = useMeUser();

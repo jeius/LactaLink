@@ -4,21 +4,19 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { VStack } from '@/components/ui/vstack';
 import KeyboardOffsetProvider from '@/features/profile/components/KeyboardOffsetContext';
+import { useCreateProfileMutation } from '@/features/profile/hooks/mutations';
+import { useProfileSetupNavigator } from '@/features/profile/hooks/useProfileSetupNavigator';
 import { useSetupProfileForm } from '@/features/profile/hooks/useSetupForm';
 import {
   AVATAR_FIELDS,
   CONTACT_FIELDS,
   DETAILS_FIELDS,
-  SETUP_PROFILE_STEPS,
   TYPE_FIELDS,
 } from '@/features/profile/lib/constants';
-import { SetupProfileFields, SetupProfileSteps } from '@/features/profile/types';
-import { useAuth } from '@/hooks/auth/useAuth';
-import { usePagination } from '@/hooks/forms/usePagination';
+import { SetupProfileFields } from '@/features/profile/lib/types';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { createProfile } from '@/lib/api/profile/createProfile';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
-import { createDynamicRoute } from '@/lib/utils/createDynamicRoute';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
@@ -30,87 +28,65 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
-const STEPS = createDynamicRoute('/profile/setup', SETUP_PROFILE_STEPS);
-
 export default function Layout() {
   const router = useRouter();
-  const { user, refetchSession } = useAuth();
+  const { data: user } = useMeUser();
   const insets = useSafeAreaInsets();
   const screenOptions = useScreenOptions({ animationType: 'slide' });
 
-  const { nextPage, hasNextPage, prevPage, hasPrevPage, progress, currentPageIndex, pathname } =
-    usePagination(STEPS);
-
-  const isInOnboarding = currentPageIndex < 0;
-
-  const [ctaSize, setCtaSize] = useState<LayoutRectangle>({ x: 0, y: 0, width: 0, height: 0 });
+  const [navBtnContainerSize, setNavBtnContainerSize] = useState<LayoutRectangle>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
 
   const form = useSetupProfileForm();
   const { handleSubmit, trigger } = form;
   const profileType = useWatch({ control: form.control, name: 'profileType' });
 
+  const { mutateAsync: createProfile } = useCreateProfileMutation();
+
   async function onSubmit(formData: SetupProfileSchema) {
-    const createPromise = async () => {
+    const create = async () => {
       if (!user) throw new Error('User not found.');
 
       const createdProfile = await createProfile(formData);
-      const name = createdProfile.displayName;
+      const name = createdProfile.value.displayName;
 
       deleteSavedFormData('profile-create');
-      await refetchSession({ throwOnError: true });
       router.replace('/feed');
 
       return name ? `Welcome to LactaLink ${name}!` : 'Profile created successfully!';
     };
 
-    const promise = createPromise();
-
-    toast.promise(promise, {
+    toast.promise(create(), {
       loading: 'Creating profile...',
       success: (msg) => msg,
       error: (error) => extractErrorMessage(error),
     });
   }
 
-  async function handleNext() {
-    if (!hasNextPage) {
-      handleSubmit(onSubmit)();
-      return;
-    }
+  const { goToNextStep, goToPrevStep, isIntro, hasNextPage, progress } = useProfileSetupNavigator({
+    onSubmit: handleSubmit(onSubmit),
+    validate: async (currentStep) => {
+      const fieldNames: SetupProfileFields = {
+        type: TYPE_FIELDS,
+        details: DETAILS_FIELDS[profileType],
+        contact: CONTACT_FIELDS,
+        avatar: AVATAR_FIELDS,
+      };
 
-    const currentStep = pathname.split('/').pop() as SetupProfileSteps | undefined;
-
-    if (!currentStep) {
-      toast.error('An unexpected error occurred. Please try again.');
-      return;
-    }
-
-    const fieldNames: SetupProfileFields = {
-      type: TYPE_FIELDS,
-      details: DETAILS_FIELDS[profileType],
-      contact: CONTACT_FIELDS,
-      avatar: AVATAR_FIELDS,
-    };
-
-    const allValid = await trigger(fieldNames[currentStep]);
-
-    if (allValid) {
-      nextPage();
-    } else {
-      toast.error('There are some invalid fields. Please fix them before proceeding.');
-    }
-  }
-
-  function handleBack() {
-    if (hasPrevPage) prevPage();
-    else router.back();
-  }
+      return trigger(fieldNames[currentStep]);
+    },
+  });
 
   return (
     <FormProvider {...form}>
-      <KeyboardOffsetProvider {...ctaSize}>
+      <KeyboardOffsetProvider {...navBtnContainerSize}>
         <FormSaver schemaName="profile-create" />
 
+        {/* Progress Indicator */}
         <Animated.View
           /**Omit animations for now since there is an issue @https://github.com/software-mansion/react-native-reanimated/issues/8422#issuecomment-3547104492 */
           // entering={FadeInUp}
@@ -118,26 +94,28 @@ export default function Layout() {
           className="px-5"
           style={{ marginTop: insets.top }}
         >
-          <AnimatedProgress size="sm" value={progress} hidden={isInOnboarding} />
+          <AnimatedProgress size="sm" value={progress} hidden={isIntro} />
         </Animated.View>
 
+        {/* Forms */}
         <Box className="flex-1">
           <Stack screenOptions={screenOptions} />
         </Box>
 
-        <AnimationWrapper hidden={isInOnboarding}>
+        {/* Navigation Buttons */}
+        <AnimationWrapper hidden={isIntro}>
           <VStack
             className="w-full rounded-2xl border border-outline-300 bg-background-0 p-4"
+            onLayout={(e) => setNavBtnContainerSize(e.nativeEvent.layout)}
             style={{
               paddingBottom: Math.max(insets.bottom, 16),
               ...createDirectionalShadow('top'),
             }}
-            onLayout={(e) => setCtaSize(e.nativeEvent.layout)}
           >
-            <Button isDisabled={!profileType} size="lg" onPress={handleNext}>
+            <Button isDisabled={!profileType} size="lg" onPress={goToNextStep}>
               <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
             </Button>
-            <Button size="md" variant="link" action="default" onPress={handleBack}>
+            <Button size="md" variant="link" action="default" onPress={goToPrevStep}>
               <ButtonText>Back</ButtonText>
             </Button>
           </VStack>
