@@ -1,9 +1,12 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { ProfileAvatar } from '@/components/Avatar';
 import { SingleImageViewer } from '@/components/ImageViewer';
+import { DonateRequestModal } from '@/components/modals';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FlashList } from '@/components/ui/FlashList';
+import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
@@ -21,7 +24,7 @@ import {
 } from '@lactalink/utilities/extractors';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
-import { ChevronRightCircleIcon } from 'lucide-react-native';
+import { ChevronRightCircleIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
@@ -43,7 +46,7 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
     return isLoading ? PLACEHOLDER : sortToNearest(combined);
   }, [donations, isLoading, requests]);
 
-  if (listings.length === 0) return null;
+  const isEmpty = listings.length === 0;
 
   return (
     <FlashList
@@ -55,7 +58,8 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
       style={shadow.sm}
       contentContainerClassName="grow p-4 bg-background-0"
       ItemSeparatorComponent={() => <Box className="w-2" />}
-      ListFooterComponent={<CTA />}
+      ListFooterComponent={!isEmpty ? <CTA /> : null}
+      ListEmptyComponent={<ListEmpty />}
       ListFooterComponentStyle={{ marginLeft: 8 }}
       renderItem={({ item }) => {
         const isPlaceholder = isPlaceHolderData(item);
@@ -86,7 +90,7 @@ function ItemCard({ item }: { item: Donation | Request }) {
   const textColor = donationData ? getColor('primary', '0') : getColor('tertiary', '50');
 
   return (
-    <Card variant="elevated" className="h-48 w-32 flex-col items-stretch justify-between p-0">
+    <Card variant="elevated" className="h-44 w-32 flex-col items-stretch justify-between p-0">
       <Box className="absolute inset-0">
         <SingleImageViewer image={imageData} disabled />
       </Box>
@@ -114,17 +118,35 @@ function CTA() {
   return (
     <Link asChild push href={'/listings'}>
       <AnimatedPressable className="overflow-hidden rounded-2xl">
-        <Card variant="filled" className="h-48 w-32 items-center justify-center">
+        <Card variant="filled" className="h-44 w-32 items-center justify-center border-0">
           <Icon as={ChevronRightCircleIcon} size="2xl" />
-          <Text className="mt-2 font-JakartaMedium">See More</Text>
+          <Text size="sm" className="mt-2 font-JakartaSemiBold">
+            See More
+          </Text>
         </Card>
       </AnimatedPressable>
     </Link>
   );
 }
 
+function ListEmpty() {
+  return (
+    <HStack space="lg" className="h-44 flex-1 items-center justify-center">
+      <Text className="font-JakartaMedium text-typography-600">No nearby listings!</Text>
+      <DonateRequestModal
+        trigger={(props) => (
+          <Button size="md" action="primary" variant="outline" {...props}>
+            <ButtonIcon as={PackagePlusIcon} />
+            <ButtonText>Create One</ButtonText>
+          </Button>
+        )}
+      />
+    </HStack>
+  );
+}
+
 function PlaceholderItem() {
-  return <Skeleton variant="rounded" className="h-48 w-32 rounded-2xl" />;
+  return <Skeleton variant="rounded" className="h-44 w-32 rounded-2xl" />;
 }
 
 function sortToNearest(items: (Donation | Request)[]) {

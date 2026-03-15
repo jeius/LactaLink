@@ -22,7 +22,7 @@ import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { Link, useRouter } from 'expo-router';
-import { PlusIcon } from 'lucide-react-native';
+import { PackagePlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -105,7 +105,7 @@ function CTA(props: HStackProps) {
       <DonateRequestModal
         trigger={(props) => (
           <Pressable {...props} hitSlop={8} className="overflow-hidden rounded-full p-2">
-            <Icon as={PlusIcon} size="xl" />
+            <Icon as={PackagePlusIcon} size="xl" />
           </Pressable>
         )}
       />
