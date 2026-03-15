@@ -94,3 +94,20 @@ export function LeaveToastAction({
     />
   );
 }
+
+export function CancelToastAction(
+  props: { id?: string; label?: string; onCancel?: () => void } & Omit<ButtonProps, 'onPress'>
+) {
+  const { id, label = 'Cancel', onCancel, action = 'default', size = 'sm', ...buttonProps } = props;
+
+  function handleCancel() {
+    onCancel?.();
+    toast.dismiss(id);
+  }
+
+  return (
+    <Button {...buttonProps} action={action} size={size} onPress={handleCancel}>
+      <ButtonText>{label}</ButtonText>
+    </Button>
+  );
+}
