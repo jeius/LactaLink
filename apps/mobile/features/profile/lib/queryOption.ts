@@ -31,21 +31,29 @@ export function createUserProfileQuery(profile: UserProfile | undefined) {
     enabled: !!id && !!slug,
     queryKey: [...QUERY_KEYS.PROFILE.ONE, id, slug],
     queryFn: async (): Promise<PopulatedUserProfile> => {
-      if (!id || !slug) throw new Error('Invalid profile data');
+      if (!id || !slug) throw new Error('User has no profile to fetch.');
 
       const apiClient = getApiClient();
-      const data = await apiClient.findByID({
-        collection: slug,
-        id: id,
-        depth: 5,
-        joins: {
-          inventory: { count: true, limit: 0 },
-          posts: { count: true, limit: 0 },
-          milkBags: { count: true, limit: 0 },
-          receivedTransactions: { count: true, limit: 0 },
-          sentTransactions: { count: true, limit: 0 },
-        },
-      });
+      const data =
+        slug === 'individuals'
+          ? await apiClient.findByID({
+              collection: slug,
+              id: id,
+              depth: 3,
+              joins: { posts: { count: true, limit: 10 } },
+            })
+          : await apiClient.findByID({
+              collection: slug,
+              id: id,
+              depth: 3,
+              joins: {
+                inventory: { count: true, limit: 0 },
+                posts: { count: true, limit: 0 },
+                milkBags: { count: true, limit: 0 },
+                receivedTransactions: { count: true, limit: 0 },
+                sentTransactions: { count: true, limit: 0 },
+              },
+            });
 
       return { relationTo: slug, value: data } as PopulatedUserProfile;
     },
