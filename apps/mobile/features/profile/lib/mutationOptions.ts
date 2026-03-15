@@ -44,9 +44,9 @@ export function createEditProfileMutationOptions(
       const updatedProfile: Individual | Hospital | MilkBank = await response.json();
       return { ...profile, value: updatedProfile } as PopulatedUserProfile;
     },
-    onSuccess: (data, _vars, _ctx, { client }) => {
+    onSuccess: async (_data, _vars, _ctx, { client }) => {
       const queryKey = createUserProfileQuery(profile).queryKey;
-      client.setQueryData(queryKey, data);
+      await client.invalidateQueries({ queryKey, exact: true });
     },
   });
 }
