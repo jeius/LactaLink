@@ -1,11 +1,11 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 
 const buttonStyle = tva({
-  base: 'group/button flex-row items-center justify-center gap-2 overflow-hidden rounded-xl bg-typography-900 disabled:opacity-50 focus:web:outline-none focus:web:ring-2',
+  base: 'group/button flex-row items-center justify-center gap-2 overflow-hidden rounded-xl disabled:opacity-50 focus:web:outline-none focus:web:ring-2',
   variants: {
     action: {
       primary:
-        'border-primary-400 bg-primary-500 hover:border-primary-500 hover:bg-primary-400 active:border-primary-600 active:bg-primary-600 focus:web:ring-indicator-info',
+        'border-primary-500 bg-primary-500 hover:border-primary-500 hover:bg-primary-400 active:border-primary-600 active:bg-primary-600 focus:web:ring-indicator-info',
       secondary:
         'border-secondary-500 bg-secondary-500 hover:border-secondary-400 hover:bg-secondary-400 active:border-secondary-600 active:bg-secondary-600 focus:web:ring-indicator-info',
       tertiary:
@@ -18,11 +18,12 @@ const buttonStyle = tva({
       muted:
         'border-outline-400 bg-background-0 hover:border-outline-300 hover:bg-background-100 active:border-outline-300 active:bg-background-100',
       default:
-        'border-typography-900 hover:border-typography-300 hover:bg-typography-300 active:border-typography-600 active:bg-typography-600',
+        'border-typography-950 bg-typography-950 hover:border-typography-600 hover:bg-typography-600 active:border-typography-600 active:bg-typography-600',
     },
     variant: {
       link: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
-      outline: 'border bg-transparent hover:bg-background-50 active:bg-background-100',
+      outline: 'border bg-transparent hover:bg-background-50 active:bg-background-50',
+      ghost: 'bg-transparent hover:bg-background-50 active:bg-background-50',
       solid: '',
     },
 
@@ -37,92 +38,91 @@ const buttonStyle = tva({
   compoundVariants: [
     {
       action: 'primary',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-primary-50 active:bg-primary-0',
     },
     {
       action: 'secondary',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-secondary-50 active:bg-secondary-0',
     },
     {
       action: 'tertiary',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
-    },
-    {
-      action: 'positive',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-tertiary-50 active:bg-tertiary-0',
     },
     {
       action: 'info',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-info-50 active:bg-info-0',
+    },
+    {
+      action: 'positive',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-success-50 active:bg-success-0',
     },
     {
       action: 'negative',
-      variant: 'link',
-      class: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      variant: 'outline',
+      class: 'bg-transparent hover:bg-error-50 active:bg-error-0',
     },
     {
       action: 'primary',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-primary-100 active:bg-primary-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-primary-50 active:bg-primary-0',
     },
     {
       action: 'secondary',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-secondary-100 active:bg-secondary-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-secondary-50 active:bg-secondary-0',
     },
     {
       action: 'tertiary',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-tertiary-100 active:bg-tertiary-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-tertiary-50 active:bg-tertiary-0',
     },
     {
       action: 'info',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-info-100 active:bg-info-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-info-50 active:bg-info-0',
     },
     {
       action: 'positive',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-success-100 active:bg-success-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-success-50 active:bg-success-0',
     },
     {
       action: 'negative',
-      variant: 'outline',
-      class: 'bg-transparent hover:bg-error-100 active:bg-error-200',
+      variant: 'ghost',
+      class: 'bg-transparent hover:bg-error-50 active:bg-error-0',
     },
   ],
 });
 
 const buttonTextStyle = tva({
-  base: 'font-JakartaSemiBold text-typography-0',
+  base: 'font-JakartaSemiBold text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
   variants: {
-    underlineOnPress: { true: 'group-active/button:underline' },
+    underlineOnPress: { true: '' },
   },
   parentVariants: {
     action: {
       primary:
-        'text-primary-500 group-hover/button:text-primary-600 group-active/button:text-primary-700',
+        'text-primary-500 group-hover/button:text-primary-400 group-active/button:text-primary-400',
       secondary:
-        'text-secondary-500 group-hover/button:text-secondary-600 group-active/button:text-secondary-700',
+        'text-secondary-500 group-hover/button:text-secondary-400 group-active/button:text-secondary-400',
       tertiary:
-        'text-tertiary-500 group-hover/button:text-tertiary-600 group-active/button:text-tertiary-700',
-      info: 'text-info-500 group-hover/button:text-info-600 group-active/button:text-info-700',
+        'text-tertiary-500 group-hover/button:text-tertiary-400 group-active/button:text-tertiary-400',
+      info: 'text-info-500 group-hover/button:text-info-400 group-active/button:text-info-400',
       positive:
-        'text-success-500 group-hover/button:text-success-600 group-active/button:text-success-700',
+        'text-success-500 group-hover/button:text-success-400 group-active/button:text-success-400',
       negative:
-        'text-error-500 group-hover/button:text-error-600 group-active/button:text-error-700',
-      muted:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
+        'text-error-500 group-hover/button:text-error-400 group-active/button:text-error-400',
+      muted: '',
     },
     variant: {
-      link: 'text-typography-950 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-      outline:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-800',
+      link: 'group-hover/button:underline group-focus-visible/button:underline group-active/button:underline',
+      outline: '',
+      ghost: '',
       solid:
         'text-typography-0 group-hover/button:text-typography-0 group-active/button:text-typography-0',
     },
@@ -138,8 +138,7 @@ const buttonTextStyle = tva({
     {
       variant: 'solid',
       action: 'primary',
-      class:
-        'text-primary-0 group-hover/button:text-primary-0 group-active/button:text-primary-100',
+      class: 'text-primary-0 group-hover/button:text-primary-0 group-active/button:text-primary-0',
     },
     {
       variant: 'solid',
@@ -174,111 +173,30 @@ const buttonTextStyle = tva({
       class:
         'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
     },
-    {
-      variant: 'outline',
-      action: 'primary',
-      class:
-        'text-primary-500 group-hover/button:text-primary-600 group-active/button:text-primary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'secondary',
-      class:
-        'text-secondary-500 group-hover/button:text-secondary-600 group-active/button:text-secondary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'tertiary',
-      class:
-        'text-tertiary-500 group-hover/button:text-tertiary-600 group-active/button:text-tertiary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'info',
-      class: 'text-info-500 group-hover/button:text-info-600 group-active/button:text-info-600',
-    },
-    {
-      variant: 'outline',
-      action: 'positive',
-      class:
-        'text-success-500 group-hover/button:text-success-600 group-active/button:text-success-600',
-    },
-    {
-      variant: 'outline',
-      action: 'negative',
-      class: 'text-error-500 group-hover/button:text-error-600 group-active/button:text-error-600',
-    },
-    {
-      variant: 'outline',
-      action: 'muted',
-      class:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-    },
-    {
-      variant: 'link',
-      action: 'primary',
-      class:
-        'text-primary-500 group-hover/button:text-primary-300 group-active/button:text-primary-300',
-    },
-    {
-      variant: 'link',
-      action: 'secondary',
-      class:
-        'text-secondary-500 group-hover/button:text-secondary-300 group-active/button:text-secondary-300',
-    },
-    {
-      variant: 'link',
-      action: 'tertiary',
-      class:
-        'text-tertiary-500 group-hover/button:text-tertiary-300 group-active/button:text-tertiary-300',
-    },
-    {
-      variant: 'link',
-      action: 'info',
-      class: 'text-info-800 group-hover/button:text-info-500 group-active/button:text-info-500',
-    },
-    {
-      variant: 'link',
-      action: 'positive',
-      class:
-        'text-success-500 group-hover/button:text-success-300 group-active/button:text-success-300',
-    },
-    {
-      variant: 'link',
-      action: 'negative',
-      class: 'text-error-500 group-hover/button:text-error-300 group-active/button:text-error-300',
-    },
-    {
-      variant: 'link',
-      action: 'muted',
-      class:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-    },
   ],
 });
 
 const buttonIconStyle = tva({
-  base: 'fill-none text-typography-0',
+  base: 'fill-none text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
   parentVariants: {
     action: {
       primary:
-        'text-primary-500 group-hover/button:text-primary-600 group-active/button:text-primary-700',
+        'text-primary-500 group-hover/button:text-primary-400 group-active/button:text-primary-400',
       secondary:
-        'text-secondary-500 group-hover/button:text-secondary-600 group-active/button:text-secondary-700',
+        'text-secondary-500 group-hover/button:text-secondary-400 group-active/button:text-secondary-400',
       tertiary:
-        'text-tertiary-500 group-hover/button:text-tertiary-600 group-active/button:text-tertiary-700',
+        'text-tertiary-500 group-hover/button:text-tertiary-400 group-active/button:text-tertiary-400',
+      info: 'text-info-500 group-hover/button:text-info-400 group-active/button:text-info-400',
       positive:
-        'text-success-500 group-hover/button:text-success-600 group-active/button:text-success-700',
-      info: 'text-info-500 group-hover/button:text-info-600 group-active/button:text-info-700',
+        'text-success-500 group-hover/button:text-success-400 group-active/button:text-success-400',
       negative:
-        'text-error-500 group-hover/button:text-error-600 group-active/button:text-error-700',
-      default:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
+        'text-error-500 group-hover/button:text-error-400 group-active/button:text-error-400',
+      muted: '',
     },
     variant: {
-      link: 'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-      outline:
-        'text-typography-800 group-hover/button:text-typography-950 group-active/button:text-typography-950',
+      link: 'group-hover/button:underline group-focus-visible/button:underline group-active/button:underline',
+      outline: '',
+      ghost: '',
       solid:
         'text-typography-0 group-hover/button:text-typography-0 group-active/button:text-typography-0',
     },
@@ -294,8 +212,7 @@ const buttonIconStyle = tva({
     {
       variant: 'solid',
       action: 'primary',
-      class:
-        'text-primary-0 group-hover/button:text-primary-0 group-active/button:text-primary-100',
+      class: 'text-primary-0 group-hover/button:text-primary-0 group-active/button:text-primary-0',
     },
     {
       variant: 'solid',
@@ -326,86 +243,6 @@ const buttonIconStyle = tva({
     },
     {
       variant: 'solid',
-      action: 'muted',
-      class:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-    },
-    {
-      variant: 'outline',
-      action: 'primary',
-      class:
-        'text-primary-500 group-hover/button:text-primary-600 group-active/button:text-primary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'secondary',
-      class:
-        'text-secondary-500 group-hover/button:text-secondary-600 group-active/button:text-secondary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'tertiary',
-      class:
-        'text-tertiary-500 group-hover/button:text-tertiary-600 group-active/button:text-tertiary-600',
-    },
-    {
-      variant: 'outline',
-      action: 'info',
-      class: 'text-info-500 group-hover/button:text-info-600 group-active/button:text-info-600',
-    },
-    {
-      variant: 'outline',
-      action: 'positive',
-      class:
-        'text-success-500 group-hover/button:text-success-600 group-active/button:text-success-600',
-    },
-    {
-      variant: 'outline',
-      action: 'negative',
-      class: 'text-error-500 group-hover/button:text-error-600 group-active/button:text-error-600',
-    },
-    {
-      variant: 'outline',
-      action: 'muted',
-      class:
-        'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',
-    },
-    {
-      variant: 'link',
-      action: 'primary',
-      class:
-        'text-primary-500 group-hover/button:text-primary-800 group-active/button:text-primary-800',
-    },
-    {
-      variant: 'link',
-      action: 'secondary',
-      class:
-        'text-secondary-500 group-hover/button:text-secondary-800 group-active/button:text-secondary-800',
-    },
-    {
-      variant: 'link',
-      action: 'tertiary',
-      class:
-        'text-tertiary-500 group-hover/button:text-tertiary-800 group-active/button:text-tertiary-800',
-    },
-    {
-      variant: 'link',
-      action: 'info',
-      class: 'text-info-800 group-hover/button:text-info-500 group-active/button:text-info-500',
-    },
-    {
-      variant: 'link',
-      action: 'positive',
-      class:
-        'text-success-500 group-hover/button:text-success-800 group-active/button:text-success-800',
-    },
-    {
-      variant: 'link',
-      action: 'negative',
-      class: 'text-error-500 group-hover/button:text-error-800 group-active/button:text-error-800',
-    },
-    {
-      variant: 'link',
       action: 'muted',
       class:
         'text-typography-900 group-hover/button:text-typography-800 group-active/button:text-typography-700',

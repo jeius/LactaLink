@@ -1,8 +1,11 @@
 'use client';
-import { createButton } from '@gluestack-ui/button';
-import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { createButton } from '@gluestack-ui/core/button/creator';
+import { PrimitiveIcon, UIIcon } from '@gluestack-ui/core/icon/creator';
+import {
+  useStyleContext,
+  withStyleContext,
+  type VariantProps,
+} from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
 import React, { ComponentProps, FC } from 'react';
 import { ActivityIndicator, GestureResponderEvent, Text, View } from 'react-native';
@@ -93,12 +96,12 @@ const Button: React.ForwardRefExoticComponent<
   });
 
   const handlePressIn = (e: GestureResponderEvent) => {
-    if (!disablePressAnimation) progress.set(true);
+    if (!disablePressAnimation && variant !== 'link') progress.set(true);
     onPressIn?.(e);
   };
 
   const handlePressOut = (e: GestureResponderEvent) => {
-    if (!disablePressAnimation) progress.set(false);
+    if (!disablePressAnimation && variant !== 'link') progress.set(false);
     onPressOut?.(e);
   };
 
@@ -111,7 +114,7 @@ const Button: React.ForwardRefExoticComponent<
       className={buttonStyle({ variant, size, action, class: className })}
       context={{ variant, size, action }}
       style={[animatedStyle, props.style]}
-      android_ripple={disableRipple ? null : undefined}
+      android_ripple={disableRipple || variant === 'link' ? null : undefined}
     />
   );
 });
@@ -191,32 +194,30 @@ const ButtonIcon: React.ForwardRefExoticComponent<
   { className, size, ...props },
   ref
 ) {
-  const { variant: parentVariant, size: parentSize, action: parentAction } = useStyleContext(SCOPE);
+  const parentVariants = useStyleContext(SCOPE);
 
   if (typeof size === 'number') {
     return (
       <UIButton.Icon
         ref={ref}
         {...props}
-        className={buttonIconStyle({ class: className })}
         size={size}
+        className={buttonIconStyle({ parentVariants, class: className })}
       />
     );
   } else if ((props.height !== undefined || props.width !== undefined) && size === undefined) {
-    return <UIButton.Icon ref={ref} {...props} className={buttonIconStyle({ class: className })} />;
+    return (
+      <UIButton.Icon
+        ref={ref}
+        {...props}
+        className={buttonIconStyle({ parentVariants, class: className })}
+      />
+    );
   }
   return (
     <UIButton.Icon
       {...props}
-      className={buttonIconStyle({
-        parentVariants: {
-          size: parentSize,
-          variant: parentVariant,
-          action: parentAction,
-        },
-        size,
-        class: className,
-      })}
+      className={buttonIconStyle({ parentVariants, size, class: className })}
       ref={ref}
     />
   );
