@@ -1,16 +1,14 @@
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { getHexColor } from '@/lib/colors';
-import { LinearGradient, LinearGradientProps } from 'expo-linear-gradient';
+import { getColor } from '@/lib/colors';
 import React from 'react';
 import { StyleSheet } from 'react-native';
+import LinearGradient, { type LinearGradientProps } from '../LinearGradient';
 
 export default function GradientBackground(props: LinearGradientProps) {
   return <LinearGradient {...props} style={[props.style, StyleSheet.absoluteFillObject]} />;
 }
 
 export function ImageGradientOverlay(props: Partial<LinearGradientProps>) {
-  const { theme } = useTheme();
-  const endColor = getHexColor(theme, 'background', 0) || theme === 'dark' ? '#fff' : '#fff';
+  const endColor = getColor('background', '0');
   return (
     <LinearGradient
       {...props}
