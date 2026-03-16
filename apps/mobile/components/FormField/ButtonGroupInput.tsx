@@ -1,10 +1,28 @@
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import React, { ComponentPropsWithoutRef } from 'react';
 import { Button, ButtonGroup, ButtonText } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 
 const containerStyle = tva({
   base: 'flex-wrap',
+});
+
+const buttonStyle = tva({
+  base: '',
+  variants: {
+    isSelected: {
+      true: 'bg-typography-800',
+    },
+  },
+});
+
+const buttonTextStyle = tva({
+  base: '',
+  variants: {
+    isSelected: {
+      true: 'text-typography-0',
+    },
+  },
 });
 
 type TButtonGroup = ComponentPropsWithoutRef<typeof ButtonGroup>;
@@ -77,14 +95,18 @@ export function ButtonGroupInput<TValue = unknown>({
           <Button
             isDisabled={props.isDisabled}
             key={`${String(option.value)}-${i}`}
-            variant={isSelected(option) ? 'solid' : 'outline'}
-            action={isInvalid ? 'negative' : 'primary'}
+            variant="outline"
+            action={isInvalid ? 'negative' : 'default'}
+            aria-label={isSelected(option) ? `Deselect ${option.label}` : `Select ${option.label}`}
             size="sm"
+            className={buttonStyle({ isSelected: isSelected(option) })}
             onPress={() => {
               handleSelectionChange(option.value);
             }}
           >
-            <ButtonText>{option.label}</ButtonText>
+            <ButtonText className={buttonTextStyle({ isSelected: isSelected(option) })}>
+              {option.label}
+            </ButtonText>
           </Button>
         )
       )}
