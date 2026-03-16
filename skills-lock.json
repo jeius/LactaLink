@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "gluestack-ui-v4": {
+      "source": "gluestack/agent-skills",
+      "sourceType": "github",
+      "computedHash": "81407cacc7d3eff17da0399f1bb84db6118363283fd07a2217030d75f702388b"
+    },
     "payload": {
       "source": "payloadcms/skills",
       "sourceType": "github",
