@@ -50,3 +50,4 @@ const Image = React.forwardRef<React.ComponentRef<typeof UIImage>, ImageProps>(f
 
 Image.displayName = 'Image';
 export { Image };
+export type { ImageProps };

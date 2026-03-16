@@ -156,7 +156,7 @@ export function ProfileAvatar({
                 source={{ uri: avatarUrl }}
                 alt={`Profile picture of ${fallbackName}`}
                 onLoad={onLoad}
-                fadeDuration={fadeDuration}
+                transition={{ duration: fadeDuration, effect: 'cross-dissolve' }}
               />
             ) : (
               <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>

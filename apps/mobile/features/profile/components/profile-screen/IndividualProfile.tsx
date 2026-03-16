@@ -1,8 +1,9 @@
 import { VerificationAlert } from '@/components/alerts/VerificationAlert';
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { ProfileAvatar } from '@/components/Avatar';
 import { BasicBadge } from '@/components/badges';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { Avatar, AvatarFallbackText } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
@@ -16,7 +17,7 @@ import { isMeUser } from '@/lib/utils/isMeUser';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { Individual } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
 import { BadgeCheckIcon, Edit2Icon } from 'lucide-react-native';
 import ProfileCTA from './ProfileCTA';
@@ -46,6 +47,8 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
     return themeColors.background[shade];
   };
 
+  const avatar = extractCollection(profile.value.avatar);
+  const avatarImage = avatar ? extractImageData(avatar) : null;
   const avatarRingColor = getAccentColor(isVerified || isVerifiedDonor ? '500' : '0');
   const badgeIconFill = getAccentColor('500');
   const badgeIconStroke = getColor('background', '0');
@@ -69,10 +72,16 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
           <Box className="relative">
-            <ProfileAvatar
-              profile={profile}
-              size="xl"
+            <SingleImageViewer
+              image={avatarImage}
+              size="lg"
+              className="overflow-hidden rounded-full"
               style={{ borderColor: avatarRingColor, borderWidth: 3 }}
+              fallback={
+                <Avatar size="xl">
+                  <AvatarFallbackText>{name}</AvatarFallbackText>
+                </Avatar>
+              }
             />
             {(isVerified || isVerifiedDonor) && (
               <Box className="absolute bottom-0 right-0">

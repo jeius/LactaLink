@@ -1,6 +1,7 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { ProfileAvatar } from '@/components/Avatar';
+import { SingleImageViewer } from '@/components/ImageViewer';
+import { Avatar, AvatarFallbackText } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
@@ -13,7 +14,7 @@ import { isMeUser } from '@/lib/utils/isMeUser';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { Individual } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { capitalizeFirst } from '@lactalink/utilities/formatters';
 import { Link } from 'expo-router';
 import { Edit2Icon } from 'lucide-react-native';
@@ -43,6 +44,8 @@ export default function OrganizationProfile({
 
   const getAccentColor = (shade: Shade) => themeColors.secondary[shade];
 
+  const avatar = extractCollection(profile.avatar);
+  const avatarImage = avatar ? extractImageData(avatar) : null;
   const avatarRingColor = getAccentColor('300');
   const bgGradientColors = [getAccentColor('50')!, getAccentColor('200')!] as const;
   const backgroundColor = getAccentColor('200');
@@ -63,10 +66,16 @@ export default function OrganizationProfile({
         className="relative grow items-stretch bg-background-50 p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
-          <ProfileAvatar
-            profile={{ relationTo, value: profile }}
-            size="xl"
+          <SingleImageViewer
+            image={avatarImage}
+            size="lg"
+            className="overflow-hidden rounded-full"
             style={{ borderColor: avatarRingColor, borderWidth: 3 }}
+            fallback={
+              <Avatar size="xl">
+                <AvatarFallbackText>{name}</AvatarFallbackText>
+              </Avatar>
+            }
           />
 
           <Text size="lg" className="font-JakartaSemiBold">
