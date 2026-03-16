@@ -12,7 +12,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { NearestListingsList } from '@/features/donation&request/components/NearestListingsList';
+import FeedNearestListings from '@/features/donation&request/components/lists/FeedNearestListings';
 import PostItem from '@/features/feed/components/post-item/PostItem';
 import PostPlaceholderItem from '@/features/feed/components/post-item/PostPlaceholderItem';
 import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
@@ -47,7 +47,7 @@ export default function FeedTabScreen() {
     return (
       <VStack className="items-stretch gap-2">
         <CTA className="border border-outline-200 bg-background-0 p-4" />
-        <NearestListingsList isLoading={isLoading} />
+        <FeedNearestListings isLoading={isLoading} />
       </VStack>
     );
   }, [isLoading]);

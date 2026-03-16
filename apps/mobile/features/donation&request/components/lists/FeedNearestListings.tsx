@@ -12,7 +12,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { getColor } from '@/lib/colors';
-import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { shadow } from '@/lib/utils/shadows';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume, generatePlaceHoldersWithID } from '@lactalink/utilities';
@@ -26,10 +25,11 @@ import { isDonation } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { ChevronRightCircleIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
+import { sortToNearestListings } from '../../lib/utils';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
 
-export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: boolean }) {
+export default function FeedNearestListings({ isLoading: isLoadingProp }: { isLoading?: boolean }) {
   const donationsQuery = useFetchNearest('donations', { limit: 10 });
   const requestsQuery = useFetchNearest('requests', { limit: 10 });
 
@@ -43,7 +43,7 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
 
   const listings = useMemo(() => {
     const combined = [...donations, ...requests];
-    return isLoading ? PLACEHOLDER : sortToNearest(combined);
+    return isLoading ? PLACEHOLDER : sortToNearestListings(combined);
   }, [donations, isLoading, requests]);
 
   const isEmpty = listings.length === 0;
@@ -79,6 +79,7 @@ export function NearestListingsList({ isLoading: isLoadingProp }: { isLoading?: 
   );
 }
 
+//#region Subcomponents
 function ItemCard({ item }: { item: Donation | Request }) {
   const donationData = isDonation(item);
   const volume = donationData ? item.remainingVolume : item.volumeNeeded;
@@ -148,13 +149,4 @@ function ListEmpty() {
 function PlaceholderItem() {
   return <Skeleton variant="rounded" className="h-44 w-32 rounded-2xl" />;
 }
-
-function sortToNearest(items: (Donation | Request)[]) {
-  return items.sort((a, b) => {
-    const dpA = extractCollection(a.deliveryPreferences);
-    const dpB = extractCollection(b.deliveryPreferences);
-    const distanceA = getMinDistance(dpA) ?? 0;
-    const distanceB = getMinDistance(dpB) ?? 0;
-    return distanceA - distanceB;
-  });
-}
+//#endregion
