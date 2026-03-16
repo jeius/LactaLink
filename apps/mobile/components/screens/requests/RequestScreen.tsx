@@ -19,7 +19,7 @@ import { DueDateTag, StorageTypeTag } from '@/features/donation&request/componen
 import TextAreaBlock from '@/features/donation&request/components/TextAreaBlock';
 import { useRequest } from '@/features/donation&request/hooks/queries';
 import { useReadState } from '@/features/donation&request/hooks/useReadState';
-import { getRequestDetails } from '@/features/donation&request/lib/getDetails';
+import { getRequestDetails } from '@/features/donation&request/lib/utils';
 import { useParallaxAnimationStyles } from '@/hooks/animations/useParallaxAnimationStyles';
 import { getTypographyColor } from '@/lib/colors';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
