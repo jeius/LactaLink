@@ -1,20 +1,22 @@
 'use client';
-import { createAvatar } from '@gluestack-ui/core/avatar/creator';
-import React from 'react';
-
-// import { Image } from 'expo-image';
-import { Image, Platform, Text, View } from 'react-native';
-
 import { addAuthHeadersInImageSource } from '@/lib/utils/addAuthHeadersInImageSource';
+import { createAvatar } from '@gluestack-ui/core/avatar/creator';
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
+import { Image as ExpoImage } from 'expo-image';
+import { cssInterop } from 'nativewind';
+import React from 'react';
+import { Platform, Text, View } from 'react-native';
+
+const StyledImage = cssInterop(ExpoImage, { className: 'style' });
+
 const SCOPE = 'AVATAR';
 
 const UIAvatar = createAvatar({
   Root: withStyleContext(View, SCOPE),
   Badge: View,
   Group: View,
-  Image: Image,
+  Image: StyledImage,
   FallbackText: Text,
 });
 

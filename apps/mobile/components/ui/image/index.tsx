@@ -1,10 +1,13 @@
 'use client';
 import { addAuthHeadersInImageSource } from '@/lib/utils/addAuthHeadersInImageSource';
-import { createImage } from '@gluestack-ui/image';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { createImage } from '@gluestack-ui/core/image/creator';
+import { type VariantProps, tva } from '@gluestack-ui/utils/nativewind-utils';
+import { Image as ExpoImage } from 'expo-image';
+import { cssInterop } from 'nativewind';
 import React, { useMemo } from 'react';
-import { Platform, Image as RNImage } from 'react-native';
+import { Platform } from 'react-native';
+
+const StyledImage = cssInterop(ExpoImage, { className: 'style' });
 
 const imageStyle = tva({
   base: 'max-w-full',
@@ -24,7 +27,7 @@ const imageStyle = tva({
   },
 });
 
-const UIImage = createImage({ Root: RNImage });
+const UIImage = createImage({ Root: StyledImage });
 
 type ImageProps = VariantProps<typeof imageStyle> & React.ComponentProps<typeof UIImage>;
 
