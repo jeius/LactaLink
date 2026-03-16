@@ -6,10 +6,10 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FlashList } from '@/components/ui/FlashList';
-import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
 import { getColor } from '@/lib/colors';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
@@ -131,17 +131,17 @@ function CTA() {
 
 function ListEmpty() {
   return (
-    <HStack space="lg" className="h-44 flex-1 items-center justify-center">
+    <VStack space="lg" className="h-44 flex-1 items-center justify-center">
       <Text className="font-JakartaMedium text-typography-600">No nearby listings!</Text>
       <DonateRequestModal
         trigger={(props) => (
-          <Button size="md" action="primary" variant="outline" {...props}>
+          <Button disablePressAnimation size="md" action="primary" variant="ghost" {...props}>
             <ButtonIcon as={PackagePlusIcon} />
             <ButtonText>Create One</ButtonText>
           </Button>
         )}
       />
-    </HStack>
+    </VStack>
   );
 }
 
