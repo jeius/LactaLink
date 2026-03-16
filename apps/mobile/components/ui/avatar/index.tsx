@@ -1,14 +1,13 @@
 'use client';
-import { createAvatar } from '@gluestack-ui/avatar';
+import { createAvatar } from '@gluestack-ui/core/avatar/creator';
 import React from 'react';
 
 // import { Image } from 'expo-image';
-import { Image, ImageProps, Platform, Text, View } from 'react-native';
+import { Image, Platform, Text, View } from 'react-native';
 
-import { appendHeaders } from '@/lib/utils/appendHeaders';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { addAuthHeadersInImageSource } from '@/lib/utils/addAuthHeadersInImageSource';
+import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
 const SCOPE = 'AVATAR';
 
 const UIAvatar = createAvatar({
@@ -145,23 +144,20 @@ type IAvatarImageProps = React.ComponentPropsWithoutRef<typeof UIAvatar.Image> &
   VariantProps<typeof avatarImageStyle>;
 
 const AvatarImage = React.forwardRef<React.ComponentRef<typeof UIAvatar.Image>, IAvatarImageProps>(
-  function AvatarImage({ className, ...props }, ref) {
-    const transformedSource = appendHeaders(props) as ImageProps['source'];
+  function AvatarImage({ className, source, ...props }, ref) {
+    const newSource = addAuthHeadersInImageSource(source);
 
     return (
       <UIAvatar.Image
         ref={ref}
         {...props}
-        source={transformedSource}
-        className={avatarImageStyle({
-          class: className,
-        })}
+        source={newSource}
+        className={avatarImageStyle({ class: className })}
         // @ts-expect-error : This is a workaround to fix the issue with the image style on web.
-        style={
-          Platform.OS === 'web'
-            ? { height: 'revert-layer', width: 'revert-layer' }
-            : { height: '100%', width: '100%' }
-        }
+        style={Platform.select({
+          web: { height: 'revert-layer', width: 'revert-layer' },
+          default: { height: '100%', width: '100%' },
+        })}
       />
     );
   }

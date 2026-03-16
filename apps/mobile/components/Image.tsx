@@ -1,9 +1,9 @@
-import { appendHeaders } from '@/lib/utils/appendHeaders';
+import { addAuthHeadersInImageSource } from '@/lib/utils/addAuthHeadersInImageSource';
 import { Image as ExpoImage, type ImageProps } from 'expo-image';
 import { cssInterop } from 'nativewind';
 
-function Image(props: ImageProps) {
-  const transformedSource = appendHeaders(props);
+function Image({ source, ...props }: ImageProps) {
+  const transformedSource = addAuthHeadersInImageSource(source);
   return <ExpoImage {...props} source={transformedSource} />;
 }
 
