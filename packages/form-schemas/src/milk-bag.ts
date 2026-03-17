@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { imageSchema } from './file';
 
 export const milkBagSchema = z.object({
-  id: z.uuid().nonempty('Required'),
+  id: z.string(),
   donor: z.uuid().nonempty('Required'),
   volume: z.number('Volume is required.').min(20, 'Atleast 20mL').positive(),
   status: z.enum(
@@ -15,14 +15,10 @@ export const milkBagSchema = z.object({
   bagImage: imageSchema.optional().nullable(),
 });
 
-export const createMilkBagSchema = z.object({
-  id: z.string(),
-  ...milkBagSchema.omit({
-    id: true,
-    code: true,
-    bagImage: true,
-    status: true,
-  }).shape,
+export const createMilkBagSchema = milkBagSchema.omit({
+  id: true,
+  code: true,
+  status: true,
 });
 
 export const updateMilkBagSchema = milkBagSchema.omit({

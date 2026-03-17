@@ -10,7 +10,7 @@ import {
 import { User } from '@lactalink/types/payload-generated-types';
 import { deliveryCreateSchema, deliveryPreferenceSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
-import { createMilkBagSchema, milkBagSchema } from '../milk-bag';
+import { milkBagSchema } from '../milk-bag';
 import { textAreaSchema } from '../textarea';
 
 const recipientSchema = z.object({
@@ -27,7 +27,7 @@ export const donationDetailsSchema = z.object({
     Object.values(COLLECTION_MODES).map((item) => item.value),
     'Select one option'
   ),
-  bags: z.array(createMilkBagSchema).min(1, 'Required at least one milk bag.'),
+  bags: z.array(milkBagSchema).min(1, 'Required at least one milk bag.'),
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
 });
@@ -78,7 +78,6 @@ export const donationSchema = z.object({
   id: z.uuid('Invalid UUID').nonempty('Required'),
   donor: z.uuid('Invalid UUID').nonempty('Required'),
   details: donationDetailsSchema,
-  milkBags: z.array(milkBagSchema),
   ...deliveryPreferencesSchema.shape,
 });
 
@@ -120,11 +119,7 @@ export const donationCreateSchema = z
       error: 'Does not match the requested storage.',
       path: ['details', 'storageType'],
     }
-  )
-  .refine((data) => data.milkBags.every((bag) => !!bag.bagImage), {
-    error: 'Not all milk bags have been verified.',
-    path: ['milkBags'],
-  });
+  );
 
 export const requestCreateSchema = z
   .discriminatedUnion('type', [
