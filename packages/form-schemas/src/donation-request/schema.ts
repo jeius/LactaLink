@@ -7,15 +7,15 @@ import {
   URGENCY_LEVELS,
 } from '@lactalink/enums';
 
-import { User } from '@lactalink/types/payload-generated-types';
-import { deliveryCreateSchema, deliveryPreferenceSchema } from '../delivery-preference';
+import { UserProfile } from '@lactalink/types';
+import { deliveryCreateSchema, deliveryPreferencesSchema } from '../delivery-preference';
 import { imageSchema } from '../file';
 import { milkBagSchema } from '../milk-bag';
 import { textAreaSchema } from '../textarea';
 
 const recipientSchema = z.object({
-  relationTo: z.custom<NonNullable<User['profile']>['relationTo']>(),
-  value: z.uuid().nonempty('Required'),
+  relationTo: z.custom<UserProfile['relationTo']>(),
+  value: z.uuid('Invalid recipient ID').nonempty('Recipient ID is required'),
 });
 
 export const donationDetailsSchema = z.object({
@@ -46,12 +46,6 @@ export const requestDetailsSchema = z.object({
   image: imageSchema.optional().nullable(),
   notes: textAreaSchema,
   reason: textAreaSchema,
-});
-
-export const deliveryPreferencesSchema = z.object({
-  deliveryPreferences: z
-    .array(deliveryPreferenceSchema)
-    .min(1, 'Atleast one delivery preference is required.'),
 });
 
 export const matchedRequestSchema = z.object({

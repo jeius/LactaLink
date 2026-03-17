@@ -24,6 +24,12 @@ export const deliveryPreferenceSchema = z.object(
   'Delivery Preference is required.'
 );
 
+export const deliveryPreferencesSchema = z.object({
+  deliveryPreferences: z
+    .array(deliveryPreferenceSchema)
+    .min(1, 'Atleast one delivery preference is required.'),
+});
+
 export const createDeliveryPreferenceSchema = deliveryPreferenceSchema.omit({ id: true });
 
 export const deliverySchema = z
@@ -69,6 +75,7 @@ export const deliveryCreateSchema = z.object(
 );
 
 export type DeliveryPreferenceSchema = z.infer<typeof deliveryPreferenceSchema>;
+export type DeliveryPreferencesSchema = z.infer<typeof deliveryPreferencesSchema>;
 export type DeliveryPreferenceCreateSchema = z.infer<typeof createDeliveryPreferenceSchema>;
 export type DeliverySchema = z.infer<typeof deliverySchema>;
 export type DeliveryCreateSchema = z.infer<typeof deliveryCreateSchema>;

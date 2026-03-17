@@ -40,6 +40,10 @@
     "./geocoding": {
       "types": "./dist/geocoding/index.d.ts",
       "default": "./dist/geocoding/index.js"
+    },
+    "./listings": {
+      "types": "./dist/listings/index.d.ts",
+      "default": "./dist/listings/index.js"
     }
   },
   "scripts": {
