@@ -17,7 +17,13 @@ import {
 } from '@lactalink/utilities/extractors';
 import { status as HttpStatus } from 'http-status';
 import isString from 'lodash/isString';
-import { addDataAndFileToRequest, APIError, PayloadHandler, PayloadRequest } from 'payload';
+import {
+  addDataAndFileToRequest,
+  APIError,
+  PayloadHandler,
+  PayloadRequest,
+  ValidationError as PayloadValidationError,
+} from 'payload';
 import { abortableAPIHandler } from './abortableHandler';
 import { createTimeoutError } from './createError';
 import { isAdmin } from './isAdmin';
@@ -158,9 +164,11 @@ export function createPayloadHandler<T>({
         status = error.statusCode || HttpStatus.BAD_REQUEST;
         message = `[Validation Error]: ${error.message}`;
         statusText = error.statusText || HttpStatus[status as 500] || 'Bad Request';
-      }
-
-      if (error instanceof APIError) {
+      } else if (error instanceof PayloadValidationError) {
+        status = error.status || HttpStatus.BAD_REQUEST;
+        message = `[Validation Error]: ${error.message}`;
+        statusText = HttpStatus[status as 500] || 'Bad Request';
+      } else if (error instanceof APIError) {
         status = error.status;
         message = `[API Error]: ${error.message}`;
         statusText = HttpStatus[status as 500] || 'Internal Server Error';
