@@ -18,6 +18,8 @@ import {
 import { status as HttpStatus } from 'http-status';
 import isString from 'lodash/isString';
 import { APIError, PayloadHandler, PayloadRequest } from 'payload';
+import { abortableAPIHandler } from './abortableHandler';
+import { createTimeoutError } from './createError';
 import { isAdmin } from './isAdmin';
 
 /**
@@ -93,31 +95,18 @@ export function createPayloadHandler<T>({
     // Record the start time for duration logging
     const startTime = performance.now();
 
-    // Create an abort controller to manage the timeout
+    // Create an internal abort controller to trigger the timeout
     const abortController = new AbortController();
 
     // Combine the request signal with the abort controller signal to allow for cancellation
-    const combinedSignal = AbortSignal.any(
+    const signal = AbortSignal.any(
       [req.signal, abortController.signal].filter(Boolean) as AbortSignal[]
     );
 
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    // A promise that rejects after maxDuration, enforcing the timeout via Promise.race
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => {
-        abortController.abort();
-        const status = HttpStatus.REQUEST_TIMEOUT;
-        reject(
-          new APIError(
-            'Request was cancelled due to timeout.',
-            HttpStatus.REQUEST_TIMEOUT,
-            { message: HttpStatus[`${status}_MESSAGE`] },
-            true
-          )
-        );
-      }, maxDuration);
-    });
+    // Timeout to abort the request if it takes too long
+    const timeoutId = setTimeout(() => {
+      abortController.abort(createTimeoutError());
+    }, maxDuration);
 
     try {
       if ((requireAuth || requireAdmin) && !user) {
@@ -140,8 +129,7 @@ export function createPayloadHandler<T>({
         );
       }
 
-      // Race the handler against the timeout promise
-      const data = await Promise.race([handler(req, combinedSignal), timeoutPromise]);
+      const data = await abortableAPIHandler(() => handler(req, signal), { signal });
 
       // Prepare the success response.
       const status = HttpStatus.OK;
@@ -182,7 +170,6 @@ export function createPayloadHandler<T>({
       return Response.json(res, { status, statusText });
     } finally {
       clearTimeout(timeoutId);
-      abortController.abort();
       const elapsed = (performance.now() - startTime).toFixed(2);
       payload.logger.info(`[Request Duration]: ${elapsed}ms`);
     }
