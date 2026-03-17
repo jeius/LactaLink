@@ -17,7 +17,7 @@ import {
 } from '@lactalink/utilities/extractors';
 import { status as HttpStatus } from 'http-status';
 import isString from 'lodash/isString';
-import { APIError, PayloadHandler, PayloadRequest } from 'payload';
+import { addDataAndFileToRequest, APIError, PayloadHandler, PayloadRequest } from 'payload';
 import { abortableAPIHandler } from './abortableHandler';
 import { createTimeoutError } from './createError';
 import { isAdmin } from './isAdmin';
@@ -128,6 +128,10 @@ export function createPayloadHandler<T>({
           true
         );
       }
+
+      // Since data and files are not automatically parsed by Payload for custom endpoints,
+      // we need to manually add them to the request object
+      await addDataAndFileToRequest(req);
 
       const data = await abortableAPIHandler(() => handler(req, signal), { signal });
 
