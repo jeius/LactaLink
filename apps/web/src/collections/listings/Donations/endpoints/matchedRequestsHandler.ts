@@ -1,48 +1,34 @@
+import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import { getEndpointSearchParams } from '@/lib/utils/getEndpointSearchParams';
+import { getQueryOptions } from '@/lib/utils/getEndpointSearchParams';
+import { parseZodSchema } from '@/lib/utils/parseZodSchema';
 import { matchDonationsAndRequestsByCriteria } from '@db/drizzle/queryBuilders';
-import { ValidationErrorNames } from '@lactalink/enums/error-names';
-import { MatchCriteria, matchCriteriaSchema } from '@lactalink/form-schemas/validators';
+import { matchCriteriaSchema } from '@lactalink/form-schemas/validators';
 import { Request } from '@lactalink/types/payload-generated-types';
-import { ValidationError } from '@lactalink/utilities/errors';
 import { and, eq, sql } from '@payloadcms/db-postgres/drizzle';
-import status from 'http-status';
-import { APIError, PaginatedDocs, PayloadRequest } from 'payload';
-import z from 'zod';
+import { PaginatedDocs, PayloadRequest } from 'payload';
 
 export const matchedRequestsHandler = createPayloadHandler({
   requireAdmin: false,
-  handler: async (req) => {
-    try {
-      return await handler(req);
-    } catch (err) {
-      if (err instanceof ValidationError) {
-        throw new APIError(err.message, err.statusCode, err, true);
-      }
-      throw err;
-    }
-  },
+  requireAuth: true,
+  handler: handler,
 });
 
-// #region Main handler
 async function handler(req: PayloadRequest): Promise<PaginatedDocs<Request>> {
   const { payload, query, pathname } = req;
 
+  // Get the ID from the pathname, which should be in the format /api/donations/:id/matched-requests
   const donationID = pathname
     .split('/')
-    .filter((part) => !['donations', 'matched-requests'].includes(part))
+    .filter((part) => !['donations', 'matched-requests'].includes(part)) //['api', ':id']
     .pop();
 
   if (!donationID) {
-    throw new ValidationError('Donation ID is required', {
-      name: ValidationErrorNames.REQUIRED_FIELD_MISSING,
-      statusCode: status.BAD_REQUEST,
-      statusText: 'Bad Request',
-    });
+    throw createBadRequestError('Donation ID is required in the URL');
   }
 
-  const criteria = parseMatchCritera(query.criteria);
-  const { limit = 10, page = 0, ...searchParams } = getEndpointSearchParams(req);
+  const criteria = parseZodSchema(matchCriteriaSchema, query.criteria);
+  const { limit = 10, page = 0, ...searchParams } = getQueryOptions(req);
 
   const match = payload.db.drizzle
     .$with('findMatch')
@@ -116,40 +102,3 @@ async function handler(req: PayloadRequest): Promise<PaginatedDocs<Request>> {
     pagingCounter: searchParams.pagination ? page * limit + 1 : 1,
   };
 }
-// #endregion
-
-// #region Helpers
-function parseMatchCritera(input: unknown): MatchCriteria | undefined {
-  if (input === undefined || input === null) {
-    return undefined;
-  }
-
-  const parsed = matchCriteriaSchema.safeParse(input);
-
-  if (parsed.data) {
-    return parsed.data;
-  }
-
-  const error = z.flattenError(parsed.error);
-  let errMsg: string | undefined;
-
-  if (error.formErrors.length) {
-    errMsg = error.formErrors[0];
-  } else {
-    for (const key of Object.keys(error.fieldErrors)) {
-      type Key = keyof typeof error.fieldErrors;
-
-      if (error.fieldErrors[key as Key]?.length) {
-        errMsg = error.fieldErrors[key as Key]![0];
-        break;
-      }
-    }
-  }
-
-  throw new ValidationError(errMsg || `Invalid search param 'options'.`, {
-    name: ValidationErrorNames.INVALID_FORMAT,
-    statusCode: status.UNPROCESSABLE_ENTITY,
-    statusText: 'Unprocessable Entity',
-  });
-}
-// #endregion
