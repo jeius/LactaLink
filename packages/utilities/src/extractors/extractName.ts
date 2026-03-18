@@ -3,8 +3,8 @@ import { User } from '@lactalink/types/payload-generated-types';
 /**
  *
  *
- * @param user - The user object from which to extract the name.
- * @returns {string | null} - The extracted name from the user profile, or null if not found.
+ * @param user The user object from which to extract the name.
+ * @returns The extracted name from the user profile, or null if not found.
  */
 export function extractName(user: Pick<User, 'profile'>): string | null {
   if (user.profile) {
@@ -24,7 +24,8 @@ export function extractName(user: Pick<User, 'profile'>): string | null {
  * Extracts the display name from a user's profile.
  *
  * @param user - The user object from which to extract the display name.
- * @returns {string | null} - The extracted display name from the user profile, or null if not found.
+ * @returns The extracted display name from the user profile.
+ * @throws Throws an error if the user profile is not found or is in an unexpected format.
  */
 export function extractDisplayName(user: Pick<User, 'profile'>): string {
   if (!user.profile) {
