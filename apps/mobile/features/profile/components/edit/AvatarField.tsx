@@ -83,10 +83,7 @@ export function AvatarField({ control }: AvatarFieldProps) {
       <HStack space="lg" className="p-5">
         <Box className="h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-background-200">
           {avatar ? (
-            <SingleImageViewer
-              image={extractImageData(avatar)}
-              style={{ width: '100%', height: '100%' }}
-            />
+            <SingleImageViewer image={extractImageData(avatar)} size="2xl" />
           ) : (
             <Icon as={ImageIcon} size="2xl" className="text-background-0" />
           )}

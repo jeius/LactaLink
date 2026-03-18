@@ -2,7 +2,7 @@ import { QUERY_KEYS } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
-import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
+import { CreateResult, UpdateByIDResult } from '@lactalink/types/api';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';
@@ -41,12 +41,12 @@ export function createEditProfileMutationOptions(
         throw new Error(errorData.message || 'Failed to update profile');
       }
 
-      const updatedProfile: Individual | Hospital | MilkBank = await response.json();
-      return { ...profile, value: updatedProfile } as PopulatedUserProfile;
+      const result: UpdateByIDResult = await response.json();
+      return { ...profile, value: result.doc } as PopulatedUserProfile;
     },
-    onSuccess: async (_data, _vars, _ctx, { client }) => {
+    onSuccess: async (data, _vars, _ctx, { client }) => {
       const queryKey = createUserProfileQuery(profile).queryKey;
-      await client.invalidateQueries({ queryKey, exact: true });
+      client.setQueryData(queryKey, data);
     },
   });
 }
@@ -71,8 +71,8 @@ export function createNewProfileMutationOptions(init?: RequestInit) {
         throw new Error(errorData.message || 'Failed to create profile');
       }
 
-      const profile: Individual | Hospital | MilkBank = await response.json();
-      return { relationTo: slugMap[profileType], value: profile } as PopulatedUserProfile;
+      const result: CreateResult = await response.json();
+      return { relationTo: slugMap[profileType], value: result.doc } as PopulatedUserProfile;
     },
     onSuccess: async (data, _vars, _ctx, { client }) => {
       const queryKey = createUserProfileQuery(data).queryKey;
