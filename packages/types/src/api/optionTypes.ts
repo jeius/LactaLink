@@ -1,50 +1,17 @@
 import { CollectionSlug } from '@/collections';
-import { CustomError } from '@/errors';
-import { Polyline } from '@/geo-types';
 import type {
-  BulkOperationResult,
   DataFromCollectionSlug,
   JoinQuery,
-  PaginatedDocs,
   PopulateType,
   RequiredDataFromCollectionSlug,
   SelectFromCollectionSlug,
   Sort,
-  TransformCollectionWithSelect,
   TypedCollection,
   TypedLocale,
   Where,
 } from '@/payload-types';
 import { DeepPartial } from 'react-hook-form';
 
-//#region API Types
-export type ApiFetchResponse<T> =
-  | {
-      message: string;
-      data: T;
-      status?: number;
-    }
-  | {
-      message: string;
-      error: CustomError | unknown;
-      status?: number;
-    };
-export type ApiMethod = 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
-
-export type BaseApiFetchArgs = {
-  url: URL | string;
-  token?: string | null;
-  bypassToken?: string;
-  headers?: Headers;
-};
-
-export type ApiFetchArgs<T extends CollectionSlug> = {
-  method: ApiMethod;
-  body?: RequiredDataFromCollectionSlug<T> | FormData | { value: unknown };
-} & BaseApiFetchArgs;
-//#endregion
-
-//#region  Arguments and Options Types
 export interface BaseOptions<
   TSlug extends CollectionSlug = CollectionSlug,
   TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
@@ -226,75 +193,3 @@ export type FindMany<
 > = FindOptions<TSlug, TSelect, TPaginate>;
 
 export type CountOptions = Pick<BaseOptions, 'where' | 'trash' | 'sort' | 'draft' | 'collection'>;
-//#endregion
-
-//#region Result Types
-export type CreateResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = {
-  message: string;
-  //@ts-expect-error - Payload type issue
-  doc: TransformCollectionWithSelect<TSlug, TSelect>;
-};
-
-export type FindOneResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  //@ts-expect-error - Payload type issue
-> = TransformCollectionWithSelect<TSlug, TSelect>;
-
-export type FindManyResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  TPaginate extends boolean = boolean,
-> = TPaginate extends true
-  ? //@ts-expect-error - Payload type issue
-    PaginatedDocs<TransformCollectionWithSelect<TSlug, TSelect>>
-  : //@ts-expect-error - Payload type issue
-    TransformCollectionWithSelect<TSlug, TSelect>[];
-
-export type UpdateByIDResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = {
-  //@ts-expect-error - Payload type issue
-  doc: TransformCollectionWithSelect<TSlug, TSelect>;
-  message: string;
-};
-
-export type UpdateManyResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  //@ts-expect-error - Payload type issue
-> = BulkOperationResult<TSlug, TSelect>;
-
-export type DeleteByIDResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-> = {
-  //@ts-expect-error - Payload type issue
-  doc: TransformCollectionWithSelect<TSlug, TSelect>;
-  message: string;
-};
-
-export type DeleteManyResult<
-  TSlug extends CollectionSlug = CollectionSlug,
-  TSelect extends SelectFromCollectionSlug<TSlug> = SelectFromCollectionSlug<TSlug>,
-  //@ts-expect-error - Payload type issue
-> = BulkOperationResult<TSlug, TSelect>;
-
-export type Direction = {
-  description?: string | null;
-  distanceMeters: number;
-  duration: { seconds: number };
-  polyline: Polyline;
-  optimizedIntermediateWaypointIndex?: number[] | null;
-  localizedValues: {
-    distance?: string | null;
-    duration?: string | null;
-  };
-};
-
-export type DirectionsResult = Direction[] | null;
-//#endregion
