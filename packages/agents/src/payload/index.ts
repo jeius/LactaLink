@@ -10,6 +10,7 @@ import { getHookContext, setHookContext } from './hookContext';
 
 export * from './fieldValidators';
 export * from './hookContext';
+export * from './HookDepthTracker';
 
 // ---------------------------------------------------------------------------
 // Local API helpers — typed wrappers around req.payload
