@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { MAX_IMAGE_SIZE } from '@/lib/constants';
 import { ImageSchema } from '@lactalink/form-schemas';
-import { CameraIcon, UploadCloudIcon, UploadIcon } from 'lucide-react-native';
+import { CameraIcon, ImageIcon, UploadCloudIcon } from 'lucide-react-native';
 import React, { forwardRef, Ref, useImperativeHandle, useMemo, useState } from 'react';
 import { Box } from './ui/box';
 import { Button, ButtonIcon, ButtonText } from './ui/button';
@@ -199,13 +199,13 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
         <ModalContent>
           <ModalBody className="my-auto">
             <VStack space="lg">
-              <Button variant="outline" onPress={captureImage}>
+              <Button onPress={captureImage}>
                 <ButtonIcon as={CameraIcon} />
-                <ButtonText>Camera</ButtonText>
+                <ButtonText>Open Camera</ButtonText>
               </Button>
-              <Button onPress={pickFromLibrary}>
-                <ButtonIcon as={UploadIcon} />
-                <ButtonText>Upload</ButtonText>
+              <Button variant="outline" onPress={pickFromLibrary}>
+                <ButtonIcon as={ImageIcon} />
+                <ButtonText>Choose from library</ButtonText>
               </Button>
             </VStack>
           </ModalBody>
