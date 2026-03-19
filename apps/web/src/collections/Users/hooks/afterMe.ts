@@ -1,14 +1,22 @@
-import { hookLogger, isHookRun, markHookRun } from '@lactalink/agents/payload';
+import { cacheStore, hookLogger, isHookRun, markHookRun } from '@lactalink/agents/payload';
 import { User } from '@lactalink/types/payload-generated-types';
 import { CollectionAfterMeHook, MeOperationResult } from 'payload';
-
-const hookName = 'skipUpdateOnlineAt';
 
 export const afterMe: CollectionAfterMeHook<User> = async ({ req, collection, response }) => {
   if (!req.user) return response;
 
-  if (isHookRun(req, hookName)) return response;
-  markHookRun(req, hookName);
+  const res = response as MeOperationResult;
+
+  const contextID = `afterMe-${req.user.id}`;
+  const [getCachedUser, setUserCache] = cacheStore<User | null>(req, contextID);
+
+  if (isHookRun(req, contextID)) {
+    const cachedUser = getCachedUser();
+    if (!cachedUser) return res;
+    return { ...res, user: cachedUser };
+  }
+
+  markHookRun(req, contextID);
 
   const logger = hookLogger(req, collection.slug, 'afterMe');
   logger.info(`Getting full user document for authenticated user..`);
@@ -22,7 +30,6 @@ export const afterMe: CollectionAfterMeHook<User> = async ({ req, collection, re
     req,
   });
 
-  const res = response as MeOperationResult;
-
+  setUserCache(updatedUser);
   return { ...res, user: updatedUser };
 };
