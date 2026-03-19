@@ -12,6 +12,7 @@ export async function getDefaultAddress(profileOwnerID: string, req: PayloadRequ
     collection: 'addresses',
     limit: 1,
     pagination: false,
+    depth: 0,
     req,
     where: {
       and: [{ owner: { equals: profileOwnerID } }, { isDefault: { equals: true } }],

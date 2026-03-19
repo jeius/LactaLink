@@ -22,25 +22,12 @@ export async function getOwner(
     collection: 'users',
     limit: 1,
     pagination: false,
+    depth: 0,
     req,
-    depth: 3,
     where: {
       and: [{ 'profile.value': { equals: docID } }, { 'profile.relationTo': { equals: docSlug } }],
     },
-    /**
-     * IMPORTANT: Don't ever select the profile field here, as it can cause infinite recursion
-     * in the afterRead hook!
-     */
-    select: {
-      email: true,
-      profileType: true,
-      onlineAt: true,
-      addresses: true,
-      deliveryPreferences: true,
-      phone: true,
-      lastSignInAt: true,
-    },
   });
 
-  return users.length > 0 ? (users[0] as User) : null;
+  return users.length > 0 ? users[0]! : null;
 }
