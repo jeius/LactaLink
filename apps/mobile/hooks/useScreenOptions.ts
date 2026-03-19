@@ -1,6 +1,8 @@
+import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { getColor, getPrimaryColor } from '@/lib/colors';
 import { StackScreenOptions } from '@/lib/types';
-import { Platform } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackAnimationTypes } from 'react-native-screens';
 
 const IS_IOS = Platform.OS === 'ios';
@@ -38,5 +40,23 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
     headerTintColor: getPrimaryColor('0'),
     headerStyle: { backgroundColor: getPrimaryColor('500') },
     contentStyle: { backgroundColor: getColor('background', '50') },
+  };
+}
+
+export function useScreenFormSheetOptions(): StackScreenOptions {
+  const { themeColors } = useTheme();
+
+  const inset = useSafeAreaInsets();
+  const screen = useWindowDimensions();
+
+  const allowedDetent = (screen.height - inset.top) / screen.height;
+
+  return {
+    presentation: 'formSheet',
+    contentStyle: { backgroundColor: themeColors.background[0] },
+    animation: 'slide_from_bottom',
+    sheetElevation: 24,
+    sheetCornerRadius: 32,
+    sheetAllowedDetents: [allowedDetent],
   };
 }
