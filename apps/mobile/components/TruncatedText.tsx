@@ -1,10 +1,10 @@
 import { useRecyclingState } from '@shopify/flash-list';
 import React, { useCallback, useEffect } from 'react';
 import { TextLayoutEvent, ViewProps } from 'react-native';
-import { Pressable } from './ui/pressable';
+import { Pressable, PressableProps } from './ui/pressable';
 import { Text, TextProps } from './ui/text';
 
-interface TruncatedTextProps extends TextProps {
+interface TruncatedTextProps extends TextProps, Pick<PressableProps, 'hitSlop'> {
   initialLines?: number;
   recyclingKey?: string | number;
   containerClassName?: ViewProps['className'];
@@ -15,6 +15,7 @@ export default function TruncatedText({
   children,
   initialLines = 3,
   containerClassName,
+  hitSlop = 4,
   ...textProps
 }: TruncatedTextProps) {
   const key = recyclingKey ?? String(children);
@@ -41,6 +42,7 @@ export default function TruncatedText({
       onPress={() => setExpanded((prev) => !prev)}
       pointerEvents={isTruncated ? 'auto' : 'none'}
       className={containerClassName}
+      hitSlop={hitSlop}
     >
       <Text
         {...textProps}
