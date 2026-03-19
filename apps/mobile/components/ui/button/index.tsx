@@ -35,7 +35,7 @@ const AnimatedUIButton = Animated.createAnimatedComponent(UIButton);
 
 const timingConfig: WithTimingConfig = {
   duration: 250,
-  easing: Easing.elastic(1.3),
+  easing: Easing.out(Easing.ease),
 };
 
 cssInterop(PrimitiveIcon, {
