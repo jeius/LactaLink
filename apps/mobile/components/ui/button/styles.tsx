@@ -120,7 +120,7 @@ const buttonTextStyle = tva({
       muted: '',
     },
     variant: {
-      link: 'group-hover/button:underline group-focus-visible/button:underline group-active/button:underline',
+      link: 'group-hover/button:underline group-active/button:underline',
       outline: '',
       ghost: '',
       solid:
