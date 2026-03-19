@@ -20,8 +20,8 @@ import { Link } from 'expo-router';
 import { Edit2Icon } from 'lucide-react-native';
 import React from 'react';
 import ProfileCTA from './ProfileCTA';
-import ProfileDetailsCard from './ProfileDetailsCard';
-import ProfileDetailsList from './ProfileDetailsList';
+import ProfileDetails from './ProfileDetails';
+import ProfileFeatureCard from './ProfileFeatureCard';
 
 interface OrganizationProfileProps {
   profile: Exclude<PopulatedUserProfile, { value: Individual }>;
@@ -66,17 +66,18 @@ export default function OrganizationProfile({
         className="relative grow items-stretch bg-background-50 p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
-          <SingleImageViewer
-            image={avatarImage}
-            size="lg"
-            className="overflow-hidden rounded-full"
-            style={{ borderColor: avatarRingColor, borderWidth: 3 }}
-            fallback={
-              <Avatar size="xl">
-                <AvatarFallbackText>{name}</AvatarFallbackText>
-              </Avatar>
-            }
-          />
+          <Box className="relative h-24 w-24">
+            <SingleImageViewer
+              image={avatarImage}
+              className="h-full w-full overflow-hidden rounded-full"
+              style={{ borderColor: avatarRingColor, borderWidth: 3 }}
+              fallback={
+                <Avatar size="xl" className="self-center justify-self-center">
+                  <AvatarFallbackText>{name}</AvatarFallbackText>
+                </Avatar>
+              }
+            />
+          </Box>
 
           <Text size="lg" className="font-JakartaSemiBold">
             {name}
@@ -102,9 +103,9 @@ export default function OrganizationProfile({
 
         {!isOwner && <ProfileCTA profile={{ relationTo, value: profile }} />}
 
-        <ProfileDetailsList profile={{ relationTo, value: profile }} />
+        <ProfileDetails profile={{ relationTo, value: profile }} />
 
-        <ProfileDetailsCard profile={{ relationTo, value: profile }} className="mt-2 p-2" />
+        <ProfileFeatureCard profile={{ relationTo, value: profile }} className="mt-2 p-2" />
       </VStack>
     </VStack>
   );

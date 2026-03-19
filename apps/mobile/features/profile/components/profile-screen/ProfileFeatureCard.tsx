@@ -13,19 +13,19 @@ import {
 } from '@lactalink/utilities/formatters';
 import React, { Fragment, useEffect, useMemo } from 'react';
 
-type IndividualDetailsProps = Omit<ProfileDetailsProps, 'profile'> & {
-  profile: Individual;
-};
-
-type OrganizationDetailsProps = Omit<ProfileDetailsProps, 'profile'> & {
-  profile: Hospital | MilkBank;
-};
-
-interface ProfileDetailsProps extends CardProps {
+interface Props extends CardProps {
   profile: UserProfile;
 }
 
-function ProfileDetailsCard({ profile, ...props }: ProfileDetailsProps) {
+type IndividualDetailsProps = Omit<Props, 'profile'> & {
+  profile: Individual;
+};
+
+type OrganizationDetailsProps = Omit<Props, 'profile'> & {
+  profile: Hospital | MilkBank;
+};
+
+function ProfileFeatureCard({ profile, ...props }: Props) {
   const slug = profile.relationTo;
   const profileData = extractCollection(profile.value);
 
@@ -113,6 +113,6 @@ function OrganizationDetails({ profile, ...props }: OrganizationDetailsProps) {
   );
 }
 
-export type { ProfileDetailsProps };
+export type { Props as ProfileFeatureProps };
 
-export default ProfileDetailsCard;
+export default ProfileFeatureCard;

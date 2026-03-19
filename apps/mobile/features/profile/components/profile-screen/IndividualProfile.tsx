@@ -21,8 +21,8 @@ import { extractCollection, extractImageData } from '@lactalink/utilities/extrac
 import { Link } from 'expo-router';
 import { BadgeCheckIcon, Edit2Icon } from 'lucide-react-native';
 import ProfileCTA from './ProfileCTA';
-import ProfileDetailsCard from './ProfileDetailsCard';
-import ProfileDetailsList from './ProfileDetailsList';
+import ProfileDetails from './ProfileDetails';
+import ProfileFeatureCard from './ProfileFeatureCard';
 
 interface IndividualProfileProps {
   profile: Extract<PopulatedUserProfile, { value: Individual }>;
@@ -56,7 +56,7 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
   const backgroundColor = getAccentColor('200');
 
   return (
-    <VStack className="flex-col items-stretch" style={{ backgroundColor }}>
+    <VStack style={{ backgroundColor }}>
       <Box className="h-28 w-full p-2">
         <GradientBackground colors={bgGradientColors} />
       </Box>
@@ -68,17 +68,16 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
         }}
-        className="relative grow items-stretch bg-background-50 p-5"
+        className="relative bg-background-50 p-5"
       >
         <VStack className="items-center" style={{ marginTop: -60 }}>
-          <Box className="relative">
+          <Box className="relative h-24 w-24">
             <SingleImageViewer
               image={avatarImage}
-              size="lg"
-              className="overflow-hidden rounded-full"
+              className="h-full w-full overflow-hidden rounded-full"
               style={{ borderColor: avatarRingColor, borderWidth: 3 }}
               fallback={
-                <Avatar size="xl">
+                <Avatar size="xl" className="self-center justify-self-center">
                   <AvatarFallbackText>{name}</AvatarFallbackText>
                 </Avatar>
               }
@@ -130,9 +129,9 @@ export default function IndividualProfile({ profile }: IndividualProfileProps) {
 
         {!isOwner && <ProfileCTA profile={profile} />}
 
-        <ProfileDetailsList profile={profile} />
+        <ProfileDetails profile={profile} />
 
-        <ProfileDetailsCard profile={profile} className="mt-2 p-2" />
+        <ProfileFeatureCard profile={profile} className="mt-2 p-2" />
       </VStack>
     </VStack>
   );
