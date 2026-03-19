@@ -63,3 +63,26 @@ export function setHookContext<T>(req: PayloadRequest, key: string, value: T): v
 export function getHookContext<T>(req: PayloadRequest, key: string): T | undefined {
   return req.context ? (req.context[key] as T | undefined) : undefined;
 }
+
+/**
+ * Utility function to create a simple cache store in the request context for a specific key.
+ * Returns a tuple of getter and setter functions to access the cached value.
+ * @example
+ * ```ts
+ * const [getCachedUser, setCachedUser] = cacheStore<User>(req, 'cachedUser');
+ * const user = getCachedUser();
+ * if (!user) {
+ *   const fetchedUser = await fetchUserFromDB();
+ *   setCachedUser(fetchedUser);
+ * }
+ * ```
+ */
+export function cacheStore<T>(
+  req: PayloadRequest,
+  key: string
+): [() => T | undefined, (value: T) => void] {
+  const _key = `cache-${key}`;
+  const get = () => getHookContext<T>(req, _key);
+  const set = (value: T) => setHookContext(req, _key, value);
+  return [get, set];
+}
