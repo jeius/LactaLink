@@ -13,6 +13,7 @@ import {
   FormControlLabelAstrick,
   FormControlLabelText,
 } from '../ui/form-control';
+import { Icon } from '../ui/icon';
 import { BaseFieldProps } from './types';
 
 type BaseFieldTextProps = {
@@ -42,6 +43,8 @@ export function FieldWrapper<
   helperTextStyle,
   errorTextClassName,
   errorTextStyle,
+  labelIcon,
+  labelIconPosition = 'start',
   ...props
 }: FieldWrapperProps<TFieldValues, TName>) {
   return (
@@ -51,6 +54,8 @@ export function FieldWrapper<
         isRequired={isRequired}
         style={labelStyle}
         className={labelClassName}
+        labelIcon={labelIcon}
+        labelIconPosition={labelIconPosition}
       />
 
       {contentPosition === 'first' ? (
@@ -79,13 +84,20 @@ export function FieldWrapper<
 export function FieldLabel({
   text,
   isRequired,
+  labelIcon: icon,
+  labelIconPosition: iconPosition = 'start',
   ...props
-}: BaseFieldTextProps & { isRequired?: boolean }) {
+}: BaseFieldTextProps &
+  Pick<BaseFieldProps, 'labelIcon' | 'labelIconPosition'> & {
+    isRequired?: boolean;
+  }) {
   if (!text) return null;
   return (
     <FormControlLabel {...props}>
+      {icon && iconPosition === 'start' && <Icon as={icon} className="mr-2" />}
       <FormControlLabelText>{text}</FormControlLabelText>
       {isRequired && <FormControlLabelAstrick>*</FormControlLabelAstrick>}
+      {icon && iconPosition === 'end' && <Icon as={icon} className="ml-2" />}
     </FormControlLabel>
   );
 }

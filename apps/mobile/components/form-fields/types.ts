@@ -1,5 +1,8 @@
+import { LucideIcon } from 'lucide-react-native';
+import { FC } from 'react';
 import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 import { ViewProps } from 'react-native';
+import { SvgProps } from 'react-native-svg';
 import { FormControlProps } from '../ui/form-control';
 
 export type BaseFieldProps<
@@ -18,6 +21,8 @@ export type BaseFieldProps<
     helperTextStyle?: ViewProps['style'];
     errorTextClassName?: ViewProps['className'];
     errorTextStyle?: ViewProps['style'];
+    labelIcon?: LucideIcon | FC<SvgProps>;
+    labelIconPosition?: 'start' | 'end';
   };
 
 export type Item = { value: string; label: string };
