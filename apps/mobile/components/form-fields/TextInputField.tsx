@@ -49,6 +49,7 @@ export function TextInputField<
     icon,
     iconClassName,
     type,
+    variant,
     ...inputProps
   } = {},
   ...props
@@ -82,6 +83,7 @@ export function TextInputField<
           size={size}
           isDisabled={disabled}
           onBlur={handleBlur}
+          variant={variant}
         >
           {icon && (
             <InputIconComp
