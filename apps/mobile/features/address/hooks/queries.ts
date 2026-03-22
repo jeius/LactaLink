@@ -15,6 +15,7 @@ import {
 } from '../lib/cacheUtils';
 import {
   createAddressesInfQuery,
+  createAddressesQuery,
   createAddressQuery,
   createBarangayQuery,
   createBarangaysInfQuery,
@@ -27,6 +28,16 @@ import {
 //#region Single Docs Queries
 export function useAddress(address: string | Address | null | undefined) {
   return useQuery(createAddressQuery(address));
+}
+
+export function useAddresses(addresses: (string | Address)[] | null | undefined) {
+  const { data: dataMap, ...query } = useQuery(createAddressesQuery(addresses));
+  const dataArray = useMemo(() => {
+    if (!dataMap) return undefined;
+    return Array.from(dataMap.values());
+  }, [dataMap]);
+
+  return { ...query, data: dataArray, dataMap };
 }
 
 export function useProvince(province: string | Province | null | undefined) {

@@ -13,6 +13,7 @@ import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformer
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import {
   findAddressByID,
+  findAddressesByIDs,
   findAddressesByUser,
   findBarangayByID,
   findBarangays,
@@ -22,18 +23,38 @@ import {
   findProvinces,
 } from './find';
 
-const ADDRESS_DEPTH = 3;
+const ADDRESS_DEPTH = 2;
 
 export function createAddressQuery(address: string | Address | null | undefined) {
   const addressID = extractID(address);
   return queryOptions({
     enabled: !!addressID,
     queryKey: [...QUERY_KEYS.ADDRESSES.ONE, addressID],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!addressID) throw new Error('Address ID is required to fetch the address.');
-      return findAddressByID(addressID, { depth: ADDRESS_DEPTH });
+      return findAddressByID(addressID, { depth: ADDRESS_DEPTH, signal });
     },
     placeholderData: extractCollection(address) || undefined,
+  });
+}
+
+export function createAddressesQuery(addresses: (string | Address)[] | null | undefined) {
+  const addressIDs = extractID(addresses);
+
+  return queryOptions({
+    enabled: !!addresses,
+    queryKey: [...QUERY_KEYS.ADDRESSES.ALL, addressIDs?.join(',')],
+    queryFn: async ({ signal }) => {
+      if (!addressIDs) throw new Error('Address IDs are required to fetch addresses.');
+      if (addressIDs.length === 0) return new Map<string, Address>();
+      const addresses = await findAddressesByIDs(addressIDs, { depth: ADDRESS_DEPTH, signal });
+      return new Map(addresses.map((addr) => [addr.id, addr]));
+    },
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      if (!addresses) return undefined;
+      return new Map(extractCollection(addresses).map((addr) => [addr.id, addr]));
+    },
   });
 }
 
