@@ -12,9 +12,9 @@ type RenderItemInfo<T> = {
   isPlaceholder: boolean;
 } & ListRenderItemInfo<T>;
 
-type ListRenderItem<T> = (info: RenderItemInfo<T>) => React.ReactElement | null;
-
 type OmittedListProps<T> = Omit<FlashListProps<T>, 'refreshControl' | 'renderItem'>;
+
+export type ListRenderItem<T> = (info: RenderItemInfo<T>) => React.ReactElement | null;
 
 export type InfiniteFlashListProps<T> = OmittedListProps<T> & {
   gap?: number;
