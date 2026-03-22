@@ -22,13 +22,26 @@ export const afterMe: CollectionAfterMeHook<User> = async ({ req, collection, re
   logger.info(`Getting full user document for authenticated user..`);
 
   const now = new Date().toISOString();
-  const updatedUser = await req.payload.update({
-    collection: 'users',
-    id: req.user.id,
-    data: { onlineAt: now },
-    depth: 3,
-    req,
-  });
+  const updatedUser = await req.payload
+    .update({
+      collection: 'users',
+      id: req.user.id,
+      data: { onlineAt: now },
+      depth: 0,
+      req,
+    })
+    .then(({ id }) =>
+      req.payload.findByID({
+        collection: 'users',
+        id: id,
+        depth: 2,
+        joins: {
+          addresses: { limit: 5, count: true },
+          deliveryPreferences: { limit: 5, count: true },
+        },
+        req,
+      })
+    );
 
   setUserCache(updatedUser);
   return { ...res, user: updatedUser };
