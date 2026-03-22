@@ -70,6 +70,7 @@ const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, exter
       onDidPresent={handleOnDidPresent}
       onDidFocus={handleOnDidFocus}
       onDidBlur={handleOnDidBlur}
+      insetAdjustment={props.insetAdjustment ?? 'never'}
       grabberOptions={{
         color: primaryColor,
         adaptive: false,
