@@ -3,15 +3,15 @@ import { BLUR_HASH } from '@/lib/constants';
 import { ImageData } from '@lactalink/types';
 import { Galeria } from '@nandorojo/galeria';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { ImageProps } from 'expo-image';
 import React, { useCallback } from 'react';
 import { GestureResponderEvent, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from './AppProvider/ThemeProvider';
-import { Image, ImageProps } from './ui/image';
+import { Image } from './Image';
 import { Pressable, PressableProps } from './ui/pressable';
 import { Text } from './ui/text';
 
-interface ImageViewerProps
-  extends Pick<ImageProps, 'contentFit' | 'size'>, Omit<PressableProps, 'style'> {
+interface ImageViewerProps extends Pick<ImageProps, 'contentFit'>, Omit<PressableProps, 'style'> {
   images: ImageData[];
   initialIndex?: number;
   imageStyle?: ImageProps['style'];
@@ -80,7 +80,6 @@ export function SingleImageViewer({
   fallback,
   imageClassName,
   imageStyle,
-  size,
   ...props
 }: SingleImageViewerProps) {
   const { theme } = useTheme();
@@ -102,12 +101,11 @@ export function SingleImageViewer({
         <Galeria urls={[image.uri]} theme={theme}>
           <Galeria.Image style={{ backgroundColor }}>
             <Image
-              size={size}
               source={{ uri: image.uri }}
               recyclingKey={image.uri}
               placeholder={{ blurhash: image.blurHash || BLUR_HASH }}
               className={imageClassName}
-              style={imageStyle}
+              style={StyleSheet.flatten([{ width: '100%', height: '100%' }, imageStyle])}
               contentFit={contentFit}
               alt={image.alt || 'Image'}
               accessibilityLabel={image.alt || 'Image'}
