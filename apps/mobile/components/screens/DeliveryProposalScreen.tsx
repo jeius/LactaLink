@@ -1,6 +1,5 @@
 import { DeliveryForm } from '@/components/forms/donation-request/DeliveryForm';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
@@ -12,7 +11,6 @@ import {
 import { useTransaction } from '@/features/transactions/hooks/queries';
 import { addTransactionToAllCache } from '@/features/transactions/lib/cacheUtils';
 import { ProposeSearchParams } from '@/features/transactions/lib/types';
-import { getPrimaryColor } from '@/lib/colors';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { mergeDateTime } from '@/lib/utils/mergeDateTime';
 import { transformToDeliverySchema } from '@/lib/utils/transformData';
@@ -27,7 +25,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import KeyboardAvoidingScrollView from '../KeyboardAvoider';
-import { BottomSheetDragIndicator } from '../ui/bottom-sheet';
+import FormSheetHandle from '../ui/FormSheetHandle';
 
 export default function DeliveryProposalScreen() {
   const inset = useSafeAreaInsets();
@@ -52,10 +50,7 @@ export default function DeliveryProposalScreen() {
         <Spinner size={'large'} />
       ) : (
         <TransactionProvider transaction={transaction}>
-          <BottomSheetDragIndicator
-            className="pb-6 pt-4"
-            indicatorStyle={{ backgroundColor: getPrimaryColor('500') }}
-          />
+          <FormSheetHandle />
           <MainComponent
             transaction={transaction}
             isRefetching={isRefetching}
@@ -111,7 +106,8 @@ function MainComponent({ transaction, isRefetching, onRefetch: refetch, canEdit 
     <KeyboardAvoidingScrollView
       className="flex-1 flex-col"
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      refreshing={isRefetching}
+      onRefresh={refetch}
     >
       <HStack space="lg" className="items-center px-2 pb-5">
         <HeaderBackButton />
