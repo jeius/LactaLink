@@ -2,7 +2,7 @@ import { Alert, AlertIcon, AlertText } from '@/components/ui/alert';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { AlertCircleIcon, LucideIcon, LucideProps, XIcon } from 'lucide-react-native';
 import React, { FC } from 'react';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 const AnimatedAlert = Animated.createAnimatedComponent(Alert);
 
@@ -17,8 +17,8 @@ export function HintAlert({ onClose, message, icon = AlertCircleIcon, visible }:
   return (
     visible && (
       <AnimatedAlert
-        // entering={FadeIn}
-        // exiting={FadeOut}
+        entering={FadeIn}
+        exiting={FadeOut}
         variant="solid"
         action="info"
         className="items-start rounded-lg"
