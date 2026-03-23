@@ -21,7 +21,7 @@ const buttonStyle = tva({
         'border-typography-950 bg-typography-950 hover:border-typography-600 hover:bg-typography-600 active:border-typography-600 active:bg-typography-600',
     },
     variant: {
-      link: 'bg-transparent px-0 hover:bg-transparent active:bg-transparent',
+      link: 'overflow-auto rounded-none bg-transparent px-0 hover:bg-transparent active:bg-transparent',
       outline: 'border bg-transparent hover:bg-background-50 active:bg-background-50',
       ghost: 'bg-transparent hover:bg-background-50 active:bg-background-50',
       solid: '',
