@@ -1,8 +1,13 @@
+import { wrapCallback } from '@/lib/utils/wrapCallback';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Coordinates } from '@lactalink/types';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { PressableProps, StyleSheet } from 'react-native';
-import { GoogleMapsView, RNMarker } from 'react-native-google-maps-plus';
+import {
+  GoogleMapsView,
+  RNGoogleMapsPlusViewMethods,
+  RNMarker,
+} from 'react-native-google-maps-plus';
 import { useTheme } from '../AppProvider/ThemeProvider';
 import { Box } from '../ui/box';
 import { Pressable } from '../ui/pressable';
@@ -31,6 +36,7 @@ export function ThumbnailMap({
   heading = 0,
 }: ThumbnailMapProps) {
   const { theme } = useTheme();
+  const mapRef = useRef<RNGoogleMapsPlusViewMethods>(null);
 
   const markerID = useMemo(() => `marker-${center.latitude}-${center.longitude}`, [center]);
 
@@ -42,6 +48,11 @@ export function ThumbnailMap({
     };
   }, [center, markerID]);
 
+  useEffect(() => {
+    if (isLoading) return;
+    mapRef.current?.setCamera({ center }, false);
+  }, [center, isLoading]);
+
   return (
     <Box className={baseStyle({ className })}>
       {isLoading ? (
@@ -49,6 +60,9 @@ export function ThumbnailMap({
       ) : (
         <>
           <GoogleMapsView
+            hybridRef={wrapCallback((ref) => {
+              mapRef.current = ref.current;
+            })}
             initialProps={{
               camera: { zoom, center, bearing: heading, tilt: pitch },
               liteMode: true,
