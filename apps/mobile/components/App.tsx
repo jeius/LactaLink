@@ -2,13 +2,12 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { Stack, usePathname } from 'expo-router';
-import FetchingSpinner from './loaders/FetchingSpinner';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
 export function App() {
   const screenOptions = useScreenOptions();
   const pathname = usePathname();
-  const { user, session, isLoading, isFetching } = useAuth();
+  const { user, session, isLoading } = useAuth();
 
   const viewedOnboarding = useOnboardingStore((s) => s.viewed);
 
@@ -47,7 +46,6 @@ export function App() {
           <Stack.Screen name="auth" />
         </Stack.Protected>
       </Stack>
-      <FetchingSpinner isFetching={isFetching} />
     </>
   );
 }
