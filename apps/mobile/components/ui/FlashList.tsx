@@ -1,6 +1,7 @@
 import { FlashList as FlashListComponent, FlashListProps, FlashListRef } from '@shopify/flash-list';
+import { cssInterop } from 'nativewind';
 import React, { ForwardedRef, forwardRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, ViewProps } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { RefreshControl } from '../RefreshControl';
 
@@ -56,9 +57,21 @@ function FlashListInner<T>(props: Props<T>, ref: ForwardedRef<FlashListRef<T>>) 
  * Android: Disables the pull-to-refresh functionality when `nestedScrollEnabled` is
  * `true` due to Android limitations.
  */
-export const FlashList = forwardRef(FlashListInner) as <T>(
+const FlashList = forwardRef(FlashListInner) as <T>(
   props: Props<T> & React.RefAttributes<FlashListRef<T>>
 ) => React.ReactElement;
 
-export type { FlashListRef } from '@shopify/flash-list';
+const StyledFlashList = cssInterop(FlashList, {
+  headerClassName: 'ListHeaderComponentStyle',
+  footerClassName: 'ListFooterComponentStyle',
+}) as <T>(
+  props: Props<T> &
+    React.RefAttributes<FlashListRef<T>> & {
+      headerClassName?: ViewProps['className'];
+      footerClassName?: ViewProps['className'];
+    }
+) => React.ReactElement;
+
+export type { FlashListRef, ListRenderItem, ListRenderItemInfo } from '@shopify/flash-list';
+export { StyledFlashList as FlashList };
 export type { Props as FlashListProps };
