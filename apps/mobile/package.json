@@ -55,7 +55,7 @@
     "@lactalink/form-schemas": "workspace:*",
     "@lactalink/utilities": "workspace:*",
     "@legendapp/motion": "^2.5.3",
-    "@lodev09/react-native-true-sheet": "^3.8.2",
+    "@lodev09/react-native-true-sheet": "^3.9.9",
     "@nandorojo/galeria": "^2.0.2",
     "@react-native-aria/focus": "^0.2.9",
     "@react-native-community/datetimepicker": "8.4.4",
