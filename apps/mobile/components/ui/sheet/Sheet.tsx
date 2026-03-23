@@ -9,7 +9,7 @@ import {
   TrueSheetProps,
 } from '@lodev09/react-native-true-sheet';
 import { cssInterop } from 'nativewind';
-import React, { useRef } from 'react';
+import React, { ForwardedRef, RefObject, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -53,10 +53,6 @@ const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, exter
     focusRef.current = false;
   };
 
-  usePreventBackPress(presentedRef, () => {
-    if (focusRef.current && typeof ref === 'object' && ref) ref.current?.dismiss();
-  });
-
   return (
     <TrueSheet
       {...props}
@@ -76,10 +72,30 @@ const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, exter
         adaptive: false,
         ...props.grabberOptions,
       }}
-    />
+    >
+      <BackHandler sheetRef={ref} presentedRef={presentedRef} focusRef={focusRef} />
+      {props.children}
+    </TrueSheet>
   );
 });
 
 cssInterop(Sheet, { className: 'style' });
 
 export default Sheet;
+
+function BackHandler({
+  sheetRef,
+  presentedRef,
+  focusRef,
+}: {
+  sheetRef: ForwardedRef<SheetRef>;
+  presentedRef: RefObject<boolean>;
+  focusRef: RefObject<boolean>;
+}) {
+  usePreventBackPress(presentedRef, () => {
+    if (typeof sheetRef !== 'object' || !sheetRef) return;
+    if (focusRef.current) sheetRef.current?.dismiss();
+  });
+
+  return null;
+}
