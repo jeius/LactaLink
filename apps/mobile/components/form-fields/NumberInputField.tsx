@@ -21,6 +21,7 @@ export function NumberInputField<
   isDisabled,
   isLoading,
   inputProps: { size = 'md', ...inputProps } = {},
+  contentPosition = 'first',
   ...props
 }: TextInputFieldProps<TFieldValues, TName>) {
   const {
@@ -37,7 +38,12 @@ export function NumberInputField<
   }
 
   return (
-    <FieldWrapper {...props} error={error} isDisabled={isDisabled || isSubmitting}>
+    <FieldWrapper
+      {...props}
+      contentPosition={contentPosition}
+      error={error}
+      isDisabled={isDisabled || isSubmitting}
+    >
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
       ) : (
