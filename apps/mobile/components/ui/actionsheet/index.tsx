@@ -1,9 +1,9 @@
 'use client';
 import { H4 } from '@expo/html-elements';
-import { createActionsheet } from '@gluestack-ui/actionsheet';
-import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { createActionsheet } from '@gluestack-ui/core/actionsheet/creator';
+import { PrimitiveIcon, UIIcon } from '@gluestack-ui/core/icon/creator';
+import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import {
   AnimatePresence,
   createMotionAnimatedComponent,
@@ -102,18 +102,18 @@ cssInterop(PrimitiveIcon, {
   },
 });
 
-const actionsheetStyle = tva({ base: 'web:pointer-events-none h-full w-full' });
+const actionsheetStyle = tva({ base: 'h-full w-full web:pointer-events-none' });
 
 const actionsheetContentStyle = tva({
-  base: 'bg-background-0 web:pointer-events-auto web:select-none shadow-hard-5 border-outline-100 items-center rounded-tl-3xl rounded-tr-3xl border border-b-0 p-5 pt-2',
+  base: 'items-center rounded-tl-3xl rounded-tr-3xl border border-b-0 border-outline-100 bg-background-0 p-5 pt-2 shadow-hard-5 web:pointer-events-auto web:select-none',
 });
 
 const actionsheetItemStyle = tva({
-  base: 'data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 web:data-[focus-visible=true]:outline-indicator-primary w-full flex-row items-center gap-2 rounded-sm p-3 data-[disabled=true]:opacity-40',
+  base: 'w-full flex-row items-center gap-2 rounded-sm p-3 hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 web:data-[focus-visible=true]:outline-indicator-primary data-[disabled=true]:opacity-40 data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed',
 });
 
 const actionsheetItemTextStyle = tva({
-  base: 'text-typography-900 font-body',
+  base: 'font-body text-typography-900',
   variants: {
     isTruncated: {
       true: '',
@@ -144,7 +144,7 @@ const actionsheetItemTextStyle = tva({
 });
 
 const actionsheetDragIndicatorStyle = tva({
-  base: 'bg-primary-500 h-1 w-16 rounded-full',
+  base: 'h-1 w-16 rounded-full bg-primary-500',
 });
 
 const actionsheetDragIndicatorWrapperStyle = tva({
@@ -152,7 +152,7 @@ const actionsheetDragIndicatorWrapperStyle = tva({
 });
 
 const actionsheetBackdropStyle = tva({
-  base: 'bg-background-600 web:cursor-default web:pointer-events-auto absolute bottom-0 left-0 right-0 top-0',
+  base: 'absolute bottom-0 left-0 right-0 top-0 bg-background-600 web:pointer-events-auto web:cursor-default',
 });
 
 const actionsheetScrollViewStyle = tva({
@@ -172,7 +172,7 @@ const actionsheetSectionListStyle = tva({
 });
 
 const actionsheetSectionHeaderTextStyle = tva({
-  base: 'font-heading text-typography-500 my-0 p-3 uppercase leading-5',
+  base: 'my-0 p-3 font-heading uppercase leading-5 text-typography-500',
   variants: {
     isTruncated: {
       true: '',
@@ -214,7 +214,7 @@ const actionsheetSectionHeaderTextStyle = tva({
 });
 
 const actionsheetIconStyle = tva({
-  base: 'text-background-500 fill-none',
+  base: 'fill-none text-background-500',
   variants: {
     size: {
       '2xs': 'h-3 w-3',
