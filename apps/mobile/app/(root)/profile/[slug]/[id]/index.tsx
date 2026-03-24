@@ -5,7 +5,6 @@ import OrganizationProfile from '@/features/profile/components/profile-screen/Or
 import ProfilePosts from '@/features/profile/components/ProfilePosts';
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { PopulatedUserProfile } from '@lactalink/types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -47,7 +46,7 @@ export default function ProfilePage() {
     <SafeArea safeTop={false} className="items-stretch">
       <Stack.Screen options={{ headerTitle }} />
       <ProfilePosts
-        profile={{ relationTo: slug, value: profile } as PopulatedUserProfile}
+        profile={data}
         isRefreshing={isRefetching}
         onRefresh={refresh}
         HeaderComponent={({ profile }) => {
