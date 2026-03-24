@@ -5,4 +5,5 @@
 
 export * from './clearReadRecords';
 export * from './deleteRelatedDocs';
+export * from './publishMilkbags';
 export * from './syncVolumes';

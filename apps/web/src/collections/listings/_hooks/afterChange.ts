@@ -1,7 +1,8 @@
 import { hookLogger } from '@lactalink/agents/payload';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
+import { isDonation } from '@lactalink/utilities/type-guards';
 import { CollectionAfterChangeHook } from 'payload';
-import { clearReadRecords } from '../_helpers';
+import { clearReadRecords, publishMilkbags } from '../_helpers';
 
 export const afterChange: CollectionAfterChangeHook<Donation | Request> = async ({
   doc,
@@ -10,7 +11,10 @@ export const afterChange: CollectionAfterChangeHook<Donation | Request> = async 
   collection,
 }) => {
   if (operation === 'create') {
-    // Create operations here if needed in the future...
+    const logger = hookLogger(req, collection.slug, 'afterCreate');
+    if (isDonation(doc)) {
+      await publishMilkbags(req, doc, logger);
+    }
   }
 
   if (operation === 'update') {
