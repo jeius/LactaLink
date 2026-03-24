@@ -1,32 +1,31 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  DonationCreateSchema,
-  donationCreateSchema,
-  MilkBagCreateSchema,
-  MilkBagSchema,
-} from '@lactalink/form-schemas';
-import { MilkBag, User } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { DonationCreateSchema, donationCreateSchema } from '@lactalink/form-schemas';
 
-import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
 import {
   transformToDeliveryPreferenceSchema,
-  transformToMilkBagCreateSchema,
-  transformToMilkBagSchema,
   transformToRequestSchema,
 } from '@/lib/utils/transformData';
 
-import { FormProps } from '@/components/contexts/FormProvider';
+import { FormProps, useForm } from '@/components/contexts/FormProvider';
 import { useDraftMilkbags, useRequest } from '@/features/donation&request/hooks/queries';
 import { useMeUser } from '@/hooks/auth/useAuth';
 
-import { useEffect, useMemo } from 'react';
-import { DeepPartial, useForm } from 'react-hook-form';
+import { deleteSavedFormData, saveFormData } from '@/lib/localStorage/utils';
+import { UserProfile } from '@lactalink/types';
+import { Request } from '@lactalink/types/payload-generated-types';
+import { UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useForm as useHookForm } from 'react-hook-form';
+import {
+  getDonationDefaultValues,
+  getPreferredDonationValues,
+  transformDraftBags,
+} from '../lib/formUtils';
 
 type Params = {
   matchedRequest: string | undefined;
-  recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
+  recipient?: { value: string; relationTo: UserProfile['relationTo'] };
 };
 
 export function useCreateDonationForm({
@@ -36,123 +35,128 @@ export function useCreateDonationForm({
   const { data: user = null, ...userQuery } = useMeUser();
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
+  const isMatched = Boolean(matchedRequest);
+  const hasRecipient = Boolean(recipient);
+
   // #region Queries
   const { data: draftMilkBags, ...bagsQuery } = useDraftMilkbags();
   const { data: matchedRequestDoc, ...requestQuery } = useRequest(matchedRequest);
+
+  const handleRefresh = useCallback(() => {
+    bagsQuery.refetch();
+    if (matchedRequest) requestQuery.refetch();
+  }, [bagsQuery, requestQuery, matchedRequest]);
   // #endregion
 
   // #region Form Setup
-  const form = useForm<DonationCreateSchema>({
+  const form = useHookForm<DonationCreateSchema>({
     resolver: zodResolver(donationCreateSchema),
-    mode: 'onTouched',
-    defaultValues: createDefaultValues(user, !!matchedRequest, !!recipient),
+    mode: 'onSubmit',
+    reValidateMode: 'onBlur',
+    defaultValues: getDonationDefaultValues(user, { isMatched, hasRecipient }),
   });
 
-  const { reset, getValues, formState, setValue } = form;
-  const isSubmitSuccessful = formState.isSubmitSuccessful;
+  const {
+    getValues,
+    setValue,
+    formState: { isSubmitSuccessful },
+  } = form;
   // #endregion
 
+  const handleMatchedWithRequest = useCallback(
+    (request: Request) => {
+      const transformedRequest = transformToRequestSchema(request);
+      setValue('type', 'MATCHED');
+      setValue('matchedRequest', transformedRequest);
+      const storage = transformedRequest.details.storagePreference;
+      // If the storage preference is EITHER, we want to leave it up to the donor
+      // Otherwise, we set it to the request's preference since the donor has no say in the matter
+      if (storage !== 'EITHER') setValue('details.storageType', storage);
+    },
+    [setValue]
+  );
+
+  const handleDirectDonation = useCallback(
+    (receiver: NonNullable<typeof recipient>) => {
+      setValue('type', 'DIRECT');
+      setValue('recipient', receiver);
+    },
+    [setValue]
+  );
+
   // #region Use Effects
-  // When draft milk bags exist, update the form values.
   useEffect(() => {
     if (!draftMilkBags) return;
+    setValue('details.bags', transformDraftBags(draftMilkBags));
+  }, [draftMilkBags, setValue]);
 
-    const { newDetailsBags, newMilkBags } = updateDataOnDraftBagsExist(draftMilkBags);
-    setValue('details.bags', newDetailsBags, { shouldDirty: true, shouldTouch: true });
-    setValue('milkBags', newMilkBags, { shouldDirty: true, shouldTouch: true });
-  }, [draftMilkBags, getValues, reset, setValue]);
-
-  // When matched request and recipient prop changes, update the form values.
   useEffect(() => {
-    if (matchedRequestDoc) {
-      const transformedRequest = transformToRequestSchema(matchedRequestDoc);
-      const preferredStorage = transformedRequest.details.storagePreference;
-      setValue('matchedRequest', transformedRequest);
-      setValue('type', 'MATCHED');
-      if (preferredStorage !== 'EITHER') setValue('details.storageType', preferredStorage);
-    } else if (recipient) {
-      setValue('recipient', recipient);
-      setValue('type', 'DIRECT');
+    if (isMatched && matchedRequestDoc) {
+      handleMatchedWithRequest(matchedRequestDoc);
+    } else if (hasRecipient && recipient) {
+      handleDirectDonation(recipient);
     } else {
-      if (!getValues('deliveryPreferences')?.length) {
-        const defaultPrefs = preferences
+      const defaultPreferences = getValues('deliveryPreferences') || [];
+      if (defaultPreferences.length > 0) return;
+      setValue(
+        'deliveryPreferences',
+        preferences
           .map((pref) => transformToDeliveryPreferenceSchema(pref))
-          .filter((v) => v !== null);
-        setValue('deliveryPreferences', defaultPrefs);
-      }
+          .filter((v) => v !== null)
+      );
     }
-  }, [getValues, matchedRequestDoc, preferences, recipient, reset, setValue]);
+  }, [
+    getValues,
+    handleDirectDonation,
+    handleMatchedWithRequest,
+    hasRecipient,
+    isMatched,
+    matchedRequestDoc,
+    preferences,
+    recipient,
+    setValue,
+  ]);
 
-  // When the form is successfully submitted, save preferred values to local storage and clear old data.
   useEffect(() => {
-    if (isSubmitSuccessful && !matchedRequest && !recipient) {
+    if (isSubmitSuccessful) {
+      if (isMatched || hasRecipient) {
+        deleteSavedFormData('donation-create');
+        return;
+      }
       const data = getValues();
-
-      const preferredValues: DeepPartial<typeof data> = {
-        details: {
-          notes: data.details.notes,
-          collectionMode: data.details.collectionMode,
-          storageType: data.details.storageType,
-        },
-        deliveryPreferences: data.deliveryPreferences,
-      };
-
+      const preferredValues = getPreferredDonationValues(data);
       // Save the preffered values to local storage
       saveFormData('donation-create', preferredValues);
     }
-  }, [isSubmitSuccessful, getValues, matchedRequest, recipient]);
+  }, [getValues, hasRecipient, isMatched, isSubmitSuccessful]);
+
   // #endregion
+
+  const requestExtraData = { data: matchedRequestDoc, ...requestQuery } as UseQueryResult<
+    Request,
+    Error
+  >;
 
   return {
     ...form,
     isLoading: bagsQuery.isLoading,
     isFetching: bagsQuery.isFetching,
-    fetchError: bagsQuery.error || userQuery.error || requestQuery.error,
+    fetchError: bagsQuery.error || userQuery.error,
     refreshing: bagsQuery.isRefetching,
-    onRefresh: () => {
-      bagsQuery.refetch();
-      requestQuery.refetch();
+    onRefresh: handleRefresh,
+    extraData: {
+      isMatched,
+      hasRecipient,
+      requestQuery: requestExtraData,
     },
   };
 }
 
-// #region Helper Functions
-function updateDataOnDraftBagsExist(draftMilkBags: MilkBag[]) {
-  const newDetailsBags: MilkBagCreateSchema[] = [];
-
-  const newMilkBags: MilkBagSchema[] = [];
-
-  for (const bag of draftMilkBags) {
-    newMilkBags.push(transformToMilkBagSchema(bag));
-    newDetailsBags.push(transformToMilkBagCreateSchema(bag));
-  }
-
-  return { newDetailsBags, newMilkBags };
-}
-
-function createDefaultValues(
-  user: User | null,
-  isMatched: boolean,
-  hasRecipient: boolean
-): DonationCreateSchema | undefined {
-  const profile = extractCollection(user?.profile?.value);
-  const savedData = getSavedFormData('donation-create') as DonationCreateSchema | undefined;
-
-  if (savedData && !isMatched && !hasRecipient) return savedData;
-
-  if (!user || !profile) return;
-
-  const donorID = extractID(profile);
-
-  return {
-    type: 'OPEN',
-    milkBags: [],
-    deliveryPreferences: [],
-    donor: donorID,
-    details: {
-      notes: '',
-      bags: [] as MilkBagCreateSchema[],
-    } as DonationCreateSchema['details'],
+export function useDonationFormExtraData() {
+  const { additionalState } = useForm<DonationCreateSchema>();
+  return additionalState.extraData as {
+    isMatched: boolean;
+    hasRecipient: boolean;
+    requestQuery: UseQueryResult<Request, Error>;
   };
 }
-// #endregion

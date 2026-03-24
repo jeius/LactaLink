@@ -11,9 +11,9 @@ export function createDonationQuery(doc: string | Donation | undefined, enabled 
   return queryOptions({
     enabled: !!doc && enabled,
     queryKey: [...QUERY_KEYS.DONATIONS.ONE, docID],
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (!docID) throw new Error('Donation ID is required to fetch donation.');
-      return findDonation(docID);
+      return findDonation(docID, { signal });
     },
     placeholderData: extractCollection(doc) ?? undefined,
   });
@@ -24,17 +24,21 @@ export function createIncomingDonationsInfQuery(user: User | null | undefined) {
     enabled: !!user,
     queryKey: [...QUERY_KEYS.DONATIONS.INFINITE, 'incoming', extractID(user)],
     initialPageParam: 1,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam, signal }) => {
       if (!user) throw new Error('User is not logged in.');
 
       const userProfile = user.profile;
 
       if (!userProfile) throw new Error('User profile is required to fetch incoming donations.');
 
-      const paginatedDocs = await findPaginatedIncomingDonations(userProfile, {
-        page: pageParam,
-        limit: 15,
-      });
+      const paginatedDocs = await findPaginatedIncomingDonations(
+        userProfile,
+        {
+          page: pageParam,
+          limit: 15,
+        },
+        { signal }
+      );
 
       return transformToPaginatedMappedDocs(paginatedDocs);
     },

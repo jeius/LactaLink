@@ -1,3 +1,4 @@
+import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';
 import { deleteMilkBag } from '../api/delete';
@@ -8,11 +9,12 @@ export function createDeleteBagMutation() {
 
   return mutationOptions({
     meta: { errorMessage: (error) => 'Failed to remove milk bag. ' + extractErrorMessage(error) },
-    mutationFn: async (id: string | undefined) => {
-      if (!id) return;
-      return deleteMilkBag(id);
+    mutationFn: async (milkbag: MilkBag | undefined) => {
+      if (!milkbag) return;
+      return deleteMilkBag(milkbag.id);
     },
-    onMutate: async (id, { client }) => {
+    onMutate: async (milkbag, { client }) => {
+      const id = milkbag?.id;
       if (!id) return;
 
       await client.cancelQueries(draftMilkbagsQueryOption);

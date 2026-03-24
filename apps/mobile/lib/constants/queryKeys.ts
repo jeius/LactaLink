@@ -37,7 +37,17 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  DELIVERY_PREFERENCES: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
   DONATIONS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
+  MILKBAGS: {
     ALL: QueryKey;
     INFINITE: QueryKey;
     ONE: QueryKey;
@@ -101,10 +111,20 @@ export const QUERY_KEYS: QueryKeys = {
     INFINITE: ['delivery-plans', 'infinite'],
     ONE: ['delivery-plans', 'one'],
   },
+  DELIVERY_PREFERENCES: {
+    ALL: ['delivery-preferences'],
+    INFINITE: ['delivery-preferences', 'infinite'],
+    ONE: ['delivery-preferences', 'one'],
+  },
   DONATIONS: {
     ALL: ['donations'],
     INFINITE: ['donations', 'infinite'],
     ONE: ['donations', 'one'],
+  },
+  MILKBAGS: {
+    ALL: ['milkbags'],
+    INFINITE: ['milkbags', 'infinite'],
+    ONE: ['milkbags', 'one'],
   },
   REQUESTS: {
     ALL: ['requests'],

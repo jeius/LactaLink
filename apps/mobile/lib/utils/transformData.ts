@@ -242,8 +242,8 @@ export function transformToDonationSchema<T extends Donation | BaseInput, B exte
       const image = input.details.milkSample?.pop();
 
       const bags = input.details.bags
-        .map((bag) => transformToMilkBagCreateSchema(bag, options))
-        .filter(Boolean) as MilkBagCreateSchema[];
+        .map((bag) => transformToMilkBagSchema(bag, options))
+        .filter(Boolean) as MilkBagSchema[];
 
       const milkBags = input.details.bags
         .map((bag) => transformToMilkBagSchema(bag, options))
