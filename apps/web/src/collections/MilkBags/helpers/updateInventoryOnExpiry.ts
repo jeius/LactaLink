@@ -66,6 +66,25 @@ export async function updateInventoryOnExpiry(
     req.payload.logger.info(
       `Inventory ${inventoryID}: bag ${doc.id} expired — remainingVolume → ${remainingVolume}ml, status → ${newStatus}`
     );
+
+    // // Create an inventory event for this expiry
+    // await req.payload.create({
+    //   req,
+    //   collection: 'milk-bag-events',
+    //   data: {
+    //     milkBag: extractID(doc),
+    //     fromParty: { ...previousDoc.owner, value: extractID(previousDoc.owner.value) },
+    //     toParty: { ...doc.owner, value: extractID(doc.owner.value) },
+    //     reason: 'Ownership Transfer',
+    //     occurredAt: new Date().toISOString(),
+    //     eventType: 'ALLOCATED',
+    //     fromStatus: previousDoc.status,
+    //     toStatus: doc.status,
+    //     isSystemGenerated: true,
+    //     source: 'SYSTEM',
+    //     sequenceNumber: 0, // Will be set correctly in the beforeChange hook
+    //   },
+    // });
   } catch (error) {
     req.payload.logger.error(
       `updateInventoryOnExpiry: failed for bag ${doc.id}: ${extractErrorMessage(error)}`

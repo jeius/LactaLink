@@ -9,7 +9,7 @@ import { afterDelete } from './hooks/afterDelete';
 import { beforeChange } from './hooks/beforeChange';
 import { beforeRead } from './hooks/beforeRead';
 import { beforeValidate } from './hooks/beforeValidate';
-import { createExpiryDate, generateCode, generateTitle } from './hooks/fieldHook';
+import { createExpiryDate, generateCode } from './hooks/fieldHook';
 
 export const MilkBags: CollectionConfig<'milkBags'> = {
   slug: 'milkBags',
@@ -25,6 +25,11 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     useAsTitle: 'title',
     defaultColumns: ['code', 'volume', 'status', 'collectedAt', 'expiresAt'],
   },
+  versions: {
+    maxPerDoc: 20,
+    drafts: { autosave: true },
+  },
+  trash: true,
   hooks: {
     beforeValidate: [beforeValidate],
     beforeRead: [beforeRead],
@@ -40,7 +45,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       unique: true,
       index: true,
       required: true,
-      hooks: { beforeChange: [generateCode] },
+      hooks: { beforeValidate: [generateCode] },
       validate: NullableValidator.text,
       admin: {
         readOnly: true,
@@ -53,7 +58,6 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
       name: 'title',
       type: 'text',
       required: true,
-      hooks: { beforeChange: [generateTitle] },
       validate: NullableValidator.text,
       admin: {
         readOnly: true,
@@ -80,6 +84,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
         {
           ...createUserProfileField({ name: 'owner', label: 'Owner Profile', required: true }),
           admin: {
+            position: undefined,
             description:
               'Current owner of the milk bag, auto-populated based on authenticated user.',
           },
@@ -159,17 +164,18 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
         },
 
         {
-          label: 'Ownership History',
+          label: 'Milk Bag Events',
           fields: [
             {
-              name: 'ownershipHistory',
-              label: 'Ownership History',
+              name: 'milkBagEvents',
+              label: 'Milk Bag Events',
               type: 'join',
-              collection: 'milkbag-ownership-histories',
+              collection: 'milk-bag-events',
               on: 'milkBag',
               admin: {
-                description: 'History of ownership transfers for this milk bag',
-                defaultColumns: ['previousOwner', 'newOwner', 'transferReason', 'transferredAt'],
+                description:
+                  'Timeline of events related to this milk bag, such as transfers and status changes.',
+                defaultColumns: ['eventType', 'fromParty', 'toParty', 'occuredAt'],
               },
             },
           ],

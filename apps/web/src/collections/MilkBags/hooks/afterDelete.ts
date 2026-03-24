@@ -1,32 +1,34 @@
+import { hookLogger } from '@lactalink/agents/payload';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterDeleteHook } from 'payload';
 
+/**
+ * After a milk bag is deleted, this hook checks if there are any associated documents (like images)
+ * that also need to be deleted.
+ */
 export const afterDelete: CollectionAfterDeleteHook<MilkBag> = async ({ req, doc, collection }) => {
-  const docsToDelete: { id: string; collection: CollectionSlug }[] = [];
+  const logger = hookLogger(req, collection.slug, 'afterDelete');
+  const docsToDelete = new Map<CollectionSlug, Set<string>>();
 
   const image = doc.bagImage;
-
   if (image) {
-    docsToDelete.push({ id: extractID(image), collection: 'milk-bag-images' });
+    docsToDelete.set('milk-bag-images', new Set([extractID(image)]));
   }
 
   await Promise.all(
-    docsToDelete.map(({ id, collection }) =>
+    docsToDelete.entries().map(([collection, ids]) =>
       req.payload.delete({
-        id,
         collection,
+        where: { id: { in: Array.from(ids) } },
         req,
         overrideAccess: true,
       })
     )
   );
 
-  req.payload.logger.info(
-    {
-      bagImage: 1,
-    },
-    `Deleted associated documents for ${collection.labels.singular} ${doc.id}`
-  );
+  logger.info(`Deleted associated documents for milk bag ${doc.id}`, {
+    bagImage: 1,
+  });
 };

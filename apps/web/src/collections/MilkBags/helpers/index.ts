@@ -1,4 +1,4 @@
-import { MILK_BAG_OWNERSHIP_TRANSFER_REASONS, MILK_BAG_STATUS } from '@lactalink/enums/milkbags';
+import { MILK_BAG_STATUS } from '@lactalink/enums/milkbags';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractID } from '@lactalink/utilities/extractors';
@@ -25,9 +25,12 @@ export async function deleteRemovedImage(
 }
 
 /**
- * When a milk bag changes ownership, this creates a new record in the Ownership History
+ * When a milk bag's ownership is transferred (i.e. the `owner` field is updated), create a new
+ * `MilkBagEvent` record to log the transfer in the bag's event history. This allows us to maintain
+ * a complete audit trail of ownership changes for each bag, which is important for traceability and
+ * accountability in the milk donation process.
  */
-export async function createOwnershipHistoryRecord(
+export async function createEventOnOwnershipTransfer(
   doc: MilkBag,
   previousDoc: MilkBag | null,
   req: PayloadRequest
@@ -38,13 +41,19 @@ export async function createOwnershipHistoryRecord(
   if (doc.owner && !isEqualProfiles(previousDoc.owner, doc.owner)) {
     await req.payload.create({
       req,
-      collection: 'milkbag-ownership-histories',
+      collection: 'milk-bag-events',
       data: {
         milkBag: extractID(doc),
-        previousOwner: previousDoc.owner,
-        newOwner: doc.owner,
-        transferReason: MILK_BAG_OWNERSHIP_TRANSFER_REASONS.DONATION_COMPLETED.value,
-        transferredAt: new Date().toISOString(),
+        fromParty: { ...previousDoc.owner, value: extractID(previousDoc.owner.value) },
+        toParty: { ...doc.owner, value: extractID(doc.owner.value) },
+        reason: 'Ownership Transfer',
+        occurredAt: new Date().toISOString(),
+        eventType: 'ALLOCATED',
+        fromStatus: previousDoc.status,
+        toStatus: doc.status,
+        isSystemGenerated: true,
+        source: 'SYSTEM',
+        sequenceNumber: 0, // Will be set correctly in the beforeChange hook
       },
     });
   }

@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload';
 import { MilkBags } from './config';
-import { MilkBagOwnershipHistory } from './OwnershipHistory';
+import { MilkBagEvents } from './MilkBagEvents';
 
-export const MilkBagCollections: CollectionConfig[] = [MilkBags, MilkBagOwnershipHistory];
+export const MilkBagCollections: CollectionConfig[] = [MilkBags, MilkBagEvents];

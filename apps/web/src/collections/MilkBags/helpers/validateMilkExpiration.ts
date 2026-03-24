@@ -11,15 +11,10 @@ import { PayloadRequest } from 'payload';
  * even if the status wasn't updated at the exact moment of expiry.
  */
 export async function validateMilkExpiration(doc: MilkBag, req: PayloadRequest) {
-  // This hook runs before every read operation on a milk bag, so we need to be mindful of performance.
-  // We will only perform the expiry check if the bag isn't already marked as EXPIRED to minimize unnecessary updates.
   if (doc.status === MILK_BAG_STATUS.EXPIRED.value) return doc;
 
-  // To prevent potential infinite loops where updating the status triggers another read, we need to check
-  // if we've already performed the expiry check for this request.
+  // Prevent infinite loops
   if (isHookRun(req, MilkBagHookContext.SkipExpiryCheck)) return doc;
-
-  // Mark that we've performed the expiry check for this request to avoid redundant checks/updates
   markHookRun(req, MilkBagHookContext.SkipExpiryCheck);
 
   if (!doc.expiresAt) return doc; // If there's no expiry date, we can't check for expiry

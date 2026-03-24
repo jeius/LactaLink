@@ -1,4 +1,5 @@
 import { MILK_EXPIRY_DAYS } from '@/lib/constants';
+import { hookLogger } from '@lactalink/agents/payload';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { randomBytes } from 'crypto';
 import { FieldHook } from 'payload';
@@ -8,39 +9,27 @@ import { FieldHook } from 'payload';
  * If an expiry date is already provided, it will be returned as is.
  */
 export const createExpiryDate: FieldHook<MilkBag, MilkBag['expiresAt']> = ({ data, value }) => {
-  if (value && value !== '') return value; // Expiry date already set
+  if (value && value.trim() !== '') return value;
 
   // If no expiry date is set, generate one based on the collectedAt date
   const dateCollected = data?.collectedAt ?? new Date().toISOString();
   const expiryDate = new Date(dateCollected);
-
-  // Add the defined number of expiry days to the collected date to get the expiry date
   expiryDate.setDate(expiryDate.getDate() + MILK_EXPIRY_DAYS);
-
   return expiryDate.toISOString();
 };
 
 /**
- * Generate a title for the milk bag based on its code and volume.
- * If a title is already provided, it will be returned as is.
+ * Generate a unique code for the milk bag if not provided. The code is a
+ * random 6-character string. If a code is already provided, it will be returned as is.
  */
-export const generateTitle: FieldHook<MilkBag, MilkBag['title']> = ({ data, value }) => {
-  if (value && value !== '') return value; // Title already set
+export const generateCode: FieldHook<MilkBag, MilkBag['code']> = async ({
+  value,
+  req,
+  collection,
+}) => {
+  if (value && value.trim() !== '') return value;
 
-  const code = data?.code;
-  const volume = data?.volume;
-  if (code && volume) return `${code} - ${volume} mL`;
-
-  // Return a default title if code or volume is missing, but only if title is not already set.
-  return 'Untitled Milkbag';
-};
-
-/**
- * Generate a unique code for the milk bag if not provided. The code is a random 6-character string.
- * If a code is already provided, it will be returned as is.
- */
-export const generateCode: FieldHook<MilkBag, MilkBag['code']> = async ({ value, req }) => {
-  if (value && value !== '') return value; // Code already set
+  const logger = collection && hookLogger(req, collection.slug, 'generateCode');
 
   // Function to generate a random 6-character code
   const generateRandomCode = () => randomBytes(3).toString('hex').toUpperCase();
@@ -71,7 +60,6 @@ export const generateCode: FieldHook<MilkBag, MilkBag['code']> = async ({ value,
   } while (!isUnique && attempts < maxAttempts);
 
   if (!isUnique) {
-    // Create a more human-readable fallback code
     // Use only clear, unambiguous characters (no 0/O, 1/I, etc.)
     const unambiguousChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let fallbackCode = '';
@@ -90,12 +78,11 @@ export const generateCode: FieldHook<MilkBag, MilkBag['code']> = async ({ value,
 
     code = fallbackCode.substring(0, 6);
 
-    req.payload.logger.warn(
+    logger?.warn(
       `Using human-readable fallback code: ${code} after ${maxAttempts} failed attempts`
     );
   }
 
-  req.payload.logger.info(`Generated unique milk bag code: ${code}`);
-
+  logger?.info(`Generated unique milk bag code: ${code}`);
   return code;
 };
