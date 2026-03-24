@@ -1,11 +1,12 @@
 import { withPayload } from '@payloadcms/next/withPayload';
 
 const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.COOLIFY_URL;
+const coolifyUrl = process.env.COOLIFY_URL;
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const resolvedUrl = vercelProdUrl
   ? `https://${vercelProdUrl}`
-  : serverUrl || 'http://localhost:3000';
+  : serverUrl || coolifyUrl || 'http://localhost:3000';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -42,7 +43,12 @@ const nextConfig = {
       },
     ];
   },
-  output: 'standalone',
+  output: coolifyUrl ? 'standalone' : undefined,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4.5mb', // Vercel Hobby plan maximum request body size
+    },
+  },
 };
 
 export default withPayload(nextConfig);
