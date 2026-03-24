@@ -138,7 +138,7 @@ export interface Config {
     individuals: Individual;
     milkBanks: MilkBank;
     milkBags: MilkBag;
-    'milkbag-ownership-histories': MilkbagOwnershipHistory;
+    'milk-bag-events': MilkBagEvent;
     transactions: Transaction;
     'delivery-details': DeliveryDetail;
     'delivery-updates': DeliveryUpdate;
@@ -213,7 +213,7 @@ export interface Config {
       posts: 'posts';
     };
     milkBags: {
-      ownershipHistory: 'milkbag-ownership-histories';
+      milkBagEvents: 'milk-bag-events';
       donation: 'donations';
       request: 'requests';
     };
@@ -268,7 +268,7 @@ export interface Config {
     individuals: IndividualsSelect<false> | IndividualsSelect<true>;
     milkBanks: MilkBanksSelect<false> | MilkBanksSelect<true>;
     milkBags: MilkBagsSelect<false> | MilkBagsSelect<true>;
-    'milkbag-ownership-histories': MilkbagOwnershipHistoriesSelect<false> | MilkbagOwnershipHistoriesSelect<true>;
+    'milk-bag-events': MilkBagEventsSelect<false> | MilkBagEventsSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'delivery-details': DeliveryDetailsSelect<false> | DeliveryDetailsSelect<true>;
     'delivery-updates': DeliveryUpdatesSelect<false> | DeliveryUpdatesSelect<true>;
@@ -1049,10 +1049,10 @@ export interface MilkBag {
    */
   bagImage?: (string | null) | MilkBagImage;
   /**
-   * History of ownership transfers for this milk bag
+   * Timeline of events related to this milk bag, such as transfers and status changes.
    */
-  ownershipHistory?: {
-    docs?: (string | MilkbagOwnershipHistory)[];
+  milkBagEvents?: {
+    docs?: (string | MilkBagEvent)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -1078,6 +1078,8 @@ export interface MilkBag {
   inventory?: (string | null) | Inventory;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1135,18 +1137,58 @@ export interface MilkBagImage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkbag-ownership-histories".
+ * via the `definition` "milk-bag-events".
  */
-export interface MilkbagOwnershipHistory {
+export interface MilkBagEvent {
   id: string;
   /**
-   * The milk bag this ownership record belongs to
+   * The milk bag associated with this event
    */
   milkBag: string | MilkBag;
+  eventType:
+    | 'RECEIVED'
+    | 'TRANSFERRED_OUT'
+    | 'TRANSFERRED_IN'
+    | 'ALLOCATED'
+    | 'RELEASED'
+    | 'USED'
+    | 'DISCARDED'
+    | 'EXPIRED'
+    | 'STATUS_CHANGED'
+    | 'CORRECTED';
+  /**
+   * The date and time when the event occurred
+   */
+  occurredAt: string;
+  /**
+   * The organization associated with this event for non P2P transfers
+   */
+  organization?:
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
+  /**
+   * The user who performed the action that triggered this event
+   */
+  performedBy?: (string | null) | User;
+  /**
+   * Auto-incrementing sequence number for events related to the same milk bag
+   */
+  sequenceNumber: number;
+  /**
+   * The source of the event, indicating how it was triggered
+   */
+  source?: ('USER' | 'SYSTEM' | 'IMPORT' | 'API') | null;
+  isSystemGenerated?: boolean | null;
   /**
    * The previous owner of the milk bag
    */
-  previousOwner:
+  fromParty:
     | {
         relationTo: 'individuals';
         value: string | Individual;
@@ -1162,7 +1204,7 @@ export interface MilkbagOwnershipHistory {
   /**
    * The new owner of the milk bag
    */
-  newOwner:
+  toParty:
     | {
         relationTo: 'individuals';
         value: string | Individual;
@@ -1175,14 +1217,36 @@ export interface MilkbagOwnershipHistory {
         relationTo: 'milkBanks';
         value: string | MilkBank;
       };
+  fromStatus: 'DRAFT' | 'AVAILABLE' | 'ALLOCATED' | 'CONSUMED' | 'EXPIRED' | 'DISCARDED';
+  toStatus: 'DRAFT' | 'AVAILABLE' | 'ALLOCATED' | 'CONSUMED' | 'EXPIRED' | 'DISCARDED';
+  fromStorageLabel?: string | null;
+  toStorageLabel?: string | null;
   /**
-   * The reason for the ownership transfer
+   * The reason for the event, especially important for transfers and corrections
    */
-  transferReason: 'DONATION_COMPLETED' | 'REDISTRIBUTION' | 'RETURN' | 'N/A';
+  reason?: string | null;
+  referenceType?: ('donations' | 'transactions' | 'allocations' | 'manual_adjustment' | 'system_job') | null;
+  referenceId?: string | null;
   /**
-   * The date and time of the ownership transfer
+   * If this event reverses a previous event, link that event here
    */
-  transferredAt?: string | null;
+  reversesEvent?: (string | null) | MilkBagEvent;
+  /**
+   * Additional notes or context about the event
+   */
+  notes?: string | null;
+  /**
+   * Free-form JSON field for storing any additional structured data related to the event
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1553,7 +1617,7 @@ export interface Transaction {
   /**
    * Type of transaction (determines delivery workflow)
    */
-  type: 'P2P' | 'P2O' | 'O2P';
+  type: 'P2P' | 'P2O' | 'O2P' | 'O2O';
   /**
    * Total volume of milk bags (in mL). Automatically calculated.
    */
@@ -3145,8 +3209,8 @@ export interface PayloadLockedDocument {
         value: string | MilkBag;
       } | null)
     | ({
-        relationTo: 'milkbag-ownership-histories';
-        value: string | MilkbagOwnershipHistory;
+        relationTo: 'milk-bag-events';
+        value: string | MilkBagEvent;
       } | null)
     | ({
         relationTo: 'transactions';
@@ -3882,23 +3946,40 @@ export interface MilkBagsSelect<T extends boolean = true> {
   collectedAt?: T;
   expiresAt?: T;
   bagImage?: T;
-  ownershipHistory?: T;
+  milkBagEvents?: T;
   donation?: T;
   request?: T;
   inventory?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "milkbag-ownership-histories_select".
+ * via the `definition` "milk-bag-events_select".
  */
-export interface MilkbagOwnershipHistoriesSelect<T extends boolean = true> {
+export interface MilkBagEventsSelect<T extends boolean = true> {
   milkBag?: T;
-  previousOwner?: T;
-  newOwner?: T;
-  transferReason?: T;
-  transferredAt?: T;
+  eventType?: T;
+  occurredAt?: T;
+  organization?: T;
+  performedBy?: T;
+  sequenceNumber?: T;
+  source?: T;
+  isSystemGenerated?: T;
+  fromParty?: T;
+  toParty?: T;
+  fromStatus?: T;
+  toStatus?: T;
+  fromStorageLabel?: T;
+  toStorageLabel?: T;
+  reason?: T;
+  referenceType?: T;
+  referenceId?: T;
+  reversesEvent?: T;
+  notes?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }
