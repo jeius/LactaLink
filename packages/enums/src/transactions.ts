@@ -16,6 +16,7 @@ export const TRANSACTION_TYPE = {
   P2P: { label: 'Peer to Peer', value: 'P2P' },
   P2O: { label: 'Peer to Organization', value: 'P2O' },
   O2P: { label: 'Organization to Peer', value: 'O2P' },
+  O2O: { label: 'Organization to Organization', value: 'O2O' },
 } as const;
 
 export const TRANSACTION_PROPOSED_BY = {

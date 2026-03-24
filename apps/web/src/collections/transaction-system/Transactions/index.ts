@@ -103,7 +103,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'type',
           label: 'Transaction Type',
           type: 'select',
-          enumName: 'enum_transaction_type',
+          enumName: 'enum_transaction_types',
           required: true,
           defaultValue: TRANSACTION_TYPE.P2P.value,
           options: Object.values(TRANSACTION_TYPE),
