@@ -63,7 +63,7 @@ export async function linkMilkBagsToInventory(
 ) {
   logger?.info(`Preparing to link milk bags to inventory ${doc.id}...`);
 
-  const milkBags = getHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBagIDs);
+  const milkBags = getHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBags);
 
   const milkBagIDs = extractID(milkBags);
 

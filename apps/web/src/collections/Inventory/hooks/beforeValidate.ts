@@ -54,7 +54,7 @@ export const beforeValidate: CollectionBeforeValidateHook<Inventory> = async ({
       }
 
       // Store milk bags in the request context for use in afterChange hook
-      setHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBagIDs, bags);
+      setHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBags, bags);
 
       logger.info(`Initialized inventory with ${bags.length} milk bags totaling ${totalVolume}ml`);
     }

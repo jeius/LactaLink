@@ -7,7 +7,7 @@ export enum MilkBagHookContext {
 }
 
 export enum InventoryHookContext {
-  MilkBagIDs = 'milkBagIDsToLink',
+  MilkBags = 'milkBagsToLink',
 }
 
 export enum ProfileHookContext {
