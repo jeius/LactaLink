@@ -1,19 +1,23 @@
-import { getColor, getPrimaryColor } from '@/lib/colors';
 import { DidDismissEvent, DidPresentEvent, TrueSheet } from '@lodev09/react-native-true-sheet';
-import { cssInterop } from 'nativewind';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GestureResponderEvent, StyleSheet, View } from 'react-native';
+import React, {
+  FC,
+  ForwardedRef,
+  forwardRef,
+  JSX,
+  PropsWithoutRef,
+  RefAttributes,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { GestureResponderEvent } from 'react-native';
 import { Pressable } from '../../pressable';
-import {
-  SheetStoreContext,
-  initSheetStore,
-  usePresentedSheet,
-  useSheetActions,
-  useSheetRef,
-} from './context';
+import { initSheetStore, SheetStoreContext, useSheetActions, useSheetRef } from './context';
 import { sheetContentStyle, sheetIconStyle, sheetItemStyle, sheetTriggerStyle } from './styles';
 import type {
   ActionSheetContentProps,
+  ActionSheetFlashListProps,
   ActionSheetIconProps,
   ActionSheetItemProps,
   ActionSheetListProps,
@@ -22,34 +26,29 @@ import type {
   ActionSheetTriggerProps,
 } from './types';
 
-import { usePreventBackPress } from '@/hooks/usePreventBackPress';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList, FlashListRef } from '../../FlashList';
 import { Icon } from '../../icon';
-import { VerticalInfiniteList } from '../../list';
+import { InfiniteFlashList, InfiniteFlashListRef, VerticalInfiniteList } from '../../list';
 import { Text } from '../../text';
+import Sheet, { SheetRef } from '../Sheet';
 
-function ActionSheetProvider({
-  onOpen,
-  onClose,
-  open: openProp,
-  setOpen: setOpenProp,
-  children,
-  sheetRef,
-}: ActionSheetProps) {
+const ActionSheetProvider = forwardRef<SheetRef, ActionSheetProps>(function ActionSheetProvider(
+  { onOpen, onClose, open: openProp, setOpen: setOpenProp, children, sheetRef },
+  externalRef
+) {
   const localRef = useRef<TrueSheet>(null);
   const [localOpen, setLocalOpen] = useState(openProp ?? false);
-  const [mounted, setMounted] = useState(false);
 
-  const ref = sheetRef ?? localRef;
+  const ref = (typeof externalRef !== 'function' ? externalRef : sheetRef) ?? localRef;
   const open = openProp !== undefined ? openProp : localOpen;
   const setOpen = setOpenProp !== undefined ? setOpenProp : setLocalOpen;
 
-  const handleOpen = useCallback(() => {
+  const handleOnOpen = useCallback(() => {
     onOpen?.();
     setOpen?.(true);
   }, [onOpen, setOpen]);
 
-  const handleClose = useCallback(() => {
+  const handleOnClose = useCallback(() => {
     onClose?.();
     setOpen?.(false);
   }, [onClose, setOpen]);
@@ -57,84 +56,57 @@ function ActionSheetProvider({
   const [store] = useState(() =>
     initSheetStore({
       presented: open ?? false,
-      mounted: mounted,
-      actions: {
-        handleOpen,
-        handleClose,
-        setPresented: setOpen,
-      },
+      actions: { handleOnOpen, handleOnClose },
     })
   );
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    store.setState({ sheetRef: ref, mounted });
-  }, [mounted, ref, store]);
+    store.setState({ sheetRef: ref, mounted: true });
+  }, [ref, store]);
 
   useEffect(() => {
     if (open === undefined) return;
-    const { handleOpen, handleClose } = store.getState().actions;
-    if (open) handleOpen();
-    else handleClose();
+    const { open: present, close } = store.getState().actions;
+    if (open) present();
+    else close();
   }, [open, store]);
 
   return <SheetStoreContext.Provider value={store}>{children}</SheetStoreContext.Provider>;
-}
+});
 
 function ActionSheetContent({
   onDidPresent,
   onDidDismiss,
-  dimmed = true,
   detents = ['auto'],
-  dismissible = true,
-  grabberOptions = {},
-  cornerRadius = 24,
-  insetAdjustment = 'never',
   ...props
 }: ActionSheetContentProps) {
-  const insets = useSafeAreaInsets();
-  const { setPresented, handleClose } = useSheetActions();
-  const presented = usePresentedSheet();
+  const { handleOnClose: handleClose, handleOnOpen: handleOpen } = useSheetActions();
   const sheetRef = useSheetRef();
 
   const handlePresent = useCallback(
     (e: DidPresentEvent) => {
-      setPresented(true);
+      handleOpen();
       onDidPresent?.(e);
     },
-    [onDidPresent, setPresented]
+    [onDidPresent, handleOpen]
   );
 
   const handleDismiss = useCallback(
     (e: DidDismissEvent) => {
-      setPresented(false);
+      handleClose();
       onDidDismiss?.(e);
     },
-    [onDidDismiss, setPresented]
+    [onDidDismiss, handleClose]
   );
 
-  usePreventBackPress(presented, handleClose);
-
   return (
-    <TrueSheet
+    <Sheet
       {...props}
       ref={sheetRef}
       detents={detents}
-      dimmed={dimmed}
-      dismissible={dismissible}
-      cornerRadius={cornerRadius}
       onDidPresent={handlePresent}
       onDidDismiss={handleDismiss}
-      grabberOptions={{ color: getPrimaryColor('500'), adaptive: false, ...grabberOptions }}
-      backgroundColor={props.backgroundColor ?? getColor('background', '0')}
       className={sheetContentStyle({ className: props.className })}
-      insetAdjustment={insetAdjustment}
-      style={StyleSheet.flatten([{ paddingBottom: insets.bottom }, props.style])}
-      header={props.header ?? <View />}
-      headerStyle={StyleSheet.flatten([{ marginTop: 30 }, props.headerStyle])}
     />
   );
 }
@@ -143,14 +115,14 @@ const ActionSheetItem = React.forwardRef<
   React.ComponentRef<typeof Pressable>,
   ActionSheetItemProps
 >(function ActionSheetItem({ className, onPress, ...props }, ref) {
-  const { handleClose } = useSheetActions();
+  const { close } = useSheetActions();
 
   const handlePress = useCallback(
     (options: GestureResponderEvent) => {
       onPress?.(options);
-      handleClose();
+      close();
     },
-    [onPress, handleClose]
+    [onPress, close]
   );
 
   return (
@@ -164,14 +136,14 @@ const ActionSheetItem = React.forwardRef<
 });
 
 function ActionSheetTrigger({ onPress, className, ...props }: ActionSheetTriggerProps) {
-  const { handleOpen } = useSheetActions();
+  const { open } = useSheetActions();
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e);
-      handleOpen();
+      open();
     },
-    [onPress, handleOpen]
+    [onPress, open]
   );
 
   return (
@@ -179,13 +151,34 @@ function ActionSheetTrigger({ onPress, className, ...props }: ActionSheetTrigger
   );
 }
 
-function ActionSheetItemText({ className, ...props }: ActionSheetTextProps) {
+function ActionSheetItemText({ ...props }: ActionSheetTextProps) {
   return <Text {...props} />;
 }
 
+/**
+ * @deprecated Use `ActionSheetInfiniteList` instead for better performance
+ */
 function ActionSheetList<T>({ ...props }: ActionSheetListProps<T>) {
   return <VerticalInfiniteList {...props} />;
 }
+
+const ActionSheetInfiniteList = forwardRef(function ActionSheetInfiniteList<T>(
+  { ...props }: ActionSheetListProps<T>,
+  ref: ForwardedRef<InfiniteFlashListRef<T>>
+) {
+  return <InfiniteFlashList {...props} ref={ref} />;
+}) as <T>(
+  props: PropsWithoutRef<ActionSheetListProps<T>> & RefAttributes<InfiniteFlashListRef<T>>
+) => JSX.Element;
+
+const ActionSheetFlashList = forwardRef(function ActionSheetFlashList<T>(
+  { ...props }: ActionSheetFlashListProps<T>,
+  ref: ForwardedRef<FlashListRef<T>>
+) {
+  return <FlashList {...props} ref={ref} />;
+}) as <T>(
+  props: PropsWithoutRef<ActionSheetFlashListProps<T>> & RefAttributes<FlashListRef<T>>
+) => JSX.Element;
 
 function ActionSheetIcon({ className, ...props }: ActionSheetIconProps) {
   return <Icon {...props} className={sheetIconStyle({ className })} />;
@@ -198,17 +191,19 @@ ActionSheetItemText.displayName = 'ActionSheetItemText';
 ActionSheetIcon.displayName = 'ActionSheetIcon';
 ActionSheetContent.displayName = 'ActionSheetContent';
 ActionSheetTrigger.displayName = 'ActionSheetTrigger';
+(ActionSheetInfiniteList as FC).displayName = 'ActionSheetInfiniteList';
+(ActionSheetFlashList as FC).displayName = 'ActionSheetFlashList';
 
 const ActionSheet = Object.assign(ActionSheetProvider, {
   Content: ActionSheetContent,
   Item: ActionSheetItem,
   List: ActionSheetList,
+  InfiniteList: ActionSheetInfiniteList,
+  FlashList: ActionSheetFlashList,
   ItemText: ActionSheetItemText,
   Icon: ActionSheetIcon,
   Trigger: ActionSheetTrigger,
 });
-
-cssInterop(ActionSheetContent, { className: 'style' });
 
 export { ActionSheet };
 export type {

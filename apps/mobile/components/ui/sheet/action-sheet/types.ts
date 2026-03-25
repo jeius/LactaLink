@@ -1,28 +1,31 @@
-import { TrueSheet, TrueSheetProps } from '@lodev09/react-native-true-sheet';
+import { RefObject } from 'react';
+import { FlashListProps } from '../../FlashList';
 import { IconProps } from '../../icon';
-import { VerticalInfiniteListProps } from '../../list';
+import { InfiniteFlashListProps, VerticalInfiniteListProps } from '../../list';
 import { PressableProps } from '../../pressable';
 import { TextProps } from '../../text';
-
-type SheetRef = React.RefObject<TrueSheet | null>;
+import { SheetProps as ISheetProps, SheetRef } from '../Sheet';
 
 interface SheetStoreActions {
   /**
-   * Closes the bottom sheet and updates internal state
+   * Handles side effects and state updates when the sheet is closed
    */
-  handleClose: () => void;
+  handleOnClose: () => void;
 
   /**
-   * Opens the bottom sheet to the specified `snapToIndex` (or expands if no index is provided)
+   * Handles side effects and state updates when the sheet is opened
    */
-  handleOpen: () => void;
+  handleOnOpen: () => void;
 
   /**
-   * Sets the presented state of the bottom sheet
-   * @param present - Whether the bottom sheet should be visible
-   * @returns {void} - No return value
+   * Imperatively present the sheet.
    */
-  setPresented: (present: boolean) => void;
+  open: () => void;
+
+  /**
+   * Imperatively dismisses the sheet.
+   */
+  close: () => void;
 }
 
 interface SheetState {
@@ -41,7 +44,7 @@ interface SheetState {
    * Ref to the BottomSheet instance. When present, it permits calling
    * imperative methods directly on the native component.
    */
-  sheetRef: SheetRef | null;
+  sheetRef: RefObject<SheetRef | null> | null;
 }
 
 type SheetStore = SheetState & {
@@ -52,10 +55,14 @@ type SheetStore = SheetState & {
 };
 
 type InitStore = Partial<SheetState> & {
-  actions?: Partial<SheetStoreActions>;
+  actions?: Partial<Pick<SheetStoreActions, 'handleOnClose' | 'handleOnOpen'>>;
 };
 
-interface SheetProps extends Partial<Pick<SheetState, 'sheetRef'>> {
+interface SheetProps {
+  /**
+   * @deprecated Use `ref` directly instead.
+   */
+  sheetRef?: RefObject<SheetRef | null>;
   children: React.ReactNode;
   open?: boolean;
   setOpen?: (open: boolean) => void;
@@ -63,9 +70,13 @@ interface SheetProps extends Partial<Pick<SheetState, 'sheetRef'>> {
   onClose?: () => void;
 }
 
-type SheetContentProps = TrueSheetProps;
+type SheetContentProps = ISheetProps;
 
 type SheetListProps<T> = VerticalInfiniteListProps<T>;
+
+type SheetInfiniteListProps<T> = InfiniteFlashListProps<T>;
+
+type SheetFlashListProps<T> = FlashListProps<T>;
 
 type SheetItemProps = PressableProps;
 
@@ -77,7 +88,9 @@ type SheetIconProps = IconProps;
 
 export type {
   SheetContentProps as ActionSheetContentProps,
+  SheetFlashListProps as ActionSheetFlashListProps,
   SheetIconProps as ActionSheetIconProps,
+  SheetInfiniteListProps as ActionSheetInfiniteListProps,
   SheetItemProps as ActionSheetItemProps,
   SheetListProps as ActionSheetListProps,
   SheetProps as ActionSheetProps,

@@ -12,32 +12,29 @@ export function initSheetStore({ actions, ...init }: InitStore) {
     sheetRef: init.sheetRef ?? null,
     presented: init.presented ?? false,
     actions: {
-      handleOpen: () => {
+      open: () => {
         const { sheetRef, mounted, presented } = get();
 
         // Prevent opening if not mounted or already presented
         if (!mounted || presented) return;
 
         sheetRef?.current?.present();
-        actions?.handleOpen?.(); // Notify external handler
       },
-      handleClose: () => {
+      close: () => {
         const { sheetRef, mounted, presented } = get();
 
         // Prevent closing if not mounted or already closed
         if (!mounted || !presented) return;
 
         sheetRef?.current?.dismiss();
-        actions?.handleClose?.(); // Notify external handler
       },
-      setPresented: (presented) => {
-        const { mounted } = get();
-
-        if (!mounted) return; // Prevent opening if not mounted
-
-        set({ presented });
-        // Notify external setVisible (parent component)
-        actions?.setPresented?.(presented);
+      handleOnOpen: () => {
+        set({ presented: true });
+        actions?.handleOnOpen?.(); // Notify external handler
+      },
+      handleOnClose: () => {
+        set({ presented: false });
+        actions?.handleOnClose?.(); // Notify external handler
       },
     },
   }));
