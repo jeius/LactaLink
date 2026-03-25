@@ -1,6 +1,6 @@
-import { createdByField } from '@/fields/createdByField';
 import { priorityLevel } from '@/fields/priorityLevel';
 import { seenTrackingFields } from '@/fields/seenTrackingField';
+import { createUserField } from '@/fields/userField';
 import { generateCreatedBy } from '@/hooks/collections/generateCreatedBy';
 import { updateSeenTracking } from '@/hooks/collections/updateSeenTracking';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
@@ -55,7 +55,8 @@ export const Notifications: CollectionConfig<'notifications'> = {
   },
 
   fields: [
-    createdByField,
+    createUserField({ name: 'createdBy' }),
+
     ...seenTrackingFields,
 
     // Core Notification Data
