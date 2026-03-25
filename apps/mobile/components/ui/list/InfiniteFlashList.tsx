@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { FlashList, FlashListProps, ListRenderItemInfo } from '@shopify/flash-list';
+import { Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NoData } from '../../NoData';
 import { RefreshControl } from '../../RefreshControl';
@@ -53,9 +54,18 @@ export function InfiniteFlashList<T>({
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       renderScrollComponent={ScrollView}
       refreshControl={
-        onRefresh ? (
-          <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
-        ) : undefined
+        // Note: Due to Android's limitation, pull-to-refresh doesn't work when
+        // nestedScrollEnabled is true. We can remove this condition once the issue is
+        // resolved in future versions.
+        Platform.select({
+          android: props.nestedScrollEnabled ? undefined : onRefresh === null ? undefined : (
+            <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
+          ),
+          default:
+            onRefresh === null ? undefined : (
+              <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
+            ),
+        })
       }
       ItemSeparatorComponent={
         props.ItemSeparatorComponent ?? (() => <Box style={{ height: gap }} />)
