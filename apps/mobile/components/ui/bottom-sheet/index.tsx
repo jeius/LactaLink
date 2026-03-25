@@ -18,13 +18,13 @@ import GorhomBottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { FocusScope } from '@react-native-aria/focus';
 import { useFocusEffect } from '@react-navigation/native';
-import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { cssInterop } from 'nativewind';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FlatListProps, PressableProps, TextProps, ViewProps } from 'react-native';
 import { Platform } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList, FlashListProps } from '../FlashList';
 import { Pressable } from '../pressable';
 import { Text } from '../text';
 import {
@@ -400,20 +400,9 @@ export const BottomSheetItemText = ({ ...props }: TextProps) => {
 
 type IBottomSheetFlashListProps<TItem> = Omit<FlashListProps<TItem>, 'renderScrollComponent'>;
 
-export function BottomSheetFlashList<TItem>({
-  showsVerticalScrollIndicator = false,
-  showsHorizontalScrollIndicator = false,
-  ...props
-}: IBottomSheetFlashListProps<TItem>) {
+export function BottomSheetFlashList<TItem>(props: IBottomSheetFlashListProps<TItem>) {
   const BottomSheetScrollable = useBottomSheetScrollableCreator({ focusHook: useFocusEffect });
-  return (
-    <FlashList
-      {...props}
-      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-      showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
-      renderScrollComponent={BottomSheetScrollable}
-    />
-  );
+  return <FlashList {...props} renderScrollComponent={BottomSheetScrollable} />;
 }
 
 type IBottomSheetFlatListProps<TItem> = Omit<FlatListProps<TItem>, 'renderScrollComponent'>;
