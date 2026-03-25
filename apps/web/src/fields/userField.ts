@@ -1,6 +1,9 @@
 import { NullableValidator } from '@lactalink/agents/payload';
 import { extractID } from '@lactalink/utilities/extractors';
+import isString from 'lodash/isString';
 import { CollectionSlug, PolymorphicRelationshipField, SingleRelationshipField } from 'payload';
+
+const profileRelations: CollectionSlug[] = ['individuals', 'milkBanks', 'hospitals'];
 
 /**
  * Create a `User` relationship field with optional overrides.
@@ -35,7 +38,12 @@ export function createUserField(
           if (operation !== 'create' || !req.user) return value;
 
           // Preserve existing value if valid string
-          if (value) return value;
+          if (isValidID(value)) return value;
+
+          // Preserve existing value if valid relationship object
+          if (isValidRelationshipObject(value)) {
+            return value.id;
+          }
 
           return extractID(req.user);
         },
@@ -74,8 +82,6 @@ export function createUserField(
 export function createUserProfileField(
   overrides: Partial<PolymorphicRelationshipField> = {}
 ): PolymorphicRelationshipField {
-  const profileRelations: CollectionSlug[] = ['individuals', 'milkBanks', 'hospitals'];
-
   //@ts-expect-error - Payload types are not correctly inferring the polymorphic relationship
   return {
     name: 'user',
@@ -88,8 +94,8 @@ export function createUserProfileField(
         ({ value, req, operation }) => {
           if (operation !== 'create' || !req.user?.profile) return value;
 
-          // Preserve existing value
-          if (value) return value;
+          // Preserve existing value if valid
+          if (isValidPolymorphicRelationshipObject(value)) return value;
 
           return {
             relationTo: req.user.profile.relationTo,
@@ -110,3 +116,27 @@ export function createUserProfileField(
     },
   };
 }
+
+//#region Helpers/Validators ---------------------------------------------------------------------
+function isValidID(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isValidRelationshipObject(value: unknown): value is { id: string } {
+  return typeof value === 'object' && value !== null && 'id' in value && isValidID(value.id);
+}
+
+function isValidPolymorphicRelationshipObject(
+  value: unknown
+): value is { value: string; relationTo: CollectionSlug } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'value' in value &&
+    (isValidID(value.value) || isValidRelationshipObject(value.value)) &&
+    'relationTo' in value &&
+    isString(value.relationTo) &&
+    profileRelations.includes(value.relationTo as CollectionSlug)
+  );
+}
+//#endregion
