@@ -1,3 +1,4 @@
+import { cssInterop } from 'nativewind';
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControlProps } from 'react-native';
 import { RefreshControl as RNRefreshControl } from 'react-native-gesture-handler';
@@ -28,3 +29,5 @@ export function RefreshControl({ onRefresh, refreshing, ...props }: RefreshContr
     />
   );
 }
+
+cssInterop(RefreshControl, { className: 'style' });
