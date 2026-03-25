@@ -38,6 +38,19 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
     afterDelete: [afterDelete],
   },
   indexes: [{ fields: ['status'] }, { fields: ['expiresAt'] }],
+  defaultPopulate: {
+    _status: true,
+    donor: true,
+    owner: true,
+    bagImage: true,
+    code: true,
+    volume: true,
+    collectedAt: true,
+    expiresAt: true,
+    deletedAt: true,
+    title: true,
+    status: true,
+  },
   fields: [
     {
       name: 'code',
