@@ -9,18 +9,14 @@ import {
   TrueSheetProps,
 } from '@lodev09/react-native-true-sheet';
 import { cssInterop } from 'nativewind';
-import React, { ForwardedRef, RefObject, useRef } from 'react';
+import React, { ComponentPropsWithoutRef, ForwardedRef, RefObject, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export type SheetRef = TrueSheet;
+type SheetRef = TrueSheet;
 
-export type SheetProps = TrueSheetProps;
-
-const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, externalRef) {
+const Sheet = React.forwardRef<SheetRef, TrueSheetProps>(function Sheet(props, ref) {
   const insets = useSafeAreaInsets();
-  const localRef = useRef<SheetRef>(null);
-  const ref = externalRef ?? localRef;
 
   const { themeColors } = useTheme();
   const backgroundColor = themeColors.background[0];
@@ -79,10 +75,27 @@ const Sheet = React.forwardRef<SheetRef, SheetProps>(function Sheet(props, exter
   );
 });
 
-cssInterop(Sheet, { className: 'style' });
+const StyledSheet = cssInterop(Sheet, {
+  className: 'style',
+  headerClassName: 'headerStyle',
+  footerClassName: 'footerStyle',
+  backgroundColorClassName: {
+    target: 'backgroundColor',
+    nativeStyleToProp: { backgroundColor: true },
+  },
+  cornerRadiusClassName: {
+    target: 'cornerRadius',
+    nativeStyleToProp: { borderRadius: 'cornerRadius' },
+  },
+});
 
-export default Sheet;
+type SheetProps = ComponentPropsWithoutRef<typeof StyledSheet>;
 
+export type { SheetProps, SheetRef };
+
+export default StyledSheet;
+
+// Helper component to handle back button presses when the sheet is open
 function BackHandler({
   sheetRef,
   presentedRef,
