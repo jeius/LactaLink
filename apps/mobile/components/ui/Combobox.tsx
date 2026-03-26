@@ -76,6 +76,7 @@ export default function Combobox<T>({
           {...listProps}
           data={items}
           renderItem={renderItem}
+          nestedScrollEnabled
           ListEmptyComponent={
             <NoData
               title={listProps?.emptyListLabel || 'No options available'}
