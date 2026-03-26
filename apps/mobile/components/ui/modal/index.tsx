@@ -11,7 +11,7 @@ import {
 } from '@legendapp/motion';
 import { cssInterop } from 'nativewind';
 import React from 'react';
-import { Pressable, ScrollView, View, ViewStyle } from 'react-native';
+import { Pressable, Modal as RNModal, ScrollView, View, ViewStyle } from 'react-native';
 
 type IAnimatedPressableProps = React.ComponentProps<typeof Pressable> &
   MotionComponentProps<typeof Pressable, ViewStyle, unknown, unknown, unknown>;
@@ -58,7 +58,7 @@ const modalBackdropStyle = tva({
 });
 
 const modalContentStyle = tva({
-  base: 'm-5 overflow-hidden rounded-2xl border border-outline-100 bg-background-0 p-6 shadow-hard-2',
+  base: 'mx-5 my-auto self-center overflow-hidden rounded-2xl border border-outline-100 bg-background-0 p-6 shadow-hard-2',
   parentVariants: {
     size: {
       xs: 'w-[60%] max-w-[360px]',
@@ -108,14 +108,23 @@ type IModalCloseButtonProps = React.ComponentProps<typeof UIModal.CloseButton> &
   VariantProps<typeof modalCloseButtonStyle> & { className?: string };
 
 const Modal = React.forwardRef<React.ComponentRef<typeof UIModal>, IModalProps>(
-  ({ className, size = 'md', ...props }, ref) => (
+  ({ className, size = 'md', children, ...props }, ref) => (
     <UIModal
-      ref={ref}
       {...props}
+      ref={ref}
       pointerEvents="box-none"
       className={modalStyle({ size, class: className })}
       context={{ size }}
-    />
+    >
+      <RNModal
+        visible={props.isOpen}
+        onRequestClose={props.onClose}
+        transparent
+        animationType="fade"
+      >
+        {children}
+      </RNModal>
+    </UIModal>
   )
 );
 
