@@ -78,9 +78,9 @@ type SheetInfiniteListProps<T> = InfiniteFlashListProps<T>;
 
 type SheetFlashListProps<T> = FlashListProps<T>;
 
-type SheetItemProps = PressableProps;
+type SheetItemProps = PressableProps & { asChild?: boolean };
 
-type SheetTriggerProps = PressableProps;
+type SheetTriggerProps = PressableProps & { asChild?: boolean };
 
 type SheetTextProps = TextProps;
 

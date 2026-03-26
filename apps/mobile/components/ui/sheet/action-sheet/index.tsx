@@ -1,5 +1,6 @@
 import { DidDismissEvent, DidPresentEvent, TrueSheet } from '@lodev09/react-native-true-sheet';
 import React, {
+  ComponentRef,
   FC,
   ForwardedRef,
   forwardRef,
@@ -29,6 +30,7 @@ import type {
 import { FlashList, FlashListRef } from '../../FlashList';
 import { Icon } from '../../icon';
 import { InfiniteFlashList, InfiniteFlashListRef, VerticalInfiniteList } from '../../list';
+import Slot from '../../Slot';
 import { Text } from '../../text';
 import Sheet, { SheetRef } from '../Sheet';
 
@@ -111,45 +113,51 @@ function ActionSheetContent({
   );
 }
 
-const ActionSheetItem = React.forwardRef<
-  React.ComponentRef<typeof Pressable>,
-  ActionSheetItemProps
->(function ActionSheetItem({ className, onPress, ...props }, ref) {
-  const { close } = useSheetActions();
+const ActionSheetItem = React.forwardRef<ComponentRef<typeof Pressable>, ActionSheetItemProps>(
+  function ActionSheetItem({ className, onPress, asChild, children, ...props }, ref) {
+    const { close } = useSheetActions();
 
-  const handlePress = useCallback(
-    (options: GestureResponderEvent) => {
-      onPress?.(options);
-      close();
-    },
-    [onPress, close]
-  );
+    const Comp = asChild ? Slot.Pressable : Pressable;
 
-  return (
-    <Pressable
-      {...props}
-      ref={ref}
-      onPress={handlePress}
-      className={sheetItemStyle({ className })}
-    />
-  );
-});
+    const handlePress = useCallback(
+      (e: GestureResponderEvent) => {
+        e.persist();
+        onPress?.(e);
+        if (!e.defaultPrevented) close();
+      },
+      [onPress, close]
+    );
 
-function ActionSheetTrigger({ onPress, className, ...props }: ActionSheetTriggerProps) {
-  const { open } = useSheetActions();
+    return (
+      <Comp {...props} ref={ref} onPress={handlePress} className={sheetItemStyle({ className })}>
+        {children}
+      </Comp>
+    );
+  }
+);
 
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      onPress?.(e);
-      open();
-    },
-    [onPress, open]
-  );
+const ActionSheetTrigger = forwardRef<ComponentRef<typeof Pressable>, ActionSheetTriggerProps>(
+  function ActionSheetTrigger({ onPress, className, asChild, children, ...props }, ref) {
+    const { open } = useSheetActions();
 
-  return (
-    <Pressable {...props} onPress={handlePress} className={sheetTriggerStyle({ className })} />
-  );
-}
+    const Comp = asChild ? Slot.Pressable : Pressable;
+
+    const handlePress = useCallback(
+      (e: GestureResponderEvent) => {
+        e.persist();
+        onPress?.(e);
+        if (!e.defaultPrevented) open();
+      },
+      [onPress, open]
+    );
+
+    return (
+      <Comp {...props} ref={ref} onPress={handlePress} className={sheetTriggerStyle({ className })}>
+        {children}
+      </Comp>
+    );
+  }
+);
 
 function ActionSheetItemText({ ...props }: ActionSheetTextProps) {
   return <Text {...props} />;
