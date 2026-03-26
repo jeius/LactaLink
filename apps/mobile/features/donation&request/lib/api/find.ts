@@ -1,6 +1,7 @@
 import { getApiClient } from '@lactalink/api';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { UserProfile } from '@lactalink/types';
+import { Donation } from '@lactalink/types/payload-generated-types';
 import type {
   CollectionSlug,
   FindOptions,
@@ -111,6 +112,30 @@ export async function findPaginatedMilkBagsByDonor(
       pagination: true,
       depth: DEFAULT_DEPTH,
       where: { and: filters },
+    },
+    init
+  );
+}
+
+export async function findPaginatedUserDonations(
+  user: UserProfile,
+  options: PaginationOptions & Pick<Donation, 'status'>,
+  init?: RequestInit
+) {
+  const userID = extractID(user.value);
+  const { page = DEFAULT_PAGE_NUMBER, limit = DEFAULT_PAGE_LIMIT, status } = options;
+
+  return getApiClient().find(
+    {
+      collection: 'donations',
+      pagination: true,
+      page,
+      limit,
+      depth: DEFAULT_DEPTH,
+      where: {
+        and: [{ donor: { equals: userID } }, { status: { equals: status } }],
+      },
+      joins: { reads: { count: true, limit: 1 }, transactions: { count: true, limit: 0 } },
     },
     init
   );
