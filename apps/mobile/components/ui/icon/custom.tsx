@@ -3,6 +3,7 @@ import React, { FC } from 'react';
 import {
   Circle,
   Defs,
+  G,
   Line,
   LinearGradient,
   Path,
@@ -224,3 +225,46 @@ const UserBuildingIcon: FC<SvgProps> = (props) => {
 
 UserBuildingIcon.displayName = 'UserBuildingIcon';
 export { UserBuildingIcon };
+
+const HandBottle2Icon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      strokeWidth={strokeWidth}
+      fill="none"
+      stroke={props.stroke || color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <G id="Layer_1_00000013878712297255039800000000841960250553796754_">
+        <G id="Layer_1_00000124131493553583600510000004459382438053388709_">
+          <Path
+            d="M15.9,16.9l2.7-2.3c0.8-0.8,2.1-0.8,2.9,0.1c0.8,0.8,0.8,2.1-0.1,2.9l-3.6,3.3C17.1,21.6,16.1,22,15,22h-4
+			c-1.1,0-2.1-0.4-2.8-1.2l-1.3-1.5C6.7,19.1,6.4,19,6.2,19H5"
+          />
+          <Path d="M2,14h12c1.1,0,2,0.9,2,2s-0.9,2-2,2h-2" />
+          <Path d="M5,14v6c0,0.6-0.4,1-1,1H2" />
+        </G>
+        <G id="Layer_3">
+          <Path d="M8.6,7.5h8.1" />
+          <Path d="M17.8,14.8v-2.1c0-0.5-0.2-1-0.7-1.4l-0.7-0.6c-0.4-0.4-0.7-0.9-0.7-1.4V7.5" />
+          <Path d="M9.7,7.5v1.7c0,0.5-0.2,1-0.7,1.4l-0.7,0.6c-0.4,0.4-0.7,0.9-0.7,1.4v0.7" />
+        </G>
+      </G>
+      <G id="Layer_3_00000173873728618600904060000010498903134663808149_">
+        <Path
+          d="M11,7.1c0.1-0.2,0.1-0.6,0.1-0.9c0-0.4-0.1-0.7-0.1-0.9C11,5.1,11,5,11,5V4.9l-0.1-0.3c-0.2-0.6,0-1.3,0.5-1.7
+		l0.2-0.2c0.6-0.5,1.5-0.5,2.1,0l0,0c0.4,0.4,0.6,1,0.5,1.5l-0.1,0.4c0,0.1,0,0.3,0,0.4C14,5.3,14,5.6,14,6.1c0,0.4,0.1,0.7,0.1,1"
+        />
+      </G>
+      <G id="Layer_2">
+        <Path d="M11,7.5l-0.7-2.7c0-0.7,0.2-1.4,0.7-1.9l0,0c0.9-1,2.4-1,3.3,0l0,0C14.7,3.4,15,4,15,4.7l-0.4,2.8" />
+      </G>
+    </Svg>
+  );
+};
+
+HandBottle2Icon.displayName = 'HandBottle';
+export { HandBottle2Icon };
