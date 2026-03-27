@@ -25,7 +25,8 @@ import {
   ValidationError as PayloadValidationError,
 } from 'payload';
 import { abortableAPIHandler } from './abortableHandler';
-import { createTimeoutError } from './createError';
+import { createInternalServerError, createTimeoutError } from './createError';
+import { isAbortErrorStatus } from './errorChecker';
 import { isAdmin } from './isAdmin';
 
 /**
@@ -139,7 +140,18 @@ export function createPayloadHandler<T>({
       // we need to manually add them to the request object
       await addDataAndFileToRequest(req);
 
+      const dbTransactionID = await payload.db.beginTransaction();
+      if (dbTransactionID === null) {
+        throw createInternalServerError('Failed to start database transaction.');
+      }
+      // Attach the transaction ID to the request object so that it can be used in
+      // the handler and any subsequent database operations
+      req.transactionID = dbTransactionID;
+
       const data = await abortableAPIHandler(() => handler(req, signal), { signal });
+
+      // Commit the transaction if everything is successful
+      await payload.db.commitTransaction(dbTransactionID);
 
       // Prepare the success response.
       const status = HttpStatus.OK;
@@ -159,6 +171,7 @@ export function createPayloadHandler<T>({
       let message = extractErrorMessage(error);
       let status = extractErrorStatus(error);
       let statusText = extractErrorStatusText(error);
+      let shouldLog = true;
 
       if (error instanceof ValidationError) {
         status = error.statusCode || HttpStatus.BAD_REQUEST;
@@ -172,11 +185,25 @@ export function createPayloadHandler<T>({
         status = error.status;
         message = `[API Error]: ${error.message}`;
         statusText = HttpStatus[status as 500] || 'Internal Server Error';
+
+        // Client Closed Request is expected on abort, so we can skip logging
+        if (isAbortErrorStatus(status)) shouldLog = false;
+      }
+
+      if (req.transactionID !== undefined) {
+        await payload.db.rollbackTransaction(req.transactionID);
+        payload.logger.warn(
+          {
+            transactionID: req.transactionID,
+            message,
+          },
+          `Rolled back transaction due to error`
+        );
       }
 
       const res: ApiFetchResponse<T> = { message, error };
 
-      payload.logger.error(error, message);
+      if (shouldLog) payload.logger.error(error, message);
 
       // Return the error response.
       return Response.json(res, { status, statusText });
