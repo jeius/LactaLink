@@ -1,6 +1,4 @@
-<picture>
-<img src="https://www.lactalink.com/images/logo_dark.png" alt="LactaLink Logo" width="480" />
-</picture>
+![LactaLink Logo](../assets/images/logo.png)
 
 # LactaLink
 
