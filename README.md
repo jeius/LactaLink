@@ -1,4 +1,4 @@
-![LactaLink Logo](../assets/images/logo.png)
+![LactaLink Logo](/docs/assets/images/logo.png)
 
 # LactaLink
 
