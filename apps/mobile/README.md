@@ -1,25 +1,61 @@
-# NativeWind Example
+# LactaLink Mobile
 
-Style your universal React app with Tailwind CSS classes. [NativeWind](https://www.nativewind.dev/) enables Tailwind CSS use in React Native apps.
+Mobile app for the LactaLink platform, built with **React Native (Expo)** and **NativeWind**.
 
-<p>
-  <!-- iOS -->
-  <img alt="Supports Expo iOS" longdesc="Supports Expo iOS" src="https://img.shields.io/badge/iOS-4630EB.svg?style=flat-square&logo=APPLE&labelColor=999999&logoColor=fff" />
-  <!-- Android -->
-  <img alt="Supports Expo Android" longdesc="Supports Expo Android" src="https://img.shields.io/badge/Android-4630EB.svg?style=flat-square&logo=ANDROID&labelColor=A4C639&logoColor=fff" />
-  <!-- Web -->
-  <img alt="Supports Expo Web" longdesc="Supports Expo Web" src="https://img.shields.io/badge/web-4630EB.svg?style=flat-square&logo=GOOGLE-CHROME&labelColor=4285F4&logoColor=fff" />
-</p>
+## Tech Stack
 
-## 🚀 How to use
+- **Framework**: [Expo](https://expo.dev) (React Native)
+- **Styling**: [NativeWind v4](https://www.nativewind.dev) (Tailwind CSS)
+- **UI Components**: [gluestack-ui v4](https://gluestack.io)
+- **State Management**: [TanStack React Query](https://tanstack.com/query) + [Zustand](https://zustand-demo.pmnd.rs)
+- **Authentication**: [Supabase Auth](https://supabase.com) + Google OAuth
+- **Maps**: [Google Maps API](https://developers.google.com/maps)
+- **Realtime**: [Supabase Realtime](https://supabase.com)
 
-<!-- Setup instructions -->
+## Development
 
-- Install with `yarn` or `npm install`.
-- Run `yarn start` or `npm run start` to try it out.
+### Prerequisites
 
-## 📝 Notes
+- Node.js 22.x
+- pnpm 10.x
+- Expo CLI
+- Android Studio or Xcode (for emulators)
 
-<!-- Link to related Expo or library docs -->
+### Setup
 
-- This example replicates the [NativeWind Expo Router setup instructions](https://www.nativewind.dev/getting-started/expo-router) for NativeWind v4.
+1. **Install dependencies** (from monorepo root):
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Configure environment variables**:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your values
+   ```
+
+3. **Start development server**:
+   ```bash
+   pnpm dev
+   ```
+
+## Scripts
+
+- `pnpm dev` - Start Expo development server
+- `pnpm lint` - Run ESLint
+
+## Project Structure
+
+```
+apps/mobile/
+├── app/                  # Expo Router app directory
+│   ├── (root)/           # Authenticated app routes
+│   └── auth/             # Authentication screens
+├── components/           # Shared React Native components
+├── features/             # Feature-specific modules
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions
+└── assets/               # Fonts, images, icons, and animations
+```
