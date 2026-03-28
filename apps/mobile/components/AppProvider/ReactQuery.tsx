@@ -8,8 +8,8 @@ declare module '@tanstack/react-query' {
   interface Register {
     mutationMeta: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      successMessage?: string | ((data: any) => string);
-      errorMessage?: string | ((error: unknown) => string);
+      successMessage?: string | ((data: any) => string | null | undefined) | null;
+      errorMessage?: string | ((error: unknown) => string | null | undefined) | null;
       invalidatesQuery?: QueryKey | Record<string, QueryKey>;
       onError?: (error: unknown) => void;
     };
@@ -19,13 +19,18 @@ declare module '@tanstack/react-query' {
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error, _vars, _context, mutation) => {
+      let message: string | null = null;
+
       if (mutation.meta?.errorMessage) {
-        let message = '';
         if (typeof mutation.meta.errorMessage === 'function') {
-          message = mutation.meta.errorMessage(error);
+          const msg = mutation.meta.errorMessage(error);
+          message = msg || null;
         } else {
           message = mutation.meta.errorMessage;
         }
+      }
+
+      if (message) {
         toast.error(message, { id: TOAST_ID.ERROR });
       }
     },
@@ -43,13 +48,18 @@ const queryClient = new QueryClient({
         );
       }
 
+      let message: string | null = null;
+
       if (mutation.meta?.successMessage) {
-        let message = '';
         if (typeof mutation.meta.successMessage === 'function') {
-          message = mutation.meta.successMessage(data);
+          const msg = mutation.meta.successMessage(data);
+          message = msg || null;
         } else {
           message = mutation.meta.successMessage;
         }
+      }
+
+      if (message) {
         toast.success(message, { id: TOAST_ID.SUCCESS });
       }
     },
