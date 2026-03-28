@@ -66,7 +66,6 @@ export default function BagVerificationStep({
   }
 
   async function handleValidation(e: GestureResponderEvent) {
-    e.persist(); // Persist the event to allow asynchronous handling
     const isValid = await trigger('details.bags');
     if (isValid && allVerified) return;
     toast.error('Please ensure all milk bags are verified before proceeding.');
@@ -135,13 +134,12 @@ export default function BagVerificationStep({
           }
           ListFooterComponent={
             <ActionModal
-              triggerLabel="Review and Submit"
               action="primary"
-              onTriggerPress={handleValidation}
-              onConfirm={handleSubmit(submitHandler)}
+              modalSize="lg"
+              triggerButtonProps={{ label: 'Review and Submit' }}
+              confirmButtonProps={{ label: 'Submit' }}
               isDisabled={!allVerified || isSubmitting}
               title="Review Donation"
-              modalSize="lg"
               description={
                 <ScrollView
                   className="border-outline-200"
@@ -154,6 +152,10 @@ export default function BagVerificationStep({
                   <DonationReviewCard data={getValues()} variant="ghost" className="p-2" />
                 </ScrollView>
               }
+              onTriggerPress={handleValidation}
+              onConfirm={() => {
+                handleSubmit(submitHandler)();
+              }}
             />
           }
         />
