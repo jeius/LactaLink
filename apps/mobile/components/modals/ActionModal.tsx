@@ -76,8 +76,8 @@ export interface ActionModalProps extends ButtonProps {
    * This allows you to conditionally prevent the modal from opening based on custom logic.
    */
   onTriggerPress?: (event: GestureResponderEvent) => Promise<void>;
-  onConfirm?: (e: GestureResponderEvent) => void;
-  onCancel?: (e: GestureResponderEvent) => void;
+  onConfirm?: (e: GestureResponderEvent) => void | Promise<void>;
+  onCancel?: (e: GestureResponderEvent) => void | Promise<void>;
 }
 
 export function ActionModal({
@@ -124,30 +124,32 @@ export function ActionModal({
     ...restCancelBtnProps
   } = cancelButtonProps || {};
 
-  function toggleModal() {
-    setOpen((prev) => !prev);
-  }
+  const openModal = () => setOpen(true);
+  const closeModal = () => setOpen(false);
 
   async function handleTriggerPress(e: GestureResponderEvent) {
+    e.persist();
     const proceed = await onTriggerPress?.(e).then(
       () => true,
       () => false
     );
     if (proceed === false) return;
     if (e.defaultPrevented) return;
-    toggleModal();
+    openModal();
   }
 
-  function handleConfirm(e: GestureResponderEvent) {
+  async function handleConfirm(e: GestureResponderEvent) {
     e.persist();
-    onConfirm?.(e);
-    if (!e.defaultPrevented) toggleModal();
+    await onConfirm?.(e);
+    if (e.defaultPrevented) return;
+    closeModal();
   }
 
-  function handleCancel(e: GestureResponderEvent) {
+  async function handleCancel(e: GestureResponderEvent) {
     e.persist();
-    onCancel?.(e);
-    if (!e.defaultPrevented) toggleModal();
+    await onCancel?.(e);
+    if (e.defaultPrevented) return;
+    closeModal();
   }
 
   return (
@@ -161,7 +163,7 @@ export function ActionModal({
         {triggerBtnLabel && !iconOnly && <ButtonText>{triggerBtnLabel}</ButtonText>}
       </Button>
 
-      <Modal size={modalSize} isOpen={open} onClose={toggleModal}>
+      <Modal size={modalSize} isOpen={open} onClose={closeModal}>
         <ModalBackdrop />
 
         <ModalContent>
