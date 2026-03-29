@@ -3,13 +3,11 @@ import { InfiniteDataMap } from '@/lib/types';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import type { QueryClient } from '@tanstack/react-query';
 import { Draft, produce } from 'immer';
-import { createDonationQuery, createIncomingDonationsInfQuery } from '../queryOptions/donations';
+import { createIncomingDonationsInfQuery } from '../queryOptions/donations';
 import { createIncomingRequestsInfQuery, createRequestQuery } from '../queryOptions/request';
+import { addDonationToCache } from './donations';
 
-export function addDonationToCache(client: QueryClient, doc: Donation) {
-  const queryKey = createDonationQuery(doc).queryKey;
-  client.setQueryData(queryKey, doc);
-}
+export * from './donations';
 
 export function addDonationToIncomingInfCache(client: QueryClient, doc: Donation) {
   const queryKey = createIncomingDonationsInfQuery(getMeUser()).queryKey;
