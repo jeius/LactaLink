@@ -3,7 +3,7 @@ import React from 'react';
 import { Platform, PressableProps, Pressable as RNPressable } from 'react-native';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 
 const pressableStyle = tva({
   base: 'disabled:opacity-50',
