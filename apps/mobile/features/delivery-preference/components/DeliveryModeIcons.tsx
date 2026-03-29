@@ -64,7 +64,7 @@ export default function DeliveryModeIcons({
             trigger={(props) => (
               <Pressable
                 {...props}
-                className="overflow-hidden rounded-full border border-primary-500 p-1"
+                className="overflow-hidden rounded-full border border-primary-500 bg-background-0 p-1"
               >
                 <Image source={iconAsset as ImageSourcePropType} alt={`${mode}-icon`} size={size} />
               </Pressable>
