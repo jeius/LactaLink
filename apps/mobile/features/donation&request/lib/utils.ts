@@ -64,5 +64,14 @@ export function getDonationDetails(data: Donation | undefined, isMobile?: boolea
   const milkSample = extractCollection(data?.details?.milkSample);
   const image = extractOneImageData(milkSample, isMobile ? 'sm' : 'lg');
   const bags = extractCollection(data?.details?.bags);
-  return { volume, image, donor, status, percentage, remainingVolume, notes, bags };
+  return {
+    volume,
+    image,
+    donor,
+    status: DONATION_REQUEST_STATUS[status],
+    percentage,
+    remainingVolume,
+    notes,
+    bags,
+  };
 }
