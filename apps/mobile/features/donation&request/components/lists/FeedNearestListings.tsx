@@ -1,12 +1,12 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { ProfileAvatar } from '@/components/Avatar';
-import { SingleImageViewer } from '@/components/ImageViewer';
 import { DonateRequestModal } from '@/components/modals';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { FlashList } from '@/components/ui/FlashList';
 import { Icon } from '@/components/ui/icon';
+import { Image } from '@/components/ui/image';
+import { Pressable } from '@/components/ui/pressable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -23,15 +23,15 @@ import {
 } from '@lactalink/utilities/extractors';
 import { isDonation } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
-import { ChevronRightCircleIcon, PackagePlusIcon } from 'lucide-react-native';
+import { ChevronRightCircleIcon, ImageIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { sortToNearestListings } from '../../lib/utils';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
 
 export default function FeedNearestListings({ isLoading: isLoadingProp }: { isLoading?: boolean }) {
-  const donationsQuery = useFetchNearest('donations', { limit: 10 });
-  const requestsQuery = useFetchNearest('requests', { limit: 10 });
+  const donationsQuery = useFetchNearest('donations', { limit: 6 });
+  const requestsQuery = useFetchNearest('requests', { limit: 6 });
 
   const isLoading = isLoadingProp || donationsQuery.isLoading || requestsQuery.isLoading;
 
@@ -53,23 +53,22 @@ export default function FeedNearestListings({ isLoading: isLoadingProp }: { isLo
       data={listings}
       keyExtractor={listKeyExtractor}
       horizontal
-      showsHorizontalScrollIndicator={false}
-      className="border border-outline-200"
       style={shadow.sm}
-      contentContainerClassName="grow p-4 bg-background-0"
+      className="border border-outline-200"
+      contentContainerClassName="grow p-3 bg-background-0"
+      footerClassName="ml-2"
       ItemSeparatorComponent={() => <Box className="w-2" />}
       ListFooterComponent={!isEmpty ? <CTA /> : null}
       ListEmptyComponent={<ListEmpty />}
-      ListFooterComponentStyle={{ marginLeft: 8 }}
       renderItem={({ item }) => {
         const isPlaceholder = isPlaceHolderData(item);
-        if (isPlaceholder) return <PlaceholderItem />;
+        if (isPlaceholder) return <PlaceholderCard />;
 
         const slug = isDonation(item) ? 'donations' : 'requests';
         const id = item.id;
         return (
           <Link asChild push href={`/${slug}/${id}`}>
-            <AnimatedPressable className="overflow-hidden rounded-2xl">
+            <AnimatedPressable className="overflow-hidden rounded-2xl" style={shadow.sm}>
               <ItemCard item={item} />
             </AnimatedPressable>
           </Link>
@@ -81,51 +80,75 @@ export default function FeedNearestListings({ isLoading: isLoadingProp }: { isLo
 
 //#region Subcomponents
 function ItemCard({ item }: { item: Donation | Request }) {
-  const donationData = isDonation(item);
-  const volume = donationData ? item.remainingVolume : item.volumeNeeded;
-  const title = donationData ? 'Donation' : 'Request';
-  const profile = donationData ? item.donor : item.requester;
-  const image = extractCollection(donationData ? item.details.milkSample : item.details.image);
+  const isDonationItem = isDonation(item);
+  const volume = isDonationItem ? item.remainingVolume : item.volumeNeeded;
+  const title = isDonationItem ? 'Donation' : 'Request';
+  const volumeText = displayVolume(volume);
+  const profile = isDonationItem ? item.donor : item.requester;
+
+  const image = extractCollection(isDonationItem ? item.details.milkSample : item.details.image);
   const imageData = image && extractOneImageData(image);
-  const bgColor = donationData ? getColor('primary', '500') : getColor('tertiary', '500');
-  const textColor = donationData ? getColor('primary', '0') : getColor('tertiary', '50');
+  const imageUri = imageData?.uri;
+  const imageAlt = `${title} image`;
+
+  const bgColor = isDonationItem ? getColor('primary', '600') : getColor('tertiary', '600');
+  const ringColor = isDonationItem ? getColor('primary', '500') : getColor('tertiary', '500');
+  const textColor = isDonationItem ? getColor('primary', '0') : getColor('tertiary', '0');
 
   return (
-    <Card variant="elevated" className="h-44 w-32 flex-col items-stretch justify-between p-0">
+    <VStack className="h-44 w-32 justify-between bg-background-300">
       <Box className="absolute inset-0">
-        <SingleImageViewer image={imageData} disabled />
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            alt={imageAlt}
+            placeholder={{ blurhash: imageData.blurHash }}
+            className="h-full w-full"
+            recyclingKey={`${title}-${imageUri}`}
+          />
+        ) : (
+          <VStack space="xs" className="flex-1 items-center justify-center">
+            <Icon as={ImageIcon} size="2xl" className="text-typography-800" />
+            <Text size="xs" className="text-typography-700">
+              No Image
+            </Text>
+          </VStack>
+        )}
+
+        <Box className="absolute inset-0" style={{ backgroundColor: bgColor, opacity: 0.1 }} />
       </Box>
 
-      <Box className="self-start p-2">
-        <Box className="rounded-full border-2" style={{ borderColor: bgColor, padding: 1 }}>
-          <ProfileAvatar size="xs" profile={{ relationTo: 'individuals', value: profile }} />
-        </Box>
+      <Box
+        className="self-start rounded-full border-2"
+        style={{ borderColor: ringColor, padding: 1, margin: 6 }}
+      >
+        <ProfileAvatar size="xs" profile={{ relationTo: 'individuals', value: profile }} />
       </Box>
 
-      <Box className="flex-col px-2 py-1">
-        <Box className="absolute inset-0" style={{ backgroundColor: bgColor, opacity: 0.75 }} />
+      <Box className="px-2 py-1">
+        <Box className="absolute inset-0" style={{ opacity: 0.6, backgroundColor: ringColor }} />
+
         <Text size="xs" style={{ color: textColor }} className="font-JakartaMedium">
           {title}
         </Text>
-        <Text size="sm" bold style={{ color: textColor }}>
-          {displayVolume(volume)}
+
+        <Text bold style={{ color: textColor }}>
+          {volumeText}
         </Text>
       </Box>
-    </Card>
+    </VStack>
   );
 }
 
 function CTA() {
   return (
     <Link asChild push href={'/listings'}>
-      <AnimatedPressable className="overflow-hidden rounded-2xl">
-        <Card variant="filled" className="h-44 w-32 items-center justify-center border-0">
-          <Icon as={ChevronRightCircleIcon} size="2xl" />
-          <Text size="sm" className="mt-2 font-JakartaSemiBold">
-            See More
-          </Text>
-        </Card>
-      </AnimatedPressable>
+      <Pressable className="h-44 w-32 flex-1 items-center justify-center overflow-hidden rounded-2xl">
+        <Icon as={ChevronRightCircleIcon} size="2xl" />
+        <Text size="sm" className="mt-2 font-JakartaSemiBold">
+          See More
+        </Text>
+      </Pressable>
     </Link>
   );
 }
@@ -146,7 +169,7 @@ function ListEmpty() {
   );
 }
 
-function PlaceholderItem() {
+function PlaceholderCard() {
   return <Skeleton variant="rounded" className="h-44 w-32 rounded-2xl" />;
 }
 //#endregion
