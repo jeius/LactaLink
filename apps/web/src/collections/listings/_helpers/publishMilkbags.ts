@@ -17,7 +17,13 @@ export async function publishMilkbags(
   doc: Donation,
   logger: ReturnType<typeof hookLogger>
 ) {
+  if (req.signal?.aborted) {
+    logger.warn('Request aborted before publishing milk bags');
+    return;
+  }
+
   const milkBagIDs = extractID(doc.details.bags);
+
   await req.payload.update({
     collection: 'milkBags',
     where: { id: { in: milkBagIDs } },
