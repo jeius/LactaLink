@@ -29,3 +29,15 @@ export class ValidationError extends BaseError {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
+
+export class AbortError extends BaseError {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, {
+      ...options,
+      name: 'AbortError',
+      statusCode: 499,
+      statusText: 'Client Closed Request',
+    });
+    Object.setPrototypeOf(this, AbortError.prototype);
+  }
+}
