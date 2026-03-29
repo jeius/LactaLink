@@ -122,7 +122,7 @@ export async function findPaginatedUserDonations(
   options: PaginationOptions & Pick<Donation, 'status'>,
   init?: RequestInit
 ) {
-  const userID = extractID(user.value);
+  const userProfileID = extractID(user.value);
   const { page = DEFAULT_PAGE_NUMBER, limit = DEFAULT_PAGE_LIMIT, status } = options;
 
   return getApiClient().find(
@@ -132,8 +132,34 @@ export async function findPaginatedUserDonations(
       page,
       limit,
       depth: DEFAULT_DEPTH,
+      sort: '-createdAt',
       where: {
-        and: [{ donor: { equals: userID } }, { status: { equals: status } }],
+        and: [{ donor: { equals: userProfileID } }, { status: { equals: status } }],
+      },
+      joins: { reads: { count: true, limit: 1 }, transactions: { count: true, limit: 0 } },
+    },
+    init
+  );
+}
+
+export async function findPaginatedUserRequests(
+  user: UserProfile,
+  options: PaginationOptions & Pick<Donation, 'status'>,
+  init?: RequestInit
+) {
+  const userProfileID = extractID(user.value);
+  const { page = DEFAULT_PAGE_NUMBER, limit = DEFAULT_PAGE_LIMIT, status } = options;
+
+  return getApiClient().find(
+    {
+      collection: 'requests',
+      pagination: true,
+      page,
+      limit,
+      depth: DEFAULT_DEPTH,
+      sort: '-createdAt',
+      where: {
+        and: [{ requester: { equals: userProfileID } }, { status: { equals: status } }],
       },
       joins: { reads: { count: true, limit: 1 }, transactions: { count: true, limit: 0 } },
     },
