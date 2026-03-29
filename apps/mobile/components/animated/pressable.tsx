@@ -41,14 +41,14 @@ export function AnimatedPressable({
   });
 
   function handlePressIn(event: GestureResponderEvent) {
-    if (!disablePressAnimation) progress.value = true;
+    if (!disablePressAnimation) progress.set(true);
 
     if (typeof props.onPressIn === 'function') props.onPressIn?.(event);
     else if (props.onPressIn) props.onPressIn.value?.(event);
   }
 
   function handlePressOut(event: GestureResponderEvent) {
-    if (!disablePressAnimation) progress.value = false;
+    if (!disablePressAnimation) progress.set(false);
 
     if (typeof props.onPressOut === 'function') props.onPressOut?.(event);
     else if (props.onPressOut) props.onPressOut.value?.(event);
