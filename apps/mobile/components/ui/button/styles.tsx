@@ -23,7 +23,7 @@ const buttonStyle = tva({
     variant: {
       link: 'overflow-auto rounded-none bg-transparent px-0 hover:bg-transparent active:bg-transparent',
       outline: 'border bg-transparent hover:bg-background-50 active:bg-background-50',
-      ghost: 'bg-transparent hover:bg-background-50 active:bg-background-50',
+      ghost: 'bg-transparent hover:bg-background-400/10 active:bg-background-400/10',
       solid: '',
     },
 
