@@ -58,7 +58,7 @@ export function useParallaxAnimationStyles(
     useAnimatedStyle(() => {
       const outputRange = fadeIn ? [0, 1] : [1, 0];
       const opacity = interpolate(scrollY.value, [0, maxScroll * 0.75], outputRange);
-      return { opacity };
+      return { opacity, pointerEvents: opacity === 0 ? 'none' : 'auto' };
     });
 
   const animatedImageStyles = useAnimatedStyle(() => {
