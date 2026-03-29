@@ -1,7 +1,9 @@
 import { getApiClient } from '@lactalink/api';
 import { ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { UpdateByIDResult } from '@lactalink/types/api';
+import { Collection } from '@lactalink/types/collections';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { File } from 'expo-file-system';
 
 export async function updateDraftMilkBag({ id, bagImage: _, code: __, ...data }: MilkBagSchema) {
@@ -43,4 +45,18 @@ export async function updateDraftMilkBagImage(
   const data: UpdateByIDResult<'milkBags'> = await response.json();
 
   return data.doc as MilkBag;
+}
+
+export async function cancelListing<
+  TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>,
+>(doc: { id: string; slug: TSlug }, init?: RequestInit) {
+  return getApiClient().updateByID(
+    {
+      collection: doc.slug as 'donations' | 'requests',
+      id: doc.id,
+      data: { status: 'CANCELLED', cancelledAt: new Date().toISOString() },
+      depth: 3,
+    },
+    init
+  ) as Promise<Collection<TSlug>>;
 }
