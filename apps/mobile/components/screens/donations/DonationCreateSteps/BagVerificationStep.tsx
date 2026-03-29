@@ -12,6 +12,7 @@ import { MMKV_KEYS } from '@/lib/constants/storageKeys';
 import Storage from '@/lib/localStorage';
 import { DonationCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { DonationCreateResult } from '@lactalink/types/api';
+import { AbortError } from '@lactalink/utilities/errors';
 import {
   extractDisplayName,
   extractErrorMessage,
@@ -81,8 +82,8 @@ export default function BagVerificationStep({
       onDismiss: cancelMutate,
     });
 
-    const handleSuccess = (res: DonationCreateResult | undefined) => {
-      if (!res) return onSubmit(null); // Mutation was cancelled, treat as no result
+    const handleSuccess = (res: DonationCreateResult) => {
+      if (!res) return onSubmit(null);
 
       if (data.type === 'OPEN') {
         toast.success('Thank you for your donation!', { id: toastID });
@@ -101,8 +102,9 @@ export default function BagVerificationStep({
     };
 
     const handleError = (error: unknown) => {
-      toast.error(extractErrorMessage(error), { id: toastID });
       onSubmit(null);
+      if (error instanceof AbortError) return;
+      toast.error(extractErrorMessage(error), { id: toastID });
     };
 
     await createDonation(data)

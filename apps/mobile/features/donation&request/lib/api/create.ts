@@ -3,6 +3,7 @@ import { getApiClient } from '@lactalink/api';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
 import { DonationCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
 import { ApiFetchResponse, DonationCreateResult } from '@lactalink/types/api';
+import { AbortError } from '@lactalink/utilities/errors';
 import { extractID } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system';
 
@@ -41,7 +42,7 @@ export function createMilkBag({ volume, collectedAt, donor }: MilkBagSchema, ini
 export async function createDonation(
   data: DonationCreateSchema,
   init?: RequestInit
-): Promise<DonationCreateResult | undefined> {
+): Promise<DonationCreateResult> {
   const file = data.details.image ? new File(data.details.image.url) : undefined;
 
   const response = await getApiClient().request({
@@ -52,22 +53,25 @@ export async function createDonation(
     init: init,
   });
 
+  const responseData: ApiFetchResponse<DonationCreateResult> = await response.json();
+
   if (!response.ok) {
+    const message = 'error' in responseData ? responseData.message : 'Failed to create donation.';
+
+    console.log(responseData);
+
     if (response.status === 499) {
-      return; // Mutation was cancelled, return undefined to indicate no result
+      throw new AbortError(message);
     }
 
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create donation.', {
+    throw new Error(message, {
       cause: {
         status: response.status,
         statusText: response.statusText,
-        body: errorData,
+        body: responseData,
       },
     });
   }
-
-  const responseData: ApiFetchResponse<DonationCreateResult> = await response.json();
 
   if ('error' in responseData) {
     throw new Error(responseData.message);
