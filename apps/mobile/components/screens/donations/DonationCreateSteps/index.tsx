@@ -24,9 +24,9 @@ export default function DonationCreateStepsScreen() {
     const transactionID = data.transaction?.id;
 
     if (transactionID) {
-      router.push(`/transactions/${transactionID}`);
+      router.dismissTo(`/transactions/${transactionID}`);
     } else {
-      router.push(`/donations/${donationID}`);
+      router.dismissTo(`/donations/${donationID}`);
     }
   }
 
