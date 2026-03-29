@@ -39,8 +39,14 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
 
   const donationType = useWatch({ control, name: 'type' });
 
-  const isLoading = additionalState.isLoading;
+  const { isLoading } = additionalState;
   const disableFields = isLoading || formState.isSubmitting;
+  const refreshing = requestQuery.isRefetching || additionalState.refreshing;
+
+  function onRefresh() {
+    if (isMatched) requestQuery.refetch();
+    additionalState.onRefresh();
+  }
 
   function handleOnDeliveryChange(data: DeliveryCreateSchema) {
     setValue('deliveryPreferences', data.deliveryPreference ? [data.deliveryPreference] : [], {
@@ -65,7 +71,12 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
       <FormPreventBack />
 
       <SafeArea safeTop={false} className="items-stretch">
-        <KeyboardAvoidingScrollView className="flex-1" contentContainerClassName="grow gap-6 py-5">
+        <KeyboardAvoidingScrollView
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          className="flex-1"
+          contentContainerClassName="grow gap-6 py-5"
+        >
           {(donationType === 'MATCHED' || isMatched) && (
             <MatchedRequestField
               className="mx-4"
