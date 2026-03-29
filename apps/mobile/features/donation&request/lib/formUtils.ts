@@ -17,6 +17,7 @@ export function getDonationDefaultValues(
     donor: savedData?.donor ?? extractID(profile),
     details: {
       ...savedData?.details,
+      bags: savedData?.details?.bags ?? [],
       notes: savedData?.details?.notes ?? '',
     },
   };
