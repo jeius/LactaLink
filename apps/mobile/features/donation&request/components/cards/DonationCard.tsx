@@ -1,35 +1,35 @@
+import { ProfileAvatar } from '@/components/Avatar';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { Card, CardProps } from '@/components/ui/card';
+import { DynamicStack, DynamicStackProps } from '@/components/ui/DynamicStack';
 import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
-import { ProfileAvatar } from '@/components/Avatar';
-import DonationRequestStatusBadge from '@/components/badges/DonationRequestStatusBadge';
-import { DynamicStack, DynamicStackProps } from '@/components/ui/DynamicStack';
 import { DEVICE_BREAKPOINTS } from '@/lib/constants';
 import { STORAGE_TYPES } from '@lactalink/enums';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
-import React, { useMemo } from 'react';
+import { ImageIcon } from 'lucide-react-native';
+import { FC, useMemo } from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import { useDonation } from '../../hooks/queries';
+import StatusBadge from '../StatusBadge';
 
-type CardContentProps = Pick<DynamicStackProps, 'orientation'> &
+type BaseProps = Pick<DynamicStackProps, 'orientation'> &
   Pick<CardProps, 'variant' | 'className' | 'style'> & {
     data: Donation;
   };
 
-interface DonationCardProps extends Omit<CardContentProps, 'data'> {
-  data?: string | Donation;
+interface DonationCardProps extends Omit<BaseProps, 'data'> {
+  data: string | Donation;
 }
 
-export function DonationCardSkeleton({
-  orientation = 'horizontal',
-}: Pick<CardContentProps, 'orientation'>) {
+function CardSkeleton({ orientation = 'horizontal' }: Pick<BaseProps, 'orientation'>) {
   const isHorizontal = orientation === 'horizontal';
   return (
     <Skeleton
@@ -40,23 +40,13 @@ export function DonationCardSkeleton({
   );
 }
 
-export default function DonationCard({ data: dataProp, ...props }: DonationCardProps) {
-  const { data: data, isLoading } = useDonation(dataProp!);
-
-  if (isLoading || !data) {
-    return <DonationCardSkeleton orientation={props.orientation} />;
-  }
-
-  return <CardContent {...props} data={data} />;
-}
-
-function CardContent({
+function MainCard({
   data,
   orientation = 'horizontal',
   variant = 'elevated',
   className,
   style,
-}: CardContentProps) {
+}: BaseProps) {
   const { width: screenWidth } = useWindowDimensions();
   const isHorizontal = orientation === 'horizontal';
   const isVertical = orientation === 'vertical';
@@ -85,7 +75,16 @@ function CardContent({
               : { height: 164, width: '100%', borderBottomWidth: 4 }
           }
         >
-          <SingleImageViewer image={image} disabled />
+          <SingleImageViewer
+            image={image}
+            disabled
+            className="flex-1"
+            fallback={
+              <Box className="flex-1 items-center justify-center">
+                <Icon as={ImageIcon} className="stroke-primary-500" size="2xl" />
+              </Box>
+            }
+          />
           {isVertical && (
             <Box className="absolute" style={{ bottom: 8, right: 8 }}>
               <ProfileAvatar size="sm" profile={{ relationTo: 'individuals', value: data.donor }} />
@@ -105,12 +104,12 @@ function CardContent({
             >
               {STORAGE_TYPES[storage].label}
             </Text>
-            {isHorizontal && <DonationRequestStatusBadge status={data.status} />}
+            {isHorizontal && <StatusBadge status={data.status} />}
           </VStack>
 
           <Box className={isVertical ? 'self-center' : 'self-end'}>
             {isVertical ? (
-              <DonationRequestStatusBadge status={data.status} size="md" />
+              <StatusBadge status={data.status} size="md" />
             ) : (
               <ProfileAvatar size="sm" profile={{ relationTo: 'individuals', value: data.donor }} />
             )}
@@ -120,3 +119,19 @@ function CardContent({
     </Card>
   );
 }
+
+function DonationCard({ data: dataProp, ...props }: DonationCardProps) {
+  const { data: data, isLoading } = useDonation(dataProp);
+
+  if (isLoading || !data) {
+    return <CardSkeleton orientation={props.orientation} />;
+  }
+
+  return <MainCard {...props} data={data} />;
+}
+
+export { CardSkeleton as DonationCardSkeleton };
+
+DonationCard.Skeleton = CardSkeleton;
+
+export default DonationCard as FC<DonationCardProps> & { Skeleton: typeof CardSkeleton };
