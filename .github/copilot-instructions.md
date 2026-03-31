@@ -123,6 +123,7 @@ LactaLink is a tech-driven solution for breastmilk donation and distribution. It
 - Follow the established folder structure and naming conventions.
 - Follow DRY (Don't Repeat Yourself) principles by utilizing shared packages.
 - Follow modern React practices, including hooks and functional components.
+- Always use named imports from modules (e.g., `import { useState } from 'react'`) instead of namespace imports (e.g., `React.useState`).
 - Follow best practices for payload CMS when working with collections and custom endpoints.
 - Write clear and readable, maintainable, and well-documented code.
 - Follow modern best practices for documenting functions, including parameters, return types, and conditions.
