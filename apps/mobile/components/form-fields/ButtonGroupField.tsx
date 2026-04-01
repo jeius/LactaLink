@@ -37,7 +37,7 @@ interface ButtonGroupFieldProps<
   selectionLimit?: number;
   items: TItem[];
   transformItem: (item: TItem) => {
-    value: string;
+    value: unknown;
     label: string;
   };
 }
@@ -72,7 +72,7 @@ export default function ButtonGroupField<
         if (newValue !== value) onChange(newValue);
         else onChange(null);
       } else {
-        const currentValues = (Array.isArray(value) ? value : []) as string[];
+        const currentValues = (Array.isArray(value) ? value : []) as unknown[];
         if (currentValues.includes(newValue)) {
           // Remove the value if it's already selected
           onChange?.(currentValues.filter((v) => v !== newValue));

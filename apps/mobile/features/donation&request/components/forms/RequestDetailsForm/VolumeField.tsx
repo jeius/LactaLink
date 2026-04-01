@@ -1,76 +1,52 @@
-import { FormField } from '@/components/FormField';
-import { AnimatedPressable } from '@/components/animated/pressable';
-import { MilkBagCard } from '@/components/cards/MilkBagCard';
+import ButtonGroupField from '@/components/form-fields/ButtonGroupField';
 import { NumberInputField } from '@/components/form-fields/NumberInputField';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
 import { HStack } from '@/components/ui/hstack';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
-import { transformToMilkBagSchema } from '@/lib/utils/transformData';
-import { RequestCreateSchema, RequestSchema } from '@lactalink/form-schemas';
-import { Donation, MilkBag } from '@lactalink/types/payload-generated-types';
-import { generatePlaceHoldersWithID } from '@lactalink/utilities';
-import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import {
-  extractCollection,
-  extractErrorMessage,
-  extractID,
-  listKeyExtractor,
-} from '@lactalink/utilities/extractors';
-import { AlertCircleIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useFormContext, useFormState, useWatch } from 'react-hook-form';
-import { ListRenderItem } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
-import { FadeIn } from 'react-native-reanimated';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
+import { RequestCreateSchema } from '@lactalink/form-schemas';
+import { useState } from 'react';
+import { Control } from 'react-hook-form';
+
+const buttonStyle = tva({
+  base: '',
+  variants: {
+    isToggled: { true: 'bg-primary-500' },
+  },
+});
+
+const buttonTextStyle = tva({
+  base: '',
+  variants: {
+    isToggled: { true: 'text-primary-0' },
+  },
+});
 
 interface VolumeFieldProps {
-  matchedDonation?: Donation;
+  control: Control<RequestCreateSchema>;
   isLoading?: boolean;
   isDisabled?: boolean;
 }
 
-export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFieldProps) {
+export function VolumeField({ isLoading, isDisabled, control }: VolumeFieldProps) {
   const [isCustomVolume, setIsCustomVolume] = useState(false);
-  const { control } = useFormContext<RequestSchema>();
 
   function handleToggleCustomVolume() {
     setIsCustomVolume((prev) => !prev);
-  }
-
-  if (matchedDonation) {
-    return (
-      <MilkBagsField
-        matchedDonation={matchedDonation}
-        isLoading={isLoading}
-        isDisabled={isDisabled}
-      />
-    );
   }
 
   return (
     <VStack space="sm" className="mx-5">
       <Text className="font-JakartaMedium">How much milk do you need?</Text>
       <Card variant="filled" className="flex-col gap-5" isDisabled={isDisabled}>
-        <FormField
+        <ButtonGroupField
           control={control}
           name="volumeNeeded"
-          fieldType="button-group"
-          options={Object.values(VOLUME_PRESET)}
+          items={Object.values(VOLUME_PRESET)}
+          transformItem={(item) => item}
           isDisabled={isCustomVolume}
           isLoading={isLoading}
         />
@@ -78,10 +54,13 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
         <HStack space="sm" className="items-start">
           <Button
             size="sm"
-            variant={isCustomVolume ? 'solid' : 'outline'}
+            variant="outline"
+            className={buttonStyle({ isToggled: isCustomVolume })}
             onPress={handleToggleCustomVolume}
           >
-            <ButtonText>Custom</ButtonText>
+            <ButtonText className={buttonTextStyle({ isToggled: isCustomVolume })}>
+              Custom
+            </ButtonText>
           </Button>
 
           {isCustomVolume && (
@@ -98,128 +77,5 @@ export function VolumeField({ isLoading, matchedDonation, isDisabled }: VolumeFi
         </HStack>
       </Card>
     </VStack>
-  );
-}
-
-const placeholder = generatePlaceHoldersWithID(6, {}) as MilkBag[];
-
-interface MilkBagsFieldProps {
-  matchedDonation: Donation;
-  isLoading?: boolean;
-  isDisabled?: boolean;
-}
-
-function MilkBagsField({ matchedDonation, isLoading, isDisabled }: MilkBagsFieldProps) {
-  const { control, setValue } = useFormContext<RequestCreateSchema>();
-  const selectedBags = useWatch({ control, name: 'details.bags' });
-  const { errors } = useFormState({ control, name: 'details.bags' });
-  const error = errors?.details?.bags;
-
-  const { bags, bagsMap } = useMemo(() => {
-    const bags = extractCollection(matchedDonation.details.bags);
-
-    const map = new Map<string, MilkBag>();
-    bags.forEach((bag) => map.set(extractID(bag), bag));
-
-    return { bags: Array.from(map.values()), bagsMap: map };
-  }, [matchedDonation]);
-
-  useEffect(() => {
-    // Update the total volume needed based on selected bags
-    if (Array.isArray(selectedBags) && selectedBags.length > 0) {
-      const totalVolume = selectedBags.reduce((acc, { id: bagId }) => {
-        const bag = bagsMap.get(bagId);
-        return acc + (bag?.volume || 0);
-      }, 0);
-
-      setValue('volumeNeeded', totalVolume);
-    }
-  }, [selectedBags, bagsMap, setValue]);
-
-  const renderItem: ListRenderItem<MilkBag> = ({ item, index }) => {
-    const isPlaceholder = isPlaceHolderData(item);
-    const isSelected = selectedBags?.some(({ id }) => id === item.id);
-
-    function handleSelectBag() {
-      if (isSelected) {
-        setValue(
-          'details.bags',
-          selectedBags?.filter(({ id }) => id !== item.id),
-          { shouldValidate: true, shouldDirty: true, shouldTouch: true }
-        );
-      } else {
-        const transformedBag = transformToMilkBagSchema(item);
-        setValue(
-          'details.bags',
-          selectedBags ? [...selectedBags, transformedBag] : [transformedBag],
-          { shouldValidate: true, shouldDirty: true, shouldTouch: true }
-        );
-      }
-    }
-
-    return isPlaceholder ? (
-      <CardSkeleton />
-    ) : (
-      <AnimatedPressable
-        entering={FadeIn.duration(300).delay(index * 200)}
-        disabled={isDisabled}
-        onPress={handleSelectBag}
-        className="overflow-hidden rounded-2xl"
-      >
-        <MilkBagCard
-          disableViewThumbnail
-          data={item}
-          className={isSelected ? 'border-2 border-primary-500' : undefined}
-        />
-      </AnimatedPressable>
-    );
-  };
-
-  return (
-    <FormControl isInvalid={!!error} isDisabled={isDisabled}>
-      <FormControlLabel className="mx-5">
-        <FormControlLabelText>Available Milk Bags</FormControlLabelText>
-      </FormControlLabel>
-
-      <FormControlHelper className="mx-5">
-        <FormControlHelperText>Select the milk bags you want to request.</FormControlHelperText>
-      </FormControlHelper>
-
-      {error && (
-        <FormControlError className="mx-5">
-          <FormControlErrorIcon as={AlertCircleIcon} />
-          <FormControlErrorText numberOfLines={2} ellipsizeMode="tail" className="shrink">
-            {extractErrorMessage(error)}
-          </FormControlErrorText>
-        </FormControlError>
-      )}
-
-      <Box className="mt-2">
-        <FlatList
-          horizontal
-          data={isLoading ? placeholder : bags}
-          keyExtractor={listKeyExtractor}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
-          ItemSeparatorComponent={() => <Box className="w-3" />}
-        />
-      </Box>
-    </FormControl>
-  );
-}
-
-function CardSkeleton() {
-  return (
-    <Card className={`w-40 p-0`}>
-      <VStack className="items-stretch">
-        <Skeleton variant="sharp" className="h-32 w-full" />
-        <VStack space="xs" className="w-full items-center px-3 py-2">
-          <Skeleton variant="circular" className="h-5 w-2/3" />
-
-          <Skeleton variant="circular" className="h-3 w-full" />
-          <Skeleton variant="circular" className="h-3 w-2/3" />
-        </VStack>
-      </VStack>
-    </Card>
   );
 }

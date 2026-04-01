@@ -1,19 +1,20 @@
-import { RequestCreateSchema, requestCreateSchema, RequestSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema, requestCreateSchema } from '@lactalink/form-schemas';
 
-import { User } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { Donation, User } from '@lactalink/types/payload-generated-types';
 
-import { FormProps } from '@/components/contexts/FormProvider';
+import { FormProps, useForm } from '@/components/contexts/FormProvider';
 import { useDonation } from '@/features/donation&request/hooks/queries';
-import { getSavedFormData, saveFormData } from '@/lib/localStorage/utils';
+import { deleteSavedFormData, saveFormData } from '@/lib/localStorage/utils';
 import {
   transformToDeliveryPreferenceSchema,
   transformToDonationSchema,
 } from '@/lib/utils/transformData';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo } from 'react';
-import { DeepPartial, useForm } from 'react-hook-form';
+import { UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useForm as useHookForm } from 'react-hook-form';
 import { useMeUser } from '../../../hooks/auth/useAuth';
+import { getPreferredRequestValues, getRequestDefaultValues } from '../lib/formUtils';
 
 type Params = {
   recipient?: { value: string; relationTo: NonNullable<User['profile']>['relationTo'] };
@@ -27,100 +28,109 @@ export function useCreateRequestForm({
   const { data: user = null, ...userQuery } = useMeUser();
   const preferences = useMemo(() => user?.deliveryPreferences?.docs || [], [user]);
 
-  const { data: matchedDonationDoc, ...donationQuery } = useDonation(matchedDonation);
+  const isMatched = Boolean(matchedDonation);
+  const hasRecipient = Boolean(recipient);
 
-  const methods = useForm<RequestCreateSchema>({
+  const donationQuery = useDonation(matchedDonation);
+  const { data: matchedDonationDoc } = donationQuery;
+
+  const methods = useHookForm<RequestCreateSchema>({
     resolver: zodResolver(requestCreateSchema),
     mode: 'onTouched',
-    defaultValues: createDefaultValues(user, !!matchedDonation, !!recipient),
+    reValidateMode: 'onBlur',
+    defaultValues: getRequestDefaultValues(user, { isMatched, hasRecipient }),
   });
 
   const { getValues, formState, setValue } = methods;
   const isSubmitSuccessful = formState.isSubmitSuccessful;
 
-  // When matched request and recipient prop changes, update the form values.
-  useEffect(() => {
-    if (matchedDonationDoc) {
-      const transformedDonation = transformToDonationSchema(matchedDonationDoc);
-      const preferredStorage = transformedDonation.details.storageType;
+  const handleRefresh = useCallback(() => {
+    if (matchedDonation) donationQuery.refetch();
+  }, [donationQuery, matchedDonation]);
+
+  const handleMatchedWithDonation = useCallback(
+    (doc: Donation) => {
+      const transformed = transformToDonationSchema(doc);
       setValue('type', 'MATCHED');
-      setValue('matchedDonation', transformedDonation);
-      setValue('details.bags', []);
-      setValue('details.storagePreference', preferredStorage);
-    } else if (recipient) {
+      setValue('matchedDonation', transformed);
+      const storage = transformed.details.storageType;
+      // If the storage preference is EITHER, we want to leave it up to the donor
+      // Otherwise, we set it to the request's preference since the donor has no say in the matter
+      setValue('details.storagePreference', storage);
+    },
+    [setValue]
+  );
+
+  const handleDirectRequest = useCallback(
+    (receiver: NonNullable<typeof recipient>) => {
       setValue('type', 'DIRECT');
-      setValue('recipient', recipient);
-    } else {
-      if (!getValues('deliveryPreferences')?.length) {
-        const defaultPrefs = preferences
-          .map((pref) => transformToDeliveryPreferenceSchema(pref))
-          .filter((v) => v !== null);
-        setValue('deliveryPreferences', defaultPrefs);
-      }
-    }
-  }, [getValues, matchedDonationDoc, preferences, recipient, setValue]);
+      setValue('recipient', receiver);
+    },
+    [setValue]
+  );
 
-  /**
-   * When the form is successfully submitted
-   * save the user preference to local storage.
-   */
   useEffect(() => {
-    async function saveUserPreference() {
-      if (isSubmitSuccessful && !matchedDonation) {
-        const data = getValues();
-
-        const preferredValues: DeepPartial<RequestSchema> = {
-          details: {
-            notes: data.details.notes,
-            reason: data.details.reason,
-            storagePreference: data.details.storagePreference,
-          },
-          deliveryPreferences: data.deliveryPreferences,
-        };
-
-        // Save the preffered values to local storage
-        saveFormData('request-create', preferredValues);
-      }
+    if (isMatched && matchedDonationDoc) {
+      handleMatchedWithDonation(matchedDonationDoc);
+    } else if (hasRecipient && recipient) {
+      handleDirectRequest(recipient);
+    } else {
+      const defaultPreferences = getValues('deliveryPreferences') || [];
+      if (defaultPreferences.length > 0) return;
+      setValue(
+        'deliveryPreferences',
+        preferences
+          .map((pref) => transformToDeliveryPreferenceSchema(pref))
+          .filter((v) => v !== null)
+      );
     }
+  }, [
+    getValues,
+    handleDirectRequest,
+    handleMatchedWithDonation,
+    hasRecipient,
+    isMatched,
+    matchedDonationDoc,
+    preferences,
+    recipient,
+    setValue,
+  ]);
 
-    saveUserPreference();
-  }, [getValues, isSubmitSuccessful, matchedDonation]);
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      if (isMatched || hasRecipient) {
+        deleteSavedFormData('request-create');
+        return;
+      }
+
+      const data = getValues();
+      const preferredValues = getPreferredRequestValues(data);
+
+      // Save the preffered values to local storage
+      saveFormData('request-create', preferredValues);
+    }
+  }, [getValues, hasRecipient, isMatched, isSubmitSuccessful]);
 
   return {
     ...methods,
-    isLoading: userQuery.isLoading,
-    isFetching: userQuery.isFetching,
-    refreshing: userQuery.isRefetching,
+    isLoading: donationQuery.isLoading,
+    isFetching: donationQuery.isFetching,
+    refreshing: donationQuery.isRefetching,
     fetchError: userQuery.error || donationQuery.error,
-    onRefresh() {
-      userQuery.refetch();
-      donationQuery.refetch();
+    onRefresh: handleRefresh,
+    extraData: {
+      isMatched,
+      hasRecipient,
+      donationQuery: donationQuery,
     },
   };
 }
 
-function createDefaultValues(
-  user: User | null,
-  isMatched: boolean,
-  hasRecipient: boolean
-): RequestCreateSchema | undefined {
-  const profile = extractCollection(user?.profile?.value);
-  const savedData = getSavedFormData('request-create');
-
-  if (savedData && !isMatched && !hasRecipient) return savedData as RequestCreateSchema;
-
-  if (!profile) return;
-
-  const requester = profile.id;
-
-  return {
-    type: 'OPEN',
-    requester: requester,
-    volumeNeeded: 20,
-    deliveryPreferences: [],
-    details: {
-      reason: '',
-      notes: '',
-    } as RequestCreateSchema['details'],
+export function useRequestFormExtraData() {
+  const { additionalState } = useForm<RequestCreateSchema>();
+  return additionalState.extraData as {
+    isMatched: boolean;
+    hasRecipient: boolean;
+    donationQuery: UseQueryResult<Donation, Error>;
   };
 }

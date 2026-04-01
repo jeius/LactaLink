@@ -1,10 +1,9 @@
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
-import { DonationCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
-import { ApiFetchResponse, DonationCreateResult } from '@lactalink/types/api';
-import { AbortError } from '@lactalink/utilities/errors';
-import { extractID } from '@lactalink/utilities/extractors';
+import { DonationCreateSchema, MilkBagSchema, RequestCreateSchema } from '@lactalink/form-schemas';
+import { DonationCreateResult, RequestCreateResult } from '@lactalink/types/api';
+import { extractDataFromResponse, extractID } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system';
 
 export function createMilkBag({ volume, collectedAt, donor }: MilkBagSchema, init?: RequestInit) {
@@ -53,29 +52,22 @@ export async function createDonation(
     init: init,
   });
 
-  const responseData: ApiFetchResponse<DonationCreateResult> = await response.json();
+  return extractDataFromResponse(response);
+}
 
-  if (!response.ok) {
-    const message = 'error' in responseData ? responseData.message : 'Failed to create donation.';
+export async function createRequest(
+  data: RequestCreateSchema,
+  init?: RequestInit
+): Promise<RequestCreateResult> {
+  const file = data.details.image ? new File(data.details.image.url) : undefined;
 
-    console.log(responseData);
+  const response = await getApiClient().request({
+    path: '/requests/create',
+    method: 'POST',
+    file: file,
+    json: data,
+    init: init,
+  });
 
-    if (response.status === 499) {
-      throw new AbortError(message);
-    }
-
-    throw new Error(message, {
-      cause: {
-        status: response.status,
-        statusText: response.statusText,
-        body: responseData,
-      },
-    });
-  }
-
-  if ('error' in responseData) {
-    throw new Error(responseData.message);
-  }
-
-  return responseData.data;
+  return extractDataFromResponse(response);
 }

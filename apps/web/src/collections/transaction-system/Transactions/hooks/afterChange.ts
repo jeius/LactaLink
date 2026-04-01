@@ -1,6 +1,7 @@
 import { hookLogger } from '@lactalink/agents/payload';
 import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { Transaction } from '@lactalink/types/payload-generated-types';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook, PayloadRequest } from 'payload';
 import {
   clearTransactionReads,
@@ -35,14 +36,19 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
   const { user } = req;
   if (!user?.profile) return doc;
 
+  const baseLogger = hookLogger(req, collection.slug, 'afterChange');
+
   try {
     if (operation === 'create') {
       const logger = hookLogger(req, collection.slug, 'afterCreate');
 
+      // Update the milk bags first since the donation/request volumes and statuses
+      // depends on the bags being allocated
+      await markBagsAsAllocated(doc.milkBags, req, logger);
+
       await Promise.all([
         markDonationAsMatched(doc.donation, req, logger),
         markRequestAsMatched(doc.request, req, logger),
-        markBagsAsAllocated(doc.milkBags, req, logger),
       ]);
     }
 
@@ -55,14 +61,17 @@ export const afterChange: CollectionAfterChangeHook<Transaction> = async ({
         finalizeOnComplete(doc, req, logger),
       ]);
     }
+
+    return doc;
   } catch (error) {
-    req.payload.logger.error(error, 'Error in Transactions afterChange hook:');
+    baseLogger.error(error, extractErrorMessage(error));
     throw error;
   }
-
-  return doc;
 };
 
+/**
+ * Helper function to finalize the transaction when completed.
+ */
 async function finalizeOnComplete(
   doc: Transaction,
   req: PayloadRequest,
@@ -71,6 +80,6 @@ async function finalizeOnComplete(
   if (doc.status !== COMPLETE_STATUS) return;
   await Promise.all([
     markRequestAsComplete(doc.request, req, logger),
-    markDonationAsComplete(doc.donation, req, logger),
+    markDonationAsComplete(doc, req, logger),
   ]);
 }

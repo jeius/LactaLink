@@ -1,10 +1,10 @@
 import { InventoryHookContext } from '@/lib/constants/hookContexts';
 import { getEarliestExpiryDateOfBags } from '@/lib/utils/collections/getEarliestExpiryDateOfBags';
-import { hookLogger, setHookContext } from '@lactalink/agents/payload';
+import { getHookContext, hookLogger, setHookContext } from '@lactalink/agents/payload';
 import { Inventory } from '@lactalink/types/payload-generated-types';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { extractCollection, extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { CollectionBeforeValidateHook, RequestContext } from 'payload';
-import { getMilkBagsFromSourceDonation } from '../helpers';
+import { getMilkBags } from '../helpers';
 
 /**
  * Before validate hook for the Inventory collection. This hook runs before
@@ -38,12 +38,16 @@ export const beforeValidate: CollectionBeforeValidateHook<Inventory> = async ({
       if (!data.initialVolume) data.initialVolume = 0;
       if (!data.remainingVolume) data.remainingVolume = 0;
 
-      if (!data.sourceDonation) return data;
+      const bagsFromContext = extractCollection(
+        getHookContext<RequestContext['milkbags']>(req, InventoryHookContext.MilkBags)
+      );
 
-      const bags = await getMilkBagsFromSourceDonation(data.sourceDonation, req, logger);
-      if (!bags) return data;
+      const bags = bagsFromContext?.length
+        ? bagsFromContext
+        : await getMilkBags(extractID(data.inputBags || []), req);
 
       const totalVolume = bags.reduce((sum, bag) => sum + (bag.volume || 0), 0);
+
       data.initialVolume = data.initialVolume || totalVolume;
       data.remainingVolume = data.remainingVolume || totalVolume;
 
@@ -62,6 +66,6 @@ export const beforeValidate: CollectionBeforeValidateHook<Inventory> = async ({
     return data;
   } catch (error) {
     logger.error(error, `Failed to validate inventory: ${extractErrorMessage(error)}`);
-    return data;
+    throw error;
   }
 };

@@ -6,7 +6,7 @@ import type {
   SelectFromCollectionSlug,
   TransformCollectionWithSelect,
 } from '@/payload-types';
-import { Donation, Transaction } from '@/payload-types/generated';
+import { Donation, Request, Transaction } from '@/payload-types/generated';
 
 export type CreateResult<
   TSlug extends CollectionSlug = CollectionSlug,
@@ -79,5 +79,10 @@ export type DirectionsResult = Direction[] | null;
 
 export type DonationCreateResult = {
   donation: Donation;
+  transaction: Transaction | null;
+};
+
+export type RequestCreateResult = {
+  request: Request;
   transaction: Transaction | null;
 };

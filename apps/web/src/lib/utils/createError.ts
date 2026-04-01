@@ -22,3 +22,12 @@ export function createTimeoutError(message = 'Request was cancelled due to timeo
     true
   );
 }
+
+export function createInternalServerError(message = 'An unexpected error occurred.') {
+  return new APIError(
+    message,
+    status.INTERNAL_SERVER_ERROR,
+    { message: status[`${status.INTERNAL_SERVER_ERROR}_MESSAGE`] },
+    true
+  );
+}

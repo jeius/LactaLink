@@ -1,27 +1,25 @@
+import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-
-import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { DeliveryCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
-import { extractCollection } from '@lactalink/utilities/extractors';
-
-import { DonationListCard } from '@/components/cards/DonationListCard';
-import ProfileCard from '@/components/cards/ProfileCard';
 import { DeliveryField } from '@/components/fields/DeliveryField';
 import { DateInputField } from '@/components/form-fields/DateInputField';
 import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
-import { ProfileTag } from '@/components/ProfileTag';
+import { Box } from '@/components/ui/box';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { useDonation } from '@/features/donation&request/hooks/queries';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useRequestFormExtraData } from '@/features/donation&request/hooks/useCreateRequestForm';
+import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
+import { DeliveryCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { CalendarDaysIcon, ClipboardPenIcon, ClockIcon } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import { useWatch } from 'react-hook-form';
+import { MatchedDonationField } from '../MatchedListingFields';
+import RequestMilkbagsField from '../RequestMilkbagsField';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {
@@ -29,26 +27,16 @@ interface RequestDetailsFormProps {
   matchedDonation?: string;
 }
 
-export function RequestDetailsForm({
-  disableFields: disableProp,
-  matchedDonation,
-}: RequestDetailsFormProps) {
-  const { getValues, additionalState, watch, control, formState, setValue } =
-    useForm<RequestCreateSchema>();
+export function RequestDetailsForm({ disableFields: disableProp }: RequestDetailsFormProps) {
+  const { additionalState, control, formState, setValue } = useForm<RequestCreateSchema>();
 
-  const isMatched = !!matchedDonation;
-  const { data: matchedDonationDoc, ...donationQuery } = useDonation(matchedDonation);
+  const { isMatched, donationQuery } = useRequestFormExtraData();
 
-  const recipient = useMemo(() => {
-    const values = getValues();
-    if (values.type === 'DIRECT') {
-      return values.recipient;
-    }
-    return null;
-  }, [getValues]);
-
-  const requestType = watch('type');
+  const { data: matchedDonationDoc } = donationQuery;
   const donorDP = extractCollection(matchedDonationDoc?.deliveryPreferences) || [];
+
+  const requestType = useWatch({ control, name: 'type' });
+  const recipient = useWatch({ control, name: 'recipient' });
 
   const isLoading = additionalState.isLoading;
   const disableFields = disableProp || formState.isSubmitting;
@@ -63,31 +51,17 @@ export function RequestDetailsForm({
   return (
     <VStack space="xl" className="py-5">
       {(requestType === 'MATCHED' || isMatched) && (
-        <Box className="mx-5 mb-4">
-          <Text className="mb-1 font-JakartaSemiBold">Selected Donation</Text>
-          <DonationListCard
-            isLoading={donationQuery.isLoading}
-            data={matchedDonationDoc}
-            footerAction={
-              matchedDonationDoc && (
-                <ProfileTag
-                  label="Donor"
-                  profile={{ relationTo: 'individuals', value: matchedDonationDoc.donor }}
-                />
-              )
-            }
-          />
-        </Box>
+        <MatchedDonationField donation={matchedDonationDoc} isLoading={donationQuery.isLoading} />
       )}
 
-      {recipient && (
+      {requestType === 'DIRECT' && recipient && (
         <Box className="mx-5 mb-4">
           <Text className="mb-1 font-JakartaSemiBold">Selected Donor</Text>
           <ProfileCard profile={recipient} variant="elevated" />
         </Box>
       )}
 
-      {requestType !== 'OPEN' && <Divider />}
+      {['MATCHED', 'DIRECT'].includes(requestType) && <Divider />}
 
       <VStack space="lg" className="mx-5">
         <HStack space="md" className="items-center">
@@ -199,11 +173,20 @@ export function RequestDetailsForm({
 
       <Divider />
 
-      <VolumeField
-        matchedDonation={matchedDonationDoc}
-        isLoading={isLoading}
-        isDisabled={isLoading || disableFields}
-      />
+      {isMatched ? (
+        <RequestMilkbagsField
+          control={control}
+          matchedDonation={matchedDonationDoc}
+          isLoading={isLoading}
+          isDisabled={isLoading || disableFields}
+        />
+      ) : (
+        <VolumeField
+          control={control}
+          isLoading={isLoading}
+          isDisabled={isLoading || disableFields}
+        />
+      )}
 
       <Divider />
 

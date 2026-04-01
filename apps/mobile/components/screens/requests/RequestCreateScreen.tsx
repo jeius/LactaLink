@@ -1,31 +1,26 @@
 import { RequestReviewCard } from '@/components/cards/RequestReviewCard';
 import { Form } from '@/components/contexts/FormProvider';
 import FormPreventBack from '@/components/forms/FormPreventBack';
+import FormSaver from '@/components/forms/FormSaver';
+import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { ActionModal } from '@/components/modals';
-import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
+import ScrollView from '@/components/ui/ScrollView';
 import { RequestDetailsForm } from '@/features/donation&request/components/forms/RequestDetailsForm';
+import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-
+import { createRequest } from '@/lib/api/request';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
 import { RequestCreateSchema } from '@lactalink/form-schemas';
-
 import { ErrorSearchParams } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
-
-import FormSaver from '@/components/forms/FormSaver';
-import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
-import { createRequest } from '@/lib/api/request';
 import { CollectionSlug } from '@lactalink/types/payload-types';
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView } from 'react-native-gesture-handler';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { toast } from 'sonner-native';
 
-export default function CreateRequest() {
+export default function RequestCreateScreen() {
   //#region Hooks
   const {
     mdid: matchedDonation,
@@ -95,31 +90,36 @@ export default function CreateRequest() {
   }
 
   return (
-    <Form {...form}>
-      <FormSaver schemaName="request-create" enabled={!matchedDonation && !recipientID} />
-      <FormPreventBack />
+    <>
+      <Stack.Screen options={{ headerTitle: 'New Request', headerShown: true }} />
 
-      <SafeArea safeTop={false}>
-        <KeyboardAwareScrollView
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-          <VStack space="lg">
+      <Form {...form}>
+        <FormSaver schemaName="request-create" enabled={!matchedDonation && !recipientID} />
+
+        <FormPreventBack />
+
+        <SafeArea safeTop={false} className="items-stretch">
+          <KeyboardAvoidingScrollView
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            className="flex-1"
+            contentContainerClassName="grow gap-4 py-5"
+          >
             <RequestDetailsForm matchedDonation={matchedDonation} />
 
             {!isLoading && (
               <Box className="mx-5">
                 <ActionModal
-                  triggerLabel="Submit"
                   action="primary"
                   onTriggerPress={handleValidation}
                   onConfirm={handleSubmit(onSubmit)}
                   isDisabled={isSubmitting}
                   modalSize="lg"
                   title="Review Request"
+                  triggerButtonProps={{ label: 'Submit Request' }}
+                  confirmButtonProps={{ label: 'Submit' }}
                   description={
                     <ScrollView
-                      showsVerticalScrollIndicator={false}
                       className="border-outline-200"
                       style={{ maxHeight: 380, borderTopWidth: 1, borderBottomWidth: 1 }}
                     >
@@ -129,11 +129,11 @@ export default function CreateRequest() {
                 />
               </Box>
             )}
-          </VStack>
-        </KeyboardAwareScrollView>
+          </KeyboardAvoidingScrollView>
 
-        <FetchingSpinner isFetching={isLoading} />
-      </SafeArea>
-    </Form>
+          <FetchingSpinner isFetching={isLoading} />
+        </SafeArea>
+      </Form>
+    </>
   );
 }

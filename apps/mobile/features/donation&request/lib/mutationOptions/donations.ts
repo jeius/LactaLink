@@ -31,20 +31,24 @@ export function createDonationCreateMutation(init?: RequestInit) {
   });
 }
 
-export function createCancelDonationMutation(init?: RequestInit) {
+export function createCancelDonationMutation(doc: Donation | null | undefined, init?: RequestInit) {
+  const donationID = doc && extractID(doc);
   return mutationOptions({
-    mutationKey: ['cancel', 'donation'],
-    mutationFn: async (doc: Donation) => {
-      return cancelListing({ id: extractID(doc), slug: 'donations' }, init);
+    mutationKey: ['cancel', 'donation', donationID].filter(Boolean),
+    mutationFn: async () => {
+      if (!donationID) return;
+      return cancelListing({ id: donationID, slug: 'donations' }, init);
     },
-    onSuccess: (data, vars, _ctx, { client }) => {
+    onSuccess: (data, _vars, _ctx, { client }) => {
+      if (data === undefined) return; // Undefined data means the mutation was not initiated
+
+      // Add to global donation cache
       addDonationToCache(client, data);
 
       const meUser = getMeUser();
       if (!meUser) return;
-
       addToUserDonationsInfCache(client, { doc: data, user: meUser });
-      removeFromUserDonationsInfCache(client, { doc: vars, user: meUser });
+      if (doc) removeFromUserDonationsInfCache(client, { doc: doc, user: meUser });
     },
   });
 }

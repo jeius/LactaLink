@@ -61,7 +61,7 @@ export function RequestListCard(props: RequestListCardProps) {
         size={size}
         className={cardDefaultStyle({ className: cardProps.className })}
       >
-        <CardSkeleton />
+        <RequestCardSkeleton />
       </Card>
     );
   }
@@ -84,6 +84,38 @@ export function RequestListCard(props: RequestListCardProps) {
     >
       <CardContent {...props} data={data} />
     </Card>
+  );
+}
+
+export function RequestCardSkeleton() {
+  return (
+    <VStack>
+      <HStack space="sm" className="w-full items-stretch p-3">
+        <Skeleton className="aspect-square h-auto w-auto" />
+
+        <VStack space="xs" className="flex-1">
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-5 w-24" />
+        </VStack>
+
+        <Skeleton className="m-auto h-9 w-20" />
+      </HStack>
+
+      <Divider />
+
+      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
+        <HStack space="sm" className="flex-1 items-center">
+          <Skeleton variant="circular" className="h-8 w-8" />
+          <VStack space="xs">
+            <Skeleton variant="circular" className="h-3 w-24" />
+            <Skeleton variant="circular" className="h-3 w-16" />
+          </VStack>
+        </HStack>
+
+        <Skeleton variant="circular" className="m-auto h-4 w-16" />
+      </HStack>
+    </VStack>
   );
 }
 
@@ -214,38 +246,6 @@ function CardContent({
           )}
         </>
       )}
-    </VStack>
-  );
-}
-
-function CardSkeleton() {
-  return (
-    <VStack>
-      <HStack space="sm" className="w-full items-stretch p-3">
-        <Skeleton className="aspect-square h-auto w-auto" />
-
-        <VStack space="xs" className="flex-1">
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-5 w-24" />
-        </VStack>
-
-        <Skeleton className="m-auto h-9 w-20" />
-      </HStack>
-
-      <Divider />
-
-      <HStack space="sm" className="w-full flex-wrap items-stretch justify-between p-3">
-        <HStack space="sm" className="flex-1 items-center">
-          <Skeleton variant="circular" className="h-8 w-8" />
-          <VStack space="xs">
-            <Skeleton variant="circular" className="h-3 w-24" />
-            <Skeleton variant="circular" className="h-3 w-16" />
-          </VStack>
-        </HStack>
-
-        <Skeleton variant="circular" className="m-auto h-4 w-16" />
-      </HStack>
     </VStack>
   );
 }

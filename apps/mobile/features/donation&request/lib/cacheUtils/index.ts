@@ -4,10 +4,12 @@ import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import type { QueryClient } from '@tanstack/react-query';
 import { Draft, produce } from 'immer';
 import { createIncomingDonationsInfQuery } from '../queryOptions/donations';
-import { createIncomingRequestsInfQuery, createRequestQuery } from '../queryOptions/request';
+import { createIncomingRequestsInfQuery } from '../queryOptions/request';
 import { addDonationToCache } from './donations';
+import { addRequestToCache } from './requests';
 
 export * from './donations';
+export * from './requests';
 
 export function addDonationToIncomingInfCache(client: QueryClient, doc: Donation) {
   const queryKey = createIncomingDonationsInfQuery(getMeUser()).queryKey;
@@ -23,11 +25,6 @@ export function addRequestToIncomingInfCache(client: QueryClient, doc: Request) 
     if (!oldData) return oldData;
     return updateInfCache(oldData, doc);
   });
-}
-
-export function addRequestToCache(client: QueryClient, doc: Request) {
-  const queryKey = createRequestQuery(doc).queryKey;
-  client.setQueryData(queryKey, doc);
 }
 
 export function addDonationToAllCaches(client: QueryClient, doc: Donation) {

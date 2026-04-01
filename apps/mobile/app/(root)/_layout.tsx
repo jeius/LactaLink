@@ -1,7 +1,6 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { Stack } from 'expo-router';
-import React from 'react';
 
 export default function Layout() {
   const { profile } = useAuth();
@@ -25,11 +24,6 @@ export default function Layout() {
           presentation: 'transparentModal',
           contentStyle: { backgroundColor: 'transparent' },
         }}
-      />
-
-      <Stack.Screen
-        name="(create)/requests/create"
-        options={{ headerShown: true, title: 'New Request' }}
       />
 
       <Stack.Screen

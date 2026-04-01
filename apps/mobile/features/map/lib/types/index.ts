@@ -43,6 +43,11 @@ export type MapQueryParams = {
    * Destination point for directions, expected in the format of `[<latitude>,<longitude>]`.
    */
   dest?: string;
+
+  /**
+   * Optional address ID that can be used to link a map marker to a specific address.
+   */
+  addrID?: string;
 };
 
 export type MapListingSlug = Extract<

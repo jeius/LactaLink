@@ -32,7 +32,7 @@ import { isAdmin } from './isAdmin';
 /**
  * Options for configuring the Payload handler.
  */
-interface HandlerOptions<T = unknown> {
+export interface HandlerOptions<T = unknown> {
   /**
    * Whether the handler requires the user to be an admin.
    *

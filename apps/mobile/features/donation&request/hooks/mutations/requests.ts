@@ -1,16 +1,16 @@
-import { Donation } from '@lactalink/types/payload-generated-types';
+import { Request } from '@lactalink/types/payload-generated-types';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  createCancelDonationMutation,
-  createDonationCreateMutation,
-} from '../../lib/mutationOptions/donations';
+  createCancelRequestMutation,
+  createRequestCreateMutation,
+} from '../../lib/mutationOptions/requests';
 
-export function useCancelDonation(doc: Donation | null | undefined) {
+export function useCancelRequest(doc: Request | null | undefined) {
   const [controller, setController] = useState(new AbortController());
 
   const { reset, ...mutation } = useMutation(
-    createCancelDonationMutation(doc, { signal: controller.signal })
+    createCancelRequestMutation(doc, { signal: controller.signal })
   );
 
   const handleAbort = useCallback(() => {
@@ -30,11 +30,11 @@ export function useCancelDonation(doc: Donation | null | undefined) {
   };
 }
 
-export function useDonationCreateMutation() {
+export function useRequestCreateMutation() {
   const [controller, setController] = useState(new AbortController());
 
   const { reset, ...mutation } = useMutation(
-    createDonationCreateMutation({ signal: controller.signal })
+    createRequestCreateMutation({ signal: controller.signal })
   );
 
   const handleAbort = useCallback(() => {

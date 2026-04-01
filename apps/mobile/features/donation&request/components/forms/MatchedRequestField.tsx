@@ -3,7 +3,6 @@ import { ProfileTag } from '@/components/ProfileTag';
 import { Box, BoxProps } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Request } from '@lactalink/types/payload-generated-types';
-import React from 'react';
 
 export default function MatchedRequestField({
   request,

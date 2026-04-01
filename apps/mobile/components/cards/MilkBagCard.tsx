@@ -6,11 +6,13 @@ import { MarkOptional } from '@lactalink/types/utils';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate } from '@lactalink/utilities/formatters';
+import { ImageIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card, CardProps } from '../ui/card';
 import { HStack } from '../ui/hstack';
+import { Icon } from '../ui/icon';
 import { Skeleton } from '../ui/skeleton';
 import { Text } from '../ui/text';
 import { VStack } from '../ui/vstack';
@@ -89,6 +91,11 @@ function CardContent({
           image={image}
           disabled={disableViewThumbnail}
           style={{ height: '100%', width: 96 }}
+          fallback={
+            <Box className="flex-1 items-center justify-center">
+              <Icon as={ImageIcon} size="2xl" className="text-primary-500" />
+            </Box>
+          }
         />
         <VStack space="xs" className="justify-center px-3 py-2">
           <Text size="lg" className="font-JakartaExtraBold">
@@ -118,7 +125,16 @@ function CardContent({
     <VStack className="items-stretch">
       <VStack className="relative h-32 w-full flex-shrink-0 items-start justify-between overflow-hidden bg-primary-50">
         <Box className="absolute inset-0">
-          <SingleImageViewer image={image} disabled={disableViewThumbnail} />
+          <SingleImageViewer
+            image={image}
+            disabled={disableViewThumbnail}
+            className="flex-1"
+            fallback={
+              <Box className="flex-1 items-center">
+                <Icon as={ImageIcon} size="2xl" className="my-auto text-primary-500" />
+              </Box>
+            }
+          />
         </Box>
         <Text
           size="sm"

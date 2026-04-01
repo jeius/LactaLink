@@ -31,4 +31,5 @@ export const SEED_PROVINCES_URL = '/api/seed/provinces';
 export const SEED_CITIES_MUNICIPALITIES_URL = '/api/seed/cities-municipalities';
 export const SEED_BARANGAYS_URL = '/api/seed/barangays';
 export const SEED_STATUS_URL = '/api/seed/status';
+export const SEED_SCREENING_FORM_URL = '/api/seed/screening-form';
 export const DIRECTIONS_URL = '/api/directions';

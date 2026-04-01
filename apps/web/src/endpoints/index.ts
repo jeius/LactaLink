@@ -20,6 +20,7 @@ import { seedIslandGroupsHandler } from './seeders/PSGC/seedIslandGroups';
 import { seedProvincesHandler } from './seeders/PSGC/seedProvinces';
 import { seedPSGCHandler } from './seeders/PSGC/seedPSGC';
 import { seedRegionsHandler } from './seeders/PSGC/seedRegions';
+import ScreeningFormSeeder from './seeders/ScreeningForm';
 import { seedStatusHandler } from './seeders/Status';
 
 export const Endpoints: Endpoint[] = [
@@ -78,4 +79,5 @@ export const Endpoints: Endpoint[] = [
     path: DIRECTIONS_URL.replace('/api', ''),
     handler: getDirectionsHandler,
   },
+  ScreeningFormSeeder,
 ];

@@ -4,45 +4,39 @@
 
 import { InventoryHookContext } from '@/lib/constants/hookContexts';
 import { getHookContext, hookLogger } from '@lactalink/agents/payload';
-import { Donation, Inventory, MilkBag } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractID } from '@lactalink/utilities/extractors';
-import { PayloadRequest, RequestContext } from 'payload';
+import { Inventory } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
+import { PayloadRequest, RequestContext, ValidationError } from 'payload';
 
 /**
- * Retrieves milk bags associated with a source donation.
+ * Queries the milk bags associated with the inventory entry using the provided milk bag IDs.
  *
- * @param donation - The source donation, which can be either a string ID or a `Donation` object.
- * @param req - The `PayloadRequest` that handles the operations.
- * @param logger - Optional logger for logging information and errors during the retrieval process.
- * @returns An array of `MilkBag` objects associated with the source donation. `null` if no bags found.
+ * @param milkbagIDs - An array of milk bag IDs to query.
+ * @param req - The Payload request object, used to perform the query operation on the milk bags collection.
+ * @returns A promise that resolves to an array of `MilkBag` documents matching the provided IDs.
+ * @throws A `ValidationError` if no milk bag IDs are provided or `Error` if the query operation fails.
  */
-export async function getMilkBagsFromSourceDonation(
-  donation: string | Donation,
-  req: PayloadRequest,
-  logger?: ReturnType<typeof hookLogger>
-): Promise<MilkBag[] | null> {
-  const donationDoc =
-    extractCollection(donation) ??
-    (await req.payload.findByID({
-      collection: 'donations',
-      id: extractID(donation),
-      depth: 0,
-      select: { details: { bags: true } },
-    }));
-
-  const bagIDs = extractID(donationDoc.details?.bags || []);
-
-  if (bagIDs.length === 0) {
-    logger?.info(`No milk bags found for donation ${extractID(donation)}`);
-    return null;
+export async function getMilkBags(milkbagIDs: string[], req: PayloadRequest) {
+  if (milkbagIDs.length === 0) {
+    throw new ValidationError({
+      collection: 'inventories',
+      req,
+      errors: [
+        {
+          path: 'inputBags',
+          label: 'Input Bags',
+          message: 'At least one milk bag must be linked to the inventory entry on create.',
+        },
+      ],
+    });
   }
 
   const { docs: bags } = await req.payload.find({
     collection: 'milkBags',
-    where: { id: { in: bagIDs } },
+    where: { id: { in: milkbagIDs } },
     req,
-    depth: 0,
-    limit: 0, // Get all matching bags
+    limit: 0, // Retrieve all matching bags
+    depth: 0, // Avoid populating relationships for performance
   });
 
   return bags;

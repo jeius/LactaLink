@@ -4,7 +4,7 @@ import { BasicCarousel } from '@/components/ui/BasicCarousel';
 import { Box } from '@/components/ui/box';
 import CollapsibleView from '@/components/ui/CollapsibleView';
 import { Icon } from '@/components/ui/icon';
-import { HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
+import { HandBottle2Icon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import ScrollView from '@/components/ui/ScrollView';
 import { Text } from '@/components/ui/text';
 import { MapListingItem, MapListingSlug, MapQueryParams } from '@/features/map/lib/types';
@@ -24,7 +24,7 @@ const ITEM_WIDTH = 192;
 const ITEM_SPACING = 6;
 const LIST_SLUGS: MapListingSlug[] = ['donations', 'requests', 'hospitals', 'milkBanks'];
 const ICONS: Record<MapListingSlug, LucideIcon | FC<SvgProps>> = {
-  donations: HandBottleIcon,
+  donations: HandBottle2Icon,
   requests: MilkBottlePlus2Icon,
   hospitals: HospitalIcon,
   milkBanks: Building2Icon,

@@ -83,7 +83,6 @@ export async function markRequestAsMatched(
  * @param req - The Payload request object used to perform the update operation on the milk bags.
  * @param logger - Optional logger for logging the operation result. If provided, logs the number of milk bags updated.
  *
- * @returns A promise that resolves when the update operation is complete. The promise will reject if the update operation fails.
  */
 export async function markBagsAsAllocated(
   milkbags: (string | MilkBag)[],
@@ -92,7 +91,7 @@ export async function markBagsAsAllocated(
 ) {
   if (!milkbags || milkbags.length === 0) {
     logger?.info('No milk bags to allocate, skipping status update...');
-    return Promise.resolve();
+    return Promise.resolve([]);
   }
 
   return req.payload
@@ -103,9 +102,10 @@ export async function markBagsAsAllocated(
       where: { id: { in: extractID(milkbags) } },
       depth: 0,
     })
-    .then(({ docs }) =>
-      logger?.info(`Updated ${docs.length} milk bags to ${MILK_ALLOCATED_STATUS}`)
-    );
+    .then(({ docs }) => {
+      logger?.info(`Updated ${docs.length} milk bags to ${MILK_ALLOCATED_STATUS}`);
+      return docs;
+    });
 }
 
 /**

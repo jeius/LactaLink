@@ -45,6 +45,18 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^(_|ignore)',
         },
       ],
+      '@typescript-eslint/no-restricted-imports': [
+        'warn',
+        {
+          patterns: [
+            {
+              group: ['react'],
+              importNamePattern: '^default$',
+              message: 'Use named imports from react instead.',
+            },
+          ],
+        },
+      ],
       'prettier/prettier': [
         'warn',
         {

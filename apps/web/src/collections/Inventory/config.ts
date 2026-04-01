@@ -145,6 +145,7 @@ export const Inventories: CollectionConfig<'inventories'> = {
 
     {
       name: 'expiresAt',
+      label: 'Earliest Expiry Date',
       type: 'date',
       index: true,
       admin: {
@@ -162,8 +163,42 @@ export const Inventories: CollectionConfig<'inventories'> = {
     },
 
     {
+      name: 'inputBags',
+      type: 'relationship',
+      relationTo: 'milkBags',
+      hasMany: true,
+      virtual: true,
+      required: true,
+      minRows: 1,
+      admin: {
+        description: 'Virtual field to link milk bags to inventory on create via hooks',
+        hidden: true,
+        readOnly: true,
+      },
+    },
+
+    {
       type: 'tabs',
       tabs: [
+        {
+          label: 'Milk Bags',
+          fields: [
+            {
+              name: 'milkBags',
+              label: 'Milk Bags',
+              type: 'join',
+              collection: 'milkBags',
+              on: 'inventory',
+              maxDepth: 3,
+              defaultLimit: 10,
+              admin: {
+                description: 'Milk bags in this inventory',
+                defaultColumns: ['title', 'status', 'collectedAt', 'expiresAt'],
+              },
+            },
+          ],
+        },
+
         {
           label: 'Allocations',
           admin: {
@@ -180,25 +215,6 @@ export const Inventories: CollectionConfig<'inventories'> = {
               defaultLimit: 10,
               admin: {
                 defaultColumns: ['allocatedVolume', 'status', 'allocatedAt'],
-              },
-            },
-          ],
-        },
-
-        {
-          label: 'Milk Bags',
-          fields: [
-            {
-              name: 'milkBags',
-              label: 'Milk Bags',
-              type: 'join',
-              collection: 'milkBags',
-              on: 'inventory',
-              maxDepth: 3,
-              defaultLimit: 10,
-              admin: {
-                description: 'Milk bags in this inventory',
-                defaultColumns: ['title', 'status', 'collectedAt', 'expiresAt'],
               },
             },
           ],
