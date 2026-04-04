@@ -63,16 +63,25 @@ export const DonorScreeningForm: GlobalConfig<'donor-screening-form'> = {
         },
         {
           name: 'questions',
-          type: 'blocks',
           label: 'Questions',
+          type: 'array',
           required: true,
           minRows: 1,
-          admin: {
-            description: 'Add questions to this section',
-            initCollapsed: false,
-          },
-          blockReferences: ['checkbox-question', 'radio-question', 'text-question'],
-          blocks: [],
+          fields: [
+            {
+              name: 'questions',
+              type: 'blocks',
+              label: 'Questions',
+              required: true,
+              minRows: 1,
+              admin: {
+                description: 'Add questions to this section',
+                initCollapsed: false,
+              },
+              blockReferences: ['checkbox-question', 'radio-question', 'text-question'],
+              blocks: [],
+            },
+          ],
         },
       ],
     },

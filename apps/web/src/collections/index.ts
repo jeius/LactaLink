@@ -5,7 +5,6 @@ import { ChatSystemCollections } from './chat-system';
 import { Comments } from './Comments';
 import { DeliveryPreferences } from './DeliveryPreferences';
 import { DonationReads } from './DonationReads';
-import { DonorScreenings } from './DonorScreenings';
 import { Identities } from './Identities';
 import { InventoryCollections } from './Inventory';
 import { Likes } from './Likes';
@@ -32,7 +31,6 @@ const Collections: CollectionConfig[] = [
   Comments,
   DeliveryPreferences,
   DonationReads,
-  DonorScreenings,
   Identities,
   IslandGroups,
   Likes,

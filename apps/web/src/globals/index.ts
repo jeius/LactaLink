@@ -1,6 +1,5 @@
 import { GlobalConfig } from 'payload';
-import { DonorScreeningForm } from './DonorScreeningForm';
 
-const GlobalConfigs: GlobalConfig[] = [DonorScreeningForm];
+const GlobalConfigs: GlobalConfig[] = [];
 
 export default GlobalConfigs;

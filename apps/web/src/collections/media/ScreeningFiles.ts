@@ -1,5 +1,5 @@
-import { createdByField } from '@/fields/createdByField';
 import { imageFields } from '@/fields/imageFields';
+import { createUserField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { CollectionConfig } from 'payload';
 import { admin } from '../_access-control/admin';
@@ -17,7 +17,7 @@ const ScreeningFiles: CollectionConfig<'screening-files'> = {
     update: collectionCreatorOrAdmin,
     delete: collectionCreatorOrAdmin,
   },
-  fields: [...imageFields, createdByField],
+  fields: [...imageFields, createUserField({ name: 'createdBy', required: true })],
   upload: {
     mimeTypes: ['image/*', 'application/pdf'],
     adminThumbnail: 'thumbnail',

@@ -119,7 +119,6 @@ export interface Config {
     comments: Comment;
     'delivery-preferences': DeliveryPreference;
     'donation-reads': DonationRead;
-    'donor-screenings': DonorScreening;
     identities: Identity;
     islandGroups: IslandGroup;
     likes: Like;
@@ -160,6 +159,8 @@ export interface Config {
     inventories: Inventory;
     'inventory-allocations': InventoryAllocation;
     'user-search': UserSearch;
+    'donor-screening-form': DonorScreeningForm;
+    'donor-screening-submissions': DonorScreeningSubmission;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -249,7 +250,6 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'delivery-preferences': DeliveryPreferencesSelect<false> | DeliveryPreferencesSelect<true>;
     'donation-reads': DonationReadsSelect<false> | DonationReadsSelect<true>;
-    'donor-screenings': DonorScreeningsSelect<false> | DonorScreeningsSelect<true>;
     identities: IdentitiesSelect<false> | IdentitiesSelect<true>;
     islandGroups: IslandGroupsSelect<false> | IslandGroupsSelect<true>;
     likes: LikesSelect<false> | LikesSelect<true>;
@@ -290,6 +290,8 @@ export interface Config {
     inventories: InventoriesSelect<false> | InventoriesSelect<true>;
     'inventory-allocations': InventoryAllocationsSelect<false> | InventoryAllocationsSelect<true>;
     'user-search': UserSearchSelect<false> | UserSearchSelect<true>;
+    'donor-screening-form': DonorScreeningFormSelect<false> | DonorScreeningFormSelect<true>;
+    'donor-screening-submissions': DonorScreeningSubmissionsSelect<false> | DonorScreeningSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -300,12 +302,8 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {
-    'donor-screening-form': DonorScreeningForm;
-  };
-  globalsSelect: {
-    'donor-screening-form': DonorScreeningFormSelect<false> | DonorScreeningFormSelect<true>;
-  };
+  globals: {};
+  globalsSelect: {};
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -2085,116 +2083,6 @@ export interface BlockedUser {
   createdAt: string;
 }
 /**
- * User responses to the donor screening questionnaire
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donor-screenings".
- */
-export interface DonorScreening {
-  id: string;
-  createdBy?: (string | null) | User;
-  /**
-   * Reference to the specific version of the questionnaire that was answered
-   */
-  formVersion: string;
-  /**
-   * The current review status of this screening response
-   */
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVIEW';
-  /**
-   * The individual who submitted this screening response
-   */
-  submittedBy: string | Individual;
-  /**
-   * When this screening was submitted
-   */
-  submittedAt: string;
-  /**
-   * The admin user who reviewed this screening
-   */
-  reviewedBy?: (string | null) | User;
-  /**
-   * When this screening was reviewed by an admin
-   */
-  reviewedAt?: string | null;
-  /**
-   * Internal notes from the reviewer (not visible to user)
-   */
-  reviewNotes?: string | null;
-  /**
-   * The user's answers to each question
-   */
-  responses: {
-    /**
-     * Section of the screening form this answer belongs to
-     */
-    section: string;
-    questionType: 'PREDEFINED' | 'CUSTOM';
-    question: string;
-    /**
-     * The user's answer to the question
-     */
-    answer: string;
-    /**
-     * If the question required a file upload, this is the uploaded file
-     */
-    file?: (string | null) | ScreeningFile;
-    id?: string | null;
-  }[];
-  /**
-   * Additional information about the submission
-   */
-  metadata?: {
-    /**
-     * Device/platform used for submission
-     */
-    deviceInfo?: string | null;
-    /**
-     * Time taken to complete the form (in seconds)
-     */
-    timeToComplete?: number | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "screening-files".
- */
-export interface ScreeningFile {
-  id: string;
-  /**
-   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
-   */
-  alt?: string | null;
-  /**
-   * A string that represents a blurred version of the image (Auto generated).
-   */
-  blurHash?: string | null;
-  createdBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "identities".
  */
@@ -2947,6 +2835,46 @@ export interface MessageRead {
   readAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "screening-files".
+ */
+export interface ScreeningFile {
+  id: string;
+  /**
+   * Alternative text for the image, used for accessibility purposes. If not provided, it will be auto-generated upon upload.
+   */
+  alt?: string | null;
+  /**
+   * A string that represents a blurred version of the image (Auto generated).
+   */
+  blurHash?: string | null;
+  /**
+   * The user who created this entry. (Auto-generated by the current authenticated user, safe to ignore)
+   */
+  createdBy: string | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2970,6 +2898,214 @@ export interface UserSearch {
         value: string | MilkBank;
       };
   searchExcerpt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage the donor screening questionnaire. Only admins can modify questions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-form".
+ */
+export interface DonorScreeningForm {
+  id: string;
+  /**
+   * Internal name for this form (e.g., "Standard Donor Screening Form"). This is not visible to donors.
+   */
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            message?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'message';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'number';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'radio';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'date';
+          }
+      )[]
+    | null;
+  submitButtonLabel?: string | null;
+  /**
+   * Choose whether to display an on-page message or redirect to a different page after they submit the form.
+   */
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    url: string;
+  };
+  /**
+   * Send custom emails when the form submits. Use comma separated lists to send the same email to multiple recipients. To reference a value from this form, wrap that field's name with double curly brackets, i.e. {{firstName}}. You can use a wildcard {{*}} to output all data and {{*:table}} to format it as an HTML table in the email.
+   */
+  emails?:
+    | {
+        emailTo?: string | null;
+        cc?: string | null;
+        bcc?: string | null;
+        replyTo?: string | null;
+        emailFrom?: string | null;
+        subject: string;
+        /**
+         * Enter the message that should be sent in this email.
+         */
+        message?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Submissions from donors filling out the screening form.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-submissions".
+ */
+export interface DonorScreeningSubmission {
+  id: string;
+  form: string | DonorScreeningForm;
+  submissionData?:
+    | {
+        field: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3140,10 +3276,6 @@ export interface PayloadLockedDocument {
         value: string | DonationRead;
       } | null)
     | ({
-        relationTo: 'donor-screenings';
-        value: string | DonorScreening;
-      } | null)
-    | ({
         relationTo: 'identities';
         value: string | Identity;
       } | null)
@@ -3302,6 +3434,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'user-search';
         value: string | UserSearch;
+      } | null)
+    | ({
+        relationTo: 'donor-screening-form';
+        value: string | DonorScreeningForm;
+      } | null)
+    | ({
+        relationTo: 'donor-screening-submissions';
+        value: string | DonorScreeningSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3463,38 +3603,6 @@ export interface DeliveryPreferencesSelect<T extends boolean = true> {
 export interface DonationReadsSelect<T extends boolean = true> {
   donation?: T;
   user?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donor-screenings_select".
- */
-export interface DonorScreeningsSelect<T extends boolean = true> {
-  createdBy?: T;
-  formVersion?: T;
-  status?: T;
-  submittedBy?: T;
-  submittedAt?: T;
-  reviewedBy?: T;
-  reviewedAt?: T;
-  reviewNotes?: T;
-  responses?:
-    | T
-    | {
-        section?: T;
-        questionType?: T;
-        question?: T;
-        answer?: T;
-        file?: T;
-        id?: T;
-      };
-  metadata?:
-    | T
-    | {
-        deviceInfo?: T;
-        timeToComplete?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4487,6 +4595,165 @@ export interface UserSearchSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-form_select".
+ */
+export interface DonorScreeningFormSelect<T extends boolean = true> {
+  title?: T;
+  fields?:
+    | T
+    | {
+        checkbox?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              defaultValue?: T;
+              id?: T;
+              blockName?: T;
+            };
+        email?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        message?:
+          | T
+          | {
+              message?: T;
+              id?: T;
+              blockName?: T;
+            };
+        number?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        select?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              placeholder?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        textarea?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        radio?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        date?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              defaultValue?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  submitButtonLabel?: T;
+  confirmationType?: T;
+  confirmationMessage?: T;
+  redirect?:
+    | T
+    | {
+        url?: T;
+      };
+  emails?:
+    | T
+    | {
+        emailTo?: T;
+        cc?: T;
+        bcc?: T;
+        replyTo?: T;
+        emailFrom?: T;
+        subject?: T;
+        message?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-screening-submissions_select".
+ */
+export interface DonorScreeningSubmissionsSelect<T extends boolean = true> {
+  form?: T;
+  submissionData?:
+    | T
+    | {
+        field?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -4557,178 +4824,6 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * Manage the donor screening questionnaire. Only admins can modify questions.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donor-screening-form".
- */
-export interface DonorScreeningForm {
-  id: string;
-  /**
-   * Brief description or instructions for the screening form
-   */
-  description?: string | null;
-  /**
-   * Whether this questionnaire is currently active
-   */
-  active?: boolean | null;
-  /**
-   * Organize questions into logical sections
-   */
-  sections: {
-    /**
-     * Title of this section (e.g., "Medical History", "Lifestyle")
-     */
-    sectionTitle: string;
-    /**
-     * Optional description or instructions for this section
-     */
-    sectionDescription?: string | null;
-    /**
-     * Add questions to this section
-     */
-    questions: (
-      | {
-          required?: boolean | null;
-          question: string;
-          /**
-           * Optional helper text for clarification
-           */
-          helpText?: string | null;
-          /**
-           * How to display the choices
-           */
-          layout: 'vertical' | 'horizontal';
-          /**
-           * Define the available choices
-           */
-          options: {
-            /**
-             * Select whether this choice is predefined or a user-defined choice.
-             *                       For example, set to User Defined if the answer can be anything outside of the listed options.
-             */
-            type: 'PREDEFINED' | 'CUSTOM';
-            /**
-             * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
-             */
-            label: string;
-            /**
-             * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
-             */
-            value?: string | null;
-            id?: string | null;
-          }[];
-          /**
-           * Optional validation constraints
-           */
-          validation?: {
-            /**
-             * Minimum number of selections. Leave blank for no minimum.
-             */
-            minSelections?: number | null;
-            /**
-             * Maximum number of selections allowed. Leave blank for no limit.
-             */
-            maxSelections?: number | null;
-          };
-          id?: string | null;
-          blockName?: string | null;
-          blockType: 'checkbox-question';
-        }
-      | {
-          required?: boolean | null;
-          question: string;
-          /**
-           * Optional helper text for clarification
-           */
-          helpText?: string | null;
-          /**
-           * Define the available choices
-           */
-          options: {
-            /**
-             * Select whether this choice is predefined or a user-defined choice.
-             *                       For example, set to User Defined if the answer can be anything outside of the listed options.
-             */
-            type: 'PREDEFINED' | 'CUSTOM';
-            /**
-             * The choice text displayed to users. e.g., "Banana", "Apple Mango", or "Other" if the type is User Defined
-             */
-            label: string;
-            /**
-             * The internal value for this option. e.g., "BANANA", "APPLE_MANGO"
-             */
-            value?: string | null;
-            id?: string | null;
-          }[];
-          /**
-           * How to display the choices
-           */
-          layout: 'vertical' | 'horizontal';
-          id?: string | null;
-          blockName?: string | null;
-          blockType: 'radio-question';
-        }
-      | {
-          required?: boolean | null;
-          question: string;
-          /**
-           * Optional helper text for clarification
-           */
-          helpText?: string | null;
-          /**
-           * Indicate the expected length of the answer
-           */
-          expectedAnswerLength: 'SHORT' | 'LONG';
-          /**
-           * Placeholder text for the input field
-           */
-          placeholder?: string | null;
-          /**
-           * Optional validation constraints
-           */
-          validation?: {
-            /**
-             * Minimum character length. Leave blank for no minimum.
-             */
-            minLength?: number | null;
-            /**
-             * Maximum character length. Leave blank for no maximum.
-             */
-            maxLength?: number | null;
-          };
-          id?: string | null;
-          blockName?: string | null;
-          blockType: 'text-question';
-        }
-    )[];
-    id?: string | null;
-  }[];
-  _status?: ('draft' | 'published') | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "donor-screening-form_select".
- */
-export interface DonorScreeningFormSelect<T extends boolean = true> {
-  description?: T;
-  active?: T;
-  sections?:
-    | T
-    | {
-        sectionTitle?: T;
-        sectionDescription?: T;
-        questions?: T | {};
-        id?: T;
-      };
-  _status?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4827,7 +4922,11 @@ export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    global?: 'donor-screening-form' | null;
+    doc?: {
+      relationTo: 'donor-screening-form';
+      value: string | DonorScreeningForm;
+    } | null;
+    global?: string | null;
     user?: (string | null) | User;
   };
   output?: unknown;
