@@ -2978,6 +2978,12 @@ export interface DonorScreeningForm {
                 }[]
               | null;
             required?: boolean | null;
+            /**
+             * If checked, an "Other" option will be added to the question.
+             */
+            withOther?: boolean | null;
+            otherLabel?: string | null;
+            otherPlaceholder?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'select';
@@ -3028,6 +3034,30 @@ export interface DonorScreeningForm {
             id?: string | null;
             blockName?: string | null;
             blockType: 'date';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            /**
+             * If checked, an "Other" option will be added to the question.
+             */
+            withOther?: boolean | null;
+            otherLabel?: string | null;
+            otherPlaceholder?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'multi-select';
           }
       )[]
     | null;
@@ -4657,6 +4687,9 @@ export interface DonorScreeningFormSelect<T extends boolean = true> {
                     id?: T;
                   };
               required?: T;
+              withOther?: T;
+              otherLabel?: T;
+              otherPlaceholder?: T;
               id?: T;
               blockName?: T;
             };
@@ -4708,6 +4741,28 @@ export interface DonorScreeningFormSelect<T extends boolean = true> {
               width?: T;
               required?: T;
               defaultValue?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'multi-select'?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              placeholder?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              withOther?: T;
+              otherLabel?: T;
+              otherPlaceholder?: T;
               id?: T;
               blockName?: T;
             };

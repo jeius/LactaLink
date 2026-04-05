@@ -96,7 +96,9 @@ export const screeningForm = formBuilderPlugin({
       fields: defaultSelectFields ? [...defaultSelectFields, ...withOtherField] : undefined,
     },
     'multi-select': {
-      ...fields.select,
+      //@ts-expect-error - The plugin's types don't currently support this field type, but it is implemented in the plugin code.
+      slug: 'multi-select',
+      labels: { singular: 'Multi-Select', plural: 'Multi-Select' },
       hasMany: true,
       fields: defaultSelectFields ? [...defaultSelectFields, ...withOtherField] : undefined,
     },
