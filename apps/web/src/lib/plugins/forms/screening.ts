@@ -1,5 +1,45 @@
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
-import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
+import { fields, formBuilderPlugin } from '@payloadcms/plugin-form-builder';
+import { Field } from 'payload';
+
+const defaultSelectFields =
+  typeof fields.select === 'function'
+    ? Array.from(fields.select().fields)
+    : fields.select
+      ? Array.from(fields.select.fields)
+      : undefined;
+
+const withOtherField: Field[] = [
+  {
+    name: 'withOther',
+    label: 'With Other Option',
+    type: 'checkbox',
+    admin: {
+      description: 'If checked, an "Other" option will be added to the question.',
+      width: '30%',
+    },
+  },
+  {
+    type: 'row',
+    admin: { condition: (_, siblingData) => !!siblingData?.withOther },
+    fields: [
+      {
+        name: 'otherLabel',
+        label: 'Label',
+        type: 'text',
+        defaultValue: 'Other',
+        admin: { width: '50%' },
+      },
+      {
+        name: 'otherPlaceholder',
+        label: 'Placeholder',
+        type: 'text',
+        defaultValue: 'Please specify',
+        admin: { width: '50%' },
+      },
+    ],
+  },
+];
 
 export const screeningForm = formBuilderPlugin({
   formOverrides: {
@@ -45,13 +85,21 @@ export const screeningForm = formBuilderPlugin({
     state: false,
     radio: true,
     checkbox: true,
-    select: true,
     text: true,
     textarea: true,
     date: true,
     email: true,
     number: true,
     message: true,
+    select: {
+      ...fields.select,
+      fields: defaultSelectFields ? [...defaultSelectFields, ...withOtherField] : undefined,
+    },
+    'multi-select': {
+      ...fields.select,
+      hasMany: true,
+      fields: defaultSelectFields ? [...defaultSelectFields, ...withOtherField] : undefined,
+    },
   },
   defaultToEmail: 'lactalinkph@gmail.com',
 });
