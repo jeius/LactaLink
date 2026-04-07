@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { NativeScrollEvent, Platform, ScrollView as RNScrollView, TextInput } from 'react-native';
 
 import { useKeyboardHandler, useReanimatedFocusedInput } from 'react-native-keyboard-controller';
@@ -31,7 +31,6 @@ const KeyboardAvoiderContext = createContext<KeyboardAvoiderContextType>({});
 export default function KeyboardAvoidingScrollView({
   children,
   keyboardVerticalOffset = 0,
-  showsVerticalScrollIndicator = false,
   refreshing,
   onRefresh,
   ...props
