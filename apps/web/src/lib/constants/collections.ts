@@ -13,3 +13,7 @@ export const COLLECTION_GROUP = {
 };
 
 export const MILK_EXPIRY_DAYS = 3;
+
+export const SCREENING_FORM_SLUG = 'donor-screening-forms';
+export const SCREENING_FORM_TITLE = 'Standard Donor Screening Form';
+export const SCREENING_FORM_SUBMISSION_SLUG = 'donor-screening-submissions';
