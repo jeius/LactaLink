@@ -1,12 +1,9 @@
 'use client';
-import { useKeyboardAvoider } from '@/components/KeyboardAvoider';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { createTextarea } from '@gluestack-ui/core';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { createTextarea } from '@gluestack-ui/textarea';
-import { randomUUID } from 'expo-crypto';
-import React, { useEffect, useRef, useState } from 'react';
-import { FocusEvent, TextInput, View } from 'react-native';
+import { tva, type VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { forwardRef } from 'react';
+import { TextInput, View } from 'react-native';
 
 const SCOPE = 'TEXTAREA';
 const UITextarea = createTextarea({
@@ -57,7 +54,7 @@ const textareaInputStyle = tva({
 
 type ITextareaProps = React.ComponentProps<typeof UITextarea> & VariantProps<typeof textareaStyle>;
 
-const Textarea = React.forwardRef<React.ComponentRef<typeof UITextarea>, ITextareaProps>(
+const Textarea = forwardRef<React.ComponentRef<typeof UITextarea>, ITextareaProps>(
   function Textarea({ className, variant, rounded, size = 'md', ...props }, ref) {
     return (
       <UITextarea
@@ -73,50 +70,23 @@ const Textarea = React.forwardRef<React.ComponentRef<typeof UITextarea>, ITextar
 type ITextareaInputProps = React.ComponentProps<typeof UITextarea.Input> &
   VariantProps<typeof textareaInputStyle>;
 
-const TextareaInput = React.forwardRef<
-  React.ComponentRef<typeof UITextarea.Input>,
-  ITextareaInputProps
->(function TextareaInput({ className, ...props }, refProp) {
-  const { size: parentSize } = useStyleContext(SCOPE);
-
-  const { onFocus, registerInput } = useKeyboardAvoider();
-  const localRef = useRef<TextInput>(null);
-  const [inputID, setInputID] = useState('');
-
-  const ref = refProp || localRef;
-
-  useEffect(() => {
-    if (typeof ref !== 'function' && ref.current) {
-      const inputID = `input-${randomUUID()}`;
-      setInputID(inputID);
-
-      const unregister = registerInput?.(inputID, ref.current as TextInput);
-      return () => {
-        unregister?.();
-      };
-    }
-    return () => {};
-  }, [ref, registerInput]);
-
-  function handleFocus(event: FocusEvent) {
-    props.onFocus?.(event);
-    onFocus?.(inputID);
+const TextareaInput = forwardRef<React.ComponentRef<typeof UITextarea.Input>, ITextareaInputProps>(
+  function TextareaInput({ className, ...props }, ref) {
+    const { size: parentSize } = useStyleContext(SCOPE);
+    return (
+      <UITextarea.Input
+        ref={ref}
+        {...props}
+        className={textareaInputStyle({
+          parentVariants: {
+            size: parentSize,
+          },
+          class: className,
+        })}
+      />
+    );
   }
-
-  return (
-    <UITextarea.Input
-      ref={ref}
-      {...props}
-      className={textareaInputStyle({
-        parentVariants: {
-          size: parentSize,
-        },
-        class: className,
-      })}
-      onFocus={handleFocus}
-    />
-  );
-});
+);
 
 Textarea.displayName = 'Textarea';
 TextareaInput.displayName = 'TextareaInput';
