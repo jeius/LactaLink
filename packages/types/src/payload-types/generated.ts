@@ -48,6 +48,40 @@ export type NotificationChannelStats = {
   id?: string | null;
 }[];
 /**
+ * Width of the field in the form layout.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FieldWidth".
+ */
+export type FieldWidth = ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+/**
+ * Sections allow you to group related fields together. Each section can have its own title and description.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DonorScreeningFormSections".
+ */
+export type DonorScreeningFormSections =
+  | {
+      title: string;
+      description?: string | null;
+      fields?:
+        | (
+            | CheckboxBlockField
+            | EmailBlockField
+            | MessageBlockField
+            | NumberBlockField
+            | SelectBlockField
+            | TextBlockField
+            | TextareaBlockField
+            | RadioBlockField
+            | DateBlockField
+            | MultiSelectBlockField
+          )[]
+        | null;
+      id?: string | null;
+    }[]
+  | null;
+/**
  * Supported timezones in IANA format.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2931,10 +2965,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -2968,10 +2999,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3025,10 +3053,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3062,10 +3087,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3119,10 +3141,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3156,10 +3175,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3189,10 +3205,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3234,10 +3247,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3271,10 +3281,7 @@ export interface DonorScreeningForm {
              * Additional guidance shown below the field (e.g., "We will never share your email.")
              */
             helperText?: string | null;
-            /**
-             * Width of the field in the form layout.
-             */
-            width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
+            width?: FieldWidth;
             /**
              * Pre-filled value for this field
              */
@@ -3313,413 +3320,7 @@ export interface DonorScreeningForm {
           }
       )[]
     | null;
-  /**
-   * Sections allow you to group related fields together. Each section can have its own title and description.
-   */
-  sections?:
-    | {
-        title: string;
-        description?: string | null;
-        fields?:
-          | (
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: boolean | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'checkbox';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'email';
-                }
-              | {
-                  message?: {
-                    root: {
-                      type: string;
-                      children: {
-                        type: any;
-                        version: number;
-                        [k: string]: unknown;
-                      }[];
-                      direction: ('ltr' | 'rtl') | null;
-                      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                      indent: number;
-                      version: number;
-                    };
-                    [k: string]: unknown;
-                  } | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'message';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: number | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'number';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  /**
-                   * The options available for select, multi-select, or radio fields.
-                   */
-                  options: {
-                    value: string;
-                    label: string;
-                    id?: string | null;
-                  }[];
-                  /**
-                   * If checked, a user-defined option will be added to the options.
-                   */
-                  withDynamicOption?: boolean | null;
-                  /**
-                   * The label for the user-defined option (e.g., "Other")
-                   */
-                  dynamicOptionLabel?: string | null;
-                  /**
-                   * The placeholder for the user-defined option input (e.g., "Please specify")
-                   */
-                  dynamicOptionPlaceholder?: string | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'select';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'text';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'textarea';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  /**
-                   * The options available for select, multi-select, or radio fields.
-                   */
-                  options: {
-                    value: string;
-                    label: string;
-                    id?: string | null;
-                  }[];
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'radio';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'date';
-                }
-              | {
-                  /**
-                   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
-                   */
-                  name: string;
-                  /**
-                   * The text that users will see
-                   */
-                  label: string;
-                  /**
-                   * Example text shown inside the field before user input (e.g., "Enter your email")
-                   */
-                  placeholder?: string | null;
-                  /**
-                   * Additional guidance shown below the field (e.g., "We will never share your email.")
-                   */
-                  helperText?: string | null;
-                  /**
-                   * Width of the field in the form layout.
-                   */
-                  width?: ('full' | '3/4' | '2/3' | '1/2' | '1/3' | '1/4') | null;
-                  /**
-                   * Pre-filled value for this field
-                   */
-                  defaultValue?: string | null;
-                  /**
-                   * Whether this field must be filled out
-                   */
-                  required?: boolean | null;
-                  /**
-                   * If checked, this field will not be visible to users filling out the form.
-                   */
-                  hidden?: boolean | null;
-                  /**
-                   * The options available for select, multi-select, or radio fields.
-                   */
-                  options: {
-                    value: string;
-                    label: string;
-                    id?: string | null;
-                  }[];
-                  /**
-                   * If checked, a user-defined option will be added to the options.
-                   */
-                  withDynamicOption?: boolean | null;
-                  /**
-                   * The label for the user-defined option (e.g., "Other")
-                   */
-                  dynamicOptionLabel?: string | null;
-                  /**
-                   * The placeholder for the user-defined option input (e.g., "Please specify")
-                   */
-                  dynamicOptionPlaceholder?: string | null;
-                  id?: string | null;
-                  blockName?: string | null;
-                  blockType: 'multi-select';
-                }
-            )[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
+  sections?: DonorScreeningFormSections;
   submitButtonLabel?: string | null;
   /**
    * Send custom emails when the form submits. Use comma separated lists to send the same email to multiple recipients. To reference a value from this form, wrap that field's name with double curly brackets, i.e. {{firstName}}. You can use a wildcard {{*}} to output all data and {{*:table}} to format it as an HTML table in the email.
@@ -3758,6 +3359,412 @@ export interface DonorScreeningForm {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CheckboxBlockField".
+ */
+export interface CheckboxBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: boolean | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'checkbox';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EmailBlockField".
+ */
+export interface EmailBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'email';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MessageBlockField".
+ */
+export interface MessageBlockField {
+  message?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'message';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NumberBlockField".
+ */
+export interface NumberBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: number | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'number';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SelectBlockField".
+ */
+export interface SelectBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  /**
+   * The options available for select, multi-select, or radio fields.
+   */
+  options: {
+    value: string;
+    label: string;
+    id?: string | null;
+  }[];
+  /**
+   * If checked, a user-defined option will be added to the options.
+   */
+  withDynamicOption?: boolean | null;
+  /**
+   * The label for the user-defined option (e.g., "Other")
+   */
+  dynamicOptionLabel?: string | null;
+  /**
+   * The placeholder for the user-defined option input (e.g., "Please specify")
+   */
+  dynamicOptionPlaceholder?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'select';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextBlockField".
+ */
+export interface TextBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextareaBlockField".
+ */
+export interface TextareaBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'textarea';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RadioBlockField".
+ */
+export interface RadioBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  /**
+   * The options available for select, multi-select, or radio fields.
+   */
+  options: {
+    value: string;
+    label: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'radio';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DateBlockField".
+ */
+export interface DateBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'date';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MultiSelectBlockField".
+ */
+export interface MultiSelectBlockField {
+  /**
+   * Unique identifier for this question and must be camelCase (e.g., "emailAddress")
+   */
+  name: string;
+  /**
+   * The text that users will see
+   */
+  label: string;
+  /**
+   * Example text shown inside the field before user input (e.g., "Enter your email")
+   */
+  placeholder?: string | null;
+  /**
+   * Additional guidance shown below the field (e.g., "We will never share your email.")
+   */
+  helperText?: string | null;
+  width?: FieldWidth;
+  /**
+   * Pre-filled value for this field
+   */
+  defaultValue?: string | null;
+  /**
+   * Whether this field must be filled out
+   */
+  required?: boolean | null;
+  /**
+   * If checked, this field will not be visible to users filling out the form.
+   */
+  hidden?: boolean | null;
+  /**
+   * The options available for select, multi-select, or radio fields.
+   */
+  options: {
+    value: string;
+    label: string;
+    id?: string | null;
+  }[];
+  /**
+   * If checked, a user-defined option will be added to the options.
+   */
+  withDynamicOption?: boolean | null;
+  /**
+   * The label for the user-defined option (e.g., "Other")
+   */
+  dynamicOptionLabel?: string | null;
+  /**
+   * The placeholder for the user-defined option input (e.g., "Please specify")
+   */
+  dynamicOptionPlaceholder?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'multi-select';
 }
 /**
  * Submissions from donors filling out the screening form.
@@ -5271,334 +5278,18 @@ export interface DonorScreeningFormsSelect<T extends boolean = true> {
   fields?:
     | T
     | {
-        checkbox?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        email?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        message?:
-          | T
-          | {
-              message?: T;
-              id?: T;
-              blockName?: T;
-            };
-        number?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        select?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              options?:
-                | T
-                | {
-                    value?: T;
-                    label?: T;
-                    id?: T;
-                  };
-              withDynamicOption?: T;
-              dynamicOptionLabel?: T;
-              dynamicOptionPlaceholder?: T;
-              id?: T;
-              blockName?: T;
-            };
-        text?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        textarea?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        radio?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              options?:
-                | T
-                | {
-                    value?: T;
-                    label?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        date?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'multi-select'?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              placeholder?: T;
-              helperText?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              hidden?: T;
-              options?:
-                | T
-                | {
-                    value?: T;
-                    label?: T;
-                    id?: T;
-                  };
-              withDynamicOption?: T;
-              dynamicOptionLabel?: T;
-              dynamicOptionPlaceholder?: T;
-              id?: T;
-              blockName?: T;
-            };
+        checkbox?: T | CheckboxBlockFieldSelect<T>;
+        email?: T | EmailBlockFieldSelect<T>;
+        message?: T | MessageBlockFieldSelect<T>;
+        number?: T | NumberBlockFieldSelect<T>;
+        select?: T | SelectBlockFieldSelect<T>;
+        text?: T | TextBlockFieldSelect<T>;
+        textarea?: T | TextareaBlockFieldSelect<T>;
+        radio?: T | RadioBlockFieldSelect<T>;
+        date?: T | DateBlockFieldSelect<T>;
+        'multi-select'?: T | MultiSelectBlockFieldSelect<T>;
       };
-  sections?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        fields?:
-          | T
-          | {
-              checkbox?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              email?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              message?:
-                | T
-                | {
-                    message?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              number?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              select?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    options?:
-                      | T
-                      | {
-                          value?: T;
-                          label?: T;
-                          id?: T;
-                        };
-                    withDynamicOption?: T;
-                    dynamicOptionLabel?: T;
-                    dynamicOptionPlaceholder?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              text?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              textarea?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              radio?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    options?:
-                      | T
-                      | {
-                          value?: T;
-                          label?: T;
-                          id?: T;
-                        };
-                    id?: T;
-                    blockName?: T;
-                  };
-              date?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-              'multi-select'?:
-                | T
-                | {
-                    name?: T;
-                    label?: T;
-                    placeholder?: T;
-                    helperText?: T;
-                    width?: T;
-                    defaultValue?: T;
-                    required?: T;
-                    hidden?: T;
-                    options?:
-                      | T
-                      | {
-                          value?: T;
-                          label?: T;
-                          id?: T;
-                        };
-                    withDynamicOption?: T;
-                    dynamicOptionLabel?: T;
-                    dynamicOptionPlaceholder?: T;
-                    id?: T;
-                    blockName?: T;
-                  };
-            };
-        id?: T;
-      };
+  sections?: T | DonorScreeningFormSectionsSelect<T>;
   submitButtonLabel?: T;
   emails?:
     | T
@@ -5617,6 +5308,207 @@ export interface DonorScreeningFormsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CheckboxBlockField_select".
+ */
+export interface CheckboxBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EmailBlockField_select".
+ */
+export interface EmailBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MessageBlockField_select".
+ */
+export interface MessageBlockFieldSelect<T extends boolean = true> {
+  message?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NumberBlockField_select".
+ */
+export interface NumberBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SelectBlockField_select".
+ */
+export interface SelectBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  options?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  withDynamicOption?: T;
+  dynamicOptionLabel?: T;
+  dynamicOptionPlaceholder?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextBlockField_select".
+ */
+export interface TextBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextareaBlockField_select".
+ */
+export interface TextareaBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RadioBlockField_select".
+ */
+export interface RadioBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  options?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DateBlockField_select".
+ */
+export interface DateBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MultiSelectBlockField_select".
+ */
+export interface MultiSelectBlockFieldSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  placeholder?: T;
+  helperText?: T;
+  width?: T;
+  defaultValue?: T;
+  required?: T;
+  hidden?: T;
+  options?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  withDynamicOption?: T;
+  dynamicOptionLabel?: T;
+  dynamicOptionPlaceholder?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DonorScreeningFormSections_select".
+ */
+export interface DonorScreeningFormSectionsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  fields?:
+    | T
+    | {
+        checkbox?: T | CheckboxBlockFieldSelect<T>;
+        email?: T | EmailBlockFieldSelect<T>;
+        message?: T | MessageBlockFieldSelect<T>;
+        number?: T | NumberBlockFieldSelect<T>;
+        select?: T | SelectBlockFieldSelect<T>;
+        text?: T | TextBlockFieldSelect<T>;
+        textarea?: T | TextareaBlockFieldSelect<T>;
+        radio?: T | RadioBlockFieldSelect<T>;
+        date?: T | DateBlockFieldSelect<T>;
+        'multi-select'?: T | MultiSelectBlockFieldSelect<T>;
+      };
+  id?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -4,7 +4,7 @@ import {
   SCREENING_FORM_SUBMISSION_SLUG,
 } from '@/lib/constants/collections';
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
-import { ArrayField, CheckboxField, DateField, Field, NumberField } from 'payload';
+import { BlocksField, CheckboxField, DateField, Field, NumberField } from 'payload';
 import {
   defaultValue,
   dynamicOption,
@@ -36,12 +36,11 @@ export const screeningForm = formBuilderPlugin({
         (field) => 'name' in field && field.name === 'fields'
       );
       const blocksField = blocksFieldIndex !== -1 ? defaultFields[blocksFieldIndex] : undefined;
+
       const newBlocksField = blocksField && {
-        ...(blocksField as ArrayField),
+        ...(blocksField as BlocksField),
         label: 'Form Fields',
-        admin: {
-          description: 'Fields that are not part of any section will be displayed in this area.',
-        },
+        interfaceName: 'FormFieldBlocks',
       };
 
       const sectionFields: Field[] = [
@@ -53,8 +52,9 @@ export const screeningForm = formBuilderPlugin({
         name: 'sections',
         label: 'Form Sections',
         labels: { singular: 'Form Section', plural: 'Form Sections' },
+        interfaceName: 'DonorScreeningFormSections',
         type: 'array',
-        fields: blocksField ? [...sectionFields, blocksField] : sectionFields,
+        fields: newBlocksField ? [...sectionFields, newBlocksField] : sectionFields,
         admin: {
           description:
             'Sections allow you to group related fields together. Each section can have its own title and description.',
@@ -63,7 +63,18 @@ export const screeningForm = formBuilderPlugin({
 
       const fields = Array.from(defaultFields);
       if (newBlocksField) {
-        fields.splice(blocksFieldIndex, 1, newBlocksField, sectionsField);
+        fields.splice(
+          blocksFieldIndex,
+          1,
+          {
+            ...newBlocksField,
+            admin: {
+              description:
+                'Fields that are not part of any section will be displayed in this area.',
+            },
+          },
+          sectionsField
+        );
       }
 
       return modifyFields(fields);
@@ -81,8 +92,11 @@ export const screeningForm = formBuilderPlugin({
     payment: false,
     country: false,
     state: false,
-    message: true,
+    message: {
+      interfaceName: 'MessageBlockField',
+    },
     radio: {
+      interfaceName: 'RadioBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         helperText,
@@ -93,6 +107,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     checkbox: {
+      interfaceName: 'CheckboxBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         helperText,
@@ -102,6 +117,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     text: {
+      interfaceName: 'TextBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -111,6 +127,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     textarea: {
+      interfaceName: 'TextareaBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -120,6 +137,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     date: {
+      interfaceName: 'DateBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -129,6 +147,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     email: {
+      interfaceName: 'EmailBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -138,6 +157,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     number: {
+      interfaceName: 'NumberBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -147,6 +167,7 @@ export const screeningForm = formBuilderPlugin({
       ],
     },
     select: {
+      interfaceName: 'SelectBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },
@@ -162,6 +183,7 @@ export const screeningForm = formBuilderPlugin({
       slug: 'multi-select',
       labels: { singular: 'Multi-Select', plural: 'Multi-Select Fields' },
       hasMany: true,
+      interfaceName: 'MultiSelectBlockField',
       fields: [
         { type: 'row', fields: [name, label] },
         { type: 'row', fields: [placeholder, helperText] },

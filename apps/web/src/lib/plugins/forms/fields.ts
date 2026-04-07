@@ -69,6 +69,7 @@ const width: Field = {
   type: 'select',
   defaultValue: 'full',
   enumName: 'enum_field_width',
+  interfaceName: 'FieldWidth',
   options: [
     { value: 'full', label: '100%' },
     { value: '3/4', label: '75%' },
