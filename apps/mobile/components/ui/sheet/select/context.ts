@@ -1,6 +1,7 @@
+import isEqual from 'lodash/isEqual';
 import { createContext, useContext } from 'react';
 import { createStore, StoreApi, useStore } from 'zustand';
-import { SelectStore } from './types';
+import { SelectProps, SelectStore } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SelectStoreContext = createContext<StoreApi<SelectStore<any>> | null>(null);
@@ -17,12 +18,42 @@ function useSelectedValue<T = unknown>() {
   return useSelectStore<T>((state) => state.selected);
 }
 
-function initStore<T>(params: Partial<SelectStore<T>> = {}) {
-  return createStore<SelectStore<T>>((set) => ({
+function initStore<T, TMultiSelect extends boolean = false>(
+  params: Partial<SelectProps<T, TMultiSelect>> = {}
+) {
+  return createStore<SelectStore<T>>((set, get) => ({
     selected: params.selected ?? null,
+    isMultiSelect: params.isMultiSelect ?? false,
     setSelected: (value) => {
-      set({ selected: value });
-      params.setSelected?.(value);
+      const { isMultiSelect, selected } = get();
+
+      if (!isMultiSelect) {
+        if (isEqual(value, selected)) {
+          set({ selected: null });
+          params.onSelect?.(null as (TMultiSelect extends true ? T[] : T) | null);
+        } else {
+          set({ selected: value });
+          params.onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null);
+        }
+        return;
+      }
+
+      const selectedArray = Array.isArray(selected) ? selected : selected ? [selected] : [];
+      const valueIndex = selectedArray.findIndex((item) => isEqual(item, value));
+      let newSelected: T[];
+
+      if (valueIndex > -1) {
+        newSelected = [
+          ...selectedArray.slice(0, valueIndex),
+          ...selectedArray.slice(valueIndex + 1),
+        ];
+      } else {
+        newSelected = [...selectedArray, value];
+      }
+
+      set({ selected: newSelected });
+      params.onSelect?.(newSelected as (TMultiSelect extends true ? T[] : T) | null);
+      return;
     },
   }));
 }

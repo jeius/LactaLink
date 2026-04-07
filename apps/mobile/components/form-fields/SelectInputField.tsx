@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from 'lucide-react-native';
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
@@ -17,9 +17,12 @@ interface SelectInputFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
   TItem = unknown,
+  TMultiSelect extends boolean = false,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
   triggerInputProps?: Omit<SelectInputProps, 'iconLeft' | 'iconRight' | 'value' | 'pointerEvents'>;
-  selectProps?: Omit<SelectProps<TItem>, 'isDisabled'> & { itemSize?: number };
+  selectProps?: Omit<SelectProps<TItem, TMultiSelect>, 'isDisabled' | 'children'> & {
+    itemSize?: number;
+  };
   items: TItem[];
   transformItem: (item: TItem) => {
     value: string;
@@ -31,6 +34,7 @@ export function SelectInputField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
   TItem = unknown,
+  TMultiSelect extends boolean = false,
 >({
   control,
   name,
@@ -42,7 +46,7 @@ export function SelectInputField<
   contentPosition = 'first',
   transformItem,
   ...props
-}: SelectInputFieldProps<TFieldValues, TName, TItem>) {
+}: SelectInputFieldProps<TFieldValues, TName, TItem, TMultiSelect>) {
   const {
     field: { value, onBlur, onChange, disabled },
     fieldState: { error, invalid },
@@ -51,20 +55,39 @@ export function SelectInputField<
 
   const detents = useDetents(items.length, selectProps?.itemSize);
 
-  const itemMap = useMemo(
+  const itemsMap = useMemo(
     () => new Map(items.map((item) => [transformItem(item).value, item])),
     [items, transformItem]
   );
 
   const handleChange = useCallback(
-    (newValue: TItem) => onChange(transformItem(newValue).value),
+    (newValue: TItem | TItem[] | null) => {
+      if (Array.isArray(newValue)) {
+        onChange(newValue.map((item) => transformItem(item).value));
+      } else {
+        onChange(newValue && transformItem(newValue).value);
+      }
+    },
     [onChange, transformItem]
   );
 
   const disabledFields = isDisabled || disabled || isSubmitting;
 
-  const selectedValue = useMemo(() => value && itemMap.get(value), [value, itemMap]);
-  const selectedLabel = selectedValue ? transformItem(selectedValue).label : '';
+  const selectedValue = useMemo(() => {
+    if (Array.isArray(value)) {
+      return (value as (typeof value)[]).map((v) => itemsMap.get(v)).filter(Boolean) as
+        | (TMultiSelect extends true ? TItem[] : TItem)
+        | null;
+    }
+    return (itemsMap.get(value) ?? null) as (TMultiSelect extends true ? TItem[] : TItem) | null;
+  }, [value, itemsMap]);
+
+  const selectedLabel = useMemo(() => {
+    if (Array.isArray(selectedValue)) {
+      return selectedValue.map((val) => transformItem(val).label).join(', ');
+    }
+    return selectedValue ? transformItem(selectedValue as TItem).label : '';
+  }, [selectedValue, transformItem]);
 
   return (
     <FieldWrapper

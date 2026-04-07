@@ -1,6 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import { ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextInput } from 'react-native';
 import { Icon } from '../../icon';
 import { Input, InputField, InputIcon, InputSlot } from '../../input';
@@ -27,12 +27,18 @@ import {
   SelectTriggerProps,
 } from './types';
 
-function SelectSheet<T>({ selected, onSelect, ...props }: SelectProps<T>) {
-  const [store] = useState(() => initStore({ selected, setSelected: onSelect }));
+function SelectSheet<T, TMultiSelect extends boolean = false>({
+  selected,
+  onSelect,
+  isMultiSelect,
+  ...props
+}: SelectProps<T, TMultiSelect>) {
+  const [store] = useState(() => initStore({ selected, onSelect, isMultiSelect }));
 
   useEffect(() => {
-    store.setState({ selected });
-  }, [selected, store]);
+    const newStore = initStore({ selected, onSelect, isMultiSelect });
+    store.setState(newStore.getState());
+  }, [isMultiSelect, onSelect, selected, store]);
 
   return (
     <SelectStoreContext.Provider value={store}>
@@ -44,7 +50,12 @@ function SelectSheet<T>({ selected, onSelect, ...props }: SelectProps<T>) {
 function SelectItem<T>({ value, className, onPress, ...props }: SelectItemProps<T>) {
   const { selected, setSelected } = useSelectActionSheetStore<T, SelectStore<T>>((s) => s);
 
-  const isSelected = isEqual(value, selected);
+  const isSelected = useMemo(() => {
+    if (Array.isArray(selected)) {
+      return selected.some((item) => isEqual(item, value));
+    }
+    return isEqual(selected, value);
+  }, [selected, value]);
 
   const handleSelect = useCallback(() => {
     setSelected(value as T);

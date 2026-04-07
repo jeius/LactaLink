@@ -14,13 +14,15 @@ import {
 } from '../action-sheet';
 
 interface SelectStore<T> {
-  selected: T | null;
+  selected: T[] | T | null;
+  isMultiSelect: boolean;
   setSelected: (value: T) => void;
 }
 
-interface SelectProps<T> extends ActionSheetProps {
-  selected?: T | null;
-  onSelect?: (value: T) => void;
+interface SelectProps<T, TMultiSelect extends boolean = false> extends ActionSheetProps {
+  selected?: (TMultiSelect extends true ? T[] : T) | null;
+  onSelect?: (value: (TMultiSelect extends true ? T[] : T) | null) => void;
+  isMultiSelect?: TMultiSelect;
 }
 
 type SelectContentProps = ActionSheetContentProps;
