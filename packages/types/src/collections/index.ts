@@ -3,7 +3,14 @@ import type {
   PopulateType,
   UploadCollectionSlug,
 } from '@/payload-types';
-import type { Config, Donation, Image, Individual, Like } from '@/payload-types/generated';
+import type {
+  Config,
+  Donation,
+  DonorScreeningFormSections,
+  Image,
+  Individual,
+  Like,
+} from '@/payload-types/generated';
 
 export type CollectionSlug = PayloadCollectionSlug;
 export type Collections = Config['collections'][keyof Config['collections']];
@@ -32,3 +39,7 @@ export type FileCollection = Collection<FileCollectionSlug>;
 export type CollectionOperation = 'CREATE' | 'FIND' | 'UPDATE' | 'DELETE';
 
 export type Populate = PopulateType;
+
+export type DonorScreeningFormSection = NonNullable<DonorScreeningFormSections>[number];
+
+export type DonorScreeningFormField = NonNullable<DonorScreeningFormSection['fields']>[number];
