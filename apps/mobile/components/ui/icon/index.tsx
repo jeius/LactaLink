@@ -1,15 +1,19 @@
 'use client';
-import { createIcon, IPrimitiveIcon, PrimitiveIcon, Svg } from '@gluestack-ui/icon';
-import { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { createIcon, IPrimitiveIcon, PrimitiveIcon, Svg } from '@gluestack-ui/core';
+import { tva, type VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
-import React from 'react';
+import {
+  ComponentPropsWithoutRef,
+  ComponentRef,
+  forwardRef,
+  ForwardRefExoticComponent,
+  RefAttributes,
+} from 'react';
 
 export const UIIcon = createIcon({
   Root: PrimitiveIcon,
-}) as React.ForwardRefExoticComponent<
-  React.ComponentPropsWithoutRef<typeof PrimitiveIcon> &
-    React.RefAttributes<React.ComponentRef<typeof Svg>>
+}) as ForwardRefExoticComponent<
+  ComponentPropsWithoutRef<typeof PrimitiveIcon> & RefAttributes<ComponentRef<typeof Svg>>
 >;
 
 const iconStyle = tva({
@@ -42,9 +46,9 @@ cssInterop(UIIcon, {
 
 type IIConProps = IPrimitiveIcon &
   VariantProps<typeof iconStyle> &
-  React.ComponentPropsWithoutRef<typeof UIIcon>;
+  ComponentPropsWithoutRef<typeof UIIcon>;
 
-const Icon = React.forwardRef<React.ComponentRef<typeof UIIcon>, IIConProps>(function Icon(
+const Icon = forwardRef<ComponentRef<typeof UIIcon>, IIConProps>(function Icon(
   { size = 'md', className, ...props },
   ref
 ) {
@@ -65,17 +69,16 @@ const createIconUI = ({ ...props }: ParameterTypes) => {
   const UIIconCreateIcon = createIcon({
     Root: Svg,
     ...props,
-  }) as React.ForwardRefExoticComponent<
-    React.ComponentPropsWithoutRef<typeof PrimitiveIcon> &
-      React.RefAttributes<React.ComponentRef<typeof Svg>>
+  }) as ForwardRefExoticComponent<
+    ComponentPropsWithoutRef<typeof PrimitiveIcon> & RefAttributes<ComponentRef<typeof Svg>>
   >;
 
-  return React.forwardRef<React.ComponentRef<typeof Svg>>(function UIIcon(
+  return forwardRef<ComponentRef<typeof Svg>>(function UIIcon(
     {
       className,
       size,
       ...inComingProps
-    }: VariantProps<typeof iconStyle> & React.ComponentPropsWithoutRef<typeof UIIconCreateIcon>,
+    }: VariantProps<typeof iconStyle> & ComponentPropsWithoutRef<typeof UIIconCreateIcon>,
     ref
   ) {
     return (
