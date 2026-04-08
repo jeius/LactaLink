@@ -1,12 +1,26 @@
 import isEqual from 'lodash/isEqual';
 import { ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TextInput } from 'react-native';
+import {
+  ComponentRef,
+  FC,
+  ForwardedRef,
+  forwardRef,
+  JSX,
+  PropsWithoutRef,
+  RefAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { GestureResponderEvent, TextInput, View } from 'react-native';
+import { FlashList, FlashListRef } from '../../FlashList';
 import { Icon } from '../../icon';
 import { Input, InputField, InputIcon, InputSlot } from '../../input';
-import { VerticalInfiniteList } from '../../list';
+import { InfiniteFlashList, InfiniteFlashListRef, VerticalInfiniteList } from '../../list';
 import { Text } from '../../text';
 import { ActionSheet } from '../action-sheet';
+import { ActionSheetRef } from '../action-sheet/types';
 import { initStore, SelectStoreContext, useSelectActionSheetStore } from './context';
 import {
   selectIconStyle,
@@ -16,7 +30,9 @@ import {
 } from './styles';
 import {
   SelectContentProps,
+  SelectFlashListProps,
   SelectIconProps,
+  SelectInfiniteListProps,
   SelectInputProps,
   SelectItemProps,
   SelectListProps,
@@ -27,27 +43,33 @@ import {
   SelectTriggerProps,
 } from './types';
 
-function SelectSheet<T, TMultiSelect extends boolean = false>({
-  selected,
-  onSelect,
-  isMultiSelect,
-  ...props
-}: SelectProps<T, TMultiSelect>) {
+const SelectSheet = forwardRef(function SelectSheet<T, TMultiSelect extends boolean = false>(
+  { selected, onSelect, isMultiSelect, ...props }: SelectProps<T, TMultiSelect>,
+  ref: ForwardedRef<ActionSheetRef>
+) {
   const [store] = useState(() => initStore({ selected, onSelect, isMultiSelect }));
 
   useEffect(() => {
-    const newStore = initStore({ selected, onSelect, isMultiSelect });
-    store.setState(newStore.getState());
+    store.setState({
+      selected,
+      isMultiSelect,
+      onSelect: (value) => onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null),
+    });
   }, [isMultiSelect, onSelect, selected, store]);
 
   return (
     <SelectStoreContext.Provider value={store}>
-      <ActionSheet {...props} />
+      <ActionSheet ref={ref} {...props} />
     </SelectStoreContext.Provider>
   );
-}
+}) as <T, TMultiSelect extends boolean = false>(
+  props: PropsWithoutRef<SelectProps<T, TMultiSelect>> & RefAttributes<ActionSheetRef>
+) => JSX.Element;
 
-function SelectItem<T>({ value, className, onPress, ...props }: SelectItemProps<T>) {
+const SelectItem = forwardRef(function SelectItem<T>(
+  { value, className, onPress, ...props }: SelectItemProps<T>,
+  ref: ForwardedRef<View>
+) {
   const { selected, setSelected } = useSelectActionSheetStore<T, SelectStore<T>>((s) => s);
 
   const isSelected = useMemo(() => {
@@ -57,42 +79,47 @@ function SelectItem<T>({ value, className, onPress, ...props }: SelectItemProps<
     return isEqual(selected, value);
   }, [selected, value]);
 
-  const handleSelect = useCallback(() => {
-    setSelected(value as T);
-    onPress?.(value as T);
-  }, [onPress, setSelected, value]);
+  const handleSelect = useCallback(
+    (e: GestureResponderEvent) => {
+      setSelected(value as T);
+      onPress?.(value as T, e);
+    },
+    [onPress, setSelected, value]
+  );
 
   return (
     <ActionSheet.Item
       {...props}
+      ref={ref}
       className={selectItemStyle({ className, isSelected })}
       onPress={handleSelect}
     />
   );
-}
+}) as <T>(props: PropsWithoutRef<SelectItemProps<T>> & RefAttributes<View>) => JSX.Element;
 
-function SelectSearchInput({
-  showSearchIcon,
-  hideClear = false,
-  isDisabled,
-  isFocused,
-  size,
-  variant,
-  onClear,
-  value = '',
-  onChangeText,
-  containerClassName,
-  containerStyle,
-  className,
-  ...props
-}: SelectSearchInputProps) {
-  const inputRef = useRef<TextInput>(null);
-
+const SelectSearchInput = forwardRef(function SelectSearchInput(
+  {
+    showSearchIcon,
+    hideClear = false,
+    isDisabled,
+    isFocused,
+    size,
+    variant,
+    onClear,
+    value = '',
+    onChangeText,
+    containerClassName,
+    containerStyle,
+    className,
+    ...props
+  }: SelectSearchInputProps,
+  ref: ForwardedRef<TextInput>
+) {
   const handleClear = useCallback(() => {
-    inputRef.current?.clear();
     onClear?.();
     onChangeText?.('');
-  }, [onChangeText, onClear]);
+    if (typeof ref === 'object') ref?.current?.clear();
+  }, [onChangeText, onClear, ref]);
 
   return (
     <Input
@@ -108,8 +135,7 @@ function SelectSearchInput({
 
       <InputField
         {...props}
-        // @ts-expect-error Gluestack type issue, safe to ignore
-        ref={inputRef}
+        ref={ref}
         className={selectInputFieldStyle({ className })}
         value={value}
         onChangeText={onChangeText}
@@ -122,21 +148,24 @@ function SelectSearchInput({
       )}
     </Input>
   );
-}
+});
 
-function SelectInput({
-  isDisabled,
-  isFocused,
-  isInvalid,
-  size,
-  variant,
-  containerClassName,
-  containerStyle,
-  className,
-  iconLeft,
-  iconRight,
-  ...props
-}: SelectInputProps) {
+const SelectInput = forwardRef(function SelectInput(
+  {
+    isDisabled,
+    isFocused,
+    isInvalid,
+    size,
+    variant,
+    containerClassName,
+    containerStyle,
+    className,
+    iconLeft,
+    iconRight,
+    ...props
+  }: SelectInputProps,
+  ref: ForwardedRef<TextInput>
+) {
   return (
     <Input
       size={size}
@@ -149,23 +178,29 @@ function SelectInput({
       pointerEvents={props.pointerEvents}
     >
       {iconLeft && <InputIcon as={iconLeft} className="ml-2" />}
-      <InputField {...props} className={selectInputFieldStyle({ className })} />
+      <InputField {...props} ref={ref} className={selectInputFieldStyle({ className })} />
       {iconRight && <InputIcon as={iconRight} className="mr-2" />}
     </Input>
   );
-}
+});
 
-function SelectText(props: SelectTextProps) {
-  return <Text {...props} />;
-}
+const SelectText = forwardRef(function SelectText(
+  { className, ...props }: SelectTextProps,
+  ref: ForwardedRef<ComponentRef<typeof Text>>
+) {
+  return <Text {...props} ref={ref} className={selectInputFieldStyle({ className })} />;
+});
 
 function SelectContent(props: SelectContentProps) {
   return <ActionSheet.Content {...props} />;
 }
 
-function SelectTrigger({ className, ...props }: SelectTriggerProps) {
-  return <ActionSheet.Trigger {...props} className={selectTriggerStyle({ className })} />;
-}
+const SelectTrigger = forwardRef(function SelectTrigger(
+  { className, ...props }: SelectTriggerProps,
+  ref: ForwardedRef<View>
+) {
+  return <ActionSheet.Trigger {...props} ref={ref} className={selectTriggerStyle({ className })} />;
+});
 
 function SelectIcon({ as = ChevronDownIcon, className, ...props }: SelectIconProps) {
   return <ActionSheet.Icon {...props} as={as} className={selectIconStyle({ className })} />;
@@ -175,31 +210,66 @@ function SelectList<T>(props: SelectListProps<T>) {
   return <VerticalInfiniteList {...props} />;
 }
 
-SelectSheet.displayName = 'SelectSheet';
+const SelectInfiniteList = forwardRef(function SelectInfiniteList<T>(
+  { ...props }: SelectInfiniteListProps<T>,
+  ref: ForwardedRef<InfiniteFlashListRef<T>>
+) {
+  return <InfiniteFlashList {...props} ref={ref} />;
+}) as <T>(
+  props: PropsWithoutRef<SelectInfiniteListProps<T>> & RefAttributes<InfiniteFlashListRef<T>>
+) => JSX.Element;
+
+const SelectFlashList = forwardRef(function SelectFlashList<T>(
+  { ...props }: SelectFlashListProps<T>,
+  ref: ForwardedRef<FlashListRef<T>>
+) {
+  return <FlashList {...props} ref={ref} />;
+}) as <T>(
+  props: PropsWithoutRef<SelectFlashListProps<T>> & RefAttributes<FlashListRef<T>>
+) => JSX.Element;
+
+(SelectSheet as FC).displayName = 'Select';
 SelectTrigger.displayName = 'SelectTrigger';
 SelectContent.displayName = 'SelectSheet';
-SelectItem.displayName = 'SelectItem';
+(SelectItem as FC).displayName = 'SelectItem';
 SelectInput.displayName = 'SelectTextInput';
 SelectList.displayName = 'SelectList';
 SelectIcon.displayName = 'SelectIcon';
 SelectText.displayName = 'SelectText';
 SelectSearchInput.displayName = 'SelectSearchInput';
+(SelectFlashList as FC).displayName = 'SelectFlashList';
+(SelectInfiniteList as FC).displayName = 'SelectInfiniteList';
 
-const Select = Object.assign(SelectSheet, {
-  Content: SelectContent,
-  Item: SelectItem,
-  List: SelectList,
-  Input: SelectInput,
-  Search: SelectSearchInput,
-  Icon: SelectIcon,
-  Trigger: SelectTrigger,
-  Text: SelectText,
-});
+const Select = SelectSheet as typeof SelectSheet & {
+  Trigger: typeof SelectTrigger;
+  Content: typeof SelectContent;
+  Item: typeof SelectItem;
+  Input: typeof SelectInput;
+  Text: typeof SelectText;
+  Icon: typeof SelectIcon;
+  List: typeof SelectList;
+  FlashList: typeof SelectFlashList;
+  InfiniteList: typeof SelectInfiniteList;
+  SearchInput: typeof SelectSearchInput;
+};
+
+Select.Trigger = SelectTrigger;
+Select.Content = SelectContent;
+Select.Item = SelectItem;
+Select.Input = SelectInput;
+Select.Text = SelectText;
+Select.Icon = SelectIcon;
+Select.List = SelectList;
+Select.FlashList = SelectFlashList;
+Select.InfiniteList = SelectInfiniteList;
+Select.SearchInput = SelectSearchInput;
 
 export { Select };
 export type {
   SelectContentProps,
+  SelectFlashListProps,
   SelectIconProps,
+  SelectInfiniteListProps,
   SelectInputProps,
   SelectItemProps,
   SelectListProps,

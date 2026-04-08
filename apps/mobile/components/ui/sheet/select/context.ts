@@ -24,16 +24,17 @@ function initStore<T, TMultiSelect extends boolean = false>(
   return createStore<SelectStore<T>>((set, get) => ({
     selected: params.selected ?? null,
     isMultiSelect: params.isMultiSelect ?? false,
+    onSelect: (value) => params.onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null),
     setSelected: (value) => {
-      const { isMultiSelect, selected } = get();
+      const { isMultiSelect, selected, onSelect } = get();
 
       if (!isMultiSelect) {
         if (isEqual(value, selected)) {
           set({ selected: null });
-          params.onSelect?.(null as (TMultiSelect extends true ? T[] : T) | null);
+          onSelect?.(null as (TMultiSelect extends true ? T[] : T) | null);
         } else {
           set({ selected: value });
-          params.onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null);
+          onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null);
         }
         return;
       }
@@ -52,7 +53,7 @@ function initStore<T, TMultiSelect extends boolean = false>(
       }
 
       set({ selected: newSelected });
-      params.onSelect?.(newSelected as (TMultiSelect extends true ? T[] : T) | null);
+      onSelect?.(newSelected as (TMultiSelect extends true ? T[] : T) | null);
       return;
     },
   }));
