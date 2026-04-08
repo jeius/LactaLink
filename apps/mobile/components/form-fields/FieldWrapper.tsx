@@ -1,5 +1,4 @@
 import { AlertCircleIcon } from 'lucide-react-native';
-import React, { PropsWithChildren } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import {
@@ -14,18 +13,13 @@ import {
   FormControlLabelText,
 } from '../ui/form-control';
 import { Icon } from '../ui/icon';
-import { BaseFieldProps } from './types';
+import { BaseFieldProps, FormFieldProps } from './types';
 
 type BaseFieldTextProps = {
   text?: string | null;
   style?: ViewProps['style'];
   className?: ViewProps['className'];
 };
-
-type FieldWrapperProps<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = PropsWithChildren & Omit<BaseFieldProps<TFieldValues, TName>, 'control' | 'name'>;
 
 export function FieldWrapper<
   TFieldValues extends FieldValues = FieldValues,
@@ -46,7 +40,7 @@ export function FieldWrapper<
   labelIcon,
   labelIconPosition = 'start',
   ...props
-}: FieldWrapperProps<TFieldValues, TName>) {
+}: FormFieldProps<TFieldValues, TName>) {
   return (
     <FormControl {...props} isInvalid={props.isInvalid ?? !!error} isRequired={isRequired}>
       <FieldLabel

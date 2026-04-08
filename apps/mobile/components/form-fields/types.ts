@@ -1,5 +1,5 @@
 import { LucideIcon } from 'lucide-react-native';
-import { FC } from 'react';
+import { FC, PropsWithChildren } from 'react';
 import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import { SvgProps } from 'react-native-svg';
@@ -24,5 +24,10 @@ export type BaseFieldProps<
     labelIcon?: LucideIcon | FC<SvgProps>;
     labelIconPosition?: 'start' | 'end';
   };
+
+export type FormFieldProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> = PropsWithChildren<Omit<BaseFieldProps<TFieldValues, TName>, 'control' | 'name'>>;
 
 export type Item = { value: string; label: string };
