@@ -2,8 +2,8 @@
 import { createTextarea } from '@gluestack-ui/core';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { tva, type VariantProps } from '@gluestack-ui/utils/nativewind-utils';
-import { forwardRef } from 'react';
-import { TextInput, View } from 'react-native';
+import { ComponentPropsWithoutRef, ComponentRef, forwardRef, useEffect } from 'react';
+import { BlurEvent, Keyboard, TextInput, View } from 'react-native';
 
 const SCOPE = 'TEXTAREA';
 const UITextarea = createTextarea({
@@ -52,31 +52,45 @@ const textareaInputStyle = tva({
   },
 });
 
-type ITextareaProps = React.ComponentProps<typeof UITextarea> & VariantProps<typeof textareaStyle>;
+type ITextareaProps = Omit<ComponentPropsWithoutRef<typeof UITextarea>, 'onBlur'> &
+  VariantProps<typeof textareaStyle> & {
+    onBlur?: (e?: BlurEvent) => void;
+  };
 
-const Textarea = forwardRef<React.ComponentRef<typeof UITextarea>, ITextareaProps>(
-  function Textarea({ className, variant, rounded, size = 'md', ...props }, ref) {
-    return (
-      <UITextarea
-        ref={ref}
-        {...props}
-        className={textareaStyle({ variant, class: className, size, rounded })}
-        context={{ size }}
-      />
-    );
-  }
-);
+const Textarea = forwardRef<ComponentRef<typeof UITextarea>, ITextareaProps>(function Textarea(
+  { className, variant, rounded, size = 'md', onBlur, ...props },
+  ref
+) {
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      onBlur?.();
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [onBlur]);
 
-type ITextareaInputProps = React.ComponentProps<typeof UITextarea.Input> &
+  return (
+    <UITextarea
+      {...props}
+      ref={ref}
+      className={textareaStyle({ variant, class: className, size, rounded })}
+      context={{ size }}
+      onBlur={onBlur}
+    />
+  );
+});
+
+type ITextareaInputProps = ComponentPropsWithoutRef<typeof UITextarea.Input> &
   VariantProps<typeof textareaInputStyle>;
 
-const TextareaInput = forwardRef<React.ComponentRef<typeof UITextarea.Input>, ITextareaInputProps>(
+const TextareaInput = forwardRef<ComponentRef<typeof UITextarea.Input>, ITextareaInputProps>(
   function TextareaInput({ className, ...props }, ref) {
     const { size: parentSize } = useStyleContext(SCOPE);
     return (
       <UITextarea.Input
-        ref={ref}
         {...props}
+        ref={ref}
         className={textareaInputStyle({
           parentVariants: {
             size: parentSize,
