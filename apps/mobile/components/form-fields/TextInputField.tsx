@@ -1,6 +1,6 @@
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { EyeClosedIcon, EyeIcon, LucideIcon, LucideProps } from 'lucide-react-native';
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import { SvgProps } from 'react-native-svg';
@@ -56,7 +56,7 @@ export function TextInputField<
 }: TextInputFieldProps<TFieldValues, TName>) {
   const {
     field: { ref, value, onBlur, onChange, disabled },
-    fieldState: { error },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
@@ -73,7 +73,12 @@ export function TextInputField<
   }
 
   return (
-    <FieldWrapper {...props} error={error} isDisabled={isDisabled || isSubmitting}>
+    <FieldWrapper
+      {...props}
+      isInvalid={invalid}
+      error={error}
+      isDisabled={isDisabled || isSubmitting}
+    >
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
       ) : (
@@ -81,6 +86,7 @@ export function TextInputField<
           className={containerClassName}
           style={containerStyle}
           size={size}
+          isInvalid={invalid}
           isDisabled={disabled}
           onBlur={handleBlur}
           variant={variant}

@@ -1,4 +1,3 @@
-import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { BlurEvent } from 'react-native';
 import { BottomSheetTextareaInput } from '../ui/bottom-sheet/textarea';
@@ -11,8 +10,8 @@ interface TextAreaFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends Omit<BaseFieldProps<TFieldValues, TName>, 'error'> {
-  textareaProps?: Omit<TextareaInputProps, 'value' | 'onChangeText' | 'size' | 'ref'> &
-    Pick<TextareaProps, 'size'> & {
+  textareaProps?: Omit<TextareaInputProps, 'value' | 'onChangeText' | 'size' | 'ref' | 'onBlur'> &
+    Pick<TextareaProps, 'size' | 'onBlur'> & {
       containerStyle?: TextareaProps['style'];
       containerClassName?: TextareaProps['className'];
       useBottomSheetInput?: boolean;
@@ -39,11 +38,15 @@ export function TextAreaField<
 }: TextAreaFieldProps<TFieldValues, TName>) {
   const {
     field: { ref, value, onBlur, onChange, disabled },
-    fieldState: { error },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
-  function handleBlur(e: BlurEvent) {
+  const disabledState = isDisabled || disabled || isSubmitting;
+
+  const InputComp = useBottomSheetInput ? BottomSheetTextareaInput : TextareaInput;
+
+  function handleBlur(e?: BlurEvent) {
     onBlur();
     textareaProps.onBlur?.(e);
   }
@@ -53,37 +56,29 @@ export function TextAreaField<
       {...props}
       contentPosition={contentPosition}
       error={error}
-      isDisabled={isDisabled || isSubmitting}
+      isInvalid={invalid}
+      isDisabled={disabledState}
     >
       {isLoading ? (
         <Skeleton variant="rounded" className="h-28" />
       ) : (
         <Textarea
-          ref={ref}
           className={containerClassName}
           style={containerStyle}
           size={size}
+          isInvalid={invalid}
           isDisabled={disabled}
           onBlur={handleBlur}
         >
-          {useBottomSheetInput ? (
-            <BottomSheetTextareaInput
-              {...textareaProps}
-              value={value || ''}
-              onChangeText={onChange}
-              style={[{ textAlignVertical: 'top' }, textareaProps.style]}
-              className={textareaProps.className || 'h-24'}
-              multiline
-            />
-          ) : (
-            <TextareaInput
-              {...textareaProps}
-              value={value || ''}
-              onChangeText={onChange}
-              style={[{ textAlignVertical: 'top' }, textareaProps.style]}
-              multiline
-            />
-          )}
+          <InputComp
+            {...textareaProps}
+            ref={ref}
+            value={value || ''}
+            onChangeText={onChange}
+            style={[{ textAlignVertical: 'top' }, textareaProps.style]}
+            className={textareaProps.className || 'h-24'}
+            multiline
+          />
         </Textarea>
       )}
     </FieldWrapper>
