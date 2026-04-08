@@ -90,7 +90,7 @@ export function FieldLabel({
     <FormControlLabel {...props}>
       {icon && iconPosition === 'start' && <Icon as={icon} className="mr-2" />}
       <FormControlLabelText>{text}</FormControlLabelText>
-      {isRequired && <FormControlLabelAstrick>*</FormControlLabelAstrick>}
+      {isRequired && <FormControlLabelAstrick />}
       {icon && iconPosition === 'end' && <Icon as={icon} className="ml-2" />}
     </FormControlLabel>
   );

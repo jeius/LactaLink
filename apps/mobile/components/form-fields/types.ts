@@ -10,9 +10,9 @@ export type BaseFieldProps<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Pick<ControllerProps<TFieldValues, TName>, 'control' | 'name'> &
   Pick<FormControlProps, 'isDisabled' | 'isRequired' | 'style' | 'className' | 'isInvalid'> & {
-    label?: string;
+    label?: string | null;
     error?: { message?: string } | null;
-    helperText?: string;
+    helperText?: string | null;
     contentPosition?: 'first' | 'middle' | 'last';
     isLoading?: boolean;
     labelClassName?: ViewProps['className'];
@@ -21,7 +21,7 @@ export type BaseFieldProps<
     helperTextStyle?: ViewProps['style'];
     errorTextClassName?: ViewProps['className'];
     errorTextStyle?: ViewProps['style'];
-    labelIcon?: LucideIcon | FC<SvgProps>;
+    labelIcon?: LucideIcon | FC<SvgProps> | null;
     labelIconPosition?: 'start' | 'end';
   };
 
