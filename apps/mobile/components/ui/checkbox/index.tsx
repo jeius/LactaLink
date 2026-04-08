@@ -1,6 +1,6 @@
 'use client';
-import { createCheckbox } from '@gluestack-ui/checkbox';
-import { IPrimitiveIcon, PrimitiveIcon, UIIcon } from '@gluestack-ui/core';
+import { createCheckbox } from '@gluestack-ui/core/checkbox/creator';
+import { IPrimitiveIcon, PrimitiveIcon, UIIcon } from '@gluestack-ui/core/icon/creator';
 import {
   tva,
   useStyleContext,

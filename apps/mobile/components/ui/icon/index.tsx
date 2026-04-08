@@ -1,5 +1,5 @@
 'use client';
-import { createIcon, IPrimitiveIcon, PrimitiveIcon, Svg } from '@gluestack-ui/core';
+import { createIcon, IPrimitiveIcon, PrimitiveIcon, Svg } from '@gluestack-ui/core/icon/creator';
 import { tva, type VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
 import {

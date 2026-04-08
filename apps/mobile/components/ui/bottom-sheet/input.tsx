@@ -1,5 +1,6 @@
 'use client';
-import { createInput, PrimitiveIcon, UIIcon } from '@gluestack-ui/core';
+import { PrimitiveIcon, UIIcon } from '@gluestack-ui/core/icon/creator';
+import { createInput } from '@gluestack-ui/core/input/creator';
 import {
   tva,
   useStyleContext,

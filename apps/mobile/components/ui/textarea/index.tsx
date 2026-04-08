@@ -1,7 +1,11 @@
 'use client';
-import { createTextarea } from '@gluestack-ui/core';
-import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { tva, type VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { createTextarea } from '@gluestack-ui/core/textarea/creator';
+import {
+  tva,
+  useStyleContext,
+  withStyleContext,
+  type VariantProps,
+} from '@gluestack-ui/utils/nativewind-utils';
 import { ComponentPropsWithoutRef, ComponentRef, forwardRef, useEffect } from 'react';
 import { BlurEvent, Keyboard, TextInput, View } from 'react-native';
 
