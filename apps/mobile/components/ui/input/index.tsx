@@ -8,7 +8,7 @@ import {
 } from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
 import { ComponentPropsWithoutRef, ComponentRef, forwardRef, useEffect, useRef } from 'react';
-import { FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
+import { BlurEvent, FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
 import InputFocusStateProvider, {
   useInputFocusStateActions,
   useInputIsFocused,
@@ -111,8 +111,7 @@ const inputFieldStyle = tva({
 
 type IInputProps = Omit<ComponentPropsWithoutRef<typeof UIInput>, 'onBlur'> &
   VariantProps<typeof inputStyle> & {
-    className?: string;
-    onBlur?: () => void;
+    onBlur?: (e?: BlurEvent) => void;
     recyclingKey?: string;
   };
 const Input = forwardRef<ComponentRef<typeof UIInput>, IInputProps>(function Input(
@@ -122,17 +121,25 @@ const Input = forwardRef<ComponentRef<typeof UIInput>, IInputProps>(function Inp
   useEffect(() => {
     const sub = Keyboard.addListener('keyboardDidHide', () => {
       onBlur?.();
+      if (
+        typeof ref === 'object' &&
+        ref?.current &&
+        'blur' in ref.current &&
+        typeof ref.current.blur === 'function'
+      ) {
+        ref.current.blur();
+      }
     });
     return () => {
       sub.remove();
     };
-  }, [onBlur]);
+  }, [onBlur, ref]);
 
   return (
     <InputFocusStateProvider recyclingKey={props.recyclingKey}>
       <UIInput
-        ref={ref}
         {...props}
+        ref={ref}
         onBlur={onBlur}
         className={inputStyle({ variant, size, class: className })}
         context={{ variant, size }}
@@ -176,8 +183,8 @@ const InputIcon = forwardRef<ComponentRef<typeof UIInput.Icon>, IInputIconProps>
   }
   return (
     <UIInput.Icon
-      ref={ref}
       {...props}
+      ref={ref}
       className={inputIconStyle({
         isFocused,
         class: className,
@@ -196,8 +203,8 @@ const InputSlot = forwardRef<ComponentRef<typeof UIInput.Slot>, IInputSlotProps>
 ) {
   return (
     <UIInput.Slot
-      ref={ref}
       {...props}
+      ref={ref}
       className={inputSlotStyle({
         class: className,
       })}
