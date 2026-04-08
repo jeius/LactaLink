@@ -33,6 +33,7 @@ export function useAddressForm<T extends InputType = undefined>(id?: T): FormRet
   const form = useForm({
     resolver: zodResolver(id ? addressSchema : addressCreateSchema),
     mode: 'onBlur',
+    shouldFocusError: true,
     defaultValues: {
       name: '',
       isDefault: false,

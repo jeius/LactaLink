@@ -1,11 +1,8 @@
+import { CheckboxField } from '@/components/form-fields/CheckboxField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
-import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
-import { HStack } from '@/components/ui/hstack';
 import { VStack } from '@/components/ui/vstack';
 import { AddressCreateSchema } from '@lactalink/form-schemas';
-import { CheckIcon } from 'lucide-react-native';
-import React from 'react';
-import { Control, Controller, useFormState, useWatch } from 'react-hook-form';
+import { Control, useFormState, useWatch } from 'react-hook-form';
 import { BarangaySelectField, CitySelectField, ProvinceSelectField } from './form-fields';
 
 interface Props {
@@ -27,6 +24,7 @@ export default function AddressForm({ control, isLoading }: Props) {
         label="Province"
         placeholder="Select a province..."
         isLoading={isLoading}
+        isRequired
         isDisabled={isSubmitting}
       />
 
@@ -37,6 +35,7 @@ export default function AddressForm({ control, isLoading }: Props) {
         placeholder="Select a city or municipality..."
         provinceID={provinceID}
         isLoading={isLoading}
+        isRequired
         isDisabled={isSubmitting}
       />
 
@@ -74,6 +73,7 @@ export default function AddressForm({ control, isLoading }: Props) {
         helperText="Enter the zip/postal code of this address."
         contentPosition="first"
         isLoading={isLoading}
+        isRequired
         isDisabled={isSubmitting}
         inputProps={{
           placeholder: 'e.g. 9200',
@@ -97,26 +97,12 @@ export default function AddressForm({ control, isLoading }: Props) {
         }}
       />
 
-      <HStack space="xl" className="justify-between">
-        <Controller
-          control={control}
-          name="isDefault"
-          render={({ field: { value, onChange, ref } }) => (
-            <Checkbox
-              ref={ref}
-              value={`checkbox-address-isDefault`}
-              isChecked={value}
-              onChange={onChange}
-              isDisabled={isSubmitting}
-            >
-              <CheckboxIndicator>
-                <CheckboxIcon as={CheckIcon} />
-              </CheckboxIndicator>
-              <CheckboxLabel>Set as default address</CheckboxLabel>
-            </Checkbox>
-          )}
-        />
-      </HStack>
+      <CheckboxField
+        control={control}
+        name="isDefault"
+        label="Set as default address"
+        className="mt-2"
+      />
     </VStack>
   );
 }
