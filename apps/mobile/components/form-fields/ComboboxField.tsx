@@ -1,5 +1,5 @@
 import { ChevronDownIcon, XIcon } from 'lucide-react-native';
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 
 import Combobox, { ComboboxProps } from '../ui/Combobox';
@@ -62,7 +62,7 @@ export function ComboboxField<
   );
 
   const handleChange = useCallback(
-    (newValue: TItem) => onChange(transformItem(newValue).value),
+    (newValue: TItem | null) => onChange(newValue && transformItem(newValue).value),
     [onChange, transformItem]
   );
 
