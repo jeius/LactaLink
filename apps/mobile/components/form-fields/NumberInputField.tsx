@@ -1,4 +1,3 @@
-import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { NumberInput, NumberInputType } from '../NumberInput';
 import { Skeleton } from '../ui/skeleton';
@@ -26,11 +25,12 @@ export function NumberInputField<
 }: TextInputFieldProps<TFieldValues, TName>) {
   const {
     field: { ref, value, onBlur, onChange, disabled },
-    fieldState: { error },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
   const recyclingKey = `NumberInputField-${name.toString()}`;
+  const disabledState = isDisabled || disabled || isSubmitting;
 
   function handleBlur() {
     onBlur();
@@ -42,7 +42,8 @@ export function NumberInputField<
       {...props}
       contentPosition={contentPosition}
       error={error}
-      isDisabled={isDisabled || isSubmitting}
+      isInvalid={invalid}
+      isDisabled={disabledState}
     >
       {isLoading ? (
         <Skeleton variant="rounded" className="h-10" />
@@ -55,7 +56,7 @@ export function NumberInputField<
           onChange={onChange}
           onBlur={handleBlur}
           recyclingKey={recyclingKey}
-          isDisabled={isDisabled || disabled || isSubmitting}
+          isDisabled={disabledState}
         />
       )}
     </FieldWrapper>
