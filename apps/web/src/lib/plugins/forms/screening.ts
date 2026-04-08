@@ -28,8 +28,8 @@ export const screeningForm = formBuilderPlugin({
       group: COLLECTION_GROUP.SCREENING,
     },
     versions: {
-      drafts: { autosave: true, schedulePublish: true },
-      maxPerDoc: 20,
+      drafts: { autosave: { showSaveDraftButton: true }, schedulePublish: true },
+      maxPerDoc: 10,
     },
     fields: ({ defaultFields }) => {
       const blocksFieldIndex = defaultFields.findIndex(
@@ -86,6 +86,10 @@ export const screeningForm = formBuilderPlugin({
     admin: {
       description: 'Submissions from donors filling out the screening form.',
       group: COLLECTION_GROUP.SCREENING,
+    },
+    versions: {
+      drafts: { autosave: true },
+      maxPerDoc: 10,
     },
   },
   fields: {
