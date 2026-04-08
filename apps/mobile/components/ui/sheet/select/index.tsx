@@ -250,7 +250,7 @@ const Select = SelectSheet as typeof SelectSheet & {
   List: typeof SelectList;
   FlashList: typeof SelectFlashList;
   InfiniteList: typeof SelectInfiniteList;
-  SearchInput: typeof SelectSearchInput;
+  Search: typeof SelectSearchInput;
 };
 
 Select.Trigger = SelectTrigger;
@@ -262,7 +262,7 @@ Select.Icon = SelectIcon;
 Select.List = SelectList;
 Select.FlashList = SelectFlashList;
 Select.InfiniteList = SelectInfiniteList;
-Select.SearchInput = SelectSearchInput;
+Select.Search = SelectSearchInput;
 
 export { Select };
 export type {
