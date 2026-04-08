@@ -1,12 +1,11 @@
-import React from 'react';
-
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from 'react';
 import { Text as RNText } from 'react-native';
 import { textStyle } from './styles';
 
-type ITextProps = React.ComponentProps<typeof RNText> & VariantProps<typeof textStyle>;
+type ITextProps = ComponentPropsWithoutRef<typeof RNText> & VariantProps<typeof textStyle>;
 
-const Text = React.forwardRef<React.ComponentRef<typeof RNText>, ITextProps>(function Text(
+const Text = forwardRef<ComponentRef<typeof RNText>, ITextProps>(function Text(
   {
     className,
     isTruncated,
