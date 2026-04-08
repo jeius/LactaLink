@@ -8,8 +8,8 @@ import {
   type VariantProps,
 } from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
-import { ComponentPropsWithoutRef, ComponentRef, forwardRef, useEffect, useRef } from 'react';
-import { BlurEvent, FocusEvent, Keyboard, Pressable, TextInput, View } from 'react-native';
+import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from 'react';
+import { BlurEvent, FocusEvent, Pressable, TextInput, View } from 'react-native';
 import InputFocusStateProvider, {
   useInputFocusStateActions,
   useInputIsFocused,
@@ -116,32 +116,14 @@ type IInputProps = Omit<ComponentPropsWithoutRef<typeof UIInput>, 'onBlur'> &
     recyclingKey?: string;
   };
 const Input = forwardRef<ComponentRef<typeof UIInput>, IInputProps>(function Input(
-  { className, variant = 'outline', size = 'md', onBlur, ...props },
+  { className, variant = 'outline', size = 'md', ...props },
   ref
 ) {
-  useEffect(() => {
-    const sub = Keyboard.addListener('keyboardDidHide', () => {
-      onBlur?.();
-      if (
-        typeof ref === 'object' &&
-        ref?.current &&
-        'blur' in ref.current &&
-        typeof ref.current.blur === 'function'
-      ) {
-        ref.current.blur();
-      }
-    });
-    return () => {
-      sub.remove();
-    };
-  }, [onBlur, ref]);
-
   return (
     <InputFocusStateProvider recyclingKey={props.recyclingKey}>
       <UIInput
         {...props}
         ref={ref}
-        onBlur={onBlur}
         className={inputStyle({ variant, size, class: className })}
         context={{ variant, size }}
       />
@@ -222,21 +204,7 @@ const InputField = forwardRef<ComponentRef<typeof TextInput>, IInputFieldProps>(
 ) {
   const { variant: parentVariant, size: parentSize } = useStyleContext(SCOPE);
 
-  const localRef = useRef<TextInput>(null);
   const { setFocused } = useInputFocusStateActions();
-
-  const ref = refProp || localRef;
-
-  useEffect(() => {
-    const listener = Keyboard.addListener('keyboardDidHide', () => {
-      if (typeof ref === 'object' && ref.current) {
-        ref.current.blur();
-      }
-    });
-    return () => {
-      listener.remove();
-    };
-  }, [ref]);
 
   function handleFocus(event: FocusEvent) {
     props.onFocus?.(event);
@@ -251,8 +219,8 @@ const InputField = forwardRef<ComponentRef<typeof TextInput>, IInputFieldProps>(
   return (
     <UIInput.Input
       {...props}
-      //@ts-expect-error Gluestack ref typing issue
-      ref={ref}
+      //@ts-expect-error - Gluestack typing issue
+      ref={refProp}
       onFocus={handleFocus}
       onBlur={handleBlur}
       className={inputFieldStyle({
