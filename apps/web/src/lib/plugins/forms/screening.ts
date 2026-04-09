@@ -1,3 +1,5 @@
+import { authenticated } from '@/collections/_access-control';
+import { createUserField } from '@/fields/userField';
 import {
   COLLECTION_GROUP,
   SCREENING_FORM_SLUG,
@@ -5,6 +7,12 @@ import {
 } from '@/lib/constants/collections';
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
 import { BlocksField, CheckboxField, DateField, Field, NumberField } from 'payload';
+import {
+  associateOrganizationOrAdmin,
+  authenticatedAndPublished,
+  organizationOrAdmin,
+  submitterOrAdmin,
+} from './access';
 import {
   defaultValue,
   dynamicOption,
@@ -30,6 +38,12 @@ export const screeningForm = formBuilderPlugin({
     versions: {
       drafts: { autosave: { showSaveDraftButton: true }, schedulePublish: true },
       maxPerDoc: 10,
+    },
+    access: {
+      create: organizationOrAdmin,
+      read: authenticatedAndPublished,
+      update: associateOrganizationOrAdmin,
+      delete: associateOrganizationOrAdmin,
     },
     fields: ({ defaultFields }) => {
       const blocksFieldIndex = defaultFields.findIndex(
@@ -90,6 +104,25 @@ export const screeningForm = formBuilderPlugin({
     versions: {
       drafts: { autosave: true },
       maxPerDoc: 10,
+    },
+    access: {
+      create: authenticated,
+      read: submitterOrAdmin,
+      update: submitterOrAdmin,
+      delete: () => false,
+    },
+    fields: ({ defaultFields }) => {
+      return [
+        ...defaultFields,
+        createUserField({ name: 'submittedBy', label: 'Submitted By', required: true }),
+        {
+          name: 'submittedAt',
+          label: 'Submitted At',
+          type: 'date',
+          required: true,
+          admin: { position: 'sidebar', readOnly: true },
+        },
+      ];
     },
   },
   fields: {
