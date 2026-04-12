@@ -6,6 +6,8 @@ import { SelectProps, SelectStore } from './types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SelectStoreContext = createContext<StoreApi<SelectStore<any>> | null>(null);
 
+export const SelectItemContext = createContext<{ value: unknown } | null>(null);
+
 function useSelectStore<T, V = unknown>(selector: (state: SelectStore<T>) => V) {
   const store = useContext(SelectStoreContext);
   if (!store) {

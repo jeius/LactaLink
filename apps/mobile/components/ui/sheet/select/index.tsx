@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react-native';
+import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react-native';
 import {
   ComponentRef,
   FC,
@@ -9,11 +9,13 @@ import {
   PropsWithoutRef,
   RefAttributes,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react';
 import { GestureResponderEvent, TextInput, View } from 'react-native';
+import Svg from 'react-native-svg';
 import { FlashList, FlashListRef } from '../../FlashList';
 import { Icon } from '../../icon';
 import { Input, InputField, InputIcon, InputSlot } from '../../input';
@@ -21,9 +23,15 @@ import { InfiniteFlashList, InfiniteFlashListRef, VerticalInfiniteList } from '.
 import { Text } from '../../text';
 import { ActionSheet } from '../action-sheet';
 import { ActionSheetRef } from '../action-sheet/types';
-import { initStore, SelectStoreContext, useSelectActionSheetStore } from './context';
+import {
+  initStore,
+  SelectItemContext,
+  SelectStoreContext,
+  useSelectActionSheetStore,
+} from './context';
 import {
   selectIconStyle,
+  selectIndicatorStyle,
   selectInputFieldStyle,
   selectItemStyle,
   selectTriggerStyle,
@@ -70,7 +78,9 @@ const SelectItem = forwardRef(function SelectItem<T>(
   { value, className, onPress, ...props }: SelectItemProps<T>,
   ref: ForwardedRef<View>
 ) {
-  const { selected, setSelected } = useSelectActionSheetStore<T, SelectStore<T>>((s) => s);
+  const { selected, setSelected, isMultiSelect } = useSelectActionSheetStore<T, SelectStore<T>>(
+    (s) => s
+  );
 
   const isSelected = useMemo(() => {
     if (Array.isArray(selected)) {
@@ -81,19 +91,26 @@ const SelectItem = forwardRef(function SelectItem<T>(
 
   const handleSelect = useCallback(
     (e: GestureResponderEvent) => {
+      e.persist();
       setSelected(value as T);
       onPress?.(value as T, e);
+      // Exit early if the default behavior has already been prevented (e.g., by a custom onPress handler)
+      if (e.defaultPrevented) return;
+      // Prevent the ActionSheet from closing when in multi-select mode
+      if (isMultiSelect) e.preventDefault();
     },
-    [onPress, setSelected, value]
+    [isMultiSelect, onPress, setSelected, value]
   );
 
   return (
-    <ActionSheet.Item
-      {...props}
-      ref={ref}
-      className={selectItemStyle({ className, isSelected })}
-      onPress={handleSelect}
-    />
+    <SelectItemContext.Provider value={{ value }}>
+      <ActionSheet.Item
+        {...props}
+        ref={ref}
+        className={selectItemStyle({ className, isSelected })}
+        onPress={handleSelect}
+      />
+    </SelectItemContext.Provider>
   );
 }) as <T>(props: PropsWithoutRef<SelectItemProps<T>> & RefAttributes<View>) => JSX.Element;
 
@@ -206,6 +223,30 @@ function SelectIcon({ as = ChevronDownIcon, className, ...props }: SelectIconPro
   return <ActionSheet.Icon {...props} as={as} className={selectIconStyle({ className })} />;
 }
 
+const SelectIndicator = forwardRef(function SelectIndicator(
+  { className, as = CheckIcon, ...props }: SelectIconProps,
+  ref: ForwardedRef<Svg>
+) {
+  const value = useContext(SelectItemContext)?.value;
+  const { selected } = useSelectActionSheetStore((s) => s);
+
+  const isSelected = useMemo(() => {
+    if (Array.isArray(selected)) {
+      return selected.some((item) => isEqual(item, value));
+    }
+    return isEqual(selected, value);
+  }, [selected, value]);
+
+  return (
+    <Icon
+      {...props}
+      ref={ref}
+      as={as}
+      className={selectIndicatorStyle({ className, isSelected })}
+    />
+  );
+});
+
 function SelectList<T>(props: SelectListProps<T>) {
   return <VerticalInfiniteList {...props} />;
 }
@@ -239,6 +280,7 @@ SelectText.displayName = 'SelectText';
 SelectSearchInput.displayName = 'SelectSearchInput';
 (SelectFlashList as FC).displayName = 'SelectFlashList';
 (SelectInfiniteList as FC).displayName = 'SelectInfiniteList';
+SelectIndicator.displayName = 'SelectIndicator';
 
 const Select = SelectSheet as typeof SelectSheet & {
   Trigger: typeof SelectTrigger;
@@ -251,6 +293,7 @@ const Select = SelectSheet as typeof SelectSheet & {
   FlashList: typeof SelectFlashList;
   InfiniteList: typeof SelectInfiniteList;
   Search: typeof SelectSearchInput;
+  Indicator: typeof SelectIndicator;
 };
 
 Select.Trigger = SelectTrigger;
@@ -263,6 +306,7 @@ Select.List = SelectList;
 Select.FlashList = SelectFlashList;
 Select.InfiniteList = SelectInfiniteList;
 Select.Search = SelectSearchInput;
+Select.Indicator = SelectIndicator;
 
 export { Select };
 export type {
