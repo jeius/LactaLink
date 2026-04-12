@@ -42,7 +42,7 @@ const personalQuestions: Question[] = [
     order: 4,
   },
   {
-    name: ' deliveryDate',
+    name: 'deliveryDate',
     label: 'Date of Delivery',
     blockType: 'date',
     placeholder: 'Select the date of your delivery',
@@ -75,9 +75,9 @@ const breastFeedingHistoryQuestions: Question[] = [
     name: 'breastfeedingDurationMonths',
     label: 'How long have you been breastfeeding your current child? (in months)',
     blockType: 'number',
-    placeholder: 'Enter the number of months you have been breastfeeding',
     order: 2,
     required: true,
+    width: '1/2',
   },
   {
     name: 'milkExpressionFrequency',
@@ -122,6 +122,7 @@ const breastFeedingHistoryQuestions: Question[] = [
     name: 'breastFeedingIssues',
     label: 'Have you had any issues with breastfeeding or milk production?',
     blockType: 'multi-select',
+    helperText: 'You can select multiple options',
     width: 'full',
     options: [
       { value: 'none', label: 'None' },
@@ -141,6 +142,8 @@ const breastFeedingHistoryQuestions: Question[] = [
     name: 'currentMedications',
     label: 'Are you currently taking any medications or supplements?',
     blockType: 'multi-select',
+    helperText: 'You can select multiple options',
+    width: 'full',
     options: [
       { value: 'none', label: 'None' },
       { value: 'prescription', label: 'Prescription medications' },

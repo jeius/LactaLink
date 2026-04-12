@@ -34,6 +34,7 @@ export const screeningForm = formBuilderPlugin({
     admin: {
       description: 'Manage the donor screening questionnaire. Only admins can modify questions.',
       group: COLLECTION_GROUP.SCREENING,
+      defaultColumns: ['title', 'fields', 'sections', '_status'],
     },
     versions: {
       drafts: { autosave: { showSaveDraftButton: true }, schedulePublish: true },
@@ -100,6 +101,8 @@ export const screeningForm = formBuilderPlugin({
     admin: {
       description: 'Submissions from donors filling out the screening form.',
       group: COLLECTION_GROUP.SCREENING,
+      useAsTitle: 'submitterEmail',
+      defaultColumns: ['submitterEmail', 'form', 'submittedAt', '_status'],
     },
     versions: {
       drafts: { autosave: true },
@@ -114,13 +117,26 @@ export const screeningForm = formBuilderPlugin({
     fields: ({ defaultFields }) => {
       return [
         ...defaultFields,
-        createUserField({ name: 'submittedBy', label: 'Submitted By', required: true }),
+        createUserField({
+          name: 'submittedBy',
+          label: 'Submitted By',
+          required: true,
+          admin: { position: 'sidebar', description: 'The user who submitted this form.' },
+        }),
         {
           name: 'submittedAt',
           label: 'Submitted At',
           type: 'date',
           required: true,
           admin: { position: 'sidebar', readOnly: true },
+        },
+        {
+          name: 'submitterEmail',
+          label: 'Submitted By',
+          type: 'text',
+          virtual: 'submittedBy.email',
+          relationTo: 'users',
+          admin: { hidden: true },
         },
       ];
     },
