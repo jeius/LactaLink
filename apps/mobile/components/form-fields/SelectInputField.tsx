@@ -30,6 +30,7 @@ interface SelectInputFieldProps<
   selectProps?: Omit<SelectProps<TItem, TMultiSelect>, 'isDisabled' | 'children'> & {
     itemSize?: number;
     dynamicOption?: DynamicOption | null;
+    showSelectedIcon?: boolean;
   };
   items: TItem[];
   transformItem: (item: TItem) => {
@@ -50,7 +51,7 @@ export function SelectInputField<
   isLoading,
   triggerInputProps: selectInputProps,
   items,
-  selectProps: { dynamicOption, ...selectProps } = {},
+  selectProps: { dynamicOption, showSelectedIcon = true, ...selectProps } = {},
   contentPosition = 'first',
   transformItem,
   ...props
@@ -207,6 +208,7 @@ export function SelectInputField<
               nestedScrollEnabled
               renderItem={({ item }) => (
                 <Select.Item value={item}>
+                  {showSelectedIcon && <Select.Indicator />}
                   <Select.Text>{transformItem(item).label}</Select.Text>
                 </Select.Item>
               )}
