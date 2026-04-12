@@ -1,12 +1,4 @@
-import React, {
-  ComponentRef,
-  FC,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import { ComponentRef, FC, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { Button, ButtonIcon } from '@/components/ui/button';
 import {
@@ -19,7 +11,7 @@ import {
 } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { useRecyclingState } from '@shopify/flash-list';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import { LucideIcon, LucideProps, MinusIcon, PlusIcon } from 'lucide-react-native';
 import { type ViewProps } from 'react-native';
 import {
@@ -29,15 +21,6 @@ import {
   BottomSheetInputSlot,
 } from './ui/bottom-sheet/input';
 import { Skeleton } from './ui/skeleton';
-
-const inputFieldStyle = tva({
-  base: 'flex-1',
-  variants: {
-    isStepButtonsVisible: {
-      true: '',
-    },
-  },
-});
 
 const iconStyle = tva({
   base: 'ml-3',
@@ -94,7 +77,7 @@ const NumberInput = forwardRef<ComponentRef<typeof InputField>, NumberInputProps
     ref
   ) {
     const [displayText, setDisplayText] = useRecyclingState(
-      value === undefined ? '' : String(value),
+      value === undefined || value === null ? '' : String(value),
       [recyclingKey]
     );
     const numericValue =
@@ -196,7 +179,7 @@ const NumberInput = forwardRef<ComponentRef<typeof InputField>, NumberInputProps
     }, [handleChange]);
 
     useEffect(() => {
-      setDisplayText(value === undefined ? '' : String(value));
+      setDisplayText(value === undefined || value === null ? '' : String(value));
     }, [value, setDisplayText]);
 
     return isLoading ? (
@@ -223,7 +206,6 @@ const NumberInput = forwardRef<ComponentRef<typeof InputField>, NumberInputProps
         <InputFieldComp
           {...props}
           ref={ref}
-          className={inputFieldStyle({ isStepButtonsVisible: showStepButtons })}
           value={displayText}
           onChangeText={handleChangeText}
           aria-disabled={isDisabled}
@@ -232,6 +214,8 @@ const NumberInput = forwardRef<ComponentRef<typeof InputField>, NumberInputProps
           onBlur={onBlur}
           type="text"
           keyboardType="numeric"
+          multiline={false}
+          numberOfLines={1}
         />
 
         {showStepButtons && (
