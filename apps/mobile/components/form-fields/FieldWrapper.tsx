@@ -42,7 +42,7 @@ export function FieldWrapper<
   ...props
 }: FormFieldProps<TFieldValues, TName>) {
   return (
-    <FormControl {...props} isInvalid={props.isInvalid ?? !!error} isRequired={isRequired}>
+    <FormControl {...props} isInvalid={props.isInvalid ?? !!error}>
       <FieldLabel
         text={label}
         isRequired={isRequired}
@@ -89,8 +89,9 @@ export function FieldLabel({
   return (
     <FormControlLabel {...props}>
       {icon && iconPosition === 'start' && <Icon as={icon} className="mr-2" />}
-      <FormControlLabelText>{text}</FormControlLabelText>
-      {isRequired && <FormControlLabelAstrick />}
+      <FormControlLabelText>
+        {text} {isRequired && <FormControlLabelAstrick>*</FormControlLabelAstrick>}
+      </FormControlLabelText>
       {icon && iconPosition === 'end' && <Icon as={icon} className="ml-2" />}
     </FormControlLabel>
   );
