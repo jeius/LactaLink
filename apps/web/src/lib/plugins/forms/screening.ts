@@ -6,7 +6,15 @@ import {
   SCREENING_FORM_SUBMISSION_SLUG,
 } from '@/lib/constants/collections';
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
-import { BlocksField, CheckboxField, DateField, Field, NumberField } from 'payload';
+import {
+  ArrayField,
+  BlocksField,
+  CheckboxField,
+  DateField,
+  Field,
+  NumberField,
+  TextField,
+} from 'payload';
 import {
   associateOrganizationOrAdmin,
   authenticatedAndPublished,
@@ -115,8 +123,50 @@ export const screeningForm = formBuilderPlugin({
       delete: () => false,
     },
     fields: ({ defaultFields }) => {
+      const fields = Array.from(defaultFields);
+      const submissionDataFieldIndex = fields.findIndex(
+        (field) => 'name' in field && field.name === 'submissionData'
+      );
+
+      const submissionDataField =
+        submissionDataFieldIndex !== -1
+          ? (fields[submissionDataFieldIndex] as ArrayField)
+          : undefined;
+
+      if (submissionDataField) {
+        fields.splice(submissionDataFieldIndex, 1, {
+          ...submissionDataField,
+          fields: [
+            ...submissionDataField.fields.map((field) => ({
+              ...(field as TextField),
+              admin: { hidden: true },
+            })),
+            {
+              name: 'fieldLabel',
+              label: 'Field',
+              type: 'text',
+              required: true,
+              admin: {
+                readOnly: true,
+                description: 'The label of the form field this answer corresponds to.',
+              },
+            },
+            {
+              name: 'valueLabel',
+              label: 'Answer',
+              type: 'textarea',
+              required: true,
+              admin: {
+                readOnly: true,
+                description: "The value of the donor's answer in a human-readable format.",
+              },
+            },
+          ],
+        });
+      }
+
       return [
-        ...defaultFields,
+        ...fields,
         createUserField({
           name: 'submittedBy',
           label: 'Submitted By',

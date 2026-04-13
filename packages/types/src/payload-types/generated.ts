@@ -3779,9 +3779,23 @@ export interface DonorScreeningSubmission {
     | {
         field: string;
         value: string;
+        /**
+         * The label of the form field this answer corresponds to.
+         */
+        fieldLabel: string;
+        /**
+         * The value of the donor's answer in a human-readable format.
+         */
+        valueLabel: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * The user who submitted this form.
+   */
+  submittedBy: string | User;
+  submittedAt: string;
+  submitterEmail?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -5522,8 +5536,13 @@ export interface DonorScreeningSubmissionsSelect<T extends boolean = true> {
     | {
         field?: T;
         value?: T;
+        fieldLabel?: T;
+        valueLabel?: T;
         id?: T;
       };
+  submittedBy?: T;
+  submittedAt?: T;
+  submitterEmail?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
