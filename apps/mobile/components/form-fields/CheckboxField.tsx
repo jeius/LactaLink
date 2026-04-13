@@ -10,6 +10,11 @@ import {
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
 import { BaseFieldProps } from './types';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
+
+const checkboxStyles = tva({ base: 'items-start' });
+
+const labelStyles = tva({ base: 'flex-1' });
 
 export interface CheckboxFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -60,11 +65,16 @@ export function CheckboxField<
           isDisabled={disabledState}
           isInvalid={invalid}
           size={size}
+          className={checkboxStyles({ className: checkboxProps?.className })}
         >
-          <CheckboxIndicator>
+          <CheckboxIndicator style={{ marginTop: 1 }}>
             <CheckboxIcon as={CheckIcon} />
           </CheckboxIndicator>
-          {label && <CheckboxLabel className={labelClassName}>{label}</CheckboxLabel>}
+          {label && (
+            <CheckboxLabel className={labelStyles({ className: labelClassName })}>
+              {label}
+            </CheckboxLabel>
+          )}
         </Checkbox>
       )}
     </FieldWrapper>
