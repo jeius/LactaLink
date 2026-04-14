@@ -11,9 +11,17 @@
  * ```
  */
 export function toKebabCase(string: string): string {
+  if (!string) return '';
   return string
-    ?.replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/\s+/g, '-')
+    .trim()
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .replace(/([a-z\d])([A-Z])/g, '$1-$2')
+    .replace(/([a-zA-Z])(\d)/g, '$1-$2')
+    .replace(/(\d)([a-zA-Z])/g, '$1-$2')
+    .replace(/[_\s]+/g, '-')
+    .replace(/[^a-zA-Z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .toLowerCase();
 }
 
