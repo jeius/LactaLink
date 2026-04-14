@@ -16,7 +16,12 @@ async function seedScreeningFormHandler(req: PayloadRequest) {
   await payload
     .delete({
       collection: SCREENING_FORM_SLUG,
-      where: { title: { equals: SCREENING_FORM_TITLE } },
+      where: {
+        or: [
+          { title: { equals: SCREENING_FORM_TITLE } },
+          { slug: { equals: 'standard-screening-form' } },
+        ],
+      },
       req,
     })
     .then(() => {
@@ -30,10 +35,12 @@ async function seedScreeningFormHandler(req: PayloadRequest) {
     collection: SCREENING_FORM_SLUG,
     draft: false,
     data: {
+      _status: 'published',
       title: SCREENING_FORM_TITLE,
       sections: sections,
       submitButtonLabel: 'Submit',
-      _status: 'published',
+      slug: 'standard-screening-form',
+      isDefault: true,
     },
     req,
   });

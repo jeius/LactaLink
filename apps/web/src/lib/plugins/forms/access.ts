@@ -23,14 +23,12 @@ export const associateOrganizationOrAdmin: Access = ({ req: { user } }) => {
 
   const profile = user.profile;
   if (!profile) return false;
-
-  if (profile.relationTo === 'hospitals') {
-    return { hospital: { equals: extractID(profile.value) } } as Where;
-  } else if (profile.relationTo === 'milkBanks') {
-    return { milkbank: { equals: extractID(profile.value) } } as Where;
-  }
-
-  return false;
+  return {
+    and: [
+      { 'organization.value': { equals: extractID(profile.value) } },
+      { 'organization.relationTo': { equals: profile.relationTo } },
+    ],
+  } as Where;
 };
 
 export const authenticatedAndPublished: Access = ({ req: { user } }) => {
@@ -44,17 +42,13 @@ export const authenticatedAndPublished: Access = ({ req: { user } }) => {
         // Allow access to published forms for all authenticated users
         { _status: { equals: 'published' } },
         // Allow users to access their own drafts
-        {
-          and: [
-            { _status: { equals: 'draft' } },
-            {
-              or: [
-                { hospital: { equals: extractID(profile.value) } },
-                { milkbank: { equals: extractID(profile.value) } },
-              ],
-            },
-          ],
-        },
+        // {
+        //   and: [
+        //     { _status: { equals: 'draft' } },
+        //     { 'organization.value': { equals: extractID(profile.value) } },
+        //     { 'organization.relationTo': { equals: profile.relationTo } },
+        //   ],
+        // },
       ],
     } as Where;
   }

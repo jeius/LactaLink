@@ -1,20 +1,11 @@
 import { authenticated } from '@/collections/_access-control';
-import { createUserField } from '@/fields/userField';
 import {
   COLLECTION_GROUP,
   SCREENING_FORM_SLUG,
   SCREENING_FORM_SUBMISSION_SLUG,
 } from '@/lib/constants/collections';
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
-import {
-  ArrayField,
-  BlocksField,
-  CheckboxField,
-  DateField,
-  Field,
-  NumberField,
-  TextField,
-} from 'payload';
+import { CheckboxField, DateField, NumberField } from 'payload';
 import {
   associateOrganizationOrAdmin,
   authenticatedAndPublished,
@@ -24,6 +15,8 @@ import {
 import {
   defaultValue,
   dynamicOption,
+  formFieldsOverrides,
+  formSubmissionFieldsOverrides,
   helperText,
   hidden,
   label,
@@ -54,54 +47,7 @@ export const screeningForm = formBuilderPlugin({
       update: associateOrganizationOrAdmin,
       delete: associateOrganizationOrAdmin,
     },
-    fields: ({ defaultFields }) => {
-      const blocksFieldIndex = defaultFields.findIndex(
-        (field) => 'name' in field && field.name === 'fields'
-      );
-      const blocksField = blocksFieldIndex !== -1 ? defaultFields[blocksFieldIndex] : undefined;
-
-      const newBlocksField = blocksField && {
-        ...(blocksField as BlocksField),
-        label: 'Form Fields',
-        interfaceName: 'FormFieldBlocks',
-      };
-
-      const sectionFields: Field[] = [
-        { name: 'title', label: 'Section Title', type: 'text', required: true },
-        { name: 'description', label: 'Section Description', type: 'textarea' },
-      ];
-
-      const sectionsField: Field = {
-        name: 'sections',
-        label: 'Form Sections',
-        labels: { singular: 'Form Section', plural: 'Form Sections' },
-        interfaceName: 'DonorScreeningFormSections',
-        type: 'array',
-        fields: newBlocksField ? [...sectionFields, newBlocksField] : sectionFields,
-        admin: {
-          description:
-            'Sections allow you to group related fields together. Each section can have its own title and description.',
-        },
-      };
-
-      const fields = Array.from(defaultFields);
-      if (newBlocksField) {
-        fields.splice(
-          blocksFieldIndex,
-          1,
-          {
-            ...newBlocksField,
-            admin: {
-              description:
-                'Fields that are not part of any section will be displayed in this area.',
-            },
-          },
-          sectionsField
-        );
-      }
-
-      return modifyFields(fields);
-    },
+    fields: ({ defaultFields }) => formFieldsOverrides(defaultFields),
   },
   formSubmissionOverrides: {
     slug: SCREENING_FORM_SUBMISSION_SLUG,
@@ -122,74 +68,7 @@ export const screeningForm = formBuilderPlugin({
       update: submitterOrAdmin,
       delete: () => false,
     },
-    fields: ({ defaultFields }) => {
-      const fields = Array.from(defaultFields);
-      const submissionDataFieldIndex = fields.findIndex(
-        (field) => 'name' in field && field.name === 'submissionData'
-      );
-
-      const submissionDataField =
-        submissionDataFieldIndex !== -1
-          ? (fields[submissionDataFieldIndex] as ArrayField)
-          : undefined;
-
-      if (submissionDataField) {
-        fields.splice(submissionDataFieldIndex, 1, {
-          ...submissionDataField,
-          fields: [
-            ...submissionDataField.fields.map((field) => ({
-              ...(field as TextField),
-              admin: { hidden: true },
-            })),
-            {
-              name: 'fieldLabel',
-              label: 'Field',
-              type: 'text',
-              required: true,
-              admin: {
-                readOnly: true,
-                description: 'The label of the form field this answer corresponds to.',
-              },
-            },
-            {
-              name: 'valueLabel',
-              label: 'Answer',
-              type: 'textarea',
-              required: true,
-              admin: {
-                readOnly: true,
-                description: "The value of the donor's answer in a human-readable format.",
-              },
-            },
-          ],
-        });
-      }
-
-      return [
-        ...fields,
-        createUserField({
-          name: 'submittedBy',
-          label: 'Submitted By',
-          required: true,
-          admin: { position: 'sidebar', description: 'The user who submitted this form.' },
-        }),
-        {
-          name: 'submittedAt',
-          label: 'Submitted At',
-          type: 'date',
-          required: true,
-          admin: { position: 'sidebar', readOnly: true },
-        },
-        {
-          name: 'submitterEmail',
-          label: 'Submitted By',
-          type: 'text',
-          virtual: 'submittedBy.email',
-          relationTo: 'users',
-          admin: { hidden: true },
-        },
-      ];
-    },
+    fields: ({ defaultFields }) => formSubmissionFieldsOverrides(defaultFields),
   },
   fields: {
     payment: false,
@@ -299,53 +178,3 @@ export const screeningForm = formBuilderPlugin({
     },
   },
 });
-
-// #region Helpers
-function modifyFields(fields: Field[]): Field[] {
-  const newFields = fields.map((field) => {
-    if (!('name' in field)) return field;
-
-    const draft = { ...field };
-
-    // Add description to the title field
-    if (field.name === 'title') {
-      const description =
-        'Internal name for this form (e.g., "Standard Donor Screening Form"). This is not visible to donors.';
-
-      if (!draft.admin) {
-        draft.admin = { description };
-      } else if ('description' in draft.admin) {
-        draft.admin.description =
-          'Internal name for this form (e.g., "Standard Donor Screening Form"). This is not visible to donors.';
-      }
-    }
-
-    // Hide fields that are not relevant
-    if (['confirmationType', 'confirmationMessage', 'redirect'].includes(field.name)) {
-      return null;
-    }
-
-    return draft;
-  });
-
-  // Add new fields
-  newFields.push(
-    {
-      name: 'hospital',
-      type: 'relationship',
-      relationTo: 'hospitals',
-      label: 'Associated Hospital',
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'milkbank',
-      type: 'relationship',
-      relationTo: 'milkBanks',
-      label: 'Associated Milk Bank',
-      admin: { position: 'sidebar' },
-    }
-  );
-
-  return newFields.filter((field) => field !== null);
-}
-// #endregion

@@ -279,6 +279,7 @@ const donationPreferencesQuestions: Question[] = [
     name: 'donationReasons',
     label: 'If so, what are your reasons for wanting to donate?',
     blockType: 'multi-select',
+    helperText: 'You can select multiple options',
     width: 'full',
     options: [
       { value: 'helpBabies', label: 'To help babies in need' },
@@ -295,6 +296,7 @@ const donationPreferencesQuestions: Question[] = [
     name: 'donationRestrictions',
     label: 'Are there any specific situations where you would not be willing to donate?',
     blockType: 'multi-select',
+    helperText: 'You can select multiple options',
     width: 'full',
     options: [
       { value: 'none', label: 'No restrictions' },
