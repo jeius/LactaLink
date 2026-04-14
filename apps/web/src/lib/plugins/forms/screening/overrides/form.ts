@@ -145,6 +145,7 @@ export function formFieldsOverrides(defaultFields: Field[]): Field[] {
                 description: 'View submissions received for this form.',
                 allowCreate: false,
               },
+              where: { _status: { equals: 'published' } },
             },
           ],
         },
