@@ -36,24 +36,24 @@ export const authenticatedAndPublished: Access = ({ req: { user } }) => {
 
   const profile = user.profile;
 
-  if (profile) {
-    return {
-      or: [
-        // Allow access to published forms for all authenticated users
-        { _status: { equals: 'published' } },
-        // Allow users to access their own drafts
-        // {
-        //   and: [
-        //     { _status: { equals: 'draft' } },
-        //     { 'organization.value': { equals: extractID(profile.value) } },
-        //     { 'organization.relationTo': { equals: profile.relationTo } },
-        //   ],
-        // },
-      ],
-    } as Where;
+  if (!profile) {
+    return { _status: { equals: 'published' } } as Where;
   }
 
-  return { _status: { equals: 'published' } } as Where;
+  return {
+    or: [
+      // Allow access to published forms for all authenticated users
+      { _status: { equals: 'published' } },
+      // Or allow users to access their own drafts
+      {
+        and: [
+          { _status: { equals: 'draft' } },
+          { 'organization.value': { equals: extractID(profile.value) } },
+          // { 'organization.relationTo': { equals: profile.relationTo } },
+        ],
+      },
+    ],
+  } as Where;
 };
 
 export const submitterOrAdmin: Access = ({ req: { user } }) => {
