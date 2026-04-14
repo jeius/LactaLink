@@ -72,6 +72,16 @@ interface QueryKeys {
     INFINITE: QueryKey;
     ONE: QueryKey;
   };
+  SCREENING_FORMS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
+  SCREENING_FORM_SUBMISSIONS: {
+    ALL: QueryKey;
+    INFINITE: QueryKey;
+    ONE: QueryKey;
+  };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -140,6 +150,16 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['psgc'],
     INFINITE: ['psgc', 'infinite'],
     ONE: ['psgc', 'one'],
+  },
+  SCREENING_FORMS: {
+    ALL: ['screening-forms'],
+    INFINITE: ['screening-forms', 'infinite'],
+    ONE: ['screening-forms', 'one'],
+  },
+  SCREENING_FORM_SUBMISSIONS: {
+    ALL: ['screening-form-submissions'],
+    INFINITE: ['screening-form-submissions', 'infinite'],
+    ONE: ['screening-form-submissions', 'one'],
   },
   LISTINGS: {
     ALL: ['listings'],
