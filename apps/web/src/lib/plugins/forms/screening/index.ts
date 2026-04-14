@@ -15,8 +15,6 @@ import {
 import {
   defaultValue,
   dynamicOption,
-  formFieldsOverrides,
-  formSubmissionFieldsOverrides,
   helperText,
   hidden,
   label,
@@ -26,6 +24,8 @@ import {
   required,
   width,
 } from './fields';
+import { formFieldsOverrides } from './overrides/form';
+import { formSubmissionFieldsOverrides } from './overrides/formSubmissions';
 
 export const screeningForm = formBuilderPlugin({
   defaultToEmail: 'lactalinkph@gmail.com',
