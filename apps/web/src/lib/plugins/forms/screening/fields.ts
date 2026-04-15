@@ -1,3 +1,4 @@
+import { WIDTH_OPTIONS } from '@lactalink/enums';
 import type { Field } from 'payload';
 
 const name: Field = {
@@ -67,17 +68,10 @@ const width: Field = {
   name: 'width',
   label: 'Field Width',
   type: 'select',
-  defaultValue: 'full',
+  defaultValue: WIDTH_OPTIONS.full.value,
   enumName: 'enum_field_width',
   interfaceName: 'FieldWidth',
-  options: [
-    { value: 'full', label: '100%' },
-    { value: '3/4', label: '75%' },
-    { value: '2/3', label: '66%' },
-    { value: '1/2', label: '50%' },
-    { value: '1/3', label: '33%' },
-    { value: '1/4', label: '25%' },
-  ],
+  options: Object.values(WIDTH_OPTIONS),
   admin: {
     width: '50%',
     description: 'Width of the field in the form layout.',
