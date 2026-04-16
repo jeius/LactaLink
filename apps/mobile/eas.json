@@ -35,7 +35,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com",
+        "EXPO_PUBLIC_API_URL": "https://vercel.dev.lactalink.com",
         "NODE_ENV": "production"
       }
     },
@@ -49,7 +49,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://coolify.dev.lactalink.com"
+        "EXPO_PUBLIC_API_URL": "https://vercel.dev.lactalink.com"
       }
     }
   },
