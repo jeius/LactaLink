@@ -44,6 +44,10 @@
     "./listings": {
       "types": "./dist/listings/index.d.ts",
       "default": "./dist/listings/index.js"
+    },
+    "./blocks": {
+      "types": "./dist/blocks/index.d.ts",
+      "default": "./dist/blocks/index.js"
     }
   },
   "scripts": {

@@ -3,6 +3,7 @@ export * from './auth/schema';
 export * from './auth/types';
 export * from './delivery-preference';
 export * from './donation-request';
+export * from './donor-screening';
 export * from './file';
 export * from './identity-verification';
 export * from './milk-bag';
