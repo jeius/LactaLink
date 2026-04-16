@@ -275,6 +275,9 @@ export interface Config {
       milkBags: 'milkBags';
       allocations: 'inventory-allocations';
     };
+    'donor-screening-forms': {
+      submissions: 'donor-screening-submissions';
+    };
   };
   collectionsSelect: {
     addresses: AddressesSelect<false> | AddressesSelect<true>;
@@ -3354,8 +3357,31 @@ export interface DonorScreeningForm {
         id?: string | null;
       }[]
     | null;
-  hospital?: (string | null) | Hospital;
-  milkbank?: (string | null) | MilkBank;
+  organization?:
+    | ({
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      } | null)
+    | ({
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      } | null);
+  /**
+   * If checked, this form will be used as the default for new donors without an associated hospital/milkbank.
+   */
+  isDefault?: boolean | null;
+  /**
+   * Unique identifier for this form used in the URL (e.g., "standard-donor-screening")
+   */
+  slug: string;
+  /**
+   * View submissions received for this form.
+   */
+  submissions?: {
+    docs?: (string | DonorScreeningSubmission)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -3794,8 +3820,13 @@ export interface DonorScreeningSubmission {
    * The user who submitted this form.
    */
   submittedBy: string | User;
-  submittedAt: string;
   submitterEmail?: string | null;
+  submittedAt: string;
+  isApproved?: boolean | null;
+  approvedAt?: string | null;
+  approvedBy?: (string | null) | User;
+  rejectedAt?: string | null;
+  rejectedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -5318,8 +5349,10 @@ export interface DonorScreeningFormsSelect<T extends boolean = true> {
         message?: T;
         id?: T;
       };
-  hospital?: T;
-  milkbank?: T;
+  organization?: T;
+  isDefault?: T;
+  slug?: T;
+  submissions?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -5541,8 +5574,13 @@ export interface DonorScreeningSubmissionsSelect<T extends boolean = true> {
         id?: T;
       };
   submittedBy?: T;
-  submittedAt?: T;
   submitterEmail?: T;
+  submittedAt?: T;
+  isApproved?: T;
+  approvedAt?: T;
+  approvedBy?: T;
+  rejectedAt?: T;
+  rejectedBy?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

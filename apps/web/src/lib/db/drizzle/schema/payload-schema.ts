@@ -269,20 +269,20 @@ export const enum_field_width = pgEnum('enum_field_width', [
   '1/3',
   '1/4',
 ]);
-export const enum_donor_screening_forms_confirmation_type = pgEnum(
-  'enum_donor_screening_forms_confirmation_type',
-  ['message', 'redirect']
-);
 export const enum_donor_screening_forms_status = pgEnum('enum_donor_screening_forms_status', [
   'draft',
   'published',
 ]);
-export const enum__donor_screening_forms_v_version_confirmation_type = pgEnum(
-  'enum__donor_screening_forms_v_version_confirmation_type',
-  ['message', 'redirect']
-);
 export const enum__donor_screening_forms_v_version_status = pgEnum(
   'enum__donor_screening_forms_v_version_status',
+  ['draft', 'published']
+);
+export const enum_donor_screening_submissions_status = pgEnum(
+  'enum_donor_screening_submissions_status',
+  ['draft', 'published']
+);
+export const enum__donor_screening_submissions_v_version_status = pgEnum(
+  'enum__donor_screening_submissions_v_version_status',
   ['draft', 'published']
 );
 export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', [
@@ -3623,16 +3623,8 @@ export const donor_screening_forms = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title'),
     submitButtonLabel: varchar('submit_button_label'),
-    confirmationType:
-      enum_donor_screening_forms_confirmation_type('confirmation_type').default('message'),
-    confirmationMessage: jsonb('confirmation_message'),
-    redirect_url: varchar('redirect_url'),
-    hospital: uuid('hospital_id').references(() => hospitals.id, {
-      onDelete: 'set null',
-    }),
-    milkbank: uuid('milkbank_id').references(() => milk_banks.id, {
-      onDelete: 'set null',
-    }),
+    isDefault: boolean('is_default'),
+    slug: varchar('slug'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -3642,11 +3634,44 @@ export const donor_screening_forms = pgTable(
     _status: enum_donor_screening_forms_status('_status').default('draft'),
   },
   (columns) => [
-    index('donor_screening_forms_hospital_idx').on(columns.hospital),
-    index('donor_screening_forms_milkbank_idx').on(columns.milkbank),
+    index('donor_screening_forms_slug_idx').on(columns.slug),
     index('donor_screening_forms_updated_at_idx').on(columns.updatedAt),
     index('donor_screening_forms_created_at_idx').on(columns.createdAt),
     index('donor_screening_forms__status_idx').on(columns._status),
+  ]
+);
+
+export const donor_screening_forms_rels = pgTable(
+  'donor_screening_forms_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('donor_screening_forms_rels_order_idx').on(columns.order),
+    index('donor_screening_forms_rels_parent_idx').on(columns.parent),
+    index('donor_screening_forms_rels_path_idx').on(columns.path),
+    index('donor_screening_forms_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('donor_screening_forms_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [donor_screening_forms.id],
+      name: 'donor_screening_forms_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'donor_screening_forms_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: 'donor_screening_forms_rels_milk_banks_fk',
+    }).onDelete('cascade'),
   ]
 );
 
@@ -4068,17 +4093,8 @@ export const _donor_screening_forms_v = pgTable(
     }),
     version_title: varchar('version_title'),
     version_submitButtonLabel: varchar('version_submit_button_label'),
-    version_confirmationType: enum__donor_screening_forms_v_version_confirmation_type(
-      'version_confirmation_type'
-    ).default('message'),
-    version_confirmationMessage: jsonb('version_confirmation_message'),
-    version_redirect_url: varchar('version_redirect_url'),
-    version_hospital: uuid('version_hospital_id').references(() => hospitals.id, {
-      onDelete: 'set null',
-    }),
-    version_milkbank: uuid('version_milkbank_id').references(() => milk_banks.id, {
-      onDelete: 'set null',
-    }),
+    version_isDefault: boolean('version_is_default'),
+    version_slug: varchar('version_slug'),
     version_updatedAt: timestamp('version_updated_at', {
       mode: 'string',
       withTimezone: true,
@@ -4102,8 +4118,7 @@ export const _donor_screening_forms_v = pgTable(
   },
   (columns) => [
     index('_donor_screening_forms_v_parent_idx').on(columns.parent),
-    index('_donor_screening_forms_v_version_version_hospital_idx').on(columns.version_hospital),
-    index('_donor_screening_forms_v_version_version_milkbank_idx').on(columns.version_milkbank),
+    index('_donor_screening_forms_v_version_version_slug_idx').on(columns.version_slug),
     index('_donor_screening_forms_v_version_version_updated_at_idx').on(columns.version_updatedAt),
     index('_donor_screening_forms_v_version_version_created_at_idx').on(columns.version_createdAt),
     index('_donor_screening_forms_v_version_version__status_idx').on(columns.version__status),
@@ -4114,14 +4129,50 @@ export const _donor_screening_forms_v = pgTable(
   ]
 );
 
+export const _donor_screening_forms_v_rels = pgTable(
+  '_donor_screening_forms_v_rels',
+  {
+    id: serial('id').primaryKey(),
+    order: integer('order'),
+    parent: uuid('parent_id').notNull(),
+    path: varchar('path').notNull(),
+    hospitalsID: uuid('hospitals_id'),
+    milkBanksID: uuid('milk_banks_id'),
+  },
+  (columns) => [
+    index('_donor_screening_forms_v_rels_order_idx').on(columns.order),
+    index('_donor_screening_forms_v_rels_parent_idx').on(columns.parent),
+    index('_donor_screening_forms_v_rels_path_idx').on(columns.path),
+    index('_donor_screening_forms_v_rels_hospitals_id_idx').on(columns.hospitalsID),
+    index('_donor_screening_forms_v_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [_donor_screening_forms_v.id],
+      name: '_donor_screening_forms_v_rels_parent_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: '_donor_screening_forms_v_rels_hospitals_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['milkBanksID']],
+      foreignColumns: [milk_banks.id],
+      name: '_donor_screening_forms_v_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
 export const donor_screening_submissions_submission_data = pgTable(
   'donor_screening_submissions_submission_data',
   {
     _order: integer('_order').notNull(),
     _parentID: uuid('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    field: varchar('field').notNull(),
-    value: varchar('value').notNull(),
+    field: varchar('field'),
+    value: varchar('value'),
+    fieldLabel: varchar('field_label'),
+    valueLabel: varchar('value_label'),
   },
   (columns) => [
     index('donor_screening_submissions_submission_data_order_idx').on(columns._order),
@@ -4138,22 +4189,145 @@ export const donor_screening_submissions = pgTable(
   'donor_screening_submissions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    form: uuid('form_id')
-      .notNull()
-      .references(() => donor_screening_forms.id, {
-        onDelete: 'set null',
-      }),
+    form: uuid('form_id').references(() => donor_screening_forms.id, {
+      onDelete: 'set null',
+    }),
+    submittedBy: uuid('submitted_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    submittedAt: timestamp('submitted_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    isApproved: boolean('is_approved'),
+    approvedAt: timestamp('approved_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    approvedBy: uuid('approved_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    rejectedAt: timestamp('rejected_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    rejectedBy: uuid('rejected_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    _status: enum_donor_screening_submissions_status('_status').default('draft'),
   },
   (columns) => [
     index('donor_screening_submissions_form_idx').on(columns.form),
+    index('donor_screening_submissions_submitted_by_idx').on(columns.submittedBy),
+    index('donor_screening_submissions_approved_by_idx').on(columns.approvedBy),
+    index('donor_screening_submissions_rejected_by_idx').on(columns.rejectedBy),
     index('donor_screening_submissions_updated_at_idx').on(columns.updatedAt),
     index('donor_screening_submissions_created_at_idx').on(columns.createdAt),
+    index('donor_screening_submissions__status_idx').on(columns._status),
+  ]
+);
+
+export const _donor_screening_submissions_v_version_submission_data = pgTable(
+  '_donor_screening_submissions_v_version_submission_data',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: uuid('_parent_id').notNull(),
+    id: uuid('id').defaultRandom().primaryKey(),
+    field: varchar('field'),
+    value: varchar('value'),
+    fieldLabel: varchar('field_label'),
+    valueLabel: varchar('value_label'),
+    _uuid: varchar('_uuid'),
+  },
+  (columns) => [
+    index('_donor_screening_submissions_v_version_submission_data_order_idx').on(columns._order),
+    index('_donor_screening_submissions_v_version_submission_data_parent_id_idx').on(
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [_donor_screening_submissions_v.id],
+      name: '_donor_screening_submissions_v_version_submission_data_parent_id_fk',
+    }).onDelete('cascade'),
+  ]
+);
+
+export const _donor_screening_submissions_v = pgTable(
+  '_donor_screening_submissions_v',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    parent: uuid('parent_id').references(() => donor_screening_submissions.id, {
+      onDelete: 'set null',
+    }),
+    version_form: uuid('version_form_id').references(() => donor_screening_forms.id, {
+      onDelete: 'set null',
+    }),
+    version_submittedBy: uuid('version_submitted_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    version_submittedAt: timestamp('version_submitted_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_isApproved: boolean('version_is_approved'),
+    version_approvedAt: timestamp('version_approved_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_approvedBy: uuid('version_approved_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    version_rejectedAt: timestamp('version_rejected_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_rejectedBy: uuid('version_rejected_by_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    version_updatedAt: timestamp('version_updated_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_createdAt: timestamp('version_created_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
+    version__status:
+      enum__donor_screening_submissions_v_version_status('version__status').default('draft'),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
+      .defaultNow()
+      .notNull(),
+    latest: boolean('latest'),
+    autosave: boolean('autosave'),
+  },
+  (columns) => [
+    index('_donor_screening_submissions_v_parent_idx').on(columns.parent),
+    index('_donor_screening_submissions_v_version_version_form_idx').on(columns.version_form),
+    index('_donor_screening_submissions_v_version_version_submitted_idx').on(
+      columns.version_submittedBy
+    ),
+    index('_donor_screening_submissions_v_version_version_approved__idx').on(
+      columns.version_approvedBy
+    ),
+    index('_donor_screening_submissions_v_version_version_rejected__idx').on(
+      columns.version_rejectedBy
+    ),
+    index('_donor_screening_submissions_v_version_version_updated_a_idx').on(
+      columns.version_updatedAt
+    ),
+    index('_donor_screening_submissions_v_version_version_created_a_idx').on(
+      columns.version_createdAt
+    ),
+    index('_donor_screening_submissions_v_version_version__status_idx').on(columns.version__status),
+    index('_donor_screening_submissions_v_created_at_idx').on(columns.createdAt),
+    index('_donor_screening_submissions_v_updated_at_idx').on(columns.updatedAt),
+    index('_donor_screening_submissions_v_latest_idx').on(columns.latest),
+    index('_donor_screening_submissions_v_autosave_idx').on(columns.autosave),
   ]
 );
 
@@ -6086,57 +6260,67 @@ export const relations_donor_screening_forms_emails = relations(
     }),
   })
 );
-export const relations_donor_screening_forms = relations(
-  donor_screening_forms,
-  ({ one, many }) => ({
-    _blocks_checkbox: many(donor_screening_forms_blocks_checkbox, {
-      relationName: '_blocks_checkbox',
+export const relations_donor_screening_forms_rels = relations(
+  donor_screening_forms_rels,
+  ({ one }) => ({
+    parent: one(donor_screening_forms, {
+      fields: [donor_screening_forms_rels.parent],
+      references: [donor_screening_forms.id],
+      relationName: '_rels',
     }),
-    _blocks_email: many(donor_screening_forms_blocks_email, {
-      relationName: '_blocks_email',
-    }),
-    _blocks_message: many(donor_screening_forms_blocks_message, {
-      relationName: '_blocks_message',
-    }),
-    _blocks_number: many(donor_screening_forms_blocks_number, {
-      relationName: '_blocks_number',
-    }),
-    _blocks_select: many(donor_screening_forms_blocks_select, {
-      relationName: '_blocks_select',
-    }),
-    _blocks_text: many(donor_screening_forms_blocks_text, {
-      relationName: '_blocks_text',
-    }),
-    _blocks_textarea: many(donor_screening_forms_blocks_textarea, {
-      relationName: '_blocks_textarea',
-    }),
-    _blocks_radio: many(donor_screening_forms_blocks_radio, {
-      relationName: '_blocks_radio',
-    }),
-    _blocks_date: many(donor_screening_forms_blocks_date, {
-      relationName: '_blocks_date',
-    }),
-    '_blocks_multi-select': many(donor_screening_forms_blocks_multi_select, {
-      relationName: '_blocks_multi-select',
-    }),
-    sections: many(donor_screening_forms_sections, {
-      relationName: 'sections',
-    }),
-    emails: many(donor_screening_forms_emails, {
-      relationName: 'emails',
-    }),
-    hospital: one(hospitals, {
-      fields: [donor_screening_forms.hospital],
+    hospitalsID: one(hospitals, {
+      fields: [donor_screening_forms_rels.hospitalsID],
       references: [hospitals.id],
-      relationName: 'hospital',
+      relationName: 'hospitals',
     }),
-    milkbank: one(milk_banks, {
-      fields: [donor_screening_forms.milkbank],
+    milkBanksID: one(milk_banks, {
+      fields: [donor_screening_forms_rels.milkBanksID],
       references: [milk_banks.id],
-      relationName: 'milkbank',
+      relationName: 'milkBanks',
     }),
   })
 );
+export const relations_donor_screening_forms = relations(donor_screening_forms, ({ many }) => ({
+  _blocks_checkbox: many(donor_screening_forms_blocks_checkbox, {
+    relationName: '_blocks_checkbox',
+  }),
+  _blocks_email: many(donor_screening_forms_blocks_email, {
+    relationName: '_blocks_email',
+  }),
+  _blocks_message: many(donor_screening_forms_blocks_message, {
+    relationName: '_blocks_message',
+  }),
+  _blocks_number: many(donor_screening_forms_blocks_number, {
+    relationName: '_blocks_number',
+  }),
+  _blocks_select: many(donor_screening_forms_blocks_select, {
+    relationName: '_blocks_select',
+  }),
+  _blocks_text: many(donor_screening_forms_blocks_text, {
+    relationName: '_blocks_text',
+  }),
+  _blocks_textarea: many(donor_screening_forms_blocks_textarea, {
+    relationName: '_blocks_textarea',
+  }),
+  _blocks_radio: many(donor_screening_forms_blocks_radio, {
+    relationName: '_blocks_radio',
+  }),
+  _blocks_date: many(donor_screening_forms_blocks_date, {
+    relationName: '_blocks_date',
+  }),
+  '_blocks_multi-select': many(donor_screening_forms_blocks_multi_select, {
+    relationName: '_blocks_multi-select',
+  }),
+  sections: many(donor_screening_forms_sections, {
+    relationName: 'sections',
+  }),
+  emails: many(donor_screening_forms_emails, {
+    relationName: 'emails',
+  }),
+  _rels: many(donor_screening_forms_rels, {
+    relationName: '_rels',
+  }),
+}));
 export const relations__donor_screening_forms_v_blocks_checkbox = relations(
   _donor_screening_forms_v_blocks_checkbox,
   ({ one }) => ({
@@ -6296,6 +6480,26 @@ export const relations__donor_screening_forms_v_version_emails = relations(
     }),
   })
 );
+export const relations__donor_screening_forms_v_rels = relations(
+  _donor_screening_forms_v_rels,
+  ({ one }) => ({
+    parent: one(_donor_screening_forms_v, {
+      fields: [_donor_screening_forms_v_rels.parent],
+      references: [_donor_screening_forms_v.id],
+      relationName: '_rels',
+    }),
+    hospitalsID: one(hospitals, {
+      fields: [_donor_screening_forms_v_rels.hospitalsID],
+      references: [hospitals.id],
+      relationName: 'hospitals',
+    }),
+    milkBanksID: one(milk_banks, {
+      fields: [_donor_screening_forms_v_rels.milkBanksID],
+      references: [milk_banks.id],
+      relationName: 'milkBanks',
+    }),
+  })
+);
 export const relations__donor_screening_forms_v = relations(
   _donor_screening_forms_v,
   ({ one, many }) => ({
@@ -6340,15 +6544,8 @@ export const relations__donor_screening_forms_v = relations(
     version_emails: many(_donor_screening_forms_v_version_emails, {
       relationName: 'version_emails',
     }),
-    version_hospital: one(hospitals, {
-      fields: [_donor_screening_forms_v.version_hospital],
-      references: [hospitals.id],
-      relationName: 'version_hospital',
-    }),
-    version_milkbank: one(milk_banks, {
-      fields: [_donor_screening_forms_v.version_milkbank],
-      references: [milk_banks.id],
-      relationName: 'version_milkbank',
+    _rels: many(_donor_screening_forms_v_rels, {
+      relationName: '_rels',
     }),
   })
 );
@@ -6372,6 +6569,64 @@ export const relations_donor_screening_submissions = relations(
     }),
     submissionData: many(donor_screening_submissions_submission_data, {
       relationName: 'submissionData',
+    }),
+    submittedBy: one(users, {
+      fields: [donor_screening_submissions.submittedBy],
+      references: [users.id],
+      relationName: 'submittedBy',
+    }),
+    approvedBy: one(users, {
+      fields: [donor_screening_submissions.approvedBy],
+      references: [users.id],
+      relationName: 'approvedBy',
+    }),
+    rejectedBy: one(users, {
+      fields: [donor_screening_submissions.rejectedBy],
+      references: [users.id],
+      relationName: 'rejectedBy',
+    }),
+  })
+);
+export const relations__donor_screening_submissions_v_version_submission_data = relations(
+  _donor_screening_submissions_v_version_submission_data,
+  ({ one }) => ({
+    _parentID: one(_donor_screening_submissions_v, {
+      fields: [_donor_screening_submissions_v_version_submission_data._parentID],
+      references: [_donor_screening_submissions_v.id],
+      relationName: 'version_submissionData',
+    }),
+  })
+);
+export const relations__donor_screening_submissions_v = relations(
+  _donor_screening_submissions_v,
+  ({ one, many }) => ({
+    parent: one(donor_screening_submissions, {
+      fields: [_donor_screening_submissions_v.parent],
+      references: [donor_screening_submissions.id],
+      relationName: 'parent',
+    }),
+    version_form: one(donor_screening_forms, {
+      fields: [_donor_screening_submissions_v.version_form],
+      references: [donor_screening_forms.id],
+      relationName: 'version_form',
+    }),
+    version_submissionData: many(_donor_screening_submissions_v_version_submission_data, {
+      relationName: 'version_submissionData',
+    }),
+    version_submittedBy: one(users, {
+      fields: [_donor_screening_submissions_v.version_submittedBy],
+      references: [users.id],
+      relationName: 'version_submittedBy',
+    }),
+    version_approvedBy: one(users, {
+      fields: [_donor_screening_submissions_v.version_approvedBy],
+      references: [users.id],
+      relationName: 'version_approvedBy',
+    }),
+    version_rejectedBy: one(users, {
+      fields: [_donor_screening_submissions_v.version_rejectedBy],
+      references: [users.id],
+      relationName: 'version_rejectedBy',
     }),
   })
 );
@@ -6718,10 +6973,10 @@ type DatabaseSchema = {
   enum_inventory_status: typeof enum_inventory_status;
   enum_inventory_allocation_status: typeof enum_inventory_allocation_status;
   enum_field_width: typeof enum_field_width;
-  enum_donor_screening_forms_confirmation_type: typeof enum_donor_screening_forms_confirmation_type;
   enum_donor_screening_forms_status: typeof enum_donor_screening_forms_status;
-  enum__donor_screening_forms_v_version_confirmation_type: typeof enum__donor_screening_forms_v_version_confirmation_type;
   enum__donor_screening_forms_v_version_status: typeof enum__donor_screening_forms_v_version_status;
+  enum_donor_screening_submissions_status: typeof enum_donor_screening_submissions_status;
+  enum__donor_screening_submissions_v_version_status: typeof enum__donor_screening_submissions_v_version_status;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
@@ -6817,6 +7072,7 @@ type DatabaseSchema = {
   donor_screening_forms_sections: typeof donor_screening_forms_sections;
   donor_screening_forms_emails: typeof donor_screening_forms_emails;
   donor_screening_forms: typeof donor_screening_forms;
+  donor_screening_forms_rels: typeof donor_screening_forms_rels;
   _donor_screening_forms_v_blocks_checkbox: typeof _donor_screening_forms_v_blocks_checkbox;
   _donor_screening_forms_v_blocks_email: typeof _donor_screening_forms_v_blocks_email;
   _donor_screening_forms_v_blocks_message: typeof _donor_screening_forms_v_blocks_message;
@@ -6833,8 +7089,11 @@ type DatabaseSchema = {
   _donor_screening_forms_v_version_sections: typeof _donor_screening_forms_v_version_sections;
   _donor_screening_forms_v_version_emails: typeof _donor_screening_forms_v_version_emails;
   _donor_screening_forms_v: typeof _donor_screening_forms_v;
+  _donor_screening_forms_v_rels: typeof _donor_screening_forms_v_rels;
   donor_screening_submissions_submission_data: typeof donor_screening_submissions_submission_data;
   donor_screening_submissions: typeof donor_screening_submissions;
+  _donor_screening_submissions_v_version_submission_data: typeof _donor_screening_submissions_v_version_submission_data;
+  _donor_screening_submissions_v: typeof _donor_screening_submissions_v;
   payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
@@ -6933,6 +7192,7 @@ type DatabaseSchema = {
   relations_donor_screening_forms_blocks_multi_select: typeof relations_donor_screening_forms_blocks_multi_select;
   relations_donor_screening_forms_sections: typeof relations_donor_screening_forms_sections;
   relations_donor_screening_forms_emails: typeof relations_donor_screening_forms_emails;
+  relations_donor_screening_forms_rels: typeof relations_donor_screening_forms_rels;
   relations_donor_screening_forms: typeof relations_donor_screening_forms;
   relations__donor_screening_forms_v_blocks_checkbox: typeof relations__donor_screening_forms_v_blocks_checkbox;
   relations__donor_screening_forms_v_blocks_email: typeof relations__donor_screening_forms_v_blocks_email;
@@ -6949,9 +7209,12 @@ type DatabaseSchema = {
   relations__donor_screening_forms_v_blocks_multi_select: typeof relations__donor_screening_forms_v_blocks_multi_select;
   relations__donor_screening_forms_v_version_sections: typeof relations__donor_screening_forms_v_version_sections;
   relations__donor_screening_forms_v_version_emails: typeof relations__donor_screening_forms_v_version_emails;
+  relations__donor_screening_forms_v_rels: typeof relations__donor_screening_forms_v_rels;
   relations__donor_screening_forms_v: typeof relations__donor_screening_forms_v;
   relations_donor_screening_submissions_submission_data: typeof relations_donor_screening_submissions_submission_data;
   relations_donor_screening_submissions: typeof relations_donor_screening_submissions;
+  relations__donor_screening_submissions_v_version_submission_data: typeof relations__donor_screening_submissions_v_version_submission_data;
+  relations__donor_screening_submissions_v: typeof relations__donor_screening_submissions_v;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;
