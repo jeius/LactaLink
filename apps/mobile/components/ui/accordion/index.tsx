@@ -1,4 +1,5 @@
 'use client';
+import { RIPPLE_COLOR } from '@/lib/colors';
 import { H3 } from '@expo/html-elements';
 import { AccordionItemContext, createAccordion } from '@gluestack-ui/core/accordion/creator';
 import { PrimitiveIcon, UIIcon } from '@gluestack-ui/core/icon/creator';
@@ -196,6 +197,7 @@ const AccordionTrigger = forwardRef<
       ref={ref}
       {...props}
       className={accordionTriggerStyle({ class: className })}
+      android_ripple={{ color: RIPPLE_COLOR, foreground: true }}
     />
   );
 });
