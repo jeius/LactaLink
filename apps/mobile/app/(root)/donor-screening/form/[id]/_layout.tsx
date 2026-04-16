@@ -1,5 +1,5 @@
-import ScreeningFormLayout from '@/components/screens/donor-screening/ScreeningFormLayout';
+import SubmissionFormLayout from '@/components/screens/donor-screening/SubmissionFormLayout';
 
 export default function DonorScreeningFormLayout() {
-  return <ScreeningFormLayout />;
+  return <SubmissionFormLayout />;
 }

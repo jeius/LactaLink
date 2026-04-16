@@ -9,7 +9,7 @@ import { buildInitialFormState } from '../lib/buildFormState';
 import { buildZodSchema } from '../lib/buildZodSchema';
 import { useDraftSubmissionQuery, useStandardScreeningFormQuery } from './queries';
 
-export function useScreeningForm(): Omit<FormProps, 'children'> {
+export function useSubmissionForm(): Omit<FormProps, 'children'> {
   const { data: form, ...formQuery } = useStandardScreeningFormQuery();
   const { data: draftSubmission, ...submissionQuery } = useDraftSubmissionQuery(form?.id);
 

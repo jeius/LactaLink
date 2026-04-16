@@ -1,5 +1,5 @@
-import FormSectionScreen from '@/components/screens/donor-screening/FormSectionScreen';
+import SubmissionSectionScreen from '@/components/screens/donor-screening/SubmissionSectionScreen';
 
 export default function DonorScreeningFormSection() {
-  return <FormSectionScreen />;
+  return <SubmissionSectionScreen />;
 }

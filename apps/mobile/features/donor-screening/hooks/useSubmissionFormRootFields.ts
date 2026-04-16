@@ -12,7 +12,7 @@ import { SubmitHandler, useForm as useHookForm, useWatch } from 'react-hook-form
 import { buildZodSchema } from '../lib/buildZodSchema';
 import { createDefaultValues } from '../lib/createDefaultValues';
 
-export function useScreeningFormRootFields(): {
+export function useSubmissionFormRootFields(): {
   formMethods: Omit<FormProps, 'children'> & { submit: () => boolean | Promise<boolean> };
   fields: DonorScreeningFormField[] | undefined;
   title: string | undefined;

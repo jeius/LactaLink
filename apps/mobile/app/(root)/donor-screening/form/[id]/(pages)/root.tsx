@@ -1,5 +1,5 @@
-import FormRootScreen from '@/components/screens/donor-screening/FormRootScreen';
+import SubmissionRootFieldsScreen from '@/components/screens/donor-screening/SubmissionRootFieldsScreen';
 
 export default function DonorScreeningFormRoot() {
-  return <FormRootScreen />;
+  return <SubmissionRootFieldsScreen />;
 }

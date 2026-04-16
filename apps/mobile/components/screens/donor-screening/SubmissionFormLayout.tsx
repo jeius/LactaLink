@@ -11,7 +11,7 @@ import {
   usePublishSubmissionMutation,
   useSaveDraftSubmissionMutation,
 } from '@/features/donor-screening/hooks/mutations';
-import { useScreeningForm } from '@/features/donor-screening/hooks/useScreeningForm';
+import { useSubmissionForm } from '@/features/donor-screening/hooks/useSubmissionForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
@@ -22,13 +22,13 @@ import { useFormState } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
-export default function ScreeningFormLayout() {
+export default function SubmissionFormLayout() {
   const insets = useSafeAreaInsets();
   const screenOptions = useScreenOptions({ animationType: 'slide' });
   const { sectionId } = useGlobalSearchParams<{ sectionId?: string }>();
   const router = useRouter();
 
-  const methods = useScreeningForm();
+  const methods = useSubmissionForm();
   const { reset, getValues, control } = methods;
   const extraData = methods.extraData as { form: DonorScreeningForm | undefined };
 
