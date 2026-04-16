@@ -1,0 +1,49 @@
+import { FC, ReactNode, useEffect } from 'react';
+import { StyleProp, ViewStyle, type LayoutChangeEvent } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
+interface AnimatedHeightProps {
+  isExpanded: boolean;
+  children: ReactNode;
+  duration?: number;
+  style?: StyleProp<ViewStyle>;
+}
+
+export const AnimatedHeight: FC<AnimatedHeightProps> = ({
+  isExpanded,
+  children,
+  duration = 300,
+  style,
+}) => {
+  const measuredHeight = useSharedValue(0);
+  const progress = useSharedValue(isExpanded ? 1 : 0);
+
+  const onLayout = (event: LayoutChangeEvent) => {
+    const height = event.nativeEvent.layout.height;
+    if (height > 0 && measuredHeight.value !== height) {
+      measuredHeight.set(height);
+    }
+  };
+
+  // Update progress when isExpanded changes
+  useEffect(() => {
+    progress.set(withTiming(isExpanded ? 1 : 0, { duration }));
+  }, [isExpanded, duration, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const height = progress.value * measuredHeight.value;
+    return {
+      height,
+      opacity: progress.value,
+      overflow: 'hidden',
+    };
+  }, [progress, measuredHeight]);
+
+  return (
+    <Animated.View style={[animatedStyle, style]}>
+      <Animated.View onLayout={onLayout} style={{ position: 'absolute', width: '100%' }}>
+        {children}
+      </Animated.View>
+    </Animated.View>
+  );
+};
