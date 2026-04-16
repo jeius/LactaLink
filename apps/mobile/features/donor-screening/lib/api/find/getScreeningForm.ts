@@ -33,7 +33,7 @@ export async function getStandardScreeningForm(init?: RequestInit): Promise<Dono
 export async function getFormByOrganization(
   organization: Exclude<UserProfile, { relationTo: 'individuals' }>,
   init?: RequestInit
-): Promise<DonorScreeningForm> {
+): Promise<DonorScreeningForm | null> {
   const forms = await getApiClient().find(
     {
       collection: 'donor-screening-forms',
@@ -52,7 +52,7 @@ export async function getFormByOrganization(
   );
 
   if (forms.length === 0) {
-    throw new Error('The hospital does not have a screening form');
+    return null;
   }
 
   return forms[0]!;
