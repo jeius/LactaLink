@@ -13,7 +13,7 @@ import {
   FormControlLabelText,
 } from '../ui/form-control';
 import { Icon } from '../ui/icon';
-import { BaseFieldProps, FormFieldProps } from './types';
+import { BaseFieldProps, FieldWrapperProps } from './types';
 
 type BaseFieldTextProps = {
   text?: string | null;
@@ -40,7 +40,7 @@ export function FieldWrapper<
   labelIcon,
   labelIconPosition = 'start',
   ...props
-}: FormFieldProps<TFieldValues, TName>) {
+}: FieldWrapperProps<TFieldValues, TName>) {
   return (
     <FormControl {...props} isInvalid={props.isInvalid ?? !!error}>
       <FieldLabel
