@@ -51,6 +51,10 @@ export function TextAreaField<
     textareaProps.onBlur?.(e);
   }
 
+  function handleChange(text: string) {
+    onChange(text === '' ? null : text);
+  }
+
   return (
     <FieldWrapper
       {...props}
@@ -74,7 +78,7 @@ export function TextAreaField<
             {...textareaProps}
             ref={ref}
             value={value || ''}
-            onChangeText={onChange}
+            onChangeText={handleChange}
             style={[{ textAlignVertical: 'top' }, textareaProps.style]}
             className={textareaProps.className || 'h-24'}
             multiline

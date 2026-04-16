@@ -72,6 +72,10 @@ export function TextInputField<
     inputProps.onBlur?.();
   }
 
+  function handleChange(text: string) {
+    onChange(text === '' ? null : text);
+  }
+
   return (
     <FieldWrapper
       {...props}
@@ -104,7 +108,7 @@ export function TextInputField<
             ref={ref}
             secureTextEntry={type === 'password' ? !showPass : inputProps.secureTextEntry}
             value={value ?? ''}
-            onChangeText={onChange}
+            onChangeText={handleChange}
             recyclingKey={recyclingKey}
           />
 
