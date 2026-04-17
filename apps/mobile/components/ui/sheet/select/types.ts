@@ -19,12 +19,14 @@ interface SelectStore<T> {
   isMultiSelect: boolean;
   setSelected: (value: T) => void;
   onSelect?: (value: T | T[] | null) => void;
+  disableHighlight?: boolean;
 }
 
 interface SelectProps<T, TMultiSelect extends boolean = false> extends ActionSheetProps {
   selected?: (TMultiSelect extends true ? T[] : T) | null;
   onSelect?: (value: (TMultiSelect extends true ? T[] : T) | null) => void;
   isMultiSelect?: TMultiSelect;
+  disableHighlight?: boolean;
 }
 
 type SelectContentProps = ActionSheetContentProps;

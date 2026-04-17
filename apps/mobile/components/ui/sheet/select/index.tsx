@@ -52,7 +52,7 @@ import {
 } from './types';
 
 const SelectSheet = forwardRef(function SelectSheet<T, TMultiSelect extends boolean = false>(
-  { selected, onSelect, isMultiSelect, ...props }: SelectProps<T, TMultiSelect>,
+  { selected, onSelect, isMultiSelect, disableHighlight, ...props }: SelectProps<T, TMultiSelect>,
   ref: ForwardedRef<ActionSheetRef>
 ) {
   const [store] = useState(() => initStore({ selected, onSelect, isMultiSelect }));
@@ -61,9 +61,10 @@ const SelectSheet = forwardRef(function SelectSheet<T, TMultiSelect extends bool
     store.setState({
       selected,
       isMultiSelect,
+      disableHighlight,
       onSelect: (value) => onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null),
     });
-  }, [isMultiSelect, onSelect, selected, store]);
+  }, [isMultiSelect, onSelect, selected, store, disableHighlight]);
 
   return (
     <SelectStoreContext.Provider value={store}>
@@ -78,9 +79,10 @@ const SelectItem = forwardRef(function SelectItem<T>(
   { value, className, onPress, ...props }: SelectItemProps<T>,
   ref: ForwardedRef<View>
 ) {
-  const { selected, setSelected, isMultiSelect } = useSelectActionSheetStore<T, SelectStore<T>>(
-    (s) => s
-  );
+  const { selected, setSelected, isMultiSelect, disableHighlight } = useSelectActionSheetStore<
+    T,
+    SelectStore<T>
+  >((s) => s);
 
   const isSelected = useMemo(() => {
     if (Array.isArray(selected)) {
@@ -107,7 +109,7 @@ const SelectItem = forwardRef(function SelectItem<T>(
       <ActionSheet.Item
         {...props}
         ref={ref}
-        className={selectItemStyle({ className, isSelected })}
+        className={selectItemStyle({ className, isSelected: isSelected && !disableHighlight })}
         onPress={handleSelect}
       />
     </SelectItemContext.Provider>
@@ -228,7 +230,7 @@ const SelectIndicator = forwardRef(function SelectIndicator(
   ref: ForwardedRef<Svg>
 ) {
   const value = useContext(SelectItemContext)?.value;
-  const { selected } = useSelectActionSheetStore((s) => s);
+  const { selected, disableHighlight } = useSelectActionSheetStore((s) => s);
 
   const isSelected = useMemo(() => {
     if (Array.isArray(selected)) {
@@ -242,7 +244,7 @@ const SelectIndicator = forwardRef(function SelectIndicator(
       {...props}
       ref={ref}
       as={as}
-      className={selectIndicatorStyle({ className, isSelected })}
+      className={selectIndicatorStyle({ className, isSelected: isSelected && !disableHighlight })}
     />
   );
 });

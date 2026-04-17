@@ -1,6 +1,7 @@
 import isEqual from 'lodash/isEqual';
 import { createContext, useContext } from 'react';
 import { createStore, StoreApi, useStore } from 'zustand';
+import { useShallow } from 'zustand/shallow';
 import { SelectProps, SelectStore } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,7 +14,7 @@ function useSelectStore<T, V = unknown>(selector: (state: SelectStore<T>) => V) 
   if (!store) {
     throw new Error('useSelectActionSheetStore must be used within a SelectActionSheet');
   }
-  return useStore(store, selector);
+  return useStore(store, useShallow(selector));
 }
 
 function useSelectedValue<T = unknown>() {
