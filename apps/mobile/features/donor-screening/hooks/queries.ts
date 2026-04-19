@@ -7,12 +7,17 @@ import {
   createDraftSubmissionQuery,
   createOrganizationScreeningFormQuery,
   createPublishedSubmissionQuery,
+  createScreeningFormQuery,
   createScreeningFormsInfQuery,
   createStandardScreeningFormQuery,
 } from '../lib/queryOptions';
 
 export function useStandardScreeningFormQuery() {
   return useQuery(createStandardScreeningFormQuery());
+}
+
+export function useScreeningFormQuery(id: string | null | undefined) {
+  return useQuery(createScreeningFormQuery(id));
 }
 
 export function useOrganizationScreeningFormQuery(

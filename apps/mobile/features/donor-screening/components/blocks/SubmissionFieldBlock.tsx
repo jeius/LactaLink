@@ -6,10 +6,10 @@ import { SelectInputField } from '@/components/form-fields/SelectInputField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { BaseFieldProps } from '@/components/form-fields/types';
-import { DonorScreeningFormField } from '@lactalink/types/collections';
 import { FieldWidth } from '@lactalink/types/payload-generated-types';
 import { Control } from 'react-hook-form';
 import { StyleProp, ViewStyle } from 'react-native';
+import { BlockSchema } from './_types';
 
 const widthMap: Record<NonNullable<FieldWidth>, `${number}%`> = {
   full: '100%',
@@ -20,14 +20,19 @@ const widthMap: Record<NonNullable<FieldWidth>, `${number}%`> = {
   '1/4': '25%',
 };
 
-interface FieldBlockProps {
-  field: Exclude<DonorScreeningFormField, { blockType: 'message' }>;
+interface SubmissionFieldBlockProps {
+  field: BlockSchema;
   control: Control;
   style?: StyleProp<ViewStyle>;
   className?: string;
 }
 
-export default function FieldBlock({ field, control, style, className }: FieldBlockProps) {
+export default function SubmissionFieldBlock({
+  field,
+  control,
+  style,
+  className,
+}: SubmissionFieldBlockProps) {
   const baseProps: BaseFieldProps = {
     control: control,
     name: field.name,

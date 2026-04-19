@@ -1,11 +1,13 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { UserProfile } from '@lactalink/types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformers';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import {
   getAllScreeningForms,
   getFormByOrganization,
+  getScreeningForm,
   getStandardScreeningForm,
 } from './api/find/getScreeningForm';
 import {
@@ -80,6 +82,22 @@ export function createSubmissionQuery(submissionID: string | null | undefined) {
     queryFn: async ({ signal }) => {
       if (!submissionID) return null;
       return getSubmission(submissionID, { signal });
+    },
+  });
+}
+
+export function createScreeningFormQuery(form: string | DonorScreeningForm | null | undefined) {
+  const id = extractID(form);
+  return queryOptions({
+    enabled: !!id,
+    queryKey: [...QUERY_KEYS.SCREENING_FORMS.ONE, id],
+    queryFn: async ({ signal }) => {
+      if (!id) return null;
+      return getScreeningForm(id, { signal });
+    },
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return extractCollection(form) || undefined;
     },
   });
 }

@@ -6,8 +6,8 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { FlashList } from '@/components/ui/FlashList';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import SubmissionFieldBlock from '@/features/donor-screening/components/blocks/SubmissionFieldBlock';
 import { useFormNavigation } from '@/features/donor-screening/components/contexts/FormNavigationProvider';
-import FieldBlock from '@/features/donor-screening/components/FieldBlock';
 import { useSubmissionFormRootFields } from '@/features/donor-screening/hooks/useSubmissionFormRootFields';
 import { useIsFocused } from '@react-navigation/native';
 import debounce from 'lodash/debounce';
@@ -69,7 +69,7 @@ export default function SubmissionRootFieldsScreen() {
           if (item.blockType === 'message') {
             return null; // TODO: render message block
           }
-          return <FieldBlock control={control} field={item} />;
+          return <SubmissionFieldBlock control={control} field={item} />;
         }}
       />
     </Form>

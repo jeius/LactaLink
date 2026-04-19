@@ -73,3 +73,14 @@ export async function getAllScreeningForms(
     init
   );
 }
+
+export async function getScreeningForm(id: string, init?: RequestInit) {
+  return getApiClient().findByID(
+    {
+      collection: 'donor-screening-forms',
+      id,
+      depth: DEPTH,
+    },
+    init
+  );
+}

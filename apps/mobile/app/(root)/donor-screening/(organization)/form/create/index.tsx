@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import FormCreateScreen from '@/components/screens/donor-screening/FormCreateScreen';
 
 export default function FormCreate() {
-  return (
-    <View>
-      <Text>FormCreate</Text>
-    </View>
-  );
+  return <FormCreateScreen />;
 }

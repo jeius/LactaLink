@@ -1,43 +1,60 @@
-import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { Form } from '@/components/contexts/FormProvider';
+import { useForm } from '@/components/contexts/FormProvider';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { FlashList } from '@/components/ui/FlashList';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
-import { HStack } from '@/components/ui/hstack';
-import { getColor } from '@/lib/colors';
-import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
-import isEqual from 'lodash/isEqual';
-import { memo } from 'react';
-import { useScreeningForm } from '../../hooks/useScreeningForm';
-import ScreeningFields from './ScreeningFields';
-import ScreeningSections from './ScreeningSections';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { DonorScreeningFormSchema } from '@lactalink/form-schemas';
+import { formatKebabToTitle } from '@lactalink/utilities/formatters';
+import { Href, useLocalSearchParams } from 'expo-router';
+import { PlusCircleIcon } from 'lucide-react-native';
+import { useMemo } from 'react';
+import { Control, FieldArrayPath, useFieldArray, useWatch } from 'react-hook-form';
+import { FormCreateSearchParams } from '../../lib/types';
+import ArrayFormControl from './ArrayFormControl';
+import LinkItem from './LinkItem';
+import SelectFieldsSheet from './SelectFieldsSheet';
 
-const MemoizedScreeningFields = memo(ScreeningFields, (prev, next) => isEqual(prev, next));
-const MemoizedScreeningSections = memo(ScreeningSections, (prev, next) => isEqual(prev, next));
+const FIELDS_HEADER = 'fieldsHeader';
+const FIELDS_FOOTER = 'fieldsFooter';
+const SECTIONS_HEADER = 'sectionsHeader';
+const SECTIONS_FOOTER = 'sectionsFooter';
 
-interface ScreeningFormProps {
-  form?: DonorScreeningForm | null;
-}
+export default function ScreeningForm() {
+  const { control } = useForm<DonorScreeningFormSchema>();
+  const fieldsArray = useFieldArray({ control, name: 'fields', keyName: '_id' });
+  const sectionsArray = useFieldArray({ control, name: 'sections', keyName: '_id' });
 
-export default function ScreeningForm({ form }: ScreeningFormProps) {
-  const methods = useScreeningForm(form);
-  const { control } = methods;
+  const data = useMemo(() => {
+    const fieldsSection = [
+      FIELDS_HEADER,
+      ...fieldsArray.fields.map((f, index) => ({ ...f, index })),
+      FIELDS_FOOTER,
+    ];
+    const sectionsSection = [
+      SECTIONS_HEADER,
+      ...sectionsArray.fields.map((f, index) => ({ ...f, index })),
+      SECTIONS_FOOTER,
+    ];
+    return [...fieldsSection, ...sectionsSection];
+  }, [fieldsArray.fields, sectionsArray.fields]);
 
   return (
-    <Form {...methods}>
-      <HStack space="md" className="items-center justify-between px-2 pb-2">
-        <HeaderBackButton tintColor={getColor('typography', '900')} />
-
-        <Button className="mr-2">
-          <ButtonText>Submit</ButtonText>
-        </Button>
-      </HStack>
-
+    <>
       <FlashList
-        data={['fields', '']}
+        data={data}
         contentContainerClassName="p-4"
         headerClassName="mb-6"
+        keyExtractor={(item, idx) => {
+          if (typeof item === 'object') return item._id;
+          return `${item}-${idx}`;
+        }}
+        getItemType={(item) => {
+          if (typeof item === 'object') {
+            if ('blockType' in item) return 'fieldItem';
+            return 'sectionItem';
+          }
+          return item;
+        }}
         ItemSeparatorComponent={() => <Box className="h-6" />}
         ListHeaderComponent={
           <TextInputField
@@ -46,18 +63,109 @@ export default function ScreeningForm({ form }: ScreeningFormProps) {
             label="Form Title"
             helperText="This is the title of your donor screening form. It will be displayed to donors when they fill out the form."
             inputProps={{ placeholder: 'Enter a good title...' }}
-            contentPosition="first"
+            contentPosition="middle"
             isRequired
           />
         }
         renderItem={({ item }) => {
-          if (!item) {
-            return <MemoizedScreeningSections control={control} />;
+          if (item === FIELDS_HEADER) {
+            return (
+              <ArrayFormControl
+                control={control}
+                name="fields"
+                label="Fields"
+                helperText="Add fields that donors will need to fill out when completing the screening form. This will be displayed before the sections. If you want to group fields together, consider adding a section and placing the fields inside the section."
+              />
+            );
           }
 
-          return <MemoizedScreeningFields control={control} name="fields" />;
+          if (item === FIELDS_FOOTER) {
+            return (
+              <SelectFieldsSheet
+                onSelect={fieldsArray.append}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <ButtonIcon as={PlusCircleIcon} />
+                    <ButtonText>Add Field</ButtonText>
+                  </Button>
+                }
+              />
+            );
+          }
+
+          if (item === SECTIONS_HEADER) {
+            return (
+              <ArrayFormControl
+                control={control}
+                name="sections"
+                label="Sections (Recommended)"
+                helperText="Sections are used to group fields together. They can be used to create a multi-step form or to separate different types of questions."
+              />
+            );
+          }
+
+          if (item === SECTIONS_FOOTER) {
+            return (
+              <Button
+                variant="outline"
+                size="sm"
+                onPress={() => sectionsArray.append({ fields: [], title: '' })}
+              >
+                <ButtonIcon as={PlusCircleIcon} />
+                <ButtonText>Add Section</ButtonText>
+              </Button>
+            );
+          }
+
+          if (typeof item !== 'object' || ('blockType' in item && item.blockType === 'message')) {
+            return null;
+          }
+
+          // The item is a section
+          const { index } = item;
+          const isBlock = 'blockType' in item;
+          return (
+            <RenderItem
+              onRemove={() => (isBlock ? fieldsArray.remove(index) : sectionsArray.remove(index))}
+              name={isBlock ? 'fields' : 'sections'}
+              control={control}
+              index={index}
+            />
+          );
         }}
       />
-    </Form>
+    </>
   );
+}
+
+type RenderItemProps = {
+  onRemove?: () => void;
+  index: number;
+  name: FieldArrayPath<DonorScreeningFormSchema>;
+  control: Control<DonorScreeningFormSchema>;
+};
+
+export function RenderItem({ onRemove, name, control, index }: RenderItemProps) {
+  const searchParams = useLocalSearchParams();
+  const fieldName = `${name}.${index}` as const;
+  const value = useWatch({ name: fieldName, control });
+
+  const isBlock = value && 'blockType' in value && value.blockType !== 'message';
+  const isSection = value && 'fields' in value;
+
+  const title = isBlock
+    ? value.label
+      ? value.label
+      : `Field ${index + 1} - ${formatKebabToTitle(value.blockType)}`
+    : isSection && value.title
+      ? value.title
+      : `Section ${index + 1}`;
+
+  const params: FormCreateSearchParams = { ...searchParams, name: fieldName };
+  const href: Href = {
+    pathname: `/donor-screening/form/create/${isBlock ? 'field' : 'section'}`,
+    params,
+  };
+
+  return <LinkItem title={title} href={href} onRemove={onRemove} />;
 }

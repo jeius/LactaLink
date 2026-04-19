@@ -1,92 +1,68 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DonorScreeningFormField } from '@lactalink/types/collections';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
-import { useEffect, useRef } from 'react';
-import {
-  Control,
-  DefaultValues,
-  FieldPath,
-  useController,
-  useForm,
-  useFormState,
-} from 'react-hook-form';
-import { z } from 'zod';
+import { useCallback, useEffect, useRef } from 'react';
+import { DefaultValues, useForm, useFormState } from 'react-hook-form';
+import { type ZodType } from 'zod';
+import { BaseBlockProps, BlockSchema } from '../../lib/types';
 
-type FieldSchema = Exclude<DonorScreeningFormField, { blockType: 'message' }>;
-
-type Params<
-  TFieldValues extends FieldSchema = FieldSchema,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName;
-  control: Control<TFieldValues> | undefined;
-  schema: z.ZodType<TFieldValues, TFieldValues>;
-  defaultValues?: DefaultValues<Omit<TFieldValues, 'name'>>;
+type Params<TFieldValues extends BlockSchema = BlockSchema> = BaseBlockProps<TFieldValues> & {
+  schema: ZodType<TFieldValues, TFieldValues>;
 };
 
-export function useBlockForm<TFieldValues extends FieldSchema = FieldSchema>({
+export function useBlockForm<TFieldValues extends BlockSchema = BlockSchema>({
   name,
-  control,
   schema,
   defaultValues,
+  values,
+  onSubmit,
+  onFormStateChange,
 }: Params<TFieldValues>) {
-  const {
-    field: { value, onChange, onBlur },
-    fieldState,
-    formState,
-  } = useController({ control, name });
-
   const lastPushedValueRef = useRef({});
 
   const methods = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       name,
-      label: '',
       width: 'full',
       ...defaultValues,
     } as DefaultValues<TFieldValues>,
   });
 
-  const { reset, getValues } = methods;
+  const { reset, handleSubmit } = methods;
 
-  // Re-renders only when isDirty changes (false→true, true→false), not on every keystroke.
-  const { isDirty } = useFormState({ control: methods.control });
+  const formState = useFormState({ control: methods.control });
 
-  // Sync: This Form -> Parent
-  // Triggered when the sub-form becomes dirty. Captures the latest values via getValues(),
-  // pushes them to the parent, then resets to clear isDirty so subsequent changes are detected.
-  useEffect(() => {
-    if (!isDirty) return;
+  const submit = useCallback(() => {
+    handleSubmit(async (data) => {
+      lastPushedValueRef.current = data;
+      reset(data);
+      await onSubmit?.(data);
+    })();
+  }, [handleSubmit, onSubmit, reset]);
 
-    const pushToParent = debounce(() => {
-      const currentValues = getValues();
-      onChange(currentValues);
-      onBlur();
-      lastPushedValueRef.current = currentValues;
-      reset(currentValues as DefaultValues<TFieldValues>);
-    }, 800);
-
-    pushToParent();
-    return () => pushToParent.cancel();
-  }, [isDirty, getValues, onChange, onBlur, reset]);
+  const handleReset = useCallback(() => reset(), [reset]);
 
   // Sync: Parent -> This Form
   // Triggered when the parent form updates this field externally (e.g. a form-wide reset with
   // new server data). Skips the reset if the change originated from this form's own push above.
   useEffect(() => {
     const resetFromParent = debounce(() => {
-      if (!value) return;
-      if (isEqual(lastPushedValueRef.current, value)) return;
+      if (!values) return;
+      if (isEqual(lastPushedValueRef.current, values)) return;
       // External value update: clear the snapshot and reset.
       lastPushedValueRef.current = {};
-      reset(value as DefaultValues<TFieldValues>);
+      reset(values);
     }, 800);
 
     resetFromParent();
     return () => resetFromParent.cancel();
-  }, [value, reset]);
+  }, [values, reset]);
 
-  return { methods, fieldState, formState };
+  // Notify parent of form state changes (e.g. dirty) for external UI updates like enabling a "Save" button.
+  useEffect(() => {
+    onFormStateChange?.(formState);
+  }, [formState, onFormStateChange]);
+
+  return { methods: { ...methods, submit, reset: handleReset } };
 }

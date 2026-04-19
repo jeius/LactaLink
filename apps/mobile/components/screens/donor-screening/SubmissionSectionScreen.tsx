@@ -7,8 +7,8 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { FlashList } from '@/components/ui/FlashList';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import SubmissionFieldBlock from '@/features/donor-screening/components/blocks/SubmissionFieldBlock';
 import { useFormNavigation } from '@/features/donor-screening/components/contexts/FormNavigationProvider';
-import FieldBlock from '@/features/donor-screening/components/FieldBlock';
 import { useSubmissionFormSection } from '@/features/donor-screening/hooks/useSubmissionFormSection';
 import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
@@ -78,7 +78,7 @@ export default function SubmissionSectionScreen() {
             if (item.blockType === 'message') {
               return null; // TODO: render message block
             }
-            return <FieldBlock control={control} field={item} />;
+            return <SubmissionFieldBlock control={control} field={item} />;
           }}
         />
       </Form>

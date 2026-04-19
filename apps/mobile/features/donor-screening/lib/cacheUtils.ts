@@ -7,8 +7,8 @@ import { QueryClient } from '@tanstack/react-query';
 import {
   createDraftSubmissionQuery,
   createOrganizationScreeningFormQuery,
+  createScreeningFormQuery,
   createScreeningFormsInfQuery,
-  createStandardScreeningFormQuery,
   createSubmissionQuery,
 } from './queryOptions';
 
@@ -18,7 +18,7 @@ export function addDraftSubmissionToCache(client: QueryClient, data: DonorScreen
 }
 
 export function addScreeningFormToCache(client: QueryClient, data: DonorScreeningForm) {
-  const queryKey = createStandardScreeningFormQuery().queryKey;
+  const queryKey = createScreeningFormQuery(data.id).queryKey;
   client.setQueryData(queryKey, data);
 }
 
