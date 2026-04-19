@@ -15,8 +15,7 @@ const baseStyle = tva({
 });
 
 interface HeaderBackButtonProps
-  extends PressableProps,
-    Pick<AnimatedPressableProps, 'disablePressAnimation' | 'disableRipple'> {
+  extends PressableProps, Pick<AnimatedPressableProps, 'disablePressAnimation' | 'disableRipple'> {
   preventBack?: boolean;
   message?: string;
   toastAction?: React.ReactNode;
@@ -63,6 +62,9 @@ export function HeaderBackButton({
   }, [disable, toastID]);
 
   function handleOnPress(event: GestureResponderEvent) {
+    event.persist();
+    onPress?.(event);
+    if (event.defaultPrevented) return;
     if (!disable) {
       router.back();
     } else {
@@ -72,7 +74,6 @@ export function HeaderBackButton({
         duration: Infinity,
       });
     }
-    onPress?.(event);
   }
 
   if (!canGoBack) {
