@@ -41,8 +41,11 @@ export function LabelField<T extends FieldSchema>({ control, ...props }: FieldPr
       control={control as unknown as Control<FieldSchema>}
       name="label"
       label="Label"
-      textareaProps={{ placeholder: 'Enter the name of the field', className: 'h-32' }}
-      helperText="The text that will be shown to users when filling out this field. (e.g. First Name, Last Name, Email Address)"
+      textareaProps={{
+        placeholder: 'e.g. Full Name, When is your birthday?',
+        className: 'h-32',
+      }}
+      helperText="The question or prompt that will be shown to users when filling out the form."
       isRequired
     />
   );
@@ -55,8 +58,8 @@ export function PlaceholderField<T extends FieldSchema>({ control, ...props }: F
       control={control as unknown as Control<FieldSchema>}
       name="placeholder"
       label="Placeholder"
-      inputProps={{ placeholder: 'Enter the placeholder text' }}
-      helperText="The text that will be shown inside the field when it is empty."
+      inputProps={{ placeholder: 'e.g. Please select your birthdate' }}
+      helperText="A hint that will be shown inside the field when it's empty to provide additional guidance to users on what to enter."
     />
   );
 }
@@ -68,8 +71,11 @@ export function HelperTextField<T extends FieldSchema>({ control, ...props }: Fi
       control={control as unknown as Control<FieldSchema>}
       name="helperText"
       label="Helper Text"
-      textareaProps={{ placeholder: 'Enter the helper text', className: 'h-32' }}
-      helperText="The text that will be shown below the field to provide additional information to users."
+      textareaProps={{
+        placeholder: 'e.g. By specifying your preferences, this will allow us to ...',
+        className: 'h-32',
+      }}
+      helperText="Additional text that will be shown below the field to provide more context or instructions to users when filling out the form."
     />
   );
 }
@@ -89,7 +95,7 @@ export function DefaultValueField<T extends FieldSchema>({
 
   switch (valueType) {
     case 'boolean':
-      return <CheckboxField {...baseProps} />;
+      return <CheckboxField {...baseProps} label="Default Checked?" />;
     case 'date':
       return (
         <DateInputField {...baseProps} datePickerProps={{ placeholder: 'Select a default date' }} />
@@ -123,7 +129,7 @@ export function RequiredField<T extends FieldSchema>({ control, ...props }: Fiel
       control={control as unknown as Control<FieldSchema>}
       name="required"
       label="Required"
-      helperText="Whether users must fill out this field before submitting the form."
+      helperText="Whether users are required to fill out this field when submitting the form."
     />
   );
 }
@@ -147,6 +153,7 @@ export function WidthField<T extends FieldSchema>({ control, ...props }: FieldPr
       control={control as unknown as Control<FieldSchema>}
       name="width"
       label="Width"
+      helperText="The width of the field when displayed in the form."
       items={Object.values(WIDTH_OPTIONS)}
       transformItem={(item) => item}
       selectProps={{ showSelectedIcon: true }}
@@ -176,16 +183,16 @@ export function DynamicOptionField<T extends FieldSchema>({
             control={control as unknown as Control<FieldSchema>}
             name="dynamicOptionLabel"
             label="Dynamic Option Label"
-            inputProps={{ placeholder: 'Enter the label for the dynamic option' }}
-            helperText="The label for the dynamic option that will be shown to users when filling out the form."
+            inputProps={{ placeholder: 'e.g. Other' }}
+            helperText="The label for the dynamic option that allows users to specify their own answer."
           />
 
           <TextInputField
             control={control as unknown as Control<FieldSchema>}
             name="dynamicOptionPlaceholder"
             label="Dynamic Option Placeholder"
-            inputProps={{ placeholder: 'Enter the placeholder for the dynamic option' }}
-            helperText="The placeholder for the dynamic option that will be shown to users when filling out the form."
+            inputProps={{ placeholder: 'e.g. Please specify...' }}
+            helperText="The placeholder for the input that appears when users select the dynamic option to specify their own answer."
           />
         </>
       )}
