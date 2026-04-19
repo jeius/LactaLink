@@ -55,8 +55,8 @@ export function FieldWrapper<
       {contentPosition === 'first' ? (
         <>
           {children}
-          <FieldHelper text={helperText} style={helperTextStyle} className={helperTextClassName} />
           <FieldError text={error?.message} style={errorTextStyle} className={errorTextClassName} />
+          <FieldHelper text={helperText} style={helperTextStyle} className={helperTextClassName} />
         </>
       ) : contentPosition === 'last' ? (
         <>
