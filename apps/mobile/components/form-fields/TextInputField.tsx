@@ -41,6 +41,7 @@ export function TextInputField<
   name,
   isDisabled,
   isLoading,
+  contentPosition = 'first',
   inputProps: {
     size = 'md',
     containerClassName,
@@ -79,6 +80,7 @@ export function TextInputField<
   return (
     <FieldWrapper
       {...props}
+      contentPosition={contentPosition}
       isInvalid={invalid}
       error={error}
       isDisabled={isDisabled || isSubmitting}
