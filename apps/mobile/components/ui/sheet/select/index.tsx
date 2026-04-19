@@ -88,8 +88,8 @@ const SelectItem = forwardRef(function SelectItem<T>(
     if (Array.isArray(selected)) {
       return selected.some((item) => isEqual(item, value));
     }
-    return isEqual(selected, value);
-  }, [selected, value]);
+    return isEqual(selected, value) && !disableHighlight;
+  }, [disableHighlight, selected, value]);
 
   const handleSelect = useCallback(
     (e: GestureResponderEvent) => {
@@ -109,7 +109,7 @@ const SelectItem = forwardRef(function SelectItem<T>(
       <ActionSheet.Item
         {...props}
         ref={ref}
-        className={selectItemStyle({ className, isSelected: isSelected && !disableHighlight })}
+        className={selectItemStyle({ className, isSelected: isSelected })}
         onPress={handleSelect}
       />
     </SelectItemContext.Provider>

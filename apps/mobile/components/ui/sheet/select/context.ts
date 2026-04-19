@@ -29,10 +29,10 @@ function initStore<T, TMultiSelect extends boolean = false>(
     isMultiSelect: params.isMultiSelect ?? false,
     onSelect: (value) => params.onSelect?.(value as (TMultiSelect extends true ? T[] : T) | null),
     setSelected: (value) => {
-      const { isMultiSelect, selected, onSelect } = get();
+      const { isMultiSelect, selected, onSelect, disableHighlight } = get();
 
       if (!isMultiSelect) {
-        if (isEqual(value, selected)) {
+        if (isEqual(value, selected) && !disableHighlight) {
           set({ selected: null });
           onSelect?.(null as (TMultiSelect extends true ? T[] : T) | null);
         } else {
