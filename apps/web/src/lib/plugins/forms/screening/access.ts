@@ -34,6 +34,8 @@ export const associateOrganizationOrAdmin: Access = ({ req: { user } }) => {
 export const authenticatedAndPublished: Access = ({ req: { user } }) => {
   if (!user) return false;
 
+  if (isAdmin(user)) return true;
+
   const profile = user.profile;
 
   if (!profile) {
@@ -49,7 +51,7 @@ export const authenticatedAndPublished: Access = ({ req: { user } }) => {
         and: [
           { _status: { equals: 'draft' } },
           { 'organization.value': { equals: extractID(profile.value) } },
-          // { 'organization.relationTo': { equals: profile.relationTo } },
+          { 'organization.relationTo': { equals: profile.relationTo } },
         ],
       },
     ],
