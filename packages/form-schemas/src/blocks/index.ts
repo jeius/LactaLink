@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { checkboxBlockSchema } from './checkboxBlockSchema';
 import { dateBlockSchema } from './dateBlockSchema';
 import { emailBlockSchema } from './emailBlockSchema';
-import { messageBlockSchema } from './messageBlockSchema';
 import { multiSelectBlockSchema } from './multiSelectBlockSchema';
 import { numberBlockSchema } from './numberBlockSchema';
 import { radioBlockSchema } from './radioBlockSchema';
@@ -27,7 +26,6 @@ export const blockSchema = z.discriminatedUnion('blockType', [
   checkboxBlockSchema,
   dateBlockSchema,
   emailBlockSchema,
-  messageBlockSchema,
   multiSelectBlockSchema,
   numberBlockSchema,
   radioBlockSchema,
