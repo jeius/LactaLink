@@ -76,8 +76,33 @@ export function formFieldsOverrides(defaultFields: Field[]): Field[] {
     return draft;
   });
 
-  // Add new fields
-  newFields.push(
+  const filteredFields = newFields.filter((field) => field !== null);
+
+  return [
+    {
+      type: 'tabs',
+      tabs: [
+        { label: 'Form', fields: filteredFields },
+        {
+          label: 'Submissions',
+          fields: [
+            {
+              name: 'submissions',
+              label: 'Form Submissions',
+              type: 'join',
+              collection: 'donor-screening-submissions',
+              on: 'form',
+              admin: {
+                defaultColumns: ['submittedBy', 'submittedAt', 'isApproved'],
+                description: 'View submissions received for this form.',
+                allowCreate: false,
+              },
+              where: { _status: { equals: 'published' } },
+            },
+          ],
+        },
+      ],
+    },
     {
       name: 'organization',
       type: 'relationship',
@@ -121,35 +146,6 @@ export function formFieldsOverrides(defaultFields: Field[]): Field[] {
         description:
           'Unique identifier for this form used in the URL (e.g., "standard-donor-screening")',
       },
-    }
-  );
-
-  const filteredFields = newFields.filter((field) => field !== null);
-
-  return [
-    {
-      type: 'tabs',
-      tabs: [
-        { label: 'Form', fields: filteredFields },
-        {
-          label: 'Submissions',
-          fields: [
-            {
-              name: 'submissions',
-              label: 'Form Submissions',
-              type: 'join',
-              collection: 'donor-screening-submissions',
-              on: 'form',
-              admin: {
-                defaultColumns: ['submittedBy', 'submittedAt', 'isApproved'],
-                description: 'View submissions received for this form.',
-                allowCreate: false,
-              },
-              where: { _status: { equals: 'published' } },
-            },
-          ],
-        },
-      ],
     },
   ];
 }
