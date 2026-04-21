@@ -12,12 +12,14 @@ import { VStack } from '@/components/ui/vstack';
 import { useCreateDraftScreeningFormMutation } from '@/features/donor-screening/hooks/mutations';
 import { useMyOrgScreeningForm } from '@/features/donor-screening/hooks/useMyOrgScreeningForm';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { AlertCircleIcon, FileXIcon, RefreshCwIcon } from 'lucide-react-native';
 import { useEffect } from 'react';
 
-export default function FormCreate() {
+export default function FormCreateWithTemplate() {
+  const { id: templateID } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+
   const { form: draftForm, ...draftFormQuery } = useMyOrgScreeningForm({ isDraft: true });
 
   const {
@@ -31,10 +33,10 @@ export default function FormCreate() {
 
   useEffect(() => {
     if (isSuccess || draftForm) return;
-    createDraftForm().then((newForm) => {
+    createDraftForm(templateID).then((newForm) => {
       router.replace(`/donor-screening/form/${newForm.id}`, { withAnchor: true });
     });
-  }, [createDraftForm, router, isSuccess, draftForm]);
+  }, [templateID, createDraftForm, router, isSuccess, draftForm]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -43,7 +45,6 @@ export default function FormCreate() {
   }
 
   if (!error) return null;
-
   const errorMessage = extractErrorMessage(error);
 
   return (
@@ -60,10 +61,11 @@ export default function FormCreate() {
         {/* Title & description */}
         <VStack space="sm" className="items-center">
           <Heading size="xl" className="text-center">
-            Failed to Begin Form Creation
+            Failed to Load Template
           </Heading>
           <Text size="md" className="text-center text-typography-500">
-            We couldn&apos;t process your form creation. Please try again for a few minutes.
+            We couldn&apos;t copy the standard form to use as your template. You can try again or
+            start from scratch.
           </Text>
         </VStack>
 
@@ -77,7 +79,7 @@ export default function FormCreate() {
 
         {/* Actions */}
         <VStack space="sm" className="w-full">
-          <Button onPress={() => createDraftForm()}>
+          <Button onPress={() => createDraftForm(templateID)}>
             <ButtonIcon as={RefreshCwIcon} />
             <ButtonText>Try Again</ButtonText>
           </Button>
