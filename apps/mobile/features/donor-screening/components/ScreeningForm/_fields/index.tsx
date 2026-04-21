@@ -7,24 +7,20 @@ import { TextInputField } from '@/components/form-fields/TextInputField';
 import { BaseFieldProps } from '@/components/form-fields/types';
 import { VStack } from '@/components/ui/vstack';
 import { WIDTH_OPTIONS } from '@lactalink/enums';
-import { DonorScreeningFormField } from '@lactalink/types/collections';
-import { type Control } from 'react-hook-form';
+import { useWatch, type Control } from 'react-hook-form';
+import { BlockSchema } from '../../../lib/types';
 
-export { OptionsField } from './OptionsField';
-
-type FieldSchema = Exclude<DonorScreeningFormField, { blockType: 'message' }>;
-
-interface FieldProps<T extends FieldSchema> {
+interface FieldProps<T extends BlockSchema> {
   control: Control<T>;
   className?: BaseFieldProps<T>['className'];
   style?: BaseFieldProps<T>['style'];
 }
 
-export function NameField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function NameField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <TextInputField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="name"
       label="Name"
       inputProps={{ placeholder: 'Enter the name of the field' }}
@@ -34,11 +30,11 @@ export function NameField<T extends FieldSchema>({ control, ...props }: FieldPro
   );
 }
 
-export function LabelField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function LabelField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <TextAreaField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="label"
       label="Label"
       textareaProps={{
@@ -51,11 +47,11 @@ export function LabelField<T extends FieldSchema>({ control, ...props }: FieldPr
   );
 }
 
-export function PlaceholderField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function PlaceholderField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <TextInputField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="placeholder"
       label="Placeholder"
       inputProps={{ placeholder: 'e.g. Please select your birthdate' }}
@@ -64,11 +60,11 @@ export function PlaceholderField<T extends FieldSchema>({ control, ...props }: F
   );
 }
 
-export function HelperTextField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function HelperTextField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <TextAreaField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="helperText"
       label="Helper Text"
       textareaProps={{
@@ -80,14 +76,14 @@ export function HelperTextField<T extends FieldSchema>({ control, ...props }: Fi
   );
 }
 
-export function DefaultValueField<T extends FieldSchema>({
+export function DefaultValueField<T extends BlockSchema>({
   control,
   valueType,
   ...props
 }: FieldProps<T> & { valueType: 'text' | 'email' | 'date' | 'boolean' | 'number' }) {
-  const baseProps: BaseFieldProps<FieldSchema> = {
+  const baseProps: BaseFieldProps<BlockSchema> = {
     ...props,
-    control: control as unknown as Control<FieldSchema>,
+    control: control as unknown as Control<BlockSchema>,
     name: 'defaultValue',
     label: 'Default Value',
     helperText: 'The value that will be pre-filled in the field when the form is first loaded.',
@@ -122,11 +118,11 @@ export function DefaultValueField<T extends FieldSchema>({
   }
 }
 
-export function RequiredField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function RequiredField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <CheckboxField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="required"
       label="Required"
       helperText="Whether users are required to fill out this field when submitting the form."
@@ -134,11 +130,11 @@ export function RequiredField<T extends FieldSchema>({ control, ...props }: Fiel
   );
 }
 
-export function HiddenField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function HiddenField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <CheckboxField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="hidden"
       label="Hidden"
       helperText="Whether this field should be hidden from users when filling out the form."
@@ -146,11 +142,11 @@ export function HiddenField<T extends FieldSchema>({ control, ...props }: FieldP
   );
 }
 
-export function WidthField<T extends FieldSchema>({ control, ...props }: FieldProps<T>) {
+export function WidthField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
   return (
     <SelectInputField
       {...props}
-      control={control as unknown as Control<FieldSchema>}
+      control={control as unknown as Control<BlockSchema>}
       name="width"
       label="Width"
       helperText="The width of the field when displayed in the form."
@@ -161,26 +157,25 @@ export function WidthField<T extends FieldSchema>({ control, ...props }: FieldPr
   );
 }
 
-export function DynamicOptionField<T extends FieldSchema>({
-  control,
-  isChecked,
-  ...props
-}: FieldProps<T> & {
-  isChecked: boolean;
-}) {
+export function DynamicOptionField<T extends BlockSchema>({ control, ...props }: FieldProps<T>) {
+  const withDynamicOptions = useWatch({
+    control: control as unknown as Control<BlockSchema>,
+    name: 'withDynamicOption',
+  });
+
   return (
     <VStack {...props} space="md">
       <CheckboxField
-        control={control as unknown as Control<FieldSchema>}
+        control={control as unknown as Control<BlockSchema>}
         name="withDynamicOption"
         label="With Dynamic Option"
         helperText="If checked, adds an option that the user can specify."
       />
 
-      {isChecked && (
+      {withDynamicOptions && (
         <>
           <TextInputField
-            control={control as unknown as Control<FieldSchema>}
+            control={control as unknown as Control<BlockSchema>}
             name="dynamicOptionLabel"
             label="Dynamic Option Label"
             inputProps={{ placeholder: 'e.g. Other' }}
@@ -188,7 +183,7 @@ export function DynamicOptionField<T extends FieldSchema>({
           />
 
           <TextInputField
-            control={control as unknown as Control<FieldSchema>}
+            control={control as unknown as Control<BlockSchema>}
             name="dynamicOptionPlaceholder"
             label="Dynamic Option Placeholder"
             inputProps={{ placeholder: 'e.g. Please specify...' }}

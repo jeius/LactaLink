@@ -12,13 +12,27 @@ import {
   createSubmissionQuery,
 } from './queryOptions';
 
+type Options = {
+  isDraft?: boolean;
+  _status?: 'published' | 'draft';
+};
+
 export function addDraftSubmissionToCache(client: QueryClient, data: DonorScreeningSubmission) {
   const queryKey = createDraftSubmissionQuery(data.id).queryKey;
   client.setQueryData(queryKey, data);
 }
 
-export function addScreeningFormToCache(client: QueryClient, data: DonorScreeningForm) {
-  const queryKey = createScreeningFormQuery(data.id).queryKey;
+export function addSubmissionToCache(client: QueryClient, data: DonorScreeningSubmission) {
+  const queryKey = createSubmissionQuery(data.id).queryKey;
+  client.setQueryData(queryKey, data);
+}
+
+export function addScreeningFormToCache(
+  client: QueryClient,
+  data: DonorScreeningForm,
+  { isDraft }: Options = {}
+) {
+  const queryKey = createScreeningFormQuery(data.id, isDraft).queryKey;
   client.setQueryData(queryKey, data);
 }
 
@@ -30,15 +44,19 @@ export function addScreeningFormToInfCache(client: QueryClient, data: DonorScree
   });
 }
 
-export function addSubmissionToCache(client: QueryClient, data: DonorScreeningSubmission) {
-  const queryKey = createSubmissionQuery(data.id).queryKey;
-  client.setQueryData(queryKey, data);
-}
-
-export function addFormToOrganizationFormCache(client: QueryClient, data: DonorScreeningForm) {
+export function cacheOrganizationForm(
+  client: QueryClient,
+  data: DonorScreeningForm,
+  options?: Options
+) {
   const organization = data.organization;
   if (!organization) return;
 
-  const queryKey = createOrganizationScreeningFormQuery(organization).queryKey;
+  const queryKey = createOrganizationScreeningFormQuery({ organization, ...options }).queryKey;
   client.setQueryData(queryKey, data);
+}
+
+export function addScreeningFormToDraftCache(client: QueryClient, data: DonorScreeningForm) {
+  addScreeningFormToCache(client, data, { isDraft: true });
+  cacheOrganizationForm(client, data, { isDraft: true });
 }

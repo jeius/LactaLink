@@ -1,16 +1,17 @@
 import { FieldWrapper } from '@/components/form-fields/FieldWrapper';
 import { BaseFieldArrayProps } from '@/components/form-fields/types';
-import { DonorScreeningFormSchema } from '@lactalink/form-schemas';
-import { FieldPath, useFormState } from 'react-hook-form';
+import { FieldPath, FieldValues, useFormState } from 'react-hook-form';
 
-type ArrayFormControlProps<T extends DonorScreeningFormSchema> = Omit<
+type ArrayFormControlProps<T extends FieldValues> = Omit<
   BaseFieldArrayProps<T>,
   'contentPosition' | 'isInvalid' | 'error'
 >;
 
-export default function ArrayFormControl<
-  T extends DonorScreeningFormSchema = DonorScreeningFormSchema,
->({ name, control, ...props }: ArrayFormControlProps<T>) {
+export default function ArrayFormControl<T extends FieldValues = FieldValues>({
+  name,
+  control,
+  ...props
+}: ArrayFormControlProps<T>) {
   const fieldName = name as FieldPath<T>;
 
   const { errors } = useFormState({ control });

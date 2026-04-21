@@ -4,10 +4,10 @@ import { DonorScreeningFormSchema, donorScreeningFormSchema } from '@lactalink/f
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
 
 export function useScreeningForm(form?: DonorScreeningForm | null) {
-  const methods = useForm({
+  const methods = useForm<DonorScreeningFormSchema>({
     resolver: zodResolver(donorScreeningFormSchema),
     defaultValues: createDefaultValues(form),
   });
@@ -24,7 +24,7 @@ export function useScreeningForm(form?: DonorScreeningForm | null) {
 
 function createDefaultValues(
   form?: DonorScreeningForm | null
-): DonorScreeningFormSchema | undefined {
+): DefaultValues<DonorScreeningFormSchema> | undefined {
   const meUser = getMeUser();
   const profile = meUser?.profile;
   const defaultOrganization =
@@ -39,6 +39,7 @@ function createDefaultValues(
       organization: defaultOrganization,
       slug: undefined!, // Will be auto-generated on the backend if not provided
       title: '',
+      _status: 'draft',
     };
 
   const {
@@ -55,5 +56,5 @@ function createDefaultValues(
     organization: organization
       ? { relationTo: organization.relationTo, value: extractID(organization.value) }
       : defaultOrganization,
-  };
+  } as DefaultValues<DonorScreeningFormSchema>;
 }

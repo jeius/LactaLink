@@ -9,9 +9,10 @@ interface LinkItemProps {
   title: string;
   href?: Href;
   onRemove?: () => void;
+  isDisabled?: boolean;
 }
 
-export default function LinkItem({ title, href, onRemove }: LinkItemProps) {
+export default function LinkItem({ title, href, onRemove, isDisabled }: LinkItemProps) {
   const router = useRouter();
 
   function handlePress() {
@@ -21,6 +22,8 @@ export default function LinkItem({ title, href, onRemove }: LinkItemProps) {
   return (
     <Pressable
       aria-label={title}
+      aria-disabled={isDisabled}
+      disabled={isDisabled}
       className="overflow-hidden rounded-xl border border-outline-500 bg-background-0 px-4 py-3"
       onPress={handlePress}
     >

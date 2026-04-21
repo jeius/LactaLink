@@ -23,58 +23,70 @@ import {
 
 import { BlockConfig, BlockType, FieldOption } from './types';
 
+export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
+  email: 'Email',
+  text: 'Short Answer',
+  textarea: 'Long Answer',
+  select: 'Dropdown',
+  'multi-select': 'Multi-Select',
+  checkbox: 'Checkbox',
+  radio: 'Single Choice',
+  number: 'Number',
+  date: 'Date',
+};
+
 export const FIELD_OPTIONS: FieldOption[] = [
   {
-    label: 'Text',
+    label: BLOCK_TYPE_LABELS['text'],
     value: 'text',
     icon: CaseSensitiveIcon,
     description: 'A simple text input field for short answers.',
   },
   {
-    label: 'Textarea',
+    label: BLOCK_TYPE_LABELS['textarea'],
     value: 'textarea',
     icon: CaseUpperIcon,
     description: 'A larger text input field for longer answers.',
   },
   {
-    label: 'Select',
+    label: BLOCK_TYPE_LABELS['select'],
     value: 'select',
     icon: ListIcon,
     description: 'A dropdown field that allows users to select one option from a list.',
   },
   {
-    label: 'Multi Select',
+    label: BLOCK_TYPE_LABELS['multi-select'],
     value: 'multi-select',
     icon: ListChecksIcon,
     description: 'A dropdown field that allows users to select multiple options from a list.',
   },
   {
-    label: 'Checkbox',
+    label: BLOCK_TYPE_LABELS['checkbox'],
     value: 'checkbox',
     icon: CheckSquareIcon,
     description: 'A field that allows users to agree/disagree by checking boxes.',
   },
   {
-    label: 'Radio',
+    label: BLOCK_TYPE_LABELS['radio'],
     value: 'radio',
     icon: CircleDotIcon,
     description:
       'A field that allows users to select one option from a list by tapping on a circle.',
   },
   {
-    label: 'Date',
+    label: BLOCK_TYPE_LABELS['date'],
     value: 'date',
     icon: Calendar1Icon,
     description: 'A field that allows users to select a date from a calendar.',
   },
   {
-    label: 'Email',
+    label: BLOCK_TYPE_LABELS['email'],
     value: 'email',
     icon: MailIcon,
     description: 'A field that allows users to enter an email address and validates the format.',
   },
   {
-    label: 'Number',
+    label: BLOCK_TYPE_LABELS['number'],
     value: 'number',
     icon: BinaryIcon,
     description: 'A field that allows users to enter a number and validates the input.',

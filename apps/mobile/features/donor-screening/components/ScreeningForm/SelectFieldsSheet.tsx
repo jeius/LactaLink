@@ -24,16 +24,14 @@ export default function SelectFieldsSheet({ onSelect, trigger }: SelectFieldsShe
     (value: BlockType | undefined | null) => {
       if (!value) return;
 
-      const baseFields = { name: '', label: undefined! };
-
       switch (value) {
         case 'select':
         case 'multi-select':
         case 'radio':
-          onSelect?.({ ...baseFields, blockType: value, options: [] });
+          onSelect?.({ blockType: value, options: [] } as unknown as BlockSchema);
           break;
         default:
-          onSelect?.({ ...baseFields, blockType: value });
+          onSelect?.({ blockType: value } as BlockSchema);
           break;
       }
     },

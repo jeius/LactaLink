@@ -2,6 +2,7 @@ import { getApiClient } from '@lactalink/api';
 import { UserProfile } from '@lactalink/types';
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
+import { Where } from 'payload';
 
 const DEPTH = 2;
 
@@ -31,19 +32,31 @@ export async function getStandardScreeningForm(init?: RequestInit): Promise<Dono
 }
 
 export async function getFormByOrganization(
-  organization: Exclude<UserProfile, { relationTo: 'individuals' }>,
+  {
+    organization,
+    _status,
+    isDraft = false,
+  }: {
+    organization: Exclude<UserProfile, { relationTo: 'individuals' }>;
+    _status?: 'published' | 'draft';
+    isDraft?: boolean;
+  },
   init?: RequestInit
 ): Promise<DonorScreeningForm | null> {
+  const filters: Where[] = [
+    { 'organization.value': { equals: extractID(organization.value) } },
+    { 'organization.relationTo': { equals: organization.relationTo } },
+  ];
+
+  if (_status) {
+    filters.push({ _status: { equals: _status } });
+  }
+
   const forms = await getApiClient().find(
     {
       collection: 'donor-screening-forms',
-      where: {
-        and: [
-          { _status: { equals: 'published' } },
-          { 'organization.value': { equals: extractID(organization.value) } },
-          { 'organization.relationTo': { equals: organization.relationTo } },
-        ],
-      },
+      draft: isDraft,
+      where: { and: filters },
       pagination: false,
       limit: 1,
       depth: DEPTH,
@@ -74,12 +87,16 @@ export async function getAllScreeningForms(
   );
 }
 
-export async function getScreeningForm(id: string, init?: RequestInit) {
+export async function getScreeningForm(
+  { id, isDraft = false }: { id: string; isDraft?: boolean },
+  init?: RequestInit
+) {
   return getApiClient().findByID(
     {
       collection: 'donor-screening-forms',
       id,
       depth: DEPTH,
+      draft: isDraft,
     },
     init
   );

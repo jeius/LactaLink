@@ -9,7 +9,7 @@ import { BaseFieldProps } from '@/components/form-fields/types';
 import { FieldWidth } from '@lactalink/types/payload-generated-types';
 import { Control } from 'react-hook-form';
 import { StyleProp, ViewStyle } from 'react-native';
-import { BlockSchema } from './_types';
+import { BlockSchema } from '../../lib/types';
 
 const widthMap: Record<NonNullable<FieldWidth>, `${number}%`> = {
   full: '100%',

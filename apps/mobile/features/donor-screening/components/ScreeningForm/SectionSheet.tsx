@@ -1,7 +1,7 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
-import { useForm } from '@/components/contexts/FormProvider';
+import { Form, useForm } from '@/components/contexts/FormProvider';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { LeaveToastAction } from '@/components/toasts/ToastAction';
@@ -14,7 +14,6 @@ import { VStackProps } from '@/components/ui/vstack';
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DonorScreeningFormSchema, SectionSchema, sectionSchema } from '@lactalink/form-schemas';
-import { formatKebabToTitle } from '@lactalink/utilities/formatters';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
@@ -30,6 +29,7 @@ import {
 } from 'react-hook-form';
 import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
+import { BLOCK_TYPE_LABELS } from '../../lib/constants';
 import { BlockSchema, FormCreateSearchParams } from '../../lib/types';
 import ArrayFormControl from './ArrayFormControl';
 import LinkItem from './LinkItem';
@@ -123,26 +123,28 @@ export default function SectionSheet({ name }: Props) {
         )}
       </HStack>
 
-      <FlashList
-        data={fields}
-        keyExtractor={(item) => item._id}
-        renderScrollComponent={KeyboardAvoidingScrollView}
-        className="flex-1"
-        headerClassName="mb-4 gap-6"
-        contentContainerClassName="grow p-4"
-        footerClassName="mt-4 gap-6 flex-1 justify-between"
-        ListHeaderComponent={<ListHeader control={methods.control} />}
-        ListFooterComponent={<ListFooter onSelect={append} onConfirm={submit} />}
-        ItemSeparatorComponent={() => <Box className="h-4" />}
-        renderItem={({ index }) => (
-          <RenderItem
-            control={methods.control}
-            name="fields"
-            index={index}
-            onRemove={() => remove(index)}
-          />
-        )}
-      />
+      <Form {...methods}>
+        <FlashList
+          data={fields}
+          keyExtractor={(item) => item._id}
+          renderScrollComponent={KeyboardAvoidingScrollView}
+          className="flex-1"
+          headerClassName="mb-4 gap-6"
+          contentContainerClassName="grow p-4"
+          footerClassName="mt-4 gap-6 flex-1 justify-between"
+          ListHeaderComponent={<ListHeader control={methods.control} />}
+          ListFooterComponent={<ListFooter onSelect={append} onConfirm={submit} />}
+          ItemSeparatorComponent={() => <Box className="h-4" />}
+          renderItem={({ index }) => (
+            <RenderItem
+              control={methods.control}
+              name="fields"
+              index={index}
+              onRemove={() => remove(index)}
+            />
+          )}
+        />
+      </Form>
     </SafeArea>
   );
 }
@@ -205,13 +207,13 @@ type RenderItemProps = {
 };
 
 export function RenderItem({ onRemove, name, control, index }: RenderItemProps) {
-  const searchParams = useLocalSearchParams<FormCreateSearchParams>();
+  const { id, ...searchParams } = useLocalSearchParams();
   const fieldName = `${name}.${index}` as const;
 
   const value = useWatch({ name: fieldName, control });
-  const isBlock = value && 'blockType' in value && value.blockType !== 'message';
+  const isBlock = value && 'blockType' in value;
   const title = isBlock
-    ? value.label || `Field ${index + 1} - ${formatKebabToTitle(value.blockType)}`
+    ? value.label || `Field ${index + 1} - ${BLOCK_TYPE_LABELS[value.blockType]}`
     : `Field ${index + 1}`;
 
   const params: FormCreateSearchParams = {
@@ -219,9 +221,9 @@ export function RenderItem({ onRemove, name, control, index }: RenderItemProps) 
     name: searchParams.name + '.' + fieldName,
   };
   const href: Href = {
-    pathname: `/donor-screening/form/create/field`,
-    params,
-  };
+    pathname: `/donor-screening/form/${id}/field`,
+    params: params,
+  } as Href;
 
   return <LinkItem title={title} href={href} onRemove={onRemove} />;
 }

@@ -2,7 +2,7 @@ import { UserProfile } from '@lactalink/types';
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { addFormToOrganizationFormCache } from '../lib/cacheUtils';
+import { cacheOrganizationForm } from '../lib/cacheUtils';
 import {
   createDraftSubmissionQuery,
   createOrganizationScreeningFormQuery,
@@ -16,14 +16,16 @@ export function useStandardScreeningFormQuery() {
   return useQuery(createStandardScreeningFormQuery());
 }
 
-export function useScreeningFormQuery(id: string | null | undefined) {
-  return useQuery(createScreeningFormQuery(id));
+export function useScreeningFormQuery(id: string | null | undefined, isDraft?: boolean) {
+  return useQuery(createScreeningFormQuery(id, isDraft));
 }
 
-export function useOrganizationScreeningFormQuery(
-  organization: Exclude<UserProfile, { relationTo: 'individuals' }> | null | undefined
-) {
-  return useQuery(createOrganizationScreeningFormQuery(organization));
+export function useOrganizationScreeningFormQuery(params: {
+  organization: Exclude<UserProfile, { relationTo: 'individuals' }> | null | undefined;
+  _status?: 'published' | 'draft';
+  isDraft?: boolean;
+}) {
+  return useQuery(createOrganizationScreeningFormQuery(params));
 }
 
 export function useDraftSubmissionQuery(formID: string | null | undefined) {
@@ -52,7 +54,7 @@ export function useInfiniteScreeningForms() {
         if (query.isPlaceholderData) return;
 
         if (form.organization) {
-          addFormToOrganizationFormCache(queryClient, form);
+          cacheOrganizationForm(queryClient, form);
         }
       });
     });

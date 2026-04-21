@@ -16,11 +16,31 @@ import {
   getSubmittedStandardForm,
 } from './api/find/getSubmission';
 
+// #region Screening Forms
 export function createStandardScreeningFormQuery() {
   return queryOptions({
     queryKey: [...QUERY_KEYS.SCREENING_FORMS.ONE, 'standard'],
     queryFn: async ({ signal }) => {
       return getStandardScreeningForm({ signal });
+    },
+  });
+}
+
+export function createScreeningFormQuery(
+  form: string | DonorScreeningForm | null | undefined,
+  isDraft = false
+) {
+  const id = extractID(form);
+  return queryOptions({
+    enabled: !!id,
+    queryKey: [...QUERY_KEYS.SCREENING_FORMS.ONE, isDraft ? 'draft' : null, id].filter(Boolean),
+    queryFn: async ({ signal }) => {
+      if (!id) return null;
+      return getScreeningForm({ id, isDraft }, { signal });
+    },
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return extractCollection(form) || undefined;
     },
   });
 }
@@ -38,21 +58,37 @@ export function createScreeningFormsInfQuery() {
   });
 }
 
-export function createOrganizationScreeningFormQuery(
-  organization: Exclude<UserProfile, { relationTo: 'individuals' }> | null | undefined
-) {
+export function createOrganizationScreeningFormQuery({
+  organization,
+  ...params
+}: {
+  organization: Exclude<UserProfile, { relationTo: 'individuals' }> | null | undefined;
+  _status?: 'published' | 'draft';
+  isDraft?: boolean;
+}) {
   const id = organization ? extractID(organization.value) : null;
   const relationTo = organization?.relationTo || null;
   return queryOptions({
     enabled: !!id && !!relationTo,
-    queryKey: [...QUERY_KEYS.SCREENING_FORMS.ONE, relationTo, id].filter(Boolean),
+    queryKey: [
+      ...QUERY_KEYS.SCREENING_FORMS.ONE,
+      params.isDraft ? 'draft' : undefined,
+      params._status ? `status:${params._status}` : undefined,
+      relationTo,
+      id,
+    ].filter(Boolean),
     queryFn: ({ signal }) => {
-      if (!organization) return null;
-      return getFormByOrganization(organization, { signal });
+      if (!id || !relationTo) return null;
+      return getFormByOrganization(
+        { ...params, organization: { relationTo, value: id } },
+        { signal }
+      );
     },
   });
 }
+// #endregion
 
+// #region Submissions
 export function createDraftSubmissionQuery(formID: string | null | undefined) {
   return queryOptions({
     enabled: !!formID,
@@ -85,19 +121,4 @@ export function createSubmissionQuery(submissionID: string | null | undefined) {
     },
   });
 }
-
-export function createScreeningFormQuery(form: string | DonorScreeningForm | null | undefined) {
-  const id = extractID(form);
-  return queryOptions({
-    enabled: !!id,
-    queryKey: [...QUERY_KEYS.SCREENING_FORMS.ONE, id],
-    queryFn: async ({ signal }) => {
-      if (!id) return null;
-      return getScreeningForm(id, { signal });
-    },
-    placeholderData: (prev) => {
-      if (prev) return prev;
-      return extractCollection(form) || undefined;
-    },
-  });
-}
+// #endregion

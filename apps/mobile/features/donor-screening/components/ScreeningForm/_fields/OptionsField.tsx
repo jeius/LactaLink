@@ -4,7 +4,6 @@ import ArrayField, {
 } from '@/components/form-fields/ArrayField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { BaseFieldProps } from '@/components/form-fields/types';
-import { Accordion } from '@/components/ui/accordion';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { FlashList, ListRenderItemInfo } from '@/components/ui/FlashList';
@@ -40,17 +39,15 @@ export function OptionsField<T extends FieldSchema>({ control, ...props }: Field
 }
 
 function OptionsFieldRender({ fields, ...props }: ArrayFieldRenderProps) {
-  const defaultOption = useMemo<OptionSchema>(() => ({ value: '', label: '' }), []);
+  const defaultOption = useMemo<OptionSchema>(() => ({ label: '' }) as OptionSchema, []);
   return (
     <VStack {...props} space="md" className="mt-2">
-      <Accordion>
-        <FlashList
-          data={fields}
-          keyExtractor={(item) => item._id}
-          ItemSeparatorComponent={() => <Box className="h-3" />}
-          renderItem={(props) => <OptionsFieldRenderItem {...props} />}
-        />
-      </Accordion>
+      <FlashList
+        data={fields}
+        keyExtractor={(item) => item._id}
+        ItemSeparatorComponent={() => <Box className="h-3" />}
+        renderItem={(props) => <OptionsFieldRenderItem {...props} />}
+      />
 
       <ArrayField.Append asChild defaultValues={defaultOption}>
         <Button variant="outline" size="sm">
@@ -98,8 +95,10 @@ function OptionsFieldRenderItem({ index }: ListRenderItemInfo<Record<'_id', stri
 
   // Auto-generate option value
   useEffect(() => {
-    onChangeValue(`option${index + 1}`);
-  }, [fieldName, index, onChangeValue]);
+    if (!value || value.trim() === '') {
+      onChangeValue(`option${index + 1}`);
+    }
+  }, [fieldName, index, onChangeValue, value]);
 
   return (
     <HStack space="md" className="items-center gap-2">
@@ -119,7 +118,7 @@ function OptionsFieldRenderItem({ index }: ListRenderItemInfo<Record<'_id', stri
           variant="ghost"
           size="sm"
           action="negative"
-          className="h-fit w-fit p-2"
+          className="h-fit w-fit p-3"
           onPress={handleOnRemove}
         >
           <ButtonIcon as={Trash2Icon} />

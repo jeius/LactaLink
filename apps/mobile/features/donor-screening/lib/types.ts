@@ -1,5 +1,5 @@
 import { DonorScreeningFormSchema } from '@lactalink/form-schemas';
-import { type BlockSchema as B } from '@lactalink/form-schemas/blocks';
+import { OptionSchema, type BlockSchema as B } from '@lactalink/form-schemas/blocks';
 import { type LucideIcon } from 'lucide-react-native';
 import type {
   Control,
@@ -12,7 +12,6 @@ import { type ZodType } from 'zod';
 
 export type FormCreateSearchParams = {
   name?: string;
-  formID?: string;
 };
 
 export type BlockSchema = Exclude<B, { blockType: 'message' }>;
@@ -35,7 +34,7 @@ export interface BlockConfig {
   hasOptions: boolean;
   hasDynamicOption: boolean;
   defaultLabel?: string;
-  defaultOptions?: unknown[];
+  defaultOptions?: OptionSchema[];
 }
 
 /** Imperative handle exposed via ref for FieldBlock. */
