@@ -14,7 +14,10 @@ import { useEffect } from 'react';
  * @param error - The error object to be handled.
  * @returns void
  */
-export function useErrorBoundary(error: unknown) {
+export function useErrorBoundary(
+  error: unknown,
+  { navigationType = 'push' }: { navigationType?: 'push' | 'replace' } = {}
+) {
   const router = useRouter();
 
   useEffect(() => {
@@ -25,7 +28,11 @@ export function useErrorBoundary(error: unknown) {
         status: extractErrorStatus(error).toString(),
       };
 
-      router.push({ pathname: '/error', params });
+      if (navigationType === 'push') {
+        router.push({ pathname: '/error', params });
+      } else {
+        router.replace({ pathname: '/error', params });
+      }
     }
-  }, [error, router]);
+  }, [error, navigationType, router]);
 }
