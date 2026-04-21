@@ -14,6 +14,8 @@ export default function OrganizationTabsLayout() {
         tabBarActiveTintColor: getColor('primary', '500'),
         tabBarPosition: 'bottom',
         tabBarLabelPosition: 'below-icon',
+        headerShown: false,
+        animation: 'shift',
       }}
     >
       <Tabs.Screen
