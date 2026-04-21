@@ -3357,6 +3357,14 @@ export interface DonorScreeningForm {
         id?: string | null;
       }[]
     | null;
+  /**
+   * View submissions received for this form.
+   */
+  submissions?: {
+    docs?: (string | DonorScreeningSubmission)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   organization?:
     | ({
         relationTo: 'hospitals';
@@ -3374,14 +3382,6 @@ export interface DonorScreeningForm {
    * Unique identifier for this form used in the URL (e.g., "standard-donor-screening")
    */
   slug: string;
-  /**
-   * View submissions received for this form.
-   */
-  submissions?: {
-    docs?: (string | DonorScreeningSubmission)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -5349,10 +5349,10 @@ export interface DonorScreeningFormsSelect<T extends boolean = true> {
         message?: T;
         id?: T;
       };
+  submissions?: T;
   organization?: T;
   isDefault?: T;
   slug?: T;
-  submissions?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
