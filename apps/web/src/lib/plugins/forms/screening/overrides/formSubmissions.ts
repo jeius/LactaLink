@@ -53,10 +53,15 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
     }),
     {
       name: 'submitterEmail',
-      label: 'Submitted By',
       type: 'text',
       virtual: 'submittedBy.email',
       admin: { hidden: true },
+    },
+    {
+      name: 'submitterName',
+      type: 'text',
+      virtual: true,
+      admin: { position: 'sidebar' },
     },
     {
       name: 'submittedAt',
@@ -66,10 +71,22 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
       admin: { position: 'sidebar', readOnly: true },
     },
     {
-      name: 'isApproved',
-      label: 'Approved?',
-      type: 'checkbox',
+      type: 'row',
       admin: { position: 'sidebar' },
+      fields: [
+        {
+          name: 'isApproved',
+          label: 'Approved',
+          type: 'checkbox',
+          admin: { width: '50%' },
+        },
+        {
+          name: 'isRejected',
+          label: 'Rejected',
+          type: 'checkbox',
+          admin: { width: '50%' },
+        },
+      ],
     },
     {
       type: 'row',
@@ -88,6 +105,7 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
               },
             ],
           },
+          admin: { width: '50%' },
         },
         {
           name: 'approvedBy',
@@ -104,6 +122,7 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
               },
             ],
           },
+          admin: { width: '50%' },
         },
       ],
       admin: {
@@ -122,13 +141,14 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
           hooks: {
             beforeChange: [
               ({ value, siblingData }) => {
-                if (siblingData?.isApproved === false && (!value || value.trim() === '')) {
+                if (siblingData?.isRejected === true && (!value || value.trim() === '')) {
                   return new Date().toISOString();
                 }
                 return value;
               },
             ],
           },
+          admin: { width: '50%' },
         },
         {
           name: 'rejectedBy',
@@ -145,12 +165,13 @@ export function formSubmissionFieldsOverrides(defaultFields: Field[]): Field[] {
               },
             ],
           },
+          admin: { width: '50%' },
         },
       ],
       admin: {
         position: 'sidebar',
         readOnly: true,
-        condition: (_, siblingData) => siblingData?.isApproved === false,
+        condition: (_, siblingData) => siblingData?.isRejected === true,
       },
     },
   ];

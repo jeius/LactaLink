@@ -3821,8 +3821,10 @@ export interface DonorScreeningSubmission {
    */
   submittedBy: string | User;
   submitterEmail?: string | null;
+  submitterName?: string | null;
   submittedAt: string;
   isApproved?: boolean | null;
+  isRejected?: boolean | null;
   approvedAt?: string | null;
   approvedBy?: (string | null) | User;
   rejectedAt?: string | null;
@@ -5575,8 +5577,10 @@ export interface DonorScreeningSubmissionsSelect<T extends boolean = true> {
       };
   submittedBy?: T;
   submitterEmail?: T;
+  submitterName?: T;
   submittedAt?: T;
   isApproved?: T;
+  isRejected?: T;
   approvedAt?: T;
   approvedBy?: T;
   rejectedAt?: T;

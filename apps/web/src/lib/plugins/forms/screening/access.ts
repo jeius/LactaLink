@@ -65,3 +65,27 @@ export const submitterOrAdmin: Access = ({ req: { user } }) => {
 
   return { submittedBy: { equals: user.id } };
 };
+
+export const submitterOrAssociatedOrgOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false;
+
+  if (isAdmin(user)) return true;
+
+  // Allow users to access their own submissions
+  const filters: Where[] = [{ submittedBy: { equals: user.id } }];
+
+  // If the user is an organization where the submission was submitted to, allow them
+  // to access the published only.
+  const profile = user.profile;
+  if (profile && profile.relationTo !== 'individuals') {
+    filters.push({
+      and: [
+        { 'form.organization.value': { equals: extractID(profile.value) } },
+        { 'form.organization.relationTo': { equals: profile.relationTo } },
+        { _status: { equals: 'published' } },
+      ],
+    });
+  }
+
+  return { or: filters } as Where;
+};

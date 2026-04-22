@@ -11,6 +11,7 @@ import {
   authenticatedAndPublished,
   organizationOrAdmin,
   submitterOrAdmin,
+  submitterOrAssociatedOrgOrAdmin,
 } from './access';
 import {
   defaultValue,
@@ -24,6 +25,7 @@ import {
   required,
   width,
 } from './fields';
+import { afterReadSubmission } from './hooks/afterRead/submission';
 import { formFieldsOverrides } from './overrides/form';
 import { formSubmissionFieldsOverrides } from './overrides/formSubmissions';
 
@@ -64,9 +66,12 @@ export const screeningForm = formBuilderPlugin({
     },
     access: {
       create: authenticated,
-      read: submitterOrAdmin,
+      read: submitterOrAssociatedOrgOrAdmin,
       update: submitterOrAdmin,
       delete: () => false,
+    },
+    hooks: {
+      afterRead: [afterReadSubmission],
     },
     fields: ({ defaultFields }) => formSubmissionFieldsOverrides(defaultFields),
   },
