@@ -1,44 +1,39 @@
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
-import { useMeUser } from '@/hooks/auth/useAuth';
 import { useUserPresence } from '@/hooks/live-updates/useUserPresence';
 import { isMeUser } from '@/lib/utils/isMeUser';
 import { UserProfile } from '@lactalink/types';
-import { Avatar as AvatarType } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { useRecyclingState } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { ComponentProps } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { AnimatedPressable } from './animated/pressable';
 import * as UIAvatar from './ui/avatar';
 import { Skeleton } from './ui/skeleton';
 
-type AvatarProps = ComponentProps<typeof UIAvatar.Avatar> & {
+type AvatarProps = UIAvatar.AvatarProps & {
   showBadge?: boolean;
-  status?: ComponentProps<typeof UIAvatar.AvatarBadge>['status'];
-  details?: { avatar: AvatarType | null; name: string };
+  status?: UIAvatar.AvatarBadgeProps['status'];
   onLoad?: () => void;
   fadeDuration?: number;
+  profile?: UserProfile | null;
 };
 
 export default function Avatar({
   showBadge = false,
-  status: badgeStatus,
-  details,
+  status: badgeStatus = 'online',
+  profile: profileProp,
   onLoad,
   fadeDuration,
   ...props
 }: AvatarProps) {
-  const { data: user, isLoading } = useMeUser();
-  const profile = extractCollection(user?.profile?.value);
+  const { data, isLoading } = useProfileData(profileProp);
+  const profile = data?.value;
 
-  const avatar = (details ? details.avatar : extractCollection(profile?.avatar)) || null;
-
-  const avatarName = (details ? details.name : profile?.displayName) || 'User';
+  const avatar = extractCollection(profile?.avatar);
+  const avatarName = profile?.displayName || 'User';
 
   let avatarUrl: string | null = avatar?.url || null;
-
   switch (props.size) {
     case 'xs':
       avatarUrl = avatar?.sizes?.icon?.url || avatarUrl;
@@ -52,30 +47,30 @@ export default function Avatar({
   }
 
   return (
-    <>
-      {isLoading && <Skeleton className="h-12 w-12" speed={4} variant="circular" />}
-
-      {!isLoading && (
-        <UIAvatar.Avatar {...props}>
+    <UIAvatar.Avatar {...props} status={badgeStatus}>
+      {isLoading ? (
+        <Skeleton className="flex-1" speed={4} variant="circular" />
+      ) : (
+        <>
           {avatarUrl ? (
             <UIAvatar.AvatarImage
               source={{ uri: avatarUrl }}
               alt={`Profile picture of ${avatarName}`}
               onLoad={onLoad}
-              fadeDuration={fadeDuration}
+              // fadeDuration={fadeDuration}
+              transition={{ duration: fadeDuration, effect: 'cross-dissolve' }}
             />
           ) : (
-            <UIAvatar.AvatarFallbackText>{avatarName}</UIAvatar.AvatarFallbackText>
+            <UIAvatar.AvatarFallbackIcon />
           )}
-          {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
-        </UIAvatar.Avatar>
+          {showBadge && <UIAvatar.AvatarBadge />}
+        </>
       )}
-    </>
+    </UIAvatar.Avatar>
   );
 }
 
-interface ProfileAvatarProps extends Omit<AvatarProps, 'details'> {
-  profile?: UserProfile;
+interface ProfileAvatarProps extends AvatarProps {
   enablePress?: boolean;
   isLoading?: boolean;
 }
