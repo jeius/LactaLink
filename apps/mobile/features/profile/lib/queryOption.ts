@@ -23,7 +23,7 @@ export function createInfiniteUserPostsQuery(profile: PopulatedUserProfile) {
   });
 }
 
-export function createUserProfileQuery(profile: UserProfile | undefined) {
+export function createUserProfileQuery(profile: UserProfile | undefined | null) {
   const profileDoc = extractCollection(profile?.value) ?? undefined;
   const slug = profile?.relationTo;
   const id = extractID(profile?.value);
