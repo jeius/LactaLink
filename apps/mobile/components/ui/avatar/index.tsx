@@ -4,9 +4,11 @@ import { createAvatar } from '@gluestack-ui/core/avatar/creator';
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
 import { Image as ExpoImage } from 'expo-image';
+import { UserIcon } from 'lucide-react-native';
 import { cssInterop } from 'nativewind';
-import React from 'react';
+import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from 'react';
 import { Platform, Text, View } from 'react-native';
+import { Icon, IconProps } from '../icon';
 
 const StyledImage = cssInterop(ExpoImage, { className: 'style' });
 
@@ -31,12 +33,21 @@ const avatarStyle = tva({
       xl: 'h-24 w-24',
       '2xl': 'h-32 w-32',
     },
+    status: {
+      online: '',
+      offline: '',
+      away: '',
+    },
+    action: {
+      primary: 'bg-primary-500',
+      muted: 'bg-background-100',
+      default: 'bg-typography-900',
+    },
   },
 });
 
 const avatarFallbackTextStyle = tva({
   base: 'text-transform:uppercase overflow-hidden font-semibold text-typography-0 web:cursor-default',
-
   parentVariants: {
     size: {
       xs: 'text-2xs',
@@ -45,6 +56,30 @@ const avatarFallbackTextStyle = tva({
       lg: 'text-xl',
       xl: 'text-3xl',
       '2xl': 'text-5xl',
+    },
+    action: {
+      primary: 'text-primary-0',
+      muted: 'text-typography-400',
+      default: 'text-typography-0',
+    },
+  },
+});
+
+const avatarFallbackIconStyle = tva({
+  base: '',
+  parentVariants: {
+    action: {
+      primary: 'text-primary-0',
+      muted: 'text-typography-400',
+      default: 'text-typography-0',
+    },
+    size: {
+      xs: 'h-4 w-4',
+      sm: 'h-6 w-6',
+      md: 'h-8 w-8',
+      lg: 'h-12 w-12',
+      xl: 'h-16 w-16',
+      '2xl': 'h-24 w-24',
     },
   },
 });
@@ -55,13 +90,6 @@ const avatarGroupStyle = tva({
 
 const avatarBadgeStyle = tva({
   base: 'absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-background-0 bg-success-400',
-  variants: {
-    status: {
-      online: 'bg-success-400',
-      offline: 'bg-background-300',
-      away: 'bg-warning-500',
-    },
-  },
   parentVariants: {
     size: {
       xs: 'h-2 w-2',
@@ -71,6 +99,11 @@ const avatarBadgeStyle = tva({
       xl: 'h-6 w-6',
       '2xl': 'h-8 w-8',
     },
+    status: {
+      online: 'bg-success-400',
+      offline: 'bg-background-300',
+      away: 'bg-warning-500',
+    },
   },
 });
 
@@ -78,29 +111,29 @@ const avatarImageStyle = tva({
   base: 'absolute h-full w-full rounded-full',
 });
 
-type IAvatarProps = Omit<React.ComponentPropsWithoutRef<typeof UIAvatar>, 'context'> &
+type IAvatarProps = Omit<ComponentPropsWithoutRef<typeof UIAvatar>, 'context'> &
   VariantProps<typeof avatarStyle>;
 
-const Avatar = React.forwardRef<React.ComponentRef<typeof UIAvatar>, IAvatarProps>(function Avatar(
-  { className, size = 'md', ...props },
+const Avatar = forwardRef<ComponentRef<typeof UIAvatar>, IAvatarProps>(function Avatar(
+  { className, size = 'md', status = 'online', action = 'primary', ...props },
   ref
 ) {
   return (
     <UIAvatar
       ref={ref}
       {...props}
-      className={avatarStyle({ size, class: className })}
-      context={{ size }}
+      className={avatarStyle({ size, class: className, action })}
+      context={{ size, status, action }}
     />
   );
 });
 
-type IAvatarBadgeProps = React.ComponentPropsWithoutRef<typeof UIAvatar.Badge> &
+type IAvatarBadgeProps = ComponentPropsWithoutRef<typeof UIAvatar.Badge> &
   VariantProps<typeof avatarBadgeStyle>;
 
-const AvatarBadge = React.forwardRef<React.ComponentRef<typeof UIAvatar.Badge>, IAvatarBadgeProps>(
+const AvatarBadge = forwardRef<ComponentRef<typeof UIAvatar.Badge>, IAvatarBadgeProps>(
   function AvatarBadge({ className, size, status = 'online', ...props }, ref) {
-    const { size: parentSize } = useStyleContext(SCOPE);
+    const { size: parentSize, status: parentStatus } = useStyleContext(SCOPE);
 
     return (
       <UIAvatar.Badge
@@ -109,6 +142,7 @@ const AvatarBadge = React.forwardRef<React.ComponentRef<typeof UIAvatar.Badge>, 
         className={avatarBadgeStyle({
           parentVariants: {
             size: parentSize,
+            status: parentStatus,
           },
           size,
           status,
@@ -119,13 +153,13 @@ const AvatarBadge = React.forwardRef<React.ComponentRef<typeof UIAvatar.Badge>, 
   }
 );
 
-type IAvatarFallbackTextProps = React.ComponentPropsWithoutRef<typeof UIAvatar.FallbackText> &
+type IAvatarFallbackTextProps = ComponentPropsWithoutRef<typeof UIAvatar.FallbackText> &
   VariantProps<typeof avatarFallbackTextStyle>;
-const AvatarFallbackText = React.forwardRef<
-  React.ComponentRef<typeof UIAvatar.FallbackText>,
+const AvatarFallbackText = forwardRef<
+  ComponentRef<typeof UIAvatar.FallbackText>,
   IAvatarFallbackTextProps
 >(function AvatarFallbackText({ className, size, ...props }, ref) {
-  const { size: parentSize } = useStyleContext(SCOPE);
+  const { size: parentSize, action: parentAction } = useStyleContext(SCOPE);
 
   return (
     <UIAvatar.FallbackText
@@ -134,6 +168,7 @@ const AvatarFallbackText = React.forwardRef<
       className={avatarFallbackTextStyle({
         parentVariants: {
           size: parentSize,
+          action: parentAction,
         },
         size,
         class: className,
@@ -142,10 +177,30 @@ const AvatarFallbackText = React.forwardRef<
   );
 });
 
-type IAvatarImageProps = React.ComponentPropsWithoutRef<typeof UIAvatar.Image> &
+type IAvatarFallbackIconProps = IconProps &
+  Omit<VariantProps<typeof avatarFallbackIconStyle>, 'size'>;
+const AvatarFallbackIcon = forwardRef<ComponentRef<typeof Icon>, IAvatarFallbackIconProps>(
+  function AvatarFallbackIcon({ className, as = UserIcon, ...props }, ref) {
+    const { size: parentSize, action: parentAction } = useStyleContext(SCOPE);
+
+    return (
+      <Icon
+        {...props}
+        ref={ref}
+        as={as}
+        className={avatarFallbackIconStyle({
+          className: className,
+          parentVariants: { action: parentAction, size: parentSize },
+        })}
+      />
+    );
+  }
+);
+
+type IAvatarImageProps = ComponentPropsWithoutRef<typeof UIAvatar.Image> &
   VariantProps<typeof avatarImageStyle>;
 
-const AvatarImage = React.forwardRef<React.ComponentRef<typeof UIAvatar.Image>, IAvatarImageProps>(
+const AvatarImage = forwardRef<ComponentRef<typeof UIAvatar.Image>, IAvatarImageProps>(
   function AvatarImage({ className, source, ...props }, ref) {
     const newSource = addAuthHeadersInImageSource(source);
 
@@ -165,10 +220,10 @@ const AvatarImage = React.forwardRef<React.ComponentRef<typeof UIAvatar.Image>, 
   }
 );
 
-type IAvatarGroupProps = React.ComponentPropsWithoutRef<typeof UIAvatar.Group> &
+type IAvatarGroupProps = ComponentPropsWithoutRef<typeof UIAvatar.Group> &
   VariantProps<typeof avatarGroupStyle>;
 
-const AvatarGroup = React.forwardRef<React.ComponentRef<typeof UIAvatar.Group>, IAvatarGroupProps>(
+const AvatarGroup = forwardRef<ComponentRef<typeof UIAvatar.Group>, IAvatarGroupProps>(
   function AvatarGroup({ className, ...props }, ref) {
     return (
       <UIAvatar.Group
@@ -182,4 +237,12 @@ const AvatarGroup = React.forwardRef<React.ComponentRef<typeof UIAvatar.Group>, 
   }
 );
 
-export { Avatar, AvatarBadge, AvatarFallbackText, AvatarGroup, AvatarImage };
+export { Avatar, AvatarBadge, AvatarFallbackIcon, AvatarFallbackText, AvatarGroup, AvatarImage };
+export type {
+  IAvatarBadgeProps as AvatarBadgeProps,
+  IAvatarFallbackIconProps as AvatarFallbackIconProps,
+  IAvatarFallbackTextProps as AvatarFallbackTextProps,
+  IAvatarGroupProps as AvatarGroupProps,
+  IAvatarImageProps as AvatarImageProps,
+  IAvatarProps as AvatarProps,
+};
