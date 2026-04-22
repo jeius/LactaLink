@@ -1,4 +1,5 @@
 import { QUERY_KEYS } from '@/lib/constants';
+import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { UserProfile } from '@lactalink/types';
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
@@ -13,6 +14,7 @@ import {
 import {
   getMyDraftSubmissionForm,
   getSubmission,
+  getSubmissions,
   getSubmittedStandardForm,
 } from './api/find/getSubmission';
 
@@ -118,6 +120,23 @@ export function createSubmissionQuery(submissionID: string | null | undefined) {
     queryFn: async ({ signal }) => {
       if (!submissionID) return null;
       return getSubmission(submissionID, { signal });
+    },
+  });
+}
+
+export function createSubmissionsInfQuery(formID: string | null | undefined) {
+  return infiniteQueryOptions({
+    initialPageParam: 1,
+    queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.INFINITE, formID],
+    queryFn: async ({ pageParam, signal }) => {
+      const paginatedDocs = await getSubmissions({ formID, page: pageParam }, { signal });
+      return transformToPaginatedMappedDocs(paginatedDocs);
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getPreviousPageParam: (firstPage) => firstPage.prevPage,
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return generatePlaceHoldersForInfQueries(15);
     },
   });
 }

@@ -69,3 +69,38 @@ export async function getMyDraftSubmissionForm(formID: string, init?: RequestIni
 
   return submissions[0] || null;
 }
+
+export async function getSubmissions(
+  {
+    formID,
+    isDraft = false,
+    _status = 'published',
+    page,
+    limit = 10,
+  }: {
+    formID?: string | null;
+    isDraft?: boolean;
+    _status?: DonorScreeningSubmission['_status'];
+    page: number;
+    limit?: number;
+  },
+  init?: RequestInit
+) {
+  const filters: Where[] = [{ _status: { equals: _status } }];
+  if (formID) {
+    filters.push({ form: { equals: formID } });
+  }
+  return getApiClient().find(
+    {
+      collection: 'donor-screening-submissions',
+      where: { and: filters },
+      draft: isDraft,
+      limit,
+      page,
+      depth: 1,
+      pagination: true,
+      sort: '-submittedAt',
+    },
+    init
+  );
+}
