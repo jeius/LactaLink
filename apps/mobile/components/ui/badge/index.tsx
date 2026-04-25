@@ -32,6 +32,7 @@ const badgeStyle = tva({
       sm: 'px-1 py-0.5',
       md: '',
       lg: '',
+      xl: 'px-3 py-1.5',
     },
   },
 });
@@ -55,6 +56,7 @@ const badgeTextStyle = tva({
       sm: 'text-2xs',
       md: 'text-xs',
       lg: 'text-sm',
+      xl: 'text-md',
     },
   },
   variants: {
@@ -100,6 +102,7 @@ const badgeIconStyle = tva({
       sm: 'h-3 w-3',
       md: 'h-3.5 w-3.5',
       lg: 'h-4 w-4',
+      xl: 'h-6 w-6',
     },
   },
 });
@@ -146,7 +149,19 @@ function Badge({
 type IBadgeTextProps = ComponentPropsWithoutRef<typeof Text> & VariantProps<typeof badgeTextStyle>;
 
 const BadgeText = forwardRef<ComponentRef<typeof Text>, IBadgeTextProps>(function BadgeText(
-  { children, className, size, ...props },
+  {
+    children,
+    className,
+    isTruncated,
+    bold,
+    underline,
+    strikeThrough,
+    size,
+    sub,
+    italic,
+    highlight,
+    ...props
+  },
   ref
 ) {
   const { size: parentSize, action: parentAction } = useStyleContext(SCOPE);
@@ -158,7 +173,14 @@ const BadgeText = forwardRef<ComponentRef<typeof Text>, IBadgeTextProps>(functio
           size: parentSize,
           action: parentAction,
         },
+        isTruncated,
+        bold,
+        underline,
+        strikeThrough,
         size,
+        sub,
+        italic,
+        highlight,
         class: className,
       })}
       {...props}
@@ -205,3 +227,8 @@ BadgeText.displayName = 'BadgeText';
 BadgeIcon.displayName = 'BadgeIcon';
 
 export { Badge, BadgeIcon, BadgeText };
+export type {
+  IBadgeIconProps as BadgeIconProps,
+  IBadgeProps as BadgeProps,
+  IBadgeTextProps as BadgeTextProps,
+};
