@@ -1,42 +1,39 @@
 import { DonorScreeningFormSchema } from '@lactalink/form-schemas';
 import { useMutation } from '@tanstack/react-query';
-import debounce from 'lodash/debounce';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import {
   createCreateDraftScreeningFormMutationOpt,
   createDeleteScreeningFormMutationOpt,
+  createNewSubmissionDraftMutationOption,
   createPublishScreeningFormMutationOpt,
   createPublishSubmissionMutationOptions,
   createSaveScreeningFormMutationOpt,
-  createSaveSubmissionMutationOptions,
+  createSaveSubmissionDraftMutationOptions,
+  createSubmissionActionMutationOptions,
 } from '../lib/mutationOptions';
-import { useDraftSubmissionQuery } from './queries';
+import { useSubmissionFormQuery } from './queries';
 
-export function useSaveDraftSubmissionMutation(
-  formID: string,
-  formValues: Record<string, unknown> = {}
-) {
-  const mutation = useMutation(createSaveSubmissionMutationOptions(formID));
-  const { mutateAsync } = mutation;
+// #region Submission Mutations
 
-  const saveDraft = useCallback(
-    (data: Record<string, unknown>) => {
-      const combinedData = { ...formValues, ...data };
-      return mutateAsync({ data: combinedData });
-    },
-    [formValues, mutateAsync]
-  );
-
-  const debouncedSaveDraft = useMemo(
-    () => debounce(saveDraft, 3000, { trailing: true }),
-    [saveDraft]
-  );
-
-  return { ...mutation, debouncedSaveDraft, mutateAsync: saveDraft };
+export function useCreateSubmissionDraftMutation() {
+  const mutation = useMutation(createNewSubmissionDraftMutationOption());
+  return mutation;
 }
 
-export function usePublishSubmissionMutation(formID: string | null | undefined) {
-  const { data } = useDraftSubmissionQuery(formID);
+export function useSaveSubmissionDraftMutation(id: string | null | undefined) {
+  const mutation = useMutation(createSaveSubmissionDraftMutationOptions(id));
+  return mutation;
+}
+
+export function useSubmissionActionMutation(submissionID: string | null | undefined) {
+  const mutation = useMutation(createSubmissionActionMutationOptions(submissionID));
+  return mutation;
+}
+// #endregion
+
+// #region Screening Form Mutations
+export function usePublishSubmissionMutation(submissionID: string) {
+  const { data } = useSubmissionFormQuery(submissionID);
   return useMutation(createPublishSubmissionMutationOptions(data));
 }
 
@@ -82,3 +79,4 @@ export function usePublishScreeningFormMutation(formID: string | null | undefine
 export function useDeleteScreeningFormMutation(formID: string | null | undefined) {
   return useMutation(createDeleteScreeningFormMutationOpt(formID));
 }
+// #endregion

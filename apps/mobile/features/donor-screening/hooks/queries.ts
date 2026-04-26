@@ -1,17 +1,22 @@
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { UserProfile } from '@lactalink/types';
-import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
+import {
+  DonorScreeningForm,
+  DonorScreeningSubmission,
+} from '@lactalink/types/payload-generated-types';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { cacheOrganizationForm } from '../lib/cacheUtils';
+import { addSubmissionToCache, cacheOrganizationForm } from '../lib/cacheUtils';
 import {
-  createDraftSubmissionQuery,
   createOrganizationScreeningFormQuery,
-  createPublishedSubmissionQuery,
+  createOrgScreeningFormsInfQuery,
   createScreeningFormQuery,
-  createScreeningFormsInfQuery,
   createStandardScreeningFormQuery,
+  createSubmissionQuery,
+  createSubmissionsByUserInfQuery,
 } from '../lib/queryOptions';
 
+// #region Screening Form Queries
 export function useStandardScreeningFormQuery() {
   return useQuery(createStandardScreeningFormQuery());
 }
@@ -28,25 +33,15 @@ export function useOrganizationScreeningFormQuery(params: {
   return useQuery(createOrganizationScreeningFormQuery(params));
 }
 
-export function useDraftSubmissionQuery(formID: string | null | undefined) {
-  return useQuery(createDraftSubmissionQuery(formID));
-}
-
-export function usePublishedSubmissionQuery(formID: string | null | undefined) {
-  return useQuery(createPublishedSubmissionQuery(formID));
-}
-
-export function useInfiniteScreeningForms() {
+export function useInfiniteOrgScreeningForms() {
   const queryClient = useQueryClient();
-  const { data, ...query } = useInfiniteQuery(createScreeningFormsInfQuery());
+  const { data, ...query } = useInfiniteQuery(createOrgScreeningFormsInfQuery());
 
   const { dataArray, dataMap } = useMemo(() => {
     const dataArray: DonorScreeningForm[] = [];
     const dataMap = new Map<string, DonorScreeningForm>();
 
-    if (!data) return { dataArray, dataMap };
-
-    data.pages.forEach((page) => {
+    data?.pages.forEach((page) => {
       page.docs.forEach((form) => {
         dataArray.push(form);
         dataMap.set(form.id, form);
@@ -64,5 +59,37 @@ export function useInfiniteScreeningForms() {
 
   return { ...query, data: dataArray, dataMap };
 }
+// #endregion
 
-export function useSubmittedStandardFormQuery() {}
+// #region Submission Queries
+export function useSubmissionFormQuery(id: string | undefined | null) {
+  return useQuery(createSubmissionQuery(id));
+}
+
+export function useMySubmissionsInfQuery() {
+  const { data: meUser } = useMeUser();
+  const queryClient = useQueryClient();
+  const { data, isPlaceholderData, ...query } = useInfiniteQuery(
+    createSubmissionsByUserInfQuery(meUser)
+  );
+
+  const { dataArray, dataMap } = useMemo(() => {
+    const dataArray: DonorScreeningSubmission[] = [];
+    const dataMap = new Map<string, DonorScreeningSubmission>();
+
+    data?.pages.forEach((page) => {
+      page.docs.forEach((submission) => {
+        dataArray.push(submission);
+        dataMap.set(submission.id, submission);
+
+        if (isPlaceholderData || submission._status === 'draft') return;
+        addSubmissionToCache(queryClient, submission);
+      });
+    });
+
+    return { dataArray, dataMap };
+  }, [data?.pages, isPlaceholderData, queryClient]);
+
+  return { ...query, data: dataArray, dataMap, isPlaceholderData };
+}
+// #endregion
