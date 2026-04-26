@@ -1,4 +1,5 @@
 import { Image } from '@/components/Image';
+import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
@@ -9,7 +10,7 @@ import { ImageData, MediaAttachment } from '@lactalink/types';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { FeedSearchParams } from '../../lib/types';
 
 interface PostMediaProps {
@@ -48,7 +49,7 @@ export default function PostMedia({ attachments, id }: PostMediaProps) {
   else if (length === 1)
     return (
       <Box className="h-64 w-full">
-        <ImageComp image={media[0]!.imageData} />
+        <SingleImageViewer image={media[0]!.imageData} />
       </Box>
     );
   else if (length === 2)
