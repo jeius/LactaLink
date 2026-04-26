@@ -8,8 +8,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
-import React, { FC, useState } from 'react';
-import { Noop } from 'react-hook-form';
+import { FC, useState } from 'react';
 import { Platform } from 'react-native';
 import { Box } from './ui/box';
 
@@ -60,7 +59,7 @@ export type DatePickerProps = DatePickerInputProps & {
   /**
    * The current value of the date input.
    */
-  value?: string;
+  value?: string | null;
 
   /**
    * Callback function triggered when the date is changed.
@@ -72,7 +71,7 @@ export type DatePickerProps = DatePickerInputProps & {
   /**
    * Callback function triggered when the input loses focus.
    */
-  onBlur?: Noop;
+  onBlur?: () => void;
 
   /**
    * Whether the input is disabled. Defaults to `false`.
@@ -171,8 +170,13 @@ export function DatePicker({
         variant={inputVariant}
         isDisabled={isDisabled}
         className={inputStyle({ className })}
+        aria-label={placeholder}
       >
-        {icon && <InputIcon as={icon} recyclingKey={recyclingKey} className="ml-3" />}
+        {icon && (
+          <InputSlot aria-hidden>
+            <InputIcon as={icon} recyclingKey={recyclingKey} className="ml-3" />
+          </InputSlot>
+        )}
 
         <InputSlot onPress={togglePicker} className="flex-1">
           <InputField
@@ -188,7 +192,7 @@ export function DatePicker({
         </InputSlot>
 
         {showSetNowButton && (
-          <InputSlot>
+          <InputSlot aria-label="Set date now" role="button">
             <Button
               variant="link"
               size="sm"
