@@ -1,54 +1,46 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
-import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
+import { FlashList, FlashListRef, ListRenderItem } from '@/components/ui/FlashList';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { TruncatedText } from '@/components/ui/truncated-text';
 import { VStack } from '@/components/ui/vstack';
-import CommentInput from '@/features/feed/components/comments/CommentInput';
-import CommentItemPlaceholder from '@/features/feed/components/comments/CommentItemPlaceholder';
-import CommentsListItem from '@/features/feed/components/comments/CommentsListItem';
+import { useNavigateToChat } from '@/features/chat/hooks/useNavigateToChat';
+import CommentsList from '@/features/feed/components/comments/CommentsList';
 import PostActionMenu from '@/features/feed/components/post-item/PostActionMenu';
 import PostAuthor from '@/features/feed/components/post-item/PostAuthor';
 import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostShare from '@/features/feed/components/post-item/PostShare';
 import PostStats from '@/features/feed/components/post-item/PostStats';
-import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
 import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
-import { createCommentsInfiniteOptions } from '@/features/feed/lib/queryOptions/commentsInfiniteOptions';
 import { createPostQueryOptions } from '@/features/feed/lib/queryOptions/postQueryOptions';
-import { CommentPayload, FeedSearchParams, ReplyArgs } from '@/features/feed/lib/types';
+import { FeedSearchParams } from '@/features/feed/lib/types';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { getMeUser } from '@/lib/stores/meUserStore';
 import { InfiniteDataMap } from '@/lib/types';
-import { createTempID } from '@/lib/utils/tempID';
-import { Comment, Post } from '@lactalink/types/payload-generated-types';
-import { generatePlaceHoldersWithID } from '@lactalink/utilities';
-import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { Post } from '@lactalink/types/payload-generated-types';
+import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import {
   extractCollection,
   extractDisplayName,
+  extractID,
   extractOneImageData,
-  listKeyExtractor,
 } from '@lactalink/utilities/extractors';
-import { FlashList, FlashListRef, ListRenderItem } from '@shopify/flash-list';
-import { QueryKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MessageSquareIcon, XIcon } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type SearchParams = FeedSearchParams & { id: string };
 
-const PLACEHOLDER_COMMENTS = generatePlaceHoldersWithID(10, {} as Comment);
-
-export default function Feed() {
+export default function ViewPost() {
   const { id, media } = useLocalSearchParams<SearchParams>();
   const mediaIndex = media ? parseInt(media) : undefined;
 
@@ -61,24 +53,30 @@ export default function Feed() {
   if (isLoading || !post) return <LoadingSpinner />;
 
   return (
-    <SafeArea className="items-stretch justify-start">
+    <SafeArea safeBottom={false} className="items-stretch justify-start">
       <Header {...post} />
       {mediaIndex !== undefined ? (
         <MediaContent {...post} mediaIndex={mediaIndex} />
       ) : (
-        <CommentsContent {...post} />
+        <CommentsList
+          postID={post.id}
+          headerClassName="-mx-4 mb-4"
+          ListHeaderComponent={<ListHeader {...post} />}
+        />
       )}
     </SafeArea>
   );
 }
 
 function Header(post: Post) {
-  const authorName = extractDisplayName({ profile: post.author });
   const router = useRouter();
+  const { data: author } = useProfileData(post.author);
 
-  const handleBackPress = () => {
-    router.back();
-  };
+  const authorName = extractDisplayName({ profile: author });
+
+  const handleBackPress = () => router.back();
+  const goToChat = useNavigateToChat(extractID(author?.value.owner));
+
   return (
     <HStack space="sm" className="items-center px-4 py-2">
       <AnimatedPressable onPress={handleBackPress} className={'overflow-hidden rounded-full p-2'}>
@@ -89,7 +87,10 @@ function Header(post: Post) {
         {authorName}
       </Text>
 
-      <AnimatedPressable className={'overflow-hidden rounded-full p-2'}>
+      <AnimatedPressable
+        className={'overflow-hidden rounded-full p-2'}
+        onPress={() => goToChat('push')}
+      >
         <Icon as={MessageSquareIcon} size="xl" />
       </AnimatedPressable>
     </HStack>
@@ -147,114 +148,8 @@ function ListHeader({ mediaIndex, ...post }: Post & { mediaIndex?: number }) {
   );
 }
 
-function ListEmpty() {
-  return (
-    <Box className="flex-1 items-center justify-center py-8">
-      <Text className="text-center text-typography-700">
-        No comments yet. Be the first to comment!
-      </Text>
-    </Box>
-  );
-}
-
-function CommentsContent({
-  onRefresh,
-  refreshing = false,
-  ...post
-}: Post & { onRefresh?: () => void; refreshing?: boolean }) {
-  const commentsQueryOptions = createCommentsInfiniteOptions(post.id);
-  const commentsQueryKey = commentsQueryOptions.queryKey;
-  const { isFetchingNextPage, ...commentsQuery } = useInfiniteQuery(commentsQueryOptions);
-
-  const comments = useMemo(
-    () => commentsQuery.data?.pages.flatMap((p) => Array.from(p.docs.values())),
-    [commentsQuery.data]
-  );
-
-  const isRefreshing = refreshing || commentsQuery.isRefetching;
-
-  const [inputHeight, setInputHeight] = useState(0);
-
-  const [repliedComment, setRepliedComment] = useState<Comment | null>(null);
-  const [parentComment, setParentComment] = useState<Comment | null>(null);
-  const [invalidateQueryKey, setInvalidateQueryKey] = useState<QueryKey>(commentsQueryKey);
-
-  const { mutate: addComment } = useAddCommentMutation(post.id);
-
-  const handleReset = () => {
-    setRepliedComment(null);
-    setParentComment(null);
-    setInvalidateQueryKey(commentsQueryKey);
-  };
-
-  const handleSubmit = (value: string) => {
-    const meUser = getMeUser();
-    const meProfile = meUser?.profile;
-    if (!meProfile) return;
-
-    const payload: CommentPayload = {
-      id: createTempID(),
-      post: repliedComment?.post ?? parentComment?.post ?? post.id,
-      repliedTo: repliedComment ?? undefined,
-      parent: parentComment ?? undefined,
-      content: value,
-      queryKey: invalidateQueryKey,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      author: meProfile,
-    };
-
-    addComment(payload);
-    handleReset();
-  };
-
-  const handleReply = ({ comment, queryKey, parentComment }: ReplyArgs) => {
-    setRepliedComment(comment);
-    setInvalidateQueryKey(queryKey);
-    setParentComment(parentComment);
-  };
-
-  const handleRefresh = () => {
-    commentsQuery.refetch();
-    onRefresh?.();
-  };
-
-  return (
-    <Box className="flex-1">
-      <FlashList
-        data={commentsQuery.isLoading ? PLACEHOLDER_COMMENTS : comments || []}
-        keyExtractor={listKeyExtractor}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <Box className="h-4" />}
-        ListHeaderComponent={() => <ListHeader {...post} />}
-        ListFooterComponent={() => isFetchingNextPage && <Spinner size={'small'} />}
-        ListEmptyComponent={ListEmpty}
-        ListHeaderComponentStyle={{ marginBottom: 16, marginHorizontal: -16 }}
-        ListFooterComponentStyle={{ marginVertical: 8 }}
-        contentContainerStyle={{ paddingBottom: inputHeight + 8, paddingHorizontal: 16 }}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
-        onEndReached={commentsQuery.fetchNextPage}
-        renderItem={({ item }) =>
-          isPlaceHolderData(item) ? (
-            <CommentItemPlaceholder />
-          ) : (
-            <CommentsListItem comment={item} onReply={handleReply} />
-          )
-        }
-      />
-      <CommentInput
-        onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}
-        className="bg-background-50"
-        onSubmit={handleSubmit}
-        onReplyCancel={handleReset}
-        replyToAuthor={repliedComment?.author}
-      />
-    </Box>
-  );
-}
-
 function MediaContent({ mediaIndex = 0, ...post }: Post & { mediaIndex?: number }) {
+  const insets = useSafeAreaInsets();
   const ref = useRef<FlashListRef<NonNullable<typeof media>[number]>>(null);
 
   const media = useMemo(
@@ -300,14 +195,11 @@ function MediaContent({ mediaIndex = 0, ...post }: Post & { mediaIndex?: number 
     <FlashList
       ref={ref}
       data={media ?? []}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      ItemSeparatorComponent={() => <Box className="h-4" />}
+      headerClassName="mb-4"
+      contentContainerClassName="pb-4"
+      ItemSeparatorComponent={() => <Box className="h-3" />}
       ListHeaderComponent={() => <ListHeader {...post} mediaIndex={mediaIndex} />}
-      ListEmptyComponent={ListEmpty}
-      ListHeaderComponentStyle={{ marginBottom: 16 }}
-      ListFooterComponentStyle={{ marginVertical: 8 }}
-      contentContainerStyle={{ paddingBottom: 8 }}
+      style={{ marginBottom: insets.bottom + 4 }}
       renderItem={renderItem}
     />
   );

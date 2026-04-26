@@ -18,7 +18,7 @@ export default function Layout() {
         <Stack.Screen name="(profile-setup)/profile/setup" />
       </Stack.Protected>
 
-      <Stack.Screen name="feed/comments" options={formSheetOptions} />
+      <Stack.Screen name="posts/[id]/comments" options={formSheetOptions} />
 
       <Stack.Screen
         name="(create)/delivery-preferences/create"

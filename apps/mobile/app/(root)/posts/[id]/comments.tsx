@@ -1,11 +1,11 @@
 import { Box } from '@/components/ui/box';
+import FormSheetHandle from '@/components/ui/FormSheetHandle';
 import { Text } from '@/components/ui/text';
-import CommentsSheet from '@/features/feed/components/comments/CommentsSheet';
-import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
+import CommentsList from '@/features/feed/components/comments/CommentsList';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function CommentsSheetPage() {
-  const { post: postID } = useLocalSearchParams<FeedCommentsSearchParams>();
+  const { id: postID } = useLocalSearchParams<{ id: string }>();
 
   if (!postID) {
     return (
@@ -20,5 +20,10 @@ export default function CommentsSheetPage() {
     );
   }
 
-  return <CommentsSheet postID={postID} />;
+  return (
+    <Box className="flex-1 bg-background-50">
+      <FormSheetHandle />
+      <CommentsList postID={postID} />
+    </Box>
+  );
 }

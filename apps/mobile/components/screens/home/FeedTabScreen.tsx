@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import { FC, useCallback } from 'react';
 
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
 import { DonateRequestModal } from '@/components/modals';
@@ -85,7 +85,7 @@ export default function FeedTabScreen() {
         renderItem={({ item }) => {
           if (isPlaceHolderData(item)) return <PostPlaceholderItem />;
 
-          const handlePress = () => router.push(`/feed/${item.id}`);
+          const handlePress = () => router.push(`/posts/${item.id}`);
           return <PostItem post={item} onPress={handlePress} />;
         }}
       />
