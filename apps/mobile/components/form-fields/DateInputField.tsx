@@ -1,4 +1,3 @@
-import React from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { DatePicker, DatePickerInputProps } from '../DatePicker';
 import { Skeleton } from '../ui/skeleton';
@@ -21,7 +20,7 @@ export function DateInputField<
   isDisabled,
   isLoading,
   datePickerProps,
-  contentPosition = 'middle',
+  contentPosition = 'first',
   ...props
 }: DateInputFieldProps<TFieldValues, TName>) {
   const {
