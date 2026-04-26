@@ -1,11 +1,5 @@
-import OrganizationsScreen from '@/components/screens/donor-screening/OrganizationsScreen';
-import { Stack } from 'expo-router';
+import OrganizationFormsScreen from '@/components/screens/donor-screening/OrganizationFormsScreen';
 
-export default function DonorScreeningOrganizations() {
-  return (
-    <>
-      <Stack.Screen options={{ headerShown: true, headerTitle: 'Find Organizations' }} />
-      <OrganizationsScreen />
-    </>
-  );
+export default function OrganizationForms() {
+  return <OrganizationFormsScreen />;
 }

@@ -8,7 +8,10 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
+import {
+  DonorScreeningForm,
+  DonorScreeningSubmission,
+} from '@lactalink/types/payload-generated-types';
 import { useRouter } from 'expo-router';
 import { InfoIcon, ShieldCheckIcon, StethoscopeIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
@@ -16,22 +19,31 @@ import { toast } from 'sonner-native';
 
 interface OnboardingProps {
   form: DonorScreeningForm;
+  submission: DonorScreeningSubmission;
 }
 
-export default function ScreeningOnboarding({ form }: OnboardingProps) {
+export default function ScreeningOnboarding({ form, submission }: OnboardingProps) {
   const router = useRouter();
 
+  const submissionID = submission.id;
   const { title, sections, fields } = form;
 
+  const hasProgress = !!submission.submissionData?.length;
+  const isPublished = submission._status === 'published';
+
   const handleProceed = useCallback(() => {
+    if (isPublished) {
+      router.push(`/donor-screening/submission/view/${submissionID}`);
+      return;
+    }
     if (fields && fields.length > 0) {
-      router.push(`/donor-screening/form/${form.id}`);
+      router.push(`/donor-screening/submission/${submissionID}`);
     } else if (sections && sections.length > 0) {
-      router.push(`/donor-screening/form/${form.id}/section/${sections[0]!.id}`);
+      router.push(`/donor-screening/submission/${submissionID}/section/${sections[0]!.id}`);
     } else {
       toast.error('This screening form is not properly configured. Please contact support.');
     }
-  }, [fields, sections, router, form.id]);
+  }, [isPublished, fields, sections, router, submissionID]);
 
   return (
     <VStack space="2xl" className="p-6 pt-0">
@@ -104,12 +116,24 @@ export default function ScreeningOnboarding({ form }: OnboardingProps) {
 
       {/* CTA */}
       <VStack space="sm">
-        <Button size="lg" onPress={handleProceed}>
-          <ButtonText>{'Start Screening'}</ButtonText>
+        <Button
+          size="lg"
+          onPress={handleProceed}
+          action={isPublished ? 'secondary' : hasProgress ? 'info' : 'primary'}
+        >
+          <ButtonText>
+            {isPublished
+              ? 'View Submission'
+              : hasProgress
+                ? 'Continue Screening'
+                : 'Start Screening'}
+          </ButtonText>
         </Button>
-        <Text size="xs" className="text-center text-typography-500">
-          You can save your progress and continue later.
-        </Text>
+        {!isPublished && (
+          <Text size="xs" className="text-center text-typography-500">
+            You can save your progress and continue later.
+          </Text>
+        )}
       </VStack>
     </VStack>
   );

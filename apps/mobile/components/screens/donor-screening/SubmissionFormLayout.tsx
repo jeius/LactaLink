@@ -9,13 +9,12 @@ import FormNavigationProvider, {
 } from '@/features/donor-screening/components/contexts/FormNavigationProvider';
 import {
   usePublishSubmissionMutation,
-  useSaveDraftSubmissionMutation,
+  useSaveSubmissionDraftMutation,
 } from '@/features/donor-screening/hooks/mutations';
 import { useSubmissionForm } from '@/features/donor-screening/hooks/useSubmissionForm';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { Stack, useGlobalSearchParams, useRouter } from 'expo-router';
+import { Stack, useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeftIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { useFormState } from 'react-hook-form';
@@ -26,27 +25,25 @@ export default function SubmissionFormLayout() {
   const insets = useSafeAreaInsets();
   const screenOptions = useScreenOptions({ animationType: 'slide' });
   const { sectionId } = useGlobalSearchParams<{ sectionId?: string }>();
+  const { id: submissionID } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
-  const methods = useSubmissionForm();
+  const methods = useSubmissionForm(submissionID);
   const { reset, getValues, control } = methods;
-  const extraData = methods.extraData as { form: DonorScreeningForm | undefined };
 
   const formState = useFormState({ control });
   const { isDirty } = formState;
 
-  const { mutateAsync: saveDraft, isPending: isSaving } = useSaveDraftSubmissionMutation(
-    extraData.form?.id || ''
-  );
+  const { mutateAsync: saveDraft, isPending: isSaving } =
+    useSaveSubmissionDraftMutation(submissionID);
 
-  const { mutateAsync: publishSubmission, isPending: isPublishing } = usePublishSubmissionMutation(
-    extraData.form?.id
-  );
+  const { mutateAsync: publishSubmission, isPending: isPublishing } =
+    usePublishSubmissionMutation(submissionID);
 
   const handleSave = useCallback(async () => {
     if (!isDirty) return;
     const values = getValues();
-    await saveDraft(values);
+    await saveDraft({ data: values });
     reset(values);
   }, [isDirty, getValues, reset, saveDraft]);
 
@@ -59,8 +56,8 @@ export default function SubmissionFormLayout() {
     toast.loading('Submitting...', { id: toastID, duration: Infinity, cancel: null });
     await publishSubmission().then(
       () => {
-        toast.success('Screening submitted!', { id: toastID });
-        router.dismissTo('/donor-screening');
+        toast.dismiss(toastID);
+        router.dismissTo('/donor-screening/submission/thank-you');
       },
       (error) => {
         toast.error('Failed to submit. ' + extractErrorMessage(error), { id: toastID });
@@ -71,6 +68,7 @@ export default function SubmissionFormLayout() {
   return (
     <Form {...methods}>
       <FormNavigationProvider
+        submissionID={submissionID}
         formState={formState}
         sectionID={sectionId}
         onSave={handleSave}
@@ -81,6 +79,7 @@ export default function SubmissionFormLayout() {
             name="index"
             options={{
               headerShown: true,
+              headerTitle: 'Donor Screening',
               header: () => (
                 <Box className="items-start px-5" style={{ marginTop: insets.top }}>
                   <HeaderBackButton className="-ml-2" />

@@ -24,56 +24,29 @@ type SubmissionEntry = Pick<
   'id' | 'submitterName' | 'submitterEmail' | 'isApproved' | 'isRejected' | 'submittedAt'
 > & { submitter?: User | null };
 
-const PLACEHOLDER_DATA: SubmissionEntry[] = [
-  {
-    id: '1',
-    submitterName: 'Maria Santos',
-    submitterEmail: 'maria.santos@example.com',
-    isApproved: true,
-    submittedAt: '2026-04-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    submitterName: 'Ana Reyes',
-    submitterEmail: 'ana.reyes@example.com',
-    isApproved: true,
-    submittedAt: '2026-04-14T08:15:00Z',
-  },
-  {
-    id: '3',
-    submitterName: 'Grace Villanueva',
-    submitterEmail: 'grace.v@example.com',
-    isRejected: true,
-    submittedAt: '2026-04-13T14:00:00Z',
-  },
-  {
-    id: '4',
-    submitterName: 'Lea Magbanua',
-    submitterEmail: 'lea.m@example.com',
-    submittedAt: '2026-04-12T09:45:00Z',
-  },
-  {
-    id: '5',
-    submitterName: 'Sofia Cruz',
-    submitterEmail: 'sofia.cruz@example.com',
-    isRejected: true,
-    submittedAt: '2026-04-10T16:20:00Z',
-  },
-  {
-    id: '6',
-    submitterName: 'Maria Santos',
-    submitterEmail: 'maria.santos@example.com',
-    isApproved: true,
-    submittedAt: '2026-04-15T10:30:00Z',
-  },
-  {
-    id: '7',
-    submitterName: 'Ana Reyes',
-    submitterEmail: 'ana.reyes@example.com',
-    isApproved: true,
-    submittedAt: '2026-04-14T08:15:00Z',
-  },
-];
+export default function SubmissionsTab() {
+  const { form } = useMyOrgScreeningForm();
+
+  const { data: submissions, isRefetching, refetch, ...query } = useInfiniteSubmissions(form?.id);
+
+  const data = submissions.map(transformData) || [];
+
+  if (query.isLoading) return <LoadingSpinner />;
+
+  return (
+    <InfiniteFlashList
+      {...query}
+      data={data}
+      renderItem={({ item }) => <SubmissionItem item={item} />}
+      gap={8}
+      refreshing={isRefetching}
+      onRefresh={refetch}
+      keyExtractor={listKeyExtractor}
+      contentContainerClassName="p-4"
+      ListEmptyComponent={<ListEmpty />}
+    />
+  );
+}
 
 function SubmissionItem({ item }: { item: SubmissionEntry }) {
   const router = useRouter();
@@ -85,9 +58,8 @@ function SubmissionItem({ item }: { item: SubmissionEntry }) {
   }
 
   return (
-    // TODO: Replace router.push path with actual submission detail route once implemented
     <AnimatedPressable
-      onPress={() => router.push(`/donor-screening/submission/${item.id}`)}
+      onPress={() => router.push(`/donor-screening/submission/view/${item.id}`)}
       className="overflow-hidden rounded-2xl border border-outline-100 bg-background-0 p-4"
     >
       <HStack space="md" className="items-center">
@@ -122,17 +94,6 @@ function SubmissionItem({ item }: { item: SubmissionEntry }) {
   );
 }
 
-function ListHeader() {
-  return (
-    <HStack className="items-center justify-between">
-      <Heading size="md">All Submissions</Heading>
-      <Badge size="md" variant="solid" action="muted">
-        <BadgeText>{PLACEHOLDER_DATA.length}</BadgeText>
-      </Badge>
-    </HStack>
-  );
-}
-
 function ListEmpty() {
   return (
     <VStack space="md" className="flex-1 items-center justify-center px-2 py-16">
@@ -148,31 +109,6 @@ function ListEmpty() {
         </Text>
       </VStack>
     </VStack>
-  );
-}
-
-export default function SubmissionsTab() {
-  const { form, isRefetching, refetch, ...formQuery } = useMyOrgScreeningForm();
-  const { data: submissions } = useInfiniteSubmissions(form?.id);
-
-  const data = submissions.map(transformData).concat(PLACEHOLDER_DATA) || [];
-
-  if (formQuery.isLoading) return <LoadingSpinner />;
-
-  return (
-    <InfiniteFlashList
-      {...formQuery}
-      data={data}
-      renderItem={({ item }) => <SubmissionItem item={item} />}
-      gap={8}
-      refreshing={isRefetching}
-      onRefresh={refetch}
-      keyExtractor={listKeyExtractor}
-      contentContainerClassName="p-4"
-      headerClassName="pb-2"
-      ListHeaderComponent={<ListHeader />}
-      ListEmptyComponent={<ListEmpty />}
-    />
   );
 }
 

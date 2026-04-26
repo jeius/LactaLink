@@ -1,6 +1,7 @@
 import { ToastAction } from '@/components/toasts/ToastAction';
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { ErrorSearchParams } from '@lactalink/types/errors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import {
   createContext,
@@ -15,12 +16,13 @@ import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
 import { createStore, StoreApi, useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { useStandardScreeningFormQuery } from '../../hooks/queries';
+import { useSubmissionFormQuery } from '../../hooks/queries';
 
 type FormNavigationStore = {
   goNext: () => void;
   goBack: () => void;
   save: (e?: GestureResponderEvent) => Promise<void>;
+  isSaving: boolean;
   isLastSection: boolean;
   progress: number | undefined;
   showUnsavedWarning: () => void;
@@ -36,27 +38,33 @@ export function useFormNavigation<T>(selector: (state: FormNavigationStore) => T
   return useStore(store, useShallow(selector));
 }
 
-type FormNavigationProviderProps = {
+interface FormNavigationProviderProps {
+  submissionID: string;
   sectionID?: string;
   formState?: { isDirty?: boolean };
   onSave?: (e?: GestureResponderEvent) => Promise<void> | void;
   onLeave?: (e?: GestureResponderEvent) => Promise<void> | void;
-};
+}
 export default function FormNavigationProvider({
   children,
+  submissionID,
   sectionID,
   formState,
   onSave,
   onLeave,
 }: PropsWithChildren<FormNavigationProviderProps>) {
   const router = useRouter();
-  const { data: form } = useStandardScreeningFormQuery();
+
+  const { data: submission } = useSubmissionFormQuery(submissionID);
+  const form = extractCollection(submission?.form);
 
   const sectionIndex = sectionID ? form?.sections?.findIndex((s) => s.id === sectionID) || 0 : 0;
   const nextSection = form?.sections?.[sectionIndex + 1];
 
   const isLast = !form?.sections ? true : sectionIndex === form.sections.length - 1;
   const isDirty = !!formState?.isDirty;
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const progress = useMemo(() => {
     const numberOfSections = form?.sections?.length || 0;
@@ -67,10 +75,8 @@ export default function FormNavigationProvider({
   }, [form, sectionID, sectionIndex]);
 
   const goNext = useCallback(() => {
-    if (!form?.id) return;
-
     if (isLast) {
-      router.push(`/donor-screening/form/${form.id}/summary`);
+      router.push(`/donor-screening/submission/${submissionID}/summary`);
       return;
     }
 
@@ -82,12 +88,14 @@ export default function FormNavigationProvider({
       return;
     }
 
-    router.push(`/donor-screening/form/${form.id}/section/${nextSection.id}`);
-  }, [router, form, nextSection, isLast]);
+    router.push(`/donor-screening/submission/${submissionID}/section/${nextSection.id}`);
+  }, [isLast, nextSection, router, submissionID]);
 
   const handleSave = useCallback(
     async (e?: GestureResponderEvent) => {
+      setIsSaving(true);
       await onSave?.(e);
+      setIsSaving(false);
     },
     [onSave]
   );
@@ -140,8 +148,9 @@ export default function FormNavigationProvider({
       goBack: handleBack,
       showUnsavedWarning,
       save: handleSave,
+      isSaving,
     }),
-    [goNext, handleBack, handleSave, isLast, progress, showUnsavedWarning]
+    [goNext, handleBack, handleSave, isLast, isSaving, progress, showUnsavedWarning]
   );
 
   const [store] = useState(createStore<FormNavigationStore>(() => contextValue));

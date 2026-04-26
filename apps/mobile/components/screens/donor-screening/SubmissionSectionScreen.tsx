@@ -10,49 +10,28 @@ import { VStack } from '@/components/ui/vstack';
 import SubmissionFieldBlock from '@/features/donor-screening/components/blocks/SubmissionFieldBlock';
 import { useFormNavigation } from '@/features/donor-screening/components/contexts/FormNavigationProvider';
 import { useSubmissionFormSection } from '@/features/donor-screening/hooks/useSubmissionFormSection';
-import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
-import debounce from 'lodash/debounce';
-import { useCallback, useEffect } from 'react';
-import { useFormState } from 'react-hook-form';
-import { GestureResponderEvent } from 'react-native';
-
-const AUTO_SAVE_DELAY = 3000; // 3 seconds after the last change
+import { useCallback } from 'react';
 
 export default function SubmissionSectionScreen() {
   const { sectionId } = useLocalSearchParams<{ sectionId: string }>();
-  const isFocused = useIsFocused();
 
   const { formMethods, fields, description, title } = useSubmissionFormSection({
     sectionID: sectionId,
   });
-  const { control, isLoading, submit } = formMethods;
-  const { isSubmitting, isDirty } = useFormState({ control });
+  const { control, isLoading, handleSubmit } = formMethods;
 
-  const { goNext, isLastSection, saveDraft } = useFormNavigation((s) => ({
+  const { goNext, isLastSection, saveDraft, isSaving } = useFormNavigation((s) => ({
     goNext: s.goNext,
     isLastSection: s.isLastSection,
     saveDraft: s.save,
+    isSaving: s.isSaving,
   }));
 
-  const handleProceed = useCallback(
-    async (e: GestureResponderEvent) => {
-      const isSuccess = await submit();
-      if (isSuccess) {
-        await saveDraft(e);
-        goNext();
-      }
-    },
-    [goNext, saveDraft, submit]
-  );
-
-  // Auto-save
-  useEffect(() => {
-    const autoSave = debounce(saveDraft, AUTO_SAVE_DELAY, { trailing: true });
-    if (isFocused && isDirty) autoSave();
-    else if (!isFocused) autoSave.flush();
-    return () => autoSave.cancel();
-  }, [saveDraft, isDirty, isFocused]);
+  const onSubmit = useCallback(async () => {
+    await saveDraft();
+    goNext();
+  }, [goNext, saveDraft]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -70,7 +49,7 @@ export default function SubmissionSectionScreen() {
           ListHeaderComponent={<ListHeader title={title} description={description} />}
           ItemSeparatorComponent={() => <Box className="h-6" />}
           ListFooterComponent={
-            <Button size="lg" onPress={handleProceed} isDisabled={isSubmitting}>
+            <Button size="lg" onPress={handleSubmit(onSubmit)} isDisabled={isSaving}>
               <ButtonText>{isLastSection ? 'Review' : 'Next'}</ButtonText>
             </Button>
           }

@@ -2,27 +2,23 @@ import { FormProps } from '@/components/contexts/FormProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
 import { DonorScreeningSubmissionData } from '@lactalink/utilities';
-import { useCallback, useEffect, useMemo } from 'react';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { buildInitialFormState } from '../lib/buildFormState';
 import { buildZodSchema } from '../lib/buildZodSchema';
-import { useDraftSubmissionQuery, useStandardScreeningFormQuery } from './queries';
+import { useSubmissionFormQuery } from './queries';
 
-export function useSubmissionForm(): Omit<FormProps, 'children'> {
-  const { data: form, ...formQuery } = useStandardScreeningFormQuery();
-  const { data: draftSubmission, ...submissionQuery } = useDraftSubmissionQuery(form?.id);
+export function useSubmissionForm(id: string): Omit<FormProps, 'children'> {
+  const { data: submission, ...submissionQuery } = useSubmissionFormQuery(id);
 
-  const isLoading = formQuery.isLoading || submissionQuery.isLoading;
-  const isFetching = formQuery.isFetching || submissionQuery.isFetching;
-  const fetchError = formQuery.error || submissionQuery.error;
-  const refreshing = formQuery.isRefetching || submissionQuery.isRefetching;
-  const refetchForm = formQuery.refetch;
-  const refetchSubmission = submissionQuery.refetch;
-  const refresh = useCallback(() => {
-    refetchForm();
-    refetchSubmission();
-  }, [refetchForm, refetchSubmission]);
+  const form = extractCollection(submission?.form);
+  const isLoading = submissionQuery.isLoading;
+  const isFetching = submissionQuery.isFetching;
+  const fetchError = submissionQuery.error;
+  const refreshing = submissionQuery.isRefetching;
+  const refresh = submissionQuery.refetch;
 
   const resolver = useMemo(() => (form ? zodResolver(buildSchema(form)) : undefined), [form]);
 
@@ -32,10 +28,10 @@ export function useSubmissionForm(): Omit<FormProps, 'children'> {
   const { reset } = methods;
 
   useEffect(() => {
-    if (draftSubmission?.submissionData) {
-      reset(DonorScreeningSubmissionData.parse(draftSubmission.submissionData));
+    if (submission?.submissionData) {
+      reset(DonorScreeningSubmissionData.parse(submission.submissionData));
     }
-  }, [draftSubmission, reset]);
+  }, [submission, reset]);
 
   return {
     ...methods,
@@ -44,7 +40,7 @@ export function useSubmissionForm(): Omit<FormProps, 'children'> {
     fetchError,
     refreshing,
     onRefresh: refresh,
-    extraData: { form, draftSubmission },
+    extraData: { form, draftSubmission: submission },
   };
 }
 

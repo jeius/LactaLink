@@ -8,12 +8,12 @@ import {
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { SubmitHandler, useForm as useHookForm, useWatch } from 'react-hook-form';
+import { UseFormHandleSubmit, useForm as useHookForm, useWatch } from 'react-hook-form';
 import { buildZodSchema } from '../lib/buildZodSchema';
 import { createDefaultValues } from '../lib/createDefaultValues';
 
 export function useSubmissionFormRootFields(): {
-  formMethods: Omit<FormProps, 'children'> & { submit: () => boolean | Promise<boolean> };
+  formMethods: Omit<FormProps, 'children'>;
   fields: DonorScreeningFormField[] | undefined;
   title: string | undefined;
 } {
@@ -58,17 +58,16 @@ export function useSubmissionFormRootFields(): {
   /** Tracks the previous rootFields reference to detect section navigation. */
   const prevRootFieldsRef = useRef<typeof rootFields>(undefined);
 
-  const rootValues = useWatch<Record<string, unknown>>({ control });
+  const rootValues = useWatch({ control }) as Record<string, unknown>;
 
-  const submitHandler = useCallback(async () => {
-    let isValid = false;
-    const onSubmit: SubmitHandler<Record<string, unknown>> = (values) => {
-      reset(values);
-      isValid = true;
-    };
-    await handleSubmit(onSubmit)();
-    return isValid;
-  }, [handleSubmit, reset]);
+  const submitHandler = useCallback<UseFormHandleSubmit<object, Record<string, never>>>(
+    (onValid, onInvalid) =>
+      handleSubmit(async (values) => {
+        reset(values);
+        return await onValid(values);
+      }, onInvalid),
+    [handleSubmit, reset]
+  );
 
   // Section → Parent: propagate section field changes to the parent form and mark it dirty.
   useEffect(() => {
@@ -127,7 +126,7 @@ export function useSubmissionFormRootFields(): {
   }, [parentFormValues, reset, rootFields]);
 
   return {
-    formMethods: { ...methods, ...queryState, submit: submitHandler },
+    formMethods: { ...methods, ...queryState, handleSubmit: submitHandler },
     fields: rootFields,
     title: form?.title,
   };

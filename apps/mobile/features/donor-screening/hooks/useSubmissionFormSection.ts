@@ -8,7 +8,7 @@ import {
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { SubmitHandler, useForm as useHookForm, useWatch } from 'react-hook-form';
+import { UseFormHandleSubmit, useForm as useHookForm, useWatch } from 'react-hook-form';
 import { buildZodSchema } from '../lib/buildZodSchema';
 import { createDefaultValues } from '../lib/createDefaultValues';
 
@@ -17,7 +17,7 @@ export function useSubmissionFormSection({
 }: {
   sectionID?: string | null;
 }): Partial<DonorScreeningFormSection> & {
-  formMethods: Omit<FormProps, 'children'> & { submit: () => Promise<boolean> | boolean };
+  formMethods: Omit<FormProps, 'children'>;
 } {
   const {
     control: parentFormControl,
@@ -57,17 +57,16 @@ export function useSubmissionFormSection({
   /** Tracks the previous sectionFields reference to detect section navigation. */
   const prevSectionFieldsRef = useRef<typeof sectionFields>(undefined);
 
-  const sectionValues = useWatch<Record<string, unknown>>({ control });
+  const sectionValues = useWatch({ control }) as Record<string, unknown>;
 
-  const submitHandler = useCallback(async () => {
-    let isValid = false;
-    const onSubmit: SubmitHandler<Record<string, unknown>> = (values) => {
-      reset(values);
-      isValid = true;
-    };
-    await handleSubmit(onSubmit)();
-    return isValid;
-  }, [handleSubmit, reset]);
+  const submitHandler = useCallback<UseFormHandleSubmit<object, Record<string, never>>>(
+    (onValid, onInvalid) =>
+      handleSubmit(async (values) => {
+        reset(values);
+        return await onValid(values);
+      }, onInvalid),
+    [handleSubmit, reset]
+  );
 
   // Section → Parent: propagate section field changes to the parent form and mark it dirty.
   useEffect(() => {
@@ -88,7 +87,7 @@ export function useSubmissionFormSection({
         }
       });
       lastPushedToParent.current = pushed;
-    }, 800);
+    }, 300);
 
     pushToParent();
     return () => pushToParent.cancel();
@@ -102,31 +101,26 @@ export function useSubmissionFormSection({
 
     if (!sectionFields) return;
 
-    const resetFromParent = debounce(() => {
-      if (!sectionFieldsChanged) {
-        // Values of this section from the parent form.
-        const parentSectionValuesObj = Object.fromEntries(
-          sectionFields
-            .filter((f) => f.blockType !== 'message' && 'name' in f)
-            .map((f) => [f.name, parentFormValues[f.name]] as const)
-        );
+    if (!sectionFieldsChanged) {
+      // Values of this section from the parent form.
+      const parentSectionValuesObj = Object.fromEntries(
+        sectionFields
+          .filter((f) => f.blockType !== 'message' && 'name' in f)
+          .map((f) => [f.name, parentFormValues[f.name]] as const)
+      );
 
-        // Skip if the current parent values match what this section last pushed.
-        if (isEqual(lastPushedToParent.current, parentSectionValuesObj)) return;
-      }
+      // Skip if the current parent values match what this section last pushed.
+      if (isEqual(lastPushedToParent.current, parentSectionValuesObj)) return;
+    }
 
-      // Section changed or external data update: clear the snapshot and reset.
-      lastPushedToParent.current = {};
-      const newValues = createDefaultValues(sectionFields, parentFormValues);
-      if (newValues) reset(newValues);
-    }, 800);
-
-    resetFromParent();
-    return () => resetFromParent.cancel();
+    // Section changed or external data update: clear the snapshot and reset.
+    lastPushedToParent.current = {};
+    const newValues = createDefaultValues(sectionFields, parentFormValues);
+    if (newValues) reset(newValues);
   }, [parentFormValues, reset, sectionFields]);
 
   return {
-    formMethods: { ...methods, ...queryState, submit: submitHandler },
+    formMethods: { ...methods, ...queryState, handleSubmit: submitHandler },
     ...(section ?? {}),
   };
 }

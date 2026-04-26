@@ -20,8 +20,17 @@ export default function DonorScreeningLayout() {
 
       <Stack.Protected guard={!isOrganization}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="organizations" />
-        <Stack.Screen name="form/[id]" />
+        <Stack.Screen name="submission/[id]" />
+        <Stack.Screen name="submission/create" />
+        <Stack.Screen name="submission/thank-you" />
+        <Stack.Screen
+          name="organizations"
+          options={{ headerShown: true, headerTitle: 'Organizations' }}
+        />
+        <Stack.Screen
+          name="submissions"
+          options={{ headerShown: true, headerTitle: 'My Submissions' }}
+        />
       </Stack.Protected>
     </Stack>
   );
