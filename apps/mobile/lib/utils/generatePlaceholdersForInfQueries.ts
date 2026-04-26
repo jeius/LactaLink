@@ -1,7 +1,9 @@
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { InfiniteDataMap } from '../types';
 
-export function generatePlaceHoldersForInfQueries<T>(count: number): InfiniteDataMap<T, number> {
+export function generatePlaceHoldersForInfQueries<T extends { id: string }>(
+  count: number
+): InfiniteDataMap<T, number> {
   return {
     pageParams: [1],
     pages: [
