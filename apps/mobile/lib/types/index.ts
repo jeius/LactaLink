@@ -1,7 +1,7 @@
 import { PaginatedDocs } from '@lactalink/types/payload-types';
 import { ListRenderItemInfo } from '@shopify/flash-list';
 import { InfiniteData } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Stack, Tabs } from 'expo-router';
 
 export * from './assets';
 export * from './markers';
@@ -9,6 +9,8 @@ export * from './profile';
 export type { MapPageSearchParams } from './searchParams';
 
 export type StackScreenOptions = Parameters<typeof Stack.Screen>[number]['options'];
+
+export type TabScreenOptions = Parameters<typeof Tabs.Screen>[number]['options'];
 
 export type PaginatedDocsMap<T> = Omit<PaginatedDocs, 'docs'> & {
   docs: Map<string, T>;

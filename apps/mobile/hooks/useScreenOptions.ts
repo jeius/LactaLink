@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { getColor, getPrimaryColor } from '@/lib/colors';
-import { StackScreenOptions } from '@/lib/types';
+import { StackScreenOptions, TabScreenOptions } from '@/lib/types';
 import { Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackAnimationTypes } from 'react-native-screens';
@@ -36,7 +36,7 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
     headerBackVisible: true,
     headerShadowVisible: true,
     headerBackButtonDisplayMode: 'minimal',
-    headerTitleStyle: { fontFamily: 'Jakarta-Bold', fontSize: 16 },
+    headerTitleStyle: { fontFamily: 'Jakarta-Bold', fontSize: 18 },
     headerTintColor: getPrimaryColor('0'),
     headerStyle: { backgroundColor: getPrimaryColor('500') },
     contentStyle: { backgroundColor: getColor('background', '50') },
@@ -58,5 +58,20 @@ export function useScreenFormSheetOptions(): StackScreenOptions {
     sheetElevation: 24,
     sheetCornerRadius: 32,
     sheetAllowedDetents: [allowedDetent],
+  };
+}
+
+export function useTabScreenOptions(): TabScreenOptions {
+  return {
+    headerShown: false,
+    headerShadowVisible: true,
+    headerBackButtonDisplayMode: 'minimal',
+    headerTitleStyle: { fontFamily: 'Jakarta-Bold', fontSize: 18 },
+    headerTintColor: getPrimaryColor('0'),
+    headerStyle: { backgroundColor: getPrimaryColor('500') },
+    sceneStyle: { backgroundColor: getColor('background', '50') },
+    tabBarStyle: { backgroundColor: getColor('background', '0') },
+    tabBarInactiveTintColor: getColor('typography', '900'),
+    tabBarActiveTintColor: getColor('primary', '500'),
   };
 }
