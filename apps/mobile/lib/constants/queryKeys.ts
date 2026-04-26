@@ -1,11 +1,7 @@
 import { QueryKey } from '@tanstack/react-query';
 
 interface QueryKeys {
-  AUTH: {
-    ALL: QueryKey;
-    SESSION: QueryKey;
-    USER: QueryKey;
-  };
+  AUTH: { ALL: QueryKey; SESSION: QueryKey; USER: QueryKey };
   USER_THEME: QueryKey;
   MARKERS: QueryKey;
   TUTORIAL_STATE: QueryKey;
@@ -13,75 +9,24 @@ interface QueryKeys {
     ALL: QueryKey;
     INFINITE: QueryKey;
     ONE: QueryKey;
+    COMMENTS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+    REPLIES: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   };
-  SEARCH: {
-    ALL: QueryKey;
-    USER: QueryKey;
-  };
-  CHATS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  PROFILE: {
-    ALL: QueryKey;
-    ONE: QueryKey;
-  };
-  TRANSACTIONS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  DELIVERY_PLANS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  DELIVERY_PREFERENCES: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  DONATIONS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  MILKBAGS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  REQUESTS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  LISTINGS: {
-    ALL: QueryKey;
-    NEAREST: QueryKey;
-  };
+  SEARCH: { ALL: QueryKey; USER: QueryKey };
+  CHATS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  PROFILE: { ALL: QueryKey; ONE: QueryKey };
+  TRANSACTIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  DELIVERY_PLANS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  DELIVERY_PREFERENCES: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  DONATIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  MILKBAGS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  REQUESTS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  LISTINGS: { ALL: QueryKey; NEAREST: QueryKey };
   DIRECTIONS: QueryKey;
-  ADDRESSES: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  PSGC: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  SCREENING_FORMS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
-  SCREENING_FORM_SUBMISSIONS: {
-    ALL: QueryKey;
-    INFINITE: QueryKey;
-    ONE: QueryKey;
-  };
+  ADDRESSES: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  PSGC: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  SCREENING_FORMS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  SCREENING_FORM_SUBMISSIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -97,6 +42,16 @@ export const QUERY_KEYS: QueryKeys = {
     ALL: ['posts'],
     INFINITE: ['posts', 'infinite'],
     ONE: ['posts', 'one'],
+    COMMENTS: {
+      ALL: ['posts', 'comments'],
+      INFINITE: ['posts', 'comments', 'infinite'],
+      ONE: ['posts', 'comments', 'one'],
+    },
+    REPLIES: {
+      ALL: ['posts', 'comments', 'replies'],
+      INFINITE: ['posts', 'comments', 'replies', 'infinite'],
+      ONE: ['posts', 'comments', 'replies', 'one'],
+    },
   },
   SEARCH: {
     ALL: ['search'],
