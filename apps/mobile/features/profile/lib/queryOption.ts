@@ -1,7 +1,9 @@
 import { QUERY_KEYS } from '@/lib/constants';
+import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { getApiClient } from '@lactalink/api';
 import { PopulatedUserProfile, UserProfile } from '@lactalink/types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
+import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformers';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { getPaginatedUserPosts } from './api/getPaginatedUserPosts';
 
@@ -12,14 +14,15 @@ export function createInfiniteUserPostsQuery(profile: PopulatedUserProfile) {
     initialPageParam: 1,
     queryKey: [...QUERY_KEYS.POSTS.INFINITE, userID],
     queryFn: async ({ pageParam = 1 }) => {
-      const { docs, ...rest } = await getPaginatedUserPosts(profile, pageParam);
-
-      const docMap = new Map(docs.map((doc) => [extractID(doc), doc]));
-
-      return { docs: docMap, ...rest };
+      const paginatedDocs = await getPaginatedUserPosts(profile, pageParam);
+      return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: ({ nextPage }) => nextPage,
     getPreviousPageParam: ({ prevPage }) => prevPage,
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return generatePlaceHoldersForInfQueries(10);
+    },
   });
 }
 
