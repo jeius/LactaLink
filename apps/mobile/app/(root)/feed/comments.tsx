@@ -1,36 +1,24 @@
 import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
 import CommentsSheet from '@/features/feed/components/comments/CommentsSheet';
 import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
-import { ErrorSearchParams } from '@lactalink/types/errors';
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function CommentsSheetPage() {
-  const { post } = useLocalSearchParams<FeedCommentsSearchParams>();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { post: postID } = useLocalSearchParams<FeedCommentsSearchParams>();
 
-  if (!post) {
-    const params: ErrorSearchParams = {
-      title: 'Missing Post ID',
-      message: 'No post ID was provided to load comments.',
-    };
-    return <Redirect href={{ pathname: '/error', params }} />;
+  if (!postID) {
+    return (
+      <Box className="flex-1 justify-center">
+        <Text bold className="text-center text-typography-800">
+          Unable to load comments
+        </Text>
+        <Text className="text-center text-typography-600">
+          The post was not found. Please try again later.
+        </Text>
+      </Box>
+    );
   }
 
-  return (
-    <>
-      <Box className="flex-1">
-        <CommentsSheet
-          post={{ id: post }}
-          defaultOpen
-          onClose={router.back}
-          snapPoints={['100']}
-          topInset={insets.top}
-          bottomInset={insets.bottom}
-        />
-      </Box>
-    </>
-  );
+  return <CommentsSheet postID={postID} />;
 }

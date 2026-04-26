@@ -1,5 +1,5 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
+import { KeyboardAvoider } from '@/components/KeyboardAvoider';
 import NameLink from '@/components/NameLink';
 import { Box, BoxProps } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
@@ -10,9 +10,10 @@ import { Text } from '@/components/ui/text';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { Comment } from '@lactalink/types/payload-generated-types';
 import { SendIcon, XIcon } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Keyboard, TextInput, TextInputContentSizeChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const baseStyle = tva({
   base: 'absolute inset-x-0 bottom-0 bg-background-0',
@@ -36,6 +37,7 @@ export default function CommentInput({
   onSubmit,
   onReplyCancel,
 }: CommentInputProps) {
+  const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [value, setValue] = useState('');
@@ -94,14 +96,13 @@ export default function CommentInput({
           </AnimatedPressable>
         </HStack>
       )}
-      <KeyboardAvoidingScrollView
+      <KeyboardAvoider
         className="border-outline-200 px-4 py-2"
-        style={{ borderTopWidth: 1 }}
+        style={{ borderTopWidth: 1, paddingBottom: insets.bottom + 8 }}
       >
         <HStack space="sm" className="items-start">
           <AnimatedInput className="flex-1" style={animatedInputStyle}>
             <InputField
-              //@ts-expect-error Gluestack mistyping - safe to ignore
               ref={inputRef}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
@@ -114,7 +115,8 @@ export default function CommentInput({
           </AnimatedInput>
           {(isFocused || value) && (
             <Button
-              variant={value ? 'solid' : 'link'}
+              variant={value ? 'solid' : 'ghost'}
+              isDisabled={!value.trim()}
               className="px-4"
               style={{ height: COMMENT_INPUT_HEIGHT }}
               onPress={handleSubmit}
@@ -123,7 +125,7 @@ export default function CommentInput({
             </Button>
           )}
         </HStack>
-      </KeyboardAvoidingScrollView>
+      </KeyboardAvoider>
     </Box>
   );
 }

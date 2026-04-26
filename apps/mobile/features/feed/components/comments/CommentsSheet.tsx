@@ -1,58 +1,34 @@
-import {
-  BottomSheet,
-  BottomSheetDragIndicator,
-  BottomSheetFlashList,
-  BottomSheetPortal,
-} from '@/components/ui/bottom-sheet';
-import { BottomSheetPortalProps, BottomSheetProps } from '@/components/ui/bottom-sheet/types';
 import { Box } from '@/components/ui/box';
-import { Spinner } from '@/components/ui/spinner';
+import FormSheetHandle from '@/components/ui/FormSheetHandle';
+import { InfiniteFlashList } from '@/components/ui/list/InfiniteFlashList';
 import { Text } from '@/components/ui/text';
 import { useAddCommentMutation } from '@/features/feed/hooks/useAddCommentMutation';
 import { CommentPayload, ReplyArgs } from '@/features/feed/lib/types';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { createTempID } from '@/lib/utils/tempID';
-import { Comment, Post } from '@lactalink/types/payload-generated-types';
+import { Comment } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createCommentsInfiniteOptions } from '../../lib/queryOptions/commentsInfiniteOptions';
 import CommentInput from './CommentInput';
 import CommentItemPlaceholder from './CommentItemPlaceholder';
 import CommentsListItem from './CommentsListItem';
 
-interface CommentsSheetProps
-  extends BottomSheetProps,
-    Pick<
-      BottomSheetPortalProps,
-      | 'snapPoints'
-      | 'enableDynamicSizing'
-      | 'backdropComponent'
-      | 'animatedPosition'
-      | 'animatedIndex'
-      | 'topInset'
-      | 'bottomInset'
-    > {
-  post: Pick<Post, 'id' | 'comments'>;
+interface CommentsSheetProps {
+  postID: string;
 }
 
 const PLACEHOLDER_COMMENTS = generatePlaceHoldersWithID(10, {} as Comment);
 
-export default function CommentsSheet({
-  post,
-  snapPoints,
-  enableDynamicSizing = false,
-  backdropComponent,
-  topInset,
-  bottomInset = 0,
-  ...props
-}: CommentsSheetProps) {
-  const commentsInfiniteOptions = createCommentsInfiniteOptions(post.id);
+export default function CommentsSheet({ postID }: CommentsSheetProps) {
+  const commentsInfiniteOptions = createCommentsInfiniteOptions(postID);
   const commentsQueryKey = commentsInfiniteOptions.queryKey;
 
-  const { data, ...query } = useInfiniteQuery(commentsInfiniteOptions);
+  const { data, isRefetching, refetch, ...commentsQuery } =
+    useInfiniteQuery(commentsInfiniteOptions);
   const comments = useMemo(() => data?.pages.flatMap((p) => Array.from(p.docs.values())), [data]);
 
   const [inputHeight, setInputHeight] = useState(0);
@@ -61,7 +37,7 @@ export default function CommentsSheet({
   const [parentComment, setParentComment] = useState<Comment | null>(null);
   const [invalidateQueryKey, setInvalidateQueryKey] = useState<QueryKey>(commentsQueryKey);
 
-  const { mutate: addComment } = useAddCommentMutation(post.id);
+  const { mutate: addComment } = useAddCommentMutation(postID);
 
   const handleReset = () => {
     setRepliedComment(null);
@@ -76,7 +52,7 @@ export default function CommentsSheet({
 
     const payload: CommentPayload = {
       id: createTempID(),
-      post: repliedComment?.post ?? parentComment?.post ?? post.id,
+      post: repliedComment?.post ?? parentComment?.post ?? postID,
       repliedTo: repliedComment ?? undefined,
       parent: parentComment ?? undefined,
       content: value,
@@ -97,47 +73,35 @@ export default function CommentsSheet({
   };
 
   return (
-    <>
-      <BottomSheet {...props}>
-        <BottomSheetPortal
-          snapPoints={snapPoints}
-          handleComponent={BottomSheetDragIndicator}
-          backdropComponent={backdropComponent}
-          enableDynamicSizing={enableDynamicSizing}
-          enableContentPanningGesture
-          topInset={topInset}
-        >
-          <BottomSheetFlashList
-            data={query.isLoading ? PLACEHOLDER_COMMENTS : (comments ?? [])}
-            keyExtractor={listKeyExtractor}
-            className="flex-1"
-            contentContainerClassName="px-4 py-2 flex-col items-stretch grow"
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: inputHeight + 8 }}
-            ItemSeparatorComponent={() => <Box className="h-4" />}
-            ListEmptyComponent={ListEmpty}
-            ListFooterComponent={() => query.isFetchingNextPage && <Spinner className="my-4" />}
-            onEndReachedThreshold={0.35}
-            onEndReached={query.fetchNextPage}
-            renderItem={({ item }) =>
-              isPlaceHolderData(item) ? (
-                <CommentItemPlaceholder />
-              ) : (
-                <CommentsListItem comment={item} onReply={handleReply} />
-              )
-            }
-          />
-        </BottomSheetPortal>
-      </BottomSheet>
+    <Box className="flex-1 bg-background-50">
+      <FormSheetHandle />
+
+      <InfiniteFlashList
+        {...commentsQuery}
+        gap={16}
+        data={commentsQuery.isLoading ? PLACEHOLDER_COMMENTS : (comments ?? [])}
+        keyExtractor={listKeyExtractor}
+        contentContainerClassName="px-4 py-2 grow"
+        contentContainerStyle={{ paddingBottom: inputHeight + 8 }}
+        refreshing={isRefetching}
+        onRefresh={refetch}
+        ListEmptyComponent={<ListEmpty />}
+        renderItem={({ item }) =>
+          isPlaceHolderData(item) ? (
+            <CommentItemPlaceholder />
+          ) : (
+            <CommentsListItem comment={item} onReply={handleReply} />
+          )
+        }
+      />
 
       <CommentInput
         onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}
-        style={{ paddingBottom: bottomInset + 8 }}
         onSubmit={handleSubmit}
         onReplyCancel={handleReset}
         replyToAuthor={repliedComment?.author}
       />
-    </>
+    </Box>
   );
 }
 
