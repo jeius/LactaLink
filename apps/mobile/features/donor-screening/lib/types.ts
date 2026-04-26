@@ -14,6 +14,10 @@ export type FormCreateSearchParams = {
   name?: string;
 };
 
+export type SubmissionCreateSearchParams = {
+  formID?: string;
+};
+
 export type BlockSchema = Exclude<B, { blockType: 'message' }>;
 
 export type BlockType = BlockSchema['blockType'];
