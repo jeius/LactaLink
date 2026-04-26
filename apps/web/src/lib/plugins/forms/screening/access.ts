@@ -16,7 +16,7 @@ export const organizationOrAdmin: Access = ({ req: { user } }) => {
   }
 };
 
-export const associateOrganizationOrAdmin: Access = ({ req: { user } }) => {
+export const associatedOrgOrAdmin: Access = ({ req: { user } }) => {
   if (!user) return false;
 
   if (isAdmin(user)) return true;
@@ -36,26 +36,21 @@ export const authenticatedAndPublished: Access = ({ req: { user } }) => {
 
   if (isAdmin(user)) return true;
 
+  const filters: Where[] = [{ _status: { equals: 'published' } }];
+
   const profile = user.profile;
 
-  if (!profile) {
-    return { _status: { equals: 'published' } } as Where;
+  if (profile && profile.relationTo !== 'individuals') {
+    filters.push({
+      and: [
+        { _status: { equals: 'draft' } },
+        { 'organization.value': { equals: extractID(profile.value) } },
+        { 'organization.relationTo': { equals: profile.relationTo } },
+      ],
+    });
   }
 
-  return {
-    or: [
-      // Allow access to published forms for all authenticated users
-      { _status: { equals: 'published' } },
-      // Or allow users to access their own drafts
-      {
-        and: [
-          { _status: { equals: 'draft' } },
-          { 'organization.value': { equals: extractID(profile.value) } },
-          { 'organization.relationTo': { equals: profile.relationTo } },
-        ],
-      },
-    ],
-  } as Where;
+  return { or: filters } as Where;
 };
 
 export const submitterOrAdmin: Access = ({ req: { user } }) => {

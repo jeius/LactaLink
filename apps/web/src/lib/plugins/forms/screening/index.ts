@@ -7,7 +7,7 @@ import {
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
 import { CheckboxField, DateField, NumberField } from 'payload';
 import {
-  associateOrganizationOrAdmin,
+  associatedOrgOrAdmin,
   authenticatedAndPublished,
   organizationOrAdmin,
   submitterOrAdmin,
@@ -46,8 +46,8 @@ export const screeningForm = formBuilderPlugin({
     access: {
       create: organizationOrAdmin,
       read: authenticatedAndPublished,
-      update: associateOrganizationOrAdmin,
-      delete: associateOrganizationOrAdmin,
+      update: associatedOrgOrAdmin,
+      delete: associatedOrgOrAdmin,
     },
     fields: ({ defaultFields }) => formFieldsOverrides(defaultFields),
   },
@@ -67,8 +67,8 @@ export const screeningForm = formBuilderPlugin({
     access: {
       create: authenticated,
       read: submitterOrAssociatedOrgOrAdmin,
-      update: submitterOrAdmin,
-      delete: () => false,
+      update: submitterOrAssociatedOrgOrAdmin,
+      delete: submitterOrAdmin,
     },
     hooks: {
       afterRead: [afterReadSubmission],
