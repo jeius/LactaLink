@@ -5,10 +5,9 @@ import {
 } from '@lactalink/types/payload-generated-types';
 import { QueryClient } from '@tanstack/react-query';
 import {
-  createDraftSubmissionQuery,
   createOrganizationScreeningFormQuery,
+  createOrgScreeningFormsInfQuery,
   createScreeningFormQuery,
-  createScreeningFormsInfQuery,
   createSubmissionQuery,
 } from './queryOptions';
 
@@ -17,16 +16,14 @@ type Options = {
   _status?: 'published' | 'draft';
 };
 
-export function addDraftSubmissionToCache(client: QueryClient, data: DonorScreeningSubmission) {
-  const queryKey = createDraftSubmissionQuery(data.id).queryKey;
-  client.setQueryData(queryKey, data);
-}
-
+// #region Submission Cache Utils
 export function addSubmissionToCache(client: QueryClient, data: DonorScreeningSubmission) {
   const queryKey = createSubmissionQuery(data.id).queryKey;
   client.setQueryData(queryKey, data);
 }
+// #endregion
 
+// #region Screening Form Cache Utils
 export function addScreeningFormToCache(
   client: QueryClient,
   data: DonorScreeningForm,
@@ -37,7 +34,7 @@ export function addScreeningFormToCache(
 }
 
 export function addScreeningFormToInfCache(client: QueryClient, data: DonorScreeningForm) {
-  const queryKey = createScreeningFormsInfQuery().queryKey;
+  const queryKey = createOrgScreeningFormsInfQuery().queryKey;
   client.setQueryData(queryKey, (oldData) => {
     if (!oldData) return oldData;
     return updateInfiniteDataMap(oldData, data, 'none');
@@ -60,3 +57,4 @@ export function addScreeningFormToDraftCache(client: QueryClient, data: DonorScr
   addScreeningFormToCache(client, data, { isDraft: true });
   cacheOrganizationForm(client, data, { isDraft: true });
 }
+// #endregion
