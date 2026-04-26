@@ -14,7 +14,7 @@ import { isIndividual } from '@lactalink/utilities/type-guards';
 import { useRecyclingState } from '@shopify/flash-list';
 import { Link } from 'expo-router';
 import { BadgeCheckIcon } from 'lucide-react-native';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { Keyboard } from 'react-native';
 
 const INITIAL_COMMENT_LINES = 3;
@@ -51,6 +51,7 @@ export default function CommentItem({
     <Pressable
       disabled={isTemporary}
       pointerEvents={isTemporary ? 'none' : 'auto'}
+      delayLongPress={200}
       onLongPress={handleLongPress}
     >
       <VStack space="xs" className="items-stretch">

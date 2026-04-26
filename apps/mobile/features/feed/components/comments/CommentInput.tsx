@@ -2,7 +2,7 @@ import { AnimatedPressable } from '@/components/animated/pressable';
 import { KeyboardAvoider } from '@/components/KeyboardAvoider';
 import NameLink from '@/components/NameLink';
 import { Box, BoxProps } from '@/components/ui/box';
-import { Button, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonIcon, ButtonSpinner } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
@@ -20,7 +20,8 @@ const baseStyle = tva({
 });
 
 interface CommentInputProps extends BoxProps {
-  onSubmit?: (value: string) => void;
+  isSubmitting?: boolean;
+  onSubmit?: (value: string) => Promise<void> | void;
   replyToAuthor?: Comment['author'] | null;
   onReplyCancel?: () => void;
 }
@@ -36,6 +37,7 @@ export default function CommentInput({
   replyToAuthor,
   onSubmit,
   onReplyCancel,
+  isSubmitting,
 }: CommentInputProps) {
   const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
@@ -50,16 +52,16 @@ export default function CommentInput({
   const handleContentSizeChange = ({ nativeEvent }: TextInputContentSizeChangeEvent) => {
     const height = nativeEvent.contentSize.height;
     const newHeight = Math.min(Math.max(COMMENT_INPUT_HEIGHT, height), MAX_COMMENT_INPUT_HEIGHT);
-    animatedHeight.value = withTiming(newHeight, { duration: 150 });
+    animatedHeight.set(withTiming(newHeight, { duration: 150 }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!value.trim()) return;
 
-    onSubmit?.(value.trim());
+    Keyboard.dismiss();
+    await onSubmit?.(value.trim());
     inputRef.current?.clear();
     setValue('');
-    Keyboard.dismiss();
   };
 
   // Separate effect for keyboard hide listener
@@ -101,7 +103,7 @@ export default function CommentInput({
         style={{ borderTopWidth: 1, paddingBottom: insets.bottom + 8 }}
       >
         <HStack space="sm" className="items-start">
-          <AnimatedInput className="flex-1" style={animatedInputStyle}>
+          <AnimatedInput isDisabled={isSubmitting} className="flex-1" style={animatedInputStyle}>
             <InputField
               ref={inputRef}
               onFocus={() => setIsFocused(true)}
@@ -117,11 +119,12 @@ export default function CommentInput({
             <Button
               variant={value ? 'solid' : 'ghost'}
               isDisabled={!value.trim()}
+              pointerEvents={isSubmitting ? 'none' : 'auto'}
               className="px-4"
               style={{ height: COMMENT_INPUT_HEIGHT }}
               onPress={handleSubmit}
             >
-              <ButtonIcon as={SendIcon} />
+              {isSubmitting ? <ButtonSpinner /> : <ButtonIcon as={SendIcon} />}
             </Button>
           )}
         </HStack>

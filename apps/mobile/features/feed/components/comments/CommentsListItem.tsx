@@ -60,8 +60,8 @@ export default function CommentsListItem({ comment, onReply }: CommentsSheetItem
           <CommentReplies
             comment={comment}
             onReply={onReply}
-            open={viewMore}
-            setOpen={setViewMore}
+            isExpanded={viewMore}
+            setExpanded={setViewMore}
           />
         }
       />

@@ -23,7 +23,6 @@ export interface Config {
 export type ReplyArgs = {
   comment: Comment;
   parentComment: Comment;
-  queryKey: QueryKey;
 };
 
 // Improved: Separate metadata from data using a discriminated union approach

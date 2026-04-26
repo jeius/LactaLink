@@ -1,17 +1,14 @@
-import React, { useCallback } from 'react';
-
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { useLikeInteraction } from '@/features/feed/hooks/useLikeInteraction';
-import { FeedCommentsSearchParams } from '@/lib/types/searchParams';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { formatNumberToShortenUnits } from '@lactalink/utilities/formatters';
 import { useRouter } from 'expo-router';
 import { HeartIcon, MessageCircleIcon } from 'lucide-react-native';
+import { useCallback } from 'react';
 import { GestureResponderEvent } from 'react-native';
-import { postsInfiniteOptions } from '../../lib/queryOptions/postsInfiniteOptions';
 
 interface PostStatsProps {
   post: Post;
@@ -27,7 +24,6 @@ export default function PostStats({
   disableCommentPress = false,
 }: PostStatsProps) {
   const router = useRouter();
-  const queryKey = postsInfiniteOptions.queryKey;
 
   const { commentsCount } = post;
   const {
@@ -35,7 +31,7 @@ export default function PostStats({
     toggleLike,
     likesCount,
     isPending: isLiking,
-  } = useLikeInteraction({ relationTo: 'posts', value: post }, queryKey);
+  } = useLikeInteraction({ relationTo: 'posts', value: post });
 
   const handleLikePress = useCallback(
     (e: GestureResponderEvent) => {
@@ -51,8 +47,7 @@ export default function PostStats({
     (e: GestureResponderEvent) => {
       onCommentPress?.(e);
       if (e.isDefaultPrevented()) return;
-      const params: FeedCommentsSearchParams = { post: post.id };
-      router.push({ pathname: '/feed/comments', params });
+      router.push(`/posts/${post.id}/comments`);
     },
     [onCommentPress, post.id, router]
   );
