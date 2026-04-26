@@ -1,22 +1,17 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { UserProfile } from '@lactalink/types';
-import { DonorScreeningForm } from '@lactalink/types/payload-generated-types';
+import { DonorScreeningForm, User } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformers';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import {
-  getAllScreeningForms,
   getFormByOrganization,
+  getOrganizationForms,
   getScreeningForm,
   getStandardScreeningForm,
 } from './api/find/getScreeningForm';
-import {
-  getMyDraftSubmissionForm,
-  getSubmission,
-  getSubmissions,
-  getSubmittedStandardForm,
-} from './api/find/getSubmission';
+import { getSubmission, getSubmissions, getSubmissionsByUser } from './api/find/getSubmission';
 
 // #region Screening Forms
 export function createStandardScreeningFormQuery() {
@@ -47,16 +42,20 @@ export function createScreeningFormQuery(
   });
 }
 
-export function createScreeningFormsInfQuery() {
+export function createOrgScreeningFormsInfQuery() {
   return infiniteQueryOptions({
     initialPageParam: 1,
     queryKey: [...QUERY_KEYS.SCREENING_FORMS.INFINITE],
     queryFn: async ({ pageParam, signal }) => {
-      const paginatedDocs = await getAllScreeningForms({ page: pageParam }, { signal });
+      const paginatedDocs = await getOrganizationForms({ page: pageParam }, { signal });
       return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     getPreviousPageParam: (firstPage) => firstPage.prevPage,
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return generatePlaceHoldersForInfQueries(15);
+    },
   });
 }
 
@@ -91,34 +90,15 @@ export function createOrganizationScreeningFormQuery({
 // #endregion
 
 // #region Submissions
-export function createDraftSubmissionQuery(formID: string | null | undefined) {
-  return queryOptions({
-    enabled: !!formID,
-    queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.ONE, 'draft', formID],
-    queryFn: async ({ signal }) => {
-      if (!formID) return null;
-      return getMyDraftSubmissionForm(formID, { signal });
-    },
-  });
-}
-
-export function createPublishedSubmissionQuery(formID: string | null | undefined) {
-  return queryOptions({
-    enabled: !!formID,
-    queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.ONE, 'published', formID],
-    queryFn: async ({ signal }) => {
-      if (!formID) return null;
-      return getSubmittedStandardForm({ formID, status: 'published' }, { signal });
-    },
-  });
-}
 
 export function createSubmissionQuery(submissionID: string | null | undefined) {
   return queryOptions({
     enabled: !!submissionID,
     queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.ONE, submissionID],
     queryFn: async ({ signal }) => {
-      if (!submissionID) return null;
+      if (!submissionID) {
+        throw new Error('Submission ID is required to fetch submission');
+      }
       return getSubmission(submissionID, { signal });
     },
   });
@@ -130,6 +110,27 @@ export function createSubmissionsInfQuery(formID: string | null | undefined) {
     queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.INFINITE, formID],
     queryFn: async ({ pageParam, signal }) => {
       const paginatedDocs = await getSubmissions({ formID, page: pageParam }, { signal });
+      return transformToPaginatedMappedDocs(paginatedDocs);
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getPreviousPageParam: (firstPage) => firstPage.prevPage,
+    placeholderData: (prev) => {
+      if (prev) return prev;
+      return generatePlaceHoldersForInfQueries(15);
+    },
+  });
+}
+
+export function createSubmissionsByUserInfQuery(user?: string | User | null) {
+  const userID = extractID(user);
+  return infiniteQueryOptions({
+    initialPageParam: 1,
+    queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.INFINITE, 'user', userID].filter(Boolean),
+    queryFn: async ({ pageParam, signal }) => {
+      if (!userID) {
+        throw new Error('User ID is required to fetch user submissions');
+      }
+      const paginatedDocs = await getSubmissionsByUser({ page: pageParam, userID }, { signal });
       return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
