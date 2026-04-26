@@ -15,6 +15,7 @@ import { VStack } from '@/components/ui/vstack';
 import CommentInput from '@/features/feed/components/comments/CommentInput';
 import CommentItemPlaceholder from '@/features/feed/components/comments/CommentItemPlaceholder';
 import CommentsListItem from '@/features/feed/components/comments/CommentsListItem';
+import PostActionMenu from '@/features/feed/components/post-item/PostActionMenu';
 import PostAuthor from '@/features/feed/components/post-item/PostAuthor';
 import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostShare from '@/features/feed/components/post-item/PostShare';
@@ -24,12 +25,13 @@ import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
 import { createCommentsInfiniteOptions } from '@/features/feed/lib/queryOptions/commentsInfiniteOptions';
 import { createPostQueryOptions } from '@/features/feed/lib/queryOptions/postQueryOptions';
 import { CommentPayload, FeedSearchParams, ReplyArgs } from '@/features/feed/lib/types';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { InfiniteDataMap } from '@/lib/types';
 import { createTempID } from '@/lib/utils/tempID';
 import { Comment, Post } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
-import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { isEqualProfiles, isPlaceHolderData } from '@lactalink/utilities/checkers';
 import {
   extractCollection,
   extractDisplayName,
@@ -40,7 +42,7 @@ import { FlashList, FlashListRef, ListRenderItem } from '@shopify/flash-list';
 import { QueryKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MessageSquareIcon, XIcon } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type SearchParams = FeedSearchParams & { id: string };
 
@@ -95,7 +97,9 @@ function Header(post: Post) {
 }
 
 function ListHeader({ mediaIndex, ...post }: Post & { mediaIndex?: number }) {
+  const { data: meUser } = useMeUser();
   const { author, createdAt, title, content, attachments, sharedFrom, id } = post;
+  const isMeUser = isEqualProfiles(meUser?.profile, author);
 
   const hasAttachments = attachments && attachments.length > 0;
   const titleInitialLines = hasAttachments ? 2 : 3;
@@ -103,7 +107,10 @@ function ListHeader({ mediaIndex, ...post }: Post & { mediaIndex?: number }) {
   return (
     <>
       <VStack space="sm" className="p-3">
-        <PostAuthor author={author} createdAt={createdAt} />
+        <HStack space="lg" className="items-center justify-between">
+          <PostAuthor author={author} createdAt={createdAt} />
+          {isMeUser && <PostActionMenu post={post} />}
+        </HStack>
 
         <VStack className="mt-2 items-stretch">
           <TruncatedText
