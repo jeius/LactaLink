@@ -71,14 +71,16 @@ export async function getFormByOrganization(
   return forms[0]!;
 }
 
-export async function getAllScreeningForms(
+export async function getOrganizationForms(
   { page, limit = 10 }: { limit?: number; page: number },
   init?: RequestInit
 ) {
   return getApiClient().find(
     {
       collection: 'donor-screening-forms',
-      where: { _status: { equals: 'published' } },
+      where: {
+        and: [{ _status: { equals: 'published' } }, { 'organization.value': { exists: true } }],
+      },
       page: page,
       limit: limit,
       depth: DEPTH,

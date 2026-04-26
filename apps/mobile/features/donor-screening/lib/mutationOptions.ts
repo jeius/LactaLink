@@ -2,8 +2,6 @@ import { QUERY_KEYS } from '@/lib/constants';
 import { DonorScreeningFormSchema } from '@lactalink/form-schemas';
 import { DonorScreeningSubmission } from '@lactalink/types/payload-generated-types';
 import { mutationOptions } from '@tanstack/react-query';
-import { publishSubmission } from './api/mutate/publishSubmission';
-import { saveSubmission } from './api/mutate/saveSubmission';
 import {
   createDraftScreeningForm,
   deleteScreeningForm,
@@ -11,23 +9,14 @@ import {
   saveScreeningForm,
 } from './api/mutate/screeningForm';
 import {
-  addDraftSubmissionToCache,
-  addScreeningFormToDraftCache,
-  addSubmissionToCache,
-} from './cacheUtils';
+  actOnSubmission,
+  createSubmissionDraft,
+  publishSubmission,
+  saveSubmissionDraft,
+} from './api/mutate/submission';
+import { addScreeningFormToDraftCache, addSubmissionToCache } from './cacheUtils';
 
-export function createSaveSubmissionMutationOptions(formID: string, init?: RequestInit) {
-  return mutationOptions({
-    mutationKey: ['donor-screening-submissions', 'save', formID],
-    mutationFn: async ({ data }: { data: Record<string, unknown> }) => {
-      return saveSubmission({ formID, data }, init);
-    },
-    onSuccess: async (data, _vars, _ctx, { client }) => {
-      if (data) addDraftSubmissionToCache(client, data);
-    },
-  });
-}
-
+// #region Submission Mutations
 export function createPublishSubmissionMutationOptions(
   submission: DonorScreeningSubmission | undefined | null,
   init?: RequestInit
@@ -45,6 +34,46 @@ export function createPublishSubmissionMutationOptions(
   });
 }
 
+export function createNewSubmissionDraftMutationOption() {
+  return mutationOptions({
+    mutationKey: ['donor-screening-submissions', 'create-draft'],
+    mutationFn: async ({ formID }: { formID: string }) => {
+      return createSubmissionDraft({ formID });
+    },
+    onSuccess: async (data, _vars, _ctx, { client }) => {
+      if (data) addSubmissionToCache(client, data);
+    },
+  });
+}
+
+export function createSaveSubmissionDraftMutationOptions(id: string | null | undefined) {
+  return mutationOptions({
+    mutationKey: ['donor-screening-submissions', 'save-draft', id].filter(Boolean),
+    mutationFn: async ({ data }: { data: Record<string, unknown> }) => {
+      if (!id) return null;
+      return saveSubmissionDraft({ submissionID: id, submissionData: data });
+    },
+    onSuccess: async (data, _vars, _ctx, { client }) => {
+      if (data) addSubmissionToCache(client, data);
+    },
+  });
+}
+
+export function createSubmissionActionMutationOptions(submissionID: string | null | undefined) {
+  return mutationOptions({
+    mutationKey: ['donor-screening-submissions', 'action', submissionID].filter(Boolean),
+    mutationFn: async ({ action }: { action: 'approve' | 'reject' }) => {
+      if (!submissionID) return null;
+      return actOnSubmission({ submissionID, action });
+    },
+    onSuccess: async (_data, _vars, _ctx, { client }) => {
+      await client.invalidateQueries({ queryKey: [QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.ALL] });
+    },
+  });
+}
+// #endregion
+
+// #region Screening Form Mutations
 export function createSaveScreeningFormMutationOpt(formID: string | null | undefined) {
   return mutationOptions({
     mutationKey: ['donor-screening-forms', 'save', formID].filter(Boolean),
@@ -95,3 +124,4 @@ export function createDeleteScreeningFormMutationOpt(formID: string | null | und
     },
   });
 }
+// #endregion
