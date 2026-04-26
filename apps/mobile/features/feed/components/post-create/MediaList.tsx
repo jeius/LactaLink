@@ -8,7 +8,6 @@ import { Icon } from '@/components/ui/icon';
 import { VStack } from '@/components/ui/vstack';
 import { MediaSchema, PostSchema } from '@lactalink/form-schemas';
 import { XIcon } from 'lucide-react-native';
-import React from 'react';
 import { Control, useWatch } from 'react-hook-form';
 import { useWindowDimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -67,13 +66,12 @@ function MediaListItem({
 
   return (
     <Card className="items-stretch p-0" style={{ width: Math.min(width, 320) }}>
-      <Box className="absolute right-4 top-4 z-10">
+      <Box className="absolute right-0 top-0 z-10 p-3">
         <AnimatedPressable
-          className="overflow-hidden rounded-full p-2"
+          className="overflow-hidden rounded-full bg-background-500/70 p-2"
           hitSlop={8}
           onPress={() => onRemove(index)}
         >
-          <Box className="absolute inset-0 bg-background-500" style={{ opacity: 0.75 }} />
           <Icon as={XIcon} className="text-typography-0" />
         </AnimatedPressable>
       </Box>
