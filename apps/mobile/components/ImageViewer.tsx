@@ -1,18 +1,21 @@
 import { getHexColor } from '@/lib/colors';
 import { BLUR_HASH } from '@/lib/constants';
 import { ImageData } from '@lactalink/types';
+import { MarkOptional } from '@lactalink/types/utils';
 import { Galeria } from '@nandorojo/galeria';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { ImageProps } from 'expo-image';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { GestureResponderEvent, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from './AppProvider/ThemeProvider';
 import { Image } from './Image';
 import { Pressable, PressableProps } from './ui/pressable';
 import { Text } from './ui/text';
 
+type ImageDataType = MarkOptional<ImageData, 'blurHash' | 'alt'>;
+
 interface ImageViewerProps extends Pick<ImageProps, 'contentFit'>, Omit<PressableProps, 'style'> {
-  images: ImageData[];
+  images: ImageDataType[];
   initialIndex?: number;
   imageStyle?: ImageProps['style'];
   imageClassName?: ImageProps['className'];
@@ -30,7 +33,7 @@ export function ImageViewer({
   const { theme } = useTheme();
   const imageURIs = images.map((image) => image.uri).filter((v) => v !== null);
 
-  const renderItem: ListRenderItem<ImageData> = useCallback(
+  const renderItem: ListRenderItem<ImageDataType> = useCallback(
     ({ item, index }) => {
       if (!item.uri) return null;
       const backgroundColor = getHexColor('light', 'background', 800)?.toString();
@@ -70,7 +73,7 @@ export function ImageViewer({
 }
 
 interface SingleImageViewerProps extends Omit<ImageViewerProps, 'initialIndex' | 'images'> {
-  image?: ImageData | null;
+  image?: ImageDataType | null;
   fallback?: React.ReactNode;
 }
 export function SingleImageViewer({
