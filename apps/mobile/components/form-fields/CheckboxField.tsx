@@ -1,3 +1,4 @@
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { CheckIcon } from 'lucide-react-native';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import {
@@ -10,7 +11,6 @@ import {
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
 import { BaseFieldProps } from './types';
-import { tva } from '@gluestack-ui/utils/nativewind-utils';
 
 const checkboxStyles = tva({ base: 'items-start' });
 
@@ -38,7 +38,7 @@ export function CheckboxField<
   ...props
 }: CheckboxFieldProps<TFieldValues, TName>) {
   const {
-    field: { disabled, ...field },
+    field: { disabled, ref, onBlur, onChange, value },
     fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
@@ -59,9 +59,11 @@ export function CheckboxField<
       ) : (
         <Checkbox
           {...checkboxProps}
-          {...field}
+          ref={ref}
           value={`checkbox-${name}`}
-          isChecked={!!field.value}
+          onChange={onChange}
+          onBlur={onBlur}
+          isChecked={!!value}
           isDisabled={disabledState}
           isInvalid={invalid}
           size={size}
