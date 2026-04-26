@@ -6,6 +6,7 @@ import {
   TransactionService,
 } from '@lactalink/api/services';
 
+export { getApiClient } from '@lactalink/api';
 export * from './chat';
 
 export function getTransactionService() {
