@@ -1,16 +1,24 @@
 import { getHexColor } from '@/lib/colors';
 import { BLUR_HASH } from '@/lib/constants';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { ImageData } from '@lactalink/types';
 import { MarkOptional } from '@lactalink/types/utils';
 import { Galeria } from '@nandorojo/galeria';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { ImageProps } from 'expo-image';
+import { ImageIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { GestureResponderEvent, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from './AppProvider/ThemeProvider';
 import { Image } from './Image';
+import { Box } from './ui/box';
+import { Icon } from './ui/icon';
 import { Pressable, PressableProps } from './ui/pressable';
 import { Text } from './ui/text';
+
+const baseStyles = tva({
+  base: 'flex-1',
+});
 
 type ImageDataType = MarkOptional<ImageData, 'blurHash' | 'alt'>;
 
@@ -96,6 +104,7 @@ export function SingleImageViewer({
   return (
     <Pressable
       {...props}
+      className={baseStyles({ className: props.className })}
       pointerEvents={disabled || !image?.uri ? 'none' : 'auto'}
       onPress={handlePress}
       android_disableSound
@@ -117,9 +126,12 @@ export function SingleImageViewer({
         </Galeria>
       ) : (
         fallback || (
-          <Text size="xs" className="text-center align-middle">
-            No Image
-          </Text>
+          <Box className="flex-1 items-center justify-center p-2">
+            <Icon as={ImageIcon} size="2xl" className="stroke-typography-600" />
+            <Text size="xs" className="mt-1 text-center align-middle text-typography-600">
+              No Image
+            </Text>
+          </Box>
         )
       )}
     </Pressable>
