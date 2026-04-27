@@ -6,6 +6,7 @@ import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { LeaveToastAction } from '@/components/toasts/ToastAction';
 import { FlashList } from '@/components/ui/FlashList';
+import FormSheetHandle from '@/components/ui/FormSheetHandle';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -111,7 +112,9 @@ export default function SectionSheet({ name }: Props) {
 
   return (
     <SafeArea safeTop={false} className="items-stretch justify-start">
-      <HStack className="items-center gap-2 px-2 pb-1 pt-4">
+      <FormSheetHandle />
+
+      <HStack className="items-center gap-2 px-2 pb-1">
         <HeaderBackButton onPress={goBack} />
         <Text size="lg" bold className="flex-1">
           Section
