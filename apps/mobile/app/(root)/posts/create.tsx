@@ -113,19 +113,18 @@ export default function PostCreate() {
           <Box pointerEvents={isPending ? 'none' : 'auto'} style={{ opacity: isPending ? 0.5 : 1 }}>
             <MediaList />
           </Box>
+        </KeyboardAvoidingScrollView>
 
+        <VStack onLayout={(e) => setOffset(e.nativeEvent.layout.height)}>
           <Box pointerEvents={isPending ? 'none' : 'auto'} style={{ opacity: isPending ? 0.5 : 1 }}>
             <Attachment />
           </Box>
-        </KeyboardAvoidingScrollView>
 
-        <VStack
-          space="md"
-          onLayout={(e) => setOffset(e.nativeEvent.layout.height)}
-          className="border-outline-200 px-4 pt-2"
-          style={{ borderTopWidth: 1 }}
-        >
-          <HStack space="sm" className="items-center">
+          <HStack
+            space="sm"
+            className="items-center border-outline-200 px-4 pt-2"
+            style={{ borderTopWidth: 1 }}
+          >
             <ImagePickerButton />
             <CameraButton />
             <AddAttachmentButton />

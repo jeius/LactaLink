@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { ProfileAvatar } from '@/components/Avatar';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -25,9 +26,9 @@ export default function PostAuthor({ author, createdAt }: Pick<Post, 'author' | 
 
       <VStack style={{ marginLeft: 4 }}>
         <Link asChild push href={`/profile/${author.relationTo}/${authorID}`}>
-          <Text size="sm" bold numberOfLines={1} ellipsizeMode="tail">
-            {authorFullName}
-          </Text>
+          <Button size="sm" variant="link" action="default" className="h-fit w-fit p-0">
+            <ButtonText className="font-JakartaBold">{authorFullName}</ButtonText>
+          </Button>
         </Link>
         <Text size="xs" className="text-typography-700">
           {timeAgo}

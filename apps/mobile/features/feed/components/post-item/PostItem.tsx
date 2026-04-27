@@ -1,3 +1,4 @@
+import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
@@ -62,7 +63,14 @@ export default function PostItem({ post, onPress }: PostItemProps) {
         <PostMedia id={post.id} attachments={attachments} />
       )}
 
-      {sharedFrom && <PostShare sharedFrom={sharedFrom} />}
+      {sharedFrom && (
+        <Box
+          className="bg-background-50 py-2"
+          style={{ marginTop: attachments && attachments.length > 0 ? 4 : 0 }}
+        >
+          <PostShare sharedFrom={sharedFrom} />
+        </Box>
+      )}
 
       <PostStats post={post} />
     </Card>

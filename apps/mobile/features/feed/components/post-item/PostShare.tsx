@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Pressable } from '@/components/ui/pressable';
 import DonationCard from '@/features/donation&request/components/cards/DonationCard';
 import RequestCard from '@/features/donation&request/components/cards/RequestCard';
@@ -17,7 +15,7 @@ export default function PostShare({ sharedFrom }: Pick<Post, 'sharedFrom'>) {
 
   return (
     <Link href={`/${slug}/${id}`} push asChild>
-      <Pressable style={{ marginHorizontal: 12 }}>
+      <Pressable className="overflow-hidden rounded-2xl" style={{ marginHorizontal: 12 }}>
         {sharedFrom.relationTo === 'donations' ? (
           <DonationCard data={sharedFrom.value} />
         ) : (
