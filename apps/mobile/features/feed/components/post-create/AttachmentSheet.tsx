@@ -36,7 +36,7 @@ export default function AttachmentSheet({
     const options = { shouldDirty: true, shouldTouch: true };
     setValue('sharedFrom', { relationTo: collection, value: item.id }, options);
     // Remove media when an attachment is selected
-    setValue('media', undefined, options);
+    setValue('media', null, options);
     setOpen(false);
   };
 

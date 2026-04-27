@@ -8,7 +8,6 @@ import DonationCard from '@/features/donation&request/components/cards/DonationC
 import RequestCard from '@/features/donation&request/components/cards/RequestCard';
 import { PostSchema } from '@lactalink/form-schemas';
 import { XIcon } from 'lucide-react-native';
-import React from 'react';
 import { useWatch } from 'react-hook-form';
 
 export default function Attachment() {
@@ -16,7 +15,7 @@ export default function Attachment() {
   const attachment = useWatch({ control, name: 'sharedFrom' });
 
   const handleRemove = () => {
-    setValue('sharedFrom', undefined, { shouldDirty: true, shouldTouch: true });
+    setValue('sharedFrom', null, { shouldDirty: true, shouldTouch: true });
   };
 
   if (!attachment) return null;

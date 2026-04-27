@@ -29,11 +29,11 @@ const useMediaField = () => {
       if (media && media.length > 0) {
         setValue('media', [...media, ...imagesToAdd], options);
         // Remove attachments if new images are added
-        setValue('sharedFrom', undefined, options);
+        setValue('sharedFrom', null, options);
       } else {
         setValue('media', imagesToAdd, options);
         // Remove attachments if new images are added
-        setValue('sharedFrom', undefined, options);
+        setValue('sharedFrom', null, options);
       }
     },
     [media, setValue]

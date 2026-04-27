@@ -5,7 +5,6 @@ import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
-import { VStack } from '@/components/ui/vstack';
 import { MediaSchema, PostSchema } from '@lactalink/form-schemas';
 import { XIcon } from 'lucide-react-native';
 import { Control, useWatch } from 'react-hook-form';
@@ -28,26 +27,24 @@ export default function MediaList() {
   };
 
   return (
-    <VStack className="items-stretch">
-      <FlatList
-        horizontal
-        data={media}
-        snapToInterval={itemWidth + 18} // item width + separator width
-        showsHorizontalScrollIndicator={false}
-        decelerationRate={'fast'}
-        snapToAlignment="center"
-        contentContainerClassName="p-4 items-stretch grow justify-center"
-        getItemLayout={(_, index) => ({
-          length: itemWidth,
-          offset: (itemWidth + 16) * index,
-          index,
-        })}
-        ItemSeparatorComponent={() => <Box className="w-4" />}
-        renderItem={({ item, index }) => (
-          <MediaListItem item={item} index={index} control={control} onRemove={remove} />
-        )}
-      />
-    </VStack>
+    <FlatList
+      horizontal
+      data={media}
+      snapToInterval={itemWidth + 18} // item width + separator width
+      showsHorizontalScrollIndicator={false}
+      decelerationRate={'fast'}
+      snapToAlignment="center"
+      contentContainerClassName="p-4 items-stretch grow justify-center"
+      getItemLayout={(_, index) => ({
+        length: itemWidth,
+        offset: (itemWidth + 16) * index,
+        index,
+      })}
+      ItemSeparatorComponent={() => <Box className="w-4" />}
+      renderItem={({ item, index }) => (
+        <MediaListItem item={item} index={index} control={control} onRemove={remove} />
+      )}
+    />
   );
 }
 
