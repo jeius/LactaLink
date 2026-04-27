@@ -4197,6 +4197,7 @@ export const donor_screening_submissions = pgTable(
     }),
     submittedAt: timestamp('submitted_at', { mode: 'string', withTimezone: true, precision: 3 }),
     isApproved: boolean('is_approved'),
+    isRejected: boolean('is_rejected'),
     approvedAt: timestamp('approved_at', { mode: 'string', withTimezone: true, precision: 3 }),
     approvedBy: uuid('approved_by_id').references(() => users.id, {
       onDelete: 'set null',
@@ -4268,6 +4269,7 @@ export const _donor_screening_submissions_v = pgTable(
       precision: 3,
     }),
     version_isApproved: boolean('version_is_approved'),
+    version_isRejected: boolean('version_is_rejected'),
     version_approvedAt: timestamp('version_approved_at', {
       mode: 'string',
       withTimezone: true,
