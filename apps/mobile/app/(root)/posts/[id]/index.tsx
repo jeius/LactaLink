@@ -18,12 +18,10 @@ import PostAuthor from '@/features/feed/components/post-item/PostAuthor';
 import PostMedia from '@/features/feed/components/post-item/PostMedia';
 import PostShare from '@/features/feed/components/post-item/PostShare';
 import PostStats from '@/features/feed/components/post-item/PostStats';
-import { useInfinitePosts } from '@/features/feed/hooks/useInfinitePosts';
-import { createPostQueryOptions } from '@/features/feed/lib/queryOptions/postQueryOptions';
+import { useInfinitePosts, usePostQuery } from '@/features/feed/hooks/queries';
 import { FeedSearchParams } from '@/features/feed/lib/types';
 import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { InfiniteDataMap } from '@/lib/types';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import {
@@ -32,7 +30,6 @@ import {
   extractID,
   extractOneImageData,
 } from '@lactalink/utilities/extractors';
-import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MessageSquareIcon, XIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useRef } from 'react';
@@ -45,10 +42,8 @@ export default function ViewPost() {
   const mediaIndex = media ? parseInt(media) : undefined;
 
   const { dataMap: mappedData } = useInfinitePosts();
-
-  const initialData = useMemo(() => getPost(id, mappedData), [id, mappedData]);
-  const postQueryOptions = createPostQueryOptions(id, initialData);
-  const { data: post, isLoading } = useQuery(postQueryOptions);
+  const initialData = useMemo(() => mappedData.get(id), [id, mappedData]);
+  const { data: post, isLoading } = usePostQuery(id, initialData);
 
   if (isLoading || !post) return <LoadingSpinner />;
 
@@ -203,12 +198,4 @@ function MediaContent({ mediaIndex = 0, ...post }: Post & { mediaIndex?: number 
       renderItem={renderItem}
     />
   );
-}
-
-function getPost(id: string, data?: InfiniteDataMap<Post>) {
-  if (!data) return;
-  for (const page of data.pages) {
-    return page.docs.get(id);
-  }
-  return;
 }

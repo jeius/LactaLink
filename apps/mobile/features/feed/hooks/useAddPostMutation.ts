@@ -4,7 +4,7 @@ import { useApiClient } from '@lactalink/api';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addPostToCache } from '../lib/postCacheUtils';
+import { addPostToInfCache } from '../lib/postCacheUtils';
 
 export function useAddPostMutation() {
   const queryClient = useQueryClient();
@@ -32,7 +32,7 @@ export function useAddPostMutation() {
       await queryClient.cancelQueries({ queryKey });
       const prevPost = queryClient.getQueryData<InfiniteDataMap<Post>>(queryKey);
       queryClient.setQueryData<InfiniteDataMap<Post>>(queryKey, (oldData) =>
-        addPostToCache(oldData, newPost)
+        addPostToInfCache(oldData, newPost)
       );
       return { prevPost };
     },

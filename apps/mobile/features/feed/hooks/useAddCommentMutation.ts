@@ -12,15 +12,14 @@ import {
   updatePostCommentsCountInCache,
 } from '../lib/commentCacheUtils';
 import { createCommentsInfiniteOptions } from '../lib/queryOptions/commentsInfiniteOptions';
-import { createPostQueryOptions } from '../lib/queryOptions/postQueryOptions';
-import { postsInfiniteOptions } from '../lib/queryOptions/postsInfiniteOptions';
+import { createPostInfQuery, createPostQueryOptions } from '../lib/queryOptions/posts';
 import { CommentPayload } from '../lib/types';
 
 export function useAddCommentMutation(postID: Post['id']) {
   const { data: meUser } = useMeUser();
 
   const postQueryOptions = createPostQueryOptions(postID);
-  const postsQueryKey = postsInfiniteOptions.queryKey;
+  const postsQueryKey = createPostInfQuery().queryKey;
   const commentsInfiniteOptions = createCommentsInfiniteOptions(postID);
   const commentsQueryKey = commentsInfiniteOptions.queryKey;
 
@@ -29,7 +28,7 @@ export function useAddCommentMutation(postID: Post['id']) {
     meta: {
       errorMessage: (err) => extractErrorMessage(err),
     },
-    mutationFn: async ({ queryKey, ...commentData }: CommentPayload) => {
+    mutationFn: async (commentData: CommentPayload) => {
       const apiClient = getApiClient();
       return apiClient.create({
         collection: 'comments',
@@ -49,7 +48,7 @@ export function useAddCommentMutation(postID: Post['id']) {
       // Cancel any outgoing refetches
       await Promise.all([
         client.cancelQueries({ queryKey }),
-        client.cancelQueries(postsInfiniteOptions),
+        client.cancelQueries(createPostInfQuery()),
         client.cancelQueries(commentsInfiniteOptions),
         client.cancelQueries(postQueryOptions),
       ]);
@@ -100,7 +99,7 @@ export function useAddCommentMutation(postID: Post['id']) {
     onSettled: (_data, _err, { queryKey }, _ctx, { client }) => {
       // Invalidate to ensure fresh data
       client.invalidateQueries({ queryKey });
-      client.invalidateQueries(postsInfiniteOptions);
+      client.invalidateQueries(createPostInfQuery());
       client.invalidateQueries(commentsInfiniteOptions);
       client.invalidateQueries(postQueryOptions);
     },

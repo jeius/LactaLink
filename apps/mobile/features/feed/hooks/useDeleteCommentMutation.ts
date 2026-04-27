@@ -11,15 +11,14 @@ import {
   updatePostCommentsCount,
   updatePostCommentsCountInCache,
 } from '../lib/commentCacheUtils';
-import { createPostQueryOptions } from '../lib/queryOptions/postQueryOptions';
-import { postsInfiniteOptions } from '../lib/queryOptions/postsInfiniteOptions';
+import { createPostInfQuery, createPostQueryOptions } from '../lib/queryOptions/posts';
 import { DeleteCommentPayload } from '../lib/types';
 
 export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
   const client = useQueryClient();
   const { data: meUser } = useMeUser();
 
-  const postsQueryKey = postsInfiniteOptions.queryKey;
+  const postsQueryKey = createPostInfQuery().queryKey;
 
   const deleteMutation = useMutation({
     mutationKey: createDeleteCommentMutationKey(meUser),
@@ -36,7 +35,7 @@ export function useDeleteCommentMutation(commentsQueryKey: QueryKey) {
       // Cancel any outgoing refetches
       await Promise.all([
         client.cancelQueries({ queryKey }),
-        client.cancelQueries(postsInfiniteOptions),
+        client.cancelQueries(createPostInfQuery()),
         client.cancelQueries({ queryKey: commentsQueryKey }),
         client.cancelQueries(postQueryOptions),
       ]);

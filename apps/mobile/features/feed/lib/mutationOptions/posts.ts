@@ -1,7 +1,7 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
 import { mutationOptions } from '@tanstack/react-query';
-import { createPostQueryOptions } from '../queryOptions/postQueryOptions';
+import { createPostQueryOptions } from '../queryOptions/posts';
 
 export function createDeletePostMutationOptions(postID: string) {
   return mutationOptions({
