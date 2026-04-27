@@ -1,5 +1,8 @@
 import { Box } from '@/components/ui/box';
+import { HStack } from '@/components/ui/hstack';
 import { InfiniteFlashList, InfiniteFlashListProps } from '@/components/ui/list/InfiniteFlashList';
+import { Skeleton } from '@/components/ui/skeleton';
+import { VStack } from '@/components/ui/vstack';
 import { Comment } from '@lactalink/types/payload-generated-types';
 import { generatePlaceHoldersWithID } from '@lactalink/utilities';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
@@ -14,7 +17,6 @@ import { ReplyArgs } from '../../lib/types';
 import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 import CommentItemActions from './CommentItemActions';
-import CommentItemPlaceholder from './CommentItemPlaceholder';
 import CommentLikeButton from './CommentLikeButton';
 import CommentReplies from './CommentReplies';
 
@@ -91,6 +93,21 @@ function ListEmpty() {
         No comments yet. Be the first to comment!
       </Text>
     </Box>
+  );
+}
+
+function CommentItemPlaceholder() {
+  return (
+    <HStack space="sm">
+      <Skeleton variant="circular" style={{ width: 32, height: 32 }} />
+      <VStack space="xs" className="h-32 flex-1">
+        <Skeleton variant="sharp" className="mb-1 h-4 w-28" />
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <Skeleton key={idx} variant="sharp" className="h-5 w-full" />
+        ))}
+        <Skeleton variant="sharp" className="mt-1 h-4 w-12" />
+      </VStack>
+    </HStack>
   );
 }
 
