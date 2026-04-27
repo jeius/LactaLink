@@ -3,6 +3,7 @@ import { imageSchema } from './file';
 import { emptyTransform } from './transformers';
 
 const mediaSchema = z.object({
+  id: z.string().nullish(),
   image: z.object(imageSchema.shape, 'Image is required'),
   caption: z.string().transform(emptyTransform).nullish(),
 });
