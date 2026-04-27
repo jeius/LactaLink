@@ -5,9 +5,9 @@ import { POST_ATTACHMENT_MEDIA_TYPE, POST_STATUS, POST_VISIBILITY } from '@lacta
 import { CollectionConfig } from 'payload';
 import { authenticated, collectionAuthorOrAdmin } from '../_access-control/general';
 import { sharedFromFilter } from './filterOptions/sharedFromFIlter';
+import { afterChange } from './hooks/afterChange';
 import { setSummary } from './hooks/beforeChange';
 import { deleteRelatedDocs } from './hooks/beforeDelete';
-import { updatePostSharesCount } from './hooks/updatePostSharesCount';
 import { preventCircularShares } from './validate/preventCircularShares';
 
 export const Posts: CollectionConfig<'posts'> = {
@@ -33,7 +33,7 @@ export const Posts: CollectionConfig<'posts'> = {
   hooks: {
     beforeChange: [setSummary, generateOwner],
     beforeDelete: [deleteRelatedDocs],
-    afterChange: [updatePostSharesCount],
+    afterChange: [afterChange],
   },
   fields: [
     {
