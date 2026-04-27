@@ -1,6 +1,14 @@
+import { uploadImage } from '@/lib/api/file';
 import { getApiClient } from '@/lib/services';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { extractID } from '@lactalink/utilities/extractors';
+import { PostSchema } from '@lactalink/form-schemas';
+import { Image, Post } from '@lactalink/types/payload-generated-types';
+import { PostError } from '@lactalink/utilities/errors';
+import {
+  extractErrorStatus,
+  extractErrorStatusText,
+  extractID,
+} from '@lactalink/utilities/extractors';
 
 export async function getPublishedPosts(
   { page, limit = 15 }: { page: number; limit?: number },
@@ -62,6 +70,52 @@ export async function getPostByID(id: string, init?: RequestInit) {
                 ],
               },
             },
+      },
+    },
+    init
+  );
+}
+
+export async function createPost(data: PostSchema, init?: RequestInit) {
+  const meUser = getMeUser();
+  if (!meUser) throw new Error('User must be logged in to create a post');
+
+  const profile = meUser?.profile;
+  if (!profile) throw new Error('User must setup a profile before creating a post');
+
+  const apiClient = getApiClient();
+  const uploadedImages: Image[] = [];
+
+  const attachments = !data.media
+    ? []
+    : await Promise.all(
+        data.media.map(async ({ image, caption }) => {
+          const uploadedImage = await uploadImage('images', image);
+          uploadedImages.push(uploadedImage);
+          return { image: uploadedImage.id, caption, mediaType: 'IMAGE' } as const;
+        })
+      ).catch((err) => {
+        throw new PostError<Partial<Post>>('Failed to upload images', {
+          cause: err,
+          data: {
+            attachments: uploadedImages.map((img) => ({ image: img.id, mediaType: 'IMAGE' })),
+          },
+          statusCode: extractErrorStatus(err),
+          statusText: extractErrorStatusText(err),
+        });
+      });
+
+  return apiClient.create(
+    {
+      collection: 'posts',
+      data: {
+        title: data.title,
+        content: data.content,
+        attachments: attachments,
+        visibility: 'PUBLIC',
+        tags: data.tags?.map((tag) => ({ tag })),
+        author: { relationTo: profile.relationTo, value: extractID(profile.value) },
+        sharedFrom: data.sharedFrom,
       },
     },
     init

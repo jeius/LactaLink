@@ -30,7 +30,7 @@ export function useInfinitePosts() {
   return { ...query, dataMap, data: dataArray, isPlaceholderData };
 }
 
-export function usePostQuery(id: Post['id'], initialData?: Post) {
+export function usePostQuery(id: Post['id'] | null | undefined, initialData?: Post) {
   return useQuery(createPostQueryOptions(id, initialData));
 }
 

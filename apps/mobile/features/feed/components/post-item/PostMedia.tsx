@@ -2,6 +2,7 @@ import { Image } from '@/components/Image';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -10,6 +11,7 @@ import { ImageData, MediaAttachment } from '@lactalink/types';
 import { Post } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractOneImageData } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
+import { ImageIcon } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { FeedSearchParams } from '../../lib/types';
 
@@ -41,8 +43,8 @@ export default function PostMedia({ attachments, id }: PostMediaProps) {
 
   const handlePress = (index: number) => {
     const params: FeedSearchParams = { media: index.toString() };
-    // @ts-expect-error -- Expo Router types are broken
-    router.push({ pathname: `/feed/${id}`, params });
+    // @ts-expect-error - Expected route type error
+    router.push({ pathname: `/posts/${id}`, params });
   };
 
   if (length === 0) return null;
@@ -54,7 +56,7 @@ export default function PostMedia({ attachments, id }: PostMediaProps) {
     );
   else if (length === 2)
     return (
-      <HStack space="xs" className="h-48 w-full">
+      <HStack space="xs" className="h-52">
         {media.map((m, idx) => (
           <Pressable key={m.id} className="flex-1" onPress={() => handlePress(idx)}>
             <ImageComp image={m!.imageData} />
@@ -64,11 +66,11 @@ export default function PostMedia({ attachments, id }: PostMediaProps) {
     );
   else if (length === 3)
     return (
-      <VStack space="xs" className="w-full">
-        <Pressable className="h-48 w-full" onPress={() => handlePress(0)}>
+      <VStack space="xs">
+        <Pressable className="h-52" onPress={() => handlePress(0)}>
           <ImageComp image={media[0]!.imageData} />
         </Pressable>
-        <HStack space="xs" className="h-32 w-full">
+        <HStack space="xs" className="h-32">
           {media.slice(1).map((m, idx) => (
             <Pressable key={m.id} className="flex-1" onPress={() => handlePress(idx + 1)}>
               <ImageComp image={m!.imageData} />
@@ -79,22 +81,21 @@ export default function PostMedia({ attachments, id }: PostMediaProps) {
     );
   else
     return (
-      <VStack space="xs" className="w-full">
-        <Pressable onPress={() => handlePress(0)} className="h-48 w-full">
+      <VStack space="xs">
+        <Pressable onPress={() => handlePress(0)} className="h-52">
           <ImageComp image={media[0]!.imageData} />
         </Pressable>
-        <HStack space="xs" className="h-32 w-full">
+        <HStack space="xs" className="h-32">
           <Pressable onPress={() => handlePress(1)} className="flex-1">
             <ImageComp image={media[1]!.imageData} />
           </Pressable>
           <Pressable onPress={() => handlePress(2)} className="flex-1 items-center justify-center">
-            <Box className="absolute inset-0">
-              <ImageComp image={media[2]!.imageData} />
+            <ImageComp image={media[2]!.imageData} />
+            <Box className="absolute inset-0 items-center justify-center bg-background-700/50">
+              <Text size="xl" bold className="text-typography-0">
+                +{length - 3}
+              </Text>
             </Box>
-            <Box className="absolute inset-0 bg-background-700" style={{ opacity: 0.5 }} />
-            <Text size="xl" bold className="text-primary-0">
-              +{length - 3}
-            </Text>
           </Pressable>
         </HStack>
       </VStack>
@@ -108,9 +109,9 @@ function ImageComp({ image }: { image: ImageData }) {
 
   if (!uri)
     return (
-      <Text size="xs" className="flex-1 text-center align-middle">
-        No Image
-      </Text>
+      <Box className="flex-1 items-center justify-center bg-background-100">
+        <Icon as={ImageIcon} size="2xl" />
+      </Box>
     );
 
   return (
@@ -118,7 +119,7 @@ function ImageComp({ image }: { image: ImageData }) {
       source={{ uri: uri }}
       placeholder={{ blurhash: blurHash ?? BLUR_HASH }}
       alt={alt}
-      style={{ width: '100%', height: '100%' }}
+      className="h-full w-full flex-1"
       contentFit={'cover'}
       recyclingKey={`image-${uri}`}
       accessibilityLabel={alt}

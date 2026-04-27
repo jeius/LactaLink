@@ -8,10 +8,17 @@ import {
   createAddLikeMutationOptions,
   createDeleteLikeMutationOptions,
 } from '../lib/mutationOptions/likes';
-import { createDeletePostMutationOptions } from '../lib/mutationOptions/posts';
+import {
+  createDeletePostMutationOptions,
+  createNewPostMutationOptions,
+} from '../lib/mutationOptions/posts';
 import { LikableRelation } from '../lib/types';
 
 // #region Post Mutations
+export function useCreatePostMutation() {
+  return useMutation(createNewPostMutationOptions());
+}
+
 export function useDeletePostMutation(postID: string) {
   return useMutation(createDeletePostMutationOptions(postID));
 }

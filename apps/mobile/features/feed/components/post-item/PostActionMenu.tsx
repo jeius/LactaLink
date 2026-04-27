@@ -10,7 +10,7 @@ import { useDeletePostMutation } from '../../hooks/mutations';
 export default function PostActionMenu({ post }: { post: Post }) {
   const [open, setOpen] = useState(false);
 
-  const { mutateAsync: deletePost, isPending } = useDeletePostMutation(post.id);
+  const { mutateAsync: deletePost, isPending: isDeleting } = useDeletePostMutation(post.id);
 
   const handleDelete = useCallback(() => {
     deletePost().then(() => setOpen(false));
@@ -27,7 +27,13 @@ export default function PostActionMenu({ post }: { post: Post }) {
       </ActionSheet.Trigger>
       <ActionSheet.Content>
         <VStack space="sm" className="px-4 pb-2">
-          <Button action="default" variant="ghost" disablePressAnimation onPress={handleEdit}>
+          <Button
+            action="default"
+            variant="ghost"
+            isDisabled={isDeleting}
+            disablePressAnimation
+            onPress={handleEdit}
+          >
             <ButtonIcon as={PenIcon} />
             <ButtonText>Edit Post</ButtonText>
           </Button>
@@ -41,7 +47,8 @@ export default function PostActionMenu({ post }: { post: Post }) {
               icon: Trash2Icon,
               variant: 'ghost',
               disablePressAnimation: true,
-              isLoading: isPending,
+              isLoading: isDeleting,
+              isDisabled: isDeleting,
             }}
             confirmButtonProps={{ label: 'Delete' }}
             onConfirm={handleDelete}

@@ -28,10 +28,14 @@ export function createPostInfQuery() {
   });
 }
 
-export function createPostQueryOptions(id: Post['id'], initialData?: Post) {
+export function createPostQueryOptions(id: Post['id'] | null | undefined, initialData?: Post) {
   return queryOptions({
+    enabled: !!id,
     queryKey: [...QUERY_KEYS.POSTS.ONE, id],
-    queryFn: async ({ signal }) => getPostByID(id, { signal }),
+    queryFn: async ({ signal }) => {
+      if (!id) throw new Error('Post ID is required');
+      return getPostByID(id, { signal });
+    },
     placeholderData: (prev) => {
       if (prev) return prev;
       return initialData;

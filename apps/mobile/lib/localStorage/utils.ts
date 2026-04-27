@@ -1,6 +1,7 @@
 import {
   DonationCreateSchema,
   IdentitySchema,
+  PostSchema,
   RequestCreateSchema,
   SetupProfileSchema,
 } from '@lactalink/form-schemas';
@@ -19,6 +20,7 @@ type Schemas = {
   'identity-create': IdentitySchema;
   'request-create': RequestCreateSchema;
   'profile-create': SetupProfileSchema;
+  'post-create': PostSchema;
 };
 
 export type SchemaName = keyof Schemas;
@@ -30,6 +32,7 @@ const BASE_STORAGE_KEYS: Record<SchemaName, string> = {
   'identity-create': 'identity-verification-form',
   'request-create': 'request-form',
   'profile-create': 'setup-profile-form',
+  'post-create': 'post-form',
 };
 
 export function getSavedFormData<TName extends SchemaName>(

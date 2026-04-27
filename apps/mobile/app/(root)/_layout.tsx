@@ -22,12 +22,7 @@ export default function Layout() {
 
       <Stack.Screen
         name="(create)/delivery-preferences/create"
-        options={{ headerShown: true, title: 'New Delivery Preference' }}
-      />
-
-      <Stack.Screen
-        name="(create)/feed/create"
-        options={{ headerShown: true, title: 'Create Post' }}
+        options={{ headerShown: true, headerTitle: 'New Delivery Preference' }}
       />
 
       <Stack.Screen name="(create)/conversations/create" />
