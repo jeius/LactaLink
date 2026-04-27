@@ -8,9 +8,6 @@ export async function getPublishedPosts(
 ) {
   const meUser = getMeUser();
   const meProfile = meUser?.profile;
-  if (!meProfile) {
-    throw new Error('Unable to fetch posts: No profile found for current user.');
-  }
 
   return getApiClient().find(
     {
@@ -24,16 +21,18 @@ export async function getPublishedPosts(
       populate: { likes: { createdBy: true } },
       joins: {
         comments: false,
-        shares: { count: true },
-        likes: {
-          count: true,
-          where: {
-            and: [
-              { 'createdBy.relationTo': { equals: meProfile.relationTo } },
-              { 'createdBy.value': { equals: extractID(meProfile.value) } },
-            ],
-          },
-        },
+        shares: false,
+        likes: !meProfile
+          ? false
+          : {
+              count: true,
+              where: {
+                and: [
+                  { 'createdBy.relationTo': { equals: meProfile.relationTo } },
+                  { 'createdBy.value': { equals: extractID(meProfile.value) } },
+                ],
+              },
+            },
       },
     },
     init
@@ -41,6 +40,9 @@ export async function getPublishedPosts(
 }
 
 export async function getPostByID(id: string, init?: RequestInit) {
+  const meUser = getMeUser();
+  const meProfile = meUser?.profile;
+
   return getApiClient().findByID(
     {
       collection: 'posts',
@@ -48,8 +50,18 @@ export async function getPostByID(id: string, init?: RequestInit) {
       depth: 2,
       joins: {
         comments: { count: true, limit: 10 },
-        shares: { count: true, limit: 0 },
-        likes: { count: true, limit: 0 },
+        shares: false,
+        likes: !meProfile
+          ? false
+          : {
+              count: true,
+              where: {
+                and: [
+                  { 'createdBy.relationTo': { equals: meProfile.relationTo } },
+                  { 'createdBy.value': { equals: extractID(meProfile.value) } },
+                ],
+              },
+            },
       },
     },
     init

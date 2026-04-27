@@ -29,18 +29,18 @@ export function getPaginatedComments(
       },
       joins: {
         replies: { count: true, sort: '-createdAt', limit: 10 },
-        likes: {
-          count: true,
-          limit: 0,
-          where: meUserProfile
-            ? {
+        likes: !meUserProfile
+          ? false
+          : {
+              count: true,
+              limit: 0,
+              where: {
                 and: [
                   { 'createdBy.relationTo': { equals: meUserProfile.relationTo } },
                   { 'createdBy.value': { equals: extractID(meUserProfile.value) } },
                 ],
-              }
-            : undefined,
-        },
+              },
+            },
       },
     },
     init
@@ -65,18 +65,18 @@ export function getPaginatedReplies(
       populate: { likes: { createdBy: true } },
       joins: {
         replies: false,
-        likes: {
-          count: true,
-          limit: 0,
-          where: meUserProfile
-            ? {
+        likes: !meUserProfile
+          ? false
+          : {
+              count: true,
+              limit: 0,
+              where: {
                 and: [
                   { 'createdBy.relationTo': { equals: meUserProfile.relationTo } },
                   { 'createdBy.value': { equals: extractID(meUserProfile.value) } },
                 ],
-              }
-            : undefined,
-        },
+              },
+            },
       },
     },
     init

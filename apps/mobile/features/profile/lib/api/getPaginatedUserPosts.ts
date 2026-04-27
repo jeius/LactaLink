@@ -1,11 +1,13 @@
+import { getMeUser } from '@/lib/stores/meUserStore';
 import { getApiClient } from '@lactalink/api';
 import { UserProfile } from '@lactalink/types';
 import { extractID } from '@lactalink/utilities/extractors';
 
 export function getPaginatedUserPosts(profile: UserProfile, page: number) {
-  const apiClient = getApiClient();
+  const meUser = getMeUser();
+  const meProfile = meUser?.profile;
 
-  return apiClient.find({
+  return getApiClient().find({
     collection: 'posts',
     pagination: true,
     page: page,
@@ -17,9 +19,19 @@ export function getPaginatedUserPosts(profile: UserProfile, page: number) {
       ],
     },
     joins: {
-      comments: { count: true, limit: 0 },
-      likes: { count: true, limit: 0 },
-      shares: { count: true, limit: 0 },
+      comments: { count: true, limit: 10 },
+      shares: false,
+      likes: !meProfile
+        ? false
+        : {
+            count: true,
+            where: {
+              and: [
+                { 'createdBy.relationTo': { equals: meProfile.relationTo } },
+                { 'createdBy.value': { equals: extractID(meProfile.value) } },
+              ],
+            },
+          },
     },
   });
 }
