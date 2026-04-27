@@ -1,5 +1,5 @@
 import { DidDismissEvent, DidPresentEvent, TrueSheet } from '@lodev09/react-native-true-sheet';
-import React, {
+import {
   ComponentRef,
   FC,
   ForwardedRef,
@@ -20,6 +20,7 @@ import type {
   ActionSheetContentProps,
   ActionSheetFlashListProps,
   ActionSheetIconProps,
+  ActionSheetInfiniteListProps,
   ActionSheetItemProps,
   ActionSheetListProps,
   ActionSheetProps,
@@ -113,7 +114,7 @@ function ActionSheetContent({
   );
 }
 
-const ActionSheetItem = React.forwardRef<ComponentRef<typeof Pressable>, ActionSheetItemProps>(
+const ActionSheetItem = forwardRef<ComponentRef<typeof Pressable>, ActionSheetItemProps>(
   function ActionSheetItem({ className, onPress, asChild, children, ...props }, ref) {
     const { close } = useSheetActions();
 
@@ -171,12 +172,12 @@ function ActionSheetList<T>({ ...props }: ActionSheetListProps<T>) {
 }
 
 const ActionSheetInfiniteList = forwardRef(function ActionSheetInfiniteList<T>(
-  { ...props }: ActionSheetListProps<T>,
+  { ...props }: ActionSheetInfiniteListProps<T>,
   ref: ForwardedRef<InfiniteFlashListRef<T>>
 ) {
   return <InfiniteFlashList {...props} ref={ref} />;
 }) as <T>(
-  props: PropsWithoutRef<ActionSheetListProps<T>> & RefAttributes<InfiniteFlashListRef<T>>
+  props: PropsWithoutRef<ActionSheetInfiniteListProps<T>> & RefAttributes<InfiniteFlashListRef<T>>
 ) => JSX.Element;
 
 const ActionSheetFlashList = forwardRef(function ActionSheetFlashList<T>(
