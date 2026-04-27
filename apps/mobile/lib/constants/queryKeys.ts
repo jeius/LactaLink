@@ -21,7 +21,7 @@ interface QueryKeys {
   DONATIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   MILKBAGS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   REQUESTS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
-  LISTINGS: { ALL: QueryKey; NEAREST: QueryKey };
+  LISTINGS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey; NEAREST: QueryKey };
   DIRECTIONS: QueryKey;
   ADDRESSES: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   PSGC: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
@@ -118,6 +118,8 @@ export const QUERY_KEYS: QueryKeys = {
   },
   LISTINGS: {
     ALL: ['listings'],
+    INFINITE: ['listings', 'infinite'],
+    ONE: ['listings', 'one'],
     NEAREST: ['listings', 'nearest'],
   },
   DIRECTIONS: ['directions'],
