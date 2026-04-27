@@ -41,3 +41,16 @@ export class AbortError extends BaseError {
     Object.setPrototypeOf(this, AbortError.prototype);
   }
 }
+
+export class PostError<T> extends BaseError {
+  data: T | null | undefined;
+
+  constructor(
+    message: string,
+    { data, ...options }: ErrorOptions & { data?: T | null | undefined } = {}
+  ) {
+    super(message, { ...options, name: 'PostError' });
+    this.data = data;
+    Object.setPrototypeOf(this, PostError.prototype);
+  }
+}
