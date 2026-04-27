@@ -1,19 +1,13 @@
 import { useForm } from '@/components/contexts/FormProvider';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Heading } from '@/components/ui/heading';
 import { Icon } from '@/components/ui/icon';
-import {
-  Popover,
-  PopoverArrow,
-  PopoverBackdrop,
-  PopoverBody,
-  PopoverContent,
-} from '@/components/ui/popover';
 import { Pressable } from '@/components/ui/pressable';
+import { ActionSheet } from '@/components/ui/sheet';
 import { type PostSchema } from '@lactalink/form-schemas';
 import { randomUUID } from 'expo-crypto';
 import { ImagePickerResult, launchCameraAsync, launchImageLibraryAsync } from 'expo-image-picker';
 import { CameraIcon, ImageIcon, PlusCircleIcon } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { transformPickerResult } from '../../lib/transformPickerResult';
 import AttachmentSheet from './AttachmentSheet';
@@ -91,47 +85,40 @@ export function CameraButton() {
 }
 
 export function AddAttachmentButton() {
-  const [openPopover, setOpenPopover] = useState(false);
+  const [isActionOpen, setIsActionOpen] = useState(false);
   const [collection, setCollection] = useState<'donations' | 'requests'>();
-  const [openSheet, setOpenSheet] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleSelect = (type: 'donations' | 'requests') => {
     setCollection(type);
-    setOpenPopover(false);
-    setOpenSheet(true);
+    setIsActionOpen(false);
+    setIsSheetOpen(true);
   };
 
   return (
     <>
-      <Popover
-        size="md"
-        isOpen={openPopover}
-        onOpen={() => setOpenPopover(true)}
-        onClose={() => setOpenPopover(false)}
-        placement="top"
-        trigger={(props, { open }) => (
-          <Pressable
-            {...props}
-            className={`overflow-hidden rounded-xl p-2 ${open ? 'bg-background-200' : ''}`}
-          >
-            <Icon as={PlusCircleIcon} size="2xl" className="text-primary-700" />
-          </Pressable>
-        )}
-      >
-        <PopoverBackdrop />
-        <PopoverContent>
-          <PopoverArrow />
-          <PopoverBody className="flex-col space-y-4">
-            <Button variant="outline" onPress={() => handleSelect('donations')}>
-              <ButtonText>Add a donation</ButtonText>
-            </Button>
-            <Button variant="outline" className="mt-4" onPress={() => handleSelect('requests')}>
-              <ButtonText>Add a request</ButtonText>
-            </Button>
-          </PopoverBody>
-        </PopoverContent>
-      </Popover>
-      <AttachmentSheet collection={collection} isOpen={openSheet} setOpen={setOpenSheet} />
+      <ActionSheet open={isActionOpen} setOpen={setIsActionOpen}>
+        <ActionSheet.Trigger
+          className={`overflow-hidden rounded-xl p-2 ${isActionOpen ? 'bg-background-200' : ''}`}
+          aria-label="Attach a donation or request"
+        >
+          <ActionSheet.Icon as={PlusCircleIcon} size="2xl" className="text-primary-700" />
+        </ActionSheet.Trigger>
+
+        <ActionSheet.Content>
+          <Heading size="md" className="px-4 pb-1">
+            What would you like to attach?
+          </Heading>
+          <ActionSheet.Item onPress={() => handleSelect('donations')} aria-label="Add a donation">
+            <ActionSheet.ItemText className="font-JakartaSemiBold">Donation</ActionSheet.ItemText>
+          </ActionSheet.Item>
+          <ActionSheet.Item onPress={() => handleSelect('requests')} aria-label="Add a request">
+            <ActionSheet.ItemText className="font-JakartaSemiBold">Request</ActionSheet.ItemText>
+          </ActionSheet.Item>
+        </ActionSheet.Content>
+      </ActionSheet>
+
+      <AttachmentSheet collection={collection} isOpen={isSheetOpen} setOpen={setIsSheetOpen} />
     </>
   );
 }
