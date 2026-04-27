@@ -56,7 +56,7 @@ function extractValues(post: Post): DefaultValues<PostSchema> {
       ?.map((a) => {
         const image = extractCollection(a.image);
         if (!image) return null;
-        return { image: transformToImageSchema(image), caption: a.caption };
+        return { id: a.id, image: transformToImageSchema(image), caption: a.caption };
       })
       .filter((a) => a !== null),
   };

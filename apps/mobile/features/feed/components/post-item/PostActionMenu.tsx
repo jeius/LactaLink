@@ -3,11 +3,13 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { ActionSheet } from '@/components/ui/sheet';
 import { VStack } from '@/components/ui/vstack';
 import { Post } from '@lactalink/types/payload-generated-types';
+import { useRouter } from 'expo-router';
 import { EllipsisIcon, PenIcon, Trash2Icon } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { useDeletePostMutation } from '../../hooks/mutations';
 
 export default function PostActionMenu({ post }: { post: Post }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const { mutateAsync: deletePost, isPending: isDeleting } = useDeletePostMutation(post.id);
@@ -18,7 +20,8 @@ export default function PostActionMenu({ post }: { post: Post }) {
 
   const handleEdit = useCallback(() => {
     setOpen(false);
-  }, []);
+    router.push(`/posts/edit/${post.id}`);
+  }, [router, post.id]);
 
   return (
     <ActionSheet open={open} setOpen={setOpen}>

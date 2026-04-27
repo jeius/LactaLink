@@ -6,7 +6,7 @@ import { Post } from '@lactalink/types/payload-generated-types';
 import { PostError } from '@lactalink/utilities/errors';
 import { extractID } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';
-import { createPost } from '../api/posts';
+import { createPost, updatePost } from '../api/posts';
 import { createPostQueryOptions } from '../queryOptions/posts';
 
 export function createDeletePostMutationOptions(postID: string) {
@@ -46,7 +46,39 @@ export function createNewPostMutationOptions() {
         });
       }
     },
-    onSuccess: async (_data, _vars, _ctx, { client }) => {
+    onSuccess: async (data, _vars, _ctx, { client }) => {
+      const postQueryKey = createPostQueryOptions(data.id).queryKey;
+      client.setQueryData(postQueryKey, data);
+      await client.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.INFINITE });
+    },
+  });
+}
+
+export function createUpdatePostMutationOptions(postID: string) {
+  return mutationOptions({
+    mutationKey: ['update', 'posts', postID],
+    mutationFn: async ({ data }: { data: PostSchema }) => {
+      return updatePost({ id: postID, data });
+    },
+    onError: async (err) => {
+      // If the error is a PostError, it means the update failed after uploading new images.
+      // Clean up those newly uploaded images to avoid orphaned files.
+      if (err instanceof PostError) {
+        const post = err.data as Partial<Post>;
+
+        const imagesToDelete = post.attachments
+          ?.map((a) => extractID(a.image))
+          .filter(Boolean) as string[];
+
+        await getApiClient().delete({
+          collection: 'images',
+          where: { id: { in: imagesToDelete } },
+        });
+      }
+    },
+    onSuccess: async (data, _vars, _ctx, { client }) => {
+      const postQueryKey = createPostQueryOptions(postID).queryKey;
+      client.setQueryData(postQueryKey, data);
       await client.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.INFINITE });
     },
   });
