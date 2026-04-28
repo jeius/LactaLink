@@ -5,11 +5,12 @@ import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { getColor } from '@/lib/colors/getColor';
 import { ColorCategory } from '@/lib/types/colors';
 import { useRouter } from 'expo-router';
-import { MapPinIcon } from 'lucide-react-native';
-import React, { useEffect } from 'react';
+import { ImageIcon, MapPinIcon } from 'lucide-react-native';
+import { useEffect } from 'react';
 import { MapListingItem, MapListingSlug, MapQueryParams } from '../lib/types';
 
 const colorCategory: Record<MapListingSlug, ColorCategory> = {
@@ -49,9 +50,23 @@ export default function MapListItem({ item, isFocused, height, width, onPress }:
       className="justify-between overflow-hidden rounded-2xl shadow-sm"
       onPress={() => onPress?.(item)}
     >
-      <Box className="absolute inset-0">
-        <SingleImageViewer image={image} disabled />
-      </Box>
+      <SingleImageViewer
+        className="absolute inset-0"
+        image={image}
+        disabled
+        fallback={
+          <VStack space="xs" className="flex-1 items-center justify-center bg-background-200">
+            <Icon as={ImageIcon} color={ringColor} size="2xl" />
+            <Text
+              size="xs"
+              style={{ color: ringColor, opacity: 0.75 }}
+              className="font-JakartaMedium"
+            >
+              No image
+            </Text>
+          </VStack>
+        }
+      />
 
       {user && (
         <Box
