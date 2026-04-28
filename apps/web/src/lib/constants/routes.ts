@@ -33,3 +33,4 @@ export const SEED_BARANGAYS_URL = '/api/seed/barangays';
 export const SEED_STATUS_URL = '/api/seed/status';
 export const SEED_SCREENING_FORM_URL = '/api/seed/screening-form';
 export const DIRECTIONS_URL = '/api/directions';
+export const MAP_MARKERS_URL = '/api/map-markers';

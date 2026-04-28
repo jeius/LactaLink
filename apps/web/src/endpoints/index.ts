@@ -1,6 +1,7 @@
 import {
   DIRECTIONS_URL,
   ID_VERIFICATION_URL,
+  MAP_MARKERS_URL,
   SEED_BARANGAYS_URL,
   SEED_CITIES_MUNICIPALITIES_URL,
   SEED_ISLAND_GROUPS_URL,
@@ -13,6 +14,7 @@ import {
 import { Endpoint } from 'payload';
 import getDirectionsHandler from './directions/getDirections';
 import { idVerificationHandler } from './id-verification';
+import { getMapMarkersHandler } from './map/getMapMarkers';
 import { seedNotificationsHandler } from './seeders/Notifications';
 import { seedBarangaysHandler } from './seeders/PSGC/seedBarangays';
 import { seedCitiesMunicipalitiesHandler } from './seeders/PSGC/seedCitiesMunicipalities';
@@ -78,6 +80,11 @@ export const Endpoints: Endpoint[] = [
     method: 'post',
     path: DIRECTIONS_URL.replace('/api', ''),
     handler: getDirectionsHandler,
+  },
+  {
+    method: 'get',
+    path: MAP_MARKERS_URL.replace('/api', ''),
+    handler: getMapMarkersHandler,
   },
   ScreeningFormSeeder,
 ];
