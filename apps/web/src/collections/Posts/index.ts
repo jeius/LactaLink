@@ -6,6 +6,7 @@ import { CollectionConfig } from 'payload';
 import { authenticated, collectionAuthorOrAdmin } from '../_access-control/general';
 import { sharedFromFilter } from './filterOptions/sharedFromFIlter';
 import { afterChange } from './hooks/afterChange';
+import { afterDelete } from './hooks/afterDelete';
 import { setSummary } from './hooks/beforeChange';
 import { deleteRelatedDocs } from './hooks/beforeDelete';
 import { preventCircularShares } from './validate/preventCircularShares';
@@ -34,6 +35,7 @@ export const Posts: CollectionConfig<'posts'> = {
     beforeChange: [setSummary, generateOwner],
     beforeDelete: [deleteRelatedDocs],
     afterChange: [afterChange],
+    afterDelete: [afterDelete],
   },
   fields: [
     {
