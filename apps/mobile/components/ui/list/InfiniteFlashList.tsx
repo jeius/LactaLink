@@ -1,9 +1,12 @@
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { type FC, type JSX, type PropsWithoutRef, type RefAttributes, forwardRef } from 'react';
 import { NoData } from '../../NoData';
 import { BottomSheetFlashList } from '../bottom-sheet';
 import { Box } from '../box';
 import { FlashList, FlashListProps, FlashListRef, ListRenderItemInfo } from '../FlashList';
 import { Spinner } from '../spinner';
+
+const contentContainerStyle = tva({ base: 'grow' });
 
 type RenderItemInfo<T> = {
   isPlaceholder: boolean;
@@ -36,6 +39,7 @@ const InfiniteFlashList = forwardRef(function InfiniteFlashList<T>(
     keyboardShouldPersistTaps = 'always',
     isPlaceholderData = false,
     listComponentType = 'flashList',
+    contentContainerClassName,
     ...props
   }: InfiniteFlashListProps<T>,
   ref: React.ForwardedRef<FlashListRef<T>>
@@ -49,7 +53,9 @@ const InfiniteFlashList = forwardRef(function InfiniteFlashList<T>(
       renderItem={(info) => props.renderItem({ ...info, isPlaceholder: isPlaceholderData })}
       onEndReachedThreshold={props.onEndReachedThreshold ?? 0.2}
       onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
-      contentContainerStyle={[props.contentContainerStyle, { flexGrow: 1 }]}
+      contentContainerClassName={contentContainerStyle({
+        className: contentContainerClassName,
+      })}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       ItemSeparatorComponent={
         props.ItemSeparatorComponent ?? (() => <Box style={{ height: gap }} />)
@@ -57,13 +63,14 @@ const InfiniteFlashList = forwardRef(function InfiniteFlashList<T>(
       ListEmptyComponent={
         props.ListEmptyComponent ?? <NoData title={emptyListLabel || `Nothing to show here`} />
       }
-      ListFooterComponentStyle={[
-        { alignItems: 'center', justifyContent: 'center' },
-        props.ListFooterComponentStyle,
-      ]}
       ListFooterComponent={
         props.ListFooterComponent ?? (
-          <Box>{isFetchingNextPage && <Spinner size="small" className="m-4" />}</Box>
+          <Box
+            className="items-center justify-center p-4"
+            style={{ display: hasNextPage ? 'flex' : 'none', opacity: isFetchingNextPage ? 1 : 0 }}
+          >
+            <Spinner size="small" />
+          </Box>
         )
       }
     />
