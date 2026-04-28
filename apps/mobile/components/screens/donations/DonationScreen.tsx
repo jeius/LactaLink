@@ -27,7 +27,7 @@ import { Donation } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -66,7 +66,8 @@ export default function DonationScreen() {
   const {
     scrollAnimatedStyles,
     headerViewAnimatedStyles,
-    titleAnimatedStyles,
+    titleFadeInStyles,
+    titleFadeOutStyles,
     animatedImageStyles,
     backButtonStyles,
   } = useParallaxAnimationStyles(scrollY, {
@@ -106,7 +107,7 @@ export default function DonationScreen() {
           </Box>
           <VStack>
             <AnimatedText
-              style={titleAnimatedStyles(true)}
+              style={titleFadeInStyles}
               bold
               size="xl"
               ellipsizeMode="tail"
@@ -115,7 +116,7 @@ export default function DonationScreen() {
               {displayVolume(details.volume)}
             </AnimatedText>
             <AnimatedText
-              style={titleAnimatedStyles(true)}
+              style={titleFadeInStyles}
               size="sm"
               className="font-JakartaMedium"
               ellipsizeMode="tail"
@@ -154,7 +155,7 @@ export default function DonationScreen() {
         <Animated.View style={[scrollAnimatedStyles]}>
           {data && (
             <Animated.View className="w-full px-5 py-3" style={[headerViewAnimatedStyles]}>
-              <Animated.View style={titleAnimatedStyles(false)}>
+              <Animated.View style={titleFadeOutStyles}>
                 <HStack space="xl" className="items-center">
                   <ProfileTag
                     label="Donor"
@@ -166,10 +167,7 @@ export default function DonationScreen() {
                 </HStack>
               </Animated.View>
 
-              <Animated.View
-                className="absolute bottom-3 right-5"
-                style={titleAnimatedStyles(true)}
-              >
+              <Animated.View className="absolute bottom-3 right-5" style={titleFadeInStyles}>
                 <ListingHeaderCTA variant="ghost" data={data} />
               </Animated.View>
             </Animated.View>

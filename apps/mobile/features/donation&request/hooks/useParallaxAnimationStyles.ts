@@ -53,13 +53,17 @@ export function useParallaxAnimationStyles(
     return { backgroundColor, paddingTop };
   });
 
-  const titleAnimatedStyles = (fadeIn: boolean) =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useAnimatedStyle(() => {
-      const outputRange = fadeIn ? [0, 1] : [1, 0];
-      const opacity = interpolate(scrollY.value, [0, maxScroll * 0.75], outputRange);
-      return { opacity, pointerEvents: opacity === 0 ? 'none' : 'auto' };
-    });
+  const titleFadeOutStyles = useAnimatedStyle(() => {
+    const outputRange = [1, 0];
+    const opacity = interpolate(scrollY.value, [0, maxScroll * 0.75], outputRange);
+    return { opacity, pointerEvents: opacity === 0 ? 'none' : 'auto' };
+  });
+
+  const titleFadeInStyles = useAnimatedStyle(() => {
+    const outputRange = [0, 1];
+    const opacity = interpolate(scrollY.value, [0, maxScroll * 0.75], outputRange);
+    return { opacity, pointerEvents: opacity === 0 ? 'none' : 'auto' };
+  });
 
   const animatedImageStyles = useAnimatedStyle(() => {
     const scale = interpolate(scrollY.value, [0, maxScroll], [1.36, 1], {
@@ -76,7 +80,8 @@ export function useParallaxAnimationStyles(
   return {
     scrollAnimatedStyles,
     headerViewAnimatedStyles,
-    titleAnimatedStyles,
+    titleFadeInStyles,
+    titleFadeOutStyles,
     animatedImageStyles,
     backButtonStyles,
   };
