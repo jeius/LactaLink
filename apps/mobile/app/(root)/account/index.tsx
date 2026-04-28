@@ -23,6 +23,7 @@ import {
   useInfiniteIncomingDonations,
   useInfiniteIncomingRequests,
 } from '@/features/donation&request/hooks/queries';
+import { useMyUnseenNotifCount } from '@/features/notifications/hooks/queries';
 import {
   useInfiniteDeliveries,
   useInfiniteTransactions,
@@ -30,7 +31,6 @@ import {
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { useLiveNotifications } from '@/hooks/live-updates/useLiveNotifications';
-import { useNotification } from '@/hooks/notifications';
 import { User } from '@lactalink/types/payload-generated-types';
 import constants from 'expo-constants';
 import { Href, Link, useRouter } from 'expo-router';
@@ -46,7 +46,7 @@ import {
   TruckIcon,
   UserRoundCheckIcon,
 } from 'lucide-react-native';
-import React, { FC, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SvgProps } from 'react-native-svg';
 
@@ -299,8 +299,9 @@ function createOtherLinks(user: User | null): ActionProps[] {
 }
 
 function NotificationBadge() {
-  const { unSeenCount } = useNotification();
-  return <NumberBadge count={unSeenCount} />;
+  const { data: count, isLoading } = useMyUnseenNotifCount();
+  if (isLoading) return <Spinner size={'small'} />;
+  return <NumberBadge count={count ?? 0} />;
 }
 
 function TransactionBadge() {

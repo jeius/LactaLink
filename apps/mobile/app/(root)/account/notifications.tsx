@@ -1,82 +1,57 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
-import NotificationListCard from '@/components/cards/NotificationListCard';
-import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { NoData } from '@/components/NoData';
-import { RefreshControl } from '@/components/RefreshControl';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { Spinner } from '@/components/ui/spinner';
-import { Text } from '@/components/ui/text';
-import { useMeUser } from '@/hooks/auth/useAuth';
-import { useNotification } from '@/hooks/notifications';
-import { Notification } from '@lactalink/types/payload-generated-types';
-import { isPlaceHolderData } from '@lactalink/utilities/checkers';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { InfiniteFlashList } from '@/components/ui/list';
+import NotificationCard from '@/features/notifications/components/NotificationCard';
+import { useMyNotifications } from '@/features/notifications/hooks/useMyNotifications';
+import { extractID, listKeyExtractor } from '@lactalink/utilities/extractors';
 import { useFocusEffect } from 'expo-router';
 
 export default function AccountNotifications() {
-  const meUser = useMeUser();
+  const { notifications, unSeenNotifications, notifQuery, markReadMutation, markSeenMutation } =
+    useMyNotifications();
 
-  const { markAsRead, notifications: data, queryMethods: query, markAsSeen } = useNotification();
+  const { mutate: markAsSeen } = markSeenMutation;
+  const { mutate: markAsRead } = markReadMutation;
 
-  const renderItem: ListRenderItem<Notification> = ({ item }) => {
-    const isLoading = isPlaceHolderData(item);
-    return (
-      <NotificationListCard
-        data={item}
-        showBadge
-        isLoading={isLoading}
-        onMarkedAsRead={markAsRead}
-      />
-    );
-  };
-
-  // Clear notifications badge when screen is unfocused
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useFocusEffect(useCallback(() => markAsSeen, []));
-
-  function EmptyComponent() {
-    return !query.isLoading && <NoData title="You have no notifications" />;
-  }
-
-  function SeparatorComponent() {
-    return <Box style={{ height: 12 }} />;
-  }
-
-  function ListHeaderComponent() {
-    return (
-      <Text size="lg" className="font-JakartaMedium">
-        Notifications
-      </Text>
-    );
-  }
-
-  function handleFetchNextPage() {
-    if (query.hasNextPage && !query.isFetchingNextPage) {
-      query.fetchNextPage();
-    }
-  }
+  useFocusEffect(
+    useCallback(() => {
+      // Clear notifications badge when screen is unfocused
+      return () => {
+        if (unSeenNotifications?.length) {
+          markAsSeen(extractID(unSeenNotifications));
+        }
+      };
+    }, [markAsSeen, unSeenNotifications])
+  );
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <FlashList
-        data={data}
-        renderItem={renderItem}
-        ListEmptyComponent={EmptyComponent}
-        ItemSeparatorComponent={SeparatorComponent}
-        ListHeaderComponent={ListHeaderComponent}
-        refreshControl={
-          <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
+      <InfiniteFlashList
+        {...notifQuery}
+        data={notifications}
+        keyExtractor={listKeyExtractor}
+        contentContainerClassName="p-4"
+        footerClassName="mt-2"
+        refreshing={notifQuery.isRefetching}
+        onRefresh={notifQuery.refetch}
+        ListEmptyComponent={
+          notifQuery.isLoading ? null : <NoData title="You have no notifications" />
         }
-        ListHeaderComponentStyle={{ marginBottom: 8 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80, flexGrow: 1 }}
-        ListFooterComponent={query.isFetchingNextPage ? <Spinner size="small" /> : null}
-        ListFooterComponentStyle={{ marginTop: 8 }}
-        onEndReachedThreshold={0.25}
-        onEndReached={handleFetchNextPage}
+        ItemSeparatorComponent={() => <Box className="h-3" />}
+        renderItem={({ item, isPlaceholder }) => {
+          if (isPlaceholder) return <NotificationCard.Skeleton />;
+          return (
+            <NotificationCard
+              data={item}
+              showBadge
+              onMarkedAsRead={(data) => markAsRead(data.id)}
+            />
+          );
+        }}
       />
-      <FetchingSpinner isFetching={meUser.isLoading} />
     </SafeArea>
   );
 }
