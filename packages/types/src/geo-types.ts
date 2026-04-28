@@ -1,3 +1,5 @@
+import { CollectionSlug } from './payload-types';
+
 export type Coordinates = {
   latitude: number;
   longitude: number;
@@ -40,3 +42,11 @@ export type Boundary = {
   maxX: number;
   maxY: number;
 };
+
+/**
+ * A subset of CollectionSlugs that can be represented as map markers.
+ */
+export type MarkerType = Extract<
+  CollectionSlug,
+  'donations' | 'requests' | 'hospitals' | 'milkBanks'
+>;

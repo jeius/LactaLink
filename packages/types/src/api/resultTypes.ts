@@ -86,3 +86,25 @@ export type RequestCreateResult = {
   request: Request;
   transaction: Transaction | null;
 };
+
+/** A single map marker returned by the `GET /api/map-markers` endpoint. */
+export type MapMarker = {
+  /** The document ID of the related collection record. */
+  id: string;
+  /** Which collection this marker belongs to. */
+  type: 'donations' | 'requests' | 'hospitals' | 'milkBanks';
+  /** Geographic coordinate of the marker. */
+  coordinate: { latitude: number; longitude: number };
+  /** Primary display text for the marker callout. */
+  title: string;
+  /** Secondary display text for the marker callout. */
+  snippet?: string;
+  /**
+   * Present only for `donations` and `requests` markers. References the specific
+   * delivery preference that resolves to this coordinate, so the mobile tap handler
+   * can load the correct delivery preference details.
+   */
+  deliveryPreferenceId?: string;
+};
+
+export type MapMarkersResult = MapMarker[];
