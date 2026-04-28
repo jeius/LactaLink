@@ -2,15 +2,26 @@ import { nullTransform } from '@/transformers';
 import { GEOCODE_SOURCES } from '@lactalink/enums/geocoding';
 import z from 'zod';
 
+const latitudeSchema = z.coerce
+  .number('Latitude must be a valid number')
+  .min(-90, { message: 'Latitude must be between -90 and 90' })
+  .max(90, { message: 'Latitude must be between -90 and 90' });
+
+const longitudeSchema = z.coerce
+  .number('Longitude must be a valid number')
+  .min(-180, { message: 'Longitude must be between -180 and 180' })
+  .max(180, { message: 'Longitude must be between -180 and 180' });
+
 export const coordinatesSchema = z.object({
-  latitude: z
-    .number('Latitude must be a valid number')
-    .min(-90, { message: 'Latitude must be between -90 and 90' })
-    .max(90, { message: 'Latitude must be between -90 and 90' }),
-  longitude: z
-    .number('Longitude must be a valid number')
-    .min(-180, { message: 'Longitude must be between -180 and 180' })
-    .max(180, { message: 'Longitude must be between -180 and 180' }),
+  latitude: latitudeSchema,
+  longitude: longitudeSchema,
+});
+
+export const boundarySchema = z.object({
+  swLat: latitudeSchema,
+  swLng: longitudeSchema,
+  neLat: latitudeSchema,
+  neLng: longitudeSchema,
 });
 
 export const addressGeocodingSchema = z.object({
@@ -25,5 +36,5 @@ export const addressGeocodingSchema = z.object({
 });
 
 export type AddressGeocoding = z.infer<typeof addressGeocodingSchema>;
-
 export type CoordinatesSchema = z.infer<typeof coordinatesSchema>;
+export type BoundarySchema = z.infer<typeof boundarySchema>;
