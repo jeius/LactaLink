@@ -27,6 +27,7 @@ interface QueryKeys {
   PSGC: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   SCREENING_FORMS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   SCREENING_FORM_SUBMISSIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
+  NOTIFICATIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey; COUNT: QueryKey };
 }
 
 export const QUERY_KEYS: QueryKeys = {
@@ -123,6 +124,12 @@ export const QUERY_KEYS: QueryKeys = {
     NEAREST: ['listings', 'nearest'],
   },
   DIRECTIONS: ['directions'],
+  NOTIFICATIONS: {
+    ALL: ['notifications'],
+    INFINITE: ['notifications', 'infinite'],
+    ONE: ['notifications', 'one'],
+    COUNT: ['notifications', 'count'],
+  },
 };
 
 export const INFINITE_QUERY_KEY = ['infinite'];
