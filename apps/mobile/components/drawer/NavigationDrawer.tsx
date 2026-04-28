@@ -6,45 +6,56 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { RIPPLE_COLOR } from '@/lib/colors';
 import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { DrawerItem, DrawerItemList } from '@react-navigation/drawer';
-import { Link, useRouter } from 'expo-router';
-import { CompassIcon, DoorOpenIcon, LogOutIcon } from 'lucide-react-native';
-import React from 'react';
+import { useLinkBuilder } from '@react-navigation/native';
+import { Href, Link } from 'expo-router';
+import { CompassIcon, DoorOpenIcon, LogOutIcon, LucideIcon } from 'lucide-react-native';
 import { BackHandler } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../AppProvider/ThemeProvider';
 import { Image } from '../Image';
+import DrawerItem from './DrawerItem';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
-  const { themeColors } = useTheme();
-  const router = useRouter();
+  const { buildHref } = useLinkBuilder();
+
+  const { state, descriptors } = props;
 
   return (
     <VStack className="flex-1">
       <DrawerHeader />
       <ScrollView className="flex-1" contentContainerClassName="p-4">
-        <DrawerItemList {...props} />
-        <DrawerItem
-          label="Explore"
-          icon={({ color }) => <Icon as={CompassIcon} color={color} />}
-          labelStyle={{ fontFamily: 'Jakarta-Bold', fontSize: 14, lineHeight: 18 }}
-          style={{ borderRadius: 14, height: 48 }}
-          pressColor={RIPPLE_COLOR}
-          inactiveTintColor={themeColors.typography[900]}
-          onPress={() => router.push('/map')}
-        />
+        {state.routes.map((route, i) => {
+          const focused = i === state.index;
+
+          const { title, drawerLabel, drawerIcon, drawerItemStyle } =
+            descriptors[route.key]?.options || {};
+
+          return (
+            <DrawerItem
+              key={route.key}
+              href={buildHref(route.name, route.params) as Href | undefined}
+              focused={focused}
+              icon={drawerIcon as LucideIcon}
+              style={drawerItemStyle}
+              label={
+                typeof drawerLabel === 'string'
+                  ? drawerLabel
+                  : title !== undefined
+                    ? title
+                    : route.name
+              }
+            />
+          );
+        })}
+
+        <DrawerItem label="Explore" icon={CompassIcon} href={'/map'} />
         <DrawerItem
           label="Exit App"
-          icon={({ color }) => <Icon as={DoorOpenIcon} color={color} />}
-          labelStyle={{ fontFamily: 'Jakarta-Bold', fontSize: 14, lineHeight: 18 }}
-          style={{ borderRadius: 14, height: 48 }}
-          pressColor={RIPPLE_COLOR}
-          inactiveTintColor={themeColors.error[400]}
+          icon={DoorOpenIcon}
+          action="negative"
           onPress={() => BackHandler.exitApp()}
         />
       </ScrollView>
