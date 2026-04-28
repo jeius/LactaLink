@@ -1,5 +1,6 @@
 import { QUERY_KEYS } from '@/lib/constants';
 import { getCurrentCoordinates } from '@/lib/stores';
+import { Collection } from '@lactalink/types/collections';
 import { DataFromCollectionSlug } from '@lactalink/types/payload-types';
 import { getDistance } from '@lactalink/utilities/geolib';
 import { useQueries, UseQueryResult } from '@tanstack/react-query';
@@ -19,7 +20,7 @@ import { createDataMarkerFromDoc } from '../lib/utils/markerUtils';
 /** Number of documents processed per chunk before yielding to the JS event loop. */
 const CHUNK_SIZE = 50;
 
-type RawResult = UseQueryResult<DataFromCollectionSlug<DataMarkerSlug>[], Error>;
+type RawResult = UseQueryResult<Collection<DataMarkerSlug>[], Error>;
 
 function markersReducer(
   prev: Map<string, DataMarker>,
@@ -84,7 +85,7 @@ export function useMarkersQuery(
 
   useEffect(() => {
     // Collect only slugs whose data reference has actually changed since last run.
-    const changed: { slug: DataMarkerSlug; data: DataFromCollectionSlug<DataMarkerSlug>[] }[] = [];
+    const changed: { slug: DataMarkerSlug; data: Collection<DataMarkerSlug>[] }[] = [];
 
     rawResults.forEach((result, idx) => {
       if (result.status !== 'success') return;
