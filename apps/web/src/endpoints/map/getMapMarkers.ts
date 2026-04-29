@@ -3,7 +3,7 @@ import {
   findHospitalMarkersInViewport,
   findMilkBankMarkersInViewport,
   findRequestMarkersInViewport,
-} from '@/lib/db/drizzle/queryBuilders';
+} from '@/lib/db/drizzle/queryBuilders/findMarkers';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { ValidationErrorNames } from '@lactalink/enums/error-names';
 import { MARKER_TYPES, mapMarkersQuerySchema } from '@lactalink/form-schemas/validators';

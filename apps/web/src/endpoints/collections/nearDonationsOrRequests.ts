@@ -1,4 +1,7 @@
-import { findNearestDonations, findNearestRequests } from '@/lib/db/drizzle/queryBuilders';
+import {
+  findNearestDonations,
+  findNearestRequests,
+} from '@/lib/db/drizzle/queryBuilders/findNearestListings';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { getQueryOptions } from '@/lib/utils/getEndpointSearchParams';
 import { ValidationErrorNames } from '@lactalink/enums/error-names';
@@ -11,8 +14,6 @@ import { ValidationError } from '@lactalink/utilities/errors';
 import { and, asc, eq, lte, sql, SQLWrapper } from '@payloadcms/db-postgres/drizzle';
 import httpStatus from 'http-status';
 import { APIError, CollectionSlug, PaginatedDocs, Payload, PayloadRequest } from 'payload';
-import { isNumber } from 'payload/shared';
-import z from 'zod';
 
 export const nearDonationsOrRequestsHandler = createPayloadHandler({
   requireAdmin: false,
@@ -157,43 +158,17 @@ function parseNearOptions(input: unknown): NearDonationOrRequestOptions {
     });
   }
 
-  // Convert to number the stringified coordinates
-  if (typeof input === 'object' && 'location' in input && Array.isArray(input.location)) {
-    input.location = input.location.map((coord) => Number(coord));
-  }
-
-  // Convert to number the stringified maxDistance
-  if (typeof input === 'object' && 'maxDistance' in input) {
-    const maxDistance = Number(input.maxDistance);
-    if (isNumber(maxDistance)) input.maxDistance = maxDistance;
-  }
-
   const parsed = nearDonationRequestSchema.safeParse(input);
 
   if (parsed.data) {
     return parsed.data;
   }
 
-  const error = z.flattenError(parsed.error);
-  let errMsg = `Invalid search param 'options'.`;
-
-  if (error.formErrors.length) {
-    errMsg = error.formErrors[0]!;
-  } else {
-    for (const key of Object.keys(error.fieldErrors)) {
-      type Key = keyof typeof error.fieldErrors;
-
-      if (error.fieldErrors[key as Key]?.length) {
-        errMsg = error.fieldErrors[key as Key]![0]!;
-        break;
-      }
-    }
-  }
-
-  throw new ValidationError(errMsg, {
-    name: ValidationErrorNames.INVALID_FORMAT,
-    statusCode: httpStatus.UNPROCESSABLE_ENTITY,
-    statusText: httpStatus[httpStatus.UNPROCESSABLE_ENTITY],
+  const error = parsed.error.issues.pop();
+  throw new ValidationError(error?.message ?? 'Invalid query parameters.', {
+    name: ValidationErrorNames.INVALID_TYPE,
+    statusCode: httpStatus.BAD_REQUEST,
+    statusText: httpStatus[httpStatus.BAD_REQUEST],
   });
 }
 
