@@ -4,6 +4,7 @@ import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { organizationEndpoints } from './endpoints';
 import { defaultAddressField, displayNameField, ownerField } from './fields';
 import { afterChange } from './hooks/afterChange';
 import { afterDelete } from './hooks/afterDelete';
@@ -30,6 +31,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     afterRead: [afterRead],
     afterDelete: [afterDelete],
   },
+  endpoints: organizationEndpoints,
   fields: [
     displayNameField({
       admin: {
