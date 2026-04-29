@@ -116,7 +116,7 @@ async function find(
       ? payload.db.drizzle.$with('findNearestHospitals').as(findNearestHospital(location))
       : payload.db.drizzle.$with('findNearestMilkbanks').as(findNearestMilkbank(location));
 
-  const filter = lte(fetch.distance, maxDistance);
+  const filter = maxDistance !== undefined ? lte(fetch.distance, maxDistance) : undefined;
 
   const [totalRowsResult, results] = await Promise.all([
     payload.db.drizzle
