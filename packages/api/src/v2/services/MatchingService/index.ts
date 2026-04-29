@@ -11,7 +11,7 @@ import type { IApiClient } from '../../interfaces';
 
 type FetchOptions<TSlug extends CollectionSlug> = Pick<
   FindOptions<TSlug>,
-  'page' | 'limit' | 'collection'
+  'page' | 'limit' | 'collection' | 'depth' | 'draft' | 'trash' | 'where'
 >;
 
 export type FindMatchOptions<
@@ -155,13 +155,14 @@ export class MatchingService {
    * @returns A promise that resolves to a paginated list of the nearest donations or requests
    */
   async getNearestListings<TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>>(
-    { collection, page = 1, limit = 10, ...nearOptions }: NearListingsOptions & FetchOptions<TSlug>,
+    { collection, page = 1, limit = 10, ...rest }: NearListingsOptions & FetchOptions<TSlug>,
     init?: { signal?: AbortSignal }
   ): Promise<PaginatedDocs<Collection<TSlug>>> {
+    const { location, maxDistance, status, ...query } = rest;
     return this.apiClient.apiFetch(`/${collection}/near`, {
       ...init,
       method: 'GET',
-      searchParams: { options: nearOptions, page, limit },
+      searchParams: { options: { location, maxDistance, status }, page, limit, ...query },
     });
   }
 
@@ -172,18 +173,14 @@ export class MatchingService {
    * @returns A promise that resolves to a paginated list of the nearest hospitals or milk banks
    */
   async getNearestOrganizations<TSlug extends Extract<CollectionSlug, 'hospitals' | 'milkBanks'>>(
-    {
-      collection,
-      page = 1,
-      limit = 10,
-      ...nearOptions
-    }: NearOrganizationsOptions & FetchOptions<TSlug>,
+    { collection, page = 1, limit = 10, ...rest }: NearOrganizationsOptions & FetchOptions<TSlug>,
     init?: { signal?: AbortSignal }
   ): Promise<PaginatedDocs<Collection<TSlug>>> {
+    const { location, maxDistance, search, ...query } = rest;
     return this.apiClient.apiFetch(`/${collection}/near`, {
       ...init,
       method: 'GET',
-      searchParams: { options: nearOptions, page, limit },
+      searchParams: { options: { location, maxDistance, search }, page, limit, ...query },
     });
   }
 }
