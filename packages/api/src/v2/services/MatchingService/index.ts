@@ -1,9 +1,18 @@
-import { MatchCriteria, NearDonationOrRequestOptions } from '@lactalink/form-schemas/validators';
+import {
+  MatchCriteria,
+  NearListingsOptions,
+  NearOrganizationsOptions,
+} from '@lactalink/form-schemas/validators';
 import type { DonationRequestStatus, Point } from '@lactalink/types';
 import type { FindManyResult, FindOptions } from '@lactalink/types/api';
-import { CollectionSlug } from '@lactalink/types/collections';
-import { SelectFromCollectionSlug } from '@lactalink/types/payload-types';
+import { Collection, CollectionSlug } from '@lactalink/types/collections';
+import { PaginatedDocs, SelectFromCollectionSlug } from '@lactalink/types/payload-types';
 import type { IApiClient } from '../../interfaces';
+
+type FetchOptions<TSlug extends CollectionSlug> = Pick<
+  FindOptions<TSlug>,
+  'page' | 'limit' | 'collection'
+>;
 
 export type FindMatchOptions<
   TSlug extends CollectionSlug,
@@ -93,13 +102,16 @@ export class MatchingService {
     });
   }
 
+  /**
+   * @deprecated Use {@link getNearestListings} with collection: 'donations' instead.
+   */
   async getNearestDonations(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'donations', SelectFromCollectionSlug<'donations'>, true>> {
-    const options: NearDonationOrRequestOptions = { location, status, maxDistance };
+    const options: NearListingsOptions = { location, status, maxDistance };
 
     const paginationOpts = {
       pagination: true,
@@ -113,13 +125,16 @@ export class MatchingService {
     });
   }
 
+  /**
+   * @deprecated Use {@link getNearestListings} with collection: 'requests' instead.
+   */
   async getNearestRequests(
     location: Point,
     status: DonationRequestStatus = 'AVAILABLE',
     maxDistance?: number,
     paginationOptions?: { page?: number; limit?: number }
   ): Promise<FindManyResult<'requests', SelectFromCollectionSlug<'requests'>, true>> {
-    const options: NearDonationOrRequestOptions = { location, status, maxDistance };
+    const options: NearListingsOptions = { location, status, maxDistance };
 
     const paginationOpts = {
       pagination: true,
@@ -130,6 +145,45 @@ export class MatchingService {
     return this.apiClient.apiFetch('/requests/near', {
       method: 'GET',
       searchParams: { options, ...paginationOpts },
+    });
+  }
+
+  /**
+   * Fetches nearest donations or requests based on the provided options.
+   * @param options - Options for fetching nearest listings, including collection type, location, and pagination
+   * @param init - Optional fetch initialization parameters, such as signal for aborting the request
+   * @returns A promise that resolves to a paginated list of the nearest donations or requests
+   */
+  async getNearestListings<TSlug extends Extract<CollectionSlug, 'donations' | 'requests'>>(
+    { collection, page = 1, limit = 10, ...nearOptions }: NearListingsOptions & FetchOptions<TSlug>,
+    init?: { signal?: AbortSignal }
+  ): Promise<PaginatedDocs<Collection<TSlug>>> {
+    return this.apiClient.apiFetch(`/${collection}/near`, {
+      ...init,
+      method: 'GET',
+      searchParams: { options: nearOptions, page, limit },
+    });
+  }
+
+  /**
+   * Fetches nearest hospitals or milk banks based on the provided options.
+   * @param options - Options for fetching nearest organizations, including collection type, location, and pagination
+   * @param init - Optional fetch initialization parameters, such as signal for aborting the request
+   * @returns A promise that resolves to a paginated list of the nearest hospitals or milk banks
+   */
+  async getNearestOrganizations<TSlug extends Extract<CollectionSlug, 'hospitals' | 'milkBanks'>>(
+    {
+      collection,
+      page = 1,
+      limit = 10,
+      ...nearOptions
+    }: NearOrganizationsOptions & FetchOptions<TSlug>,
+    init?: { signal?: AbortSignal }
+  ): Promise<PaginatedDocs<Collection<TSlug>>> {
+    return this.apiClient.apiFetch(`/${collection}/near`, {
+      ...init,
+      method: 'GET',
+      searchParams: { options: nearOptions, page, limit },
     });
   }
 }
