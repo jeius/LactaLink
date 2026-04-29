@@ -17,6 +17,7 @@ export function findNearestHospital(location: Point) {
       .select({
         id: hospitals.id,
         type: hospitals.type,
+        display_name: hospitals.displayName,
         distance: distanceSql.as('distance'),
       })
       .from(hospitals)
@@ -26,8 +27,8 @@ export function findNearestHospital(location: Point) {
       )
       .innerJoin(users, eq(users.id, users_rels.parent))
       .innerJoin(addresses, and(eq(addresses.owner, users.id), eq(addresses.isDefault, true)))
-      .orderBy(asc(distanceSql))
-      .where(isNotNull(addresses.coordinates));
+      .where(isNotNull(addresses.coordinates))
+      .orderBy(asc(distanceSql));
 }
 
 export function findNearestMilkbank(location: Point) {
@@ -44,6 +45,7 @@ export function findNearestMilkbank(location: Point) {
       .select({
         id: milk_banks.id,
         type: milk_banks.type,
+        display_name: milk_banks.displayName,
         distance: distanceSql.as('distance'),
       })
       .from(milk_banks)
@@ -53,6 +55,6 @@ export function findNearestMilkbank(location: Point) {
       )
       .innerJoin(users, eq(users.id, users_rels.parent))
       .innerJoin(addresses, and(eq(addresses.owner, users.id), eq(addresses.isDefault, true)))
-      .orderBy(asc(distanceSql))
-      .where(isNotNull(addresses.coordinates));
+      .where(isNotNull(addresses.coordinates))
+      .orderBy(asc(distanceSql));
 }

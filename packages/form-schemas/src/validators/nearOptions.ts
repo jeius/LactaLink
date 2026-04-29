@@ -15,7 +15,10 @@ export const nearListingsOptionsSchema = z.object({
     .optional(),
 });
 
-export const nearOrganizationsOptionsSchema = nearListingsOptionsSchema.omit({ status: true });
+export const nearOrganizationsOptionsSchema = z.object({
+  ...nearListingsOptionsSchema.omit({ status: true }).shape,
+  search: z.coerce.string().nullish(),
+});
 
 /**
  * @deprecated Use {@link nearListingsOptionsSchema} instead, which is more appropriately named for its intended

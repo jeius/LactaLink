@@ -11,7 +11,7 @@ import {
 } from '@lactalink/form-schemas/validators';
 import { Hospital, MilkBank } from '@lactalink/types/payload-generated-types';
 import { ValidationError } from '@lactalink/utilities/errors';
-import { asc, lte, sql } from '@payloadcms/db-postgres/drizzle';
+import { and, asc, ilike, lte, sql, SQLWrapper } from '@payloadcms/db-postgres/drizzle';
 import httpStatus from 'http-status';
 import { APIError, CollectionSlug, PaginatedDocs, Payload, PayloadRequest } from 'payload';
 
@@ -108,31 +108,39 @@ async function find(
   nearOptions: NearOrganizationsOptions,
   queryOptions: { limit: number; offset: number }
 ) {
-  const { location, maxDistance } = nearOptions;
+  const { location, maxDistance, search } = nearOptions;
   const { limit, offset } = queryOptions;
 
-  const fetch =
+  const cte =
     collection === 'hospitals'
       ? payload.db.drizzle.$with('findNearestHospitals').as(findNearestHospital(location))
       : payload.db.drizzle.$with('findNearestMilkbanks').as(findNearestMilkbank(location));
 
-  const filter = maxDistance !== undefined ? lte(fetch.distance, maxDistance) : undefined;
+  const filters: SQLWrapper[] = [];
+
+  if (maxDistance !== undefined) {
+    filters.push(lte(cte.distance, maxDistance));
+  }
+
+  if (search) {
+    filters.push(ilike(cte.display_name, `%${search}%`));
+  }
 
   const [totalRowsResult, results] = await Promise.all([
     payload.db.drizzle
-      .with(fetch)
-      .select({ count: sql<number>`COUNT(${fetch.id})` })
-      .from(fetch)
-      .where(filter),
+      .with(cte)
+      .select({ count: sql<number>`COUNT(${cte.id})` })
+      .from(cte)
+      .where(and(...filters)),
     payload.db.drizzle
-      .with(fetch)
-      .selectDistinctOn([fetch.id], {
-        id: fetch.id,
-        distance: fetch.distance,
+      .with(cte)
+      .selectDistinctOn([cte.id], {
+        id: cte.id,
+        distance: cte.distance,
       })
-      .from(fetch)
-      .where(filter)
-      .orderBy(asc(fetch.id))
+      .from(cte)
+      .where(and(...filters))
+      .orderBy(asc(cte.id))
       .limit(limit)
       .offset(offset),
   ]);
