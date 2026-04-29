@@ -1,5 +1,5 @@
 import z from 'zod';
-import { nearDonationRequestSchema } from './nearDonationRequestSchema';
+import { nearListingsOptionsSchema } from './nearOptions';
 
 export const matchCriteriaSchema = z
   .object({
@@ -8,6 +8,6 @@ export const matchCriteriaSchema = z
       .array(z.enum(['deliveryMode', 'deliveryDays', 'barangay', 'cityMunicipality', 'province']))
       .optional(),
   })
-  .and(nearDonationRequestSchema.omit({ location: true }));
+  .and(nearListingsOptionsSchema.omit({ location: true }));
 
 export type MatchCriteria = z.infer<typeof matchCriteriaSchema>;
