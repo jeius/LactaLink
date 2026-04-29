@@ -35,6 +35,13 @@ export const addressGeocodingSchema = z.object({
     .nullable(),
 });
 
+export const pointSchema = z
+  .tuple([longitudeSchema, latitudeSchema])
+  .refine((val) => Array.isArray(val) && val.length === 2, {
+    message: 'Invalid point format. Expected [longitude, latitude]',
+  });
+
+export type Point = z.infer<typeof pointSchema>;
 export type AddressGeocoding = z.infer<typeof addressGeocodingSchema>;
 export type CoordinatesSchema = z.infer<typeof coordinatesSchema>;
 export type BoundarySchema = z.infer<typeof boundarySchema>;
