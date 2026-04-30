@@ -58,20 +58,31 @@ const InfiniteFlashList = forwardRef(function InfiniteFlashList<T>(
       })}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       ItemSeparatorComponent={
-        props.ItemSeparatorComponent ?? (() => <Box style={{ height: gap }} />)
+        props.ItemSeparatorComponent === null
+          ? null
+          : (props.ItemSeparatorComponent ?? (() => <Box style={{ height: gap }} />))
       }
       ListEmptyComponent={
-        props.ListEmptyComponent ?? <NoData title={emptyListLabel || `Nothing to show here`} />
+        props.ListEmptyComponent === null
+          ? null
+          : (props.ListEmptyComponent ?? (
+              <NoData title={emptyListLabel || `Nothing to show here`} />
+            ))
       }
       ListFooterComponent={
-        props.ListFooterComponent ?? (
-          <Box
-            className="items-center justify-center p-4"
-            style={{ display: hasNextPage ? 'flex' : 'none', opacity: isFetchingNextPage ? 1 : 0 }}
-          >
-            <Spinner size="small" />
-          </Box>
-        )
+        props.ListFooterComponent === null
+          ? null
+          : (props.ListFooterComponent ?? (
+              <Box
+                className="items-center justify-center p-4"
+                style={{
+                  display: hasNextPage ? 'flex' : 'none',
+                  opacity: isFetchingNextPage ? 1 : 0,
+                }}
+              >
+                <Spinner size="small" />
+              </Box>
+            ))
       }
     />
   );
