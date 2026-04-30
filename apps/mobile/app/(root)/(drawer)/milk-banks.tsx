@@ -1,9 +1,8 @@
 import { useHeaderSize } from '@/components/contexts/HeaderProvider';
 import { DrawerHeader } from '@/components/drawer/DrawerHeader';
-import { OrganizationList } from '@/components/lists/OrganizationList';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import React from 'react';
+import { OrganizationList } from '@/features/organizations/components/OrganizationList';
 
 export default function MilkBankListsPage() {
   const { height: headerHeight } = useHeaderSize();
