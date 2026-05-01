@@ -30,6 +30,7 @@ function OrgCard({
   action,
   canViewThumbnail = true,
   badgeLabel = 'Organization',
+  variant = 'elevated',
   ...cardProps
 }: OrganizationListCardProps) {
   const name = data?.name;
@@ -38,13 +39,19 @@ function OrgCard({
   const image = extractImageData(avatar);
 
   return (
-    <Card {...cardProps} className={cardStyles({ className: cardProps.className })}>
-      <HStack space="sm" className="items-stretch">
+    <Card
+      {...cardProps}
+      variant={variant}
+      className={cardStyles({ className: cardProps.className })}
+    >
+      <HStack className="items-stretch">
         <Box className="aspect-square overflow-hidden">
           <SingleImageViewer disabled={!canViewThumbnail} image={image} />
         </Box>
 
-        <VStack space="xs" className="flex-1 p-2">
+        <Box className="w-1 bg-secondary-500" />
+
+        <VStack space="xs" className="flex-1 p-2 pl-3">
           <Text bold className="flex-1" numberOfLines={1}>
             {name}
           </Text>
