@@ -4,6 +4,9 @@ import { CollectionSlug } from '@lactalink/types/payload-types';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isValidCoordinate } from '@lactalink/utilities/geolib';
 
+/**
+ * @deprecated use {@link createMarkerId} instead, which accepts a doc object and is more flexible
+ */
 export function createMarkerID<TSlug extends CollectionSlug>(
   slug: TSlug,
   id: Collection<TSlug>['id'],
@@ -11,6 +14,14 @@ export function createMarkerID<TSlug extends CollectionSlug>(
 ) {
   const { latitude, longitude } = Array.isArray(point) ? pointToLatLng(point) : point;
   return `${slug}-${id}-[${longitude},${latitude}]`;
+}
+
+export function createMarkerId<TSlug extends CollectionSlug>(
+  doc: { relationTo: TSlug; value: string },
+  point: Point | Coordinates
+) {
+  const { latitude, longitude } = Array.isArray(point) ? pointToLatLng(point) : point;
+  return `${doc.relationTo}-${doc.value}-[${longitude},${latitude}]`;
 }
 
 export function parseMarkerID(markerID: string): {
