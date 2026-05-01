@@ -11,15 +11,15 @@ import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformer
 import { infiniteQueryOptions } from '@tanstack/react-query';
 import { getMyListings } from '../api/listings';
 
-const status = DONATION_REQUEST_STATUS.AVAILABLE.value;
-const limit = 15;
+const STATUS = DONATION_REQUEST_STATUS.AVAILABLE.value;
+const LIMIT = 15;
 
 const createDefaultPaginatedDocs = <T>(page: number): PaginatedDocsMap<T> => ({
   docs: new Map<string, T>(),
   totalDocs: 0,
   totalPages: 0,
   page,
-  limit: limit,
+  limit: LIMIT,
   hasNextPage: false,
   hasPrevPage: false,
   nextPage: null,
@@ -35,17 +35,24 @@ export function createNearestDonationsInfQuery(
     enabled: !!coordinates,
     queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'donations', maxDistance],
     initialPageParam: 1,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam, signal }) => {
       if (!coordinates) return createDefaultPaginatedDocs<Donation>(pageParam);
 
       const point = latLngToPoint(coordinates);
-      const matchingService = getMatchingService();
-      const paginatedDocs = await matchingService.getNearestDonations(point, status, maxDistance, {
-        page: pageParam,
-        limit: limit,
-      });
+      const service = getMatchingService();
+      const paginatedDocs = await service.getNearestListings(
+        {
+          collection: 'donations',
+          location: point,
+          maxDistance,
+          status: STATUS,
+          page: pageParam,
+          limit: LIMIT,
+        },
+        { signal }
+      );
 
-      return transformToPaginatedMappedDocs(paginatedDocs as PaginatedDocs<Donation>);
+      return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     getPreviousPageParam: (firstPage) => firstPage.prevPage,
@@ -68,15 +75,22 @@ export function createNearestRequestsInfQuery(
     enabled: !!coordinates,
     queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'requests', maxDistance],
     initialPageParam: 1,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam, signal }) => {
       if (!coordinates) return createDefaultPaginatedDocs<Request>(pageParam);
 
       const point = latLngToPoint(coordinates);
-      const matchingService = getMatchingService();
-      const paginatedDocs = await matchingService.getNearestRequests(point, status, maxDistance, {
-        page: pageParam,
-        limit: limit,
-      });
+      const service = getMatchingService();
+      const paginatedDocs = await service.getNearestListings(
+        {
+          collection: 'requests',
+          location: point,
+          maxDistance,
+          status: STATUS,
+          page: pageParam,
+          limit: LIMIT,
+        },
+        { signal }
+      );
 
       return transformToPaginatedMappedDocs(paginatedDocs as PaginatedDocs<Request>);
     },
@@ -102,7 +116,10 @@ export function createMyListingsInfQuery(
     queryKey: [...QUERY_KEYS.LISTINGS.INFINITE, collection],
     queryFn: async ({ pageParam, signal }) => {
       if (!collection) return createDefaultPaginatedDocs<Donation | Request>(pageParam);
-      const paginatedDocs = await getMyListings({ collection, page: pageParam, limit }, { signal });
+      const paginatedDocs = await getMyListings(
+        { collection, page: pageParam, limit: LIMIT },
+        { signal }
+      );
       return transformToPaginatedMappedDocs(paginatedDocs);
     },
     getNextPageParam: (page) => page.nextPage,
