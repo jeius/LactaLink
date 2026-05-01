@@ -1,11 +1,11 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
-import { useDirectionIsActive } from '@/features/map/components/contexts/directions';
-import DirectionDetails from '@/features/map/components/DirectionDetails';
-import { MapLayout } from '@/features/map/components/MapLayout';
-import MapListings from '@/features/map/components/MapListings';
-import MarkerDetailsSheet from '@/features/map/components/MarkerDetailsSheet';
+import { useDirectionIsActive } from '@/features/map.new/components/contexts/directions';
+import DirectionDetails from '@/features/map.new/components/DirectionDetails';
+import { MapLayout } from '@/features/map.new/components/MapLayout';
+import MapListings from '@/features/map.new/components/MapListings';
+import MarkerDetailsSheet from '@/features/map.new/components/MarkerDetailsSheet';
 import { useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
 import { ViewProps } from 'react-native';
@@ -23,18 +23,18 @@ export default function ExploreScreen() {
         pointerEvents="box-none"
         style={{ paddingTop: insets.top }}
       >
-        <FadeWrapper fadeDirection="up" className="flex-row items-center gap-2 py-2 pl-3 pr-5">
+        <FadeView fadeDirection="up" className="flex-row items-center gap-2 py-2 pl-3 pr-5">
           <HeaderBackButton />
 
           <Input variant="rounded" className="flex-1 bg-background-0 shadow">
             <InputIcon as={SearchIcon} className="ml-3" />
             <InputField numberOfLines={1} placeholder="Search here..." />
           </Input>
-        </FadeWrapper>
+        </FadeView>
 
-        <FadeWrapper fadeDirection="down">
+        <FadeView fadeDirection="down">
           <MapListings />
-        </FadeWrapper>
+        </FadeView>
       </Box>
 
       <MarkerDetailsSheet />
@@ -46,7 +46,7 @@ export default function ExploreScreen() {
   );
 }
 
-function FadeWrapper({
+function FadeView({
   children,
   fadeDirection = 'up',
   ...props
