@@ -142,6 +142,21 @@ export function findBarangayByID(
     { signal }
   );
 }
+
+export async function findDefaultAddressByUser(userID: string, init?: RequestInit) {
+  const addresses = await getApiClient().find(
+    {
+      collection: 'addresses',
+      where: { and: [{ owner: { equals: userID } }, { isDefault: { equals: true } }] },
+      depth: 2,
+      limit: 1,
+      pagination: false,
+    },
+    init
+  );
+
+  return addresses[0] ?? null;
+}
 //#endregion
 
 export function findAddressesByIDs(

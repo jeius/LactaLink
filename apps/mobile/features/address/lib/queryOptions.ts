@@ -19,6 +19,7 @@ import {
   findBarangays,
   findCities,
   findCityByID,
+  findDefaultAddressByUser,
   findProvinceByID,
   findProvinces,
 } from './find';
@@ -35,6 +36,18 @@ export function createAddressQuery(address: string | Address | null | undefined)
       return findAddressByID(addressID, { depth: ADDRESS_DEPTH, signal });
     },
     placeholderData: extractCollection(address) || undefined,
+  });
+}
+
+export function createDefaultAddressQuery(user: string | User | null | undefined) {
+  const userID = extractID(user);
+  return queryOptions({
+    enabled: !!userID,
+    queryKey: [...QUERY_KEYS.ADDRESSES.ONE, userID],
+    queryFn: async ({ signal }) => {
+      if (!userID) throw new Error('User ID is required to fetch the default address.');
+      return findDefaultAddressByUser(userID, { signal });
+    },
   });
 }
 
