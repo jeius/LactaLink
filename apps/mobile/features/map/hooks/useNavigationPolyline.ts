@@ -49,6 +49,17 @@ export function useNavigationPolyline(
   });
 
   useEffect(() => {
+    if (!polyline) {
+      setResult({
+        trimmedPolyline: undefined,
+        snappedPosition: undefined,
+        distanceFromRoute: 0,
+        isOffRoute: false,
+      });
+    }
+  }, [polyline]);
+
+  useEffect(() => {
     if (polylineRef.current !== polyline || !isActive) {
       polylineRef.current = polyline;
       lastSegmentIndexRef.current = 0;

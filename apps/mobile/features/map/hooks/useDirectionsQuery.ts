@@ -6,20 +6,20 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 export function useDirectionsQuery(
-  args: {
+  params: {
     origin: Coordinates | undefined | null;
     destination: Coordinates | undefined | null;
     travelMode?: TravelMode;
   },
   options: { enabled?: boolean } = { enabled: true }
 ) {
-  const { origin, destination, travelMode = 'DRIVE' } = args;
+  const { origin, destination, travelMode = 'DRIVE' } = params;
   const { enabled } = options;
 
   const { data, ...query } = useQuery({
-    enabled: !!origin && !!destination && enabled,
-    queryKey: [...QUERY_KEYS.DIRECTIONS, origin, destination, travelMode],
-    queryFn: () => {
+    enabled: enabled,
+    queryKey: [...QUERY_KEYS.DIRECTIONS, origin, destination, travelMode].filter(Boolean),
+    queryFn: async () => {
       if (!origin || !destination) return null;
       return getDirectionsService().getDirections({
         origin,
@@ -28,7 +28,7 @@ export function useDirectionsQuery(
       });
     },
     staleTime: Infinity,
-    gcTime: Infinity,
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   const directions = useMemo(() => {

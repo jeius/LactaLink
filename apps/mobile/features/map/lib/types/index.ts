@@ -1,7 +1,11 @@
-import { Coordinates, ImageData, UserProfile } from '@lactalink/types';
-import { CollectionSlug } from '@lactalink/types/payload-types';
+import { BoundarySchema } from '@lactalink/form-schemas/geocoding';
+import { MarkerType } from '@lactalink/types';
+import { MapMarker } from '@lactalink/types/api';
+import { DataMarkerSlug } from './marker';
 
 export * from './marker';
+
+export type { BoundarySchema, MapMarker, MarkerType };
 
 export type MapQueryParams = {
   /**
@@ -18,7 +22,7 @@ export type MapQueryParams = {
    * Expected values are the collection slugs (e.g., 'donations', 'requests', etc.)
    * Example: `donations`
    */
-  list?: string;
+  list?: DataMarkerSlug;
 
   /**
    * Optional latitude parameter for directly setting the map camera position.
@@ -50,44 +54,4 @@ export type MapQueryParams = {
   addrID?: string;
 };
 
-export type MapListingSlug = Extract<
-  CollectionSlug,
-  'donations' | 'requests' | 'hospitals' | 'milkBanks'
->;
-
-export type MapListingItem = {
-  /**
-   * The slug of the listing, which corresponds to the collection it belongs to (e.g.,
-   * 'donations', 'requests', etc.). This is used to determine the type of the listing
-   * and how it should be displayed in the UI.
-   */
-  slug: MapListingSlug;
-  /**
-   * Main title or name of the listing item, used for display purposes in the listing carousel.
-   */
-  title: string;
-  /**
-   * For donations and requests, this would be the user who created the listing.
-   */
-  user?: UserProfile;
-  /**
-   * Distance in kilometers from the user's current location, used for sorting and display purposes.
-   * Optional because it may not always be available depending on the data source.
-   */
-  distance?: number | null | undefined;
-  /**
-   * `ImageData` object containing the URL and metadata of the listing's image.
-   * Optional because some listings may not have an associated image.
-   */
-  image?: ImageData | null | undefined;
-  /**
-   * Coordinates of the listing item, used for placing markers on the map and for calculating distances.
-   * This is required for map functionality, but may be null or undefined if the data source does not provide it.
-   */
-  coordinates: Coordinates;
-  /**
-   * Unique identifier for the listing item, used for navigation and linking to the specific marker on the map.
-   * This is required for linking the listing item to its corresponding marker on the map.
-   */
-  markerID: string;
-};
+export type MapListingSlug = DataMarkerSlug;

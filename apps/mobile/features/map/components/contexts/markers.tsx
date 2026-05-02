@@ -5,41 +5,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { createStore, StoreApi, useStore } from 'zustand';
 import { useMarkersQuery } from '../../hooks/useMarkersQuery';
 import { DataMarkerProviderProps, DataMarkerStore, MapQueryParams } from '../../lib/types';
-import { createDataMarkerFromDoc } from '../../lib/utils/markerUtils';
 
 const DataMarkerStoreContext = createContext<StoreApi<DataMarkerStore> | null>(null);
-
-export function DataMarkerProvider({
-  children,
-  selectedMarkerID: selectedMarkerId,
-}: DataMarkerProviderProps) {
-  const [store] = useState(createMarkerStore);
-
-  const { markers, markersMap, errors, isPending } = useMarkersQuery();
-
-  useEffect(() => {
-    if (!selectedMarkerId) {
-      store.setState({ selectedDataMarker: null });
-    } else {
-      const { markersMap } = store.getState();
-      const selectedDataMarker = markersMap.get(selectedMarkerId) || null;
-      store.setState({ selectedDataMarker });
-    }
-  }, [selectedMarkerId, store]);
-
-  useEffect(() => {
-    if (errors.length > 0) {
-      store.setState({ markers: [], markersMap: new Map(), selectedDataMarker: null });
-      console.error('Error fetching markers:', errors);
-    } else {
-      store.setState({ markers, markersMap, isPending });
-    }
-  }, [errors, isPending, markers, markersMap, store]);
-
-  return (
-    <DataMarkerStoreContext.Provider value={store}>{children}</DataMarkerStoreContext.Provider>
-  );
-}
 
 export const useMarkers = () => {
   const markers = useDataMarkerStore((state) => state.markers);
@@ -60,6 +27,39 @@ export const useResetDataMarkers = () => {
   };
 };
 
+export function DataMarkerProvider({
+  children,
+  selectedMarkerID: selectedMarkerId,
+  boundary,
+}: DataMarkerProviderProps) {
+  const [store] = useState(createMarkerStore);
+
+  const { markers, markersMap, error, isPending, isProcessing } = useMarkersQuery(boundary ?? null);
+
+  useEffect(() => {
+    if (!selectedMarkerId) {
+      store.setState({ selectedDataMarker: null });
+    } else {
+      const { markersMap } = store.getState();
+      const selectedDataMarker = markersMap.get(selectedMarkerId) || null;
+      store.setState({ selectedDataMarker });
+    }
+  }, [selectedMarkerId, store]);
+
+  useEffect(() => {
+    if (error) {
+      store.setState({ markers: [], markersMap: new Map(), selectedDataMarker: null });
+      console.error('Error fetching markers:', error);
+    } else {
+      store.setState({ markers, isPending: isPending || isProcessing, markersMap: markersMap });
+    }
+  }, [error, isPending, isProcessing, markers, markersMap, store]);
+
+  return (
+    <DataMarkerStoreContext.Provider value={store}>{children}</DataMarkerStoreContext.Provider>
+  );
+}
+
 //#region Helpers
 function useDataMarkerStore<T>(selector: (state: DataMarkerStore) => T) {
   const store = useContext(DataMarkerStoreContext);
@@ -77,14 +77,16 @@ function createMarkerStore() {
     isPending: false,
     actions: {
       setSelectedMarker: (markerID) => {
-        const marker = markerID ? get().markersMap.get(markerID) || null : null;
+        const { markersMap } = get();
+
+        const marker = markerID ? markersMap.get(markerID) || null : null;
         set({ selectedDataMarker: marker });
-        const params: MapQueryParams = {
+
+        router.setParams({
           mrk: markerID || undefined,
           lat: undefined,
           lng: undefined,
-        };
-        router.setParams(params);
+        } satisfies MapQueryParams);
       },
 
       removeMarker: (markerID) => {
@@ -94,29 +96,20 @@ function createMarkerStore() {
           const newMap = new Map(markerMap);
           const deleted = newMap.delete(markerID);
           if (!deleted) return;
+
           const newMarkers = Array.from(newMap.values()).map((dm) => dm.marker);
           set({ markers: newMarkers, markersMap: newMap });
         }
-        router.setParams({ mrk: undefined } as MapQueryParams);
+        router.setParams({ mrk: undefined } satisfies MapQueryParams);
       },
 
-      addMarker: (doc) => {
+      addMarker: (dataMarker) => {
         const { markersMap: markerMap } = get();
         const newMap = new Map(markerMap);
-        const dataMarker = createDataMarkerFromDoc(doc);
-
-        if (Array.isArray(dataMarker)) {
-          dataMarker.forEach((dm) => {
-            newMap.set(dm.marker.id, dm);
-          });
-        } else if (dataMarker) {
-          newMap.set(dataMarker.marker.id, dataMarker);
-        }
+        newMap.set(dataMarker.marker.id, dataMarker);
 
         const newMarkers = Array.from(newMap.values()).map((dm) => dm.marker);
         set({ markers: newMarkers, markersMap: newMap });
-
-        return dataMarker;
       },
     },
   }));

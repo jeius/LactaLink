@@ -1,6 +1,12 @@
+import { USER_MARKER_ID } from '@/lib/constants';
+import { useCurrentCoordinates } from '@/lib/stores';
+import { createMarkerId } from '@/lib/utils/markerUtils';
+import { Coordinates } from '@lactalink/types';
+import { Collection } from '@lactalink/types/collections';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createStore, useStore } from 'zustand';
 import { useDirectionsQuery } from '../../hooks/useDirectionsQuery';
+import { DataMarkerSlug } from '../../lib/types';
 import {
   DirectionsContext,
   DirectionsContextProviderProps,
@@ -54,6 +60,52 @@ function useDirection() {
   return { direction, isPending, error, isActive };
 }
 
+export function useStartNavigation<TSlug extends DataMarkerSlug>({
+  destination,
+  doc,
+}: {
+  destination:
+    | {
+        coordinates: Coordinates;
+        name: string;
+      }
+    | null
+    | undefined;
+  doc: {
+    relationTo: TSlug;
+    value: Collection<TSlug>;
+  };
+}) {
+  const currentCoords = useCurrentCoordinates();
+  const { startNavigation, setInputs } = useDirectionActions();
+
+  function handleShowDirections() {
+    if (currentCoords && destination) {
+      setInputs({
+        origin: {
+          coordinates: currentCoords,
+          name: 'Your Location',
+          markerID: USER_MARKER_ID,
+        },
+        destination: {
+          coordinates: destination.coordinates,
+          name: destination.name,
+          markerID: createMarkerId({ ...doc, value: doc.value.id }, destination.coordinates),
+        },
+      });
+
+      startNavigation();
+    }
+  }
+
+  return handleShowDirections;
+}
+
+export function useStopNavigation() {
+  const { stopNavigation } = useDirectionActions();
+  return stopNavigation;
+}
+
 function Provider({ children }: DirectionsContextProviderProps) {
   const [store] = useState(
     createStore<DirectionsContextStore>((set, get) => ({
@@ -72,7 +124,9 @@ function Provider({ children }: DirectionsContextProviderProps) {
           if (!origin || !destination) return;
           set({ isActive: true });
         },
-        stopNavigation: () => set({ isActive: false }),
+        stopNavigation: () => {
+          set({ origin: null, destination: null, direction: null, isActive: false });
+        },
       },
     }))
   );

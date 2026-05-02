@@ -1,5 +1,4 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { LocateButton } from '@/components/buttons/LocateButton';
 import { useMap } from '@/components/contexts/MapProvider';
 import TruncatedText from '@/components/TruncatedText';
 import { Box } from '@/components/ui/box';
@@ -24,8 +23,8 @@ import {
   RulerDimensionLineIcon,
   XIcon,
 } from 'lucide-react-native';
-import { useCallback, useEffect } from 'react';
-import Animated, {
+import React, { useCallback, useEffect } from 'react';
+import {
   createAnimatedComponent,
   FadeInDown,
   FadeInUp,
@@ -40,9 +39,7 @@ import {
   useDirectionDestination,
   useDirectionOrigin,
   useDirectionTravelMode,
-  useStopNavigation,
 } from './contexts/directions';
-import MapSpinner from './MapSpinner';
 
 const AnimatedCard = createAnimatedComponent(Card);
 
@@ -50,7 +47,7 @@ export default function DirectionDetails() {
   const insets = useSafeAreaInsets();
 
   const { direction, isActive, isPending, error } = useDirection();
-  const stopNavigation = useStopNavigation();
+  const { stopNavigation } = useDirectionActions();
 
   const origin = useDirectionOrigin();
   const destination = useDirectionDestination();
@@ -72,84 +69,78 @@ export default function DirectionDetails() {
   useEffect(() => {
     if (error) {
       toast.error('Failed to get directions. Please try again!');
-      console.error('Directions error:', error);
     }
   }, [error]);
 
   if (!isActive) return null;
 
   return (
-    <VStack space="lg" className="absolute justify-between px-4 py-2" style={insets}>
-      <Box>
-        <AnimatedCard
-          entering={FadeInUp.duration(300)}
-          exiting={FadeOutUp.duration(300)}
-          className="flex-row items-start p-0"
-        >
-          <VStack space="xs" className="m-4 mr-0 flex-1 items-start">
-            <HStack space="xs" className="items-start">
-              <Icon as={MapPinIcon} />
-              <TruncatedText initialLines={1} containerClassName="flex-1">
-                {origin?.name ?? 'Unknown Location'}
-              </TruncatedText>
-            </HStack>
-
-            <VStack space="xs" className="mx-2">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Box key={index} className="h-1 w-1 rounded-full bg-typography-600" />
-              ))}
-            </VStack>
-
-            <HStack space="xs" className="items-start">
-              <Icon as={FlagIcon} />
-              <TruncatedText initialLines={1} containerClassName="flex-1">
-                {destination?.name ?? 'Unknown Location'}
-              </TruncatedText>
-            </HStack>
-          </VStack>
-
-          <AnimatedPressable
-            className="m-3 overflow-hidden rounded-full p-2"
-            onPress={handleStopNavigation}
-          >
-            <Icon as={XIcon} className="text-typography-600" />
-          </AnimatedPressable>
-        </AnimatedCard>
-
-        <MapSpinner className="mt-4 self-end" />
-      </Box>
-
-      <Animated.View entering={FadeInDown.duration(300)} exiting={FadeOutDown.duration(300)}>
-        <LocateButton className="mb-4 self-end" />
-
-        <Card className="self-center rounded-3xl border-0 bg-background-0 p-0">
-          <HStack space="2xl" className="justify-between px-3 py-2">
-            <HStack space="xs" className="items-center">
-              <Icon as={ClockIcon} />
-              {isPending ? (
-                <Skeleton className="h-4 w-24" />
-              ) : (
-                <Text numberOfLines={1} className="font-JakartaSemiBold">
-                  {duration}
-                </Text>
-              )}
-            </HStack>
-
-            <HStack space="xs" className="items-center">
-              <Icon as={RulerDimensionLineIcon} />
-              {isPending ? (
-                <Skeleton className="h-4 w-24" />
-              ) : (
-                <Text numberOfLines={1} className="font-JakartaSemiBold">
-                  {distance}
-                </Text>
-              )}
-            </HStack>
+    <VStack space="lg" className="absolute justify-between px-4 py-2" style={{ ...insets }}>
+      <AnimatedCard
+        entering={FadeInUp.duration(300)}
+        exiting={FadeOutUp.duration(300)}
+        className="flex-row items-start p-0"
+      >
+        <VStack space="xs" className="m-4 mr-0 flex-1 items-start">
+          <HStack space="xs" className="items-start">
+            <Icon as={MapPinIcon} />
+            <TruncatedText initialLines={1} containerClassName="flex-1">
+              {origin?.name ?? 'Unknown Location'}
+            </TruncatedText>
           </HStack>
 
-          <TravelModeSelector />
-        </Card>
-      </Animated.View>
+          <VStack space="xs" className="mx-2">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Box key={index} className="h-1 w-1 rounded-full bg-typography-600" />
+            ))}
+          </VStack>
+
+          <HStack space="xs" className="items-start">
+            <Icon as={FlagIcon} />
+            <TruncatedText initialLines={1} containerClassName="flex-1">
+              {destination?.name ?? 'Unknown Location'}
+            </TruncatedText>
+          </HStack>
+        </VStack>
+        <AnimatedPressable
+          className="m-3 overflow-hidden rounded-full p-2"
+          onPress={handleStopNavigation}
+        >
+          <Icon as={XIcon} className="text-typography-600" />
+        </AnimatedPressable>
+      </AnimatedCard>
+
+      <AnimatedCard
+        entering={FadeInDown.duration(300)}
+        exiting={FadeOutDown.duration(300)}
+        className="self-center rounded-3xl border-0 bg-background-0 p-0"
+      >
+        <HStack space="2xl" className="justify-between px-3 py-2">
+          <HStack space="xs" className="items-center">
+            <Icon as={ClockIcon} />
+            {isPending ? (
+              <Skeleton className="h-4 w-24" />
+            ) : (
+              <Text numberOfLines={1} className="font-JakartaSemiBold">
+                {duration}
+              </Text>
+            )}
+          </HStack>
+
+          <HStack space="xs" className="items-center">
+            <Icon as={RulerDimensionLineIcon} />
+            {isPending ? (
+              <Skeleton className="h-4 w-24" />
+            ) : (
+              <Text numberOfLines={1} className="font-JakartaSemiBold">
+                {distance}
+              </Text>
+            )}
+          </HStack>
+        </HStack>
+
+        <TravelModeSelector />
+      </AnimatedCard>
     </VStack>
   );
 }

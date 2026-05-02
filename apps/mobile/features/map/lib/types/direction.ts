@@ -31,4 +31,4 @@ export type DirectionsContextStore = DirectionsContextState & { actions: Directi
 
 export type DirectionsContext = StoreApi<DirectionsContextStore>;
 
-export type DirectionsContextProviderProps = PropsWithChildren<{}>;
+export type DirectionsContextProviderProps = PropsWithChildren;

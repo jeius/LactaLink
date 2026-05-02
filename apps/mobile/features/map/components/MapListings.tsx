@@ -1,30 +1,35 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { LocateButton } from '@/components/buttons/LocateButton';
-import { BasicCarousel } from '@/components/ui/BasicCarousel';
 import { Box } from '@/components/ui/box';
-import CollapsibleView from '@/components/ui/CollapsibleView';
 import { Icon } from '@/components/ui/icon';
-import { HandBottle2Icon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
+import { HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import ScrollView from '@/components/ui/ScrollView';
 import { Text } from '@/components/ui/text';
-import { MapListingItem, MapListingSlug, MapQueryParams } from '@/features/map/lib/types';
-import { useCurrentCoordinates } from '@/lib/stores';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { Donation, Hospital, MilkBank, Request } from '@lactalink/types/payload-generated-types';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import { formatCamelCaseCaps } from '@lactalink/utilities/formatters';
+import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Building2Icon, HospitalIcon, LucideIcon } from 'lucide-react-native';
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { SvgProps } from 'react-native-svg';
-import { getListings } from '../lib/utils/extractListingData';
-import { useMarkerActions, useMarkersMap } from './contexts/markers';
-import MapListItem from './MapListItem';
+import { MapListingSlug, MapMarker, MapQueryParams } from '../lib/types';
+import { mapMarkerToRNMarker } from '../lib/utils/markerUtils';
+import { useMarkerActions, useMarkersMap, useSelectedMarker } from './contexts/markers';
+import DetailsSheet from './DetailsSheet';
+import ListingsSheet from './ListingsSheet';
+import OrganizationsSheet from './OrganizationsSheet';
 
-const ITEM_WIDTH = 192;
-const ITEM_SPACING = 6;
+type DataType = {
+  relationTo: MapListingSlug;
+  value: Donation | Request | Hospital | MilkBank;
+};
+
 const LIST_SLUGS: MapListingSlug[] = ['donations', 'requests', 'hospitals', 'milkBanks'];
 const ICONS: Record<MapListingSlug, LucideIcon | FC<SvgProps>> = {
-  donations: HandBottle2Icon,
+  donations: HandBottleIcon,
   requests: MilkBottlePlus2Icon,
   hospitals: HospitalIcon,
   milkBanks: Building2Icon,
@@ -53,67 +58,82 @@ const pressableTextStyle = tva({
 export default function MapListings() {
   const { list } = useLocalSearchParams<MapQueryParams>();
   const router = useRouter();
-  const currentCoords = useCurrentCoordinates();
 
-  const expand = Boolean(list);
-
-  const { setSelectedMarker } = useMarkerActions();
+  const { setSelectedMarker, addMarker } = useMarkerActions();
   const markersMap = useMarkersMap();
+  const [selectedMarker] = useSelectedMarker();
 
-  const { donationsListings, requestsListings } = useMemo(
-    () => getListings(markersMap, currentCoords),
-    [currentCoords, markersMap]
-  );
+  const [type, setType] = useState<MapListingSlug | null>(null);
+  const [selectedData, setSelectedData] = useState<DataType | null>(null);
 
-  const [data, setData] = useState<MapListingItem[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState(0);
+  const deliveryPreferences = useMemo(() => {
+    if (!selectedData) return null;
+    const doc = selectedData.value;
+    if (!isDonation(doc) || isRequest(doc)) return null;
+    return extractCollection(doc.deliveryPreferences);
+  }, [selectedData]);
 
   function setListParams(slug: MapListingSlug | undefined) {
     router.setParams({ list: slug } as MapQueryParams);
   }
 
-  function setMarkerID({ markerID }: MapListingItem) {
-    setSelectedMarker(markerID);
+  function closeListings() {
+    setListParams(undefined);
+  }
+
+  function handleSelect(data: Donation | Request | Hospital | MilkBank) {
+    if (!type) return;
+    setSelectedData({ relationTo: type, value: data });
+  }
+
+  function handleDetailsClose() {
+    setSelectedData(null);
+    setSelectedMarker(null);
+  }
+
+  function handleLocate(mapMarker: MapMarker) {
+    const marker = mapMarkerToRNMarker(mapMarker);
+    if (markersMap.has(marker.id)) {
+      setSelectedMarker(marker.id);
+      return;
+    } else {
+      addMarker({ data: mapMarker, marker });
+      setSelectedMarker(marker.id);
+    }
+    setSelectedData(null);
   }
 
   useEffect(() => {
-    if (!expand) return;
-
-    if (list === 'donations' && donationsListings) {
-      setData(donationsListings);
-    } else if (list === 'requests' && requestsListings) {
-      setData(requestsListings);
+    const listings: MapListingSlug[] = ['donations', 'requests', 'hospitals', 'milkBanks'];
+    if (list && listings.includes(list)) {
+      setType(list);
     } else {
-      setData([]);
+      setType(null);
     }
-  }, [list, donationsListings, requestsListings, expand]);
+  }, [list]);
 
   return (
     <Box pointerEvents="box-none">
       <LocateButton className="mx-4 mb-4 self-end" />
 
-      <CollapsibleView expand={expand}>
-        <BasicCarousel
-          data={data}
-          itemWidth={ITEM_WIDTH}
-          itemSpacing={ITEM_SPACING}
-          contentContainerClassName="px-4 py-2"
-          focusedIndex={focusedIndex}
-          setFocusedIndex={setFocusedIndex}
-          renderItem={({ item, isFocused, index }) => (
-            <MapListItem
-              width={ITEM_WIDTH}
-              height={128}
-              item={item}
-              isFocused={isFocused}
-              onPress={() => {
-                setMarkerID(item);
-                setFocusedIndex(index);
-              }}
-            />
-          )}
+      {!selectedMarker &&
+        !selectedData &&
+        type &&
+        (type === 'donations' || type === 'requests' ? (
+          <ListingsSheet type={type} onClose={closeListings} onSelect={handleSelect} />
+        ) : (
+          <OrganizationsSheet type={type} onClose={closeListings} onSelect={handleSelect} />
+        ))}
+
+      {!selectedMarker && selectedData && (
+        <DetailsSheet
+          initialDetentIndex={1}
+          data={selectedData}
+          deliveryPreference={deliveryPreferences}
+          onWillDismiss={handleDetailsClose}
+          onLocate={handleLocate}
         />
-      </CollapsibleView>
+      )}
 
       <ScrollView
         horizontal
