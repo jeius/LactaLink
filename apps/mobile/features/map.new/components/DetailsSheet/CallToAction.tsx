@@ -115,7 +115,7 @@ export default function CallToAction({
           className="flex-1 shadow"
           onPress={handleMainBtnPress}
         >
-          <ButtonIcon as={mainBtnIcon} className="h-6 w-6" />
+          <ButtonIcon as={mainBtnIcon} className="h-6 w-6 fill-typography-0" />
           <ButtonText>{mainBtnLabel}</ButtonText>
         </Button>
       ) : (

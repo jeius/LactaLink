@@ -2,7 +2,7 @@ import { AnimatedPressable } from '@/components/animated/pressable';
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { Box } from '@/components/ui/box';
 import { Icon } from '@/components/ui/icon';
-import { HandBottle2Icon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
+import { HandBottleIcon, MilkBottlePlus2Icon } from '@/components/ui/icon/custom';
 import ScrollView from '@/components/ui/ScrollView';
 import { Text } from '@/components/ui/text';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
@@ -29,7 +29,7 @@ type DataType = {
 
 const LIST_SLUGS: MapListingSlug[] = ['donations', 'requests', 'hospitals', 'milkBanks'];
 const ICONS: Record<MapListingSlug, LucideIcon | FC<SvgProps>> = {
-  donations: HandBottle2Icon,
+  donations: HandBottleIcon,
   requests: MilkBottlePlus2Icon,
   hospitals: HospitalIcon,
   milkBanks: Building2Icon,
