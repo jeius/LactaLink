@@ -17,9 +17,9 @@ export function useDirectionsQuery(
   const { enabled } = options;
 
   const { data, ...query } = useQuery({
-    enabled: !!origin && !!destination && enabled,
+    enabled: enabled,
     queryKey: [...QUERY_KEYS.DIRECTIONS, origin, destination, travelMode].filter(Boolean),
-    queryFn: () => {
+    queryFn: async () => {
       if (!origin || !destination) return null;
       return getDirectionsService().getDirections({
         origin,
@@ -28,7 +28,7 @@ export function useDirectionsQuery(
       });
     },
     staleTime: Infinity,
-    gcTime: Infinity,
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   const directions = useMemo(() => {

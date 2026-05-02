@@ -1,11 +1,12 @@
 import { DONATION_PIN, HOSPITAL_PIN, MILK_BANK_PIN, REQUEST_PIN } from '@/lib/constants/markerSvgs';
 import { getCurrentCoordinates } from '@/lib/stores/locationStore';
-import { createMarkerId, createMarkerID } from '@/lib/utils/markerUtils';
+import { createMarkerId } from '@/lib/utils/markerUtils';
+import { Coordinates } from '@lactalink/types';
 import { Donation, Hospital, MilkBank, Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
 import { getDistance } from '@lactalink/utilities/geolib';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
-import { RNMarker } from 'react-native-google-maps-plus';
+import { RNMarker, RNPolyline } from 'react-native-google-maps-plus';
 import { DataMarker, MapMarker } from '../types';
 
 export type MarkersAction = {
@@ -45,7 +46,7 @@ export function createMarkerSnippet(doc: Hospital | MilkBank | Donation | Reques
  * Converts a lightweight `MapMarker` payload from the `/api/map-markers` endpoint
  * into a renderable `RNMarker` for the Google Maps component.
  *
- * The marker ID is produced by {@link createMarkerID} to keep the same format as
+ * The marker ID is produced by {@link createMarkerId} to keep the same format as
  * the legacy implementation (`{slug}-{id}-[{lng},{lat}]`), ensuring tap-handler
  * compatibility.
  *
@@ -93,4 +94,16 @@ export function markersReducer(
   });
 
   return new Map(sortedEntries);
+}
+
+export function createDirectionsPolyline(coordinates: Coordinates[]): RNPolyline {
+  return {
+    id: 'directions-polyline',
+    coordinates: coordinates,
+    color: '#2563eb',
+    width: 6,
+    lineCap: 'round',
+    lineJoin: 'round',
+    zIndex: 99999,
+  };
 }

@@ -52,7 +52,7 @@ function DonationDetails({ data }: BaseProps<Donation>) {
   const donor = { value: data.donor, relationTo: 'individuals' } as const;
 
   return (
-    <VStack space="lg" className="bg-background-0 px-4 pb-4 shadow">
+    <VStack space="lg" className="border-b border-outline-200 bg-background-0 px-4 pb-4">
       <Box className="h-40 w-full overflow-hidden rounded-2xl bg-background-100">
         <SingleImageViewer image={image} />
       </Box>
@@ -105,7 +105,7 @@ function RequestDetails({ data }: BaseProps<Request>) {
   const requester = { relationTo: 'individuals', value: data.requester } as const;
 
   return (
-    <VStack space="lg" className="bg-background-0 px-4 pb-4 shadow">
+    <VStack space="lg" className="border-b border-outline-200 bg-background-0 px-4 pb-4">
       <Box className="h-40 w-full overflow-hidden rounded-2xl bg-background-100">
         <SingleImageViewer image={image} />
         <BasicBadge
@@ -173,7 +173,7 @@ function OrganizationDetails({ data }: BaseProps<Hospital | MilkBank>) {
   );
 
   return (
-    <VStack space="lg" className="bg-background-0 px-4 pb-4 shadow">
+    <VStack space="lg" className="border-b border-outline-200 bg-background-0 px-4 pb-4">
       <Box className="h-40 w-full overflow-hidden rounded-2xl bg-background-100">
         <SingleImageViewer image={image} />
         <Box

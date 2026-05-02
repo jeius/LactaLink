@@ -3,10 +3,9 @@ import { Box } from '@/components/ui/box';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { useDirectionIsActive } from '@/features/map.new/components/contexts/directions';
 import DirectionDetails from '@/features/map.new/components/DirectionDetails';
-import { MapLayout } from '@/features/map.new/components/MapLayout';
+import MapLayout from '@/features/map.new/components/MapLayout';
 import MapListings from '@/features/map.new/components/MapListings';
 import MarkerDetailsSheet from '@/features/map.new/components/MarkerDetailsSheet';
-import { useRouter } from 'expo-router';
 import { SearchIcon } from 'lucide-react-native';
 import { ViewProps } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
@@ -14,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
 
   return (
     <MapLayout>

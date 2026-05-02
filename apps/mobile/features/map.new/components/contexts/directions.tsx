@@ -101,6 +101,11 @@ export function useStartNavigation<TSlug extends DataMarkerSlug>({
   return handleShowDirections;
 }
 
+export function useStopNavigation() {
+  const { stopNavigation } = useDirectionActions();
+  return stopNavigation;
+}
+
 function Provider({ children }: DirectionsContextProviderProps) {
   const [store] = useState(
     createStore<DirectionsContextStore>((set, get) => ({
@@ -119,7 +124,9 @@ function Provider({ children }: DirectionsContextProviderProps) {
           if (!origin || !destination) return;
           set({ isActive: true });
         },
-        stopNavigation: () => set({ isActive: false }),
+        stopNavigation: () => {
+          set({ origin: null, destination: null, direction: null, isActive: false });
+        },
       },
     }))
   );

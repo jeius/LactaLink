@@ -1,7 +1,7 @@
 import DeliveryModeIcons from '@/components/DeliveryModeIcons';
 import TruncatedText from '@/components/TruncatedText';
-import { Button, ButtonIcon } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
@@ -50,8 +50,11 @@ export default function DPDetails<TSlug extends DataMarkerSlug>({
   }
 
   return (
-    <Pressable onPress={handleLocate}>
-      <Card variant="elevated" className="flex-row items-center gap-2 rounded-none">
+    <Pressable
+      onPress={handleLocate}
+      className="border-b border-outline-200 bg-background-0 px-4 py-3"
+    >
+      <Box className="flex-row items-center gap-3">
         <VStack space="xs" className="flex-1">
           <HStack space="sm">
             <DeliveryModeIcons modes={item.preferredMode} />
@@ -65,15 +68,20 @@ export default function DPDetails<TSlug extends DataMarkerSlug>({
           </HStack>
         </VStack>
 
-        <Button
-          action="info"
-          className="h-fit w-fit rounded-full p-3"
-          accessibilityLabel="Show Directions"
-          onPress={handleShowDirections}
-        >
-          <ButtonIcon as={RouteIcon} className="h-6 w-6" />
-        </Button>
-      </Card>
+        <Box>
+          <Button
+            action="default"
+            variant="ghost"
+            size="sm"
+            className="h-fit w-fit flex-col gap-0 rounded-2xl bg-typography-50 p-3"
+            accessibilityLabel="Show Directions"
+            onPress={handleShowDirections}
+          >
+            <ButtonIcon as={RouteIcon} className="h-6 w-6" />
+            <ButtonText>Directions</ButtonText>
+          </Button>
+        </Box>
+      </Box>
     </Pressable>
   );
 }
