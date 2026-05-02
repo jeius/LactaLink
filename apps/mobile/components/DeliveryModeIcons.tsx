@@ -15,6 +15,7 @@ interface BaseProps {
   placement?: PopoverProps['placement'];
   offset?: PopoverProps['offset'];
   recyclingKey?: string | number;
+  isDisabled?: boolean;
 }
 
 function ModeIcon({
@@ -23,6 +24,7 @@ function ModeIcon({
   placement = 'bottom',
   offset = 8,
   recyclingKey = randomUUID(),
+  isDisabled,
 }: { mode: DeliveryMode } & BaseProps) {
   const [isOpen, setIsOpen] = useRecyclingState(false, [recyclingKey]);
   const iconAsset = getDeliveryPreferenceIcon(mode);
@@ -35,7 +37,11 @@ function ModeIcon({
       onOpen={() => setIsOpen(true)}
       onClose={() => setIsOpen(false)}
       trigger={(props) => (
-        <Pressable {...props} className="overflow-hidden rounded-full bg-primary-0 p-2">
+        <Pressable
+          {...props}
+          pointerEvents={isDisabled ? 'none' : 'auto'}
+          className="overflow-hidden rounded-full bg-primary-0 p-2"
+        >
           <Image source={iconAsset} alt={`${mode}-icon`} style={{ width: 26, height: 26 }} />
         </Pressable>
       )}
