@@ -78,6 +78,7 @@ export function LocateButton({
         />
       )}
       <ButtonIcon
+        style={{ width: 24, height: 24 }}
         as={
           followingUser
             ? CompassIcon
@@ -85,8 +86,6 @@ export function LocateButton({
               ? LocateFixedIcon
               : LocateIcon
         }
-        height={22}
-        width={22}
       />
     </Button>
   );
