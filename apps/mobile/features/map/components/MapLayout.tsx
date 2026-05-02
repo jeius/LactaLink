@@ -13,6 +13,9 @@ import {
 } from 'react-native-google-maps-plus';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import DirectionsContextProvider, {
+  useDirection,
+} from '@/features/directions/components/DirectionsProvider';
 import { useLocationTracking } from '../hooks/useLocationTracking';
 import { useMapNavigation } from '../hooks/useMapNavigation';
 import { useMarkerCamera } from '../hooks/useMarkerCamera';
@@ -20,7 +23,6 @@ import { useMarkerInfoWindow } from '../hooks/useMarkerInfoWindow';
 import { useNavigationPolyline } from '../hooks/useNavigationPolyline';
 import { BoundarySchema, MapQueryParams } from '../lib/types';
 import { createDirectionsPolyline } from '../lib/utils/markerUtils';
-import { DirectionsContextProvider, useDirection } from './contexts/directions';
 import { DataMarkerProvider, useMarkers, useSelectedMarker } from './contexts/markers';
 import MapSpinner from './MapSpinner';
 

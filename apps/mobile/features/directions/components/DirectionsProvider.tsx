@@ -3,64 +3,67 @@ import { useCurrentCoordinates } from '@/lib/stores';
 import { createMarkerId } from '@/lib/utils/markerUtils';
 import { Coordinates } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
+import { CollectionSlug } from '@lactalink/types/payload-types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createStore, useStore } from 'zustand';
-import { useDirectionsQuery } from '../../hooks/useDirectionsQuery';
-import { DataMarkerSlug } from '../../lib/types';
+import { useShallow } from 'zustand/shallow';
+import { useDirectionsQuery } from '../hooks/useDirectionsQuery';
 import {
   DirectionsContext,
   DirectionsContextProviderProps,
   DirectionsContextStore,
-} from '../../lib/types/direction';
+} from '../lib/types';
 
 const Context = createContext<DirectionsContext | null>(null);
 
 function useContextStore<T>(selector: (state: DirectionsContextStore) => T) {
   const store = useContext(Context);
   if (!store) {
-    throw new Error('useDirectionsContextStore must be used within a DirectionsContextProvider');
+    throw new Error('useDirectionsContextStore must be used within a DirectionsProvider');
   }
   return useStore(store, selector);
 }
 
-function useDirectionActions() {
+export function useDirectionActions() {
   return useContextStore((s) => s.actions);
 }
 
-function useDirectionPending() {
+export function useDirectionPending() {
   return useContextStore((s) => s.isPending);
 }
 
-function useDirectionError() {
+export function useDirectionError() {
   return useContextStore((s) => s.error);
 }
 
-function useDirectionOrigin() {
+export function useDirectionOrigin() {
   return useContextStore((s) => s.origin);
 }
 
-function useDirectionDestination() {
+export function useDirectionDestination() {
   return useContextStore((s) => s.destination);
 }
 
-function useDirectionIsActive() {
+export function useDirectionIsActive() {
   return useContextStore((s) => s.isActive);
 }
 
-function useDirectionTravelMode() {
+export function useDirectionTravelMode() {
   return useContextStore((s) => s.mode);
 }
 
-function useDirection() {
-  const direction = useContextStore((s) => s.direction);
-  const isPending = useDirectionPending();
-  const error = useDirectionError();
-  const isActive = useContextStore((s) => s.isActive);
-
-  return { direction, isPending, error, isActive };
+export function useDirection() {
+  return useContextStore(
+    useShallow((s) => ({
+      direction: s.direction,
+      isPending: s.isPending,
+      error: s.error,
+      isActive: s.isActive,
+    }))
+  );
 }
 
-export function useStartNavigation<TSlug extends DataMarkerSlug>({
+export function useStartNavigation<TSlug extends CollectionSlug>({
   destination,
   doc,
 }: {
@@ -106,7 +109,7 @@ export function useStopNavigation() {
   return stopNavigation;
 }
 
-function Provider({ children }: DirectionsContextProviderProps) {
+export default function DirectionsContextProvider({ children }: DirectionsContextProviderProps) {
   const [store] = useState(
     createStore<DirectionsContextStore>((set, get) => ({
       direction: undefined,
@@ -150,15 +153,3 @@ function Provider({ children }: DirectionsContextProviderProps) {
 
   return <Context.Provider value={store}>{children}</Context.Provider>;
 }
-
-export {
-  Provider as DirectionsContextProvider,
-  useDirection,
-  useDirectionActions,
-  useDirectionDestination,
-  useDirectionError,
-  useDirectionIsActive,
-  useDirectionOrigin,
-  useDirectionPending,
-  useDirectionTravelMode,
-};

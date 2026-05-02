@@ -1,5 +1,5 @@
+import { useDirectionIsActive } from '@/features/directions/components/DirectionsProvider';
 import { useDeliveryPreferenceQuery, useMarkerDataQuery } from '../hooks/queries';
-import { useDirectionIsActive } from './contexts/directions';
 import { useSelectedMarker } from './contexts/markers';
 import DetailsSheet from './DetailsSheet';
 

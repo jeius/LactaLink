@@ -1,6 +1,6 @@
 import { Spinner } from '@/components/ui/spinner';
+import { useDirection } from '@/features/directions/components/DirectionsProvider';
 import { ComponentProps } from 'react';
-import { useDirection } from './contexts/directions';
 import { useMarkers } from './contexts/markers';
 
 export default function MapSpinner({ size = 'small', ...props }: ComponentProps<typeof Spinner>) {

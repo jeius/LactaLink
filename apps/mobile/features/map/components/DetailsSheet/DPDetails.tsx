@@ -12,6 +12,7 @@ import Sheet from '@/components/ui/sheet';
 import { SheetRef } from '@/components/ui/sheet/Sheet';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useStartNavigation } from '@/features/directions/components/DirectionsProvider';
 import { DELIVERY_OPTIONS, ShortDays } from '@lactalink/enums';
 import { Collection } from '@lactalink/types/collections';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
@@ -27,7 +28,6 @@ import {
 import { useRef } from 'react';
 import { DataMarkerSlug, MapMarker } from '../../lib/types';
 import { createMarkerSnippet } from '../../lib/utils/markerUtils';
-import { useStartNavigation } from '../contexts/directions';
 
 interface Props<TSlug extends DataMarkerSlug> {
   parentDoc: { relationTo: TSlug; value: Collection<TSlug> };

@@ -1,7 +1,7 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
-import { useDirectionIsActive } from '@/features/map/components/contexts/directions';
+import { useDirectionIsActive } from '@/features/directions/components/DirectionsProvider';
 import DirectionDetails from '@/features/map/components/DirectionDetails';
 import MapLayout from '@/features/map/components/MapLayout';
 import MapListings from '@/features/map/components/MapListings';

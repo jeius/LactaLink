@@ -1,3 +1,4 @@
+import { useDirectionActions } from '@/features/directions/components/DirectionsProvider';
 import { USER_MARKER_ID } from '@/lib/constants';
 import { produce } from 'immer';
 import isEqual from 'lodash/isEqual';
@@ -8,7 +9,6 @@ import {
   RNMapPadding,
   RNPolyline,
 } from 'react-native-google-maps-plus';
-import { useDirectionActions } from '../components/contexts/directions';
 
 interface UseMapNavigationParams {
   mapRef: RefObject<GoogleMapsViewRef | null>;

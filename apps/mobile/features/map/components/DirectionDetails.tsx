@@ -10,6 +10,14 @@ import { Pressable } from '@/components/ui/pressable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import {
+  useDirection,
+  useDirectionActions,
+  useDirectionDestination,
+  useDirectionOrigin,
+  useDirectionTravelMode,
+  useStopNavigation,
+} from '@/features/directions/components/DirectionsProvider';
 import { usePreventBackPress } from '@/hooks/usePreventBackPress';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { TravelMode } from '@lactalink/form-schemas/directions';
@@ -34,14 +42,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
-import {
-  useDirection,
-  useDirectionActions,
-  useDirectionDestination,
-  useDirectionOrigin,
-  useDirectionTravelMode,
-  useStopNavigation,
-} from './contexts/directions';
 import MapSpinner from './MapSpinner';
 
 const AnimatedCard = createAnimatedComponent(Card);
