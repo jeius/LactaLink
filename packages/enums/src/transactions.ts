@@ -4,6 +4,7 @@ export const TRANSACTION_STATUS = {
     value: 'PENDING',
   },
   CONFIRMED: { label: 'Delivery Confirmed', value: 'CONFIRMED' },
+  PREPARING: { label: 'Preparing', value: 'PREPARING' },
   IN_TRANSIT: { label: 'In Transit', value: 'IN_TRANSIT' },
   READY_FOR_PICKUP: { label: 'Ready for Pickup', value: 'READY_FOR_PICKUP' },
   DELIVERED: { label: 'Delivered', value: 'DELIVERED' },
@@ -13,9 +14,9 @@ export const TRANSACTION_STATUS = {
 } as const;
 
 export const TRANSACTION_TYPE = {
-  P2P: { label: 'Peer to Peer', value: 'P2P' },
-  P2O: { label: 'Peer to Organization', value: 'P2O' },
-  O2P: { label: 'Organization to Peer', value: 'O2P' },
+  P2P: { label: 'Donor to Requester', value: 'P2P' },
+  P2O: { label: 'Donor to Organization', value: 'P2O' },
+  O2P: { label: 'Organization to Requester', value: 'O2P' },
   O2O: { label: 'Organization to Organization', value: 'O2O' },
 } as const;
 

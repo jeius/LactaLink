@@ -92,7 +92,7 @@ export const Transactions: CollectionConfig<'transactions'> = {
           name: 'status',
           label: 'Transaction Status',
           type: 'select',
-          enumName: 'enum_transaction_status',
+          enumName: 'enum_transactions_status',
           required: true,
           defaultValue: TRANSACTION_STATUS.PENDING.value,
           options: Object.values(TRANSACTION_STATUS),

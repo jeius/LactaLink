@@ -205,9 +205,10 @@ export const enum_milk_bag_events_reference_type = pgEnum('enum_milk_bag_events_
   'manual_adjustment',
   'system_job',
 ]);
-export const enum_transaction_status = pgEnum('enum_transaction_status', [
+export const enum_transactions_status = pgEnum('enum_transactions_status', [
   'PENDING',
   'CONFIRMED',
+  'PREPARING',
   'IN_TRANSIT',
   'READY_FOR_PICKUP',
   'DELIVERED',
@@ -242,6 +243,17 @@ export const enum_delivery_updates_status = pgEnum('enum_delivery_updates_status
   'FAILED',
   'CANCELLED',
   'DELAYED',
+]);
+export const enum_transaction_status = pgEnum('enum_transaction_status', [
+  'PENDING',
+  'CONFIRMED',
+  'PREPARING',
+  'IN_TRANSIT',
+  'READY_FOR_PICKUP',
+  'DELIVERED',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
 ]);
 export const enum_message_type = pgEnum('enum_message_type', ['TEXT', 'SYSTEM']);
 export const enum_conversation_type = pgEnum('enum_conversation_type', ['DIRECT', 'GROUP']);
@@ -2051,7 +2063,7 @@ export const transactions = pgTable(
     request: uuid('request_id').references(() => requests.id, {
       onDelete: 'set null',
     }),
-    status: enum_transaction_status('status').notNull().default('PENDING'),
+    status: enum_transactions_status('status').notNull().default('PENDING'),
     type: enum_transaction_types('type').notNull().default('P2P'),
     volume: numeric('volume', { mode: 'number' }).notNull().default(0),
     tracking_deliveredAt: timestamp('tracking_delivered_at', {
@@ -6964,11 +6976,12 @@ type DatabaseSchema = {
   enum_milk_bag_events_type: typeof enum_milk_bag_events_type;
   enum_milk_bag_event_source: typeof enum_milk_bag_event_source;
   enum_milk_bag_events_reference_type: typeof enum_milk_bag_events_reference_type;
-  enum_transaction_status: typeof enum_transaction_status;
+  enum_transactions_status: typeof enum_transactions_status;
   enum_transaction_types: typeof enum_transaction_types;
   enum_delivery_details_status: typeof enum_delivery_details_status;
   enum_delivery_options: typeof enum_delivery_options;
   enum_delivery_updates_status: typeof enum_delivery_updates_status;
+  enum_transaction_status: typeof enum_transaction_status;
   enum_message_type: typeof enum_message_type;
   enum_conversation_type: typeof enum_conversation_type;
   enum_conversation_participants_role: typeof enum_conversation_participants_role;

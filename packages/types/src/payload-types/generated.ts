@@ -1647,6 +1647,7 @@ export interface Transaction {
   status:
     | 'PENDING'
     | 'CONFIRMED'
+    | 'PREPARING'
     | 'IN_TRANSIT'
     | 'READY_FOR_PICKUP'
     | 'DELIVERED'
@@ -1831,6 +1832,7 @@ export interface TransactionStatusHistory {
   status:
     | 'PENDING'
     | 'CONFIRMED'
+    | 'PREPARING'
     | 'IN_TRANSIT'
     | 'READY_FOR_PICKUP'
     | 'DELIVERED'
