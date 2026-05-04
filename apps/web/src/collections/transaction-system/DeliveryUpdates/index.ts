@@ -8,6 +8,7 @@ import { createUserField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { DELIVERY_UPDATES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
+import { afterChange } from './hooks/afterChange';
 
 export const DeliveryUpdates: CollectionConfig<'delivery-updates'> = {
   slug: 'delivery-updates',
@@ -23,6 +24,7 @@ export const DeliveryUpdates: CollectionConfig<'delivery-updates'> = {
     update: involvedPartiesOrAdmin,
     delete: userOrAdmin,
   },
+  hooks: { afterChange: [afterChange] },
   indexes: [{ fields: ['transaction', 'user'], unique: true }],
   fields: [
     createUserField({ name: 'user', required: true, index: true }),
