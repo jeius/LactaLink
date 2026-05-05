@@ -38,6 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   androidStatusBar: { translucent: true, hidden: true },
   plugins: [
+    'expo-asset',
     'expo-router',
     'expo-image-picker',
     'expo-mail-composer',
