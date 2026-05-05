@@ -9,7 +9,7 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { FC, useState } from 'react';
-import { Platform } from 'react-native';
+import { Modal, Platform } from 'react-native';
 import { Box } from './ui/box';
 
 const inputStyle = tva({
@@ -207,7 +207,7 @@ export function DatePicker({
         )}
       </Input>
 
-      {showDatePicker && (
+      <Modal visible={showDatePicker} transparent onRequestClose={() => setShowDatePicker(false)}>
         <DateTimePicker
           {...options}
           mode={mode}
@@ -219,7 +219,7 @@ export function DatePicker({
           style={{ borderRadius: 20 }}
           accentColor={accentColor}
         />
-      )}
+      </Modal>
     </Box>
   );
 }
