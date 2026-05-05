@@ -23,6 +23,42 @@ const accordionItemStyle = tva({
 
 const accordionTitleTextStyle = tva({
   base: 'flex-1 text-left font-JakartaMedium text-sm text-typography-900',
+  variants: {
+    isTruncated: {
+      true: 'web:truncate',
+    },
+    bold: {
+      true: 'font-JakartaBold',
+    },
+    underline: {
+      true: 'underline',
+    },
+    strikeThrough: {
+      true: 'line-through',
+    },
+    size: {
+      '2xs': 'text-2xs',
+      xs: 'text-xs',
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
+      xl: 'text-xl',
+      '2xl': 'text-2xl',
+      '3xl': 'text-3xl',
+      '4xl': 'text-4xl',
+      '5xl': 'text-5xl',
+      '6xl': 'text-6xl',
+    },
+    sub: {
+      true: 'text-xs',
+    },
+    italic: {
+      true: 'font-JakartaItalic',
+    },
+    highlight: {
+      true: 'bg-yellow-500',
+    },
+  },
 });
 
 const accordionIconStyle = tva({
@@ -107,7 +143,8 @@ type IAccordionHeaderProps = React.ComponentPropsWithoutRef<typeof UIAccordion.H
 
 type IAccordionTriggerProps = React.ComponentPropsWithoutRef<typeof UIAccordion.Trigger>;
 
-type IAccordionTitleTextProps = React.ComponentPropsWithoutRef<typeof UIAccordion.TitleText>;
+type IAccordionTitleTextProps = React.ComponentPropsWithoutRef<typeof UIAccordion.TitleText> &
+  VariantProps<typeof accordionTitleTextStyle>;
 
 /** Components */
 
@@ -205,12 +242,36 @@ const AccordionTrigger = forwardRef<
 const AccordionTitleText = forwardRef<
   React.ComponentRef<typeof UIAccordion.TitleText>,
   IAccordionTitleTextProps
->(function AccordionTitleText({ className, ...props }, ref) {
+>(function AccordionTitleText(
+  {
+    className,
+    isTruncated,
+    bold,
+    underline,
+    strikeThrough,
+    size = 'md',
+    sub,
+    italic,
+    highlight,
+    ...props
+  },
+  ref
+) {
   return (
     <UIAccordion.TitleText
       ref={ref}
       {...props}
-      className={accordionTitleTextStyle({ class: className })}
+      className={accordionTitleTextStyle({
+        class: className,
+        isTruncated,
+        bold,
+        underline,
+        strikeThrough,
+        size,
+        sub,
+        italic,
+        highlight,
+      })}
     />
   );
 });
