@@ -1,5 +1,5 @@
 import { randomUUID } from 'expo-crypto';
-import React, { FC } from 'react';
+import { FC } from 'react';
 import {
   Circle,
   Defs,
@@ -86,6 +86,59 @@ const MilkBottlePlus2Icon: FC<SvgProps> = (props) => {
 MilkBottleIcon.displayName = 'MilkBottleIcon';
 MilkBottlePlus2Icon.displayName = 'MilkBottlePlus2Icon';
 export { MilkBottleIcon, MilkBottlePlus2Icon };
+
+const BabyBottleIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={rest.stroke || color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M12,5l-.81-2.03c-.12-.3-.03-.63.24-.86.19-.16.94-.16,1.13,0,.27.22.36.56.24.86l-.81,2.03Z" />
+      <Path d="M6,13.08v-1.11c0-1.23.9-2.23,2-2.23h7.99c1.11,0,2,1,2,2.23v7.8c0,1.23-.9,2.23-2,2.23h-7.99c-1.11,0-2-1-2-2.23v-6.8" />
+      <Path d="M7.8,9.74v-2.05c0-1.12.99-2.04,2.2-2.04h4c1.22,0,2.21.91,2.21,2.04v2.05H7.8Z" />
+      <Line x1="6" y1="13.83" x2="10" y2="13.83" />
+      <Line x1="6" y1="17.91" x2="10" y2="17.91" />
+      <Rect id="frame" fill="none" stroke="none" />
+    </Svg>
+  );
+};
+
+BabyBottleIcon.displayName = 'BabyBottleIcon';
+export { BabyBottleIcon };
+
+const BabyBottlePlusIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={rest.stroke || color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M10,5l-.81-2.03c-.12-.3-.03-.63.24-.86.19-.16.94-.16,1.13,0,.27.22.36.56.24.86l-.81,2.03Z" />
+      <Path d="M4,12.97v6.8c0,1.23.9,2.23,2,2.23h8" />
+      <Path d="M4,13.08v-1.11c0-1.23.9-2.23,2-2.23h7.99c1.11,0,2,1,2,2.23v2.03" />
+      <Path d="M5.8,9.74v-2.05c0-1.12.99-2.04,2.2-2.04h4c1.22,0,2.21.91,2.21,2.04v2.05H5.8Z" />
+      <Line x1="18" y1="17" x2="18" y2="21" />
+      <Line x1="20" y1="19" x2="16" y2="19" />
+      <Line x1="4" y1="13.83" x2="8" y2="13.83" />
+      <Line x1="4" y1="17.91" x2="8" y2="17.91" />
+      <Rect id="frame" fill="none" stroke="none" />
+    </Svg>
+  );
+};
+
+BabyBottlePlusIcon.displayName = 'BabyBottlePlusIcon';
+export { BabyBottlePlusIcon };
 
 const UserLocationIcon: FC<SvgProps> = (props) => {
   const { color = 'currentColor', strokeWidth = 1, ...rest } = props;
@@ -268,3 +321,31 @@ const HandBottle2Icon: FC<SvgProps> = (props) => {
 
 HandBottle2Icon.displayName = 'HandBottle';
 export { HandBottle2Icon };
+
+const HandBabyBottleIcon: FC<SvgProps> = (props) => {
+  const { color = 'currentColor', strokeWidth = 2, ...rest } = props;
+  return (
+    <Svg
+      {...rest}
+      viewBox="0 0 24 24"
+      strokeWidth={strokeWidth}
+      fill="none"
+      stroke={props.stroke || color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M10.2,8v-1.5c0-.83.66-1.5,1.46-1.5h2.66c.81,0,1.47.67,1.47,1.5v1.5h-5.6Z" />
+      <Path d="M11.03,15.52h1.85c1.02,0,1.85-.83,1.85-1.85s-.83-1.85-1.85-1.85h-2.78c-.56,0-1.02.19-1.3.56l-5.19,5" />
+      <Path d="M13,3.99l-.54-1.35c-.08-.2-.02-.42.16-.57.13-.11.63-.11.75,0,.18.15.24.37.16.57l-.54,1.35Z" />
+      <Path d="M2.69,16.44l5.56,5.56" />
+      <Path d="M7.33,21.07l1.48-1.3c.28-.37.74-.56,1.3-.56h3.7c1.02,0,1.94-.37,2.59-1.11l4.26-4.07c.74-.7.78-1.88.07-2.62s-1.88-.78-2.62-.07l-3.89,3.61" />
+      <Path d="M9,12v-2.7" />
+      <Path d="M9,9.38v-.46c0-.51.6-.92,1.34-.92h5.33c.74,0,1.34.41,1.34.92v.46" />
+      <Line x1="17" y1="9" x2="17" y2="12" />
+      <Rect id="frame" fill="none" stroke="none" />
+    </Svg>
+  );
+};
+
+HandBabyBottleIcon.displayName = 'HandBabyBottleIcon';
+export { HandBabyBottleIcon };
