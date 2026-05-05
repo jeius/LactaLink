@@ -17,17 +17,19 @@ import {
   FormControlLabelText,
 } from '@/components/ui/form-control';
 import { Icon } from '@/components/ui/icon';
+import DeliveryForm, {
+  DeliveryFormProps,
+} from '@/features/donation&request/components/forms/DeliveryForm';
 import {
   DeliveryCreateSchema,
   DonationCreateSchema,
   RequestCreateSchema,
 } from '@lactalink/form-schemas';
 import { AlertCircleIcon, TruckIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Control, useController } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DeliveryCard } from '../cards/DeliveryCard';
-import { DeliveryForm, DeliveryFormProps } from '../forms/donation-request/DeliveryForm';
 
 interface DeliveryFieldProps extends DeliveryFormProps {
   control: Control<DonationCreateSchema | RequestCreateSchema>;
@@ -42,15 +44,15 @@ export function DeliveryField({ control, ...props }: DeliveryFieldProps) {
     fieldState: { error },
   } = useController({ control, name: 'delivery', defaultValue: undefined });
 
+  function handleClose() {
+    setOpen(false);
+    onBlur();
+  }
+
   function handleChange(data: DeliveryCreateSchema) {
     onChange?.(data);
     props.onChange?.(data);
     handleClose();
-  }
-
-  function handleClose() {
-    setOpen(false);
-    onBlur();
   }
 
   return (
