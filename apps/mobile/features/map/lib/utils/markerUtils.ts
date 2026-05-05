@@ -101,11 +101,21 @@ export function markersReducer(
   return new Map(sortedEntries);
 }
 
-export function createDirectionsPolyline(coordinates: Coordinates[]): RNPolyline {
+/**
+ * Creates a polyline object for rendering a route on the map.
+ *
+ * @param coordinates - An array of coordinates representing the route.
+ * @param options - Optional styling options for the polyline.
+ * @returns An `RNPolyline` object ready for rendering.
+ */
+export function createDirectionsPolyline(
+  coordinates: Coordinates[],
+  { color, id }: { color?: string; id: string } = { id: 'directions-polyline' }
+): RNPolyline {
   return {
-    id: 'directions-polyline',
+    id: id,
     coordinates: coordinates,
-    color: '#2563eb',
+    color: color || '#2563eb',
     width: 6,
     lineCap: 'round',
     lineJoin: 'round',
