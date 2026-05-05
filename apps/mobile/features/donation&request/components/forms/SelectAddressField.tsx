@@ -29,12 +29,20 @@ interface Props<
   selections?: Address[];
   isLoading?: boolean;
   isDisabled?: boolean;
+  isRequired?: boolean;
 }
 
 export default function SelectAddressField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({ control, name, selections: addresses, isDisabled, isLoading }: Props<TFieldValues, TName>) {
+>({
+  control,
+  name,
+  selections: addresses,
+  isDisabled,
+  isLoading,
+  isRequired,
+}: Props<TFieldValues, TName>) {
   const { data: meUser } = useMeUser();
 
   const selections = useMemo(() => {
@@ -52,6 +60,7 @@ export default function SelectAddressField<
       isInvalid={invalid}
       error={error}
       isDisabled={isDisabled}
+      isRequired={isRequired}
       contentPosition="last"
       label={'Address'}
       helperText={'Select the address of transaction'}
