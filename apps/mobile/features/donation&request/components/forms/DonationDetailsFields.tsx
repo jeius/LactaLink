@@ -6,9 +6,8 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack, VStackProps } from '@/components/ui/vstack';
 import { COLLECTION_MODES, STORAGE_TYPES } from '@lactalink/enums';
-import { DonationCreateSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { ClipboardPenIcon } from 'lucide-react-native';
-import React from 'react';
 import { Control } from 'react-hook-form';
 
 interface DonationDetailsFieldsProps extends VStackProps {

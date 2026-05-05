@@ -12,10 +12,11 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { VStack } from '@/components/ui/vstack';
 import { useAddMilkBagMutation } from '@/features/donation&request/hooks/mutations';
-import { DonationSchema } from '@lactalink/form-schemas';
+import { MilkBagSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { AlertCircleIcon, MilkIcon, PlusIcon } from 'lucide-react-native';
-import React from 'react';
-import { useController, useFormContext } from 'react-hook-form';
+import { useState } from 'react';
+import { Control, useController } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import MilkBagFormSheet from './MilkBagFormSheet';
@@ -23,24 +24,32 @@ import MilkBagItem from './MilkBagItem';
 
 const AnimatedButton = Animated.createAnimatedComponent(Button);
 
-interface CreateMilkBagsFieldProps extends Pick<ViewProps, 'style' | 'className'> {
+interface MilkBagsFieldProps extends Pick<ViewProps, 'style' | 'className'> {
   isLoading?: boolean;
   isDisabled?: boolean;
+  control: Control<DonationCreateSchema>;
 }
 
 export default function MilkBagsField({
   isLoading,
   isDisabled,
+  control,
   ...props
-}: CreateMilkBagsFieldProps) {
-  const { control } = useFormContext<DonationSchema>();
-
+}: MilkBagsFieldProps) {
   const {
     field: { value: milkbags, onChange },
     fieldState: { error, invalid },
   } = useController({ name: 'details.bags', control });
 
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedMilkBag, setSelectedMilkBag] = useState<MilkBagSchema | null>(null);
+
   const { mutate: addMilkBag } = useAddMilkBagMutation(milkbags, onChange);
+
+  function handleOnSheetClose() {
+    setIsSheetOpen(false);
+    setSelectedMilkBag(null);
+  }
 
   return (
     <FormControl isInvalid={invalid} {...props}>
@@ -69,27 +78,35 @@ export default function MilkBagsField({
             value={bag}
             isLoading={isLoading}
             isDisabled={isDisabled}
+            onPress={() => {
+              setSelectedMilkBag(bag);
+              setIsSheetOpen(true);
+            }}
             onDuplicate={addMilkBag}
             disableRemove={milkbags.length <= 1}
           />
         ))}
       </VStack>
 
+      <AnimatedButton
+        layout={LinearTransition}
+        isDisabled={isDisabled}
+        size="sm"
+        variant="outline"
+        action="positive"
+        className="mt-5"
+        onPress={() => setIsSheetOpen(true)}
+      >
+        <ButtonIcon as={PlusIcon} />
+        <ButtonText>Add Milk Bag</ButtonText>
+      </AnimatedButton>
+
       <MilkBagFormSheet
-        trigger={(props) => (
-          <AnimatedButton
-            {...props}
-            layout={LinearTransition}
-            isDisabled={isDisabled}
-            size="sm"
-            variant="outline"
-            action="positive"
-            className="mt-5"
-          >
-            <ButtonIcon as={PlusIcon} />
-            <ButtonText>Add Milk Bag</ButtonText>
-          </AnimatedButton>
-        )}
+        isOpen={isSheetOpen}
+        onClose={handleOnSheetClose}
+        milkbags={milkbags}
+        onChange={onChange}
+        selectedMilkBag={selectedMilkBag}
       />
     </FormControl>
   );

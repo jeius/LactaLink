@@ -16,9 +16,7 @@ import { displayVolume } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 import { CopyIcon, MilkIcon, MinusIcon } from 'lucide-react-native';
-import React from 'react';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -30,6 +28,7 @@ import Animated, {
 interface ListItemProps {
   isLoading?: boolean;
   isDisabled?: boolean;
+  onPress?: () => void;
   onDuplicate?: (data: MilkBagSchema) => void;
   value: MilkBagSchema;
   disableRemove?: boolean;
@@ -37,12 +36,12 @@ interface ListItemProps {
 
 export default function MilkBagItem({
   disableRemove,
+  onPress,
   onDuplicate,
   isLoading,
   isDisabled,
   value: data,
 }: ListItemProps) {
-  const router = useRouter();
   const containerRef = useAnimatedRef<Animated.View>();
 
   const { collectedAt, volume, id } = data;
@@ -61,10 +60,6 @@ export default function MilkBagItem({
   });
 
   const isPending = isDeleting || isTemp;
-
-  function handleEdit() {
-    router.push({ pathname: '/donations/create/new-milkbag', params: { id } });
-  }
 
   function handleDuplicate() {
     onDuplicate?.({ ...data, id: createTempID() });
@@ -91,7 +86,7 @@ export default function MilkBagItem({
       </Animated.View>
 
       <Animated.View className={'flex-1'} entering={FadeInDown} exiting={FadeOutRight}>
-        <Pressable onPress={handleEdit} disabled={isDisabled}>
+        <Pressable onPress={onPress} disabled={isDisabled} className="overflow-hidden rounded-xl">
           <Card size="lg" variant="filled" className="relative flex-row gap-4 overflow-visible p-3">
             <HStack space="sm" className="flex-1">
               {isLoading ? (
@@ -122,7 +117,7 @@ export default function MilkBagItem({
             <Button
               variant="ghost"
               action="default"
-              className="h-fit w-fit self-center rounded-none p-1"
+              className="h-fit w-fit self-center rounded p-2"
               isDisabled={isDisabled}
               hitSlop={8}
               onPress={handleDuplicate}
