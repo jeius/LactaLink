@@ -409,6 +409,15 @@ export class TransactionService implements ITransactionService {
       });
     }
   }
+
+  async upsertDeliveryUpdate(
+    transaction: Transaction,
+    markedBy: User,
+    status: DeliveryUpdate['status']
+  ): Promise<Transaction> {
+    await this.updateDeliveryStatus(transaction, markedBy, status);
+    return this.getTransaction(transaction.id, 3);
+  }
   // #endregion
 
   // #region Completion Methods

@@ -409,6 +409,30 @@ export class TransactionService implements ITransactionService {
       });
     }
   }
+
+  /**
+   * Updates the caller's delivery status and returns the refreshed transaction.
+   *
+   * @description
+   * Unlike {@link updateDeliveryStatus} (which returns only a `DeliveryUpdate`), this
+   * method re-fetches the full transaction after the backend hook auto-transitions its
+   * status, so the frontend immediately reflects the new state without a separate query.
+   *
+   * Use this for the delivery execution CTA flow on mobile.
+   *
+   * @param transaction - The transaction document
+   * @param markedBy - User performing the status update
+   * @param status - New delivery update status to set
+   * @returns The refreshed transaction document at depth 3
+   */
+  async upsertDeliveryUpdate(
+    transaction: Transaction,
+    markedBy: User,
+    status: DeliveryUpdate['status']
+  ): Promise<Transaction> {
+    await this.updateDeliveryStatus(transaction, markedBy, status);
+    return this.getTransaction(transaction.id, 3);
+  }
   // #endregion
 
   // #region Completion Methods

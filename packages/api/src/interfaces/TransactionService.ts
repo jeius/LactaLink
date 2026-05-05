@@ -161,6 +161,23 @@ export interface ITransactionService {
   ): Promise<DeliveryUpdate>;
 
   /**
+   * Updates the caller's delivery status and returns the refreshed transaction.
+   * Re-fetches the transaction after the backend hook auto-transitions its status,
+   * so the frontend immediately reflects the new state without a separate query.
+   * Use this for the delivery execution CTA flow on mobile.
+   *
+   * @param transaction - The transaction document
+   * @param markedBy - User performing the status update
+   * @param status - New delivery update status to set
+   * @returns The refreshed transaction document
+   */
+  upsertDeliveryUpdate(
+    transaction: Transaction,
+    markedBy: User,
+    status: DeliveryUpdate['status']
+  ): Promise<Transaction>;
+
+  /**
    * Completes the transaction (recipient verifies receipt and quality).
    * Only the recipient can complete a transaction.
    * @param transaction - The transaction document
