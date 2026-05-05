@@ -1,4 +1,9 @@
-import { DONATION_PIN, HOSPITAL_PIN, MILK_BANK_PIN, REQUEST_PIN } from '@/lib/constants/markerSvgs';
+import {
+  DONATION_MAP_PIN,
+  HOSPITAL_PIN,
+  MILK_BANK_PIN,
+  REQUEST_MAP_PIN,
+} from '@/lib/constants/markerSvgs';
 import { getCurrentCoordinates } from '@/lib/stores/locationStore';
 import { createMarkerId } from '@/lib/utils/markerUtils';
 import { Coordinates } from '@lactalink/types';
@@ -22,8 +27,8 @@ export type MarkersAction = {
 const ICON_SIZE = 48;
 
 const MARKER_SVG: Record<MapMarker['type'], string> = {
-  donations: DONATION_PIN,
-  requests: REQUEST_PIN,
+  donations: DONATION_MAP_PIN,
+  requests: REQUEST_MAP_PIN,
   hospitals: HOSPITAL_PIN,
   milkBanks: MILK_BANK_PIN,
 };
