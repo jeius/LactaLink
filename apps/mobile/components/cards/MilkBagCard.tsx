@@ -7,7 +7,7 @@ import { displayVolume } from '@lactalink/utilities';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { formatDate } from '@lactalink/utilities/formatters';
 import { ImageIcon } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { SingleImageViewer } from '../ImageViewer';
 import { Box } from '../ui/box';
 import { Card, CardProps } from '../ui/card';
@@ -86,18 +86,20 @@ function CardContent({
 
   if (orientation === 'horizontal') {
     return (
-      <HStack className="items-stretch">
-        <SingleImageViewer
-          image={image}
-          disabled={disableViewThumbnail}
-          style={{ height: '100%', width: 96 }}
-          fallback={
-            <Box className="flex-1 items-center justify-center">
-              <Icon as={ImageIcon} size="2xl" className="text-primary-500" />
-            </Box>
-          }
-        />
-        <VStack space="xs" className="justify-center px-3 py-2">
+      <HStack className="flex-1 items-stretch">
+        <Box style={{ width: 96 }} className="bg-background-100">
+          <SingleImageViewer
+            image={image}
+            disabled={disableViewThumbnail}
+            fallback={
+              <Box className="flex-1 items-center justify-center">
+                <Icon as={ImageIcon} size="2xl" className="text-primary-500" />
+              </Box>
+            }
+          />
+        </Box>
+
+        <VStack space="xs" className="flex-1 justify-center px-3 py-2">
           <Text size="lg" className="font-JakartaExtraBold">
             {code}
           </Text>
