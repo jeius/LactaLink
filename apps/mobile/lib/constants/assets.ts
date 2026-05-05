@@ -90,4 +90,6 @@ export const LOTTIE_ASSETS = {
   areaMap: require('@/assets/lottie/area_map.zip'),
   success: require('@/assets/lottie/success.zip'),
   receivePackage: require('@/assets/lottie/receive_order.zip'),
+  confirmed: require('@/assets/lottie/confirmed.zip'),
+  cancelled: require('@/assets/lottie/cancelled.zip'),
 };
