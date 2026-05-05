@@ -11,14 +11,14 @@ export function useDirectionsQuery(
     destination: Coordinates | undefined | null;
     travelMode?: TravelMode;
   },
-  options: { enabled?: boolean } = { enabled: true }
+  options: { enabled?: boolean; id?: string } = { enabled: true }
 ) {
   const { origin, destination, travelMode = 'DRIVE' } = params;
-  const { enabled } = options;
+  const { enabled, id } = options;
 
   const { data, ...query } = useQuery({
     enabled: enabled,
-    queryKey: [...QUERY_KEYS.DIRECTIONS, origin, destination, travelMode].filter(Boolean),
+    queryKey: [...QUERY_KEYS.DIRECTIONS, origin, destination, travelMode, id].filter(Boolean),
     queryFn: async () => {
       if (!origin || !destination) return null;
       return getDirectionsService().getDirections({
