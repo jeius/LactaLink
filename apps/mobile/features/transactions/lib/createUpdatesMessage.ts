@@ -1,4 +1,3 @@
-import { getMeUser } from '@/lib/stores/meUserStore';
 import { isMeProfile } from '@/lib/utils/isMeUser';
 import {
   DELIVERY_DETAILS_STATUS,
@@ -7,242 +6,181 @@ import {
   TRANSACTION_STATUS,
 } from '@lactalink/enums';
 import { DeliveryMode } from '@lactalink/types';
-import { DeliveryUpdate, Transaction } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractName } from '@lactalink/utilities/extractors';
-import { extractDeliveryDetail, extractDeliveryPlan, extractDeliveryUpdate } from './extractors';
-import { getOtherParty } from './getOtherParty';
-
-type CreateMsgParams = {
-  deliveryUpdate: DeliveryUpdate;
-  otherPartyName: string;
-  method: DeliveryMode;
-};
+import {
+  DeliveryDetail,
+  DeliveryUpdate,
+  Transaction,
+} from '@lactalink/types/payload-generated-types';
+import { isEqualProfiles } from '@lactalink/utilities/checkers';
+import { extractName } from '@lactalink/utilities/extractors';
+import { extractDeliveryDetail, extractDeliveryPlan } from './extractors';
+import { getOtherParty, getOtherPartyDeliveryUpdates } from './getOtherParty';
 
 const PlanStatus = DELIVERY_DETAILS_STATUS;
-const TransactionStatus = TRANSACTION_STATUS;
+const TxnStatus = TRANSACTION_STATUS;
 const Updates = DELIVERY_UPDATES;
+const Methods = DELIVERY_OPTIONS;
 
-// Constants for common messages
-const MESSAGES = {
-  NO_DELIVERY: 'Delivery has been scheduled but details are missing.',
-  MILK_PREPARATION: {
-    SENDER: 'Please prepare the milk as soon as possible.',
-    RECIPIENT: (name: string) => `Please wait for ${name} to prepare the milk.`,
-  },
-  SAFETY: {
-    STAY_SAFE: 'Please stay safe!',
-    CHECK_IN: (name: string) => `You may want to check in with ${name} for updates.`,
-  },
-  COMPLETION: {
-    SUCCESS: 'Thank you for completing the transaction successfully!',
-    THANK_YOU: (name: string) => `${name}, appreciates the milk received. Thank you!`,
-  },
-  ISSUES: {
-    CANCELLED: `The transaction has been cancelled.`,
-    FAILED: (otherPartyName: string, method: DeliveryMode) => {
-      switch (method) {
-        case 'DELIVERY':
-          return `${otherPartyName} was unable to deliver the milk. Please contact them for further information.`;
-        case 'PICKUP':
-          return `${otherPartyName} was unable to pick up the milk. Please contact them for further information.`;
-        case 'MEETUP':
-        default:
-          return `${otherPartyName} was unable to meet up. Please contact them for further information.`;
-      }
-    },
-    DELAYED: (name: string) =>
-      `${name} is experiencing a delay. Please check in with them for updates.`,
-  },
-} as const;
-
+/**
+ * Generates a message describing the other party's delivery updates.
+ *
+ * Shows the other party's journey and actions in sender and recipient perspectives.
+ */
 export function createUpdatesMessage(transaction: Transaction): string {
-  const meUser = getMeUser();
-
   const confirmedDelivery = extractDeliveryDetail(transaction);
   const deliveryPlan = extractDeliveryPlan(transaction);
 
-  const otherParty = getOtherParty(transaction);
-  const otherPartyName = extractName({ profile: otherParty }) ?? 'Unknown User';
-  const otherPartyDoc = extractCollection(otherParty.value);
+  const otherPartyProfile = getOtherParty(transaction);
+  const otherPartyName = extractName({ profile: otherPartyProfile });
 
-  const myUpdate = meUser ? extractDeliveryUpdate(transaction, meUser) : null;
-  const otherPartyUpdate = otherPartyDoc?.owner
-    ? extractDeliveryUpdate(transaction, otherPartyDoc.owner)
-    : null;
+  const isIndividual = otherPartyProfile.relationTo === 'individuals';
+  const isSender = isEqualProfiles(otherPartyProfile, transaction.sender);
+  const name =
+    otherPartyName || (isIndividual ? (isSender ? 'Donor' : 'Recipient') : 'Organization');
+  const defaultMessage = `Feel free to check in with ${name} for updates.`;
 
-  const isMeSender = isMeProfile(transaction.sender);
-  const isMeRecipient = isMeProfile(transaction.recipient);
-
-  const defaultMessage = `No updates from ${otherPartyName} yet.`;
-
-  if (confirmedDelivery) {
-    const transactionStatus = transaction.status;
-    const deliveryMode = confirmedDelivery.method;
-
-    switch (transactionStatus) {
-      case TransactionStatus.DELIVERED.value:
-
-      case TransactionStatus.COMPLETED.value:
-        return isMeSender
-          ? MESSAGES.COMPLETION.THANK_YOU(otherPartyName)
-          : MESSAGES.COMPLETION.SUCCESS;
-
-      case TransactionStatus.CANCELLED.value: {
-        let cancellerName: string | null = null;
-
-        if (myUpdate?.status === Updates.CANCELLED.value) {
-          cancellerName = 'You';
-        } else if (otherPartyUpdate?.status === Updates.CANCELLED.value) {
-          cancellerName = otherPartyName;
-        }
-
-        return cancellerName
-          ? `${cancellerName} have cancelled the transaction. You may want to reach out to ${otherPartyName} for more details.`
-          : MESSAGES.ISSUES.CANCELLED;
-      }
-
-      default:
-        return isMeSender
-          ? myUpdate
-            ? createSenderUpdates({
-                deliveryUpdate: myUpdate,
-                method: deliveryMode,
-                otherPartyName,
-              })
-            : defaultMessage
-          : otherPartyUpdate
-            ? createRecipientUpdates({
-                deliveryUpdate: otherPartyUpdate,
-                method: deliveryMode,
-                otherPartyName,
-              })
-            : defaultMessage;
+  if (transaction.status === TxnStatus.PENDING.value) {
+    if (deliveryPlan) {
+      return createDeliveryPlanMessage({ deliveryPlan, name });
     }
-  } else if (deliveryPlan) {
-    const status = deliveryPlan.status;
-    const isMeProposer = isMeProfile(deliveryPlan.proposedBy);
-
-    switch (status) {
-      case PlanStatus.PENDING.value:
-        return isMeProposer
-          ? `You proposed a delivery plan. Please wait for ${otherPartyName} to respond.`
-          : `${otherPartyName} proposed a delivery plan. Please respond to it.`;
-
-      case PlanStatus.REJECTED.value:
-        return isMeProposer
-          ? `${otherPartyName} rejected your proposal. You may propose another delivery plan.`
-          : `You rejected ${otherPartyName}'s proposal. You may propose another delivery plan.`;
-
-      default:
-        return isMeProposer
-          ? `${otherPartyName} has agreed to your proposal.`
-          : `You have agreed to ${otherPartyName}'s proposal.`;
-    }
-  } else {
-    return defaultMessage;
+    return 'It looks like there is no delivery plan proposed yet. You can propose one to get the process started.';
   }
+
+  const deliveryMode = confirmedDelivery?.method;
+  const deliveryUpdate = getOtherPartyDeliveryUpdates(transaction);
+
+  return deliveryUpdate && deliveryMode
+    ? createOtherPartyUpdatesMessage({
+        name,
+        deliveryUpdate,
+        deliveryMode,
+        isSender: isSender,
+      })
+    : defaultMessage;
 }
 
-function createSenderUpdates({ deliveryUpdate, otherPartyName, method }: CreateMsgParams): string {
-  const { status } = deliveryUpdate;
-  const deliveryMode = getDeliveryModeLabel(method, true);
-
-  switch (status) {
-    case Updates.PREPARING.value:
-      return `You are preparing the milk for ${otherPartyName}.`;
-
-    case Updates.ON_THE_WAY.value:
-      return `You are on the way to the ${deliveryMode} location.`;
-
-    case Updates.PICKUP_READY.value:
-      return `The milk is ready for pickup by ${otherPartyName}.`;
-
-    case Updates.ARRIVED.value:
-      return `You have arrived at the ${deliveryMode} location.`;
-
-    case Updates.DELIVERED.value: {
-      switch (method) {
-        case 'MEETUP':
-          return `You have handed over the milk at the meetup location.`;
-        case 'PICKUP':
-          return `${otherPartyName} has picked up the milk.`;
-        case 'DELIVERY':
-        default:
-          return `You have delivered the milk.`;
-      }
-    }
-
-    case Updates.COMPLETED.value:
-      return MESSAGES.COMPLETION.THANK_YOU(otherPartyName);
-
-    case Updates.DELAYED.value:
-      return `You are experiencing a delay. Please inform ${otherPartyName}.`;
-
-    case Updates.CANCELLED.value:
-      return `You have cancelled the transaction. You may want to inform ${otherPartyName}.`;
-
-    case Updates.FAILED.value:
-      return `You were not able to continue the ${deliveryMode}. You may want to inform ${otherPartyName}.`;
-
-    case Updates.WAITING.value:
-    default:
-      return `You may now start preparing the milk for ${otherPartyName}.`;
-  }
-}
-
-function createRecipientUpdates({
+/**
+ * Generates a message of the other party's delivery updates.
+ *
+ * Shows the other party's journey and actions in sender and recipient perspectives.
+ *
+ * @param params.name - Name of the other party
+ * @param params.deliveryUpdate - Delivery update of the other party
+ * @param params.deliveryMode - Mode of the confirmed delivery details
+ * @param params.isSender - Set to true if the other party is a sender
+ * @returns A string message describing the other party's delivery updates
+ */
+export function createOtherPartyUpdatesMessage({
+  name,
   deliveryUpdate,
-  otherPartyName,
-  method,
-}: CreateMsgParams): string {
+  deliveryMode,
+  isSender,
+}: {
+  /** Name of the other party */
+  name: string;
+  /** Delivery Updates of the other party */
+  deliveryUpdate: DeliveryUpdate;
+  /** Mode of the confirmed delivery details */
+  deliveryMode: DeliveryMode;
+  /** Set to true if the other party is a sender*/
+  isSender: boolean;
+}): string {
   const { status } = deliveryUpdate;
-  const deliveryMode = getDeliveryModeLabel(method, true);
+
+  // Sender specific updates - focuses on the sender's journey and actions
+  if (isSender) {
+    switch (status) {
+      case Updates.WAITING.value:
+        return `${name} will prepare the milk soon. Please check in with them for updates.`;
+      case Updates.PREPARING.value:
+        return `${name} is preparing the milk, making sure it's in good condition for you.`;
+      case Updates.PICKUP_READY.value:
+        return deliveryMode === 'MEETUP'
+          ? `${name} has the milk ready. Head to the meetup location to receive it.`
+          : `${name} has the milk ready for pickup. Please head over to collect it.`;
+      case Updates.ON_THE_WAY.value:
+        return deliveryMode === 'MEETUP'
+          ? `${name} is on the way to the meetup location.`
+          : `${name} is on the way to deliver the milk.`;
+      case Updates.ARRIVED.value:
+        return deliveryMode === 'MEETUP'
+          ? `${name} has arrived at the meetup location. Please head there to receive the milk.`
+          : `${name} has arrived at the ${Methods[deliveryMode].label.toLowerCase()} location`;
+      case Updates.DELIVERED.value:
+        return deliveryMode === 'MEETUP'
+          ? `${name} has handed over the milk. Please confirm you received it.`
+          : `${name} has delivered the milk. Please confirm you received it.`;
+      case Updates.COMPLETED.value:
+        return `The transaction with ${name} has been completed. Thank you for using LactaLink!`;
+    }
+  }
 
   switch (status) {
-    case Updates.PREPARING.value:
-      return `${otherPartyName} is preparing the milk for you.`;
-
+    case Updates.WAITING.value: {
+      if (deliveryMode === 'DELIVERY') return `${name} is waiting for you to deliver the milk.`;
+      if (deliveryMode === 'PICKUP')
+        return `${name} is waiting for the milk to be available for pickup.`;
+      return `You may want to check in with ${name} for updates.`;
+    }
+    case Updates.PREPARING.value: {
+      if (deliveryMode === 'MEETUP')
+        return `${name} is preparing and will head to the meetup location soon.`;
+      if (deliveryMode === 'PICKUP') return `${name} is preparing to pick up the milk soon.`;
+      return `${name} is preparing to receive the milk soon.`;
+    }
     case Updates.ON_THE_WAY.value:
-      return `${otherPartyName} is on the way to the ${deliveryMode} location.`;
-
-    case Updates.PICKUP_READY.value:
-      return `The milk is now ready for pickup. You may collect it soon.`;
-
+      return deliveryMode === 'MEETUP'
+        ? `${name} is on the way to the meetup location.`
+        : `${name} is on the way to pickup the milk.`;
     case Updates.ARRIVED.value:
-      return `${otherPartyName} had arrived at the ${deliveryMode} location.`;
-
-    case Updates.DELIVERED.value: {
-      switch (method) {
-        case 'MEETUP':
-          return `${otherPartyName} has handed over the milk at the meetup location.`;
-        case 'PICKUP':
-          return `You have picked up the milk. Thank you for collecting it.`;
-        case 'DELIVERY':
-        default:
-          return `${otherPartyName} has delivered the milk at the location.`;
-      }
-    }
-
+      return deliveryMode === 'MEETUP'
+        ? `${name} has arrived at the meetup location. Please head there to handover the milk.`
+        : `${name} has arrived at the ${Methods[deliveryMode].label.toLowerCase()} location`;
+    case Updates.DELIVERED.value:
     case Updates.COMPLETED.value:
-      return MESSAGES.COMPLETION.SUCCESS;
-
+      return deliveryMode === 'PICKUP'
+        ? `${name} has picked-up the milk. Thank you for your contribution!`
+        : `${name} has received the milk. Thank you for your contribution!`;
     case Updates.DELAYED.value:
-      return `${otherPartyName} is experiencing a delay. Please check in with them for updates.`;
-
+      return `${name} is experiencing a delay. Please check in with them for updates.`;
     case Updates.CANCELLED.value:
-      return `${otherPartyName} has cancelled the transaction. You may want to reach out to them for more details.`;
-
-    case Updates.FAILED.value: {
-      return MESSAGES.ISSUES.FAILED(otherPartyName, method);
-    }
-
-    case Updates.WAITING.value:
-    default:
-      return `${otherPartyName} is currently busy. Please wait for their updates.`;
+      return `${name} has cancelled the transaction.`;
+    case Updates.FAILED.value:
+      return `${name} was unable to complete the transaction. Please reach out to them for more information.`;
   }
+
+  return `Feel free to check in with ${name} for updates.`;
 }
 
-function getDeliveryModeLabel(mode: DeliveryMode, lowercase = false): string {
-  const label = DELIVERY_OPTIONS[mode]?.label || 'delivery';
-  return lowercase ? label.toLowerCase() : label;
+/**
+ * Generates a message describing the delivery plan details proposed.
+ *
+ * @param params.name - Name of the other party
+ * @param params.deliveryPlan - The proposed delivery plan details
+ * @returns A string message describing the delivery plan details proposed
+ */
+export function createDeliveryPlanMessage({
+  name,
+  deliveryPlan,
+}: {
+  name: string;
+  deliveryPlan: DeliveryDetail;
+}): string {
+  const status = deliveryPlan.status;
+  const isMeProposer = isMeProfile(deliveryPlan.proposedBy);
+
+  switch (status) {
+    case PlanStatus.PENDING.value:
+      return isMeProposer
+        ? `You proposed a delivery plan to ${name}. Please wait for them to respond.`
+        : `${name} proposed a delivery plan. Please respond to it.`;
+    case PlanStatus.REJECTED.value:
+      return isMeProposer
+        ? `${name} rejected your delivery plan proposal. You may propose another plan.`
+        : `You rejected ${name}'s delivery plan proposal. You may propose another plan.`;
+    case PlanStatus.ACCEPTED.value:
+      return isMeProposer
+        ? `${name} has accepted your delivery plan proposal.`
+        : `You have accepted ${name}'s delivery plan proposal.`;
+  }
 }

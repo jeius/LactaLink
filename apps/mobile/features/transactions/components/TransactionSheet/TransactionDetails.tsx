@@ -11,10 +11,10 @@ import { extractCollection, extractDisplayName } from '@lactalink/utilities/extr
 import { isDonation } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { isString } from 'lodash';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTransactionContext } from '../context';
 
-export default function TransactionDetails({ space = 'md', ...props }: VStackProps) {
+export default function TransactionDetails({ space = 'sm', ...props }: VStackProps) {
   const transaction = useTransactionContext();
 
   const milkBags = useMemo(() => extractCollection(transaction.milkBags), [transaction.milkBags]);
@@ -35,9 +35,6 @@ export default function TransactionDetails({ space = 'md', ...props }: VStackPro
 
   return (
     <VStack space={space} {...props}>
-      <Text bold size="lg" className="mb-2">
-        Transaction Details
-      </Text>
       {Object.entries(details).map(([key, value], idx) =>
         value === null ? null : isString(value) ? (
           <HStack key={idx} space="sm" className="items-center">

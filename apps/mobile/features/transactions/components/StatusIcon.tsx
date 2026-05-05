@@ -6,24 +6,25 @@ import LottieView, { AnimationObject } from 'lottie-react-native';
 
 const ANIMATED_ICON: Record<Transaction['status'], { source: AnimationObject }> = {
   PENDING: { source: getLottieAsset('timeLoader') },
-  CONFIRMED: { source: getLottieAsset('orderPacked') },
-  COMPLETED: { source: getLottieAsset('success') },
-  CANCELLED: { source: getLottieAsset('success') },
+  CONFIRMED: { source: getLottieAsset('confirmed') },
+  PREPARING: { source: getLottieAsset('orderPacked') },
+  COMPLETED: { source: getLottieAsset('confirmed') },
+  CANCELLED: { source: getLottieAsset('cancelled') },
   DELIVERED: { source: getLottieAsset('receivePackage') },
   READY_FOR_PICKUP: { source: getLottieAsset('receivePackage') },
   IN_TRANSIT: { source: getLottieAsset('areaMap') },
-  FAILED: { source: getLottieAsset('success') },
+  FAILED: { source: getLottieAsset('cancelled') },
 };
 
 const statusBadgeStyle = tva({
-  base: 'h-20 w-20 items-center justify-center rounded-full border-4 border-primary-500 bg-primary-0',
+  base: 'h-20 w-20 items-center justify-center rounded-full border-4 border-primary-500 bg-typography-50',
 });
 
 interface StatusBadgeProps extends BoxProps {
   status: Transaction['status'];
 }
 
-export function TransactionStatusBadge({ status, className, ...props }: StatusBadgeProps) {
+export function StatusIcon({ status, className, ...props }: StatusBadgeProps) {
   return (
     <Box {...props} className={statusBadgeStyle({ className })}>
       <LottieView

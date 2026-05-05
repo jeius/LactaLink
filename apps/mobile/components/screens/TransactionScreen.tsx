@@ -1,5 +1,5 @@
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
@@ -16,11 +16,15 @@ import MarkReadTransaction from '@/features/transactions/components/MarkReadTran
 import { TransactionSheet } from '@/features/transactions/components/TransactionSheet';
 import TransactionStatusCard from '@/features/transactions/components/TransactionStatusCard';
 import { useTransaction } from '@/features/transactions/hooks/queries';
+import { useDeliveryLocationChannel } from '@/features/transactions/hooks/useDeliveryLocationChannel';
+import { useTransactionMapMarkers } from '@/features/transactions/hooks/useTransactionMapMarkers';
 import { createUpdatesMessage } from '@/features/transactions/lib/createUpdatesMessage';
 import { extractDeliveryDetail } from '@/features/transactions/lib/extractors';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { getColor } from '@/lib/colors';
-import { DELIVERY_OPTIONS, TRANSACTION_STATUS } from '@lactalink/enums';
+import { TRANSACTION_STATUS } from '@lactalink/enums';
 import { ErrorSearchParams } from '@lactalink/types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { Layout } from '@react-navigation/elements';
 import { StyleSheet } from 'react-native';
 import { useWindowDimensions } from 'react-native-keyboard-controller';
@@ -32,6 +36,12 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const ACTIVE_TXN_STATUSES: string[] = [
+  TRANSACTION_STATUS.READY_FOR_PICKUP.value,
+  TRANSACTION_STATUS.IN_TRANSIT.value,
+  TRANSACTION_STATUS.DELIVERED.value,
+];
 
 function useAnimStyles(scrollY: SharedValue<number>, cardHeight: SharedValue<number>) {
   const screen = useWindowDimensions();
@@ -75,6 +85,18 @@ export default function TransactionScreen() {
 
   const { data, isLoading, error } = useTransaction(id);
 
+  const deliveryDetail = data ? extractDeliveryDetail(data) : null;
+
+  const { data: meUser } = useMeUser();
+  const isActiveDelivery = !!data && ACTIVE_TXN_STATUSES.includes(data.status) && !!deliveryDetail;
+  const otherPartyLocation = useDeliveryLocationChannel(
+    data?.id,
+    extractID(meUser!),
+    isActiveDelivery
+  );
+
+  const mapMarkers = useTransactionMapMarkers(data, isActiveDelivery ? otherPartyLocation : null);
+
   if (error) {
     const params: ErrorSearchParams = {
       title: 'Transaction Not Found',
@@ -88,12 +110,7 @@ export default function TransactionScreen() {
     return <LoadingSpinner />;
   }
 
-  const deliveryDetail = extractDeliveryDetail(data);
-
-  const title = deliveryDetail
-    ? DELIVERY_OPTIONS[deliveryDetail.method].label
-    : TRANSACTION_STATUS[data.status].label;
-
+  const title = TRANSACTION_STATUS[data.status].label;
   const subtitle = createUpdatesMessage(data);
 
   return (
@@ -103,7 +120,7 @@ export default function TransactionScreen() {
       <Stack.Screen options={{ contentStyle: { backgroundColor: getColor('background', '0') } }} />
 
       <SafeArea safeTop={false} className="items-stretch bg-background-0">
-        <MapView mapPadding={{ top: 80, bottom: 164, left: 4, right: 4 }}>
+        <MapView mapPadding={{ top: 80, bottom: 164, left: 4, right: 4 }} markers={mapMarkers}>
           <VStack className="flex-1">
             <Animated.View className="absolute inset-x-0" style={[animatedCardStyle]}>
               <Box className="px-5">
