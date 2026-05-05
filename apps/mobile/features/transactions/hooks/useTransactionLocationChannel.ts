@@ -1,6 +1,6 @@
 import { useCurrentCoordinates } from '@/lib/stores/locationStore';
 import { supabase } from '@/lib/supabase';
-import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
+import { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect, useRef, useState } from 'react';
 import { RNLatLng as LatLng } from 'react-native-google-maps-plus';
 
@@ -24,29 +24,49 @@ type LocationPayload = {
  * Location sharing is opt-in: pass `enabled = false` to disable it (e.g., for terminal
  * transaction states or when no delivery detail is present).
  *
- * @param transactionId - The transaction ID used to namespace the channel
- * @param myUserId - The current user's ID (used to filter out self-broadcasts)
- * @param enabled - Whether to start broadcasting/subscribing (default: true)
- * @param broadcastIntervalMs - How often to broadcast own location in ms (default: 5000)
+ * @param params.transactionId - The transaction ID used to namespace the channel
+ * @param params.myUserId - The current user's ID (used to filter out self-broadcasts)
+ * @param params.enabled - Whether to start broadcasting/subscribing (default: true)
+ * @param params.broadcastIntervalMs - How often to broadcast own location in ms (default: 5000)
  * @returns The other party's last known coordinates, or `null`
  */
-export function useDeliveryLocationChannel(
-  transactionId: string | undefined,
-  myUserId: string,
+export function useTransactionLocationChannel({
+  transactionId,
+  myUserId,
   enabled = true,
-  broadcastIntervalMs = 5000
-): LatLng | null {
+  broadcastIntervalMs = 10000, // 10 seconds
+}: {
+  transactionId: string | undefined;
+  myUserId: string;
+  enabled?: boolean;
+  broadcastIntervalMs?: number;
+}): LatLng | null {
   const currentCoords = useCurrentCoordinates();
   const [otherPartyLocation, setOtherPartyLocation] = useState<LatLng | null>(null);
 
   // Store refs to avoid stale closures in the interval
   const currentCoordsRef = useRef(currentCoords);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     currentCoordsRef.current = currentCoords;
-  }, [currentCoords]);
+    if (channelRef.current && currentCoords) {
+      // Optionally, broadcast an immediate update on location change
+      channelRef.current.send({
+        type: 'broadcast',
+        event: LOCATION_EVENT,
+        payload: { userId: myUserId, lat: currentCoords.latitude, lng: currentCoords.longitude },
+      });
+    }
+  }, [currentCoords, myUserId]);
 
   useEffect(() => {
+    // Cleanup prev channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
     if (!enabled || !transactionId) return;
 
     const channelName = `location:transaction:${transactionId}`;
@@ -62,6 +82,9 @@ export function useDeliveryLocationChannel(
 
     channel.subscribe((status) => {
       if (status !== REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) return;
+
+      // Store channel ref
+      channelRef.current = channel;
 
       // Start broadcasting own location at regular intervals
       const intervalId = setInterval(() => {
@@ -83,6 +106,7 @@ export function useDeliveryLocationChannel(
       const { intervalId } = cleanup;
       if (intervalId) clearInterval(intervalId);
       supabase.removeChannel(channel);
+      channelRef.current = null;
     };
   }, [transactionId, myUserId, enabled, broadcastIntervalMs]);
 

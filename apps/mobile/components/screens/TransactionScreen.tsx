@@ -4,20 +4,19 @@ import { useMemo, useState } from 'react';
 import { LocateButton } from '@/components/buttons/LocateButton';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import LoadingSpinner from '@/components/loaders/LoadingSpinner';
-import MapView from '@/components/map/MapView';
 import SafeArea from '@/components/SafeArea';
 import { HANDLEHEIGHT } from '@/components/ui/BottomSheetHandle';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { TransactionProvider } from '@/features/transactions/components/context';
+import TransactionContextProviders from '@/features/transactions/components/contexts';
 import MarkReadTransaction from '@/features/transactions/components/MarkReadTransaction';
+import TransactionMapView from '@/features/transactions/components/TransactionMapView';
 import { TransactionSheet } from '@/features/transactions/components/TransactionSheet';
 import TransactionStatusCard from '@/features/transactions/components/TransactionStatusCard';
 import { useTransaction } from '@/features/transactions/hooks/queries';
-import { useDeliveryLocationChannel } from '@/features/transactions/hooks/useDeliveryLocationChannel';
-import { useTransactionMapMarkers } from '@/features/transactions/hooks/useTransactionMapMarkers';
+import { useTransactionLocationChannel } from '@/features/transactions/hooks/useTransactionLocationChannel';
 import { createUpdatesMessage } from '@/features/transactions/lib/createUpdatesMessage';
 import { extractDeliveryDetail } from '@/features/transactions/lib/extractors';
 import { useMeUser } from '@/hooks/auth/useAuth';
@@ -72,6 +71,7 @@ function useAnimStyles(scrollY: SharedValue<number>, cardHeight: SharedValue<num
 }
 
 export default function TransactionScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
 
   const [headerSize, setHeaderSize] = useState<Layout>({ width: 0, height: 100 });
@@ -81,21 +81,17 @@ export default function TransactionScreen() {
   const { animatedHeaderInStyle, animatedHeaderOutStyle, animatedCardStyle, snapPoints } =
     useAnimStyles(scrollY, cardHeight);
 
-  const { id } = useLocalSearchParams<{ id: string }>();
-
   const { data, isLoading, error } = useTransaction(id);
 
   const deliveryDetail = data ? extractDeliveryDetail(data) : null;
+  const isActiveDelivery = !!data && ACTIVE_TXN_STATUSES.includes(data.status) && !!deliveryDetail;
 
   const { data: meUser } = useMeUser();
-  const isActiveDelivery = !!data && ACTIVE_TXN_STATUSES.includes(data.status) && !!deliveryDetail;
-  const otherPartyLocation = useDeliveryLocationChannel(
-    data?.id,
-    extractID(meUser!),
-    isActiveDelivery
-  );
-
-  const mapMarkers = useTransactionMapMarkers(data, isActiveDelivery ? otherPartyLocation : null);
+  const otherPartyLocation = useTransactionLocationChannel({
+    transactionId: extractID(data),
+    myUserId: meUser?.id ?? '',
+    enabled: isActiveDelivery,
+  });
 
   if (error) {
     const params: ErrorSearchParams = {
@@ -114,13 +110,13 @@ export default function TransactionScreen() {
   const subtitle = createUpdatesMessage(data);
 
   return (
-    <TransactionProvider transaction={data}>
+    <TransactionContextProviders transaction={data} otherPartyLocation={otherPartyLocation}>
       <MarkReadTransaction transaction={data} />
 
       <Stack.Screen options={{ contentStyle: { backgroundColor: getColor('background', '0') } }} />
 
       <SafeArea safeTop={false} className="items-stretch bg-background-0">
-        <MapView mapPadding={{ top: 80, bottom: 164, left: 4, right: 4 }} markers={mapMarkers}>
+        <TransactionMapView isActiveDelivery={isActiveDelivery}>
           <VStack className="flex-1">
             <Animated.View className="absolute inset-x-0" style={[animatedCardStyle]}>
               <Box className="px-5">
@@ -184,8 +180,8 @@ export default function TransactionScreen() {
               />
             </Box>
           </VStack>
-        </MapView>
+        </TransactionMapView>
       </SafeArea>
-    </TransactionProvider>
+    </TransactionContextProviders>
   );
 }
