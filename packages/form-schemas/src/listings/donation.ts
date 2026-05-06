@@ -49,7 +49,7 @@ export const donationCreateSchema = z
     }),
     z.object({
       type: z.literal('DIRECT'),
-      recipient: recipientSchema.required('Recipient is required for direct donations.'),
+      recipient: recipientSchema,
       ...donationSchema.omit({ id: true }).shape,
     }),
     z.object({
