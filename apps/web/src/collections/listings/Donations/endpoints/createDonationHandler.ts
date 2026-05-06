@@ -1,11 +1,13 @@
 import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import { parseZodSchema } from '@/lib/utils/parseZodSchema';
+import { ValidationErrorNames } from '@lactalink/enums/error-names';
 import { donationCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { UserProfile } from '@lactalink/types';
 import { DonationCreateResult } from '@lactalink/types/api';
 import { Donation, Transaction } from '@lactalink/types/payload-generated-types';
+import { ValidationError } from '@lactalink/utilities/errors';
 import { extractID } from '@lactalink/utilities/extractors';
+import status from 'http-status';
 import { PayloadRequest, RequiredDataFromCollectionSlug } from 'payload';
 
 export const createDonationHandler = createPayloadHandler({
@@ -27,10 +29,16 @@ async function handler(req: PayloadRequest): Promise<DonationCreateResult> {
     throw createBadRequestError('User must have a profile to create a donation');
   }
 
-  const parsedData = parseZodSchema(donationCreateSchema, data, {
-    collection: 'donations',
-    req: req,
-  });
+  const { data: parsedData, success, error } = donationCreateSchema.safeParse(data);
+
+  if (!success) {
+    const issue = error.issues.pop();
+    throw new ValidationError(issue?.message ?? 'Invalid donation data', {
+      name: ValidationErrorNames.INVALID_TYPE,
+      statusCode: status.BAD_REQUEST,
+      statusText: status[status.BAD_REQUEST],
+    });
+  }
 
   const { type, ...restOfData } = parsedData;
 
