@@ -59,7 +59,6 @@ export default function DeliveryPreferencesField<
     defaultValue: [] as PathValue<TFieldValues, FieldPath<TFieldValues>>,
   });
 
-  const disableRemove = fields.length <= 1;
   const hasPreferences = fields.length > 0;
 
   const { data: meUser } = useMeUser();
@@ -101,13 +100,7 @@ export default function DeliveryPreferencesField<
 
       <VStack space="md" className="mt-2">
         {selectedValues.map((item, index) => (
-          <ListItem
-            key={item.id}
-            item={item}
-            index={index}
-            onRemove={remove}
-            isDisabledRemove={disableRemove}
-          />
+          <ListItem key={item.id} item={item} index={index} onRemove={remove} />
         ))}
       </VStack>
 

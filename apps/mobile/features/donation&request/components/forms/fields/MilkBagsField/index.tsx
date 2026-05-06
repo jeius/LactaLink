@@ -78,12 +78,11 @@ export default function MilkBagsField({
             value={bag}
             isLoading={isLoading}
             isDisabled={isDisabled}
+            onDuplicate={addMilkBag}
             onPress={() => {
               setSelectedMilkBag(bag);
               setIsSheetOpen(true);
             }}
-            onDuplicate={addMilkBag}
-            disableRemove={milkbags.length <= 1}
           />
         ))}
       </VStack>
