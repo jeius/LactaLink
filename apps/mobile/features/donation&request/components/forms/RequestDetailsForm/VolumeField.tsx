@@ -7,7 +7,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { VOLUME_PRESET } from '@/lib/constants/donationRequest';
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
-import { RequestCreateSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema } from '@lactalink/form-schemas/listings';
 import { useState } from 'react';
 import { Control } from 'react-hook-form';
 

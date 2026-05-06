@@ -14,8 +14,8 @@ import isEqual from 'lodash/isEqual';
 import { CalendarDaysIcon, ClockIcon } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import SelectAddressField from './SelectAddressField';
-import SelectDeliveryPreferenceField from './SelectDeliveryPreferenceField';
+import SelectAddressField from './fields/SelectAddressField';
+import SelectDeliveryPreferenceField from './fields/SelectDeliveryPreferenceField';
 
 export interface DeliveryFormProps extends VStackProps {
   values?: DeliverySchema;

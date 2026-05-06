@@ -1,6 +1,6 @@
 import { addTransactionToAllCache } from '@/features/transactions/lib/cacheUtils';
 import { getMeUser } from '@/lib/stores/meUserStore';
-import { DonationCreateSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { Donation } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';

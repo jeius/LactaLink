@@ -10,7 +10,8 @@ import VerifyBagItem from '@/features/donation&request/components/cards/VerifyBa
 import { useDonationCreateMutation } from '@/features/donation&request/hooks/mutations';
 import { MMKV_KEYS } from '@/lib/constants/storageKeys';
 import Storage from '@/lib/localStorage';
-import { DonationCreateSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import { MilkBagSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { DonationCreateResult } from '@lactalink/types/api';
 import { AbortError } from '@lactalink/utilities/errors';
 import {

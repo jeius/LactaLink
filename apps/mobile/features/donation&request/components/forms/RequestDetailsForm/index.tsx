@@ -1,7 +1,6 @@
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { DeliveryPreferencesField } from '@/components/fields';
-import { DeliveryField } from '@/components/fields/DeliveryField';
 import { DateInputField } from '@/components/form-fields/DateInputField';
 import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
@@ -12,14 +11,16 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import DeliveryField from '@/features/donation&request/components/forms/fields/DeliveryField';
 import { useRequestFormExtraData } from '@/features/donation&request/hooks/useCreateRequestForm';
 import { STORAGE_TYPES, URGENCY_LEVELS } from '@lactalink/enums';
-import { DeliveryCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas';
+import { DeliveryCreateSchema } from '@lactalink/form-schemas/delivery-preference';
+import { RequestCreateSchema } from '@lactalink/form-schemas/listings';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { CalendarDaysIcon, ClipboardPenIcon, ClockIcon } from 'lucide-react-native';
 import { useWatch } from 'react-hook-form';
-import { MatchedDonationField } from '../MatchedListingFields';
-import RequestMilkbagsField from '../RequestMilkbagsField';
+import { MatchedDonationField } from '../fields/MatchedListingFields';
+import RequestMilkbagsField from '../fields/RequestMilkbagsField';
 import { VolumeField } from './VolumeField';
 
 interface RequestDetailsFormProps {

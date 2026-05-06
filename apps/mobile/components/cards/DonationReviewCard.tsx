@@ -1,10 +1,9 @@
 import { getColor } from '@/lib/colors';
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES } from '@lactalink/enums';
-import { DonationCreateSchema } from '@lactalink/form-schemas';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import { DotIcon, DropletIcon, PackageIcon } from 'lucide-react-native';
-import React, { ComponentProps } from 'react';
-import { Card } from '../ui/card';
+import { Card, CardProps } from '../ui/card';
 import { HStack } from '../ui/hstack';
 import { Icon } from '../ui/icon';
 import { Text } from '../ui/text';
@@ -12,7 +11,7 @@ import { Textarea, TextareaInput } from '../ui/textarea';
 import { VStack } from '../ui/vstack';
 import { DeliveryPreferenceCard } from './DeliveryPreferenceCard';
 
-interface DonationReviewCardProps extends ComponentProps<typeof Card> {
+interface DonationReviewCardProps extends CardProps {
   data: DonationCreateSchema;
 }
 export function DonationReviewCard({

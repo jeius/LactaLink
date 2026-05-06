@@ -1,8 +1,8 @@
 import { Box, BoxProps } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
-import DonationCard from '../cards/DonationCard';
-import RequestCard from '../cards/RequestCard';
+import DonationCard from '../../cards/DonationCard';
+import RequestCard from '../../cards/RequestCard';
 
 export function MatchedDonationField({
   donation,
