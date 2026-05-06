@@ -1,7 +1,6 @@
 import { FormPreventBack } from '@/components/buttons/FormPreventBack';
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
-import { DeliveryPreferencesField } from '@/components/fields/DeliveryPreferencesField';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -9,6 +8,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { Text } from '@/components/ui/text';
 import DeliveryField from '@/features/donation&request/components/forms/fields/DeliveryField';
+import DeliveryPreferencesField from '@/features/donation&request/components/forms/fields/DeliveryPreferencesField';
 import DonationDetailsFields from '@/features/donation&request/components/forms/fields/DonationDetailsFields';
 import { MatchedRequestField } from '@/features/donation&request/components/forms/fields/MatchedListingFields';
 import MilkBagsField from '@/features/donation&request/components/forms/fields/MilkBagsField';
@@ -114,7 +114,11 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
               onChange={handleOnDeliveryChange}
             />
           ) : (
-            <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
+            <DeliveryPreferencesField
+              control={control}
+              isLoading={isLoading}
+              isDisabled={disableFields}
+            />
           )}
 
           <Button onPress={handleNextPress} isDisabled={disableFields} className="mx-4 mt-4">

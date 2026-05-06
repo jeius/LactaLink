@@ -1,6 +1,5 @@
 import ProfileCard from '@/components/cards/ProfileCard';
 import { useForm } from '@/components/contexts/FormProvider';
-import { DeliveryPreferencesField } from '@/components/fields';
 import { DateInputField } from '@/components/form-fields/DateInputField';
 import { ImageField } from '@/components/form-fields/ImageField';
 import { SelectInputField } from '@/components/form-fields/SelectInputField';
@@ -19,6 +18,7 @@ import { RequestCreateSchema } from '@lactalink/form-schemas/listings';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { CalendarDaysIcon, ClipboardPenIcon, ClockIcon } from 'lucide-react-native';
 import { useWatch } from 'react-hook-form';
+import DeliveryPreferencesField from '../fields/DeliveryPreferencesField';
 import { MatchedDonationField } from '../fields/MatchedListingFields';
 import RequestMilkbagsField from '../fields/RequestMilkbagsField';
 import { VolumeField } from './VolumeField';
@@ -200,7 +200,11 @@ export function RequestDetailsForm({ disableFields: disableProp }: RequestDetail
           onChange={handleOnDeliveryChange}
         />
       ) : (
-        <DeliveryPreferencesField isLoading={isLoading} isDisabled={disableFields} />
+        <DeliveryPreferencesField
+          control={control}
+          isLoading={isLoading}
+          isDisabled={disableFields}
+        />
       )}
     </VStack>
   );
