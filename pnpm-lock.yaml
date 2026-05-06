@@ -649,9 +649,6 @@ importers:
 
   packages/agents:
     dependencies:
-      '@lactalink/types':
-        specifier: workspace:*
-        version: link:../types
       expo:
         specifier: '*'
         version: 54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(graphql@16.12.0)(react-native@0.81.5(@babel/core@7.29.0)(@react-native-community/cli@20.1.1(typescript@5.9.3))(@react-native/metro-config@0.80.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
@@ -659,6 +656,9 @@ importers:
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@lactalink/types':
+        specifier: workspace:*
+        version: link:../types
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -782,17 +782,16 @@ importers:
         version: 2.8.9(eslint@9.39.2(jiti@2.6.1))(turbo@2.8.9)
 
   packages/form-schemas:
-    dependencies:
+    devDependencies:
       '@lactalink/enums':
         specifier: workspace:*
         version: link:../enums
-      '@lactalink/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
       '@lactalink/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@lactalink/types':
+        specifier: workspace:*
+        version: link:../types
       '@lactalink/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

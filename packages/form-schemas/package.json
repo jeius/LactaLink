@@ -60,6 +60,8 @@
   "devDependencies": {
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/enums": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@types/node": "^22.5.4",
     "react-hook-form": "^7.75.0",
     "typescript": "^5.9.3",

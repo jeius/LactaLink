@@ -36,6 +36,7 @@
   "devDependencies": {
     "@lactalink/eslint-config": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
+    "@lactalink/types": "workspace:*",
     "@types/node": "^22.5.4",
     "payload": "3.79.0",
     "typescript": "^5.9.3"
