@@ -56,12 +56,16 @@ export default function MilkBagFormSheet({
 
   const { handleSubmit, reset } = methods;
 
+  function closeSheet() {
+    sheetRef.current?.dismiss();
+  }
+
   async function onSubmit(data: MilkBagSchema) {
     if (isUpdate) {
-      await updateBag(data).then(() => sheetRef.current?.dismiss());
+      await updateBag(data).then(closeSheet);
     }
     addMilkBag(data);
-    sheetRef.current?.dismiss();
+    closeSheet();
   }
 
   useEffect(() => {
@@ -117,6 +121,7 @@ export default function MilkBagFormSheet({
             label="Date collected"
             datePickerProps={{
               mode: 'date',
+              options: { display: 'calendar', minimumDate: new Date() },
               placeholder: 'Select date...',
               icon: CalendarDaysIcon,
             }}
