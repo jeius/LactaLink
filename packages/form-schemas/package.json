@@ -58,21 +58,17 @@
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
-    "@lactalink/enums": "workspace:*",
     "@lactalink/eslint-config": "workspace:*",
-    "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
-    "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.5.4",
-    "payload": "3.42.0",
-    "react-hook-form": "^7.63.0",
-    "zod": "^4.1.12"
+    "react-hook-form": "^7.75.0",
+    "typescript": "^5.9.3",
+    "zod": "^4.4.3"
   },
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/types": "workspace:*",
-    "@supabase/supabase-js": "^2.49.4",
-    "react-hook-form": "^7.63.0",
-    "zod": "^4.1.12"
+    "react-hook-form": "*",
+    "zod": "*"
   }
 }
