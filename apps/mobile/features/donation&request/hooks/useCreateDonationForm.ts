@@ -77,13 +77,20 @@ export function useCreateDonationForm({
     [setValue]
   );
 
-  const handleDirectDonation = useCallback(
-    (receiver: NonNullable<typeof recipient>) => {
-      setValue('type', 'DIRECT');
-      setValue('recipient', receiver);
-    },
-    [setValue]
-  );
+  const handleDirectDonation = useCallback(() => {
+    if (!recipient) return;
+    setValue('type', 'DIRECT');
+    setValue('recipient', recipient);
+  }, [recipient, setValue]);
+
+  const syncDeliveryPrefs = useCallback(() => {
+    const currentPrefs = getValues('deliveryPreferences') || [];
+    if (currentPrefs.length > 0) return;
+    setValue(
+      'deliveryPreferences',
+      preferences.map((pref) => transformToDeliveryPreferenceSchema(pref)).filter((v) => v !== null)
+    );
+  }, [getValues, preferences, setValue]);
 
   // #region Use Effects
   useEffect(() => {
@@ -94,28 +101,20 @@ export function useCreateDonationForm({
   useEffect(() => {
     if (isMatched && matchedRequestDoc) {
       handleMatchedWithRequest(matchedRequestDoc);
-    } else if (hasRecipient && recipient) {
-      handleDirectDonation(recipient);
-    } else {
-      const defaultPreferences = getValues('deliveryPreferences') || [];
-      if (defaultPreferences.length > 0) return;
-      setValue(
-        'deliveryPreferences',
-        preferences
-          .map((pref) => transformToDeliveryPreferenceSchema(pref))
-          .filter((v) => v !== null)
-      );
+      return;
     }
+    if (hasRecipient) {
+      handleDirectDonation();
+    }
+    syncDeliveryPrefs();
   }, [
-    getValues,
     handleDirectDonation,
     handleMatchedWithRequest,
+    syncDeliveryPrefs,
     hasRecipient,
     isMatched,
     matchedRequestDoc,
-    preferences,
     recipient,
-    setValue,
   ]);
 
   useEffect(() => {

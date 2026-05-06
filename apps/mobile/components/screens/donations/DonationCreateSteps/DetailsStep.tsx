@@ -16,12 +16,11 @@ import { useDonationFormExtraData } from '@/features/donation&request/hooks/useC
 import { DeliveryCreateSchema } from '@lactalink/form-schemas/delivery-preference';
 import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { useMemo } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
 
 export default function DetailsStep({ onNextPress }: { onNextPress?: () => void }) {
-  const { getValues, additionalState, control, formState, setValue, trigger } =
+  const { additionalState, control, formState, setValue, handleSubmit } =
     useForm<DonationCreateSchema>();
 
   const { isMatched, requestQuery } = useDonationFormExtraData();
@@ -29,14 +28,7 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
   const matchedRequest = requestQuery.data;
   const requesterDP = extractCollection(matchedRequest?.deliveryPreferences);
 
-  const recipient = useMemo(() => {
-    const values = getValues();
-    if (values.type === 'DIRECT') {
-      return values.recipient;
-    }
-    return null;
-  }, [getValues]);
-
+  const recipient = useWatch({ control, name: 'recipient' });
   const donationType = useWatch({ control, name: 'type' });
 
   const { isLoading } = additionalState;
@@ -56,12 +48,14 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
   }
 
   async function handleNextPress() {
-    const isValid = await trigger();
-    if (!isValid) {
-      toast.error('Please fix the errors in the form before proceeding.');
-      return;
-    }
-    onNextPress?.();
+    handleSubmit(
+      () => {
+        onNextPress?.();
+      },
+      () => {
+        toast.error('Please fix the errors in the form before proceeding.');
+      }
+    )();
   }
 
   return (
