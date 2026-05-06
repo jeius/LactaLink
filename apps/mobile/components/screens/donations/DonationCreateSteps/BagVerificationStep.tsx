@@ -19,8 +19,7 @@ import {
   listKeyExtractor,
 } from '@lactalink/utilities/extractors';
 import { ListRenderItem } from '@shopify/flash-list';
-import { Stack } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useController } from 'react-hook-form';
 import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
@@ -114,7 +113,6 @@ export default function BagVerificationStep({
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: 'Verify Milk Bags' }} />
       <SafeArea safeTop={false} className="items-stretch">
         <FlashList
           data={milkBags}

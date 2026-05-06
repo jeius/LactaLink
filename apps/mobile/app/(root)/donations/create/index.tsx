@@ -1,6 +1,5 @@
-import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
+import { DONATION_CREATE_STEPS } from '@/features/donation&request/lib/constants';
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import React from 'react';
 
 export default function CreatePageRedirect() {
   const params = useLocalSearchParams();

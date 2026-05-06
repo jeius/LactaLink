@@ -2,12 +2,11 @@ import { Form } from '@/components/contexts/FormProvider';
 import FormSaver from '@/components/forms/FormSaver';
 import FetchingSpinner from '@/components/loaders/FetchingSpinner';
 import { useCreateDonationForm } from '@/features/donation&request/hooks/useCreateDonationForm';
+import { DONATION_CREATE_STEPS } from '@/features/donation&request/lib/constants';
+import { DonationCreateParams, DonationCreateSteps } from '@/features/donation&request/lib/types';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
-import { DONATION_CREATE_STEPS } from '@/lib/constants/donationRequest';
-import { DonationCreateParams, DonationCreateSteps } from '@/lib/types/donationRequest';
 import { ErrorSearchParams } from '@lactalink/types';
-import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import { Redirect, Stack, useGlobalSearchParams } from 'expo-router';
 
 type SearchParams = {
   step: DonationCreateSteps;
@@ -21,7 +20,7 @@ export default function DonationCreateLayout() {
     rid: recipientID,
     rslg: recipientSlug,
     step,
-  } = useLocalSearchParams<SearchParams>();
+  } = useGlobalSearchParams<SearchParams>();
 
   const form = useCreateDonationForm({
     matchedRequest: matchedRequestID,
@@ -45,7 +44,7 @@ export default function DonationCreateLayout() {
         screenOptions={{
           ...screenOptions,
           headerShown: true,
-          headerTitle: DONATION_CREATE_STEPS[step]?.label || 'New Donation',
+          headerTitle: DONATION_CREATE_STEPS[step]?.label || 'Create Donation',
         }}
       />
 

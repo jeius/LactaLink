@@ -2,7 +2,6 @@ import { useCreateDonationNavigator } from '@/features/donation&request/hooks/us
 import { DonationCreateParams, DonationCreateSteps } from '@/features/donation&request/lib/types';
 import { DonationCreateResult } from '@lactalink/types/api';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import BagVerificationStep from './BagVerificationStep';
 import DetailsStep from './DetailsStep';
 import TutorialStep from './TutorialStep';

@@ -192,7 +192,6 @@ export function RequestDetailsForm({ disableFields: disableProp }: RequestDetail
 
       {requestType === 'MATCHED' ? (
         <DeliveryField
-          //@ts-expect-error typescript cant infer this properly
           control={control}
           isLoading={isLoading}
           isDisabled={disableFields}

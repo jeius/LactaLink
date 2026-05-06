@@ -6,7 +6,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getImageAsset } from '@/lib/stores/assetsStore';
 import { Asset } from 'expo-asset';
-import { Stack } from 'expo-router';
 import React from 'react';
 import { ImageSourcePropType } from 'react-native';
 
@@ -34,7 +33,6 @@ export default function TutorialStep({ onNextPress }: { onNextPress?: () => void
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: 'Milkbag Verification' }} />
       <SafeArea safeTop={false} className="items-stretch">
         <ScrollView className="flex-1" contentContainerClassName="grow gap-6 p-5">
           <Text className="mb-2 rounded-2xl bg-info-50 p-3 text-center text-info-700">

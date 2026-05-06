@@ -13,9 +13,9 @@ import DonationDetailsFields from '@/features/donation&request/components/forms/
 import { MatchedRequestField } from '@/features/donation&request/components/forms/MatchedListingFields';
 import MilkBagsField from '@/features/donation&request/components/forms/MilkBagsField';
 import { useDonationFormExtraData } from '@/features/donation&request/hooks/useCreateDonationForm';
-import { DeliveryCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas';
+import { DeliveryCreateSchema } from '@lactalink/form-schemas/delivery-preference';
+import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { extractCollection } from '@lactalink/utilities/extractors';
-import { Stack } from 'expo-router';
 import { useMemo } from 'react';
 import { useWatch } from 'react-hook-form';
 import { toast } from 'sonner-native';
@@ -66,8 +66,6 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: 'Create Donation' }} />
-
       <FormPreventBack />
 
       <SafeArea safeTop={false} className="items-stretch">
@@ -98,7 +96,12 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
 
           <Divider />
 
-          <MilkBagsField className="mx-4" isLoading={isLoading} isDisabled={disableFields} />
+          <MilkBagsField
+            control={control}
+            className="mx-4"
+            isLoading={isLoading}
+            isDisabled={disableFields}
+          />
 
           <Divider />
 
