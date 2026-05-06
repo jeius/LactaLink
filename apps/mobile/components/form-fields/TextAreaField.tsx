@@ -71,7 +71,7 @@ export function TextAreaField<
           style={containerStyle}
           size={size}
           isInvalid={invalid}
-          isDisabled={disabled}
+          isDisabled={disabledState}
           onBlur={handleBlur}
         >
           <InputComp
