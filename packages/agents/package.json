@@ -35,13 +35,13 @@
   },
   "devDependencies": {
     "@lactalink/eslint-config": "workspace:*",
-    "@lactalink/types": "workspace:*",
     "@lactalink/typescript-config": "workspace:*",
     "@types/node": "^22.5.4",
     "payload": "3.79.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
+    "@lactalink/types": "workspace:*",
     "payload": "*",
     "expo": "*"
   },
