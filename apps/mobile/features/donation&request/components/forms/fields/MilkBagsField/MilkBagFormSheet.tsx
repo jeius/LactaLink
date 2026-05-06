@@ -63,6 +63,7 @@ export default function MilkBagFormSheet({
   async function onSubmit(data: MilkBagSchema) {
     if (isUpdate) {
       await updateBag(data).then(closeSheet);
+      return;
     }
     addMilkBag(data);
     closeSheet();
