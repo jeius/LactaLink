@@ -1,11 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { DonationCreateSchema, donationCreateSchema } from '@lactalink/form-schemas';
-
-import {
-  transformToDeliveryPreferenceSchema,
-  transformToRequestSchema,
-} from '@/lib/utils/transformData';
+import { type DonationCreateSchema, donationCreateSchema } from '@lactalink/form-schemas/listings';
 
 import { FormProps, useForm } from '@/components/contexts/FormProvider';
 import { useDraftMilkbags, useRequest } from '@/features/donation&request/hooks/queries';
@@ -14,6 +9,7 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { deleteSavedFormData, saveFormData } from '@/lib/localStorage/utils';
 import { UserProfile } from '@lactalink/types';
 import { Request } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useForm as useHookForm } from 'react-hook-form';
@@ -22,6 +18,7 @@ import {
   getPreferredDonationValues,
   transformDraftBags,
 } from '../lib/formUtils';
+import { transformToDeliveryPreferenceSchema } from '../lib/transformData';
 
 type Params = {
   matchedRequest: string | undefined;
@@ -65,13 +62,17 @@ export function useCreateDonationForm({
 
   const handleMatchedWithRequest = useCallback(
     (request: Request) => {
-      const transformedRequest = transformToRequestSchema(request);
       setValue('type', 'MATCHED');
-      setValue('matchedRequest', transformedRequest);
-      const storage = transformedRequest.details.storagePreference;
+      setValue('matchedRequest', {
+        id: request.id,
+        requester: extractID(request.requester),
+        storagePreference: request.details.storagePreference || 'EITHER',
+        volumeNeeded: request.volumeNeeded,
+      });
+      const storage = request.details.storagePreference;
       // If the storage preference is EITHER, we want to leave it up to the donor
       // Otherwise, we set it to the request's preference since the donor has no say in the matter
-      if (storage !== 'EITHER') setValue('details.storageType', storage);
+      if (storage && storage !== 'EITHER') setValue('details.storageType', storage);
     },
     [setValue]
   );
