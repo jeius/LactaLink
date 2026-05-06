@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Input, InputField, InputIcon, InputProps, InputSlot } from '@/components/ui/input';
+import { Input, InputProps } from '@/components/ui/input';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { formatDate, formatLocaleTime } from '@lactalink/utilities/formatters';
 import DateTimePicker, {
@@ -10,10 +10,12 @@ import DateTimePicker, {
 import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { FC, useState } from 'react';
 import { Modal, Platform } from 'react-native';
-import { Box } from './ui/box';
+import { Icon } from './ui/icon';
+import { Pressable } from './ui/pressable';
+import { Text } from './ui/text';
 
 const inputStyle = tva({
-  base: '',
+  base: 'items-stretch',
 });
 
 export type DatePickerInputProps = InputProps & {
@@ -106,10 +108,9 @@ export function DatePicker({
   icon,
   showSetNowButton = false,
   setNowLabel = 'Set Now',
-  variant: inputVariant = 'outline',
-  size: inputSize = 'md',
+  variant = 'outline',
+  size = 'md',
   options,
-  recyclingKey,
   ...inputProps
 }: DatePickerProps) {
   const date = value ? new Date(value) : new Date(1999, 6, 6);
@@ -163,47 +164,43 @@ export function DatePicker({
   }
 
   return (
-    <Box>
+    <>
       <Input
         {...inputProps}
-        size={inputSize}
-        variant={inputVariant}
+        size={size}
+        variant={variant}
         isDisabled={isDisabled}
         className={inputStyle({ className })}
         aria-label={placeholder}
       >
-        {icon && (
-          <InputSlot aria-hidden>
-            <InputIcon as={icon} recyclingKey={recyclingKey} className="ml-3" />
-          </InputSlot>
-        )}
+        <Pressable onPress={togglePicker} className="flex-1 flex-row items-center gap-2">
+          {icon && <Icon size={size} as={icon} className="ml-3" />}
 
-        <InputSlot onPress={togglePicker} className="flex-1">
-          <InputField
-            value={inputValue}
-            aria-disabled={isDisabled}
-            placeholder={placeholder}
-            textContentType="dateTime"
-            editable={false}
-            pointerEvents="none"
-            className="flex-1"
-            recyclingKey={recyclingKey}
-          />
-        </InputSlot>
+          {inputValue ? (
+            <Text size={size} numberOfLines={1}>
+              {inputValue}
+            </Text>
+          ) : (
+            <Text size={size} numberOfLines={1} className="text-typography-500">
+              {placeholder}
+            </Text>
+          )}
+        </Pressable>
 
         {showSetNowButton && (
-          <InputSlot aria-label="Set date now" role="button">
-            <Button
-              variant="link"
-              size="sm"
-              className="h-fit w-fit pr-3"
-              isDisabled={isDisabled}
-              onPress={handleSetNow}
-              disablePressAnimation
-            >
-              <ButtonText>{setNowLabel}</ButtonText>
-            </Button>
-          </InputSlot>
+          <Button
+            action="default"
+            variant="ghost"
+            size="sm"
+            className="h-auto w-fit rounded-none pr-3"
+            isDisabled={isDisabled}
+            onPress={handleSetNow}
+            aria-label="Set date now"
+            disablePressAnimation
+            disableRipple
+          >
+            <ButtonText>{setNowLabel}</ButtonText>
+          </Button>
         )}
       </Input>
 
@@ -220,6 +217,6 @@ export function DatePicker({
           accentColor={accentColor}
         />
       </Modal>
-    </Box>
+    </>
   );
 }
