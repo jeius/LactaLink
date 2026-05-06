@@ -1,7 +1,7 @@
 import { ImageSchema } from '@lactalink/form-schemas';
 import { extractImageData } from '@lactalink/utilities/extractors';
-import { EditIcon, MinusIcon, PlusCircleIcon } from 'lucide-react-native';
-import React, { RefObject, useCallback, useMemo, useRef } from 'react';
+import { MinusIcon, PenIcon, PlusCircleIcon, XIcon } from 'lucide-react-native';
+import { RefObject, useCallback, useMemo, useRef } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 import { FlatList } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
@@ -130,16 +130,13 @@ export function ImageField<
 
 function SingleImage({ data, isDisabled, uploadRef }: SingleImageProps) {
   const actions = [
-    { icon: EditIcon, onPress: () => uploadRef.current?.upload(), action: 'muted' },
-    { icon: MinusIcon, onPress: () => uploadRef.current?.remove(), action: 'negative' },
+    { icon: PenIcon, onPress: () => uploadRef.current?.upload(), action: 'muted' },
+    { icon: XIcon, onPress: () => uploadRef.current?.remove(), action: 'negative' },
   ] as const;
 
   return (
-    <Box>
-      <SingleImageViewer
-        image={extractImageData(data)}
-        style={{ width: '100%', height: 160, borderRadius: 12, overflow: 'hidden' }}
-      />
+    <Box style={{ width: '100%', height: 160, borderRadius: 12, overflow: 'hidden' }}>
+      <SingleImageViewer image={extractImageData(data)} />
       <Box className="absolute inset-y-0" style={{ right: 0 }}>
         <VStack space="md" className="grow overflow-hidden rounded-r-xl p-1">
           <Box className="absolute inset-0 bg-background-900" style={{ opacity: 0.4 }} />
