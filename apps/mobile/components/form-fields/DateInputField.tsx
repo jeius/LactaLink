@@ -25,7 +25,7 @@ export function DateInputField<
 }: DateInputFieldProps<TFieldValues, TName>) {
   const {
     field: { value, onBlur, onChange, disabled },
-    fieldState: { error },
+    fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
 
@@ -36,6 +36,7 @@ export function DateInputField<
       {...props}
       contentPosition={contentPosition}
       error={error}
+      isInvalid={invalid}
       isDisabled={isDisabled || isSubmitting}
     >
       {isLoading ? (
@@ -48,6 +49,7 @@ export function DateInputField<
           onChange={onChange}
           onBlur={onBlur}
           recyclingKey={recyclingKey}
+          isInvalid={invalid}
         />
       )}
     </FieldWrapper>

@@ -67,7 +67,7 @@ export function SelectInputField<
   const [customValue, setCustomValue] = useState('');
 
   const {
-    field: { value, onBlur, onChange, disabled },
+    field: { value, onBlur, onChange, disabled, ref },
     fieldState: { error, invalid },
     formState: { isSubmitting },
   } = useController({ name, control });
@@ -198,7 +198,7 @@ export function SelectInputField<
           onSelect={handleChange}
           onClose={onBlur}
         >
-          <Select.Trigger disabled={disabledFields} className="rounded-xl">
+          <Select.Trigger ref={ref} disabled={disabledFields} className="rounded-xl">
             <Select.Input
               {...triggerInputProps}
               value={selectedLabel}
@@ -206,6 +206,7 @@ export function SelectInputField<
               pointerEvents="none"
               containerClassName="flex-1"
               editable={false}
+              isInvalid={invalid}
             />
           </Select.Trigger>
 
