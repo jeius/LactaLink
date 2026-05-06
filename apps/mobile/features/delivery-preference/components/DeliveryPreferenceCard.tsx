@@ -6,6 +6,7 @@ import GradientBackground from '@/components/ui/gradient-bg';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useAddress } from '@/features/address/hooks/queries';
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
@@ -21,9 +22,10 @@ const cardStyle = tva({
 
 interface Props extends CardProps {
   data: DeliveryPreference;
+  showName?: boolean;
 }
 
-function DeliveryPreferenceCard({ data, variant = 'filled', ...props }: Props) {
+function DeliveryPreferenceCard({ data, variant = 'filled', showName = false, ...props }: Props) {
   const { data: addressDoc } = useAddress(data.address);
 
   const availableDaysText = formatDaysToText(data.availableDays, { short: true });
@@ -33,7 +35,7 @@ function DeliveryPreferenceCard({ data, variant = 'filled', ...props }: Props) {
 
   return (
     <Card {...props} variant={variant} className={cardStyle({ className: props.className })}>
-      <Box className="h-36 flex-1">
+      <Box className="h-36 w-full">
         {center ? (
           <ThumbnailMap center={center} className="flex-1" />
         ) : (
@@ -56,6 +58,11 @@ function DeliveryPreferenceCard({ data, variant = 'filled', ...props }: Props) {
       </Box>
 
       <VStack space="sm" className="p-2">
+        {showName && (
+          <Text bold size="sm" numberOfLines={1}>
+            {data.name}
+          </Text>
+        )}
         <HStack space="xs" className="items-start">
           <Icon size="sm" as={CalendarDaysIcon} />
           <TruncatedText
