@@ -99,10 +99,18 @@ export async function markBagsAsAllocated(
       collection: 'milkBags',
       req,
       data: { status: MILK_ALLOCATED_STATUS },
-      where: { id: { in: extractID(milkbags) } },
       depth: 0,
+      where: {
+        and: [
+          { id: { in: extractID(milkbags) } },
+          { status: { equals: 'AVAILABLE' } }, // Only update bags that are currently available
+        ],
+      },
     })
     .then(({ docs }) => {
+      if (docs.length === 0) {
+        logger?.info(`No milk bags were updated to ${MILK_ALLOCATED_STATUS}`);
+      }
       logger?.info(`Updated ${docs.length} milk bags to ${MILK_ALLOCATED_STATUS}`);
       return docs;
     });
