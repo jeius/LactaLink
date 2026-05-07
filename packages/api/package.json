@@ -73,7 +73,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@payloadcms/sdk": "^3.79.0",
+    "@payloadcms/sdk": "^3.84.1",
     "http-status": "^2.1.0",
     "qs-esm": "^7.0.3"
   },
@@ -93,7 +93,7 @@
     "install": "^0.13.0",
     "lodash": "^4.17.21",
     "npm": "^11.5.2",
-    "payload": "^3.79.0",
+    "payload": "^3.84.1",
     "react": "19.1.0",
     "zustand": "^5.0.5"
   },

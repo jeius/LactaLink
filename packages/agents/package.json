@@ -38,7 +38,7 @@
     "@lactalink/typescript-config": "workspace:*",
     "@lactalink/types": "workspace:*",
     "@types/node": "^22.5.4",
-    "payload": "3.79.0",
+    "payload": "3.84.1",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {

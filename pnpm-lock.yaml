@@ -666,8 +666,8 @@ importers:
         specifier: ^22.5.4
         version: 22.19.11
       payload:
-        specifier: 3.79.0
-        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
+        specifier: 3.84.1
+        version: 3.84.1(graphql@16.12.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -675,8 +675,8 @@ importers:
   packages/api:
     dependencies:
       '@payloadcms/sdk':
-        specifier: ^3.79.0
-        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
+        specifier: ^3.84.1
+        version: 3.84.1(graphql@16.12.0)(typescript@5.9.3)
       http-status:
         specifier: ^2.1.0
         version: 2.1.0
@@ -730,8 +730,8 @@ importers:
         specifier: ^11.5.2
         version: 11.10.0
       payload:
-        specifier: ^3.79.0
-        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
+        specifier: ^3.84.1
+        version: 3.84.1(graphql@16.12.0)(typescript@5.9.3)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -826,14 +826,11 @@ importers:
         specifier: ^22.5.4
         version: 22.19.11
       payload:
-        specifier: ^3.79.0
-        version: 3.79.0(graphql@16.12.0)(typescript@5.9.3)
+        specifier: ^3.84.1
+        version: 3.84.1(graphql@16.12.0)(typescript@5.9.3)
       react-hook-form:
         specifier: ^7.63.0
         version: 7.71.1(react@19.1.0)
-      zod:
-        specifier: ^4.1.3
-        version: 4.3.6
 
   packages/typescript-config:
     devDependencies:
@@ -3369,6 +3366,9 @@ packages:
 
   '@payloadcms/sdk@3.79.0':
     resolution: {integrity: sha512-5+kj7RvO2EF8HMNfEQy3fQN0d6/FjLNkoHGcYjm9ZYQcNCo1k/deylxLqBPPN5WgGjurguZIOFY5eYL8sQpybA==}
+
+  '@payloadcms/sdk@3.84.1':
+    resolution: {integrity: sha512-pNpg4ov0Z1xbmd9ZGtVtzpffVoDCPe7eCG9z5k/C7Xljp87TyfqE/WMhk+HIL7VwdsfYD1dBSXDic6adzghnOA==}
 
   '@payloadcms/storage-s3@3.84.1':
     resolution: {integrity: sha512-nKR79tWvKCpPpWjVLBsBBtGYDXzcOW4rc0Oz8QUBG/NQ3yn5QaHHMKi76Go2NUuWKGX0Hhx/1W8Iful6aXgBMg==}
@@ -11728,9 +11728,6 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@4.3.6:
-    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
-
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
@@ -15200,6 +15197,18 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - graphql
+      - typescript
+      - utf-8-validate
+
+  '@payloadcms/sdk@3.84.1(graphql@16.12.0)(typescript@5.9.3)':
+    dependencies:
+      payload: 3.84.1(graphql@16.12.0)(typescript@5.9.3)
+      qs-esm: 8.0.1
+      ts-essentials: 10.0.3(typescript@5.9.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - graphql
+      - supports-color
       - typescript
       - utf-8-validate
 
@@ -25332,8 +25341,6 @@ snapshots:
   zod-validation-error@4.0.2(zod@4.4.3):
     dependencies:
       zod: 4.4.3
-
-  zod@4.3.6: {}
 
   zod@4.4.3: {}
 
