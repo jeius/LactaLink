@@ -70,7 +70,7 @@
   "peerDependencies": {
     "@lactalink/enums": "workspace:*",
     "@lactalink/types": "workspace:*",
-    "react-hook-form": "*",
-    "zod": "*"
+    "react-hook-form": "^7.75.0",
+    "zod": "^4.4.3"
   }
 }
