@@ -129,6 +129,7 @@ function RenderItem({ item, selected, onSelect, isDisabled }: RenderItemProps) {
         data={item}
         isDisabled={isDisabled}
         variant="filled"
+        showName
         className={cardStyle({ isSelected })}
         style={{ width: 190 }}
       />

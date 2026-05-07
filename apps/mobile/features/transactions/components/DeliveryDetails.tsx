@@ -106,7 +106,7 @@ export default function DeliveryDetails({ data }: DeliveryPlanProps) {
                 variant="link"
                 action="default"
                 size="sm"
-                className="h-fit w-fit p-0"
+                className="h-fit w-fit justify-start p-0"
               >
                 <ButtonText>{fullAddress}</ButtonText>
               </Button>
