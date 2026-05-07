@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { COLLECTION_MODES, PREFERRED_STORAGE_TYPES, STORAGE_TYPES } from '@lactalink/enums';
 
-import { deliveryCreateSchema, deliveryPreferencesSchema } from '@/delivery-preference';
+import { deliveryCreateSchema, deliveryPreferenceSchema } from '@/delivery-preference';
 import { imageSchema } from '@/file';
 import { milkBagSchema } from '@/milk-bag';
 import { textAreaSchema } from '@/textarea';
@@ -36,7 +36,7 @@ export const donationSchema = z.object({
   id: z.uuid('Invalid UUID').nonempty('Required'),
   donor: z.uuid('Invalid UUID').nonempty('Required'),
   details: donationDetailsSchema,
-  ...deliveryPreferencesSchema.shape,
+  deliveryPreferences: z.array(deliveryPreferenceSchema).nullish(),
 });
 
 export const donationCreateSchema = z
@@ -54,7 +54,10 @@ export const donationCreateSchema = z
     }),
     z.object({
       type: z.literal('OPEN'),
-      ...donationSchema.omit({ id: true }).shape,
+      ...donationSchema.omit({ id: true, deliveryPreferences: true }).shape,
+      deliveryPreferences: z
+        .array(deliveryPreferenceSchema)
+        .min(1, 'Required at least one delivery preference.'),
     }),
   ])
   .refine(
