@@ -1,12 +1,15 @@
 import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
-import { parseZodSchema } from '@/lib/utils/parseZodSchema';
+import { ValidationErrorNames } from '@lactalink/enums/error-names';
 import { RequestCreateSchema, requestCreateSchema } from '@lactalink/form-schemas/listings';
-import { UserProfile } from '@lactalink/types';
 import { RequestCreateResult } from '@lactalink/types/api';
-import { Request, Transaction } from '@lactalink/types/payload-generated-types';
+import { Request, Transaction, User } from '@lactalink/types/payload-generated-types';
+import { ValidationError } from '@lactalink/utilities/errors';
 import { extractID } from '@lactalink/utilities/extractors';
+import status from 'http-status';
 import { PayloadRequest, RequiredDataFromCollectionSlug } from 'payload';
+import { createDeliveryDetail } from '../../_helpers/createDeliveryDetail';
+import { createP2PTransaction } from '../../_helpers/createTransaction';
 
 export const requestCreationHandler = createPayloadHandler({
   requireAdmin: false,
@@ -27,10 +30,16 @@ async function handler(req: PayloadRequest): Promise<RequestCreateResult> {
     throw createBadRequestError('User must have a profile to create a request');
   }
 
-  const parsedData = parseZodSchema(requestCreateSchema, data, {
-    collection: 'requests',
-    req: req,
-  });
+  const { data: parsedData, success, error } = requestCreateSchema.safeParse(data);
+
+  if (!success) {
+    const issue = error.issues.pop();
+    throw new ValidationError(issue?.message ?? 'Invalid request data', {
+      name: ValidationErrorNames.INVALID_TYPE,
+      statusCode: status.BAD_REQUEST,
+      statusText: status[status.BAD_REQUEST],
+    });
+  }
 
   const { type } = parsedData;
 
@@ -66,10 +75,10 @@ async function handler(req: PayloadRequest): Promise<RequestCreateResult> {
       break;
 
     case 'MATCHED': {
-      [request, transaction] = await createTransaction(req, {
+      [request, transaction] = await createTransactionWithDelivery(req, {
         ...parsedData,
-        userProfile: user.profile,
-        baseInput: baseInput,
+        user,
+        baseInput,
       });
       break;
     }
@@ -127,22 +136,20 @@ function buildBaseInput({
   };
 }
 
-async function createTransaction(
+async function createTransactionWithDelivery(
   req: PayloadRequest,
   {
     details,
-    requester,
     delivery,
-    userProfile,
+    user,
     baseInput,
     matchedDonation,
   }: {
-    userProfile: UserProfile;
+    user: User;
     baseInput: RequiredDataFromCollectionSlug<'requests'>;
   } & Extract<RequestCreateSchema, { type: 'MATCHED' }>
 ): Promise<[Request, Transaction]> {
   const { payload } = req;
-  const volume = details.bags.reduce((total, bag) => total + bag.volume, 0);
 
   const [requestDoc, donationDoc] = await Promise.all([
     payload.create({
@@ -155,47 +162,19 @@ async function createTransaction(
       req,
       collection: 'donations',
       id: matchedDonation.id,
-      select: { donor: true },
       depth: 0,
     }),
   ]);
 
-  const transaction = await payload.create({
+  const transaction = await createP2PTransaction({
     req,
-    depth: 0,
-    collection: 'transactions',
-    select: { initiatedBy: true },
-    data: {
-      type: 'P2P',
-      status: 'PENDING',
-      donation: donationDoc.id,
-      request: requestDoc.id,
-      milkBags: extractID(details.bags),
-      sender: { relationTo: 'individuals', value: requester },
-      recipient: { relationTo: 'individuals', value: extractID(requestDoc.requester) },
-      // The following fields are placeholders to avoid TS errors;
-      // the backend will overwrite them with calculated values.
-      volume,
-      txn: '',
-      initiatedBy: userProfile,
-      tracking: {},
-    },
+    donation: donationDoc,
+    request: requestDoc,
+    milkbagIds: extractID(details.bags),
+    user,
   });
 
-  await payload.create({
-    req,
-    collection: 'delivery-details',
-    depth: 0,
-    data: {
-      transaction: transaction.id,
-      status: delivery.type === 'CONFIRMED' ? 'ACCEPTED' : 'PENDING',
-      address: extractID(delivery.address),
-      proposedBy: transaction.initiatedBy,
-      method: delivery.mode,
-      scheduledAt: delivery.time,
-      notes: delivery.note,
-    },
-  });
+  await createDeliveryDetail({ req, delivery, transaction });
 
   return Promise.all([
     payload.findByID({ req, collection: 'requests', id: requestDoc.id, depth: 3 }),

@@ -2,13 +2,14 @@ import { createBadRequestError } from '@/lib/utils/createError';
 import { createPayloadHandler } from '@/lib/utils/createPayloadHandler';
 import { ValidationErrorNames } from '@lactalink/enums/error-names';
 import { donationCreateSchema, DonationCreateSchema } from '@lactalink/form-schemas/listings';
-import { UserProfile } from '@lactalink/types';
 import { DonationCreateResult } from '@lactalink/types/api';
-import { Donation, Transaction } from '@lactalink/types/payload-generated-types';
+import { Donation, Transaction, User } from '@lactalink/types/payload-generated-types';
 import { ValidationError } from '@lactalink/utilities/errors';
 import { extractID } from '@lactalink/utilities/extractors';
 import status from 'http-status';
 import { PayloadRequest, RequiredDataFromCollectionSlug } from 'payload';
+import { createDeliveryDetail } from '../../_helpers/createDeliveryDetail';
+import { createP2PTransaction } from '../../_helpers/createTransaction';
 
 export const createDonationHandler = createPayloadHandler({
   requireAdmin: false,
@@ -76,8 +77,8 @@ async function handler(req: PayloadRequest): Promise<DonationCreateResult> {
     case 'MATCHED': {
       [donation, transaction] = await createTransactionWithDelivery(req, {
         ...parsedData,
-        userProfile: user.profile,
-        baseInput: baseInput,
+        user,
+        baseInput,
       });
       break;
     }
@@ -160,18 +161,18 @@ async function createTransactionWithDelivery(
   req: PayloadRequest,
   {
     details,
-    donor,
     delivery,
-    userProfile,
+    user,
     baseInput,
     matchedRequest,
   }: {
-    userProfile: UserProfile;
+    user: User;
     baseInput: RequiredDataFromCollectionSlug<'donations'>;
   } & Extract<DonationCreateSchema, { type: 'MATCHED' }>
 ): Promise<[Donation, Transaction]> {
   const { payload } = req;
-  const volume = details.bags.reduce((total, bag) => total + bag.volume, 0);
+
+  const bagIds = extractID(details.bags);
 
   const [donationDoc, requestDoc] = await Promise.all([
     payload.create({
@@ -180,51 +181,24 @@ async function createTransactionWithDelivery(
       data: { ...baseInput, status: 'MATCHED' },
       depth: 0,
     }),
-    payload.findByID({
+    payload.update({
       req,
       collection: 'requests',
       id: matchedRequest.id,
-      select: { requester: true },
       depth: 0,
+      data: { details: { bags: bagIds } },
     }),
   ]);
 
-  const transaction = await payload.create({
+  const transaction = await createP2PTransaction({
     req,
-    depth: 0,
-    collection: 'transactions',
-    select: { initiatedBy: true },
-    data: {
-      type: 'P2P',
-      status: 'PENDING',
-      donation: donationDoc.id,
-      request: requestDoc.id,
-      milkBags: extractID(details.bags),
-      sender: { relationTo: 'individuals', value: donor },
-      recipient: { relationTo: 'individuals', value: extractID(requestDoc.requester) },
-      // The following fields are placeholders to avoid TS errors;
-      // the backend will overwrite them with calculated values.
-      volume,
-      txn: '',
-      initiatedBy: userProfile,
-      tracking: {},
-    },
+    donation: donationDoc,
+    request: requestDoc,
+    milkbagIds: bagIds,
+    user,
   });
 
-  await payload.create({
-    req,
-    collection: 'delivery-details',
-    depth: 0,
-    data: {
-      transaction: transaction.id,
-      status: delivery.type === 'CONFIRMED' ? 'ACCEPTED' : 'PENDING',
-      address: extractID(delivery.address),
-      proposedBy: transaction.initiatedBy,
-      method: delivery.mode,
-      scheduledAt: delivery.time,
-      notes: delivery.note,
-    },
-  });
+  await createDeliveryDetail({ req, delivery, transaction });
 
   return Promise.all([
     payload.findByID({ req, collection: 'donations', id: donationDoc.id, depth: 3 }),
