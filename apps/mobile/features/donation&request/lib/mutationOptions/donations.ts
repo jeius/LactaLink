@@ -2,7 +2,8 @@ import { addTransactionToAllCache } from '@/features/transactions/lib/cacheUtils
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { Donation } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
+import { AbortError } from '@lactalink/utilities/errors';
+import { extractErrorMessage, extractID } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';
 import { createDonation } from '../api/create';
 import { cancelListing } from '../api/update';
@@ -15,6 +16,12 @@ import {
 
 export function createDonationCreateMutation(init?: RequestInit) {
   return mutationOptions({
+    meta: {
+      errorMessage: (err) => {
+        if (err instanceof AbortError) return;
+        return extractErrorMessage(err) || 'Failed to create donation. Please try again.';
+      },
+    },
     mutationFn: (data: DonationCreateSchema) => createDonation(data, init),
     onSuccess: (data, _vars, _ctx, { client }) => {
       if (!data) return; // No data means the mutation was cancelled, so we skip cache updates
