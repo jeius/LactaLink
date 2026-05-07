@@ -24,12 +24,16 @@ export async function publishMilkbags(
 
   const milkBagIDs = extractID(doc.details.bags);
 
-  await req.payload.update({
-    collection: 'milkBags',
-    where: { id: { in: milkBagIDs } },
-    data: { _status: 'published' },
-    req,
-  });
+  await Promise.all(
+    milkBagIDs.map((id) =>
+      req.payload.update({
+        collection: 'milkBags',
+        id,
+        data: { _status: 'published' },
+        req,
+      })
+    )
+  );
 
   logger.info(`Published ${milkBagIDs.length} milk bags associated with donation ${doc.id}`);
 }
