@@ -26,10 +26,13 @@ export function statusField(
   };
 }
 
-const beforeValidate: FieldHook<Donation | Request, Donation['status']> = ({ data }) => {
+const beforeValidate: FieldHook<Donation | Request, Donation['status']> = ({ value, data }) => {
+  if (value && value.trim() !== '') return value;
+
   // If there's a recipient, the status should be PENDING; otherwise, it should be AVAILABLE.
   if (data?.recipient) {
     return DONATION_REQUEST_STATUS.PENDING.value;
   }
+
   return DONATION_REQUEST_STATUS.AVAILABLE.value;
 };
