@@ -1,4 +1,3 @@
-import { deliveryTab } from '@/fields/deliveryTab';
 import { createUserField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { NullableValidator } from '@lactalink/agents/payload';
@@ -6,10 +5,10 @@ import { PREFERRED_STORAGE_TYPES, PRIORITY_LEVELS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../../_access-control';
 import { recipientField, timeStampFields, titleField } from '../_fields';
+import { deliveryTab } from '../_fields/deliveryTab';
 import { statusField } from '../_fields/statusField';
 import { afterChange } from '../_hooks/afterChange';
 import { afterDelete } from '../_hooks/afterDelete';
-import { afterRead } from '../_hooks/afterRead';
 import { caculateFulfillmentPercentage } from '../_hooks/calculateFulfillmentPercentage';
 import { requestsEndpoints } from './endpoints';
 import { beforeValidate } from './hooks/beforeValidate';
@@ -32,7 +31,6 @@ export const Requests: CollectionConfig<'requests'> = {
     beforeValidate: [beforeValidate],
     afterChange: [afterChange],
     afterDelete: [afterDelete],
-    afterRead: [afterRead],
   },
   endpoints: requestsEndpoints,
   fields: [
