@@ -74,7 +74,8 @@ export const donationCreateSchema = z
     }
   );
 
-export const donationUpdateSchema = z.object({
-  details: donationDetailsSchema.omit({ bags: true }),
-  ...donationSchema.pick({ id: true, deliveryPreferences: true }).shape,
+export const donationUpdateSchema = donationSchema.pick({
+  id: true,
+  details: true,
+  deliveryPreferences: true,
 });
