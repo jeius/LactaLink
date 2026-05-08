@@ -1,24 +1,15 @@
-import { MilkBagHookContext } from '@/lib/constants/hookContexts';
-import { isHookRun, markHookRun } from '@lactalink/agents/payload';
 import { MILK_BAG_STATUS } from '@lactalink/enums/milkbags';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
-import { PayloadRequest } from 'payload';
 
 /**
- * Before reading a milk bag, check if it has expired based on the current date and its expiresAt field.
- * If it has expired and isn't already marked as EXPIRED, update its status to EXPIRED.
- * This ensures that any read operation on an expired milk bag will reflect its expired status,
- * even if the status wasn't updated at the exact moment of expiry.
+ * Check if a milk bag has expired based on the current date and its expiresAt field.
+ *
+ * @returns
+ * - `true` if the milk bag has expired and should be marked as EXPIRED
+ * - `false` if it hasn't expired
+ * - `null` if no status update is needed (e.g., already consumed or discarded).
  */
-export async function validateMilkExpiration(doc: MilkBag, req: PayloadRequest) {
-  if (doc.status === MILK_BAG_STATUS.EXPIRED.value) return doc;
-
-  // Prevent infinite loops
-  if (isHookRun(req, MilkBagHookContext.SkipExpiryCheck)) return doc;
-  markHookRun(req, MilkBagHookContext.SkipExpiryCheck);
-
-  if (!doc.expiresAt) return doc; // If there's no expiry date, we can't check for expiry
-
+export async function validateMilkExpiration(doc: Pick<MilkBag, 'expiresAt' | 'status'>) {
   const currentDate = new Date();
   const expiryDate = new Date(doc.expiresAt);
 
@@ -28,28 +19,16 @@ export async function validateMilkExpiration(doc: MilkBag, req: PayloadRequest) 
       // If already consumed, expired, or discarded, do nothing
       case MILK_BAG_STATUS.CONSUMED.value:
       case MILK_BAG_STATUS.DISCARDED.value:
-        return doc;
+        return null;
 
       // For all other statuses, we will proceed to update the status to 'EXPIRED'
       case MILK_BAG_STATUS.DRAFT.value:
       case MILK_BAG_STATUS.AVAILABLE.value:
       case MILK_BAG_STATUS.ALLOCATED.value:
       default:
-        break;
+        return true;
     }
-
-    // Update the milk bag's status to EXPIRED
-    const updated = await req.payload.update({
-      collection: 'milkBags',
-      id: doc.id,
-      data: { status: MILK_BAG_STATUS.EXPIRED.value },
-      depth: 0,
-      req,
-    });
-
-    // Update the status in the returned doc to reflect the change
-    doc.status = updated.status;
   }
 
-  return doc;
+  return false;
 }
