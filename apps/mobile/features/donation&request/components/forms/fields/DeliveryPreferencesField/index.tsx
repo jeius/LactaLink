@@ -31,21 +31,21 @@ import DPList from './DPList';
 
 const AnimatedButton = Animated.createAnimatedComponent(Button);
 
-interface DeliveryPreferencesFieldProps<
-  TFieldValues extends DonationCreateSchema | RequestCreateSchema =
-    | DonationCreateSchema
-    | RequestCreateSchema,
-> {
+type FieldValues =
+  | Pick<DonationCreateSchema, 'deliveryPreferences'>
+  | Pick<RequestCreateSchema, 'deliveryPreferences'>;
+
+interface DeliveryPreferencesFieldProps<TFieldValues extends FieldValues = FieldValues> {
   control: Control<TFieldValues>;
   isLoading?: boolean;
   isDisabled?: boolean;
 }
 
-export default function DeliveryPreferencesField<
-  TFieldValues extends DonationCreateSchema | RequestCreateSchema =
-    | DonationCreateSchema
-    | RequestCreateSchema,
->({ control, isLoading, isDisabled }: DeliveryPreferencesFieldProps<TFieldValues>) {
+export default function DeliveryPreferencesField<TFieldValues extends FieldValues = FieldValues>({
+  control,
+  isLoading,
+  isDisabled,
+}: DeliveryPreferencesFieldProps<TFieldValues>) {
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<SheetRef>(null);
 

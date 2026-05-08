@@ -13,7 +13,7 @@ import {
 export function createDonationQuery(doc: string | Donation | undefined, enabled = true) {
   const docID = extractID(doc);
   return queryOptions({
-    enabled: !!doc && enabled,
+    enabled: !!docID && enabled,
     queryKey: [...QUERY_KEYS.DONATIONS.ONE, docID],
     queryFn: ({ signal }) => {
       if (!docID) throw new Error('Donation ID is required to fetch donation.');

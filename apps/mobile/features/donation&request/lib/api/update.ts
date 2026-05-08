@@ -1,9 +1,11 @@
 import { getApiClient } from '@lactalink/api';
 import { ImageSchema, MilkBagSchema } from '@lactalink/form-schemas';
+import { DonationUpdateSchema } from '@lactalink/form-schemas/listings';
 import { UpdateByIDResult } from '@lactalink/types/api';
 import { Collection } from '@lactalink/types/collections';
 import { MilkBag } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
+import { extractID } from '@lactalink/utilities/extractors';
 import { File } from 'expo-file-system';
 
 export async function updateDraftMilkBag({ id, bagImage: _, code: __, ...data }: MilkBagSchema) {
@@ -59,4 +61,25 @@ export async function cancelListing<
     },
     init
   ) as Promise<Collection<TSlug>>;
+}
+
+export async function updateDonation(data: DonationUpdateSchema, init?: RequestInit) {
+  const { id, details, deliveryPreferences } = data;
+  const { image, ...detailsWithoutImage } = details;
+
+  const isNewImage = image?.url?.startsWith('file://');
+  const file = image && isNewImage ? new File(image.url) : undefined;
+
+  return getApiClient().updateByID({
+    collection: 'donations',
+    id,
+    data: {
+      deliveryPreferences: extractID(deliveryPreferences),
+      details: {
+        ...detailsWithoutImage,
+        bags: extractID(detailsWithoutImage.bags),
+      },
+    },
+    file: file as undefined,
+  });
 }

@@ -1,15 +1,14 @@
-import { DonationReviewCard } from '@/components/cards/DonationReviewCard';
 import { useForm } from '@/components/contexts/FormProvider';
 import { HintAlert } from '@/components/HintAlert';
 import { ActionModal } from '@/components/modals/ActionModal';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
-import { FlashList } from '@/components/ui/FlashList';
+import { FlashList, ListRenderItem } from '@/components/ui/FlashList';
 import ScrollView from '@/components/ui/ScrollView';
 import VerifyBagItem from '@/features/donation&request/components/cards/VerifyBagItem';
+import DonationReview from '@/features/donation&request/components/DonationReview';
+import { useMilkBagVerificationHint } from '@/features/donation&request/hooks/hints';
 import { useDonationCreateMutation } from '@/features/donation&request/hooks/mutations';
-import { MMKV_KEYS } from '@/lib/constants/storageKeys';
-import Storage from '@/lib/localStorage';
 import { MilkBagSchema } from '@lactalink/form-schemas';
 import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { DonationCreateResult } from '@lactalink/types/api';
@@ -19,21 +18,17 @@ import {
   extractErrorMessage,
   listKeyExtractor,
 } from '@lactalink/utilities/extractors';
-import { ListRenderItem } from '@shopify/flash-list';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useController } from 'react-hook-form';
 import { GestureResponderEvent } from 'react-native';
 import { toast } from 'sonner-native';
-
-const STORAGE_KEY = MMKV_KEYS.ALERT.MILKBAG_VERIFICATION;
 
 export default function BagVerificationStep({
   onSubmit,
 }: {
   onSubmit: (result: DonationCreateResult | null) => void;
 }) {
-  const hasViewedHint = Storage.getBoolean(STORAGE_KEY);
-  const [showHint, setShowHint] = useState(!hasViewedHint);
+  const { hasViewedHint, closeHint } = useMilkBagVerificationHint();
 
   const { control, getValues, formState, handleSubmit, additionalState, trigger } =
     useForm<DonationCreateSchema>();
@@ -60,11 +55,6 @@ export default function BagVerificationStep({
     },
     [milkBags, onChange]
   );
-
-  function handleHintClose() {
-    Storage.set(STORAGE_KEY, true);
-    setShowHint(true);
-  }
 
   async function handleValidation(e: GestureResponderEvent) {
     const isValid = await trigger('details.bags');
@@ -128,9 +118,9 @@ export default function BagVerificationStep({
           footerClassName="mt-6 flex-1 justify-end"
           ListHeaderComponent={
             <HintAlert
-              visible={showHint}
+              visible={!hasViewedHint}
               message="Ensure that you affix/write the code to the exact milk bag."
-              onClose={handleHintClose}
+              onClose={closeHint}
             />
           }
           ListFooterComponent={
@@ -144,13 +134,15 @@ export default function BagVerificationStep({
               description={
                 <ScrollView
                   className="border-outline-200"
+                  contentContainerClassName="py-2"
                   style={{
                     maxHeight: 380,
                     borderTopWidth: 1,
                     borderBottomWidth: 1,
                   }}
                 >
-                  <DonationReviewCard data={getValues()} variant="ghost" className="p-2" />
+                  {/* @ts-expect-error - getValues is not properly typed to reflect nested fields */}
+                  <DonationReview data={getValues()} />
                 </ScrollView>
               }
               onTriggerPress={handleValidation}

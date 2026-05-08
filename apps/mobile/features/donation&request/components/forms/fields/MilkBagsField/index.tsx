@@ -16,7 +16,7 @@ import { MilkBagSchema } from '@lactalink/form-schemas';
 import { DonationCreateSchema } from '@lactalink/form-schemas/listings';
 import { AlertCircleIcon, MilkIcon, PlusIcon } from 'lucide-react-native';
 import { useState } from 'react';
-import { Control, useController } from 'react-hook-form';
+import { Control, FieldPath, useController } from 'react-hook-form';
 import { ViewProps } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import MilkBagFormSheet from './MilkBagFormSheet';
@@ -24,27 +24,32 @@ import MilkBagItem from './MilkBagItem';
 
 const AnimatedButton = Animated.createAnimatedComponent(Button);
 
-interface MilkBagsFieldProps extends Pick<ViewProps, 'style' | 'className'> {
+type FieldValues = Pick<DonationCreateSchema, 'details'>;
+
+interface MilkBagsFieldProps<TFieldValues extends FieldValues = FieldValues> extends Pick<
+  ViewProps,
+  'style' | 'className'
+> {
   isLoading?: boolean;
   isDisabled?: boolean;
-  control: Control<DonationCreateSchema>;
+  control: Control<TFieldValues>;
 }
 
-export default function MilkBagsField({
+export default function MilkBagsField<TFieldValues extends FieldValues = FieldValues>({
   isLoading,
   isDisabled,
   control,
   ...props
-}: MilkBagsFieldProps) {
+}: MilkBagsFieldProps<TFieldValues>) {
   const {
     field: { value: milkbags, onChange },
     fieldState: { error, invalid },
-  } = useController({ name: 'details.bags', control });
+  } = useController({ name: 'details.bags' as FieldPath<TFieldValues>, control });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedMilkBag, setSelectedMilkBag] = useState<MilkBagSchema | null>(null);
 
-  const { mutate: addMilkBag } = useAddMilkBagMutation(milkbags, onChange);
+  const { mutate: addMilkBag } = useAddMilkBagMutation(milkbags as MilkBagSchema[], onChange);
 
   function handleOnSheetClose() {
     setIsSheetOpen(false);
@@ -72,7 +77,7 @@ export default function MilkBagsField({
       )}
 
       <VStack space="sm" className="mt-2 items-stretch">
-        {milkbags.map((bag, index) => (
+        {(milkbags as MilkBagSchema[])?.map((bag, index) => (
           <MilkBagItem
             key={`milkbag-${index}-${bag.id}`}
             value={bag}
@@ -103,7 +108,7 @@ export default function MilkBagsField({
       <MilkBagFormSheet
         isOpen={isSheetOpen}
         onClose={handleOnSheetClose}
-        milkbags={milkbags}
+        milkbags={milkbags as MilkBagSchema[]}
         onChange={onChange}
         selectedMilkBag={selectedMilkBag}
       />
