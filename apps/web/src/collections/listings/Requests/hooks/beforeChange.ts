@@ -1,0 +1,57 @@
+import { hookLogger } from '@lactalink/agents/payload';
+import { Request } from '@lactalink/types/payload-generated-types';
+import { extractID } from '@lactalink/utilities/extractors';
+import { CollectionBeforeChangeHook, PayloadRequest } from 'payload';
+
+export const beforeChange: CollectionBeforeChangeHook<Request> = async ({
+  data,
+  req,
+  operation,
+  collection,
+}) => {
+  if (operation === 'update') {
+    const logger = hookLogger(req, collection.slug, 'beforeUpdate');
+    const { details } = data;
+    if (!details) return data;
+
+    const imageID = extractID(details?.image);
+    const upsertedImage = await upsertImage(req, imageID, logger);
+
+    if (upsertedImage) {
+      data.details = {
+        ...details,
+        image: upsertedImage.id,
+      };
+    }
+  }
+
+  return data;
+};
+
+async function upsertImage(
+  req: PayloadRequest,
+  imageID?: string | null,
+  logger?: ReturnType<typeof hookLogger>
+) {
+  const file = req.file;
+  if (!file) return null;
+
+  if (imageID) {
+    logger?.info('Updating request image', { imageID, hasFile: !!file });
+    return req.payload.update({
+      collection: 'images',
+      id: imageID,
+      data: {},
+      file: file,
+      req,
+    });
+  }
+
+  logger?.info('Creating request image', { hasFile: !!file });
+  return req.payload.create({
+    collection: 'images',
+    data: {},
+    file: file,
+    req,
+  });
+}

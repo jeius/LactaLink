@@ -11,6 +11,7 @@ import { afterChange } from '../_hooks/afterChange';
 import { afterDelete } from '../_hooks/afterDelete';
 import { donationsEndpoints } from './endpoints';
 import { filterMilkBagsOptions } from './filterOptions';
+import { beforeChange } from './hooks/beforeChange';
 import { beforeValidate } from './hooks/beforeValidate';
 
 export const Donations: CollectionConfig<'donations'> = {
@@ -29,6 +30,7 @@ export const Donations: CollectionConfig<'donations'> = {
   },
   hooks: {
     beforeValidate: [beforeValidate],
+    beforeChange: [beforeChange],
     afterChange: [afterChange],
     afterDelete: [afterDelete],
   },

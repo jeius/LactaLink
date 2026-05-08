@@ -20,7 +20,14 @@ export const afterChange: CollectionAfterChangeHook<Donation | Request> = async 
   if (operation === 'update') {
     const logger = hookLogger(req, collection.slug, 'afterUpdate');
 
-    await Promise.all([clearReadRecords(doc, req, collection, logger)]);
+    await Promise.all([
+      clearReadRecords(doc, req, collection, logger),
+      (async function () {
+        if (isDonation(doc)) {
+          await publishMilkbags(req, doc, logger);
+        }
+      })(),
+    ]);
   }
 
   return doc;
