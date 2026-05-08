@@ -37,7 +37,8 @@
         "PSGC_API_URL",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "CRON_SECRET"
       ]
     },
     "dev": {
