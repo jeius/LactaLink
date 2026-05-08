@@ -8,14 +8,29 @@ import { FieldHook } from 'payload';
  * Generate an expiry date based on the collectedAt date plus a defined number of days.
  * If an expiry date is already provided, it will be returned as is.
  */
-export const createExpiryDate: FieldHook<MilkBag, MilkBag['expiresAt']> = ({ data, value }) => {
-  if (value && value.trim() !== '') return value;
-
+export const createExpiryDate: FieldHook<MilkBag, MilkBag['expiresAt']> = ({
+  data,
+  value,
+  operation,
+}) => {
   // If no expiry date is set, generate one based on the collectedAt date
   const dateCollected = data?.collectedAt ?? new Date().toISOString();
-  const expiryDate = new Date(dateCollected);
+  let expiryDate = new Date(dateCollected);
+
+  if (isNaN(expiryDate.getTime())) {
+    // If collectedAt is invalid, default to current date
+    expiryDate = new Date();
+  }
+
   expiryDate.setDate(expiryDate.getDate() + MILK_EXPIRY_DAYS);
-  return expiryDate.toISOString();
+  const isoExpiryDate = expiryDate.toISOString();
+
+  if (operation === 'create') {
+    if (value && value.trim() !== '') return value;
+    return isoExpiryDate;
+  }
+
+  return isoExpiryDate;
 };
 
 /**
