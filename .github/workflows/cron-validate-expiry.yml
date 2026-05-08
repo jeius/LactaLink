@@ -58,4 +58,4 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            "$SERVER_URL/api/milk-bags/validate-expiry"
+            "$SERVER_URL/api/milkBags/validate-expiry"
