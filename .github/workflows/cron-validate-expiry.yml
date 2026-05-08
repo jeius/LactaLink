@@ -1,0 +1,61 @@
+name: CRON — Validate Milk Bag Expiry
+
+on:
+  schedule:
+    # Runs daily at midnight UTC
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: environment
+        default: production
+
+jobs:
+  validate-expiry:
+    name: Call validate-expiry endpoint
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'production' }}
+
+    steps:
+      - name: 🔑 Generate CRON JWT
+        id: generate_token
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          TOKEN=$(node -e "
+            const crypto = require('crypto');
+            const secret = process.env.CRON_SECRET;
+            if (!secret) { console.error('CRON_SECRET is not set'); process.exit(1); }
+
+            const b64url = (s) =>
+              Buffer.from(s)
+                .toString('base64')
+                .replace(/=/g, '')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_');
+
+            const now = Math.floor(Date.now() / 1000);
+            const header  = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+            const payload = b64url(JSON.stringify({ iat: now, exp: now + 300 }));
+            const sig = crypto
+              .createHmac('sha256', secret)
+              .update(header + '.' + payload)
+              .digest('base64url');
+
+            console.log(header + '.' + payload + '.' + sig);
+          ")
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: 🥛 Trigger validate-expiry endpoint
+        env:
+          SERVER_URL: ${{ vars.SERVER_URL }}
+          TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          curl --fail-with-body \
+            --silent \
+            --show-error \
+            -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            "$SERVER_URL/api/milk-bags/validate-expiry"
