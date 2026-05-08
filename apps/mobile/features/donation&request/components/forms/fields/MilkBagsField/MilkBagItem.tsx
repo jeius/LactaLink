@@ -1,3 +1,4 @@
+import { Image } from '@/components/Image';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonSpinner } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -44,7 +45,7 @@ export default function MilkBagItem({
 }: ListItemProps) {
   const containerRef = useAnimatedRef<Animated.View>();
 
-  const { collectedAt, volume, id } = data;
+  const { collectedAt, volume, id, bagImage } = data;
   const isTemp = isTempID(id);
 
   const { mutateAsync: handleRemove, isPending: isDeleting } = useMutation({
@@ -99,9 +100,20 @@ export default function MilkBagItem({
                 </>
               ) : (
                 <>
-                  <Box className="h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary-50">
-                    <Icon as={MilkIcon} size="2xl" color={getPrimaryColor('600')} />
-                  </Box>
+                  {bagImage ? (
+                    <Box className="h-12 w-12 overflow-hidden rounded-md bg-primary-50">
+                      <Image
+                        alt={bagImage.alt || 'Milk Bag Image'}
+                        source={{ uri: bagImage.url }}
+                        placeholder={{ blurhash: bagImage.blurhash }}
+                        className="h-full w-full"
+                      />
+                    </Box>
+                  ) : (
+                    <Box className="h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary-50">
+                      <Icon as={MilkIcon} size="2xl" color={getPrimaryColor('600')} />
+                    </Box>
+                  )}
                   <VStack className="flex-1">
                     <HStack space="xs" className="items-center">
                       <Text bold>{displayVolume(volume)}</Text>
