@@ -4,10 +4,10 @@ import { NullableValidator } from '@lactalink/agents/payload';
 import { MILK_BAG_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
 import { admin, authenticated, collectionCreatorOrAdmin } from '../_access-control';
+import { endpoints } from './endpoints';
 import { afterChange } from './hooks/afterChange';
 import { afterDelete } from './hooks/afterDelete';
 import { beforeChange } from './hooks/beforeChange';
-import { beforeRead } from './hooks/beforeRead';
 import { beforeValidate } from './hooks/beforeValidate';
 import { createExpiryDate, generateCode } from './hooks/fieldHook';
 
@@ -32,11 +32,11 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
   trash: true,
   hooks: {
     beforeValidate: [beforeValidate],
-    beforeRead: [beforeRead],
     beforeChange: [beforeChange],
     afterChange: [afterChange],
     afterDelete: [afterDelete],
   },
+  endpoints: endpoints,
   indexes: [{ fields: ['status'] }, { fields: ['expiresAt'] }],
   defaultPopulate: {
     _status: true,
@@ -153,7 +153,7 @@ export const MilkBags: CollectionConfig<'milkBags'> = {
                   name: 'expiresAt',
                   type: 'date',
                   required: true,
-                  hooks: { beforeChange: [createExpiryDate] },
+                  hooks: { beforeValidate: [createExpiryDate] },
                   validate: NullableValidator.date,
                   admin: {
                     description:
