@@ -51,6 +51,7 @@ jobs:
         env:
           SERVER_URL: ${{ vars.SERVER_URL }}
           TOKEN: ${{ steps.generate_token.outputs.token }}
+          VERCEL_AUTOMATION_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           RESPONSE=$(curl --fail-with-body \
             --silent \
@@ -58,5 +59,6 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
+            -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS}" \
             "$SERVER_URL/api/milkBags/validate-expiry")
           echo "Response: $RESPONSE"
