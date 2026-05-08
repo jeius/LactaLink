@@ -30,6 +30,7 @@ declare global {
       GOOGLE_CLOUD_VISION_API_KEY: string;
       GOOGLE_ROUTES_API_KEY: string;
       ENABLE_DEBUG_LOGS?: number;
+      CRON_SECRET: string;
     }
   }
 }

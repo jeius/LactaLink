@@ -26,7 +26,9 @@ import {
 } from 'payload';
 import { abortableAPIHandler } from './abortableHandler';
 import { createInternalServerError, createTimeoutError } from './createError';
+import { verifyCRONJWT } from './cronJwt';
 import { isAbortErrorStatus } from './errorChecker';
+import { extractToken } from './extractToken';
 import { isAdmin } from './isAdmin';
 
 /**
@@ -46,6 +48,13 @@ export interface HandlerOptions<T = unknown> {
    * @default true
    */
   requireAuth?: boolean;
+
+  /**
+   * Whether the handler can only be executed by a CRON robot.
+   *
+   * @default false
+   */
+  requireCRONRobot?: boolean;
 
   /**
    * Maximum time (in milliseconds) to allow for the handler to execute before timing out.
@@ -92,6 +101,7 @@ export interface HandlerOptions<T = unknown> {
 export function createPayloadHandler<T>({
   requireAdmin = false,
   requireAuth = true,
+  requireCRONRobot = false,
   handler,
   maxDuration = 30 * 1000,
   successMessage,
@@ -116,24 +126,54 @@ export function createPayloadHandler<T>({
     }, maxDuration);
 
     try {
-      if ((requireAuth || requireAdmin) && !user) {
-        const status = HttpStatus.UNAUTHORIZED;
-        throw new APIError(
-          t('error:unauthorized'),
-          status,
-          { message: HttpStatus[`${status}_MESSAGE`] },
-          true
-        );
-      }
+      const anyRequirement = requireAuth || requireAdmin || requireCRONRobot;
 
-      if (requireAdmin && !isAdmin(user)) {
-        const status = HttpStatus.FORBIDDEN;
-        throw new APIError(
-          t('error:unauthorizedAdmin'),
-          status,
-          { message: HttpStatus[`${status}_MESSAGE`] },
-          true
-        );
+      if (anyRequirement) {
+        // Each enabled requirement is checked independently.
+        // Auth passes if at least one is satisfied (OR logic).
+        let authSatisfied = false;
+
+        if (requireAuth && user) {
+          authSatisfied = true;
+        }
+
+        if (!authSatisfied && requireAdmin && user) {
+          if (isAdmin(user)) {
+            authSatisfied = true;
+          }
+        }
+
+        if (!authSatisfied && requireCRONRobot) {
+          const token = extractToken(req.headers, 'Bearer');
+          if (token) {
+            // verifyCRONJWT throws APIError(401) on failure, letting it propagate
+            await verifyCRONJWT(token);
+            authSatisfied = true;
+          }
+        }
+
+        if (!authSatisfied) {
+          // If only requireAdmin was enabled and the user is present but not admin,
+          // return 403 Forbidden rather than 401 Unauthorized.
+          const onlyAdminRequired = requireAdmin && !requireAuth && !requireCRONRobot;
+          if (onlyAdminRequired && user) {
+            const status = HttpStatus.FORBIDDEN;
+            throw new APIError(
+              t('error:unauthorizedAdmin'),
+              status,
+              { message: HttpStatus[`${status}_MESSAGE`] },
+              true
+            );
+          }
+
+          const status = HttpStatus.UNAUTHORIZED;
+          throw new APIError(
+            t('error:unauthorized'),
+            status,
+            { message: HttpStatus[`${status}_MESSAGE`] },
+            true
+          );
+        }
       }
 
       // Since data and files are not automatically parsed by Payload for custom endpoints,
