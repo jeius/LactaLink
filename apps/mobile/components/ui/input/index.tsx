@@ -77,6 +77,11 @@ const inputIconStyle = tva({
       lg: 'h-5 w-5',
       xl: 'h-6 w-6',
     },
+    variant: {
+      underlined: 'mr-3',
+      outline: '',
+      rounded: '',
+    },
   },
 });
 
@@ -143,7 +148,7 @@ const InputIcon = forwardRef<ComponentRef<typeof UIInput.Icon>, IInputIconProps>
   { className, size, recyclingKey: _, ...props },
   ref
 ) {
-  const { size: parentSize } = useStyleContext(SCOPE);
+  const { size: parentSize, variant: parentVariant } = useStyleContext(SCOPE);
   const isFocused = useInputIsFocused();
 
   if (typeof size === 'number') {
@@ -171,7 +176,7 @@ const InputIcon = forwardRef<ComponentRef<typeof UIInput.Icon>, IInputIconProps>
       className={inputIconStyle({
         isFocused,
         class: className,
-        parentVariants: { size: parentSize },
+        parentVariants: { size: parentSize, variant: parentVariant },
       })}
     />
   );
