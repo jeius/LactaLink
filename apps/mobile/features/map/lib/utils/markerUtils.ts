@@ -6,9 +6,11 @@ import {
 } from '@/lib/constants/markerSvgs';
 import { getCurrentCoordinates } from '@/lib/stores/locationStore';
 import { createMarkerId } from '@/lib/utils/markerUtils';
-import { Coordinates } from '@lactalink/types';
+import { Coordinates, PopulatedUserProfile } from '@lactalink/types';
 import { Donation, Hospital, MilkBank, Request } from '@lactalink/types/payload-generated-types';
 import { displayVolume } from '@lactalink/utilities';
+import { extractCollection } from '@lactalink/utilities/extractors';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { getDistance } from '@lactalink/utilities/geolib';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import { RNMarker, RNPolyline } from 'react-native-google-maps-plus';
@@ -85,7 +87,10 @@ export function markersReducer(
   remove.forEach((id) => next.delete(id));
 
   // Merge new/updated markers.
-  add.forEach((value, key) => next.set(key, value));
+  add.forEach((value, key) => {
+    if (next.has(key)) return;
+    next.set(key, value);
+  });
 
   // Sort markers by distance to current location so that nearby markers are
   // more likely to be visible if the total number exceeds the map's marker limit.
@@ -120,5 +125,39 @@ export function createDirectionsPolyline(
     lineCap: 'round',
     lineJoin: 'round',
     zIndex: 99999,
+  };
+}
+
+/**
+ * Creates a `DataMarker` for an organization profile, extracting the necessary
+ * information from the profile data and formatting it for display on the map.
+ *
+ * The organization must have a default address with coordinates for the marker to be created.
+ *
+ * @param data The populated user profile data for the organization.
+ * @returns A `DataMarker` object containing the map marker data and the original profile data.
+ * @throws Will throw an error if the organization profile is missing a default address with coordinates.
+ */
+export function createDataMarkerFromOrg(
+  data: Exclude<PopulatedUserProfile, { relationTo: 'individuals' }>
+): DataMarker {
+  const docValue = data.value;
+
+  const defaultAddress = extractCollection(docValue.defaultAddress);
+  if (!defaultAddress || !defaultAddress.coordinates) {
+    throw new Error('Organization profile is missing a default address with coordinates');
+  }
+
+  const mapMarker: MapMarker = {
+    id: docValue.id,
+    type: data.relationTo,
+    title: docValue.displayName || 'Unknown Organization',
+    snippet: createMarkerSnippet(docValue),
+    coordinate: pointToLatLng(defaultAddress.coordinates),
+  };
+
+  return {
+    data: mapMarker,
+    marker: mapMarkerToRNMarker(mapMarker),
   };
 }

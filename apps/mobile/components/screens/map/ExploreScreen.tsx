@@ -1,12 +1,11 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { Box } from '@/components/ui/box';
-import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { useDirectionIsActive } from '@/features/directions/components/DirectionsProvider';
 import DirectionDetails from '@/features/map/components/DirectionDetails';
 import MapLayout from '@/features/map/components/MapLayout';
 import MapListings from '@/features/map/components/MapListings';
+import MapSearchInput from '@/features/map/components/MapSearchInput';
 import MarkerDetailsSheet from '@/features/map/components/MarkerDetailsSheet';
-import { SearchIcon } from 'lucide-react-native';
 import { ViewProps } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,13 +20,10 @@ export default function ExploreScreen() {
         pointerEvents="box-none"
         style={{ paddingTop: insets.top }}
       >
-        <FadeView fadeDirection="up" className="flex-row items-center gap-2 py-2 pl-3 pr-5">
+        <FadeView fadeDirection="up" className="flex-row gap-2 py-2 pl-3 pr-5">
           <HeaderBackButton />
 
-          <Input variant="rounded" className="flex-1 bg-background-0 shadow">
-            <InputIcon as={SearchIcon} className="ml-3" />
-            <InputField numberOfLines={1} placeholder="Search here..." />
-          </Input>
+          <MapSearchInput className="flex-1" />
         </FadeView>
 
         <FadeView fadeDirection="down">

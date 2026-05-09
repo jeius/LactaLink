@@ -105,9 +105,10 @@ function createMarkerStore() {
 
       addMarker: (dataMarker) => {
         const { markersMap: markerMap } = get();
+        if (markerMap.has(dataMarker.marker.id)) return;
+
         const newMap = new Map(markerMap);
         newMap.set(dataMarker.marker.id, dataMarker);
-
         const newMarkers = Array.from(newMap.values()).map((dm) => dm.marker);
         set({ markers: newMarkers, markersMap: newMap });
       },
