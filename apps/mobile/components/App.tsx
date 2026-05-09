@@ -4,6 +4,8 @@ import { useOnboardingStore } from '@/lib/stores/onboardingStore';
 import { Stack, usePathname } from 'expo-router';
 import LoadingSpinner from './loaders/LoadingSpinner';
 
+const restrictedOnValidAuth = ['/auth/sign-up', '/auth/sign-in', '/auth/forgot-password'];
+
 export function App() {
   const screenOptions = useScreenOptions();
   const pathname = usePathname();
@@ -16,7 +18,7 @@ export function App() {
   }
 
   const isAuthenticated = !!(user && session);
-  const isResettingPassword = pathname.includes('/auth/reset-password');
+  const isRestrictedOnValidAuth = restrictedOnValidAuth.includes(pathname);
 
   let initialRoute: string = '(root)';
 
@@ -38,11 +40,11 @@ export function App() {
           <Stack.Screen name="index" />
         </Stack.Protected>
 
-        <Stack.Protected guard={isAuthenticated && !isResettingPassword}>
+        <Stack.Protected guard={isAuthenticated}>
           <Stack.Screen name="(root)" />
         </Stack.Protected>
 
-        <Stack.Protected guard={!isAuthenticated || isResettingPassword}>
+        <Stack.Protected guard={!isAuthenticated || !isRestrictedOnValidAuth}>
           <Stack.Screen name="auth" />
         </Stack.Protected>
       </Stack>
