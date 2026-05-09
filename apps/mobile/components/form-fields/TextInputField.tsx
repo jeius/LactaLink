@@ -9,7 +9,7 @@ import {
   BottomSheetInputField,
   BottomSheetInputIcon,
 } from '../ui/bottom-sheet/input';
-import { Input, InputField, InputFieldProps, InputIcon, InputProps } from '../ui/input';
+import { Input, InputField, InputFieldProps, InputIcon, InputProps, InputSlot } from '../ui/input';
 import { Pressable } from '../ui/pressable';
 import { Skeleton } from '../ui/skeleton';
 import { FieldWrapper } from './FieldWrapper';
@@ -98,11 +98,13 @@ export function TextInputField<
           variant={variant}
         >
           {icon && (
-            <InputIconComp
-              as={icon}
-              recyclingKey={recyclingKey}
-              className={iconStyle({ className: iconClassName })}
-            />
+            <InputSlot>
+              <InputIconComp
+                as={icon}
+                recyclingKey={recyclingKey}
+                className={iconStyle({ className: iconClassName })}
+              />
+            </InputSlot>
           )}
 
           <InputFieldComp
