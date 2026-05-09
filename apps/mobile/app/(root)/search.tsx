@@ -1,11 +1,11 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { NoData } from '@/components/NoData';
-import { RefreshControl } from '@/components/RefreshControl';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { InfiniteFlashList } from '@/components/ui/list';
+import { Spinner } from '@/components/ui/spinner';
 import { VStack } from '@/components/ui/vstack';
 import { SearchHeader } from '@/features/user-search/components/SearchHeader';
 import SearchItem from '@/features/user-search/components/SearchItem';
@@ -13,11 +13,10 @@ import { useUserSearch } from '@/features/user-search/hooks/useUserSearch';
 import { useUserSearchHistory } from '@/features/user-search/hooks/useUserSearchHistory';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { UserSearch as Search } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
-import { FlashList } from '@shopify/flash-list';
+import { extractID, listKeyExtractor } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
-import { XIcon } from 'lucide-react-native';
-import React, { useEffect, useRef } from 'react';
+import { SearchIcon, XIcon } from 'lucide-react-native';
+import { useEffect, useRef, useState } from 'react';
 import { TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -33,16 +32,15 @@ export default function SearchPage() {
     setSearchTerm,
     clearSearch,
     willSearch,
-    isLoading,
     isRefetching,
     refetch,
     searchResults,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
+    ...searchQuery
   } = useUserSearch();
 
   const { history, addToHistory, clearHistory, removeFromHistory } = useUserSearchHistory(meUser);
+
+  const [inputValue, setInputValue] = useState(searchTerm);
 
   // Focus the search input on mount
   useEffect(() => {
@@ -52,7 +50,7 @@ export default function SearchPage() {
   // Clear the search input field
   function handleClearSearch() {
     clearSearch();
-    inputRef.current?.clear();
+    setInputValue('');
   }
 
   // Handle selecting a search result
@@ -71,24 +69,35 @@ export default function SearchPage() {
         <HeaderBackButton />
 
         <Input size="md" variant="rounded" className="mx-2 flex-1">
+          <InputSlot className="ml-2">
+            <InputIcon as={SearchIcon} />
+          </InputSlot>
           <InputField
-            //@ts-expect-error Gluestack ref type mismatch
             ref={inputRef}
+            className="px-2"
             placeholder="Search donors, hospitals, milk banks..."
-            defaultValue={searchTerm}
-            onChangeText={setSearchTerm}
+            value={inputValue}
+            onChangeText={(text) => {
+              setInputValue(text);
+              setSearchTerm(text);
+            }}
             keyboardType="web-search"
             autoCorrect={false}
             autoCapitalize="words"
             autoComplete="name"
           />
+          {searchQuery.isFetching && (
+            <InputSlot className="mr-2">
+              <Spinner size={'small'} />
+            </InputSlot>
+          )}
           {searchTerm && (
-            <InputSlot>
+            <InputSlot aria-label="Clear Search" role="button">
               <Button
                 size="sm"
-                variant="link"
+                variant="ghost"
                 action="default"
-                className="mr-4 h-fit w-fit p-0"
+                className="mr-2 h-fit w-fit rounded-full p-2"
                 onPress={handleClearSearch}
                 hitSlop={8}
               >
@@ -100,24 +109,20 @@ export default function SearchPage() {
       </HStack>
       <Divider />
       <Box className="w-full flex-1">
-        <FlashList
+        <InfiniteFlashList
+          {...searchQuery}
           data={willSearch ? searchResults : history || []}
-          keyExtractor={(item) => item.id}
-          keyboardShouldPersistTaps="handled"
+          keyExtractor={listKeyExtractor}
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          emptyListLabel="No results found"
           ListHeaderComponent={
             <SearchHeader
               isSearchMode={willSearch}
-              isLoading={isLoading}
               history={history}
               onClearHistory={clearHistory}
             />
           }
-          ListEmptyComponent={() =>
-            !isLoading && <NoData title="No results found" style={{ marginTop: 112 }} />
-          }
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-          onEndReachedThreshold={0.25}
-          onEndReached={hasNextPage && !isFetchingNextPage ? fetchNextPage : undefined}
           renderItem={({ item }) => (
             <SearchItem
               item={item}

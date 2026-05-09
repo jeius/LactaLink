@@ -1,11 +1,10 @@
-import { AnimatedPressable } from '@/components/animated/pressable';
-import { ProfileAvatar } from '@/components/Avatar';
+import Avatar from '@/components/Avatar';
 import { Button, ButtonIcon } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { UserSearch as Search } from '@lactalink/types/payload-generated-types';
 import { XIcon } from 'lucide-react-native';
-import React from 'react';
 
 type SearchItemProps = {
   item: Search;
@@ -30,13 +29,9 @@ export default function SearchItem({
   }
 
   return (
-    <AnimatedPressable
-      disablePressAnimation
-      className="flex-row items-center px-5 py-3"
-      onPress={handlePress}
-    >
+    <Pressable className="flex-row items-center px-5 py-3" onPress={handlePress}>
       <HStack space="sm" className="flex-1 items-center">
-        <ProfileAvatar profile={doc} className="h-10 w-10" />
+        <Avatar profile={doc} className="h-10 w-10" />
         <Text className="shrink font-JakartaMedium" ellipsizeMode="tail" numberOfLines={1}>
           {title}
         </Text>
@@ -52,6 +47,6 @@ export default function SearchItem({
           <ButtonIcon as={XIcon} />
         </Button>
       )}
-    </AnimatedPressable>
+    </Pressable>
   );
 }

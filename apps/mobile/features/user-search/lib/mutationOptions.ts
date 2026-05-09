@@ -63,7 +63,7 @@ export function createClearHistoryMutationOptions(user: User | null) {
     mutationFn: () => {
       const apiClient = getApiClient();
       const storageKey = createStorageKey(user);
-      Storage.delete(storageKey);
+      Storage.remove(storageKey);
       return apiClient.updatePreference(MMKV_KEYS.SEARCH_HISTORY, []);
     },
     onMutate: async (_, { client }) => {
