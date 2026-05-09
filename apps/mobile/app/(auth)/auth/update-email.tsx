@@ -6,6 +6,7 @@ import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { OTPSearchParams } from '@/lib/types/searchParams';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/form-schemas';
 import { useRouter } from 'expo-router';
@@ -29,8 +30,13 @@ export default function UpdateEmail() {
 
   async function onSubmit({ email }: Schema) {
     try {
-      const message = await updateEmail(email);
-      toast.success(message);
+      await updateEmail(email);
+      const params: OTPSearchParams = {
+        email,
+        type: 'email_change',
+        redirect: '/account/settings',
+      };
+      router.push({ pathname: '/auth/verify-otp', params });
     } catch (error) {
       toast.error('Failed to update email. Please try again.');
       console.error('Error updating email:', error);

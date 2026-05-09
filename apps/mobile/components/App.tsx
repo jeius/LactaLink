@@ -1,14 +1,11 @@
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { useOnboardingStore } from '@/lib/stores/onboardingStore';
-import { Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import LoadingSpinner from './loaders/LoadingSpinner';
-
-const restrictedOnValidAuth = ['/auth/sign-up', '/auth/sign-in', '/auth/forgot-password'];
 
 export function App() {
   const screenOptions = useScreenOptions();
-  const pathname = usePathname();
   const { user, session, isLoading } = useAuth();
 
   const viewedOnboarding = useOnboardingStore((s) => s.viewed);
@@ -18,24 +15,20 @@ export function App() {
   }
 
   const isAuthenticated = !!(user && session);
-  const isRestrictedOnValidAuth = restrictedOnValidAuth.includes(pathname);
 
   let initialRoute: string = '(root)';
 
   if (!viewedOnboarding) {
     initialRoute = 'index';
   } else if (!isAuthenticated) {
-    initialRoute = 'auth';
+    initialRoute = '(auth)/(entry)/auth';
+  } else {
+    initialRoute = '(root)';
   }
 
   return (
     <>
-      <Stack
-        initialRouteName={initialRoute}
-        screenOptions={{
-          ...screenOptions,
-        }}
-      >
+      <Stack initialRouteName={initialRoute} screenOptions={screenOptions}>
         <Stack.Protected guard={!viewedOnboarding}>
           <Stack.Screen name="index" />
         </Stack.Protected>
@@ -44,8 +37,8 @@ export function App() {
           <Stack.Screen name="(root)" />
         </Stack.Protected>
 
-        <Stack.Protected guard={!isAuthenticated || !isRestrictedOnValidAuth}>
-          <Stack.Screen name="auth" />
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)/(entry)/auth" />
         </Stack.Protected>
       </Stack>
     </>
