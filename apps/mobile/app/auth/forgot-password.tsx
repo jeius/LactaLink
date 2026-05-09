@@ -1,8 +1,9 @@
-import { resetPassword } from '@/auth';
+import { requestPasswordChange } from '@/auth';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import { Form } from '@/components/contexts/FormProvider';
 import { TextInputField } from '@/components/form-fields/TextInputField';
+import { Image } from '@/components/Image';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
@@ -15,15 +16,12 @@ import { VStack } from '@/components/ui/vstack';
 
 import { getHexColor } from '@/lib/colors';
 import { getImageAsset } from '@/lib/stores';
+import { OTPSearchParams } from '@/lib/types/searchParams';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emailSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-
+import { useRouter } from 'expo-router';
 import { ChevronLeftIcon, MailIcon } from 'lucide-react-native';
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner-native';
 import * as z from 'zod/v4';
@@ -33,6 +31,7 @@ type Schema = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
   const { theme } = useTheme();
+  const router = useRouter();
 
   const gradientColors = [
     'transparent',
@@ -47,7 +46,7 @@ export default function ForgotPassword() {
   const { isSubmitting } = methods.formState;
 
   async function onSubmit({ email }: Schema) {
-    const resetPromise = resetPassword(email);
+    const resetPromise = requestPasswordChange(email);
 
     toast.promise(resetPromise, {
       loading: 'Requesting reset...',
@@ -56,6 +55,9 @@ export default function ForgotPassword() {
     });
 
     await resetPromise;
+
+    const params: OTPSearchParams = { email, type: 'recovery' };
+    router.push({ pathname: '/auth/verify-otp', params });
   }
 
   return (

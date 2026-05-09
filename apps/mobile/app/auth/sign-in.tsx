@@ -1,6 +1,5 @@
+//@ts-expect-error - No type definitions for this file yet
 import Logo from '@/assets/svgs/logo.svg';
-
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import SignInForm from '@/components/forms/SignInForm';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
@@ -11,20 +10,13 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-
-import { getHexColor } from '@/lib/colors';
+import { getPrimaryColor } from '@/lib/colors';
 import { getImageAsset } from '@/lib/stores';
-
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import React from 'react';
+import { Link } from 'expo-router';
 
 export default function SignIn() {
-  const { theme } = useTheme();
-  const gradientColors = [
-    'transparent',
-    (getHexColor(theme, 'primary', 50) as string) || 'transparent',
-  ] as const;
+  const gradientColors = ['transparent', getPrimaryColor('50')] as const;
 
   return (
     <SafeArea className="items-stretch justify-start">
@@ -51,9 +43,11 @@ export default function SignIn() {
             <Text size="md" className="text-typography-600">
               Don&apos;t have an account?
             </Text>
-            <Button size="md" variant="link" onPress={() => router.push('/auth/sign-up')}>
-              <ButtonText className="text-primary-500">Create account</ButtonText>
-            </Button>
+            <Link asChild href="/auth/sign-up">
+              <Button size="md" variant="link" className="px-0">
+                <ButtonText className="text-primary-500">Create account</ButtonText>
+              </Button>
+            </Link>
           </HStack>
 
           <SignInForm />
