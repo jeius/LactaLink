@@ -4,7 +4,7 @@ import { RESEND_OTP } from '@/lib/constants';
 import { VerifyOtp } from '@lactalink/types/auth';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { formatTime } from '@lactalink/utilities/formatters';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner-native';
 
 export default function SendAgain(params: VerifyOtp) {
@@ -32,10 +32,6 @@ export default function SendAgain(params: VerifyOtp) {
     await sendOtpPromise;
     setIsSending(false);
   };
-
-  useEffect(() => {
-    setSecondsLeft(RESEND_OTP);
-  }, []);
 
   useEffect(() => {
     if (secondsLeft <= 0) return;

@@ -1,3 +1,5 @@
+import { VerifyOtpSearchParams } from '@lactalink/types/auth';
+
 export type MapPageSearchParams = {
   mrk?: string;
   lat?: string;
@@ -12,3 +14,5 @@ export type FeedCommentsSearchParams = {
 export type RedirectSearchParams = {
   redirect?: string;
 };
+
+export type OTPSearchParams = VerifyOtpSearchParams & RedirectSearchParams;

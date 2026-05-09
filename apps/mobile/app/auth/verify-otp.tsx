@@ -1,6 +1,7 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
 import OTPForm from '@/components/forms/OTPForm';
 import SendAgain from '@/components/forms/OTPForm/SendAgain';
+import { Image } from '@/components/Image';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
 import SafeArea from '@/components/SafeArea';
 
@@ -12,11 +13,10 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
 import { getImageAsset } from '@/lib/stores';
-import type { VerifyOtp, VerifyOtpSearchParams } from '@lactalink/types/auth';
+import { OTPSearchParams } from '@/lib/types/searchParams';
+import type { VerifyOtp } from '@lactalink/types/auth';
 
-import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
 
 export default function VerifyOTP() {
   const { theme } = useTheme();
@@ -25,7 +25,7 @@ export default function VerifyOTP() {
     (getHexColor(theme, 'primary', 50) as string) || 'transparent',
   ] as const;
 
-  const searchParams = useLocalSearchParams<VerifyOtpSearchParams>();
+  const { redirect, ...searchParams } = useLocalSearchParams<OTPSearchParams>();
   const recipient = 'email' in searchParams ? searchParams.email : searchParams.phone;
   const params: VerifyOtp = { ...searchParams };
 
@@ -63,7 +63,7 @@ export default function VerifyOTP() {
           </VStack>
 
           <Box className="p-5">
-            <OTPForm {...params} />
+            <OTPForm {...params} redirect={redirect} />
           </Box>
 
           <VStack className="mx-auto items-center p-5">

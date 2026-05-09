@@ -5,19 +5,22 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { getHexColor } from '@/lib/colors';
-import { OtpSchema, otpSchema } from '@lactalink/form-schemas';
-
+import { RedirectSearchParams } from '@/lib/types/searchParams';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { OtpSchema, otpSchema } from '@lactalink/form-schemas';
 import { VerifyOtp } from '@lactalink/types/auth';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-
-import React from 'react';
+import { Href, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { OtpInput } from 'react-native-otp-entry';
 import { toast } from 'sonner-native';
 
-export default function OTPForm(props: VerifyOtp) {
+export default function OTPForm({
+  redirect: redirectTo,
+  ...props
+}: VerifyOtp & RedirectSearchParams) {
+  const router = useRouter();
+
   const {
     control,
     formState: { isSubmitting, errors },
@@ -43,6 +46,21 @@ export default function OTPForm(props: VerifyOtp) {
     });
 
     await verifyPromise;
+
+    switch (props.type) {
+      case 'recovery':
+        router.replace((redirectTo || '/auth/reset-password') as Href);
+        break;
+      case 'signup':
+        router.replace((redirectTo || '/profile/setup') as Href);
+        break;
+      case 'email_change':
+        router.replace((redirectTo || '/account/settings') as Href);
+        break;
+      default:
+        router.replace((redirectTo || '/feed') as Href);
+        break;
+    }
   }
 
   return (
