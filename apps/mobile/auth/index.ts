@@ -1,4 +1,3 @@
-import { AUTH_TOAST_ID } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
 import { SignInSchema } from '@lactalink/form-schemas';
 
@@ -20,8 +19,6 @@ import { router } from 'expo-router';
 import { toast } from 'sonner-native';
 
 export * from './googleSignIn';
-
-const toastID = AUTH_TOAST_ID;
 
 export async function signIn(formData: SignInSchema) {
   const apiClient = getApiClient();
@@ -76,13 +73,12 @@ export async function verifyOTP(params: VerifyOtpParams) {
 
   switch (params.type) {
     case 'recovery':
-      router.replace('/auth/reset-password');
       return 'OTP verified. You can now reset your password.';
     case 'signup':
-      router.replace('/profile/setup');
       return 'OTP verified. You can now complete your profile setup.';
+    case 'email_change':
+      return 'OTP verified. Your email has been updated.';
     default:
-      router.replace('/feed');
       break;
   }
   return 'OTP verified successfully.';
@@ -105,22 +101,24 @@ export async function updatePassword(password: string) {
   const apiClient = getApiClient();
   await apiClient.auth.updatePassword(password);
 
-  if (router.canDismiss()) {
-    router.dismiss();
-  } else {
-    await signOut();
-    router.replace('/auth/sign-in');
-  }
-
   return 'Password updated successfully.';
 }
 
-export async function resetPassword(email: string) {
+export async function updateEmail(email: string) {
+  const apiClient = getApiClient();
+  await apiClient.auth.updateEmail(email);
+  return 'Email updated successfully.';
+}
+
+export async function requestPasswordChange(email: string) {
   const apiClient = getApiClient();
   await apiClient.auth.resetPasswordForEmail(email);
 
-  const params: VerifyOtpSearchParams = { email, type: 'recovery' };
-  router.push({ pathname: '/auth/verify-otp', params });
+  return `Verification code sent to ${email}.`;
+}
 
+export async function requestEmailChange(email: string) {
+  const apiClient = getApiClient();
+  await apiClient.auth.sendVerification({ email, type: 'email_change' });
   return `Verification code sent to ${email}.`;
 }
