@@ -615,6 +615,7 @@ export interface User {
   picture?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   collection: 'users';
 }
 /**
@@ -4280,6 +4281,7 @@ export interface UsersSelect<T extends boolean = true> {
   picture?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

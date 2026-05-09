@@ -12,9 +12,11 @@ begin
     select exists (select 1 from public.users where auth_id = old.id) into public_user_exists;
 
     if public_user_exists then
-      delete from public.users where auth_id = old.id;
+      update public.users
+      set deleted_at = now(), auth_id = null
+      where auth_id = old.id;
     else
-      raise warning 'Public user with auth_id % not found when deleting user %', old.id, old.id;
+      raise warning 'Public user with auth_id % not found when soft-deleting user %', old.id, old.id;
     end if;
   end if;
 

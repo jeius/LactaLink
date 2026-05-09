@@ -17,6 +17,7 @@ export const Users: CollectionConfig<'users'> = {
     afterLogout: [signOut],
     afterMe: [afterMe],
   },
+  trash: true,
   auth: {
     disableLocalStrategy: true,
     strategies: [{ name: 'supabase-auth', authenticate: SupabaseStrategy }],

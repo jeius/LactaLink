@@ -2,7 +2,7 @@ import { createSupabaseServerClient } from '@/lib/api/init/server';
 import { extractToken } from '@/lib/utils/extractToken';
 import { users } from '@db/drizzle/schema';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { eq } from '@payloadcms/db-postgres/drizzle';
+import { and, eq, isNull } from '@payloadcms/db-postgres/drizzle';
 import { AuthError, SupabaseClient, User } from '@supabase/supabase-js';
 import status from 'http-status';
 import { cookies } from 'next/headers';
@@ -28,7 +28,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     const [authenticatedUser] = await payload.db.drizzle
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.authId, sbUser.id))
+      .where(and(eq(users.authId, sbUser.id), isNull(users.deletedAt)))
       .limit(1);
 
     if (!authenticatedUser) {
@@ -40,6 +40,7 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
       id: authenticatedUser.id,
       collection: collectionSlug,
       depth: collection.config.auth.depth,
+      trash: false,
     });
 
     const user: AuthStrategyResult['user'] = {

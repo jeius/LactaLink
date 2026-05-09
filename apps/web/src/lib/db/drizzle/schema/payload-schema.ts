@@ -1399,6 +1399,7 @@ export const users = pgTable(
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
     authId: uuid('auth_id'),
   },
   (columns) => [
@@ -1406,6 +1407,7 @@ export const users = pgTable(
     uniqueIndex('users_phone_idx').on(columns.phone),
     index('users_updated_at_idx').on(columns.updatedAt),
     index('users_created_at_idx').on(columns.createdAt),
+    index('users_deleted_at_idx').on(columns.deletedAt),
   ]
 );
 
