@@ -62,7 +62,7 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'items-center justify-center text-typography-700',
+  base: 'items-center justify-center text-typography-600',
   variants: {
     isFocused: {
       true: 'text-primary-500',
