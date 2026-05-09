@@ -55,7 +55,7 @@ export default function OTPForm({
         router.replace((redirectTo || '/profile/setup') as Href);
         break;
       case 'email_change':
-        router.replace((redirectTo || '/account/settings') as Href);
+        router.dismissTo((redirectTo || '/account/settings') as Href);
         break;
       default:
         router.replace((redirectTo || '/feed') as Href);

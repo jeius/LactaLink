@@ -70,16 +70,19 @@ export async function updateDonation(data: DonationUpdateSchema, init?: RequestI
   const isNewImage = image?.url?.startsWith('file://');
   const file = image && isNewImage ? new File(image.url) : undefined;
 
-  return getApiClient().updateByID({
-    collection: 'donations',
-    id,
-    data: {
-      deliveryPreferences: extractID(deliveryPreferences),
-      details: {
-        ...detailsWithoutImage,
-        bags: extractID(detailsWithoutImage.bags),
+  return getApiClient().updateByID(
+    {
+      collection: 'donations',
+      id,
+      data: {
+        deliveryPreferences: extractID(deliveryPreferences),
+        details: {
+          ...detailsWithoutImage,
+          bags: extractID(detailsWithoutImage.bags),
+        },
       },
+      file: file as undefined,
     },
-    file: file as undefined,
-  });
+    init
+  );
 }
