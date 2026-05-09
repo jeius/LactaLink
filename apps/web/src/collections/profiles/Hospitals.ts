@@ -25,6 +25,7 @@ export const Hospitals: CollectionConfig<'hospitals'> = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head'],
   },
+  trash: true,
   hooks: {
     beforeChange: [beforeChange],
     afterChange: [afterChange],

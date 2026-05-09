@@ -25,19 +25,22 @@ export const beforeSyncWithSearch: BeforeSync = async ({ originalDoc, searchDoc 
     ...searchDoc,
     title: displayName || 'Untitled',
     searchExcerpt: namesArray.join(' '),
+    deletedAt: doc.deletedAt || null,
   };
 
   return modifiedDoc;
 };
 
-export const populateDoc: CollectionAfterReadHook<UserSearch> = async ({ doc, req }) => {
+const _populateDoc: CollectionAfterReadHook<UserSearch> = async ({ doc, req }) => {
   if (doc.doc) {
-    const populatedDoc = await req.payload.findByID({
-      id: extractID(doc.doc.value),
-      collection: doc.doc.relationTo,
-      req,
-      depth: 5,
-    });
+    const populatedDoc = await req.payload
+      .findByID({
+        id: extractID(doc.doc.value),
+        collection: doc.doc.relationTo,
+        req,
+        depth: 2,
+      })
+      .catch(() => null);
 
     if (populatedDoc) doc.doc.value = populatedDoc;
   }

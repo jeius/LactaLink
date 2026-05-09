@@ -25,6 +25,7 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'head', 'owner'],
   },
+  trash: true,
   hooks: {
     beforeChange: [beforeChange],
     afterChange: [afterChange],

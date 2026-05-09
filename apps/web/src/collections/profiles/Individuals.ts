@@ -25,6 +25,7 @@ export const Individuals: CollectionConfig<'individuals'> = {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'dependents', 'gender', 'maritalStatus'],
   },
+  trash: true,
   hooks: {
     beforeChange: [beforeChange],
     afterChange: [afterChange],

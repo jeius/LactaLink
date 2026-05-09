@@ -1684,12 +1684,14 @@ export const hospitals = pgTable(
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
   },
   (columns) => [
     index('hospitals_avatar_idx').on(columns.avatar),
     uniqueIndex('hospitals_phone_idx').on(columns.phone),
     index('hospitals_updated_at_idx').on(columns.updatedAt),
     index('hospitals_created_at_idx').on(columns.createdAt),
+    index('hospitals_deleted_at_idx').on(columns.deletedAt),
   ]
 );
 
@@ -1716,12 +1718,14 @@ export const individuals = pgTable(
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
   },
   (columns) => [
     index('individuals_avatar_idx').on(columns.avatar),
     uniqueIndex('individuals_phone_idx').on(columns.phone),
     index('individuals_updated_at_idx').on(columns.updatedAt),
     index('individuals_created_at_idx').on(columns.createdAt),
+    index('individuals_deleted_at_idx').on(columns.deletedAt),
   ]
 );
 
@@ -1745,12 +1749,14 @@ export const milk_banks = pgTable(
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
   },
   (columns) => [
     index('milk_banks_avatar_idx').on(columns.avatar),
     uniqueIndex('milk_banks_phone_idx').on(columns.phone),
     index('milk_banks_updated_at_idx').on(columns.updatedAt),
     index('milk_banks_created_at_idx').on(columns.createdAt),
+    index('milk_banks_deleted_at_idx').on(columns.deletedAt),
   ]
 );
 
@@ -3191,10 +3197,12 @@ export const user_search = pgTable(
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true, precision: 3 }),
   },
   (columns) => [
     index('user_search_updated_at_idx').on(columns.updatedAt),
     index('user_search_created_at_idx').on(columns.createdAt),
+    index('user_search_deleted_at_idx').on(columns.deletedAt),
   ]
 );
 

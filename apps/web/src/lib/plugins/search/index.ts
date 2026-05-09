@@ -2,7 +2,7 @@ import { Hospitals, Individuals, MilkBanks } from '@/collections';
 import { admin, authenticated } from '@/collections/_access-control';
 import { COLLECTION_GROUP } from '@/lib/constants';
 import { searchPlugin } from '@payloadcms/plugin-search';
-import { beforeSyncWithSearch, populateDoc } from './hooks';
+import { beforeSyncWithSearch } from './hooks';
 
 export default searchPlugin({
   collections: [Individuals.slug, Hospitals.slug, MilkBanks.slug],
@@ -10,6 +10,7 @@ export default searchPlugin({
   searchOverrides: {
     slug: 'user-search',
     labels: { singular: 'User Search', plural: 'User Searches' },
+    trash: true,
     access: {
       create: admin,
       read: authenticated,
@@ -17,9 +18,6 @@ export default searchPlugin({
       delete: admin,
       unlock: admin,
       readVersions: admin,
-    },
-    hooks: {
-      afterRead: [populateDoc],
     },
     admin: { group: COLLECTION_GROUP.SYSTEM },
     fields: ({ defaultFields }) => [

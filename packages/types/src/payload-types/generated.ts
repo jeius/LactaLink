@@ -655,6 +655,7 @@ export interface Individual {
   };
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Avatars are images used to represent users in the system. They can be uploaded by users themselves or by administrators.
@@ -887,6 +888,7 @@ export interface Hospital {
   };
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Milk inventory held by hospitals and milk banks
@@ -1029,6 +1031,7 @@ export interface MilkBank {
   };
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2940,6 +2943,7 @@ export interface UserSearch {
   searchExcerpt?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Manage the donor screening questionnaire. Only admins can modify questions.
@@ -4372,6 +4376,7 @@ export interface HospitalsSelect<T extends boolean = true> {
   posts?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4394,6 +4399,7 @@ export interface IndividualsSelect<T extends boolean = true> {
   posts?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4417,6 +4423,7 @@ export interface MilkBanksSelect<T extends boolean = true> {
   posts?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4964,6 +4971,7 @@ export interface UserSearchSelect<T extends boolean = true> {
   searchExcerpt?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
