@@ -1,23 +1,25 @@
-import DonateMilkIcon from '@/components/icons/DonateMilkIcon';
-import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
 import { Button, ButtonIcon, ButtonProps, ButtonText } from '@/components/ui/button';
 import { HStack, HStackProps } from '@/components/ui/hstack';
+import { BabyBottlePlusIcon, HandBabyBottleIcon } from '@/components/ui/icon/custom';
+import {
+  DonationCreateParams,
+  RecipientSearchParams,
+  RequestCreateParams,
+} from '@/features/donation&request/lib/types';
 import { useMeUser } from '@/hooks/auth/useAuth';
-import { DonationCreateParams, RequestCreateParams } from '@/lib/types/donationRequest';
 import { UserProfile } from '@lactalink/types';
 import { Collection } from '@lactalink/types/collections';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { isEqualProfiles } from '@lactalink/utilities/checkers';
 import { extractID } from '@lactalink/utilities/extractors';
-import { toKebabCase } from '@lactalink/utilities/formatters';
 import { Href, useRouter } from 'expo-router';
-import { ClipboardListIcon, EditIcon, LucideIcon } from 'lucide-react-native';
-import { FC, useMemo } from 'react';
+import { BuildingIcon, ClipboardListIcon, EditIcon, LucideIcon } from 'lucide-react-native';
+import { FC } from 'react';
 import { SvgProps } from 'react-native-svg';
 import { DataMarkerSlug } from '../../lib/types';
 
-const DONATE_BTN_ICON = DonateMilkIcon;
-const REQUEST_BTN_ICON = MilkBottlePlusIcon;
+const DONATE_BTN_ICON = HandBabyBottleIcon;
+const REQUEST_BTN_ICON = BabyBottlePlusIcon;
 
 interface CallToActionProps extends HStackProps {
   isLoading?: boolean;
@@ -26,6 +28,19 @@ interface CallToActionProps extends HStackProps {
     value: Collection<DataMarkerSlug>;
   } | null;
 }
+
+/** Config for the single action button shown on listing markers. */
+interface ListingButtonConfig {
+  label: string;
+  icon: LucideIcon | FC<SvgProps>;
+  action: ButtonProps['action'];
+}
+
+const LISTING_BUTTON_CONFIG = {
+  owner: { label: 'Edit', icon: EditIcon, action: 'default' as const },
+  donations: { label: 'Request', icon: REQUEST_BTN_ICON, action: 'tertiary' as const },
+  requests: { label: 'Donate', icon: DONATE_BTN_ICON, action: 'primary' as const },
+} satisfies Record<string, ListingButtonConfig>;
 
 export default function CallToAction({
   data,
@@ -39,107 +54,122 @@ export default function CallToAction({
   const docID = extractID(data?.value);
   const docSlug = data?.relationTo;
   const isOrganization = docSlug === 'hospitals' || docSlug === 'milkBanks';
+  const isOwner = isEqualProfiles(meUser?.profile, getInvolvedProfile(data));
 
-  const { isOwner, mainBtnIcon, mainBtnLabel, buttonAction } = useMemo(() => {
-    const profileInvolved = getInvolvedProfile(data);
-    const isOwner = isEqualProfiles(meUser?.profile, profileInvolved);
+  // --- Handlers for organization markers ---
 
-    let mainBtnIcon: LucideIcon | FC<SvgProps> = EditIcon;
-    let mainBtnLabel: string = 'Edit';
-    let buttonAction: ButtonProps['action'] = 'default';
-
-    if (!isOwner) {
-      switch (data?.relationTo) {
-        case 'donations':
-          mainBtnIcon = REQUEST_BTN_ICON;
-          mainBtnLabel = 'Request';
-          buttonAction = 'tertiary';
-          break;
-        case 'requests':
-          mainBtnIcon = DONATE_BTN_ICON;
-          mainBtnLabel = 'Donate';
-          buttonAction = 'primary';
-          break;
-      }
-    }
-
-    return { isOwner, mainBtnIcon, mainBtnLabel, profileInvolved, buttonAction };
-  }, [data, meUser]);
-
-  function handleRequestPress() {
-    if (isOwner) {
-      router.push(`/requests/${docID}/edit`);
-    } else {
-      const params: DonationCreateParams = { mrid: docID };
-      router.push({ pathname: '/donations/create', params });
+  function handleOrgDonate() {
+    if (isOwner || !docSlug || !docID) {
+      router.push(`/profile/${docSlug}/${docID}`);
+    } else if (!isOwner && (docSlug === 'hospitals' || docSlug === 'milkBanks')) {
+      router.push({
+        pathname: '/donations/create',
+        params: { rid: docID, rslg: docSlug } satisfies RecipientSearchParams,
+      });
     }
   }
 
-  function handleDonatePress() {
-    if (isOwner) {
-      router.push(`/donations/${docID}/edit`);
-    } else {
-      const params: RequestCreateParams = { mdid: docID };
-      router.push({ pathname: '/requests/create', params });
+  function handleOrgRequest() {
+    if (isOwner || !docSlug || !docID) {
+      router.push(`/profile/${docSlug}/${docID}`);
+    } else if (!isOwner && (docSlug === 'hospitals' || docSlug === 'milkBanks')) {
+      router.push({
+        pathname: '/requests/create',
+        params: { rid: docID, rslg: docSlug } satisfies RecipientSearchParams,
+      });
     }
   }
 
-  function handleMainBtnPress() {
-    switch (docSlug) {
-      case 'donations':
-        handleDonatePress();
-        break;
-      case 'requests':
-        handleRequestPress();
-        break;
-    }
-  }
+  // --- Handler for listing (donation / request) markers ---
 
-  function handleViewDetailsPress() {
+  function handleListingAction() {
     if (!docSlug || !docID) return;
-    let href: Href = `/${toKebabCase(docSlug)}/${docID}` as Href;
-    if (isOrganization) {
-      href = `/profile/${docSlug}/${docID}`;
+
+    if (isOwner) {
+      router.push(`/${docSlug}/${docID}/edit` as Href);
+      return;
     }
-    router.push(href);
+
+    if (docSlug === 'donations') {
+      // Non-owner viewing a donation listing → create a request matched to it
+      router.push({
+        pathname: '/requests/create',
+        params: { mdid: docID } satisfies RequestCreateParams,
+      });
+    } else if (docSlug === 'requests') {
+      // Non-owner viewing a request listing → create a donation matched to it
+      router.push({
+        pathname: '/donations/create',
+        params: { mrid: docID } satisfies DonationCreateParams,
+      });
+    }
+  }
+
+  // --- Handler for the view-details / view-profile icon button ---
+
+  function handleViewPress() {
+    if (!docSlug || !docID) return;
+    if (isOrganization) {
+      router.push(`/profile/${docSlug}/${docID}`);
+    } else {
+      router.push(`/${docSlug}/${docID}` as Href);
+    }
   }
 
   if (isLoading) return null;
 
+  const listingBtnConfig = isOwner
+    ? LISTING_BUTTON_CONFIG.owner
+    : (LISTING_BUTTON_CONFIG[docSlug as 'donations' | 'requests'] ?? LISTING_BUTTON_CONFIG.owner);
+
   return (
     <HStack {...props} space={space}>
-      {!isOrganization ? (
+      {isOrganization ? (
+        isOwner ? (
+          <Button variant="outline" size="lg" action="default" onPress={handleViewPress}>
+            <ButtonIcon as={BuildingIcon} />
+            <ButtonText>View</ButtonText>
+          </Button>
+        ) : (
+          <>
+            <Button size="lg" action="primary" className="flex-1 shadow" onPress={handleOrgDonate}>
+              <ButtonIcon as={DONATE_BTN_ICON} className="h-6 w-6 stroke-primary-0" />
+              <ButtonText>Donate</ButtonText>
+            </Button>
+
+            <Button
+              size="lg"
+              action="tertiary"
+              className="flex-1 shadow"
+              onPress={handleOrgRequest}
+            >
+              <ButtonIcon as={REQUEST_BTN_ICON} className="h-6 w-6 stroke-tertiary-0" />
+              <ButtonText>Request</ButtonText>
+            </Button>
+          </>
+        )
+      ) : (
         <Button
           size="lg"
-          action={buttonAction}
+          action={listingBtnConfig.action}
           className="flex-1 shadow"
-          onPress={handleMainBtnPress}
+          onPress={handleListingAction}
         >
-          <ButtonIcon as={mainBtnIcon} className="h-6 w-6 fill-typography-0" />
-          <ButtonText>{mainBtnLabel}</ButtonText>
+          <ButtonIcon as={listingBtnConfig.icon} className="h-6 w-6 stroke-typography-0" />
+          <ButtonText>{listingBtnConfig.label}</ButtonText>
         </Button>
-      ) : (
-        <>
-          <Button size="lg" action="primary" className="flex-1 shadow" onPress={handleDonatePress}>
-            <ButtonIcon as={DONATE_BTN_ICON} className="h-6 w-6 fill-primary-0" />
-            <ButtonText>Donate</ButtonText>
-          </Button>
-
-          <Button size="lg" action="tertiary" className="flex-1 shadow" onPress={handleDonatePress}>
-            <ButtonIcon as={REQUEST_BTN_ICON} className="h-6 w-6 fill-tertiary-0" />
-            <ButtonText>Request</ButtonText>
-          </Button>
-        </>
       )}
 
-      <Button
-        size="lg"
-        action="muted"
-        className="h-fit w-fit rounded-full bg-background-0 p-3 shadow"
-        onPress={handleViewDetailsPress}
-      >
-        <ButtonIcon as={ClipboardListIcon} className="h-6 w-6" />
-      </Button>
+      {(!isOrganization || !isOwner) && (
+        <Button
+          size="lg"
+          action="muted"
+          className="h-fit w-fit rounded-full bg-background-0 p-3 shadow"
+          onPress={handleViewPress}
+        >
+          <ButtonIcon as={ClipboardListIcon} className="h-6 w-6" />
+        </Button>
+      )}
     </HStack>
   );
 }
