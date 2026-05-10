@@ -14,7 +14,7 @@ interface QueryKeys {
   };
   SEARCH: { ALL: QueryKey; USER: QueryKey };
   CHATS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
-  PROFILE: { ALL: QueryKey; ONE: QueryKey };
+  PROFILE: { ALL: QueryKey; ONE: QueryKey; MANY: QueryKey };
   TRANSACTIONS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   DELIVERY_PLANS: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
   DELIVERY_PREFERENCES: { ALL: QueryKey; INFINITE: QueryKey; ONE: QueryKey };
@@ -66,6 +66,7 @@ export const QUERY_KEYS: QueryKeys = {
   PROFILE: {
     ALL: ['profiles'],
     ONE: ['profiles', 'one'],
+    MANY: ['profiles', 'many'],
   },
   TRANSACTIONS: {
     ALL: ['transactions'],

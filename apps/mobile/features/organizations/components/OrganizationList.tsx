@@ -11,7 +11,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { InfiniteFlashList } from '@/components/ui/list';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { addToProfileCache } from '@/features/profile/lib/cacheUtils';
+import { addProfileToAllCache } from '@/features/profile/lib/cacheUtils';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
@@ -47,7 +47,7 @@ export function OrganizationList({ collection }: OrganizationListProps) {
   } = useInfiniteNearestOrganizations(collection, {
     search,
     callback: (doc, queryClient) => {
-      addToProfileCache(queryClient, { relationTo: collection, value: doc });
+      addProfileToAllCache(queryClient, { relationTo: collection, value: doc });
     },
   });
 
