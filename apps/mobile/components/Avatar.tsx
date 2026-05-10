@@ -63,7 +63,7 @@ export default function Avatar({
           ) : (
             <UIAvatar.AvatarFallbackIcon />
           )}
-          {showBadge && <UIAvatar.AvatarBadge />}
+          {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
         </>
       )}
     </UIAvatar.Avatar>
