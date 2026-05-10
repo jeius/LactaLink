@@ -1,10 +1,9 @@
-import { ProfileAvatar } from '@/components/Avatar';
+import Avatar from '@/components/Avatar';
 import { HStack, HStackProps } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import { isIndividual } from '@lactalink/utilities/type-guards';
-import React from 'react';
 import { StyleSheet } from 'react-native';
 
 interface UserProfileItemProps extends HStackProps {
@@ -23,7 +22,7 @@ export default function UserProfileItem({ profile, space = 'sm', ...props }: Use
       space={space}
       style={StyleSheet.flatten([{ alignItems: 'center' }, props.style])}
     >
-      <ProfileAvatar profile={profile} className="h-12 w-12" />
+      <Avatar profile={profile} size="md" />
       <Text numberOfLines={1} className="shrink font-JakartaSemiBold">
         {displayName}
       </Text>

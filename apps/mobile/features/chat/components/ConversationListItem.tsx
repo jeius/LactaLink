@@ -136,7 +136,7 @@ function ListItem({
         }}
       >
         <Pressable
-          className="w-full flex-row items-center gap-3 bg-background-50 px-5 py-2"
+          className="w-full flex-row items-center gap-2 bg-background-50 px-5 py-2"
           onPress={onPress}
         >
           {avatarComponent}
@@ -160,7 +160,7 @@ function ListItem({
 function ItemSkeleton() {
   return (
     <HStack space="sm" className="items-center px-5 py-2">
-      <Skeleton variant="circular" className="h-10 w-10" />
+      <Skeleton variant="circular" className="h-12 w-12" />
       <VStack className="flex-1">
         <Skeleton variant="sharp" className="mb-1 h-4 w-1/2" />
         <Skeleton variant="sharp" className="h-3 w-3/4" />
@@ -206,7 +206,7 @@ function DirectChatListItem({
           showBadge={!!userPresence?.isOnline}
           status="online"
           profile={userProfile}
-          className="h-10 w-10"
+          size="md"
         />
       }
     />

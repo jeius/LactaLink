@@ -19,13 +19,13 @@ export default function GroupChatAvatar({
       <Image
         source={{ uri: avatarDoc.url }}
         placeholder={{ blurhash: avatarDoc.blurHash ?? BLUR_HASH }}
-        className="h-10 w-10 overflow-hidden rounded-full"
+        className="h-12 w-12 overflow-hidden rounded-full"
       />
     );
   }
 
   return (
-    <Box className="h-10 w-10">
+    <Box className="h-12 w-12">
       {participants.slice(0, 2).map((profile, index) => {
         return (
           <Box

@@ -1,44 +1,41 @@
-import { ProfileAvatar } from '@/components/Avatar';
+import Avatar from '@/components/Avatar';
 import { HeaderBackButton } from '@/components/HeaderBackButton';
-import { NoData } from '@/components/NoData';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
+import { FlashList } from '@/components/ui/FlashList';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Input, InputField } from '@/components/ui/input';
+import { InfiniteFlashList } from '@/components/ui/list';
 import { Pressable } from '@/components/ui/pressable';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { useUserSearch } from '@/features/user-search/hooks/useUserSearch';
 import { getColor } from '@/lib/colors';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { shadow } from '@/lib/utils/shadows';
+import { UserProfile } from '@lactalink/types';
 import { User } from '@lactalink/types/payload-generated-types';
 import { extractErrorMessage, extractName } from '@lactalink/utilities/extractors';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import isEqual from 'lodash/isEqual';
-import { CheckCircle2Icon, CircleIcon, SearchIcon, XIcon } from 'lucide-react-native';
-import React, { useCallback, useRef, useState } from 'react';
-import { TextInput } from 'react-native';
+import { CheckCircle2Icon, CircleIcon, XIcon } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner-native';
 import { useCreateGroupChat } from '../hooks/mutations';
 import { createNearestUsersQueryOptions } from '../lib/queryOptions';
 import UserProfileItem from './UserProfileItem';
+import UserSearchInput from './UserSearchInput';
 
 interface ListHeaderProps {
   isLoading?: boolean;
   selectedUsers?: NonNullable<User['profile']>[];
   setSelectedUsers?: (users: NonNullable<User['profile']>[]) => void;
-}
-
-interface SearchInputProps {
-  value: string;
-  onChange: (text: string) => void;
-  onClear?: () => void;
 }
 
 interface GroupNameInputProps {
@@ -58,7 +55,6 @@ export default function CreateGroupChat() {
   const { searchTerm, setSearchTerm, clearSearch, willSearch, searchResults, ...query } =
     useUserSearch();
   const profiles = willSearch ? searchResults.map((s) => s.doc) : suggestions || [];
-  const isLoading = query.isLoading || usersQuery.isLoading;
 
   const { mutateAsync: createGroupChat, isPending: isCreating } = useCreateGroupChat();
 
@@ -78,30 +74,6 @@ export default function CreateGroupChat() {
     const conversation = await promise;
     router.dismissTo(`/chat/${conversation.id}`);
   }, [selectedUsers, createGroupChat, groupName, router]);
-
-  const renderItem = useCallback<ListRenderItem<(typeof profiles)[number]>>(
-    ({ item, extraData: { selectedUsers } }) => {
-      const isSelected = selectedUsers?.some((u: typeof item) => isEqual(u, item));
-
-      function handleSelect() {
-        if (isSelected) return;
-        setSelectedUsers((prev) => (prev ? [...prev, item] : [item]));
-      }
-
-      return (
-        <Pressable className="px-5 py-4" onPress={handleSelect}>
-          <UserProfileItem profile={item} />
-          <Box pointerEvents="none" className="absolute inset-0 items-end justify-center p-4">
-            <Icon
-              as={isSelected ? CheckCircle2Icon : CircleIcon}
-              className={isSelected ? 'fill-primary-100 text-primary-500' : 'text-outline-800'}
-            />
-          </Box>
-        </Pressable>
-      );
-    },
-    []
-  );
 
   return (
     <SafeArea className="items-stretch">
@@ -128,40 +100,41 @@ export default function CreateGroupChat() {
 
         <GroupNameInput value={groupName} onChange={setGroupName} />
 
-        <SearchInput value={searchTerm} onChange={setSearchTerm} onClear={clearSearch} />
+        <UserSearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          onClear={clearSearch}
+          isLoading={query.isFetching}
+          className="mx-4"
+        />
       </Box>
 
-      <FlashList
+      <InfiniteFlashList
+        {...query}
         data={profiles}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponentStyle={{ marginBottom: 4 }}
-        onEndReached={query.fetchNextPage}
         extraData={{ selectedUsers }}
-        renderItem={renderItem}
+        emptyListLabel="No users found..."
+        headerClassName="mb-1"
         ListHeaderComponent={
-          willSearch
-            ? () => isLoading && <Spinner size={'large'} style={{ marginTop: 16 }} />
-            : () => (
-                <ListHeader
-                  isLoading={usersQuery.isLoading}
-                  selectedUsers={selectedUsers}
-                  setSelectedUsers={setSelectedUsers}
-                />
-              )
+          <ListHeader
+            isLoading={usersQuery.isLoading}
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+          />
         }
-        ListFooterComponent={() =>
-          query.isFetchingNextPage && <Spinner size={'small'} className="my-2" />
-        }
-        ListEmptyComponent={() =>
-          !isLoading && (
-            <NoData
-              title="No results found"
-              className="self-center"
-              style={{ marginTop: 64, width: '80%' }}
+        renderItem={({ item, extraData: { selectedUsers } }) => {
+          const isSelected = selectedUsers?.some((u: typeof item) => isEqual(u, item));
+          return (
+            <ListItem
+              item={item}
+              isSelected={isSelected}
+              onSelect={(user) => {
+                if (isSelected) return;
+                setSelectedUsers((prev) => (prev ? [...prev, user] : [user]));
+              }}
             />
-          )
-        }
+          );
+        }}
       />
     </SafeArea>
   );
@@ -184,8 +157,8 @@ function ListHeader({ isLoading, selectedUsers, setSelectedUsers }: ListHeaderPr
             }
 
             return (
-              <VStack className="items-center">
-                <ProfileAvatar profile={item} size="lg" />
+              <VStack space="xs" className="items-center">
+                <Avatar profile={item} size="lg" />
                 <Text size="sm" numberOfLines={1}>
                   {extractName({ profile: item })}
                 </Text>
@@ -209,43 +182,39 @@ function ListHeader({ isLoading, selectedUsers, setSelectedUsers }: ListHeaderPr
   );
 }
 
-function SearchInput({ value, onChange, onClear }: SearchInputProps) {
-  const inputRef = useRef<TextInput>(null);
+type ListItemProps = {
+  item: UserProfile;
+  isSelected?: boolean;
+  onSelect: (user: UserProfile) => void;
+};
 
-  function handleClearSearch() {
-    onClear?.();
-    inputRef.current?.clear();
+function ListItem({ item, isSelected, onSelect }: ListItemProps) {
+  const { data: profile, isLoading } = useProfileData(item);
+
+  function handleSelect() {
+    if (isSelected || !profile) return;
+    onSelect(profile);
+  }
+
+  if (isLoading || !profile) {
+    return (
+      <HStack space="sm" className="items-center px-5 py-4">
+        <Skeleton variant="circular" className="h-12 w-12" />
+        <Skeleton variant="sharp" className="h-5 w-32" />
+      </HStack>
+    );
   }
 
   return (
-    <Input variant="rounded" className="mx-4">
-      <InputIcon as={SearchIcon} className="ml-3" />
-
-      <InputField
-        //@ts-expect-error Gluestack ref type mismatch
-        ref={inputRef}
-        placeholder="Search a user..."
-        defaultValue={value}
-        onChangeText={onChange}
-        keyboardType="web-search"
-        autoCorrect={false}
-        autoCapitalize="words"
-        autoComplete="name"
-        className="grow"
-      />
-
-      {value && (
-        <InputSlot>
-          <Pressable
-            className="overflow-hidden rounded-full p-2"
-            onPress={handleClearSearch}
-            hitSlop={8}
-          >
-            <Icon as={XIcon} />
-          </Pressable>
-        </InputSlot>
-      )}
-    </Input>
+    <Pressable className="px-5 py-4" onPress={handleSelect}>
+      <UserProfileItem profile={profile} />
+      <Box pointerEvents="none" className="absolute inset-0 items-end justify-center p-4">
+        <Icon
+          as={isSelected ? CheckCircle2Icon : CircleIcon}
+          className={isSelected ? 'fill-primary-100 text-primary-500' : 'text-outline-800'}
+        />
+      </Box>
+    </Pressable>
   );
 }
 
