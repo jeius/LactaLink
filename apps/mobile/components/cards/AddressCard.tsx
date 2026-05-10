@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import { Address } from '@lactalink/types/payload-generated-types';
@@ -15,8 +14,10 @@ import { isTempID } from '@/lib/utils/tempID';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { useRouter } from 'expo-router';
+import { MapPinIcon } from 'lucide-react-native';
 import { GestureResponderEvent, StyleSheet } from 'react-native';
 import { ThumbnailMap } from '../map/ThumbnailMap';
+import TruncatedText from '../TruncatedText';
 import { Button, ButtonText } from '../ui/button';
 import { BasicLocationPin } from '../ui/icon/custom';
 
@@ -121,12 +122,7 @@ export function AddressCard({
                 onPress={navigateToMap}
                 hitSlop={8}
               >
-                <ButtonText
-                  underlineOnPress
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  className="font-JakartaSemiBold"
-                >
+                <ButtonText numberOfLines={1} className="font-JakartaSemiBold">
                   {name}
                 </ButtonText>
               </Button>
@@ -135,10 +131,10 @@ export function AddressCard({
             </HStack>
 
             <HStack space="xs" className="mt-1 w-full items-start">
-              <Icon as={BasicLocationPin} className="fill-primary-500" />
-              <Text ellipsizeMode="tail" numberOfLines={2} size="sm" className="flex-1">
+              <Icon as={MapPinIcon} className="stroke-typography-600" />
+              <TruncatedText initialLines={2} size="sm" containerClassName="flex-1">
                 {displayName}
-              </Text>
+              </TruncatedText>
             </HStack>
           </VStack>
         </HStack>
