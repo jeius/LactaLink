@@ -9,7 +9,10 @@ import { User } from '@lactalink/types/payload-generated-types';
 export function extractName(user: Pick<User, 'profile'>): string | null {
   if (user.profile) {
     const profile = user.profile.value;
-    if (typeof profile === 'object') {
+    if (profile && typeof profile === 'object') {
+      if (profile.deletedAt) {
+        return 'Deleted User';
+      }
       if ('name' in profile) {
         return profile.name;
       } else {
@@ -29,7 +32,7 @@ export function extractName(user: Pick<User, 'profile'>): string | null {
  */
 export function extractDisplayName(user: Pick<User, 'profile'>): string {
   if (!user.profile) {
-    throw new Error('User profile is not found.');
+    return 'Unknown User';
   }
 
   const profile = user.profile.value;
@@ -38,7 +41,16 @@ export function extractDisplayName(user: Pick<User, 'profile'>): string {
     throw new Error('User profile is a string, expected an object.');
   }
 
+  if (!profile) {
+    return 'Unknown User';
+  }
+
+  const isDeleted = !!profile.deletedAt;
   const displayName = profile.displayName;
+
+  if (isDeleted) {
+    return 'Deleted User';
+  }
 
   if (!displayName) {
     if ('givenName' in profile) {
