@@ -5,6 +5,7 @@ import { SingleImageViewer } from '@/components/ImageViewer';
 import { ProfileTag } from '@/components/ProfileTag';
 import TruncatedText from '@/components/TruncatedText';
 import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useDefaultAddress } from '@/features/address/hooks/useDefaultAddress';
+import { useStartNavigation } from '@/features/directions/components/DirectionsProvider';
 import { getUrgencyAction } from '@/lib/utils/getUrgencyAction';
 import { URGENCY_LEVELS } from '@lactalink/enums';
 import { Collection } from '@lactalink/types/collections';
@@ -22,6 +24,7 @@ import {
   extractImageData,
   extractOneImageData,
 } from '@lactalink/utilities/extractors';
+import { pointToLatLng } from '@lactalink/utilities/geo-utils';
 import { isHospital } from '@lactalink/utilities/type-guards';
 import {
   ArrowRightLeftIcon,
@@ -29,6 +32,7 @@ import {
   MapPinIcon,
   MilkIcon,
   PhoneIcon,
+  RouteIcon,
   SquareUserIcon,
 } from 'lucide-react-native';
 import { useMemo } from 'react';
@@ -160,6 +164,11 @@ function OrganizationDetails({ data }: BaseProps<Hospital | MilkBank>) {
     relationTo: isHospital(data) ? 'hospitals' : 'milkBanks',
   });
 
+  const startNavigation = useStartNavigation({
+    destination: { coordinates: pointToLatLng(address?.coordinates), name: displayName || name },
+    doc: { relationTo: isHospital(data) ? 'hospitals' : 'milkBanks', value: data },
+  });
+
   const location = address?.displayName || 'Location not available';
 
   const infoRows = useMemo(
@@ -240,6 +249,11 @@ function OrganizationDetails({ data }: BaseProps<Hospital | MilkBank>) {
           </Text>
         </VStack>
       </HStack>
+
+      <Button size="lg" action="secondary" onPress={startNavigation}>
+        <ButtonIcon as={RouteIcon} />
+        <ButtonText>Get Directions</ButtonText>
+      </Button>
     </VStack>
   );
 }
