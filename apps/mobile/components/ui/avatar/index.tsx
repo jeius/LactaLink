@@ -4,7 +4,7 @@ import { createAvatar } from '@gluestack-ui/core/avatar/creator';
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
 import { Image as ExpoImage } from 'expo-image';
-import { UserIcon } from 'lucide-react-native';
+import { User2Icon } from 'lucide-react-native';
 import { cssInterop } from 'nativewind';
 import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from 'react';
 import { Platform, Text, View } from 'react-native';
@@ -180,7 +180,7 @@ const AvatarFallbackText = forwardRef<
 type IAvatarFallbackIconProps = IconProps &
   Omit<VariantProps<typeof avatarFallbackIconStyle>, 'size'>;
 const AvatarFallbackIcon = forwardRef<ComponentRef<typeof Icon>, IAvatarFallbackIconProps>(
-  function AvatarFallbackIcon({ className, as = UserIcon, ...props }, ref) {
+  function AvatarFallbackIcon({ className, as = User2Icon, ...props }, ref) {
     const { size: parentSize, action: parentAction } = useStyleContext(SCOPE);
 
     return (

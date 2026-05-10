@@ -154,7 +154,7 @@ export function ProfileAvatar({
                 transition={{ duration: fadeDuration, effect: 'cross-dissolve' }}
               />
             ) : (
-              <UIAvatar.AvatarFallbackText>{fallbackName}</UIAvatar.AvatarFallbackText>
+              <UIAvatar.AvatarFallbackIcon />
             )}
 
             {showBadge && <UIAvatar.AvatarBadge status={badgeStatus} />}
