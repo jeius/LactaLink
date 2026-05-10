@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable, PressableProps } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useDeleteAccountMutation } from '@/features/account/hooks/mutations';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { OTPSearchParams } from '@/lib/types/searchParams';
 import { useRouter } from 'expo-router';
@@ -24,6 +25,8 @@ import { toast } from 'sonner-native';
 
 export default function AccountSettings() {
   const router = useRouter();
+
+  const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteAccountMutation();
 
   async function handleChangeEmail() {
     router.push('/auth/update-email');
@@ -47,6 +50,11 @@ export default function AccountSettings() {
     };
     router.push({ pathname: '/auth/verify-otp', params });
   }
+
+  async function handleDeleteAccount() {
+    await deleteAccount();
+  }
+
   return (
     <SafeArea safeTop={false} className="items-stretch">
       <ScrollView
@@ -92,16 +100,18 @@ export default function AccountSettings() {
             <ActionModal
               title="Delete Account"
               description="This will permanently delete your account and all associated data. This action cannot be undone."
+              variant="solid"
+              action="negative"
               triggerButtonProps={{
                 label: 'Delete Account',
                 icon: Trash2Icon,
               }}
               confirmButtonProps={{
-                label: 'Delete Account',
+                label: 'Delete',
                 action: 'negative',
+                isLoading: isDeleting,
               }}
-              variant="solid"
-              action="negative"
+              onConfirm={handleDeleteAccount}
             />
           </VStack>
         </VStack>
