@@ -1,18 +1,17 @@
-import { ProfileAvatar } from '@/components/Avatar';
+import Avatar from '@/components/Avatar';
 import { Image } from '@/components/Image';
 import { Box } from '@/components/ui/box';
 import { BLUR_HASH } from '@/lib/constants';
-import { Conversation, ConversationParticipant } from '@lactalink/types/payload-generated-types';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { UserProfile } from '@lactalink/types';
+import { Conversation } from '@lactalink/types/payload-generated-types';
+import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 
 export default function GroupChatAvatar({
   avatar,
   participants,
-  isLoading,
 }: {
   avatar: Conversation['avatar'];
-  participants: ConversationParticipant[];
-  isLoading?: boolean;
+  participants: UserProfile[];
 }) {
   const avatarDoc = extractCollection(avatar);
   if (avatarDoc && avatarDoc.url) {
@@ -20,26 +19,24 @@ export default function GroupChatAvatar({
       <Image
         source={{ uri: avatarDoc.url }}
         placeholder={{ blurhash: avatarDoc.blurHash ?? BLUR_HASH }}
-        style={{ width: 40, height: 40, borderRadius: 20 }}
+        className="h-10 w-10 overflow-hidden rounded-full"
       />
     );
   }
 
   return (
-    <Box style={{ width: 40, height: 40 }}>
-      {participants.slice(0, 2).map((p, index) => {
-        const user = extractCollection(p.participant);
-        if (!user) return null;
+    <Box className="h-10 w-10">
+      {participants.slice(0, 2).map((profile, index) => {
         return (
           <Box
-            key={p.id}
+            key={extractID(profile.value)}
             className="absolute"
             style={{
               top: index * 15,
               left: index * 15,
             }}
           >
-            <ProfileAvatar profile={user.profile!} size="xs" isLoading={isLoading} />
+            <Avatar profile={profile} size="xs" />
           </Box>
         );
       })}

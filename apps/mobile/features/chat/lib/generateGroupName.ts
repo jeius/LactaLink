@@ -1,30 +1,8 @@
-import { ConversationParticipant } from '@lactalink/types/payload-generated-types';
-import { extractCollection, extractName } from '@lactalink/utilities/extractors';
+import { PopulatedUserProfile } from '@lactalink/types';
+import { extractName } from '@lactalink/utilities/extractors';
 
-export function generateGroupName(members: (string | ConversationParticipant)[]) {
-  const memberNames = members.map((member) => {
-    const doc = extractCollection(member);
-    if (!doc) {
-      throw new Error('Unable to generate group name: ConversationParticipant is not populated.');
-    }
-
-    const user = extractCollection(doc.participant);
-    if (!user) {
-      throw new Error(
-        'Unable to generate group name: ConversationParticipant.participant is not populated.'
-      );
-    }
-
-    const name = extractName(user);
-
-    if (!name) {
-      throw new Error(
-        'Unable to generate group name: Missing user profile or might not be populated.'
-      );
-    }
-
-    return name;
-  });
+export function generateGroupName(members: PopulatedUserProfile[]) {
+  const memberNames = members.map((member) => extractName({ profile: member }));
 
   if (memberNames.length === 0) {
     return 'Unnamed Group';
