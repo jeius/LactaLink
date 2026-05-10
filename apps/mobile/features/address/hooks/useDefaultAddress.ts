@@ -22,6 +22,7 @@ export function useDefaultAddress(profile: UserProfile | null | undefined) {
     isLoading: profileQuery.isLoading || addressQuery.isLoading,
     isPending: profileQuery.isPending || addressQuery.isPending,
     isFetching: profileQuery.isFetching || addressQuery.isFetching,
+    isRefetching: profileQuery.isRefetching || addressQuery.isRefetching,
     error: profileQuery.error || addressQuery.error,
     isError: profileQuery.isError || addressQuery.isError,
     refetch,
