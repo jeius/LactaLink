@@ -9,7 +9,7 @@ import { Collection } from '@lactalink/types/collections';
 import { createStorageKeyByUser } from '@lactalink/utilities';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { produce } from 'immer';
-import { DeepPartial } from 'react-hook-form';
+import { DeepPartial, DefaultValues } from 'react-hook-form';
 import { type MMKV } from 'react-native-mmkv';
 import { getMeUser } from '../stores/meUserStore';
 import { InfiniteDataMap } from '../types';
@@ -56,7 +56,7 @@ export function getSavedFormData<TName extends SchemaName>(
 
 export function saveFormData<TName extends SchemaName>(
   schemaName: TName,
-  data: DeepPartial<Schema<TName>>
+  data: DefaultValues<Schema<TName>>
 ): void {
   const key = createKey(schemaName);
   if (!key) return;
