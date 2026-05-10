@@ -131,7 +131,7 @@ export function getLastMessage(conversation: Conversation) {
   const lastMessage = conversation.messages?.docs?.[0] ?? null;
   const lastMsgDoc = extractCollection(lastMessage);
 
-  const name = extractName({ profile: lastMsgDoc?.sender });
+  const name = extractName({ profile: lastMsgDoc?.sender }) || 'Unknown User';
   const content = lastMsgDoc?.content;
 
   const isMyMsg = isEqualProfiles(lastMsgDoc?.sender, meUser?.profile);
