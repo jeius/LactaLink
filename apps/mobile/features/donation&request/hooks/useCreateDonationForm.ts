@@ -126,7 +126,7 @@ export function useCreateDonationForm({
       const data = getValues();
       const preferredValues = getPreferredDonationValues(data);
       // Save the preffered values to local storage
-      saveFormData('donation-create', preferredValues);
+      saveFormData('donation-create', preferredValues as never);
     }
   }, [getValues, hasRecipient, isMatched, isSubmitSuccessful]);
 

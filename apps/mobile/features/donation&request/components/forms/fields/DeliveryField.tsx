@@ -109,7 +109,12 @@ export default function DeliveryField<
 
       <Sheet ref={sheetRef} detents={[1]} scrollable onDidDismiss={handleClose}>
         <ScrollView nestedScrollEnabled contentContainerClassName="grow py-2 px-4">
-          <DeliveryForm {...props} values={selectedValue} onChange={handleChange} />
+          <DeliveryForm
+            {...props}
+            values={selectedValue}
+            onChange={handleChange}
+            className="flex-1"
+          />
         </ScrollView>
       </Sheet>
     </FormControl>

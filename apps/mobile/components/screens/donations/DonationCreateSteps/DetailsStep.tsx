@@ -30,6 +30,7 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
 
   const recipient = useWatch({ control, name: 'recipient' });
   const donationType = useWatch({ control, name: 'type' });
+  const isOrgRecipient = recipient?.relationTo !== 'individuals';
 
   const { isLoading } = additionalState;
   const disableFields = isLoading || formState.isSubmitting;
@@ -99,12 +100,14 @@ export default function DetailsStep({ onNextPress }: { onNextPress?: () => void 
 
           <Divider />
 
-          {donationType === 'MATCHED' ? (
+          {donationType === 'MATCHED' || (donationType === 'DIRECT' && isOrgRecipient) ? (
             <DeliveryField
               control={control}
               isLoading={isLoading}
               isDisabled={disableFields}
               deliveryPreferences={requesterDP}
+              recipient={recipient}
+              listingType="donation"
               onChange={handleOnDeliveryChange}
             />
           ) : (

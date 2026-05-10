@@ -55,7 +55,7 @@ export default function DeliveryProposalScreen() {
             transaction={transaction}
             isRefetching={isRefetching}
             onRefetch={refetch}
-            canEdit={edit === 'true' ? true : edit === 'false' ? false : edit}
+            canEdit={Boolean(edit)}
           />
         </TransactionProvider>
       )}
