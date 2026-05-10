@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
-      <Stack.Screen options={{ headerTitle }} />
+      <Stack.Screen options={{ headerTitle, headerShown: true }} />
       <ProfilePosts
         profile={data}
         isRefreshing={isRefetching}

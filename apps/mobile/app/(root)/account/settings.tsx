@@ -10,6 +10,7 @@ import { VStack } from '@/components/ui/vstack';
 import { useDeleteAccountMutation } from '@/features/account/hooks/mutations';
 import { getMeUser } from '@/lib/stores/meUserStore';
 import { OTPSearchParams } from '@/lib/types/searchParams';
+import { extractID } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
 import {
   ChevronRightIcon,
@@ -33,7 +34,14 @@ export default function AccountSettings() {
   }
 
   async function handleEditProfile() {
-    router.push('/account/edit-profile');
+    const meUser = getMeUser();
+    if (!meUser?.profile) {
+      toast.error('Unable to retrieve profile information');
+      return;
+    }
+    const slug = meUser.profile.relationTo;
+    const id = extractID(meUser.profile.value);
+    router.push(`/profile/${slug}/${id}/edit`, { withAnchor: true });
   }
 
   async function handleChangePassword() {

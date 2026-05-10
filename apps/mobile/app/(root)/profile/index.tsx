@@ -1,7 +1,6 @@
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { extractID } from '@lactalink/utilities/extractors';
 import { Redirect } from 'expo-router';
-import React from 'react';
 
 export default function ProfilePage() {
   const { data: user } = useMeUser();
