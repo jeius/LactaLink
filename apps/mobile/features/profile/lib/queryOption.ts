@@ -63,6 +63,7 @@ export function createProfileByUserQuery(user: string | User | null | undefined)
         collection: 'users',
         id: userID,
         depth: 0,
+        trash: true,
         select: { profile: true },
       });
 
@@ -95,6 +96,7 @@ export function createMultipleProfilesByUsersQuery(users: (string | User)[]) {
         collection: 'users',
         where: { id: { in: userIDs } },
         depth: 1,
+        trash: true,
         pagination: false,
         limit: userIDs.length,
         select: { profile: true },

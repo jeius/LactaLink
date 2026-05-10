@@ -15,6 +15,7 @@ export async function findProfile(profile: UserProfile, init?: RequestInit) {
             collection: slug,
             id: id,
             depth: 3,
+            trash: true,
             joins: { posts: { count: true, limit: 10 } },
           },
           init
@@ -24,6 +25,7 @@ export async function findProfile(profile: UserProfile, init?: RequestInit) {
             collection: slug,
             id: id,
             depth: 3,
+            trash: true,
             joins: {
               inventory: { count: true, limit: 0 },
               posts: { count: true, limit: 0 },
@@ -75,6 +77,7 @@ export async function findMultipleProfiles(
               collection: slug,
               depth: 3,
               where: { id: { in: ids } },
+              trash: true,
               pagination: false,
               limit: ids.length,
               joins: { posts: { count: true, limit: 10 } },
@@ -88,6 +91,7 @@ export async function findMultipleProfiles(
               where: { id: { in: ids } },
               pagination: false,
               limit: ids.length,
+              trash: true,
               joins: {
                 inventory: { count: true, limit: 0 },
                 posts: { count: true, limit: 0 },
