@@ -11,7 +11,12 @@ import {
   getScreeningForm,
   getStandardScreeningForm,
 } from './api/find/getScreeningForm';
-import { getSubmission, getSubmissions, getSubmissionsByUser } from './api/find/getSubmission';
+import {
+  getApprovedSubmissionByUser,
+  getSubmission,
+  getSubmissions,
+  getSubmissionsByUser,
+} from './api/find/getSubmission';
 
 // #region Screening Forms
 export function createStandardScreeningFormQuery() {
@@ -138,6 +143,27 @@ export function createSubmissionsByUserInfQuery(user?: string | User | null) {
     placeholderData: (prev) => {
       if (prev) return prev;
       return generatePlaceHoldersForInfQueries(15);
+    },
+  });
+}
+
+export function createApprovedSubmissionByUserQuery({
+  formID,
+  userID,
+}: {
+  formID?: string | null;
+  userID?: string | null;
+}) {
+  return queryOptions({
+    enabled: !!userID,
+    queryKey: [...QUERY_KEYS.SCREENING_FORM_SUBMISSIONS.ONE, 'approved', userID, formID].filter(
+      Boolean
+    ),
+    queryFn: async ({ signal }) => {
+      if (!userID) {
+        throw new Error('User ID is required to fetch approved submission');
+      }
+      return getApprovedSubmissionByUser({ formID, userID }, { signal });
     },
   });
 }

@@ -75,3 +75,25 @@ export async function getSubmissionsByUser(
     init
   );
 }
+
+export async function getApprovedSubmissionByUser(
+  { formID, userID }: { formID?: string | null; userID: string },
+  init?: RequestInit
+) {
+  const filters: Where[] = [{ submittedBy: { equals: userID } }, { isApproved: { equals: true } }];
+  if (formID) {
+    filters.push({ form: { equals: formID } });
+  }
+  const submissions = await getApiClient().find(
+    {
+      collection: 'donor-screening-submissions',
+      where: { and: filters },
+      limit: 1,
+      pagination: false,
+      depth: DEPTH,
+    },
+    init
+  );
+
+  return submissions?.[0] || null;
+}

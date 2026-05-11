@@ -8,6 +8,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useMemo } from 'react';
 import { addSubmissionToCache, cacheOrganizationForm } from '../lib/cacheUtils';
 import {
+  createApprovedSubmissionByUserQuery,
   createOrganizationScreeningFormQuery,
   createOrgScreeningFormsInfQuery,
   createScreeningFormQuery,
@@ -64,6 +65,13 @@ export function useInfiniteOrgScreeningForms() {
 // #region Submission Queries
 export function useSubmissionFormQuery(id: string | undefined | null) {
   return useQuery(createSubmissionQuery(id));
+}
+
+export function useApprovedSubmissionByUserQuery(params: {
+  formID?: string | null;
+  userID?: string | null;
+}) {
+  return useQuery(createApprovedSubmissionByUserQuery(params));
 }
 
 export function useMySubmissionsInfQuery() {
