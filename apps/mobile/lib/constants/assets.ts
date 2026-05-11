@@ -63,6 +63,7 @@ export const IMAGE_ASSETS = {
   'emailReceived_0.75x': require('../../assets/images/0_75x/email_received.png'),
   bagVerification: require('../../assets/images/1x/screenshot_bag_verification.png'),
   captureBagPhoto: require('../../assets/images/1x/milkbag_capture.png'),
+  screening: require('../../assets/images/1x/screening.png'),
   writeCode: require('../../assets/images/1x/write_code.png'),
 };
 
