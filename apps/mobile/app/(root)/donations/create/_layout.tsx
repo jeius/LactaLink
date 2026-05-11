@@ -46,7 +46,9 @@ export default function DonationCreateLayout() {
           headerShown: true,
           headerTitle: DONATION_CREATE_STEPS[step]?.label || 'Create Donation',
         }}
-      />
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+      </Stack>
 
       <FetchingSpinner isFetching={isLoading} />
     </Form>
