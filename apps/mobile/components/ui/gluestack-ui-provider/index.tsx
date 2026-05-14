@@ -1,7 +1,7 @@
 import Toaster from '@/components/Toaster';
 import { OverlayProvider } from '@gluestack-ui/overlay';
-import React from 'react';
 import { View, ViewProps } from 'react-native';
+import LetterBox from '../letterbox';
 import { Config, config } from './config';
 import { ModeType } from './types';
 
@@ -25,12 +25,16 @@ export function GluestackUIProvider({
   style?: ViewProps['style'];
 }) {
   return (
-    <View className="flex-1" style={[config[mode as keyof Config], props.style]}>
+    <LetterBox
+      containerClassName="bg-background-50"
+      className="flex-1"
+      style={[config[mode as keyof Config], props.style]}
+    >
       <OverlayProvider>
         <View className="relative flex-1 bg-background-50">{props.children}</View>
       </OverlayProvider>
 
       <Toaster />
-    </View>
+    </LetterBox>
   );
 }
