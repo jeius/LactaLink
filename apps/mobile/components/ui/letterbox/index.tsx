@@ -1,7 +1,11 @@
+import { isDeviceTablet } from '@/lib/utils/getDeviceType';
 import { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
-import { ComponentRef, forwardRef } from 'react';
-import { useWindowDimensions, View, ViewProps } from 'react-native';
+import { ComponentRef, forwardRef, useEffect, useState } from 'react';
+import { View, ViewProps } from 'react-native';
 import { boxContainerStyle, boxStyle } from './styles';
+
+// Mobile-like max width (e.g., iPhone 14 Pro max width is approx 430dp)
+const mobileMaxWidth = 430;
 
 type IBoxProps = ViewProps &
   VariantProps<typeof boxStyle> & {
@@ -14,16 +18,17 @@ const LetterBox = forwardRef<ComponentRef<typeof View>, IBoxProps>(function Lett
   { children, className, containerClassName, style, containerStyle },
   ref
 ) {
-  const { width } = useWindowDimensions();
+  const [isTablet, setIsTablet] = useState(false);
 
-  // Define tablet threshold (standard is often 768dp)
-  const isTablet = width >= 768;
-
-  // Mobile-like max width (e.g., iPhone 14 Pro max width is approx 430dp)
-  const mobileMaxWidth = 430;
+  useEffect(() => {
+    isDeviceTablet().then((isTab) => setIsTablet(isTab));
+  }, []);
 
   return (
-    <View style={containerStyle} className={boxContainerStyle({ className: containerClassName })}>
+    <View
+      style={containerStyle}
+      className={boxContainerStyle({ className: containerClassName, isTablet })}
+    >
       <View
         ref={ref}
         className={boxStyle({ className })}

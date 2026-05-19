@@ -27,8 +27,8 @@ export function GluestackUIProvider({
   return (
     <LetterBox
       containerClassName="bg-background-50"
+      containerStyle={[config[mode as keyof Config], props.style]}
       className="flex-1"
-      style={[config[mode as keyof Config], props.style]}
     >
       <OverlayProvider>
         <View className="relative flex-1 bg-background-50">{props.children}</View>

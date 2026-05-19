@@ -14,5 +14,10 @@ export const boxStyle = tva({
 });
 
 export const boxContainerStyle = tva({
-  base: 'flex-1 items-center justify-center',
+  base: 'flex-1',
+  variants: {
+    isTablet: {
+      true: 'items-center justify-center',
+    },
+  },
 });
