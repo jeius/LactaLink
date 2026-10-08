@@ -14,7 +14,12 @@ const initializeVolume: FieldHook<Hospital | MilkBank, number, Hospital | MilkBa
 }) => {
   if (!data || !collection?.slug || operation === 'update') return value ?? 0;
 
+  // New organizations do not have an ID (or inventory) yet. Do not issue a
+  // relationship query with an undefined ID during profile creation.
+  if (!data.id) return 0;
+
   const inventoryItems = await req.payload.find({
+    req,
     collection: 'inventories',
     where: {
       and: [

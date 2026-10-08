@@ -14,12 +14,12 @@ import {
   TYPE_FIELDS,
 } from '@/features/profile/lib/constants';
 import { SetupProfileFields } from '@/features/profile/lib/types';
+import { getProfileSetupErrorMessage } from '@/features/profile/lib/setupError';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Stack, useRouter } from 'expo-router';
 import React, { PropsWithChildren, useState } from 'react';
 import { FormProvider, useWatch } from 'react-hook-form';
@@ -42,7 +42,11 @@ export default function Layout() {
   });
 
   const form = useSetupProfileForm();
-  const { handleSubmit, trigger } = form;
+  const {
+    handleSubmit,
+    trigger,
+    formState: { isSubmitting },
+  } = form;
   const profileType = useWatch({ control: form.control, name: 'profileType' });
 
   const { mutateAsync: createProfile } = useCreateProfileMutation();
@@ -60,26 +64,31 @@ export default function Layout() {
       return name ? `Welcome to LactaLink ${name}!` : 'Profile created successfully!';
     };
 
-    toast.promise(create(), {
+    const submission = create();
+    toast.promise(submission, {
       loading: 'Creating profile...',
       success: (msg) => msg,
-      error: (error) => extractErrorMessage(error),
+      error: getProfileSetupErrorMessage,
     });
+    // Keep submission pending until the request settles so repeated taps cannot
+    // create duplicate profiles. The toast reports failures; preserve the form.
+    await submission.catch(() => undefined);
   }
 
-  const { goToNextStep, goToPrevStep, isIntro, hasNextPage, progress } = useProfileSetupNavigator({
-    onSubmit: handleSubmit(onSubmit),
-    validate: async (currentStep) => {
-      const fieldNames: SetupProfileFields = {
-        type: TYPE_FIELDS,
-        details: DETAILS_FIELDS[profileType],
-        contact: CONTACT_FIELDS,
-        avatar: AVATAR_FIELDS,
-      };
+  const { goToNextStep, goToPrevStep, isIntro, hasNextPage, progress } =
+    useProfileSetupNavigator({
+      onSubmit: handleSubmit(onSubmit),
+      validate: async (currentStep) => {
+        const fieldNames: SetupProfileFields = {
+          type: TYPE_FIELDS,
+          details: DETAILS_FIELDS[profileType],
+          contact: CONTACT_FIELDS,
+          avatar: AVATAR_FIELDS,
+        };
 
-      return trigger(fieldNames[currentStep]);
-    },
-  });
+        return trigger(fieldNames[currentStep]);
+      },
+    });
 
   return (
     <FormProvider {...form}>
@@ -112,10 +121,18 @@ export default function Layout() {
               ...createDirectionalShadow('top'),
             }}
           >
-            <Button isDisabled={!profileType} size="lg" onPress={goToNextStep}>
-              <ButtonText>{hasNextPage ? 'Continue' : 'Submit'}</ButtonText>
+            <Button isDisabled={!profileType || isSubmitting} size="lg" onPress={goToNextStep}>
+              <ButtonText>
+                {isSubmitting ? 'Creating profile...' : hasNextPage ? 'Continue' : 'Submit'}
+              </ButtonText>
             </Button>
-            <Button size="md" variant="link" action="default" onPress={goToPrevStep}>
+            <Button
+              isDisabled={isSubmitting}
+              size="md"
+              variant="link"
+              action="default"
+              onPress={goToPrevStep}
+            >
               <ButtonText>Back</ButtonText>
             </Button>
           </VStack>

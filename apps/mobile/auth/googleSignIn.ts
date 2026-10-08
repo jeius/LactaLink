@@ -29,7 +29,11 @@ export async function signInWithGoogle() {
 
     return `Welcome! ${name}`;
   } catch (error) {
-    let message = 'An unknown error occured. Please try again later!';
+    // Supabase errors also have a code. Preserve their message and status before
+    // considering native Google sign-in codes.
+    if (error instanceof AuthError) throw error;
+
+    let message = 'Google sign-in failed. Please try again later.';
     let code = 'google_sign_in_error';
     const status = 500;
 
@@ -53,13 +57,14 @@ export async function signInWithGoogle() {
           console.log(message);
           break;
         default:
-          message = 'Unknown error occurred.';
+          message =
+            error instanceof Error && error.message
+              ? `${error.message} (code: ${error.code})`
+              : `Google sign-in failed (code: ${error.code}). Please try again.`;
           break;
       }
     } else if (error instanceof Error) {
       message = error.message;
-    } else if (error instanceof AuthError) {
-      throw error; // Re-throw AuthError to be handled by caller
     }
 
     throw new AuthError(message, status, code);

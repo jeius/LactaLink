@@ -31,7 +31,9 @@ export default function GoogleButtonWrapper({
       error: (error) => extractErrorMessage(error),
     });
 
-    await googleSignInPromise.finally(() => setIsSubmitting(false));
+    // The toast handles the error. Consume the rejection in this event handler
+    // and always re-enable the button for another attempt.
+    await googleSignInPromise.catch(() => undefined).finally(() => setIsSubmitting(false));
   }
 
   return (
