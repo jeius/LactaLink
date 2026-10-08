@@ -92,3 +92,6 @@ xcuserdata
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+
+# Agent scratch (local issue tracker)
+.scratch

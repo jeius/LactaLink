@@ -65,7 +65,7 @@ LactaLink, built with **React Native (Expo)**, facilitates the donation and dist
 - 🛠️ [TypeScript](https://www.typescriptlang.org/) (Static Typing)
 - 🎨 [Prettier](https://prettier.io/) (Code Formatting)
 
-> More details in the [Technical Architecture](./docs/technical-architecture/INDEX.md) documentation.
+> More details in the [Technical Architecture](./docs/technical-architecture/INDEX.md) documentation, the [Tech Stack & Conventions](./docs/tech-stack.md) reference, and the [Architecture](./docs/architecture.md) overview. AI coding agents: start with [AGENTS.md](./AGENTS.md); product scope in [docs/PRD.md](./docs/PRD.md), roadmap in [docs/plan.md](./docs/plan.md), current status in [docs/progress.md](./docs/progress.md).
 
 ## Installation & Setup ⚙️📦
 

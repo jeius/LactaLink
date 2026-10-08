@@ -1,15 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "cms-migration": {
+      "source": "payloadcms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cms-migration/SKILL.md",
+      "computedHash": "306502bcc7ab9d0bb2328e8711d5ec65c48fa3cf6af52fd9a2e7f2e4d116eeb3"
+    },
     "gluestack-ui-v4": {
       "source": "gluestack/agent-skills",
       "sourceType": "github",
+      "skillPath": ".agents/skills/gluestack-ui-v4/SKILL.md",
       "computedHash": "81407cacc7d3eff17da0399f1bb84db6118363283fd07a2217030d75f702388b"
+    },
+    "gluestack-ui-v5": {
+      "source": "gluestack/agent-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/gluestack-ui-v5/SKILL.md",
+      "computedHash": "b19717e992153a421da7423f0609a39c4864f947c7f50fca67cf5e5b7d4878e4"
     },
     "payload": {
       "source": "payloadcms/skills",
       "sourceType": "github",
-      "computedHash": "4a17a9529d4533545edb8191159c9134120774acdd042172877291a25929e7a1"
+      "skillPath": "skills/payload/SKILL.md",
+      "computedHash": "1cc1ce9d9461d031e3f9dba24bf8bbf80129a533a2d56c6e5452be14c283b582"
     }
   }
 }

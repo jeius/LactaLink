@@ -12,8 +12,9 @@ This document provides a comprehensive overview of the features available in the
   - [Identity Verification](#identity-verification)
   - [Donation Management](#donation-management)
   - [Request Management](#request-management)
-  - [Messaging and Notifications](#messaging-and-notifications)
-  - [Geographic Services](#geographic-services)
+- [Messaging and Notifications](#messaging-and-notifications)
+  - [Community Feed](#community-feed)
+- [Geographic Services](#geographic-services)
 - [Administrative Features](#administrative-features)
   - [User Management](#user-management)
   - [Content Management](#content-management)
@@ -94,7 +95,7 @@ The donation process enables individuals to safely donate breast milk to recipie
 - **Donation Tracking**
   - Monitor donation status and recipient responses
   - Track partial and complete allocations
-  - View donation history and impact statistics
+  - View donation history (impact statistics pending — moved to milestone M7)
   - Receive notifications about donation updates
 
 ### Request Management
@@ -130,6 +131,13 @@ The request system allows individuals to seek breast milk donations based on the
   - Receive alerts for donation matches, requests, and system updates
   - Customize notification preferences by category and channel
   - Access notification history and action items
+
+### Community Feed
+
+The community feed lets users share posts, comment, and like — the shipped early core of community interaction (dedicated milestone M8 in the roadmap).
+
+- **Shipped** — Posts, comments, and likes; feed tab in the mobile app; post creation/editing and comment threads.
+- **Remaining (In Progress)** — polish backlog to be defined: moderation tooling, wiring user blocking, surfacing read-tracking data.
 
 ### Geographic Services
 
@@ -194,9 +202,7 @@ The request system allows individuals to seek breast milk donations based on the
 
 These features are planned for future releases:
 
-- **Advanced Analytics Dashboard**: Comprehensive data visualization and reporting tools for tracking donations, requests, and impact metrics.
-
-- **Community Forums**: Discussion spaces for users to share experiences, advice, and support related to breastfeeding and milk donation.
+- **Advanced Analytics Dashboard**: Comprehensive data visualization and reporting tools for tracking donations, requests, and impact metrics (includes donor impact statistics, moved from M1).
 
 - **Mobile Scanning**: Barcode/QR code scanning functionality for easier milk bag tracking and verification.
 
