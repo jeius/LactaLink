@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { RefreshCwIcon } from 'lucide-react-native';
 import { ReactNode, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
@@ -32,7 +33,8 @@ export function AppInitializer({ children }: Props) {
 
   const { isLoading: isThemeLoading } = useTheme();
   const auth = useAuth();
-  const location = useInitLocation();
+  // Browser previews cannot use the native background-location flow.
+  const location = useInitLocation(Platform.OS !== 'web');
   const tutorialState = useInitializeTutorialStore(auth.user);
 
   const isAppReady =

@@ -7,10 +7,24 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import { AuthError } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 
 export async function signInWithGoogle() {
   try {
     const apiClient = getApiClient();
+
+    if (Platform.OS === 'web') {
+      const { url } = await apiClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/sign-in`,
+          skipBrowserRedirect: true,
+        },
+      });
+      window.location.assign(url);
+      return 'Redirecting to Google...';
+    }
+
     await GoogleSignin.hasPlayServices();
     const res = await GoogleSignin.signIn();
 

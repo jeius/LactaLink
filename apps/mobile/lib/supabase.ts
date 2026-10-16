@@ -1,5 +1,5 @@
 import { createClient, type SupportedStorage } from '@supabase/supabase-js';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 import { MMKV_KEYS, SUPABASE_ANON_KEY, SUPABASE_URL } from './constants';
 import { authStorage } from './localStorage';
@@ -35,7 +35,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: Platform.OS === 'web',
     storageKey: MMKV_KEYS.AUTH,
   },
 });

@@ -58,17 +58,6 @@ export default function CallToAction({
 
   // --- Handlers for organization markers ---
 
-  function handleOrgDonate() {
-    if (isOwner || !docSlug || !docID) {
-      router.push(`/profile/${docSlug}/${docID}`);
-    } else if (!isOwner && (docSlug === 'hospitals' || docSlug === 'milkBanks')) {
-      router.push({
-        pathname: '/donations/create',
-        params: { rid: docID, rslg: docSlug } satisfies RecipientSearchParams,
-      });
-    }
-  }
-
   function handleOrgRequest() {
     if (isOwner || !docSlug || !docID) {
       router.push(`/profile/${docSlug}/${docID}`);
@@ -132,11 +121,6 @@ export default function CallToAction({
           </Button>
         ) : (
           <>
-            <Button size="lg" action="primary" className="flex-1 shadow" onPress={handleOrgDonate}>
-              <ButtonIcon as={DONATE_BTN_ICON} className="h-6 w-6 stroke-primary-0" />
-              <ButtonText>Donate</ButtonText>
-            </Button>
-
             <Button
               size="lg"
               action="tertiary"

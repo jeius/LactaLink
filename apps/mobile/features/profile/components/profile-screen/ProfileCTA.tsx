@@ -14,6 +14,7 @@ interface ProfileCTAProps {
 }
 
 export default function ProfileCTA({ profile }: ProfileCTAProps) {
+  const isOrganization = profile.relationTo === 'hospitals' || profile.relationTo === 'milkBanks';
   const params: RecipientSearchParams = {
     rid: extractID(profile.value),
     rslg: profile.relationTo,
@@ -21,12 +22,14 @@ export default function ProfileCTA({ profile }: ProfileCTAProps) {
 
   return (
     <HStack space="lg" className="w-full items-stretch">
-      <Link asChild push href={{ pathname: `/donations/create`, params }}>
-        <Button className="flex-1">
-          <ButtonIcon as={DonateMilkIcon} className="fill-primary-0" />
-          <ButtonText>Donate</ButtonText>
-        </Button>
-      </Link>
+      {!isOrganization && (
+        <Link asChild push href={{ pathname: `/donations/create`, params }}>
+          <Button className="flex-1">
+            <ButtonIcon as={DonateMilkIcon} className="fill-primary-0" />
+            <ButtonText>Donate</ButtonText>
+          </Button>
+        </Link>
+      )}
       <Link asChild push href={{ pathname: `/requests/create`, params }}>
         <Button action="tertiary" className="flex-1">
           <ButtonIcon as={MilkBottlePlusIcon} className="fill-tertiary-0" />

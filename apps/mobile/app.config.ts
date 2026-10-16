@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'lactalink',
   userInterfaceStyle: 'light',
   newArchEnabled: true,
-  platforms: ['ios', 'android'],
+  platforms: ['ios', 'android', 'web'],
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.lactalink.mobile',

@@ -27,6 +27,11 @@ const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export default buildConfig({
+  // The Expo web preview calls the deployed Payload API from localhost.
+  // Payload only emits Access-Control-Allow-Origin for explicitly allowed
+  // origins, so browsers otherwise surface authenticated requests as
+  // "Failed to fetch" even though the API is online.
+  cors: [getServerSideURL(), 'http://localhost:8085'],
   admin: {
     user: Users.slug,
     importMap: {

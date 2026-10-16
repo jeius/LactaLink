@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useFetchNearest } from '@/hooks/collections/useFetchNearest';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import { DonationCreateParams, RequestCreateParams } from '@/lib/types/donationRequest';
 import { useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';
 import { generatePlaceHolders } from '@lactalink/utilities';
@@ -31,6 +32,9 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
 }: SceneProps<T>) {
   const res = useFetchNearest(route.key as 'donations' | 'requests');
   const router = useRouter();
+  const { data: meUser } = useMeUser();
+  const canDonate =
+    meUser?.profile?.relationTo !== 'hospitals' && meUser?.profile?.relationTo !== 'milkBanks';
 
   const BottomSheetScrollable = useBottomSheetScrollableCreator({ focusHook: useFocusEffect });
 
@@ -49,6 +53,8 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
       const isLoading = item.id.includes('placeholder');
 
       function Action() {
+        if (route.key === 'requests' && !canDonate) return null;
+
         let actionButtonLabel = '';
         switch (route.key) {
           case 'donations':
@@ -122,7 +128,7 @@ export function DonationRequestScene<T extends Donation | Request = Donation | R
           return null;
       }
     },
-    [canViewImage, onPress, route.key, router]
+    [canDonate, canViewImage, onPress, route.key, router]
   );
 
   function EmptyComponent() {

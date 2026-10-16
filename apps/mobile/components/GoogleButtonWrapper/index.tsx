@@ -3,7 +3,7 @@ import { Image } from '@/components/Image';
 import { getIconAsset } from '@/lib/stores';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import React, { useState } from 'react';
-import { ViewProps } from 'react-native';
+import { Platform, ViewProps } from 'react-native';
 import { toast } from 'sonner-native';
 import { Button, ButtonText } from '../ui/button';
 import { Divider } from '../ui/divider';
@@ -23,13 +23,14 @@ export default function GoogleButtonWrapper({
 
     const googleSignInPromise = signInWithGoogle();
 
-    toast.dismiss();
-
-    toast.promise(googleSignInPromise, {
-      loading: 'Signing in with Google...',
-      success: (msg) => msg,
-      error: (error) => extractErrorMessage(error),
-    });
+    if (Platform.OS !== 'web') {
+      toast.dismiss();
+      toast.promise(googleSignInPromise, {
+        loading: 'Signing in with Google...',
+        success: (msg) => msg,
+        error: (error) => extractErrorMessage(error),
+      });
+    }
 
     // The toast handles the error. Consume the rejection in this event handler
     // and always re-enable the button for another attempt.

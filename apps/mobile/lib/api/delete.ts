@@ -4,14 +4,13 @@ import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { toast } from 'sonner-native';
 
-const apiClient = getApiClient();
-
 export async function deleteCollection(
   slug: CollectionSlug,
   id?: string | null,
   options: { silent?: boolean } = {}
 ): Promise<boolean> {
   if (!id) return false;
+  const apiClient = getApiClient();
 
   const { silent = false } = options;
 
@@ -43,6 +42,7 @@ export async function deleteCollection(
 }
 
 export async function deleteMilkBag(id: string): Promise<MilkBag> {
+  const apiClient = getApiClient();
   return apiClient.deleteByID({
     collection: 'milkBags',
     id,

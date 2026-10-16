@@ -42,10 +42,10 @@ const svgConfig = {
   },
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
-    getTransformOptions: async () => ({
+    getTransformOptions: async (_entryPoints, { platform }) => ({
       transform: {
         experimentalImportSupport: false,
-        inlineRequires: true,
+        inlineRequires: platform !== 'web',
       },
     }),
   },
