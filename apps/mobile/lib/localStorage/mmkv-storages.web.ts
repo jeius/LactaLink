@@ -1,11 +1,11 @@
 import { createMMKV } from 'react-native-mmkv';
 
-// Keep browser preview sessions in memory; native encrypted storage is unchanged.
-const session = new Map<string, string>();
+// OAuth returns through a full-page browser redirect, so the auth session must
+// survive reloads. Native builds continue to use encrypted MMKV storage.
 export const authStorage = {
-  getString: (key: string) => session.get(key),
-  set: (key: string, value: string) => { session.set(key, value); },
-  remove: (key: string) => session.delete(key),
+  getString: (key: string) => window.localStorage.getItem(key) ?? undefined,
+  set: (key: string, value: string) => window.localStorage.setItem(key, value),
+  remove: (key: string) => window.localStorage.removeItem(key),
 };
 
 export const formDataStorage = createMMKV({ id: 'form-data-storage' });
