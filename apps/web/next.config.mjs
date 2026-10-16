@@ -33,6 +33,15 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'http://localhost:8085',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {
