@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   title: 'Sign In | LactaLink',
 };
 
+// The admin existence check depends on the live database and must run when
+// the page is requested rather than while Vercel is building the app.
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const payload = await getPayload({ config: payloadConfig });
   const userCount = await payload.count({
