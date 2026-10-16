@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: 'Create First Admin | LactaLink',
 };
 
+// This page checks the live users collection and must not query the database
+// while Vercel is generating static pages during a deployment.
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const payload = await getPayload({ config });
   const admins = await payload.find({
