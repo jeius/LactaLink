@@ -33,7 +33,7 @@ const monorepoConfig = {
         return middleware(req, res, next);
       }
 
-      const target = new URL(req.url, 'https://vercel.dev.lactalink.com');
+      const target = new URL(req.url, 'https://vercel.lactalink.com');
       const headers = { ...req.headers, host: target.host };
       delete headers.origin;
 
