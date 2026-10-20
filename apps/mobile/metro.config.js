@@ -1,4 +1,5 @@
 const path = require('path');
+const https = require('https');
 const { getDefaultConfig } = require('expo/metro-config');
 const { FileStore } = require('metro-cache');
 const { withNativeWind } = require('nativewind/metro');
@@ -26,6 +27,34 @@ const monorepoConfig = {
       root: path.join(projectDir, 'node_modules', '.cache', 'metro'),
     }),
   ],
+  server: {
+    enhanceMiddleware: (middleware) => (req, res, next) => {
+      if (!req.url?.startsWith('/api/')) {
+        return middleware(req, res, next);
+      }
+
+      const target = new URL(req.url, 'https://vercel.dev.lactalink.com');
+      const headers = { ...req.headers, host: target.host };
+      delete headers.origin;
+
+      const proxyRequest = https.request(
+        target,
+        { method: req.method, headers },
+        (proxyResponse) => {
+          res.writeHead(proxyResponse.statusCode || 502, proxyResponse.headers);
+          proxyResponse.pipe(res);
+        }
+      );
+
+      proxyRequest.on('error', (error) => {
+        console.error('Local API proxy failed:', error.message);
+        if (!res.headersSent) res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Local API proxy failed.' }));
+      });
+
+      req.pipe(proxyRequest);
+    },
+  },
 };
 
 /** @type {import('expo/metro-config').MetroConfig} */

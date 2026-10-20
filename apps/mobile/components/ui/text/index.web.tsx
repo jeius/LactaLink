@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { textStyle } from './styles';
 
@@ -19,8 +20,33 @@ const Text = React.forwardRef<React.ComponentRef<'span'>, ITextProps>(function T
   }: { className?: string } & ITextProps,
   ref
 ) {
+  const {
+    style,
+    numberOfLines,
+    ellipsizeMode: _ellipsizeMode,
+    onLayout: _onLayout,
+    nativeID,
+    forwardedRef: _forwardedRef,
+    ...webProps
+  } = props as typeof props & {
+    ellipsizeMode?: unknown;
+    forwardedRef?: unknown;
+    nativeID?: string;
+    numberOfLines?: number;
+    onLayout?: unknown;
+  };
+  const lineClampStyle: React.CSSProperties | undefined = numberOfLines
+    ? {
+        display: '-webkit-box',
+        overflow: 'hidden',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: numberOfLines,
+      }
+    : undefined;
   return (
     <span
+      {...webProps}
+      id={nativeID ?? webProps.id}
       className={textStyle({
         isTruncated,
         bold,
@@ -32,7 +58,7 @@ const Text = React.forwardRef<React.ComponentRef<'span'>, ITextProps>(function T
         highlight,
         class: className,
       })}
-      {...props}
+      style={{ ...(StyleSheet.flatten(style) as React.CSSProperties), ...lineClampStyle }}
       ref={ref}
     />
   );
