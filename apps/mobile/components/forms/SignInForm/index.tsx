@@ -14,6 +14,7 @@ import { Form } from '@/components/contexts/FormProvider';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { Box } from '@/components/ui/box';
 import { sessionQueryOptions } from '@/lib/queries/authQueryOptions';
+import { getApiClient } from '@lactalink/api';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -48,8 +49,9 @@ export default function SignInForm() {
     // Do not rely only on the auth event listener for navigation. On web the
     // event can fire before the listener is mounted, leaving a valid session
     // on the sign-in screen until the page is reloaded.
-    await queryClient.refetchQueries({ queryKey: sessionQueryOptions.queryKey });
-    router.replace('/');
+    const session = await getApiClient().auth.getSession();
+    queryClient.setQueryData(sessionQueryOptions.queryKey, session);
+    router.replace('/feed');
   }
 
   return (
@@ -109,7 +111,9 @@ export default function SignInForm() {
             size="xl"
             isDisabled={isSubmitting}
             className="rounded-xl"
-            onPress={form.handleSubmit(onSubmit)}
+            onPress={form.handleSubmit(onSubmit, () => {
+              toast.error('Please enter a valid email address and password.');
+            })}
           >
             <ButtonText>{isSubmitting ? 'Signing in...' : 'Sign In'}</ButtonText>
           </Button>
