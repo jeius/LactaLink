@@ -88,6 +88,8 @@ export function HeaderBackButton({
   return (
     <AnimatedPressable
       {...props}
+      accessibilityLabel={props.accessibilityLabel ?? 'Go Back'}
+      role={props.role ?? 'button'}
       disablePressAnimation={disablePressAnimation}
       className={baseStyle({ className })}
       hitSlop={10}
