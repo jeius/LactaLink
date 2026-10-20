@@ -66,7 +66,7 @@ export default function SearchPage() {
         style={{ paddingTop: insets.top + 8, paddingBottom: 8 }}
         className="bg-background-0 px-2"
       >
-        <HeaderBackButton />
+        <HeaderBackButton href="/feed" />
 
         <Input size="md" variant="rounded" className="mx-2 flex-1">
           <InputSlot className="ml-2">

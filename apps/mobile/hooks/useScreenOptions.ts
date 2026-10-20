@@ -1,7 +1,9 @@
 import { useTheme } from '@/components/AppProvider/ThemeProvider';
+import { HeaderBackButton } from '@/components/HeaderBackButton';
 import { getColor, getPrimaryColor } from '@/lib/colors';
 import { StackScreenOptions, TabScreenOptions } from '@/lib/types';
 import { Platform, useWindowDimensions } from 'react-native';
+import { createElement } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackAnimationTypes } from 'react-native-screens';
 
@@ -34,6 +36,8 @@ export function useScreenOptions(args?: UseScreenOptions): StackScreenOptions {
     animation,
     headerShown: false,
     headerBackVisible: true,
+    headerLeft: ({ canGoBack, tintColor }) =>
+      createElement(HeaderBackButton, { canGoBack, tintColor, href: '/feed' }),
     headerShadowVisible: true,
     headerBackButtonDisplayMode: 'minimal',
     headerTitleStyle: { fontFamily: 'Jakarta-Bold', fontSize: 18 },

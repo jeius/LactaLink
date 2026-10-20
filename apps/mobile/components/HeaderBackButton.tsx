@@ -1,6 +1,6 @@
 import { BACK_TOAST_ID } from '@/lib/constants';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { ArrowLeftIcon, ChevronLeftIcon } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
 import { GestureResponderEvent, Platform, StyleSheet } from 'react-native';
@@ -34,6 +34,7 @@ export function HeaderBackButton({
   toastAction,
   toastID = BACK_TOAST_ID,
   canGoBack: canGoBackProp,
+  href,
   onPress,
   tintColor,
   iconType = Platform.select({ ios: 'chevron', default: 'arrow' }),
@@ -43,7 +44,8 @@ export function HeaderBackButton({
   ...props
 }: HeaderBackButtonProps) {
   const router = useRouter();
-  const canGoBack = canGoBackProp || router.canGoBack();
+  const canGoBack = canGoBackProp ?? router.canGoBack();
+  const canNavigateBack = canGoBack || Boolean(href);
 
   const icon = useMemo(() => {
     switch (iconType) {
@@ -68,7 +70,8 @@ export function HeaderBackButton({
     onPress?.(event);
     if (event.defaultPrevented) return;
     if (!disable) {
-      router.back();
+      if (href) router.replace(href as Href);
+      else if (canGoBack) router.back();
     } else {
       toast.warning(message, {
         id: toastID,
@@ -78,7 +81,7 @@ export function HeaderBackButton({
     }
   }
 
-  if (!canGoBack) {
+  if (!canNavigateBack) {
     return null;
   }
 
