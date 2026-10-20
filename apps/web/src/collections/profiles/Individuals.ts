@@ -2,7 +2,7 @@ import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { GENDER_TYPES, MARITAL_STATUS } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { admin, authenticated, profileOwnerOrAdmin } from '../_access-control';
 import { defaultAddressField, displayNameField, ownerField } from './fields';
 import { afterChange } from './hooks/afterChange';
 import { afterDelete } from './hooks/afterDelete';
@@ -15,8 +15,8 @@ export const Individuals: CollectionConfig<'individuals'> = {
     admin: admin,
     create: authenticated,
     read: authenticated,
-    update: collectionOwnerOrAdmin,
-    delete: collectionOwnerOrAdmin,
+    update: profileOwnerOrAdmin('individuals'),
+    delete: profileOwnerOrAdmin('individuals'),
   },
   admin: {
     group: COLLECTION_GROUP.USER,

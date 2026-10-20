@@ -1,6 +1,6 @@
 import { isAdmin } from '@/lib/utils/isAdmin';
 import { extractID } from '@lactalink/utilities/extractors';
-import { Access, Where } from 'payload';
+import { Access, CollectionSlug, Where } from 'payload';
 
 // This file defines general access control rules for collections in Payload CMS.
 
@@ -32,6 +32,27 @@ export const collectionOwnerOrAdmin: Access = ({ req }) => {
   // If the collection has an owner, check if the user is the owner
   return {
     owner: { equals: user.id },
+  };
+};
+
+type ProfileSlug = Extract<CollectionSlug, 'individuals' | 'hospitals' | 'milkBanks'>;
+
+/**
+ * Profile ownership is stored on the user's polymorphic `profile` relationship.
+ * The profile collections expose `owner` only as a virtual field, so filtering
+ * those collections by `owner` produces invalid SQL in Payload.
+ */
+export const profileOwnerOrAdmin = (collection: ProfileSlug): Access => {
+  return ({ req }) => {
+    const user = req.user;
+
+    if (!user) return false;
+    if (isAdmin(user)) return true;
+
+    const profile = user.profile;
+    if (!profile || profile.relationTo !== collection) return false;
+
+    return { id: { equals: extractID(profile.value) } };
   };
 };
 

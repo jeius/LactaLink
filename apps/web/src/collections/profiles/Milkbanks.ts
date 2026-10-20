@@ -3,7 +3,7 @@ import { profilesRelatedPostsField } from '@/fields/profilesRelatedPost';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
 import { CollectionConfig } from 'payload';
-import { admin, authenticated, collectionOwnerOrAdmin } from '../_access-control';
+import { admin, authenticated, profileOwnerOrAdmin } from '../_access-control';
 import { organizationEndpoints } from './endpoints';
 import { defaultAddressField, displayNameField, ownerField } from './fields';
 import { afterChange } from './hooks/afterChange';
@@ -17,8 +17,8 @@ export const MilkBanks: CollectionConfig<'milkBanks'> = {
     admin: admin,
     create: authenticated,
     read: authenticated,
-    update: collectionOwnerOrAdmin,
-    delete: collectionOwnerOrAdmin,
+    update: profileOwnerOrAdmin('milkBanks'),
+    delete: profileOwnerOrAdmin('milkBanks'),
   },
   admin: {
     group: COLLECTION_GROUP.USER,
