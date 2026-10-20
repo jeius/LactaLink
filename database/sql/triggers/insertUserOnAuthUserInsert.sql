@@ -3,17 +3,19 @@ create or replace function public.insert_public_user_on_auth_user_insert()
 returns trigger
 language plpgsql
 security definer
+set search_path = public
 as $$
 declare
+  existing_user_id uuid;
   existing_auth_id uuid;
-  existing_email varchar;
 begin
   -- Check if a user already exists with the same email
-  select auth_id, email into existing_auth_id, existing_email
+  select id, auth_id into existing_user_id, existing_auth_id
   from public.users
-  where email = new.email;
+  where lower(email) = lower(new.email)
+  limit 1;
 
-  if existing_email = new.email then
+  if existing_user_id is not null then
     if existing_auth_id = new.id then
       -- Same auth_id, no action needed
       return new;
@@ -26,14 +28,12 @@ begin
           profile_type = 'INDIVIDUAL',
           role = 'AUTHENTICATED',
           updated_at = new.updated_at
-      where email = new.email
-      and auth_id is null; -- ensure only if still NULL
+      where id = existing_user_id;
 
       -- Remove the relationship to the old soft-deleted profile so the app
       -- sends the user through profile setup again.
       delete from public.users_rels
-      where parent_id = (select id from public.users where email = new.email)
-        and path = 'profile';
+      where parent_id = existing_user_id and path = 'profile';
     else
       -- Email exists and auth_id belongs to another user, throw error
       raise exception 'Email % is already associated with another user.', new.email
