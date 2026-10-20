@@ -8,7 +8,7 @@ import { Pressable, PressableProps } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useDeleteAccountMutation } from '@/features/account/hooks/mutations';
-import { getMeUser } from '@/lib/stores/meUserStore';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { OTPSearchParams } from '@/lib/types/searchParams';
 import { extractID } from '@lactalink/utilities/extractors';
 import { useRouter } from 'expo-router';
@@ -26,6 +26,7 @@ import { toast } from 'sonner-native';
 
 export default function AccountSettings() {
   const router = useRouter();
+  const { user, refetchSession } = useAuth();
 
   const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteAccountMutation();
 
@@ -34,18 +35,25 @@ export default function AccountSettings() {
   }
 
   async function handleEditProfile() {
-    const meUser = getMeUser();
-    if (!meUser?.profile) {
-      toast.error('Unable to retrieve profile information');
+    let currentUser = user;
+
+    if (!currentUser?.profile) {
+      const { data: session } = await refetchSession();
+      currentUser = session?.user || null;
+    }
+
+    if (!currentUser?.profile) {
+      router.replace('/profile/setup');
       return;
     }
-    const slug = meUser.profile.relationTo;
-    const id = extractID(meUser.profile.value);
+
+    const slug = currentUser.profile.relationTo;
+    const id = extractID(currentUser.profile.value);
     router.push(`/profile/${slug}/${id}/edit`, { withAnchor: true });
   }
 
   async function handleChangePassword() {
-    const email = getMeUser()?.email;
+    const email = user?.email;
     if (!email) {
       toast.error('Unable to retrieve email for password reset');
       return;

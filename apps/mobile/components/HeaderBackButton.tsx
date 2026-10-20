@@ -56,7 +56,9 @@ export function HeaderBackButton({
   }, [iconType]);
 
   useEffect(() => {
-    if (!disable) {
+    // sonner-native does not initialize its imperative context reliably on web.
+    // There is no native back-warning toast to clear when this screen mounts.
+    if (!disable && Platform.OS !== 'web') {
       toast.dismiss(toastID);
     }
   }, [disable, toastID]);

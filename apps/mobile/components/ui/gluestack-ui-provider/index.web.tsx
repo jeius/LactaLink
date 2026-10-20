@@ -1,4 +1,5 @@
 'use client';
+import Toaster from '@/components/Toaster';
 import React, { useEffect, useLayoutEffect } from 'react';
 import { config } from './config';
 import { OverlayProvider } from '@gluestack-ui/overlay';
@@ -87,7 +88,10 @@ export function GluestackUIProvider({
         }}
       />
       <OverlayProvider>
-        <ToastProvider>{props.children}</ToastProvider>
+        <ToastProvider>
+          {props.children}
+          <Toaster />
+        </ToastProvider>
       </OverlayProvider>
     </>
   );

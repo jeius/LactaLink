@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ORGANIZATION_TYPES } from '@lactalink/enums';
 import { EditProfileSchema, editProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
-import { isHospital, isIndividual, isMilkBank } from '@lactalink/utilities/type-guards';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -23,13 +22,11 @@ export function useEditProfileForm(profile: PopulatedUserProfile | undefined | n
 }
 
 function createValues(profile: PopulatedUserProfile): EditProfileSchema | undefined {
-  const slug = profile.relationTo;
-  const doc = profile.value;
-
-  if (slug === 'individuals' && isIndividual(doc)) {
+  if (profile.relationTo === 'individuals') {
+    const doc = profile.value;
     return {
       id: doc.id,
-      slug: slug,
+      slug: profile.relationTo,
       profileType: 'INDIVIDUAL',
       givenName: doc.givenName,
       middleName: doc.middleName,
@@ -41,10 +38,11 @@ function createValues(profile: PopulatedUserProfile): EditProfileSchema | undefi
       avatar: transformToImageSchema(doc.avatar),
       phone: doc.phone,
     };
-  } else if (slug === 'hospitals' && isHospital(doc)) {
+  } else if (profile.relationTo === 'hospitals') {
+    const doc = profile.value;
     return {
       id: doc.id,
-      slug: slug,
+      slug: profile.relationTo,
       profileType: 'HOSPITAL',
       name: doc.name,
       description: doc.description,
@@ -54,10 +52,11 @@ function createValues(profile: PopulatedUserProfile): EditProfileSchema | undefi
       avatar: transformToImageSchema(doc.avatar),
       phone: doc.phone,
     };
-  } else if (slug === 'milkBanks' && isMilkBank(doc)) {
+  } else if (profile.relationTo === 'milkBanks') {
+    const doc = profile.value;
     return {
       id: doc.id,
-      slug: slug,
+      slug: profile.relationTo,
       profileType: 'MILK_BANK',
       name: doc.name,
       description: doc.description,
