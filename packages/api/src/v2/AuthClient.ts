@@ -168,15 +168,17 @@ export class AuthClient implements IAuthClient {
 
   signIn = async (credentials: SignInWithPasswordCredentials): Promise<User> => {
     const sbAuth = this._ensureSbAuthAvailable('signIn');
-    const { error } = await sbAuth.signInWithPassword(credentials);
+    const { data, error } = await sbAuth.signInWithPassword(credentials);
     if (error) throw error;
+    this._setToken(data.session?.access_token || null);
     return await this._handleAuthSuccess();
   };
 
   signInWithIdToken = async (credentials: SignInWithIdTokenCredentials): Promise<User> => {
     const sbAuth = this._ensureSbAuthAvailable('signInWithIdToken');
-    const { error } = await sbAuth.signInWithIdToken(credentials);
+    const { data, error } = await sbAuth.signInWithIdToken(credentials);
     if (error) throw error;
+    this._setToken(data.session?.access_token || null);
     return await this._handleAuthSuccess();
   };
 
@@ -327,6 +329,7 @@ export class AuthClient implements IAuthClient {
     if (error) throw error;
     if (!data.session) return null;
 
+    this._setToken(data.session.access_token);
     const backendSession = await this._getBackendSession();
     const { access_token: token, ...restOfSession } = data.session;
 
