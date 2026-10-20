@@ -3,30 +3,22 @@ create or replace function public.delete_auth_user_on_public_user_soft_delete()
 returns trigger
 language plpgsql
 security definer
+set search_path = public
 as $$
-declare
-  auth_user_exists boolean;
 begin
   -- Only proceed when deleted_at transitions from NULL to non-NULL
   if new.deleted_at is null or old.deleted_at is not null then
-    return old;
+    return new;
   end if;
 
   if old.auth_id is not null then
-    -- Check if the auth user actually exists
-    select exists (select 1 from auth.users where id = old.auth_id) into auth_user_exists;
-
-    if auth_user_exists then
-      delete from auth.users where id = old.auth_id;
-    else
-      raise warning 'Auth user with id % not found when deleting user %', old.auth_id, old.auth_id;
-    end if;
+    delete from auth.users where id = old.auth_id;
 
     -- Clear the auth_id reference so it doesn't point to a non-existing auth user
     update public.users set auth_id = null where id = old.id;
   end if;
 
-  return old;
+  return new;
 end;
 $$;
 
