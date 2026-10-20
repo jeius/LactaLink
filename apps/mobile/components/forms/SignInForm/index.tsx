@@ -13,7 +13,9 @@ import { signIn } from '@/auth';
 import { Form } from '@/components/contexts/FormProvider';
 import { TextInputField } from '@/components/form-fields/TextInputField';
 import { Box } from '@/components/ui/box';
+import { sessionQueryOptions } from '@/lib/queries/authQueryOptions';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { LockIcon, MailIcon } from 'lucide-react-native';
 import React from 'react';
@@ -21,6 +23,7 @@ import { toast } from 'sonner-native';
 
 export default function SignInForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(signInSchema),
@@ -41,6 +44,12 @@ export default function SignInForm() {
     });
 
     await signInPromise;
+
+    // Do not rely only on the auth event listener for navigation. On web the
+    // event can fire before the listener is mounted, leaving a valid session
+    // on the sign-in screen until the page is reloaded.
+    await queryClient.refetchQueries({ queryKey: sessionQueryOptions.queryKey });
+    router.replace('/');
   }
 
   return (
