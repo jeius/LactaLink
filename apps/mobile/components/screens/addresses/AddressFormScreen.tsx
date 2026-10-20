@@ -19,7 +19,7 @@ import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { SaveIcon } from 'lucide-react-native';
 import React, { useCallback } from 'react';
-import { useFormState, useWatch } from 'react-hook-form';
+import { FieldErrors, useFormState, useWatch } from 'react-hook-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
@@ -76,6 +76,25 @@ export default function AddressFormScreen() {
     goBack();
   }
 
+  function onInvalid(errors: FieldErrors<AddressCreateSchema>) {
+    const labels: Partial<Record<keyof AddressCreateSchema, string>> = {
+      province: 'Province',
+      cityMunicipality: 'City or Municipality',
+      zipCode: 'Zip Code',
+      coordinates: 'Location',
+    };
+    const missingFields = Object.keys(errors)
+      .map((field) => labels[field as keyof AddressCreateSchema] || field)
+      .join(', ');
+
+    toast.error(
+      missingFields
+        ? `Please complete: ${missingFields}.`
+        : 'Please check the address details and try again.',
+      { id: TOAST_ID.ERROR }
+    );
+  }
+
   return (
     <>
       <FormSheetHandle />
@@ -93,7 +112,8 @@ export default function AddressFormScreen() {
             description="Are you sure you want to save this address?"
             onTriggerPress={handleValidation}
             confirmLabel="Save"
-            onConfirm={handleSubmit(onSubmit)}
+            confirmButtonProps={{ isLoading: isSubmitting, isDisabled: isSubmitting }}
+            onConfirm={handleSubmit(onSubmit, onInvalid)}
           />
           {isEditMode && (
             <DeleteActionButton

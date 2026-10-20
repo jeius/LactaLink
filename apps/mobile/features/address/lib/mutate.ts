@@ -17,7 +17,7 @@ export async function createAddress(data: AddressCreateSchema) {
     data: {
       ...rest,
       geocodedAt: geocodedAt?.toISOString(),
-      coordinates: latLngToPoint(coordinates),
+      coordinates: coordinates ? latLngToPoint(coordinates) : undefined,
       //@ts-expect-error This is auto-populated by the server, but is required by the type.
       owner: undefined, // Safe to set undefined since the server will populate this based on the authenticated user
     },

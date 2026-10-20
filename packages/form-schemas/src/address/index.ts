@@ -21,7 +21,9 @@ export const addressSchema = z.object({
   ...addressGeocodingSchema.omit({ coordinates: true }).shape,
 });
 
-export const addressCreateSchema = addressSchema.omit({ id: true, displayName: true });
+export const addressCreateSchema = addressSchema
+  .omit({ id: true, displayName: true, coordinates: true })
+  .extend({ coordinates: coordinatesSchema.optional() });
 
 export type AddressSchema = z.infer<typeof addressSchema>;
 export type AddressCreateSchema = z.infer<typeof addressCreateSchema>;
