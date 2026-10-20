@@ -26,6 +26,13 @@ export class ApiClient<T extends Config = Config> extends PayloadSDK<T> implemen
         if (token) headers.set('Authorization', `Bearer ${token}`);
         if (bypassToken) headers.set('x-vercel-protection-bypass', bypassToken);
         const mergedHeaders = mergeHeaders(headers, new Headers(init?.headers));
+
+        // Let fetch add the multipart boundary. Keeping the client's default
+        // application/json header makes Payload parse FormData as JSON.
+        if (typeof FormData !== 'undefined' && init?.body instanceof FormData) {
+          mergedHeaders.delete('Content-Type');
+        }
+
         return fetcher(url, { ...init, headers: mergedHeaders });
       },
     });
