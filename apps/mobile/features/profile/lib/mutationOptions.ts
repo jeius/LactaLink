@@ -1,11 +1,12 @@
 import { getApiClient } from '@lactalink/api';
-import { SetupProfileSchema } from '@lactalink/form-schemas';
+import { ImageSchema, SetupProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { CreateResult, UpdateByIDResult } from '@lactalink/types/api';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractID } from '@lactalink/utilities/extractors';
 import { mutationOptions } from '@tanstack/react-query';
-import { File } from 'expo-file-system';
+import { File as ExpoFile } from 'expo-file-system';
+import { Platform } from 'react-native';
 import { createUserProfileQuery } from './queryOption';
 
 const slugMap: Record<
@@ -17,6 +18,20 @@ const slugMap: Record<
   MILK_BANK: 'milkBanks',
 };
 
+async function createAvatarFile(avatar?: ImageSchema | null): Promise<Blob | undefined> {
+  if (!avatar?.url || avatar.id) return undefined;
+
+  if (Platform.OS !== 'web') return new ExpoFile(avatar.url);
+
+  const response = await fetch(avatar.url);
+  if (!response.ok) throw new Error('Failed to read the selected avatar.');
+
+  const blob = await response.blob();
+  return new globalThis.File([blob], avatar.filename || 'avatar.jpg', {
+    type: avatar.mimeType || blob.type || 'image/jpeg',
+  });
+}
+
 export function createEditProfileMutationOptions(
   profile: PopulatedUserProfile,
   init?: RequestInit
@@ -24,12 +39,12 @@ export function createEditProfileMutationOptions(
   return mutationOptions({
     mutationKey: ['profile', 'update'],
     mutationFn: async ({ avatar, profileType: _, ...data }: Partial<SetupProfileSchema>) => {
-      const avatarURI = avatar?.url;
+      const file = await createAvatarFile(avatar);
 
       const response = await getApiClient().request({
         path: `/${profile.relationTo}/${extractID(profile.value)}`,
         method: 'PATCH',
-        file: avatarURI ? new File(avatarURI) : undefined,
+        file,
         json: avatar ? { ...data, avatar: avatar.id } : { ...data, avatar },
         init: init,
         args: { depth: 3 },
@@ -54,12 +69,12 @@ export function createNewProfileMutationOptions(init?: RequestInit) {
   return mutationOptions({
     mutationKey: ['profile', 'create'],
     mutationFn: async ({ avatar, profileType, ...data }: SetupProfileSchema) => {
-      const avatarURI = avatar?.url;
+      const file = await createAvatarFile(avatar);
 
       const response = await getApiClient().request({
         path: `/${slugMap[profileType]}`,
         method: 'POST',
-        file: avatarURI ? new File(avatarURI) : undefined,
+        file,
         json: data,
         init: init,
         args: { depth: 3 },
