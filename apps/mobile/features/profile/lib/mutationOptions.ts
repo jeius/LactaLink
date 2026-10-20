@@ -1,4 +1,3 @@
-import { QUERY_KEYS } from '@/lib/constants';
 import { getApiClient } from '@lactalink/api';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
@@ -77,8 +76,6 @@ export function createNewProfileMutationOptions(init?: RequestInit) {
     onSuccess: async (data, _vars, _ctx, { client }) => {
       const queryKey = createUserProfileQuery(data).queryKey;
       client.setQueryData(queryKey, data);
-
-      await client.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
     },
   });
 }

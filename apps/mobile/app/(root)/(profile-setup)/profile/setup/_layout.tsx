@@ -17,11 +17,14 @@ import { SetupProfileFields } from '@/features/profile/lib/types';
 import { getProfileSetupErrorMessage } from '@/features/profile/lib/setupError';
 import { useMeUser } from '@/hooks/auth/useAuth';
 import { useScreenOptions } from '@/hooks/useScreenOptions';
+import { QUERY_KEYS } from '@/lib/constants';
 import { deleteSavedFormData } from '@/lib/localStorage/utils';
+import { sessionQueryOptions } from '@/lib/queries/authQueryOptions';
 import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { SetupProfileSchema } from '@lactalink/form-schemas';
+import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useRef, useState } from 'react';
 import { FormProvider, useWatch } from 'react-hook-form';
 import { LayoutRectangle } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
@@ -30,6 +33,8 @@ import { toast } from 'sonner-native';
 
 export default function Layout() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const submissionStarted = useRef(false);
   const { data: user } = useMeUser();
   const insets = useSafeAreaInsets();
   const screenOptions = useScreenOptions({ animationType: 'slide' });
@@ -52,14 +57,36 @@ export default function Layout() {
   const { mutateAsync: createProfile } = useCreateProfileMutation();
 
   async function onSubmit(formData: SetupProfileSchema) {
+    if (submissionStarted.current) return;
+    submissionStarted.current = true;
+
     const create = async () => {
       if (!user) throw new Error('User not found.');
 
-      const createdProfile = await createProfile(formData);
+      const createdProfile = await createProfile(formData).catch(async (error) => {
+        // A previous request may have created the profile even if navigation did
+        // not finish. Recover by refreshing the session instead of submitting a
+        // duplicate profile.
+        const session = await queryClient.fetchQuery({
+          ...sessionQueryOptions,
+          staleTime: 0,
+        });
+
+        if (session?.user?.profile?.value) {
+          deleteSavedFormData('profile-create');
+          router.replace('/feed');
+          return null;
+        }
+
+        throw error;
+      });
+      if (!createdProfile) return 'Profile already created successfully!';
+
       const name = createdProfile.value.displayName;
 
       deleteSavedFormData('profile-create');
       router.replace('/feed');
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.SESSION });
 
       return name ? `Welcome to LactaLink ${name}!` : 'Profile created successfully!';
     };
@@ -73,6 +100,7 @@ export default function Layout() {
     // Keep submission pending until the request settles so repeated taps cannot
     // create duplicate profiles. The toast reports failures; preserve the form.
     await submission.catch(() => undefined);
+    submissionStarted.current = false;
   }
 
   const { goToNextStep, goToPrevStep, isIntro, hasNextPage, progress } =
