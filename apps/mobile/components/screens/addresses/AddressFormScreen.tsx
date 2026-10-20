@@ -20,6 +20,7 @@ import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { SaveIcon } from 'lucide-react-native';
 import React, { useCallback } from 'react';
 import { FieldErrors, useFormState, useWatch } from 'react-hook-form';
+import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
@@ -41,7 +42,8 @@ export default function AddressFormScreen() {
   const { mutate: deleteAddress } = useDeleteAddressMutation();
 
   const goBack = useCallback(() => {
-    if (redirect) router.dismissTo(redirect as Href);
+    if (redirect && Platform.OS === 'web') router.replace(redirect as Href);
+    else if (redirect) router.dismissTo(redirect as Href);
     else router.dismissAll();
   }, [redirect, router]);
 
