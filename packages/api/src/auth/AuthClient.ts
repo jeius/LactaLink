@@ -173,7 +173,8 @@ export class AuthClient implements IAuthClient {
     const { count, error } = await sb
       .from('users')
       .select('*', { count: 'exact', head: true })
-      .eq('email', email);
+      .eq('email', email)
+      .is('deleted_at', null);
 
     if (error) {
       throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);
@@ -188,7 +189,8 @@ export class AuthClient implements IAuthClient {
     const { count, error } = await sb
       .from('users')
       .select('*', { count: 'exact', head: true })
-      .eq('phone', phone);
+      .eq('phone', phone)
+      .is('deleted_at', null);
 
     if (error) {
       throw new AuthError(error.message, status.INTERNAL_SERVER_ERROR, error.code);

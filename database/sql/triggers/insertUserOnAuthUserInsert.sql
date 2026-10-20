@@ -18,11 +18,22 @@ begin
       -- Same auth_id, no action needed
       return new;
     elsif existing_auth_id is null then
-      -- Email exists but auth_id is null, so update the auth_id
+      -- Re-register a previously deleted account as a fresh account.
       update public.users
-      set auth_id = new.id, updated_at = new.updated_at
+      set auth_id = new.id,
+          deleted_at = null,
+          phone = null,
+          profile_type = 'INDIVIDUAL',
+          role = 'AUTHENTICATED',
+          updated_at = new.updated_at
       where email = new.email
       and auth_id is null; -- ensure only if still NULL
+
+      -- Remove the relationship to the old soft-deleted profile so the app
+      -- sends the user through profile setup again.
+      delete from public.users_rels
+      where parent_id = (select id from public.users where email = new.email)
+        and path = 'profile';
     else
       -- Email exists and auth_id belongs to another user, throw error
       raise exception 'Email % is already associated with another user.', new.email

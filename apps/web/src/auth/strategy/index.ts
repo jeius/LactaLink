@@ -2,7 +2,7 @@ import { createSupabaseServerClient } from '@/lib/api/init/server';
 import { extractToken } from '@/lib/utils/extractToken';
 import { users } from '@db/drizzle/schema';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { and, eq, isNull } from '@payloadcms/db-postgres/drizzle';
+import { eq } from '@payloadcms/db-postgres/drizzle';
 import { AuthError, SupabaseClient, User } from '@supabase/supabase-js';
 import status from 'http-status';
 import { cookies } from 'next/headers';
@@ -26,14 +26,33 @@ export const SupabaseStrategy: AuthStrategyFunction = async (params) => {
     }
 
     const [authenticatedUser] = await payload.db.drizzle
-      .select({ id: users.id })
+      .select({ id: users.id, deletedAt: users.deletedAt })
       .from(users)
-      .where(and(eq(users.authId, sbUser.id), isNull(users.deletedAt)))
+      .where(eq(users.authId, sbUser.id))
       .limit(1);
 
     if (!authenticatedUser) {
       payload.logger.warn('[Auth] User not found in the database.');
       return { user: null };
+    }
+
+    // A deleted Supabase identity may be recreated with the same verified email.
+    // Treat that as a fresh registration by restoring the user without its old profile.
+    if (authenticatedUser.deletedAt) {
+      await payload.update({
+        collection: collectionSlug,
+        id: authenticatedUser.id,
+        data: {
+          deletedAt: null,
+          phone: null,
+          profile: null,
+          profileType: 'INDIVIDUAL',
+          role: 'AUTHENTICATED',
+        },
+        depth: 0,
+        overrideAccess: true,
+        trash: true,
+      });
     }
 
     const userDoc = await payload.findByID({
