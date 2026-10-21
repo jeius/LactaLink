@@ -70,6 +70,11 @@ export function useCreateRequestForm({
   );
 
   useEffect(() => {
+    const profileID = user?.profile?.value;
+    if (profileID && !getValues('requester')) {
+      setValue('requester', typeof profileID === 'string' ? profileID : profileID.id);
+    }
+
     if (isMatched && matchedDonationDoc) {
       handleMatchedWithDonation(matchedDonationDoc);
     } else if (hasRecipient && recipient) {
@@ -94,6 +99,7 @@ export function useCreateRequestForm({
     preferences,
     recipient,
     setValue,
+    user?.profile?.value,
   ]);
 
   useEffect(() => {
@@ -113,8 +119,8 @@ export function useCreateRequestForm({
 
   return {
     ...methods,
-    isLoading: donationQuery.isLoading,
-    isFetching: donationQuery.isFetching,
+    isLoading: userQuery.isLoading || (isMatched && donationQuery.isLoading),
+    isFetching: userQuery.isFetching || donationQuery.isFetching,
     refreshing: donationQuery.isRefetching,
     fetchError: userQuery.error || donationQuery.error,
     onRefresh: handleRefresh,

@@ -19,6 +19,8 @@ import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
 import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { toast } from 'sonner-native';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 export default function RequestCreateScreen() {
   //#region Hooks
@@ -87,6 +89,20 @@ export default function RequestCreateScreen() {
   if (!isLoading && fetchError) {
     const params: ErrorSearchParams = { message: fetchError.message };
     return <Redirect href={{ pathname: '/error', params }} />;
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen options={{ headerTitle: 'New Request', headerShown: true }} />
+        <SafeArea safeTop={false} className="items-stretch bg-background-50">
+          <VStack space="md" className="flex-1 items-center justify-center px-6">
+            <FetchingSpinner isFetching />
+            <Text className="text-typography-600">Preparing your request…</Text>
+          </VStack>
+        </SafeArea>
+      </>
+    );
   }
 
   return (
