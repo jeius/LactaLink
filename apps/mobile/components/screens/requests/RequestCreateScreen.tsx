@@ -69,10 +69,10 @@ export default function RequestCreateScreen() {
     const slugsToRevalidate: CollectionSlug[] = ['requests', 'notifications', 'milkBags'];
 
     if (transaction) {
-      router.dismissTo(`/transactions/${transaction.id}`);
+      router.replace(`/transactions/${transaction.id}`);
       slugsToRevalidate.push('donations', 'transactions');
     } else {
-      router.dismissTo('/account/requests');
+      router.replace('/account/requests');
     }
 
     revalidateQueries(slugsToRevalidate);
