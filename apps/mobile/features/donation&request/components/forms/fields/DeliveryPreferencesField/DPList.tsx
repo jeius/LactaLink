@@ -8,7 +8,6 @@ import { VStack } from '@/components/ui/vstack';
 import DeliveryPreferenceCard from '@/features/delivery-preference/components/DeliveryPreferenceCard';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
-import { Link } from 'expo-router';
 import { PenBoxIcon, PlusIcon } from 'lucide-react-native';
 
 interface Props extends Omit<
@@ -17,8 +16,10 @@ interface Props extends Omit<
 > {
   value?: DeliveryPreference[] | null;
   onChange?: (values: DeliveryPreference[]) => void;
+  onCreate?: () => void;
+  onEdit?: (id: string) => void;
 }
-export default function DPList({ value, onChange, data, ...props }: Props) {
+export default function DPList({ value, onChange, onCreate, onEdit, data, ...props }: Props) {
   return (
     <InfiniteFlashList
       {...props}
@@ -36,12 +37,16 @@ export default function DPList({ value, onChange, data, ...props }: Props) {
       ListFooterComponent={
         <VStack space="sm">
           {props.isFetchingNextPage && <Spinner size={'small'} className="self-center" />}
-          <Link asChild push href={'/delivery-preferences/create'}>
-            <Button disablePressAnimation action="default" variant="ghost" className="self-start">
-              <ButtonIcon as={PlusIcon} />
-              <ButtonText>Add New Preference</ButtonText>
-            </Button>
-          </Link>
+          <Button
+            disablePressAnimation
+            action="default"
+            variant="ghost"
+            className="self-start"
+            onPress={onCreate}
+          >
+            <ButtonIcon as={PlusIcon} />
+            <ButtonText>Add New Preference</ButtonText>
+          </Button>
         </VStack>
       }
       renderItem={({ item, isPlaceholder }) => {
@@ -78,16 +83,15 @@ export default function DPList({ value, onChange, data, ...props }: Props) {
                 <Text className="font-JakartaSemiBold text-success-0">Selected</Text>
               </Box>
             )}
-            <Link asChild push href={`/delivery-preferences/${item.id}/edit`}>
-              <Button
-                variant="ghost"
-                action="default"
-                className="absolute h-fit w-fit bg-background-400/80 p-2"
-                style={{ top: 8, right: 8 }}
-              >
-                <ButtonIcon as={PenBoxIcon} className="stroke-typography-0" />
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              action="default"
+              className="absolute h-fit w-fit bg-background-400/80 p-2"
+              style={{ top: 8, right: 8 }}
+              onPress={() => onEdit?.(item.id)}
+            >
+              <ButtonIcon as={PenBoxIcon} className="stroke-typography-0" />
+            </Button>
           </AnimatedPressable>
         );
       }}

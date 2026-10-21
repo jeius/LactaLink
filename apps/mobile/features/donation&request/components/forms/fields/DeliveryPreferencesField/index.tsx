@@ -23,6 +23,7 @@ import { transformToDeliveryPreferenceSchema } from '@/lib/utils/transformData';
 import { DonationCreateSchema, RequestCreateSchema } from '@lactalink/form-schemas/listings';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
+import { useRouter } from 'expo-router';
 import { useMemo, useRef } from 'react';
 import { Control, FieldPath, PathValue, useController } from 'react-hook-form';
 import Animated, { FadeInDown, FadeOutRight, LinearTransition } from 'react-native-reanimated';
@@ -47,6 +48,7 @@ export default function DeliveryPreferencesField<TFieldValues extends FieldValue
   isDisabled,
 }: DeliveryPreferencesFieldProps<TFieldValues>) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const sheetRef = useRef<SheetRef>(null);
 
   const {
@@ -83,6 +85,11 @@ export default function DeliveryPreferencesField<TFieldValues extends FieldValue
     const updated = [...fields];
     updated.splice(index, 1);
     setValue(updated);
+  }
+
+  async function closeSheetAndNavigate(path: `/delivery-preferences/${string}`) {
+    await sheetRef.current?.dismiss();
+    router.push(path);
   }
 
   return (
@@ -128,7 +135,14 @@ export default function DeliveryPreferencesField<TFieldValues extends FieldValue
         detents={[0.65, 1]}
         footer={<Box className="bg-background-0" style={{ paddingBottom: insets.bottom }} />}
       >
-        <DPList {...dpQuery} data={preferences} value={selectedValues} onChange={handleChange} />
+        <DPList
+          {...dpQuery}
+          data={preferences}
+          value={selectedValues}
+          onChange={handleChange}
+          onCreate={() => closeSheetAndNavigate('/delivery-preferences/create')}
+          onEdit={(id) => closeSheetAndNavigate(`/delivery-preferences/${id}/edit`)}
+        />
       </Sheet>
     </FormControl>
   );
