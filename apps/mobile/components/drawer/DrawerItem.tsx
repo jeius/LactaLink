@@ -1,6 +1,6 @@
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { DrawerActions } from '@react-navigation/native';
-import { Href, useRouter } from 'expo-router';
+import { Href, useNavigation, useRouter } from 'expo-router';
 import { LucideIcon } from 'lucide-react-native';
 import { FC, useCallback } from 'react';
 import { GestureResponderEvent } from 'react-native';
@@ -42,15 +42,16 @@ export default function DrawerItem({
   ...props
 }: DrawerItemProps) {
   const router = useRouter();
+  const navigation = useNavigation();
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e);
       if (e.defaultPrevented) return;
-      DrawerActions.closeDrawer();
       if (href) router.push(href);
+      navigation.dispatch(DrawerActions.closeDrawer());
     },
-    [href, onPress, router]
+    [href, navigation, onPress, router]
   );
 
   return (
