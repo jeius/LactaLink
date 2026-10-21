@@ -25,7 +25,10 @@ import {
   HandHeartIcon,
   HomeIcon,
   LogOutIcon,
+  ListChecksIcon,
+  MapPinIcon,
   MessageSquareIcon,
+  PackageIcon,
   SettingsIcon,
   TruckIcon,
 } from 'lucide-react-native';
@@ -53,6 +56,20 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
 
         <MenuSection label="Milk Donation & Requests">
           <DrawerItem label="Available Listings" icon={MilkBottleIcon} href={'/listings'} />
+          <DrawerItem label="Addresses" icon={MapPinIcon} href={'/account/addresses'} />
+          {isIndividual ? (
+            <>
+              <DrawerItem
+                label="Delivery Preferences"
+                icon={ListChecksIcon}
+                href={'/account/delivery-preferences'}
+              />
+              <DrawerItem label="My Donations" icon={HandHeartIcon} href={'/account/donations'} />
+              <DrawerItem label="My Requests" icon={ClipboardListIcon} href={'/account/requests'} />
+            </>
+          ) : (
+            <DrawerItem label="Inventory" icon={PackageIcon} href={'/account/inventory'} />
+          )}
           <DrawerItem
             label="Incoming Donations"
             icon={HandHeartIcon}
