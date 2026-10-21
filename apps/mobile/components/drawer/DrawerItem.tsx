@@ -1,7 +1,7 @@
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { DrawerActions } from '@react-navigation/native';
 import { Href, useNavigation, useRouter } from 'expo-router';
-import { LucideIcon } from 'lucide-react-native';
+import { ChevronRightIcon, LucideIcon } from 'lucide-react-native';
 import { FC, useCallback } from 'react';
 import { GestureResponderEvent } from 'react-native';
 import { SvgProps } from 'react-native-svg';
@@ -28,6 +28,7 @@ interface DrawerItemProps extends ButtonProps {
    * Whether to highlight the drawer item as active.
    */
   focused?: boolean;
+  showChevron?: boolean;
 }
 
 export default function DrawerItem({
@@ -35,6 +36,7 @@ export default function DrawerItem({
   label,
   icon,
   focused,
+  showChevron = true,
   variant = 'ghost',
   action = 'default',
   disablePressAnimation = true,
@@ -61,10 +63,11 @@ export default function DrawerItem({
       action={focused ? 'primary' : action}
       disablePressAnimation={disablePressAnimation}
       onPress={handlePress}
-      className={styles({ className: props.className })}
+      className={styles({ className: `px-3 ${props.className || ''}` })}
     >
       {icon && <ButtonIcon as={icon} />}
-      <ButtonText className="font-JakartaSemiBold">{label}</ButtonText>
+      <ButtonText className="flex-1 text-left font-JakartaSemiBold">{label}</ButtonText>
+      {showChevron && <ButtonIcon as={ChevronRightIcon} size="sm" />}
     </Button>
   );
 }

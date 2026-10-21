@@ -1,6 +1,8 @@
 import { signOut } from '@/auth';
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { ProfileAvatar } from '@/components/Avatar';
+import { MilkBottleIcon } from '@/components/ui/icon/custom';
+import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -10,7 +12,23 @@ import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Href, Link } from 'expo-router';
-import { CompassIcon, DoorOpenIcon, LogOutIcon, LucideIcon } from 'lucide-react-native';
+import {
+  BadgeCheckIcon,
+  BellIcon,
+  Building2Icon,
+  BuildingIcon,
+  CircleHelpIcon,
+  ClipboardCheckIcon,
+  ClipboardListIcon,
+  CompassIcon,
+  DoorOpenIcon,
+  HandHeartIcon,
+  HomeIcon,
+  LogOutIcon,
+  MessageSquareIcon,
+  SettingsIcon,
+  TruckIcon,
+} from 'lucide-react-native';
 import { BackHandler } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,48 +36,83 @@ import { Image } from '../Image';
 import DrawerItem from './DrawerItem';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
-  const { state, descriptors } = props;
+  const { data: user } = useMeUser();
+  const profileType = user?.profile?.relationTo;
+  const isIndividual = profileType === 'individuals';
+
+  const goHome = () => {
+    props.navigation.navigate('(tabs)');
+    props.navigation.closeDrawer();
+  };
 
   return (
-    <VStack className="flex-1">
+    <VStack className="flex-1 bg-background-0">
       <DrawerHeader />
-      <ScrollView className="flex-1" contentContainerClassName="p-4">
-        {state.routes.map((route, i) => {
-          const focused = i === state.index;
+      <ScrollView className="flex-1" contentContainerClassName="gap-1 p-4">
+        <DrawerItem label="Home" icon={HomeIcon} focused onPress={goHome} />
 
-          const { title, drawerLabel, drawerIcon, drawerItemStyle } =
-            descriptors[route.key]?.options || {};
+        <MenuSection label="Milk Donation & Requests">
+          <DrawerItem label="Available Listings" icon={MilkBottleIcon} href={'/listings'} />
+          <DrawerItem
+            label="Incoming Donations"
+            icon={HandHeartIcon}
+            href={'/account/donations/incoming'}
+          />
+          <DrawerItem
+            label="Incoming Requests"
+            icon={ClipboardListIcon}
+            href={'/account/requests/incoming'}
+          />
+          <DrawerItem label="Deliveries" icon={TruckIcon} href={'/account/deliveries'} />
+          <DrawerItem
+            label="Transactions"
+            icon={ClipboardCheckIcon}
+            href={'/account/transactions'}
+          />
+        </MenuSection>
 
-          return (
-            <DrawerItem
-              key={route.key}
-              onPress={() => {
-                props.navigation.navigate(route.name, route.params);
-                props.navigation.closeDrawer();
-              }}
-              focused={focused}
-              icon={drawerIcon as LucideIcon}
-              style={drawerItemStyle}
-              label={
-                typeof drawerLabel === 'string'
-                  ? drawerLabel
-                  : title !== undefined
-                    ? title
-                    : route.name
-              }
-            />
-          );
-        })}
+        <MenuSection label="Network & Resources">
+          <DrawerItem label="Hospitals" icon={Building2Icon} href={'/hospitals'} />
+          <DrawerItem label="Milk Banks" icon={BuildingIcon} href={'/milk-banks'} />
+          <DrawerItem label="Explore" icon={CompassIcon} href={'/map'} />
+        </MenuSection>
 
-        <DrawerItem label="Explore" icon={CompassIcon} href={'/map'} />
+        <MenuSection label="Communication">
+          <DrawerItem label="Notifications" icon={BellIcon} href={'/notifications'} />
+          <DrawerItem label="Messages" icon={MessageSquareIcon} href={'/messages'} />
+        </MenuSection>
+
+        {isIndividual && (
+          <MenuSection label="Account & Safety">
+            <DrawerItem label="Donor Screening" icon={BadgeCheckIcon} href={'/donor-screening'} />
+            <DrawerItem label="ID Verification" icon={ClipboardCheckIcon} href={'/id-verification'} />
+          </MenuSection>
+        )}
+
+        <Divider className="my-2" />
+        <DrawerItem label="Settings" icon={SettingsIcon} href={'/account/settings'} />
+        <DrawerItem label="Help & Support" icon={CircleHelpIcon} href={'/account'} />
         <DrawerItem
           label="Exit App"
           icon={DoorOpenIcon}
           action="negative"
+          showChevron={false}
           onPress={() => BackHandler.exitApp()}
         />
       </ScrollView>
       <DrawerFooter />
+    </VStack>
+  );
+}
+
+function MenuSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <VStack className="mt-3 gap-1">
+      <Text size="xs" className="px-3 uppercase tracking-widest text-typography-500">
+        {label}
+      </Text>
+      {children}
+      <Divider className="mt-2" />
     </VStack>
   );
 }
@@ -70,14 +123,14 @@ function DrawerHeader() {
   return (
     <HStack
       space="md"
-      className="items-center rounded-tr-2xl border-primary-300 bg-primary-500"
+      className="items-center rounded-tr-3xl border-primary-300 bg-primary-500 px-4"
       style={{ paddingTop: insets.top, borderBottomWidth: 2 }}
     >
       <Image
         source={LOGO_ASSETS.logo_light}
         alt="LactaLink Logo"
-        style={{ width: 96, height: 64, marginLeft: 8 }}
-        contentFit="cover"
+        style={{ width: 190, height: 104 }}
+        contentFit="contain"
       />
     </HStack>
   );
@@ -93,7 +146,7 @@ function DrawerFooter() {
 
   return (
     <VStack
-      className="items-center justify-start rounded-br-2xl border-t-2 border-primary-300 bg-primary-500"
+      className="items-center justify-start rounded-br-3xl border-t border-primary-100 bg-primary-50"
       style={{ paddingBottom: insets.bottom }}
     >
       <HStack className="w-full items-start justify-between">
@@ -104,13 +157,13 @@ function DrawerFooter() {
               <VStack className="min-w-0 flex-1">
                 <Text
                   size="sm"
-                  className="font-JakartaSemiBold text-primary-0"
+                  className="font-JakartaSemiBold text-primary-900"
                   ellipsizeMode="tail"
                   numberOfLines={1}
                 >
                   {name}
                 </Text>
-                <Text size="xs" ellipsizeMode="tail" numberOfLines={1} className="text-primary-0">
+                <Text size="xs" ellipsizeMode="tail" numberOfLines={1} className="text-primary-700">
                   {email}
                 </Text>
               </VStack>
@@ -119,8 +172,8 @@ function DrawerFooter() {
         </Link>
         <AnimatedPressable className="p-4" onPress={signOut}>
           <VStack space="xs" className="items-center">
-            <Icon as={LogOutIcon} size="xl" className="text-primary-100" />
-            <Text size="xs" className="font-JakartaMedium text-primary-100">
+            <Icon as={LogOutIcon} size="xl" className="text-error-600" />
+            <Text size="xs" className="font-JakartaMedium text-error-600">
               Logout
             </Text>
           </VStack>
