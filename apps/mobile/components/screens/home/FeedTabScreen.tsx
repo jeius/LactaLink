@@ -1,13 +1,11 @@
 import { FC } from 'react';
 
 import { useHeaderScrollHandler, useHeaderSize } from '@/components/contexts/HeaderProvider';
-import { DonateRequestModal } from '@/components/modals';
 import SafeArea from '@/components/SafeArea';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { FlashList, FlashListProps } from '@/components/ui/FlashList';
 import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
@@ -21,7 +19,6 @@ import { Post } from '@lactalink/types/payload-generated-types';
 import { isPlaceHolderData } from '@lactalink/utilities/checkers';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
 import { Link, useRouter } from 'expo-router';
-import { PackagePlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMeUser } from '@/hooks/auth/useAuth';
@@ -89,13 +86,6 @@ function ListHeader({ isLoading }: { isLoading: boolean }) {
           </Pressable>
         </Link>
 
-        <DonateRequestModal
-          trigger={(props) => (
-            <Pressable {...props} hitSlop={8} className="overflow-hidden rounded-full p-2">
-              <Icon as={PackagePlusIcon} size="xl" />
-            </Pressable>
-          )}
-        />
       </HStack>
 
       {showNearbyListings && <FeedNearestListings isLoading={isLoading} />}
