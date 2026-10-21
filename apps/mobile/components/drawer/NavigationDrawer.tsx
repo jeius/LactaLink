@@ -99,12 +99,10 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
           <DrawerItem label="Messages" icon={MessageSquareIcon} href={'/messages'} />
         </MenuSection>
 
-        {isIndividual && (
-          <MenuSection label="Account & Safety">
-            <DrawerItem label="Donor Screening" icon={BadgeCheckIcon} href={'/donor-screening'} />
-            <DrawerItem label="ID Verification" icon={ClipboardCheckIcon} href={'/id-verification'} />
-          </MenuSection>
-        )}
+        <MenuSection label="Account & Safety">
+          <DrawerItem label="Donor Screening" icon={BadgeCheckIcon} href={'/donor-screening'} />
+          <DrawerItem label="ID Verification" icon={ClipboardCheckIcon} href={'/id-verification'} />
+        </MenuSection>
 
         <Divider className="my-2" />
         <DrawerItem label="Settings" icon={SettingsIcon} href={'/account/settings'} />
