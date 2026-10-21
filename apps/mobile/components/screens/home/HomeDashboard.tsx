@@ -24,6 +24,7 @@ export default function HomeDashboard() {
   const { data: profile } = useProfileData(user?.profile);
   const doc = profile?.value;
   const organization = profile?.relationTo !== 'individuals' ? doc : null;
+  const isOrganization = profile?.relationTo === 'hospitals' || profile?.relationTo === 'milkBanks';
   const stock = organization && 'totalVolume' in organization ? organization.totalVolume || 0 : 0;
   const incoming =
     organization && 'receivedTransactions' in organization
@@ -36,13 +37,13 @@ export default function HomeDashboard() {
         <VStack className="z-10 h-full w-3/5 justify-center p-6">
           <Text size="3xl" bold className="leading-tight text-primary-900">Share Milk{`\n`}Nurture Lives</Text>
           <Text size="sm" className="mt-2 text-primary-800">Together, we can give every baby a healthier tomorrow.</Text>
-          <Link asChild push href="/donations/create"><Pressable className="mt-4 self-start rounded-full bg-primary-500 px-5 py-3"><Text bold className="text-primary-0">Donate Now</Text></Pressable></Link>
+          {!isOrganization && <Link asChild push href="/donations/create"><Pressable className="mt-4 self-start rounded-full bg-primary-500 px-5 py-3"><Text bold className="text-primary-0">Donate Now</Text></Pressable></Link>}
         </VStack>
         <Image source={require('@/assets/images/1x/pumping_milk.png')} alt="Mother expressing breast milk" className="absolute bottom-0 right-0 h-52 w-48" contentFit="contain" />
       </Box>
 
       <HStack space="sm">
-        <QuickAction href="/donations/create" label="Donate Milk" icon={MilkIcon} tone="bg-primary-50 text-primary-600" />
+        {!isOrganization && <QuickAction href="/donations/create" label="Donate Milk" icon={MilkIcon} tone="bg-primary-50 text-primary-600" />}
         <QuickAction href="/requests/create" label="Request Milk" icon={HandHeartIcon} tone="bg-warning-50 text-warning-700" />
         <QuickAction href="/hospitals" label="Find Hospitals" icon={Building2Icon} tone="bg-info-50 text-info-700" />
         <QuickAction href="/milk-banks" label="Find Milk Banks" icon={MapPinnedIcon} tone="bg-success-50 text-success-700" />

@@ -24,6 +24,7 @@ import { Link, useRouter } from 'expo-router';
 import { PackagePlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMeUser } from '@/hooks/auth/useAuth';
 import HomeDashboard from './HomeDashboard';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
@@ -71,6 +72,9 @@ export default function FeedTabScreen() {
 }
 
 function ListHeader({ isLoading }: { isLoading: boolean }) {
+  const { data: user } = useMeUser();
+  const showNearbyListings = user?.profile?.relationTo === 'individuals';
+
   return (
     <VStack space="sm">
       <HomeDashboard />
@@ -94,7 +98,7 @@ function ListHeader({ isLoading }: { isLoading: boolean }) {
         />
       </HStack>
 
-      <FeedNearestListings isLoading={isLoading} />
+      {showNearbyListings && <FeedNearestListings isLoading={isLoading} />}
     </VStack>
   );
 }
