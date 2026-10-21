@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   },
   content: {
     width: '100%',
+    height: 360,
     maxHeight: '82%',
     alignSelf: 'center',
     borderTopLeftRadius: 24,
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     paddingTop: 12,
   },
-  body: { minHeight: 80, maxHeight: '100%' },
+  body: { flex: 1, minHeight: 80 },
 });
 
 const StyledSheet = cssInterop(Sheet, {
