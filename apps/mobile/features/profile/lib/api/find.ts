@@ -1,6 +1,25 @@
 import { getApiClient } from '@/lib/services';
 import { PopulatedUserProfile, UserProfile } from '@lactalink/types';
+import { Hospital, Individual, MilkBank } from '@lactalink/types/payload-generated-types';
 import { extractID } from '@lactalink/utilities/extractors';
+
+type ProfileDocument = Hospital | Individual | MilkBank;
+
+async function populateAvatar<T extends ProfileDocument>(doc: T, init?: RequestInit): Promise<T> {
+  if (typeof doc.avatar !== 'string') return doc;
+
+  const avatar = await getApiClient().findByID(
+    {
+      collection: 'avatars',
+      id: doc.avatar,
+      depth: 1,
+      trash: true,
+    },
+    init
+  );
+
+  return { ...doc, avatar };
+}
 
 export async function findProfile(profile: UserProfile, init?: RequestInit) {
   const { relationTo: slug, value } = profile;
@@ -37,7 +56,7 @@ export async function findProfile(profile: UserProfile, init?: RequestInit) {
           init
         );
 
-  return { relationTo: slug, value: data } as PopulatedUserProfile;
+  return { relationTo: slug, value: await populateAvatar(data, init) } as PopulatedUserProfile;
 }
 
 export async function findMultipleProfiles(
@@ -103,7 +122,9 @@ export async function findMultipleProfiles(
             init
           );
 
-    return profileDocs.map((doc) => ({ relationTo: slug, value: doc }));
+    return Promise.all(
+      profileDocs.map(async (doc) => ({ relationTo: slug, value: await populateAvatar(doc, init) }))
+    );
   };
 
   const results = await Promise.all([
