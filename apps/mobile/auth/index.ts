@@ -54,15 +54,15 @@ export async function signUp({ email, password }: SignInSchema) {
 
 export async function signOut() {
   const apiClient = getApiClient();
-  const signOutPromise = apiClient.auth.signOut;
+  const signOutPromise = apiClient.auth.signOut();
 
-  toast.promise(signOutPromise(), {
+  toast.promise(signOutPromise, {
     loading: 'Signing out...',
     success: () => 'Signed out successfully!',
     error: (error) => extractErrorMessage(error),
   });
 
-  await signOutPromise();
+  await signOutPromise;
   return;
 }
 

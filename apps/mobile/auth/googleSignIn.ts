@@ -19,6 +19,9 @@ export async function signInWithGoogle() {
         options: {
           redirectTo: `${window.location.origin}/auth/sign-in`,
           skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       });
       window.location.assign(url);
@@ -26,6 +29,9 @@ export async function signInWithGoogle() {
     }
 
     await GoogleSignin.hasPlayServices();
+    if (GoogleSignin.hasPreviousSignIn()) {
+      await GoogleSignin.signOut();
+    }
     const res = await GoogleSignin.signIn();
 
     if (!isSuccessResponse(res)) {
