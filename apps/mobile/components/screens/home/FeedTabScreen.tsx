@@ -24,6 +24,7 @@ import { Link, useRouter } from 'expo-router';
 import { PackagePlusIcon } from 'lucide-react-native';
 import Animated, { AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import HomeDashboard from './HomeDashboard';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as FC<
   AnimatedProps<FlashListProps<Post>>
@@ -72,6 +73,7 @@ export default function FeedTabScreen() {
 function ListHeader({ isLoading }: { isLoading: boolean }) {
   return (
     <VStack space="sm">
+      <HomeDashboard />
       <HStack
         space="sm"
         style={shadow.sm}
