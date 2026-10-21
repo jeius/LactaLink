@@ -103,7 +103,7 @@ function ListEmpty() {
       <Text size="lg" className="text-center text-typography-600">
         No posts yet. Be the first to share something with the community!
       </Text>
-      <Link asChild push href={'/feed/create'}>
+      <Link asChild push href={'/posts/create'}>
         <Button size="lg">
           <ButtonText>Create Post</ButtonText>
         </Button>

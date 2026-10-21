@@ -84,7 +84,7 @@ function EmptyState({ isMeUser }: { isMeUser: boolean }) {
         {isMeUser ? "You haven't posted anything yet." : 'This user has not posted anything yet.'}
       </Text>
       {isMeUser && (
-        <Link asChild push href={{ pathname: '/feed/create' }}>
+        <Link asChild push href={{ pathname: '/posts/create' }}>
           <Button>
             <ButtonText>Create Post</ButtonText>
           </Button>
