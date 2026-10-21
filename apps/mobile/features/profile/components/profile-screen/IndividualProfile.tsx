@@ -1,27 +1,23 @@
 import { VerificationAlert } from '@/components/alerts/VerificationAlert';
 import { AnimatedPressable } from '@/components/animated/pressable';
-import { useTheme } from '@/components/AppProvider/ThemeProvider';
-import { BasicBadge } from '@/components/badges';
 import { SingleImageViewer } from '@/components/ImageViewer';
 import { Avatar, AvatarFallbackText } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import GradientBackground from '@/components/ui/gradient-bg';
+import { Card } from '@/components/ui/card';
+import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { PROFILE_TYPE_ICONS } from '@/features/profile/lib/constants';
-import { getColor } from '@/lib/colors';
-import { Shade } from '@/lib/types/colors';
 import { isMeUser } from '@/lib/utils/isMeUser';
-import { createDirectionalShadow } from '@/lib/utils/shadows';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { Individual } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractImageData } from '@lactalink/utilities/extractors';
 import { Link } from 'expo-router';
-import { BadgeCheckIcon, Edit2Icon } from 'lucide-react-native';
+import { BabyIcon, CalendarDaysIcon, Edit2Icon, MailIcon, MapPinIcon, PhoneIcon, UserIcon, UsersIcon } from 'lucide-react-native';
+import React from 'react';
 import ProfileCTA from './ProfileCTA';
-import ProfileDetails from './ProfileDetails';
 import ProfileFeatureCard from './ProfileFeatureCard';
 
 interface IndividualProfileProps {
@@ -29,110 +25,56 @@ interface IndividualProfileProps {
 }
 
 export default function IndividualProfile({ profile }: IndividualProfileProps) {
-  const user = extractCollection(profile.value.owner);
-  const { themeColors } = useTheme();
-
-  const isOwner = user && isMeUser(user);
-  const isVerified = !!profile.value.isVerified;
-  const isVerifiedDonor = false; //Mocked for now
-
-  const name = profile.value.displayName || profile.value.givenName || 'Unknown User';
-
-  const profileType = 'Individual';
-  const profileIcon = PROFILE_TYPE_ICONS['INDIVIDUAL'];
-
-  const getAccentColor = (shade: Shade) => {
-    if (isVerifiedDonor) return themeColors.primary[shade];
-    else if (isVerified) return themeColors.info[shade];
-    return themeColors.background[shade];
-  };
-
-  const avatar = extractCollection(profile.value.avatar);
+  const person = profile.value;
+  const user = extractCollection(person.owner);
+  const isOwner = Boolean(user && isMeUser(user));
+  const name = person.displayName || person.givenName || 'Unknown User';
+  const avatar = extractCollection(person.avatar);
   const avatarImage = avatar ? extractImageData(avatar) : null;
-  const avatarRingColor = getAccentColor(isVerified || isVerifiedDonor ? '500' : '0');
-  const badgeIconFill = getAccentColor('500');
-  const badgeIconStroke = getColor('background', '0');
-  const bgGradientColors = [getAccentColor('50')!, getAccentColor('200')!] as const;
-  const backgroundColor = getAccentColor('200');
+  const address = extractCollection(person.defaultAddress)?.displayName || 'No address';
+  const details = [
+    { label: 'Full Name', value: name, icon: UserIcon },
+    { label: 'Email Address', value: user?.email || 'No email', icon: MailIcon },
+    { label: 'Phone Number', value: person.phone || 'No phone number', icon: PhoneIcon },
+    { label: 'Address', value: address, icon: MapPinIcon },
+  ];
 
   return (
-    <VStack style={{ backgroundColor }}>
-      <Box className="h-28 w-full p-2">
-        <GradientBackground colors={bgGradientColors} />
+    <VStack className="items-stretch bg-primary-50">
+      <Box className="h-52 overflow-hidden bg-primary-100">
+        {avatarImage?.uri ? (
+          <Image source={{ uri: avatarImage.uri }} alt={`${name} cover`} className="h-full w-full" contentFit="cover" blurRadius={5} />
+        ) : (
+          <VStack className="h-full items-center justify-center bg-primary-100"><Icon as={UserIcon} size="2xl" className="text-primary-300" /></VStack>
+        )}
+        <Box className="absolute inset-0 bg-primary-100 opacity-30" />
       </Box>
 
-      <VStack
-        space="md"
-        style={{
-          ...createDirectionalShadow('top'),
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-        }}
-        className="relative bg-background-50 p-5"
-      >
-        <VStack className="items-center" style={{ marginTop: -60 }}>
-          <Box className="relative h-24 w-24">
-            <SingleImageViewer
-              image={avatarImage}
-              className="h-full w-full overflow-hidden rounded-full"
-              style={{ borderColor: avatarRingColor, borderWidth: 3 }}
-              fallback={
-                <Avatar size="xl" className="self-center justify-self-center">
-                  <AvatarFallbackText>{name}</AvatarFallbackText>
-                </Avatar>
-              }
-            />
-            {(isVerified || isVerifiedDonor) && (
-              <Box className="absolute bottom-0 right-0">
-                <Icon
-                  size="2xl"
-                  as={BadgeCheckIcon}
-                  fill={badgeIconFill}
-                  stroke={badgeIconStroke}
-                />
-              </Box>
-            )}
+      <VStack className="-mt-5 items-stretch rounded-t-3xl bg-background-50 px-5 pb-6">
+        <VStack className="items-center" style={{ marginTop: -58 }}>
+          <Box className="h-28 w-28 overflow-hidden rounded-full border-8 border-background-50 bg-primary-50">
+            <SingleImageViewer image={avatarImage} className="h-full w-full rounded-full" fallback={<Avatar size="xl" className="h-full w-full"><AvatarFallbackText>{name}</AvatarFallbackText></Avatar>} />
           </Box>
-
-          <Text size="lg" className="font-JakartaSemiBold">
-            {name}
-          </Text>
-
-          {(isVerified || isVerifiedDonor) && (
-            <BasicBadge
-              size="sm"
-              text={isVerifiedDonor ? 'Verified Donor' : 'Verified User'}
-              action={isVerifiedDonor ? 'primary' : 'info'}
-              className="mt-1 py-0.5"
-            />
-          )}
-
-          <HStack space="xs" className="mt-1 items-center">
-            <Icon as={profileIcon} size="xs" />
-            <Text italic size="sm" ellipsizeMode="tail" numberOfLines={1}>
-              {profileType}
-            </Text>
-          </HStack>
+          <Text size="2xl" bold className="mt-2 text-center text-typography-950">{name}</Text>
+          <HStack space="xs" className="mt-1 items-center rounded-full bg-primary-50 px-4 py-2"><Icon as={UserIcon} size="sm" className="text-primary-700" /><Text className="font-JakartaMedium text-primary-800">Individual</Text></HStack>
         </VStack>
 
-        {isOwner && (
-          <Box className="absolute" style={{ top: 8, right: 8 }}>
-            <Link href={`/profile/${profile.relationTo}/${profile.value.id}/edit`} asChild>
-              <AnimatedPressable className="overflow-hidden rounded-full p-4">
-                <Icon as={Edit2Icon} />
-              </AnimatedPressable>
-            </Link>
-          </Box>
-        )}
-
-        {isOwner && !isVerified && <VerificationAlert />}
-
+        {isOwner && <Box className="absolute right-4 top-4"><Link href={`/profile/${profile.relationTo}/${person.id}/edit`} asChild><AnimatedPressable className="rounded-full bg-background-0 p-3"><Icon as={Edit2Icon} className="text-primary-700" /></AnimatedPressable></Link></Box>}
+        {isOwner && !person.isVerified && <VerificationAlert />}
         {!isOwner && <ProfileCTA profile={profile} />}
 
-        <ProfileDetails profile={profile} />
+        <Card className="mt-5 rounded-2xl border border-primary-100 bg-background-0 p-4">
+          <Text bold size="lg" className="mb-2 text-primary-800">Personal Information</Text>
+          {details.map((detail, index) => <React.Fragment key={detail.label}><HStack space="md" className="items-center py-3"><Box className="h-10 w-10 items-center justify-center rounded-xl bg-primary-50"><Icon as={detail.icon} className="text-primary-700" /></Box><Text className="w-32 text-typography-600">{detail.label}</Text><Text className="min-w-0 flex-1 font-JakartaMedium" numberOfLines={2}>{detail.value}</Text></HStack>{index < details.length - 1 && <Divider className="ml-14" />}</React.Fragment>)}
+        </Card>
 
-        <ProfileFeatureCard profile={profile} className="mt-2 p-2" />
+        <Card className="mt-4 rounded-2xl border border-primary-100 bg-background-0 p-4"><HStack className="items-stretch"><PersonalStat icon={BabyIcon} value={person.dependents ?? 0} label="Dependents" /><Divider orientation="vertical" /><PersonalStat icon={CalendarDaysIcon} value={person.birth ? new Date(person.birth).getFullYear() : '—'} label="Birth Year" /><Divider orientation="vertical" /><PersonalStat icon={UsersIcon} value={person.maritalStatus || '—'} label="Status" /></HStack></Card>
+        <ProfileFeatureCard profile={profile} className="mt-4 rounded-2xl p-4" />
       </VStack>
     </VStack>
   );
+}
+
+function PersonalStat({ icon, value, label }: { icon: typeof UserIcon; value: string | number; label: string }) {
+  return <VStack space="xs" className="flex-1 items-center px-2"><Box className="h-12 w-12 items-center justify-center rounded-2xl bg-primary-50"><Icon as={icon} className="text-primary-600" /></Box><Text bold numberOfLines={1}>{value}</Text><Text size="xs" className="text-center text-typography-600">{label}</Text></VStack>;
 }

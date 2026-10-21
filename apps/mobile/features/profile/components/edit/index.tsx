@@ -1,10 +1,11 @@
 import { HeaderBackButton } from '@/components/HeaderBackButton';
 import KeyboardAvoidingScrollView from '@/components/KeyboardAvoider';
-import { AnimatedPressable } from '@/components/animated/pressable';
 import { Form } from '@/components/contexts/FormProvider';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { getDirtyData } from '@/lib/utils/getDirtyData';
 import { EditProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
@@ -32,6 +33,10 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const { isDirty, isSubmitting, dirtyFields } = formState;
 
   const { mutateAsync: updateProfile } = useUpdateProfileMutation(profile);
+  const profileName =
+    profile.value.displayName ||
+    ('name' in profile.value ? profile.value.name : undefined) ||
+    'Profile';
 
   const renderForm: Record<ProfileSlug, React.ReactNode> = {
     individuals: <PersonalEditForm control={methods.control} />,
@@ -47,29 +52,24 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   return (
     <Form {...methods}>
-      <HStack className="items-center gap-4 px-2 py-5 pb-2">
+      <HStack className="items-center gap-4 bg-primary-400 px-4 py-5">
         <HeaderBackButton />
-        <Text size="xl" bold className="grow">
-          Update Profile
+        <Text size="xl" bold className="grow text-primary-0">
+          Edit Profile
         </Text>
-        <AnimatedPressable
-          disabled={!isDirty || isSubmitting}
-          className="px-3 py-2"
-          onPress={handleSubmit(onSubmit)}
-        >
-          {isSubmitting ? (
-            <Spinner size={'small'} />
-          ) : (
-            <Text className="font-JakartaSemiBold">Save</Text>
-          )}
-        </AnimatedPressable>
       </HStack>
       <KeyboardAvoidingScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-2 pt-2"
+        contentContainerClassName="gap-2 pb-8"
       >
-        <AvatarField control={methods.control} />
-        {renderForm[slug]}
+        <AvatarField control={methods.control} name={profileName} />
+        <VStack space="lg" className="mx-4 rounded-3xl border border-primary-100 bg-background-0 py-5">
+          {renderForm[slug]}
+        </VStack>
+        <HStack space="md" className="px-5 pt-3">
+          <Button variant="outline" className="flex-1 rounded-xl" onPress={() => methods.reset()}><ButtonText>Cancel</ButtonText></Button>
+          <Button disabled={!isDirty || isSubmitting} className="flex-1 rounded-xl" onPress={handleSubmit(onSubmit)}>{isSubmitting ? <Spinner size="small" /> : <ButtonText>Save Changes</ButtonText>}</Button>
+        </HStack>
       </KeyboardAvoidingScrollView>
     </Form>
   );

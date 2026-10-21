@@ -126,7 +126,7 @@ export function ProfileAvatar({
 
   const handlePress = () => {
     if (!enablePress) return;
-    if (isOwner) router.push('/account');
+    if (isOwner) router.push('/profile');
     else if (profileSlug && profileID) router.push(`/profile/${profileSlug}/${profileID}`);
   };
 
