@@ -9,8 +9,8 @@ import { VStack } from '@/components/ui/vstack';
 import { getDirtyData } from '@/lib/utils/getDirtyData';
 import { EditProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
-import { extractErrorMessage } from '@lactalink/utilities/extractors';
-import { extractCollection } from '@lactalink/utilities/extractors';
+import { extractCollection, extractErrorMessage } from '@lactalink/utilities/extractors';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { toast } from 'sonner-native';
 import { useUpdateProfileMutation } from '../../hooks/mutations';
@@ -28,6 +28,7 @@ interface ProfileEditFormProps {
 
 export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const slug = profile.relationTo;
+  const router = useRouter();
 
   const methods = useEditProfileForm(profile);
   const { formState, handleSubmit } = methods;
@@ -62,7 +63,13 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const onSubmit = async (data: EditProfileSchema) => {
     const { id: _, slug: __, ...finalData } = getDirtyData(data, dirtyFields);
 
-    await updateProfile(finalData).catch((err) => toast.error(extractErrorMessage(err)));
+    try {
+      await updateProfile(finalData);
+      toast.success('Profile updated successfully.');
+      router.replace(`/profile/${profile.relationTo}/${profile.value.id}`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
   };
 
   return (
@@ -82,7 +89,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
           {renderForm[slug]}
         </VStack>
         <HStack space="md" className="px-5 pt-3">
-          <Button variant="outline" className="flex-1 rounded-xl" onPress={() => methods.reset()}><ButtonText>Cancel</ButtonText></Button>
+          <Button variant="outline" className="flex-1 rounded-xl" onPress={() => router.back()}><ButtonText>Cancel</ButtonText></Button>
           <Button disabled={!isDirty || isSubmitting} className="flex-1 rounded-xl" onPress={handleSubmit(onSubmit)}>{isSubmitting ? <Spinner size="small" /> : <ButtonText>Save Changes</ButtonText>}</Button>
         </HStack>
       </KeyboardAvoidingScrollView>
