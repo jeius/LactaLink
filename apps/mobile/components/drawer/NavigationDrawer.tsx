@@ -9,7 +9,6 @@ import { useMeUser } from '@/hooks/auth/useAuth';
 import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { useLinkBuilder } from '@react-navigation/native';
 import { Href, Link } from 'expo-router';
 import { CompassIcon, DoorOpenIcon, LogOutIcon, LucideIcon } from 'lucide-react-native';
 import { BackHandler } from 'react-native';
@@ -19,8 +18,6 @@ import { Image } from '../Image';
 import DrawerItem from './DrawerItem';
 
 export function NavigationDrawerContent(props: DrawerContentComponentProps) {
-  const { buildHref } = useLinkBuilder();
-
   const { state, descriptors } = props;
 
   return (
@@ -36,7 +33,10 @@ export function NavigationDrawerContent(props: DrawerContentComponentProps) {
           return (
             <DrawerItem
               key={route.key}
-              href={buildHref(route.name, route.params) as Href | undefined}
+              onPress={() => {
+                props.navigation.navigate(route.name, route.params);
+                props.navigation.closeDrawer();
+              }}
               focused={focused}
               icon={drawerIcon as LucideIcon}
               style={drawerItemStyle}

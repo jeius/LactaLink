@@ -1,5 +1,5 @@
 import { QUERY_KEYS } from '@/lib/constants';
-import { getMatchingService } from '@/lib/services';
+import { getApiClient, getMatchingService } from '@/lib/services';
 import { PaginatedDocsMap } from '@/lib/types';
 import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
@@ -32,11 +32,23 @@ export function createNearestDonationsInfQuery(
   maxDistance: number | undefined
 ) {
   return infiniteQueryOptions({
-    enabled: !!coordinates,
-    queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'donations', maxDistance],
+    queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'donations', coordinates, maxDistance],
     initialPageParam: 1,
     queryFn: async ({ pageParam, signal }) => {
-      if (!coordinates) return createDefaultPaginatedDocs<Donation>(pageParam);
+      if (!coordinates) {
+        return transformToPaginatedMappedDocs(
+          await getApiClient().find(
+            {
+              collection: 'donations',
+              where: { status: { equals: STATUS } },
+              page: pageParam,
+              limit: LIMIT,
+              depth: 3,
+            },
+            { signal }
+          )
+        );
+      }
 
       const point = latLngToPoint(coordinates);
       const service = getMatchingService();
@@ -72,11 +84,23 @@ export function createNearestRequestsInfQuery(
   maxDistance: number | undefined
 ) {
   return infiniteQueryOptions({
-    enabled: !!coordinates,
-    queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'requests', maxDistance],
+    queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'requests', coordinates, maxDistance],
     initialPageParam: 1,
     queryFn: async ({ pageParam, signal }) => {
-      if (!coordinates) return createDefaultPaginatedDocs<Request>(pageParam);
+      if (!coordinates) {
+        return transformToPaginatedMappedDocs(
+          await getApiClient().find(
+            {
+              collection: 'requests',
+              where: { status: { equals: STATUS } },
+              page: pageParam,
+              limit: LIMIT,
+              depth: 3,
+            },
+            { signal }
+          )
+        );
+      }
 
       const point = latLngToPoint(coordinates);
       const service = getMatchingService();
