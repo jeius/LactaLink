@@ -1,4 +1,3 @@
-import { SingleImageViewer } from '@/components/ImageViewer';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -9,6 +8,7 @@ import { deleteLocalFiles } from '@/lib/utils/deleteLocalFiles';
 import { transformImage } from '@/lib/utils/imageProcessors';
 import { EditProfileSchema } from '@lactalink/form-schemas';
 import { extractErrorMessage, extractImageData } from '@lactalink/utilities/extractors';
+import { Image } from 'expo-image';
 import {
   CameraType,
   ImagePickerOptions,
@@ -83,7 +83,12 @@ export function AvatarField({ control }: AvatarFieldProps) {
       <HStack space="lg" className="p-5">
         <Box className="h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-background-200">
           {avatar ? (
-            <SingleImageViewer image={extractImageData(avatar)} className="h-full w-full" />
+            <Image
+              source={{ uri: extractImageData(avatar)?.uri }}
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+              accessibilityLabel="Selected avatar preview"
+            />
           ) : (
             <Icon as={ImageIcon} size="2xl" className="text-background-0" />
           )}

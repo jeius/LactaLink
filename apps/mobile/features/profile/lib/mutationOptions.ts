@@ -52,7 +52,9 @@ export function createEditProfileMutationOptions(
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update profile');
+        const message =
+          errorData.message || errorData.errors?.[0]?.message || 'Failed to update profile';
+        throw new Error(message);
       }
 
       const result: UpdateByIDResult = await response.json();
@@ -61,6 +63,7 @@ export function createEditProfileMutationOptions(
     onSuccess: async (data, _vars, _ctx, { client }) => {
       const queryKey = createUserProfileQuery(profile).queryKey;
       client.setQueryData(queryKey, data);
+      await client.invalidateQueries({ queryKey });
     },
   });
 }
@@ -82,7 +85,9 @@ export function createNewProfileMutationOptions(init?: RequestInit) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create profile');
+        const message =
+          errorData.message || errorData.errors?.[0]?.message || 'Failed to create profile';
+        throw new Error(message);
       }
 
       const result: CreateResult = await response.json();
