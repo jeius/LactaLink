@@ -40,7 +40,12 @@ export default function ProfilePage() {
     );
   }
 
-  const headerTitle = isMeUser ? 'My Profile' : profile.displayName || 'Profile';
+  const headerTitle =
+    data.relationTo === 'individuals'
+      ? isMeUser
+        ? 'My Profile'
+        : profile.displayName || 'Profile'
+      : profile.displayName || ('name' in profile ? profile.name : null) || 'Profile';
 
   return (
     <SafeArea safeTop={false} className="items-stretch">
