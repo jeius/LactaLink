@@ -11,7 +11,7 @@ export default function HospitalListsPage() {
       <DrawerHeader title="Hospitals" hideShadow />
 
       {/* Spacer to offset for the header */}
-      <Box className="w-0" style={{ height: headerHeight }} />
+      <Box className="w-0 shrink-0" style={{ height: Math.max(headerHeight, 84) }} />
 
       <OrganizationList collection="hospitals" />
     </SafeArea>

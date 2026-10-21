@@ -11,7 +11,7 @@ export default function MilkBankListsPage() {
       <DrawerHeader title="Milk Banks" hideShadow />
 
       {/* Spacer to offset for the header */}
-      <Box className="w-0" style={{ height: headerHeight }} />
+      <Box className="w-0 shrink-0" style={{ height: Math.max(headerHeight, 84) }} />
 
       <OrganizationList collection="milkBanks" />
     </SafeArea>
