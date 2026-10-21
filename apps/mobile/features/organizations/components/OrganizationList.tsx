@@ -1,8 +1,4 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
-import {
-  useHideOnScrollAnimation,
-  useScrollAnimationMethods,
-} from '@/components/contexts/ScrollProvider';
 import { NoData } from '@/components/NoData';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -41,7 +37,6 @@ import {
 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
 import { useInfiniteNearestOrganizations } from '../hooks/queries';
 
 interface OrganizationListProps {
@@ -51,11 +46,6 @@ interface OrganizationListProps {
 type Filter = 'all' | 'nearby' | 'inStock' | 'outOfStock';
 
 export function OrganizationList({ collection }: OrganizationListProps) {
-  const { scrollValue, scrollDirection: _, ...scrollHandlers } = useScrollAnimationMethods();
-  const headerAnimatedStyle = useHideOnScrollAnimation(scrollValue, {
-    animationDirection: 'up',
-    animateDistance: 116,
-  });
   const coordinates = useCurrentCoordinates();
   const [filter, setFilter] = useState<Filter>('all');
   const [inputVal, setInputVal] = useState('');
@@ -87,35 +77,7 @@ export function OrganizationList({ collection }: OrganizationListProps) {
 
   return (
     <Box className="flex-1 bg-background-50">
-      <InfiniteFlashList
-        {...query}
-        {...scrollHandlers}
-        data={filteredOrganizations}
-        keyExtractor={listKeyExtractor}
-        contentContainerClassName="px-4 pb-5"
-        contentContainerStyle={{ paddingTop: 132 }}
-        refreshing={isRefetching}
-        onRefresh={refetch}
-        ItemSeparatorComponent={() => <Box className="h-3" />}
-        ListEmptyComponent={
-          <NoData
-            title={
-              filter === 'nearby' && !coordinates
-                ? 'Enable location to find nearby organizations'
-                : `No ${formatCamelCase(collection)} found`
-            }
-          />
-        }
-        renderItem={({ item }) => {
-          if (isPlaceHolderData(item)) return <Skeleton className="h-32 rounded-2xl" />;
-          return <OrganizationCard item={item} relationTo={collection} />;
-        }}
-      />
-
-      <Animated.View
-        style={[headerAnimatedStyle]}
-        className="absolute inset-x-0 top-0 border-b border-outline-100 bg-background-0 px-4 pb-3 pt-3"
-      >
+      <VStack className="border-b border-outline-100 bg-background-0 px-4 pb-3 pt-3">
         <Input variant="rounded" size="md" className="bg-background-0">
           <InputSlot className="pl-3">
             <InputIcon as={SearchIcon} />
@@ -169,7 +131,31 @@ export function OrganizationList({ collection }: OrganizationListProps) {
             onPress={() => setFilter('outOfStock')}
           />
         </ScrollView>
-      </Animated.View>
+      </VStack>
+
+      <InfiniteFlashList
+        {...query}
+        data={filteredOrganizations}
+        keyExtractor={listKeyExtractor}
+        contentContainerClassName="p-4"
+        refreshing={isRefetching}
+        onRefresh={refetch}
+        ItemSeparatorComponent={() => <Box className="h-3" />}
+        ListEmptyComponent={
+          <NoData
+            title={
+              filter === 'nearby' && !coordinates
+                ? 'Enable location to find nearby organizations'
+                : `No ${formatCamelCase(collection)} found`
+            }
+          />
+        }
+        renderItem={({ item }) => {
+          if (isPlaceHolderData(item)) return <Skeleton className="h-32 rounded-2xl" />;
+          return <OrganizationCard item={item} relationTo={collection} />;
+        }}
+      />
+
     </Box>
   );
 }
