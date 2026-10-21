@@ -1,14 +1,23 @@
 import { OptionsSelectField } from '@/components/form-fields/OptionsSelectField';
 import { TextAreaField } from '@/components/form-fields/TextAreaField';
 import { TextInputField } from '@/components/form-fields/TextInputField';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { EditProfileSchema } from '@lactalink/form-schemas';
-import { HospitalIcon, PhoneIcon, User2Icon } from 'lucide-react-native';
+import { HospitalIcon, MailIcon, MapPinIcon, PhoneIcon, User2Icon } from 'lucide-react-native';
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { buildingTypeOptions } from '../../lib/options';
 
-export default function HospitalEditForm({ control }: { control: Control<EditProfileSchema> }) {
+interface Props {
+  control: Control<EditProfileSchema>;
+  email?: string;
+  address?: string;
+}
+
+export default function HospitalEditForm({ control, email, address }: Props) {
   return (
     <>
       <VStack space="lg" className="px-5">
@@ -26,20 +35,13 @@ export default function HospitalEditForm({ control }: { control: Control<EditPro
           }}
         />
 
-        <TextAreaField
-          control={control}
-          name="description"
-          label="Description"
-          textareaProps={{
-            placeholder: 'Enter brief description of the hospital.',
-          }}
-        />
+        <TextInputField control={control} name="hospitalID" contentPosition="first" label="Hospital ID" inputProps={{ placeholder: 'Enter your hospital ID', autoCapitalize: 'characters', autoComplete: 'off', textContentType: 'none' }} />
 
         <TextInputField
           control={control}
           name="head"
-          label="Hospital Head"
-          helperText="Enter the name of head/president if applicable."
+          label="Contact Person"
+          helperText="Enter the hospital contact person."
           contentPosition="first"
           inputProps={{
             placeholder: 'e.g. John M. Doe',
@@ -50,18 +52,7 @@ export default function HospitalEditForm({ control }: { control: Control<EditPro
           }}
         />
 
-        <TextInputField
-          control={control}
-          name="hospitalID"
-          contentPosition="first"
-          label="Hospital ID"
-          inputProps={{
-            placeholder: 'Enter your hospital ID',
-            autoCapitalize: 'characters',
-            autoComplete: 'off',
-            textContentType: 'none',
-          }}
-        />
+        <ReadOnlyField label="Email Address" value={email || 'No email'} icon={MailIcon} />
 
         <TextInputField
           control={control}
@@ -76,6 +67,10 @@ export default function HospitalEditForm({ control }: { control: Control<EditPro
             icon: PhoneIcon,
           }}
         />
+
+        <ReadOnlyField label="Address" value={address || 'No address'} icon={MapPinIcon} />
+
+        <TextAreaField control={control} name="description" label="About Us" textareaProps={{ placeholder: 'Tell us about your hospital...' }} />
       </VStack>
 
       <OptionsSelectField
@@ -88,4 +83,8 @@ export default function HospitalEditForm({ control }: { control: Control<EditPro
       />
     </>
   );
+}
+
+function ReadOnlyField({ label, value, icon: FieldIcon }: { label: string; value: string; icon: typeof MailIcon }) {
+  return <VStack space="xs"><Text className="font-JakartaMedium text-typography-800">{label}</Text><HStack space="sm" className="min-h-12 items-center rounded-xl border border-outline-300 bg-background-50 px-3 py-2"><Icon as={FieldIcon} className="text-typography-500" /><Text className="flex-1 text-typography-600">{value}</Text></HStack></VStack>;
 }

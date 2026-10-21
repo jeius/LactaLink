@@ -210,7 +210,9 @@ export function transformToImageSchema<T extends FileCollection | BaseInput, B e
   return baseTransformer<FileCollection, ImageSchema | null, B>(
     image,
     (input) => {
-      const url = input.url || input.sizes?.thumbnail?.url;
+      // Prefer the generated thumbnail. Some older original S3 keys no longer
+      // exist, while their thumbnail variants are still available.
+      const url = input.sizes?.thumbnail?.url || input.url;
       if (!url) return null;
       return {
         id: input.id,

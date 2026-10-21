@@ -1,7 +1,5 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import MilkBottlePlusIcon from '@/components/icons/MilkBottlePlusIcon';
-import { SingleImageViewer } from '@/components/ImageViewer';
-import { Avatar, AvatarFallbackText } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -87,15 +85,11 @@ export default function OrganizationProfile({ profile }: OrganizationProfileProp
       <VStack className="-mt-5 items-stretch rounded-t-3xl bg-background-50 px-5 pb-6">
         <VStack className="items-center" style={{ marginTop: -58 }}>
           <Box className="h-28 w-28 overflow-hidden rounded-full border-8 border-background-50 bg-primary-50">
-            <SingleImageViewer
-              image={avatarImage}
-              className="h-full w-full rounded-full"
-              fallback={
-                <Avatar size="xl" className="h-full w-full">
-                  <AvatarFallbackText>{name}</AvatarFallbackText>
-                </Avatar>
-              }
-            />
+            {avatarImage?.uri ? (
+              <Image source={{ uri: avatarImage.uri }} alt={avatarImage.alt || name} className="h-full w-full" contentFit="cover" />
+            ) : (
+              <VStack className="h-full w-full items-center justify-center bg-primary-50"><Icon as={Building2Icon} size="2xl" className="text-primary-600" /></VStack>
+            )}
           </Box>
 
           <Text size="2xl" bold className="mt-2 text-center text-typography-950">

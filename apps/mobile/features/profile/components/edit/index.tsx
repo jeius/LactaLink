@@ -10,6 +10,7 @@ import { getDirtyData } from '@/lib/utils/getDirtyData';
 import { EditProfileSchema } from '@lactalink/form-schemas';
 import { PopulatedUserProfile } from '@lactalink/types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { extractCollection } from '@lactalink/utilities/extractors';
 import React from 'react';
 import { toast } from 'sonner-native';
 import { useUpdateProfileMutation } from '../../hooks/mutations';
@@ -33,6 +34,8 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const { isDirty, isSubmitting, dirtyFields } = formState;
 
   const { mutateAsync: updateProfile } = useUpdateProfileMutation(profile);
+  const owner = extractCollection(profile.value.owner);
+  const address = extractCollection(profile.value.defaultAddress);
   const profileName =
     profile.value.displayName ||
     ('name' in profile.value ? profile.value.name : undefined) ||
@@ -40,8 +43,20 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   const renderForm: Record<ProfileSlug, React.ReactNode> = {
     individuals: <PersonalEditForm control={methods.control} />,
-    hospitals: <HospitalEditForm control={methods.control} />,
-    milkBanks: <MilkBankEditForm control={methods.control} />,
+    hospitals: (
+      <HospitalEditForm
+        control={methods.control}
+        email={owner?.email || ''}
+        address={address?.displayName || ''}
+      />
+    ),
+    milkBanks: (
+      <MilkBankEditForm
+        control={methods.control}
+        email={owner?.email || ''}
+        address={address?.displayName || ''}
+      />
+    ),
   };
 
   const onSubmit = async (data: EditProfileSchema) => {
