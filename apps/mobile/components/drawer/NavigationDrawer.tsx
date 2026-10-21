@@ -8,6 +8,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useMeUser } from '@/hooks/auth/useAuth';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { LOGO_ASSETS } from '@/lib/constants';
 import { extractCollection } from '@lactalink/utilities/extractors';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -154,9 +155,14 @@ function DrawerHeader() {
 function DrawerFooter() {
   const insets = useSafeAreaInsets();
   const { data: user } = useMeUser();
-  const profile = extractCollection(user?.profile?.value);
+  const { data: populatedProfile } = useProfileData(user?.profile);
+  const profile = populatedProfile?.value || extractCollection(user?.profile?.value);
 
-  const name = profile?.displayName || 'Unknown User';
+  const name =
+    profile?.displayName ||
+    (profile && 'name' in profile ? profile.name : null) ||
+    (profile && 'givenName' in profile ? profile.givenName : null) ||
+    'Unknown User';
   const email = user?.email || 'No email provided';
 
   return (
