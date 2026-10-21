@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useNearestDonations } from '@/features/donation&request/hooks/useNearestListings';
+import { isListingExpired } from '@/features/donation&request/lib/utils';
 import { useCurrentCoordinates } from '@/lib/stores';
 import { getMinDistance } from '@/lib/utils/getMinDistance';
 import { STORAGE_TYPES } from '@lactalink/enums';
@@ -36,6 +37,7 @@ export default function ListingsScreen() {
     const term = search.trim().toLowerCase();
     return data.filter((item) => {
       if (isPlaceholderData) return true;
+      if (isListingExpired(item)) return false;
       if (filter === 'fresh' && item.details.storageType !== 'FRESH') return false;
       if (filter === 'frozen' && item.details.storageType !== 'FROZEN') return false;
       if (filter === 'nearby') {

@@ -156,6 +156,38 @@ export function isAvailableListing(doc: Donation | Request): boolean {
   return fulfilledVolume < volume;
 }
 
+/** Returns the time a listing expired, including donations whose milk bags have all expired. */
+export function getListingExpiredAt(doc: Donation | Request): number | null {
+  if (doc.expiredAt) return Date.parse(doc.expiredAt);
+
+  if (isDonation(doc)) {
+    const bags = extractCollection(doc.details?.bags);
+    if (!bags.length) return doc.status === STATUS.EXPIRED.value ? Date.parse(doc.updatedAt) : null;
+
+    const expiryTimes = bags
+      .map((bag) => Date.parse(bag.expiresAt))
+      .filter((value) => Number.isFinite(value));
+    if (expiryTimes.length && expiryTimes.length === bags.length) {
+      const lastBagExpiry = Math.max(...expiryTimes);
+      return lastBagExpiry <= Date.now() ? lastBagExpiry : null;
+    }
+  }
+
+  return doc.status === STATUS.EXPIRED.value ? Date.parse(doc.updatedAt) : null;
+}
+
+export function isListingExpired(doc: Donation | Request): boolean {
+  const expiredAt = getListingExpiredAt(doc);
+  return expiredAt !== null && expiredAt <= Date.now();
+}
+
+/** Expired listings remain in the feed for three days, then disappear. */
+export function shouldShowListingInFeed(doc: Donation | Request): boolean {
+  const expiredAt = getListingExpiredAt(doc);
+  if (expiredAt === null || expiredAt > Date.now()) return true;
+  return Date.now() - expiredAt < 3 * 24 * 60 * 60 * 1000;
+}
+
 // #region Helpers -----------------------------------------------
 function isOwner(doc: Donation | Request, user: User) {
   const actorID = isDonation(doc) ? extractID(doc.donor) : extractID(doc.requester);

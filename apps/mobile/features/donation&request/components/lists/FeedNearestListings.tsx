@@ -25,7 +25,11 @@ import { isDonation } from '@lactalink/utilities/type-guards';
 import { Link } from 'expo-router';
 import { ChevronRightCircleIcon, ImageIcon, PackagePlusIcon } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { sortToNearestListings } from '../../lib/utils';
+import {
+  isListingExpired,
+  shouldShowListingInFeed,
+  sortToNearestListings,
+} from '../../lib/utils';
 
 const PLACEHOLDER = generatePlaceHoldersWithID(20, {} as Donation | Request);
 
@@ -43,7 +47,9 @@ export default function FeedNearestListings({ isLoading: isLoadingProp }: { isLo
 
   const listings = useMemo(() => {
     const combined = [...donations, ...requests];
-    return isLoading ? PLACEHOLDER : sortToNearestListings(combined);
+    return isLoading
+      ? PLACEHOLDER
+      : sortToNearestListings(combined.filter(shouldShowListingInFeed));
   }, [donations, isLoading, requests]);
 
   const isEmpty = listings.length === 0;
@@ -94,9 +100,12 @@ function ItemCard({ item }: { item: Donation | Request }) {
   const bgColor = isDonationItem ? getColor('primary', '600') : getColor('tertiary', '600');
   const ringColor = isDonationItem ? getColor('primary', '500') : getColor('tertiary', '500');
   const textColor = isDonationItem ? getColor('primary', '0') : getColor('tertiary', '0');
+  const isExpired = isListingExpired(item);
 
   return (
-    <VStack className="h-44 w-32 justify-between bg-background-300">
+    <VStack
+      className={`h-44 w-32 justify-between ${isExpired ? 'bg-error-100' : 'bg-background-300'}`}
+    >
       <Box className="absolute inset-0">
         {imageUri ? (
           <Image
@@ -115,7 +124,13 @@ function ItemCard({ item }: { item: Donation | Request }) {
           </VStack>
         )}
 
-        <Box className="absolute inset-0" style={{ backgroundColor: bgColor, opacity: 0.1 }} />
+        <Box
+          className="absolute inset-0"
+          style={{
+            backgroundColor: isExpired ? getColor('error', '500') : bgColor,
+            opacity: isExpired ? 0.35 : 0.1,
+          }}
+        />
       </Box>
 
       <Box
@@ -129,7 +144,7 @@ function ItemCard({ item }: { item: Donation | Request }) {
         <Box className="absolute inset-0" style={{ opacity: 0.6, backgroundColor: ringColor }} />
 
         <Text size="xs" style={{ color: textColor }} className="font-JakartaMedium">
-          {title}
+          {isExpired ? `Expired ${title}` : title}
         </Text>
 
         <Text bold style={{ color: textColor }}>
