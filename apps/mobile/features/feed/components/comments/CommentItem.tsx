@@ -1,6 +1,7 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { ProfileAvatar } from '@/components/Avatar';
 import NameLink from '@/components/NameLink';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
@@ -98,8 +99,16 @@ function CommentContent({
   const [pressed, setPressed] = useRecyclingState(false, [id]);
 
   const authorReplied = extractCollection(repliedTo)?.author;
+  const { data: populatedAuthorReplied } = useProfileData(authorReplied);
+  const resolvedAuthorReplied =
+    populatedAuthorReplied?.value || extractCollection(authorReplied?.value);
   const authorRepliedFullname =
-    extractCollection(authorReplied?.value)?.displayName || 'Unknown User';
+    resolvedAuthorReplied?.displayName ||
+    (resolvedAuthorReplied && 'name' in resolvedAuthorReplied ? resolvedAuthorReplied.name : null) ||
+    (resolvedAuthorReplied && 'givenName' in resolvedAuthorReplied
+      ? resolvedAuthorReplied.givenName
+      : null) ||
+    'Unknown User';
   const authorID = extractID(authorReplied?.value);
   const authorSlug = authorReplied?.relationTo;
   return (

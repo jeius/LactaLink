@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useProfileData } from '@/features/profile/hooks/useProfileData';
 
 import { ProfileAvatar } from '@/components/Avatar';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -17,8 +18,15 @@ export default function PostAuthor({ author, createdAt }: Pick<Post, 'author' | 
   const timeAgo = useMemo(() => formatTimeToPastLabel(createdAt), [createdAt]);
   const authorID = extractID(author.value);
   const authorDoc = extractCollection(author.value);
-  const authorFullName = authorDoc?.displayName || 'Unknown User';
-  const isVerified = (authorDoc && isIndividual(authorDoc) && authorDoc.isVerified) ?? false;
+  const { data: populatedAuthor } = useProfileData(author);
+  const resolvedAuthor = populatedAuthor?.value || authorDoc;
+  const authorFullName =
+    resolvedAuthor?.displayName ||
+    (resolvedAuthor && 'name' in resolvedAuthor ? resolvedAuthor.name : null) ||
+    (resolvedAuthor && 'givenName' in resolvedAuthor ? resolvedAuthor.givenName : null) ||
+    'Unknown User';
+  const isVerified =
+    (resolvedAuthor && isIndividual(resolvedAuthor) && resolvedAuthor.isVerified) ?? false;
 
   return (
     <HStack space="xs" className="flex-row items-start">
