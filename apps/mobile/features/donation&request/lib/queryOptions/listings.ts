@@ -1,12 +1,11 @@
 import { QUERY_KEYS } from '@/lib/constants';
-import { getApiClient, getMatchingService } from '@/lib/services';
+import { getApiClient } from '@/lib/services';
 import { PaginatedDocsMap } from '@/lib/types';
 import { generatePlaceHoldersForInfQueries } from '@/lib/utils/generatePlaceholdersForInfQueries';
 import { DONATION_REQUEST_STATUS } from '@lactalink/enums';
 import { Coordinates } from '@lactalink/types';
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
 import { CollectionSlug, PaginatedDocs } from '@lactalink/types/payload-types';
-import { latLngToPoint } from '@lactalink/utilities/geo-utils';
 import { transformToPaginatedMappedDocs } from '@lactalink/utilities/transformers';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 import { getMyListings } from '../api/listings';
@@ -35,31 +34,13 @@ export function createNearestDonationsInfQuery(
     queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'donations', coordinates, maxDistance],
     initialPageParam: 1,
     queryFn: async ({ pageParam, signal }) => {
-      if (!coordinates) {
-        return transformToPaginatedMappedDocs(
-          await getApiClient().find(
-            {
-              collection: 'donations',
-              where: { status: { equals: STATUS } },
-              page: pageParam,
-              limit: LIMIT,
-              depth: 3,
-            },
-            { signal }
-          )
-        );
-      }
-
-      const point = latLngToPoint(coordinates);
-      const service = getMatchingService();
-      const paginatedDocs = await service.getNearestListings(
+      const paginatedDocs = await getApiClient().find(
         {
           collection: 'donations',
-          location: point,
-          maxDistance,
-          status: STATUS,
+          where: { status: { equals: STATUS } },
           page: pageParam,
           limit: LIMIT,
+          depth: 3,
         },
         { signal }
       );
@@ -87,31 +68,13 @@ export function createNearestRequestsInfQuery(
     queryKey: [...QUERY_KEYS.LISTINGS.NEAREST, 'requests', coordinates, maxDistance],
     initialPageParam: 1,
     queryFn: async ({ pageParam, signal }) => {
-      if (!coordinates) {
-        return transformToPaginatedMappedDocs(
-          await getApiClient().find(
-            {
-              collection: 'requests',
-              where: { status: { equals: STATUS } },
-              page: pageParam,
-              limit: LIMIT,
-              depth: 3,
-            },
-            { signal }
-          )
-        );
-      }
-
-      const point = latLngToPoint(coordinates);
-      const service = getMatchingService();
-      const paginatedDocs = await service.getNearestListings(
+      const paginatedDocs = await getApiClient().find(
         {
           collection: 'requests',
-          location: point,
-          maxDistance,
-          status: STATUS,
+          where: { status: { equals: STATUS } },
           page: pageParam,
           limit: LIMIT,
+          depth: 3,
         },
         { signal }
       );
