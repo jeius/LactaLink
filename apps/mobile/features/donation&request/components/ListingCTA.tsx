@@ -21,7 +21,7 @@ import React, { FC } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DonationCreateParams, RequestCreateParams } from '../lib/types';
-import { isEditableListing, isResolvableListing } from '../lib/utils';
+import { isEditableListing, isListingExpired, isResolvableListing } from '../lib/utils';
 import ChatButton from './ChatButton';
 import ListingOwnerActionSheet from './ListingOwnerActionsheet';
 
@@ -71,11 +71,15 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
   const isOwner = isEqualProfiles({ relationTo: 'individuals', value: profile }, meUser?.profile);
 
   const isStatusPending = data.status === DONATION_REQUEST_STATUS.PENDING.value;
+  const isExpired = isListingExpired(data);
 
   let label: string;
   let icon: FC<LucideProps> | null = null;
 
-  if (isEditableListing(data, meUser)) {
+  if (isExpired) {
+    label = 'Listing Expired';
+    icon = null;
+  } else if (isEditableListing(data, meUser)) {
     label = isDonation(data) ? 'Edit Donation' : 'Edit Request';
     icon = EditIcon;
   } else if (isResolvableListing(data, meUser)) {
@@ -110,7 +114,11 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
       className="absolute inset-x-0 bottom-0 rounded-t-2xl border border-outline-300 bg-background-0 p-4"
       style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
-      <Button onPress={handlePress} action={isStatusPending ? 'info' : 'primary'}>
+      <Button
+        onPress={handlePress}
+        action={isStatusPending ? 'info' : 'primary'}
+        isDisabled={isExpired}
+      >
         {icon && <ButtonIcon as={icon} />}
         <ButtonText>{label}</ButtonText>
       </Button>
