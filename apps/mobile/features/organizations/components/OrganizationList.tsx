@@ -77,8 +77,34 @@ export function OrganizationList({ collection }: OrganizationListProps) {
 
   return (
     <Box className="flex-1 bg-background-50">
-      <VStack className="border-b border-outline-100 bg-background-0 px-4 pb-3 pt-3">
-        <Input variant="rounded" size="md" className="bg-background-0">
+      <VStack className="border-b border-outline-100 bg-background-0 px-4 pb-4 pt-3">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-3 pr-2"
+        >
+          <FilterChip active={filter === 'all'} label="All" onPress={() => setFilter('all')} />
+          <FilterChip
+            active={filter === 'nearby'}
+            label="Nearby"
+            icon={MapPinIcon}
+            onPress={() => setFilter('nearby')}
+          />
+          <FilterChip
+            active={filter === 'inStock'}
+            label="In Stock"
+            icon={CheckCircle2Icon}
+            onPress={() => setFilter('inStock')}
+          />
+          <FilterChip
+            active={filter === 'outOfStock'}
+            label="Out of Stock"
+            icon={XCircleIcon}
+            onPress={() => setFilter('outOfStock')}
+          />
+        </ScrollView>
+
+        <Input variant="rounded" size="md" className="mt-4 bg-background-0">
           <InputSlot className="pl-3">
             <InputIcon as={SearchIcon} />
           </InputSlot>
@@ -105,39 +131,13 @@ export function OrganizationList({ collection }: OrganizationListProps) {
               </InputSlot>
             ))}
         </Input>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2 pt-3"
-        >
-          <FilterChip active={filter === 'all'} label="All" onPress={() => setFilter('all')} />
-          <FilterChip
-            active={filter === 'nearby'}
-            label="Nearby"
-            icon={MapPinIcon}
-            onPress={() => setFilter('nearby')}
-          />
-          <FilterChip
-            active={filter === 'inStock'}
-            label="In Stock"
-            icon={CheckCircle2Icon}
-            onPress={() => setFilter('inStock')}
-          />
-          <FilterChip
-            active={filter === 'outOfStock'}
-            label="Out of Stock"
-            icon={XCircleIcon}
-            onPress={() => setFilter('outOfStock')}
-          />
-        </ScrollView>
       </VStack>
 
       <InfiniteFlashList
         {...query}
         data={filteredOrganizations}
         keyExtractor={listKeyExtractor}
-        contentContainerClassName="p-4"
+        contentContainerClassName="px-4 pb-4 pt-5"
         refreshing={isRefetching}
         onRefresh={refetch}
         ItemSeparatorComponent={() => <Box className="h-3" />}
