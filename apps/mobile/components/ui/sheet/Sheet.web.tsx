@@ -22,7 +22,7 @@ const Sheet = React.forwardRef<SheetRef, TrueSheetProps>(function WebSheet(props
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={dismiss}>
       <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+        <Pressable style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={dismiss} />
         <View
           style={StyleSheet.flatten([
             styles.content,
@@ -42,10 +42,15 @@ const Sheet = React.forwardRef<SheetRef, TrueSheetProps>(function WebSheet(props
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
+  backdrop: { zIndex: 1 },
   content: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 2,
     width: '100%',
     height: 360,
     maxHeight: '82%',
@@ -54,6 +59,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     overflow: 'hidden',
     paddingTop: 12,
+    boxShadow: '0 -8px 28px rgba(0,0,0,0.18)',
   },
   body: { flex: 1, minHeight: 80 },
 });
