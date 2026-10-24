@@ -13,7 +13,7 @@ import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreat
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { createRequest } from '@/lib/api/request';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
-import { RequestCreateSchema } from '@lactalink/form-schemas';
+import { RequestCreateSchema, requestCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
@@ -79,6 +79,14 @@ export default function RequestCreateScreen() {
   async function handleValidation() {
     const isValid = await form.trigger();
     if (!isValid) {
+      const parsed = requestCreateSchema.safeParse(getValues());
+      const firstIssue = parsed.success ? undefined : parsed.error.issues[0];
+      const fieldName = firstIssue?.path.at(-1)?.toString();
+      toast.error(
+        firstIssue
+          ? `${fieldName ? `${fieldName}: ` : ''}${firstIssue.message}`
+          : 'Please complete all required request fields.'
+      );
       throw new Error('Form validation failed');
     }
   }

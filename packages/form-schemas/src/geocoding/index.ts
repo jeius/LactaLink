@@ -36,7 +36,10 @@ export const boundarySchema = z.object({
 export const addressGeocodingSchema = z.object({
   geocodedAddress: z.string().transform(nullTransform).optional().nullable(),
   geocodedComponents: z.any().optional().nullable(),
-  geocodedAt: z.date().optional().nullable(),
+  // Persisted form drafts and Payload API responses serialize dates as ISO
+  // strings. Coerce them back to Date objects before request validation so a
+  // saved delivery preference remains valid after a page reload.
+  geocodedAt: z.coerce.date().optional().nullable(),
   coordinates: coordinatesSchema,
   geocodeSource: z
     .enum(Object.values(GEOCODE_SOURCES).map(({ value }) => value))

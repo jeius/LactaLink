@@ -100,7 +100,7 @@ export function DatePicker({
         max={max}
         disabled={isDisabled}
         onBlur={onBlur}
-        onChange={(event) => {
+        onInput={(event) => {
           if (event.currentTarget.value) onChange?.(mergeValue(event.currentTarget.value, value, mode));
         }}
         style={{
