@@ -10,6 +10,7 @@ import { Box } from '@/components/ui/box';
 import ScrollView from '@/components/ui/ScrollView';
 import { RequestDetailsForm } from '@/features/donation&request/components/forms/RequestDetailsForm';
 import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
+import { addRequestToCache } from '@/features/donation&request/lib/cacheUtils';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
 import { createRequest } from '@/lib/api/request';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
@@ -17,6 +18,7 @@ import { RequestCreateSchema, requestCreateSchema } from '@lactalink/form-schema
 import { ErrorSearchParams } from '@lactalink/types';
 import { CollectionSlug } from '@lactalink/types/payload-types';
 import { extractErrorMessage } from '@lactalink/utilities/extractors';
+import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { toast } from 'sonner-native';
 import { Text } from '@/components/ui/text';
@@ -31,6 +33,7 @@ export default function RequestCreateScreen() {
   } = useLocalSearchParams<RequestCreateParams>();
 
   const revalidateQueries = useRevalidateCollectionQueries();
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const form = useCreateRequestForm({
@@ -73,6 +76,10 @@ export default function RequestCreateScreen() {
     }
 
     revalidateQueries(slugsToRevalidate);
+    // Seed the detail route with the document returned by the create call.
+    // Without this, navigation can race the backend read and briefly resolve
+    // the brand-new request as "Not found".
+    addRequestToCache(queryClient, request);
     router.replace(`/requests/${request.id}`);
   }
 
