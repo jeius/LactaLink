@@ -64,18 +64,16 @@ export default function RequestCreateScreen() {
       error: (error) => extractErrorMessage(error),
     });
 
-    const { transaction } = await createPromise;
+    const { request, transaction } = await createPromise;
 
     const slugsToRevalidate: CollectionSlug[] = ['requests', 'notifications', 'milkBags'];
 
     if (transaction) {
-      router.replace(`/transactions/${transaction.id}`);
       slugsToRevalidate.push('donations', 'transactions');
-    } else {
-      router.replace('/account/requests');
     }
 
     revalidateQueries(slugsToRevalidate);
+    router.replace(`/requests/${request.id}`);
   }
 
   async function handleValidation() {

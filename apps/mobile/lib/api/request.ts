@@ -129,7 +129,7 @@ export async function createRequest(data: RequestCreateSchema) {
       message = `Thank you! ${donorName} has been notified of your request.`;
     }
 
-    return { transaction, message };
+    return { request: requestDoc, transaction, message };
   } catch (error) {
     // Handle cleanup if anything fails
     await handleCleanup(cleanupResources);
