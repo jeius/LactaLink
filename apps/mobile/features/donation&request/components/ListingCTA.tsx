@@ -21,7 +21,12 @@ import React, { FC } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DonationCreateParams, RequestCreateParams } from '../lib/types';
-import { isEditableListing, isListingExpired, isResolvableListing } from '../lib/utils';
+import {
+  isAvailableListing,
+  isEditableListing,
+  isListingExpired,
+  isResolvableListing,
+} from '../lib/utils';
 import ChatButton from './ChatButton';
 import ListingOwnerActionSheet from './ListingOwnerActionsheet';
 
@@ -76,6 +81,7 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
 
   const isStatusPending = data.status === DONATION_REQUEST_STATUS.PENDING.value;
   const isExpired = isListingExpired(data);
+  const hasAvailableMilkBags = !isDonation(data) || isAvailableListing(data);
 
   // Hospitals and milk banks can create and edit their own requests, but they
   // cannot fulfil another request by creating an individual milk donation.
@@ -90,6 +96,9 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
   } else if (isEditableListing(data, meUser)) {
     label = isDonation(data) ? 'Edit Donation' : 'Edit Request';
     icon = EditIcon;
+  } else if (isDonation(data) && !hasAvailableMilkBags) {
+    label = 'No Available Milk Bags';
+    icon = null;
   } else if (isResolvableListing(data, meUser)) {
     label = isDonation(data) ? 'Accept Donation' : 'Approve and Donate';
     icon = CheckCircle;
@@ -125,7 +134,7 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
       <Button
         onPress={handlePress}
         action={isStatusPending ? 'info' : 'primary'}
-        isDisabled={isExpired}
+        isDisabled={isExpired || !hasAvailableMilkBags}
       >
         {icon && <ButtonIcon as={icon} />}
         <ButtonText>{label}</ButtonText>

@@ -139,17 +139,20 @@ export function isResolvableListing(doc: Donation | Request, user: User | null):
  * @returns A boolean indicating whether the document is available for matching.
  */
 export function isAvailableListing(doc: Donation | Request): boolean {
+  if (isDonation(doc)) {
+    if (doc.status === STATUS.EXPIRED.value || doc.status === STATUS.COMPLETED.value) return false;
+
+    const bags = extractCollection(doc.details?.bags);
+    return bags.some(
+      (bag) => bag.status === 'AVAILABLE' && Date.parse(bag.expiresAt) > Date.now()
+    );
+  }
+
   if (doc.status === STATUS.AVAILABLE.value) return true;
 
   // We consider a listing available if it still has unallocated milk bags for donations, or
   // if it has unfulfilled volume for requests.
   if (doc.status !== STATUS.PENDING.value) return false;
-
-  if (isDonation(doc)) {
-    const bags = extractCollection(doc.details?.bags);
-    const availableBags = bags.filter((bag) => bag.status === 'AVAILABLE');
-    return availableBags.length > 0;
-  }
 
   const volume = doc.initialVolumeNeeded || 0;
   const fulfilledVolume = doc.volumeFulfilled || 0;
