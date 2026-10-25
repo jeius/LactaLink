@@ -1569,11 +1569,6 @@ export const requests = pgTable(
       .references(() => users.id, {
         onDelete: 'set null',
       }),
-    requester: uuid('requester_id')
-      .notNull()
-      .references(() => individuals.id, {
-        onDelete: 'set null',
-      }),
     initialVolumeNeeded: numeric('initial_volume_needed', { mode: 'number' }).notNull().default(20),
     volumeNeeded: numeric('volume_needed', { mode: 'number' }).notNull().default(20),
     volumeFulfilled: numeric('volume_fulfilled', { mode: 'number' }).notNull().default(0),
@@ -1601,7 +1596,6 @@ export const requests = pgTable(
   },
   (columns) => [
     index('requests_created_by_idx').on(columns.createdBy),
-    index('requests_requester_idx').on(columns.requester),
     index('requests_details_details_image_idx').on(columns.details_image),
     index('requests_updated_at_idx').on(columns.updatedAt),
     index('requests_created_at_idx').on(columns.createdAt),
@@ -1616,8 +1610,8 @@ export const requests_rels = pgTable(
     parent: uuid('parent_id').notNull(),
     path: varchar('path').notNull(),
     individualsID: uuid('individuals_id'),
-    hospitalsID: uuid('hospitals_id'),
     milkBanksID: uuid('milk_banks_id'),
+    hospitalsID: uuid('hospitals_id'),
     milkBagsID: uuid('milk_bags_id'),
     'delivery-preferencesID': uuid('delivery_preferences_id'),
   },
@@ -1626,8 +1620,8 @@ export const requests_rels = pgTable(
     index('requests_rels_parent_idx').on(columns.parent),
     index('requests_rels_path_idx').on(columns.path),
     index('requests_rels_individuals_id_idx').on(columns.individualsID),
-    index('requests_rels_hospitals_id_idx').on(columns.hospitalsID),
     index('requests_rels_milk_banks_id_idx').on(columns.milkBanksID),
+    index('requests_rels_hospitals_id_idx').on(columns.hospitalsID),
     index('requests_rels_milk_bags_id_idx').on(columns.milkBagsID),
     index('requests_rels_delivery_preferences_id_idx').on(columns['delivery-preferencesID']),
     foreignKey({
@@ -1641,14 +1635,14 @@ export const requests_rels = pgTable(
       name: 'requests_rels_individuals_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [columns['hospitalsID']],
-      foreignColumns: [hospitals.id],
-      name: 'requests_rels_hospitals_fk',
-    }).onDelete('cascade'),
-    foreignKey({
       columns: [columns['milkBanksID']],
       foreignColumns: [milk_banks.id],
       name: 'requests_rels_milk_banks_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [columns['hospitalsID']],
+      foreignColumns: [hospitals.id],
+      name: 'requests_rels_hospitals_fk',
     }).onDelete('cascade'),
     foreignKey({
       columns: [columns['milkBagsID']],
@@ -5488,15 +5482,15 @@ export const relations_requests_rels = relations(requests_rels, ({ one }) => ({
     references: [individuals.id],
     relationName: 'individuals',
   }),
-  hospitalsID: one(hospitals, {
-    fields: [requests_rels.hospitalsID],
-    references: [hospitals.id],
-    relationName: 'hospitals',
-  }),
   milkBanksID: one(milk_banks, {
     fields: [requests_rels.milkBanksID],
     references: [milk_banks.id],
     relationName: 'milkBanks',
+  }),
+  hospitalsID: one(hospitals, {
+    fields: [requests_rels.hospitalsID],
+    references: [hospitals.id],
+    relationName: 'hospitals',
   }),
   milkBagsID: one(milk_bags, {
     fields: [requests_rels.milkBagsID],
@@ -5514,11 +5508,6 @@ export const relations_requests = relations(requests, ({ one, many }) => ({
     fields: [requests.createdBy],
     references: [users.id],
     relationName: 'createdBy',
-  }),
-  requester: one(individuals, {
-    fields: [requests.requester],
-    references: [individuals.id],
-    relationName: 'requester',
   }),
   details_image: one(images, {
     fields: [requests.details_image],

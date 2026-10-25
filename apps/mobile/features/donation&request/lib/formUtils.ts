@@ -40,7 +40,12 @@ export function getRequestDefaultValues(
 
   const baseValues: DeepPartial<RequestCreateSchema> = {
     deliveryPreferences: savedData?.deliveryPreferences ?? [],
-    requester: savedData?.requester ?? extractID(profile),
+    // Request ownership must always follow the active account. Reusing a
+    // requester ID from a saved draft breaks after logout, account switching,
+    // or deleting and re-registering an account.
+    requester: user?.profile
+      ? { relationTo: user.profile.relationTo, value: extractID(user.profile.value) }
+      : undefined,
     details: {
       ...savedData?.details,
       notes: savedData?.details?.notes ?? '',

@@ -62,11 +62,40 @@ export async function createRequest(
 ): Promise<RequestCreateResult> {
   const file = data.details.image ? new File(data.details.image.url) : undefined;
 
+  // geocodedAt is useful client-side metadata, but a Date is serialized to an
+  // ISO string in JSON while the currently deployed endpoint expects a Date
+  // instance. It is optional, so omit it from request creation payloads.
+  const deliveryPreferences = data.deliveryPreferences.map((preference) => ({
+    ...preference,
+    address: { ...preference.address, geocodedAt: undefined },
+  }));
+
+  const requestData =
+    data.type === 'MATCHED'
+      ? {
+          ...data,
+          deliveryPreferences,
+          delivery: {
+            ...data.delivery,
+            address: { ...data.delivery.address, geocodedAt: undefined },
+            deliveryPreference: data.delivery.deliveryPreference
+              ? {
+                  ...data.delivery.deliveryPreference,
+                  address: {
+                    ...data.delivery.deliveryPreference.address,
+                    geocodedAt: undefined,
+                  },
+                }
+              : data.delivery.deliveryPreference,
+          },
+        }
+      : { ...data, deliveryPreferences };
+
   const response = await getApiClient().request({
     path: '/requests/create',
     method: 'POST',
     file: file,
-    json: data,
+    json: requestData,
     init: init,
   });
 

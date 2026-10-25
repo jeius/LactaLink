@@ -70,9 +70,19 @@ export function useCreateRequestForm({
   );
 
   useEffect(() => {
-    const profileID = user?.profile?.value;
-    if (profileID && !getValues('requester')) {
-      setValue('requester', typeof profileID === 'string' ? profileID : profileID.id);
+    const profile = user?.profile;
+    if (profile) {
+      const activeRequester = {
+        relationTo: profile.relationTo,
+        value: typeof profile.value === 'string' ? profile.value : profile.value.id,
+      };
+      const currentRequester = getValues('requester');
+      if (
+        currentRequester?.relationTo !== activeRequester.relationTo ||
+        currentRequester?.value !== activeRequester.value
+      ) {
+        setValue('requester', activeRequester);
+      }
     }
 
     if (isMatched && matchedDonationDoc) {
@@ -99,7 +109,7 @@ export function useCreateRequestForm({
     preferences,
     recipient,
     setValue,
-    user?.profile?.value,
+    user?.profile,
   ]);
 
   useEffect(() => {

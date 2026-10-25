@@ -28,7 +28,7 @@ export async function createP2PTransaction({
       request: request.id,
       milkBags: milkbagIds,
       sender: { relationTo: 'individuals', value: extractID(donation.donor) },
-      recipient: { relationTo: 'individuals', value: extractID(request.requester) },
+      recipient: request.requester,
       initiatedBy: userProfile
         ? { ...userProfile, value: extractID(userProfile.value) }
         : undefined!,

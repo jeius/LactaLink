@@ -50,7 +50,7 @@ export const requestDetailsSchema = z.object({
 
 export const matchedRequestSchema = z.object({
   id: z.uuid().nonempty('Required'),
-  requester: z.uuid().nonempty('Required'),
+  requester: recipientSchema,
   volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
   storagePreference: z.enum(
     Object.values(PREFERRED_STORAGE_TYPES).map((item) => item.value),
@@ -77,7 +77,7 @@ export const donationSchema = z.object({
 
 export const requestSchema = z.object({
   id: z.uuid('Invalid UUID').nonempty('Required'),
-  requester: z.uuid('Invalid UUID').nonempty('Required'),
+  requester: recipientSchema,
   volumeNeeded: z.number('Required').min(20, 'Atleast 20mL').positive(),
   details: requestDetailsSchema,
   ...deliveryPreferencesSchema.shape,

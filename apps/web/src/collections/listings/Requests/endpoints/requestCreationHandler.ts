@@ -43,17 +43,24 @@ async function handler(req: PayloadRequest): Promise<RequestCreateResult> {
 
   const { type } = parsedData;
 
+  const requesterProfile = user.profile;
+  const requesterID = extractID(requesterProfile.value);
   const requesterDoc = await payload.findByID({
     req,
-    collection: 'individuals',
-    id: parsedData.requester,
-    select: { givenName: true },
+    collection: requesterProfile.relationTo,
+    id: requesterID,
+    select: { displayName: true },
     depth: 0,
   });
 
-  const image = await uploadImage(req, requesterDoc.givenName);
+  const image = await uploadImage(req, requesterDoc.displayName || 'Requester');
 
-  const baseInput = buildBaseInput({ ...parsedData, imageID: image?.id, userID: user!.id });
+  const baseInput = buildBaseInput({
+    ...parsedData,
+    requester: { relationTo: requesterProfile.relationTo, value: requesterID },
+    imageID: image?.id,
+    userID: user!.id,
+  });
 
   const createDoc = (input: typeof baseInput) =>
     payload.create({ req, collection: 'requests', data: input });
@@ -113,7 +120,8 @@ function buildBaseInput({
   imageID,
   userID,
   ...rest
-}: RequestCreateSchema & {
+}: Omit<RequestCreateSchema, 'requester'> & {
+  requester: { relationTo: NonNullable<User['profile']>['relationTo']; value: string };
   imageID?: string;
   userID: string;
 }): RequiredDataFromCollectionSlug<'requests'> {

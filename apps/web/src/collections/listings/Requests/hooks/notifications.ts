@@ -3,6 +3,7 @@ import { AfterChangeHookParams } from '@/lib/types';
 import { Notification, Request } from '@lactalink/types/payload-generated-types';
 import { extractCollection, extractID } from '@lactalink/utilities/extractors';
 import { CollectionAfterChangeHook } from 'payload';
+import { getProfileReference } from '../../_helpers/profileReference';
 
 export const createRequestNotification: CollectionAfterChangeHook<Request> = async ({
   doc,
@@ -47,9 +48,11 @@ async function autoCreateNotifications<T extends Request>(
 ): Promise<Notification[]> {
   const { doc, previousDoc, req, operation } = options;
 
+  const requesterRef = getProfileReference(doc.requester);
+  if (!requesterRef.id) return [];
   const requester = await req.payload.findByID({
-    collection: 'individuals',
-    id: extractID(doc.requester),
+    collection: requesterRef.relationTo,
+    id: requesterRef.id,
     req,
     depth: 0,
     select: { owner: true },
@@ -92,7 +95,12 @@ async function notifyRecipientOnCreate<T extends Request>(
     },
   });
 
-  const requesterName = extractCollection(request.requester)?.displayName || 'A requester';
+  const requesterRelation = request.requester;
+  const requesterValue =
+    requesterRelation && typeof requesterRelation === 'object' && 'value' in requesterRelation
+      ? requesterRelation.value
+      : requesterRelation;
+  const requesterName = extractCollection(requesterValue)?.displayName || 'A requester';
   const recipient = extractCollection(request.recipient?.value)?.owner;
   const recipientID = extractID(recipient);
 

@@ -1496,9 +1496,21 @@ export interface Request {
    */
   createdBy: string | User;
   /**
-   * The person requesting the milk
+   * The individual or organization requesting the milk
    */
-  requester: string | Individual;
+  requester:
+    | {
+        relationTo: 'individuals';
+        value: string | Individual;
+      }
+    | {
+        relationTo: 'milkBanks';
+        value: string | MilkBank;
+      }
+    | {
+        relationTo: 'hospitals';
+        value: string | Hospital;
+      };
   /**
    * Who this request is directed to (optional - leave empty for general request)
    */

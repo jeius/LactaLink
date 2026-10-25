@@ -1,8 +1,8 @@
 import { Donation, Request } from '@lactalink/types/payload-generated-types';
-import { extractID } from '@lactalink/utilities/extractors';
 import { isDonation, isRequest } from '@lactalink/utilities/type-guards';
 import isEqual from 'lodash/isEqual';
 import { FieldHook } from 'payload';
+import { getProfileReference } from '@/collections/listings/_helpers/profileReference';
 
 export const generateTitleForDonationOrRequest: FieldHook<
   Donation | Request,
@@ -17,19 +17,20 @@ export const generateTitleForDonationOrRequest: FieldHook<
     const isDonation = 'donor' in data;
     const isRequest = 'requester' in data;
 
-    const id = extractID(isDonation ? data.donor : isRequest ? data.requester : null);
+    const actor = isDonation ? data.donor : isRequest ? data.requester : null;
+    const { id, relationTo } = getProfileReference(actor);
 
     if (!id) return defaultTitle;
 
     const doc = await req.payload.findByID({
       req,
-      collection: 'individuals',
+      collection: relationTo,
       id,
       depth: 0,
-      select: { displayName: true, familyName: true, givenName: true },
+      select: { displayName: true },
     });
 
-    const name = doc.displayName || `${doc.givenName || ''} ${doc.familyName || ''}`.trim();
+    const name = doc.displayName || 'Unknown User';
     const volume = isDonation ? data.volume : isRequest ? data.initialVolumeNeeded : 0;
 
     return `${name} | ${volume ?? 0} mL`;
@@ -40,16 +41,19 @@ export const generateTitleForDonationOrRequest: FieldHook<
     return await generateTitle();
   } else if (operation === 'update' && originalDoc) {
     const { actor: prevActor, volume: prevVolume } = isDonation(originalDoc)
-      ? { actor: extractID(originalDoc.donor), volume: originalDoc.volume }
+      ? { actor: getProfileReference(originalDoc.donor), volume: originalDoc.volume }
       : isRequest(originalDoc)
-        ? { actor: extractID(originalDoc.requester), volume: originalDoc.initialVolumeNeeded }
+        ? {
+            actor: getProfileReference(originalDoc.requester),
+            volume: originalDoc.initialVolumeNeeded,
+          }
         : {};
 
     const { actor: newActor, volume: newVolume } =
       'donor' in data
-        ? { actor: extractID(data.donor), volume: data.volume }
+        ? { actor: getProfileReference(data.donor), volume: data.volume }
         : 'requester' in data
-          ? { actor: extractID(data.requester), volume: data.initialVolumeNeeded }
+          ? { actor: getProfileReference(data.requester), volume: data.initialVolumeNeeded }
           : {};
 
     // If neither the actor nor the volume has changed, keep the existing title

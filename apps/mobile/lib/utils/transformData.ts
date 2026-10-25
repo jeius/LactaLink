@@ -293,7 +293,13 @@ export function transformToRequestSchema<T extends Request | BaseInput, B extend
 
       return {
         id: input.id,
-        requester: extractID(input.requester),
+        requester:
+          input.requester && typeof input.requester === 'object' && 'relationTo' in input.requester
+            ? {
+                relationTo: input.requester.relationTo,
+                value: extractID(input.requester.value),
+              }
+            : { relationTo: 'individuals', value: extractID(input.requester) },
         volumeNeeded: input.volumeNeeded,
         deliveryPreferences,
         details: {

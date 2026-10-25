@@ -11,8 +11,8 @@ import ScrollView from '@/components/ui/ScrollView';
 import { RequestDetailsForm } from '@/features/donation&request/components/forms/RequestDetailsForm';
 import { useCreateRequestForm } from '@/features/donation&request/hooks/useCreateRequestForm';
 import { addRequestToCache } from '@/features/donation&request/lib/cacheUtils';
+import { createRequest } from '@/features/donation&request/lib/api/create';
 import { useRevalidateCollectionQueries } from '@/hooks/collections/useRevalidateQueries';
-import { createRequest } from '@/lib/api/request';
 import { RequestCreateParams } from '@/lib/types/donationRequest';
 import { RequestCreateSchema, requestCreateSchema } from '@lactalink/form-schemas';
 import { ErrorSearchParams } from '@lactalink/types';
@@ -60,10 +60,7 @@ export default function RequestCreateScreen() {
 
     toast.promise(createPromise, {
       loading: `Submitting Request...`,
-      success: (res: { message: string }) => {
-        console.log(res.message, res);
-        return res.message;
-      },
+      success: () => 'Request created successfully!',
       error: (error) => extractErrorMessage(error),
     });
 

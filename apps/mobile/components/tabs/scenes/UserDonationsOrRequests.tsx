@@ -58,7 +58,8 @@ export function UserDonationsOrRequestsScene({
     if (collection === 'donations') {
       conditions.push({ donor: { equals: profileID } });
     } else {
-      conditions.push({ requester: { equals: profileID } });
+      conditions.push({ 'requester.value': { equals: profileID } });
+      conditions.push({ 'requester.relationTo': { equals: profile.relationTo } });
     }
 
     return { and: conditions };

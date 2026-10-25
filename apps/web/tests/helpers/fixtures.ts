@@ -150,13 +150,19 @@ export class Fixtures {
   ): Promise<Request> {
     const payload = this.payload;
     const user = this.user;
+    if (!user.profile) throw new Error('Test user must have a profile to create a request');
 
-    // @ts-expect-error - Type error for auto-generated fields, safe-error
+    // @ts-expect-error - generated create types include fields populated by collection hooks
     return await payload.create({
       collection: 'requests',
       data: {
-        requester: extractID(user.profile?.value),
-        recipient: recipient,
+        requester: {
+          relationTo: user.profile.relationTo,
+          value: extractID(user.profile.value) as string,
+        },
+        recipient: recipient
+          ? { relationTo: recipient.relationTo, value: extractID(recipient.value) as string }
+          : undefined,
         status: status,
         initialVolumeNeeded: volumeNeeded,
         volumeNeeded: volumeNeeded,

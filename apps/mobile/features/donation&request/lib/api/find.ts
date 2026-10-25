@@ -159,7 +159,11 @@ export async function findPaginatedUserRequests(
       depth: DEFAULT_DEPTH,
       sort: '-createdAt',
       where: {
-        and: [{ requester: { equals: userProfileID } }, { status: { equals: status } }],
+        and: [
+          { 'requester.value': { equals: userProfileID } },
+          { 'requester.relationTo': { equals: user.relationTo } },
+          { status: { equals: status } },
+        ],
       },
       joins: { reads: { count: true, limit: 1 }, transactions: { count: true, limit: 0 } },
     },

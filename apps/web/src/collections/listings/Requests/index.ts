@@ -1,4 +1,4 @@
-import { createUserField } from '@/fields/userField';
+import { createUserField, createUserProfileField } from '@/fields/userField';
 import { COLLECTION_GROUP } from '@/lib/constants/collections';
 import { NullableValidator } from '@lactalink/agents/payload';
 import { PREFERRED_STORAGE_TYPES, PRIORITY_LEVELS } from '@lactalink/enums';
@@ -60,16 +60,15 @@ export const Requests: CollectionConfig<'requests'> = {
     {
       type: 'row',
       fields: [
-        {
+        createUserProfileField({
           name: 'requester',
-          type: 'relationship',
-          relationTo: 'individuals',
+          label: 'Requester',
           required: true,
           admin: {
-            description: 'The person requesting the milk',
+            description: 'The individual or organization requesting the milk',
             width: '50%',
           },
-        },
+        }),
         recipientField({
           description:
             'Who this request is directed to (optional - leave empty for general request)',
