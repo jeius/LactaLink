@@ -96,7 +96,7 @@ export class TransactionService implements ITransactionService {
         donation: extractID(donation),
         request: extractID(request),
         sender: { relationTo: 'individuals', value: extractID(donation.donor) },
-        recipient: { relationTo: 'individuals', value: extractID(request.requester) },
+        recipient: request.requester,
         milkBags: extractID(milkBags),
         volume: volume,
         // @ts-expect-error Safe to ignore.
@@ -178,7 +178,7 @@ export class TransactionService implements ITransactionService {
         status: TXN_CONFIRMED,
         request: extractID(request),
         sender: organization,
-        recipient: { relationTo: 'individuals', value: extractID(request.requester) },
+        recipient: request.requester,
         milkBags: extractID(milkBags),
         volume: volume,
         // @ts-expect-error Safe to ignore.
