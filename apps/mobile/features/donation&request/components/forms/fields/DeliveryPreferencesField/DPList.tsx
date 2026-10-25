@@ -8,7 +8,7 @@ import { VStack } from '@/components/ui/vstack';
 import DeliveryPreferenceCard from '@/features/delivery-preference/components/DeliveryPreferenceCard';
 import { DeliveryPreference } from '@lactalink/types/payload-generated-types';
 import { listKeyExtractor } from '@lactalink/utilities/extractors';
-import { PenBoxIcon, PlusIcon } from 'lucide-react-native';
+import { CheckIcon, PenBoxIcon, PlusIcon } from 'lucide-react-native';
 
 interface Props extends Omit<
   InfiniteFlashListProps<DeliveryPreference>,
@@ -18,8 +18,9 @@ interface Props extends Omit<
   onChange?: (values: DeliveryPreference[]) => void;
   onCreate?: () => void;
   onEdit?: (id: string) => void;
+  onDone?: () => void;
 }
-export default function DPList({ value, onChange, onCreate, onEdit, data, ...props }: Props) {
+export default function DPList({ value, onChange, onCreate, onEdit, onDone, data, ...props }: Props) {
   return (
     <InfiniteFlashList
       {...props}
@@ -30,9 +31,15 @@ export default function DPList({ value, onChange, onCreate, onEdit, data, ...pro
       contentContainerClassName="px-4"
       footerClassName="mt-4"
       ListHeaderComponent={
-        <Text bold size="lg" className="text-center">
-          Select from your Delivery Preferences
-        </Text>
+        <Box className="flex-row items-center justify-between gap-3">
+          <Text bold size="lg" className="flex-1">
+            Select from your Delivery Preferences
+          </Text>
+          <Button size="sm" action="primary" variant="solid" onPress={onDone}>
+            <ButtonIcon as={CheckIcon} />
+            <ButtonText>Done</ButtonText>
+          </Button>
+        </Box>
       }
       ListFooterComponent={
         <VStack space="sm">

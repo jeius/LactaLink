@@ -140,6 +140,7 @@ export default function DeliveryPreferencesField<TFieldValues extends FieldValue
           data={preferences}
           value={selectedValues}
           onChange={handleChange}
+          onDone={() => sheetRef.current?.dismiss()}
           onCreate={() => closeSheetAndNavigate('/delivery-preferences/create')}
           onEdit={(id) => closeSheetAndNavigate(`/delivery-preferences/${id}/edit`)}
         />
