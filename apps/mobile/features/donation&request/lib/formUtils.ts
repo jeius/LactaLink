@@ -48,6 +48,10 @@ export function getRequestDefaultValues(
       : undefined,
     details: {
       ...savedData?.details,
+      // Matched requests require an explicit bag selection. Keep the field as
+      // an empty array until the user selects a currently available bag so the
+      // form never exposes Zod's raw "received undefined" error.
+      bags: isMatched ? [] : savedData?.details?.bags,
       notes: savedData?.details?.notes ?? '',
       reason: savedData?.details?.reason ?? '',
     },

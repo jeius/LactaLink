@@ -1,6 +1,7 @@
 import { AnimatedPressable } from '@/components/animated/pressable';
 import { Box } from '@/components/ui/box';
 import { FlashList, ListRenderItem } from '@/components/ui/FlashList';
+import { Text } from '@/components/ui/text';
 import {
   FormControl,
   FormControlError,
@@ -46,7 +47,11 @@ function RequestMilkbagsField({ matchedDonation, isLoading, isDisabled, control 
   const disableField = isDisabled || isSubmitting;
 
   const { bags, bagsMap } = useMemo(() => {
-    const bags = isLoading ? placeholders : extractCollection(matchedDonation?.details.bags);
+    const bags = isLoading
+      ? placeholders
+      : (extractCollection(matchedDonation?.details.bags) ?? []).filter(
+          (bag) => bag.status === 'AVAILABLE' && Date.parse(bag.expiresAt) > Date.now()
+        );
 
     const map = new Map<string, MilkBag>();
     bags?.forEach((bag) => map.set(extractID(bag), bag));
@@ -91,14 +96,22 @@ function RequestMilkbagsField({ matchedDonation, isLoading, isDisabled, control 
       )}
 
       <Box className="mt-2">
-        <MilkbagList
-          bags={bags}
-          selectedBags={
-            (selectedBags ?? []).map((bag) => bagsMap.get(bag.id)).filter(Boolean) as MilkBag[]
-          }
-          onSelect={handleSelect}
-          isDisabled={disableField}
-        />
+        {!isLoading && bags.length === 0 ? (
+          <Box className="mx-5 rounded-xl border border-outline-200 bg-background-100 p-4">
+            <Text className="text-center text-typography-600">
+              No available milk bags remain for this donation.
+            </Text>
+          </Box>
+        ) : (
+          <MilkbagList
+            bags={bags}
+            selectedBags={
+              (selectedBags ?? []).map((bag) => bagsMap.get(bag.id)).filter(Boolean) as MilkBag[]
+            }
+            onSelect={handleSelect}
+            isDisabled={disableField}
+          />
+        )}
       </Box>
     </FormControl>
   );
