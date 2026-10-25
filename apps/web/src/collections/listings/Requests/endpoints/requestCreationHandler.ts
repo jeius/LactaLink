@@ -33,8 +33,12 @@ async function handler(req: PayloadRequest): Promise<RequestCreateResult> {
   const { data: parsedData, success, error } = requestCreateSchema.safeParse(data);
 
   if (!success) {
-    const issue = error.issues.pop();
-    throw new ValidationError(issue?.message ?? 'Invalid request data', {
+    const issue = error.issues[0];
+    const field = issue?.path.join('.');
+    const message = issue
+      ? `${field ? `${field}: ` : ''}${issue.message}`
+      : 'Invalid request data';
+    throw new ValidationError(message, {
       name: ValidationErrorNames.INVALID_TYPE,
       statusCode: status.BAD_REQUEST,
       statusText: status[status.BAD_REQUEST],
