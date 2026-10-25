@@ -67,11 +67,19 @@ export function ListingBottomCTA({ data, onLayout }: CTAProps) {
   const insets = useSafeAreaInsets();
   const { data: meUser } = useMeUser();
 
-  const profile = isDonation(data) ? data?.donor : data?.requester;
-  const isOwner = isEqualProfiles({ relationTo: 'individuals', value: profile }, meUser?.profile);
+  const listingProfile = isDonation(data)
+    ? { relationTo: 'individuals' as const, value: data.donor }
+    : data.requester;
+  const isOwner = isEqualProfiles(listingProfile, meUser?.profile);
+  const isOrganization =
+    meUser?.profile?.relationTo === 'hospitals' || meUser?.profile?.relationTo === 'milkBanks';
 
   const isStatusPending = data.status === DONATION_REQUEST_STATUS.PENDING.value;
   const isExpired = isListingExpired(data);
+
+  // Hospitals and milk banks can create and edit their own requests, but they
+  // cannot fulfil another request by creating an individual milk donation.
+  if (isRequest(data) && isOrganization && !isOwner) return null;
 
   let label: string;
   let icon: FC<LucideProps> | null = null;

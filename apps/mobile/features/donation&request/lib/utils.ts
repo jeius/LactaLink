@@ -190,8 +190,10 @@ export function shouldShowListingInFeed(doc: Donation | Request): boolean {
 
 // #region Helpers -----------------------------------------------
 function isOwner(doc: Donation | Request, user: User) {
-  const actorID = isDonation(doc) ? extractID(doc.donor) : extractID(doc.requester);
-  return isEqualProfiles(user.profile, { relationTo: 'individuals', value: actorID });
+  const actor = isDonation(doc)
+    ? { relationTo: 'individuals' as const, value: extractID(doc.donor) }
+    : doc.requester;
+  return isEqualProfiles(user.profile, actor);
 }
 
 function isRecipient(recipient: NonNullable<Donation['recipient']>, user: User) {

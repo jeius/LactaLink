@@ -166,7 +166,7 @@ export default function RequestScreen() {
                 <HStack space="xl" className="items-center">
                   <ProfileTag
                     label="Requester"
-                    profile={{ relationTo: 'individuals', value: data.requester }}
+                    profile={data.requester}
                   />
                   <Box className="flex-1 items-end">
                     <ListingHeaderCTA data={data} />
